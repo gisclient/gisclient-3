@@ -1,0 +1,24 @@
+<?php
+
+//Impostazioni database Postgresql
+define('DB_NAME', '<MY_DB_NAME>');
+define('DB_SCHEMA', '<MY_SCHEMA_NAME>');
+define('USER_SCHEMA', '<MY_USER_SCHEMA_NAME>');
+define('CHAR_SET', 'UTF-8');
+define('DB_HOST', '<MY_DB_HOST>');
+define('DB_PORT', '5432');
+define('DB_USER', '<MY_DB_ADMIN_USER>'); //Superutente
+define('DB_PWD', '<MY_DB_ADMIN_PASSWORD>');
+
+//Alias per postgis_transform_geom
+define('POSTGIS_TRANSOFRM_GEOMETRY','ST_Transform_geometry');
+
+//Utente scritto sul file .map
+define('MAP_USER','<MY_DB_MAPSERVER_USER>');
+define('MAP_PWD','<MY_DB_MAPSERVER_PASSWORD>');
+
+//Superutente per l'accesso ad Author
+define('SUPER_USER','<MY_AUTHOR_USER>');
+define('SUPER_PWD','<MY_AUTHOR_PASSWORD>');
+
+?>

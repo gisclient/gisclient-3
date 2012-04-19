@@ -1,0 +1,17 @@
+<form>
+<table border=2 cellpadding=10><tr><td id="blah">
+Color: <input type=text onChange="oldColor=this.value;setColor(this.value);">
+<input type=button
+onClick="window.open('ColorEditor.html','Color','height=350,width=390,dependent=yes,directories=no,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no')"
+value="Edit !">
+</td></tr></table></form></layer>
+<script>
+// Microsoft or Netscape ?
+var oldColor;
+function setColor(a) {
+	document.getElementById("blah").bgColor=document.forms[0].elements[0].value=a;
+	oldColor=a;
+}
+
+setColor("FFFFFF");
+</script>

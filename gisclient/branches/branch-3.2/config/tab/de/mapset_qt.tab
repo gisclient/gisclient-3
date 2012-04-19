@@ -1,0 +1,24 @@
+[standard]
+table = "mapset_qt"
+pkey = "mapset_name;qt_id"
+order_fld = "theme_title#presente DESC#qt_name"
+dato[] = ";presente;1%;idriga"
+dato[] = "Vorhanden;qt_id;7%#qt_id#presente;check1"
+dato[] = "Suchmodell;qt_name;46%;text"
+dato[] = "Thema;theme_title;46%;text"
+
+[list]
+table = "mapset_qt"
+pkey = "mapset_name;qt_id"
+order_fld = "theme_title#qt_name"
+dato[] = "Suchmodelle;qt_name;47%;text"
+dato[] = "Thema;theme_title;50%;text"
+
+[title]
+edit = "Suchmodelle des Kartensets"
+view = "Suchmodelle des Kartensets"
+new = "Suchmodelle des Kartensets"
+list = "Suchmodelle des Kartensets"
+
+[message]
+nodata = ""

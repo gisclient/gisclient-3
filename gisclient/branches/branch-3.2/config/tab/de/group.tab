@@ -1,0 +1,22 @@
+[standard]
+table = "groups"
+pkey = "groupname"
+dato[] = "Name;groupname;40;text"
+dato[] = "Beschreibung;description;60;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+[list]
+table = "groups"
+pkey = "groupname"
+order_fld = "description"
+dato[] = ";groupname;3%;info"
+dato[] = "Name;groupname;30%#groupname;goto"
+dato[] = "Beschreibung;description;67%;text"
+
+[title]
+edit = "Daten der Benutzergruppe"
+view = "Daten der Benutzergruppe"
+new = "Neue Benutzergruppe"
+list = "Benutzergruppen"
+
+[message]
+nodata = "Keine Benutzergruppe vorhanden"
