@@ -11,7 +11,6 @@ if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_E
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-	include('../../config/config.php');
 	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
 	
 	$fileContent = file_get_contents('php://input');
@@ -117,6 +116,8 @@ if(!isset($_SESSION)) {
 	}
 	session_start();
 }
+
+$cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;
 if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
 	$hasPrivateLayers = false;
 	if(!empty($layersParameter)) {
@@ -134,7 +135,6 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 			header('WWW-Authenticate: Basic realm="Gisclient"');
 			header('HTTP/1.0 401 Unauthorized');
 		} else {
-			include('../../config/config.php');
 			$userData = array(
 				"user"=>"username",
 				"pwd"=>"password",
@@ -222,6 +222,20 @@ if(!empty($layersParameter)) {
 }
 session_write_close();
 
+// Cache part 1
+$owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
+$owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
+if ((isset($_REQUEST['REQUEST']) && 
+     strtolower($_REQUEST['REQUEST']) == 'getmap') || 
+	(isset($_REQUEST['request']) && 
+     strtolower($_REQUEST['request']) == 'getmap')) {
+	
+	if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < time() - $owsCacheTTL) {
+		header('HTTP/1.1 304 Not Modified');
+		die(); // Dont' return image
+	}
+}
+
 if(strtoupper($objRequest->getvaluebyname('request')) == 'GETLEGENDGRAPHIC') {
 	include './include/wmsGetLegendGraphic.php';
 }
@@ -243,8 +257,45 @@ $contenttype = ms_iostripstdoutbuffercontenttype();
 $ctt = explode("/",$contenttype); 
 
 /* Send response with appropriate header */ 
-if ($ctt[0] == 'image') { 
+if ($ctt[0] == 'image') {
+
+	$hasDynamicLayer = false;
+	if (defined('DYNAMIC_LAYERS')) {
+		$dynamicLayers = explode(',', DYNAMIC_LAYERS);
+		if (isset($layersToInclude)) {
+			foreach($layersToInclude as $currentLayer) {
+				if (in_array($currentLayer, $dynamicLayers)) {
+					$hasDynamicLayer = true;
+					break;
+				}
+			}
+		}
+    }
+
 	header('Content-type: image/'. $ctt[1]); 
+    
+    // Cache part 2
+	if (!$hasDynamicLayer && $cacheExpireTimeout > 0 && $cacheExpireTimeout > time()) {
+		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTLOpen) . " GMT";
+		$serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";
+		header("Cache-Control: public, max-age={$owsCacheTTLOpen}, pre-check={$owsCacheTTLOpen}	");
+		header("Pragma: public");
+        header("Date: {$serverTime}");
+		header("Cache-Control: max-age={$owsCacheTTLOpen}");
+		header("Last-Modified: {$serverTime}");
+		header("Expires: {$cacheTime}");
+	} else if ($owsCacheTTL > 0) {
+		// OL FIX: Prevent multiple request for the same layer. Fixed setting cache to 60 sec
+		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTL) . " GMT";
+		$serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";
+		header("Cache-Control: public, max-age={$owsCacheTTL}, pre-check={$owsCacheTTL}	");
+		header("Pragma: public");
+        header("Date: {$serverTime}");
+		header("Cache-Control: max-age={$owsCacheTTL}");
+		header("Last-Modified: {$serverTime}");
+		header("Expires: {$cacheTime}");
+	}
+    
 	ms_iogetStdoutBufferBytes(); 
 } else { 
 	header("Content-Type: application/xml"); 
