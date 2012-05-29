@@ -55,6 +55,7 @@ $sql = 'select distinct '.$fieldName.' from '.$schema.'.'.$catalog['table'].' as
 if(!empty($constraints)) {
     $sql .= ' where '.implode(' and ', $constraints);
 }
+$sql .= ' order by '.$fieldName;
 
 try {
     $stmt = $db->prepare($sql);
