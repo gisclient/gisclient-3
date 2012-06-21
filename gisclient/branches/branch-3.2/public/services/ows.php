@@ -53,7 +53,7 @@ $oMap = ms_newMapobj($directory.$mapfile.".map");
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
-	$oMap->set('defresolution', 72);
+	$oMap->set('defresolution', 96);
 }
 
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
