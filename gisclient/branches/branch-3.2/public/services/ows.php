@@ -58,6 +58,14 @@ if(!empty($resolution) && $resolution != 72) {
 
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
 if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
+    $ch = curl_init($_REQUEST['SLD_BODY']);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+    curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+    $sldContent = curl_exec($ch);
+    curl_close($ch);
+    
 	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
 	if($sldContent !== false) {
         $objRequest->setParameter('SLD_BODY', $sldContent);

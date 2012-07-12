@@ -421,7 +421,15 @@ class gcMap{
                 $this->oMap = ms_newMapobj("../../map/{$this->projectName}/{$this->mapsetName}.map");
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
-                $this->oMap->applySLD(file_get_contents($row['sld']));
+                $ch = curl_init($row['sld']);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+                curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+                $sldContent = curl_exec($ch);
+                curl_close($ch);
+                
+                $this->oMap->applySLD($sldContent);
                 $this->sldContents[$row['sld']] = true;
             }
             if ($this->sldContents[$row['sld']]) {
