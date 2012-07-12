@@ -58,7 +58,13 @@ if(!empty($resolution) && $resolution != 72) {
 
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
 if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
-    $ch = curl_init($_REQUEST['SLD_BODY']);
+	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
+	if($sldContent !== false) {
+        $objRequest->setParameter('SLD_BODY', $sldContent);
+        $oMap->applySLD($sldContent); // for getlegendgraphic
+    }
+} else if(!empty($_REQUEST['SLD'])) {
+    $ch = curl_init($_REQUEST['SLD']);
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
@@ -66,13 +72,6 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
     $sldContent = curl_exec($ch);
     curl_close($ch);
     
-	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
-	if($sldContent !== false) {
-        $objRequest->setParameter('SLD_BODY', $sldContent);
-        $oMap->applySLD($sldContent); // for getlegendgraphic
-    }
-} else if(!empty($_REQUEST['SLD'])) {
-	$sldContent = file_get_contents($_REQUEST['SLD']);
 	if($sldContent !== false) {
         $objRequest->setParameter('SLD_BODY', $sldContent);
         $oMap->applySLD($sldContent); // for getlegendgraphic
