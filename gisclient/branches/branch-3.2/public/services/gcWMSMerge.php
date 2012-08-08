@@ -51,6 +51,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 		if(!empty($layer['PARAMETERS']['PROJECT'])) $url .= 'PROJECT='.$layer['PARAMETERS']['PROJECT'];
 		if(!empty($layer['PARAMETERS']['MAP'])) $url .= '&MAP='.$layer['PARAMETERS']['MAP'];
 		if(!empty($layer['PARAMETERS']['REDLINEID'])) $url .= '&REDLINEID='.$layer['PARAMETERS']['REDLINEID'];
+        if(!empty($layer['PARAMETERS']['LANG'])) $url .= '&LANG='.$layer['PARAMETERS']['LANG'];
 		if(!empty($sessionId)) $url .= '&GC_SESSION_ID='.$sessionId;
 		if(!empty($mapConfig['resolution'])) $url.= '&RESOLUTION='.$mapConfig['resolution'];
 		$layerNames = !empty($layer['PARAMETERS']['LAYERS']) ? $layer['PARAMETERS']['LAYERS'] : '';

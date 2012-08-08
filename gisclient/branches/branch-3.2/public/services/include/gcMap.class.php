@@ -269,7 +269,7 @@ class gcMap{
 				$layerParameters['gisclient_map'] = 1;
 				if(!empty($_REQUEST["tmp"])) $layerParameters['tmp'] = 1;
                 
-                if (!empty($row['url']) && !empty($row['layers'])) { 
+                if (!empty($row['url']) && (!empty($row['layers']) || $row['layers'] == '0')) { 
                     $layerParameters["layers"] = $row['layers']; 
  		        } else if($row["theme_single"] == 1){ 
 					$list=array();
