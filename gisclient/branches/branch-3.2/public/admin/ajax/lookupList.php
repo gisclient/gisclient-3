@@ -28,7 +28,7 @@ if(empty($_REQUEST['step'])) {
 	$sql = "SELECT c.relname AS table
                 FROM pg_catalog.pg_class c
                 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                WHERE c.relkind IN ('r','') AND n.nspname = :schema order by c.relname";
+                WHERE c.relkind IN ('r','v','') AND n.nspname = :schema order by c.relname";
 	try {
 		$stmt = $dataDb->prepare($sql);
 		$stmt->execute(array('schema'=>$schema));
