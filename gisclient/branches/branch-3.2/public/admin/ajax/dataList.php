@@ -106,13 +106,13 @@ switch($catalogData["connection_type"]){
 			$stmt = $dataDb->prepare($sql);
 			$stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data']));
 			$dbTableName = $stmt->fetchColumn(0);
-			if($dbTableName != $_REQUEST['data']) $ajax->error();
+			if($dbTableName != $_REQUEST['data']) $ajax->error('Cannot find table '.$schema.'.'.$_REQUEST['data']);
 			
 			$sql = 'select column_name from information_schema.columns where table_schema=:schema and table_name=:table and column_name=:column';
 			$stmt = $dataDb->prepare($sql);
 			$stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data'], ':column'=>$_REQUEST['data_geom']));
 			$dbColumnName = $stmt->fetchColumn(0);
-			if($dbColumnName != $_REQUEST['data_geom']) $ajax->error();
+			if($dbColumnName != $_REQUEST['data_geom']) $ajax->error('Cannot find column '.$_REQUEST['data_geom'].' for table '.$schema.'.'.$_REQUEST['data']);
 			
 			$sql = 'select st_extent('.$dbColumnName.') from '.$schema.'.'.$dbTableName;
 			$box = $dataDb->query($sql)->fetchColumn(0);
