@@ -31,7 +31,6 @@ var mapset;
 GisClient.initMapset = function() {
 	mapset = GisClient.mapset[0];
 	document.title = mapset.title;
-	console.log('qui');
 	var map = new OpenLayers.Map("map",mapset.map);
 	map.addControls( [
 		new OpenLayers.Control.Navigation(),
@@ -45,6 +44,11 @@ GisClient.initMapset = function() {
 		new OpenLayers.Control.KeyboardDefaults(),
         new OpenLayers.Control.Permalink()		
 	]);
+	
+	//var emptyBaseLayer = new OpenLayers.Layer.Image('Base',"../images/blank.gif", map.maxExtent, new OpenLayers.Size(1,1),{"gc_id":"GisClient_empty_base","displayInLayerSwitcher":true});
+	//map.addLayer(emptyBaseLayer);
+	//map.setLayerIndex(emptyBaseLayer,0);
+	
 	if(!mapset.baseLayerId) map.allOverlays = true;
 	map.zoomToExtent(map.maxExtent);
 
@@ -53,19 +57,8 @@ GisClient.initMapset = function() {
 function init(){
 	//Se non c'è un layer google chiamo la funzione di inizializzazione:
 	if(!GisClient.loader) GisClient.initMapset();	
-	console.log('la')
-
-	
-	
-
-	
-
-
-	//var emptyBaseLayer = new OpenLayers.Layer.Image('Base',"../images/blank.gif", map.maxExtent, new OpenLayers.Size(1,1),{"gc_id":"GisClient_empty_base","displayInLayerSwitcher":true});
-	//map.addLayer(emptyBaseLayer);
-	//map.setLayerIndex(emptyBaseLayer,0);
-/*
-	*/
+    document.getElementById("mapconf").setAttribute("href", "../../services/gcmap.php" + window.location.search);
+    document.getElementById("jsonconf").setAttribute("href", "../../services/gcmap.php" + window.location.search + "&jsonformat=1");
 }
 
 </script>
@@ -74,7 +67,10 @@ function init(){
     <body onload="init()">
         <div id="map"></div>
 		<div>
-			<a target="new" href="../services/gcmap.php?mapset=os_scavi&auth=">GisClient Map configuration</a>
+			<p><a id="mapconf" target="new" href="">GisClient Map configuration</a></p>
+			<p><a id="jsonconf" target="new" href="">GisClient Map json configuration</a></p>
 		</div>
+		
+		
     </body>
 </html>
