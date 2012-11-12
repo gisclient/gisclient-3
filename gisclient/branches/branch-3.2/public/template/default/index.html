@@ -1,0 +1,80 @@
+<html>
+    <head>
+        <title></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js" ></script>
+		<script src="LoadingPanel.js" type="text/javascript"></script>
+		<style type="text/css">
+			#map {
+				width: 512px;
+				height: 512px;
+				border: 1px solid black;
+			}
+			.olControlLoadingPanel {
+				background-image:url(../../images/icons/loading.gif);
+				margin-left: 40%;
+				margin-top: 40%;
+				position: relative;
+				width: 50px;
+				height: 50px;
+				background-position:center;
+				background-repeat:no-repeat;
+				display: none;
+			}
+		</style>		
+
+<script type="text/javascript">
+var GisClient = GisClient || {}; 
+document.write('<script src="../../services/gcmap.php' + window.location.search + '" type="text/javascript"><\/script>');
+var mapset;
+
+GisClient.initMapset = function() {
+	mapset = GisClient.mapset[0];
+	document.title = mapset.title;
+	console.log('qui');
+	var map = new OpenLayers.Map("map",mapset.map);
+	map.addControls( [
+		new OpenLayers.Control.Navigation(),
+		new OpenLayers.Control.LoadingPanel(),
+		new OpenLayers.Control.PanZoomBar(),
+		new OpenLayers.Control.LayerSwitcher({'ascending':false}),
+	   // new OpenLayers.Control.Permalink(),
+		new OpenLayers.Control.ScaleLine(),
+		new OpenLayers.Control.MousePosition(),
+	   // new OpenLayers.Control.OverviewMap({autoPan:true,layers:[map.layers[0],map.layers[5]]}),
+		new OpenLayers.Control.KeyboardDefaults(),
+        new OpenLayers.Control.Permalink()		
+	]);
+	if(!mapset.baseLayerId) map.allOverlays = true;
+	map.zoomToExtent(map.maxExtent);
+
+};
+
+function init(){
+	//Se non c'è un layer google chiamo la funzione di inizializzazione:
+	if(!GisClient.loader) GisClient.initMapset();	
+	console.log('la')
+
+	
+	
+
+	
+
+
+	//var emptyBaseLayer = new OpenLayers.Layer.Image('Base',"../images/blank.gif", map.maxExtent, new OpenLayers.Size(1,1),{"gc_id":"GisClient_empty_base","displayInLayerSwitcher":true});
+	//map.addLayer(emptyBaseLayer);
+	//map.setLayerIndex(emptyBaseLayer,0);
+/*
+	*/
+}
+
+</script>
+
+</head>
+    <body onload="init()">
+        <div id="map"></div>
+		<div>
+			<a target="new" href="../services/gcmap.php?mapset=os_scavi&auth=">GisClient Map configuration</a>
+		</div>
+    </body>
+</html>
