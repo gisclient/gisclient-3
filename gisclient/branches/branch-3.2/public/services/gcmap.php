@@ -56,7 +56,7 @@ else{
 	//JAVASC	header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 	//header("Content-Type: application/x-www-form-urlencoded; Charset=". CHAR_SET);
 	header("Content-type: text/javascript; Charset=UTF-8");
-	echo $objMapset->OLMap(isset($_REQUEST["mapservices"]));
+	echo $objMapset->OLMap();
 }
 
 ?>
