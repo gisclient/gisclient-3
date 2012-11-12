@@ -67,7 +67,7 @@ class gcMap{
 			VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
 			YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
 			OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-			GMAP3_LAYER_TYPE => "http://maps.google.com/maps/api/js?v=3.2&sensor=false");//Elenco dei provider di mappe OSM GMap2 VEMap YMap come mappati in tabelle e_owstype
+			GMAP3_LAYER_TYPE => "https://maps.googleapis.com/maps/api/js?callback=GisClient.initMapset");//Elenco dei provider di mappe OSM GMap2 VEMap YMap come mappati in tabelle e_owstype
 	
 	private $i18n;
 	protected $oMap;
@@ -80,7 +80,9 @@ class gcMap{
 
 		$this->db = GCApp::getDB();
 		
-        if (defined('GMAPKEY')) $this->mapProviders[2] = str_replace('%KEY%',GMAPKEY,$this->mapProviders[2]);
+        if (defined('GMAPKEY')) $this->mapProviders[GMAP2_LAYER_TYPE] = str_replace('%KEY%',GMAPKEY,$this->mapProviders[GMAP2_LAYER_TYPE]);//DEPRECATED
+		if (defined('GMAPKEY') && GMAPKEY) $this->mapProviders[GMAP3_LAYER_TYPE] .= "&key='".GMAPKEY."'";
+		if (defined('GMAPSENSOR')) $this->mapProviders[GMAP3_LAYER_TYPE] .= "&sensor=true"; else $this->mapProviders[GMAP3_LAYER_TYPE] .= "&sensor=false";
 	
 		$sql = "SELECT mapset.*, ".
 			" x(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
@@ -654,17 +656,19 @@ class gcMap{
 
 	
 	//Elenco delle librerie per i providers usati
-	function getMapProviders(){
-		$jsText = '';
+	function _setMapProviders(){
+		$jsText = "var script;";
 		foreach($this->listProviders as $key){
-			$jsText .= "<script src=\"".$this->mapProviders[$key]."\"></script>\n";
+			$jsText .= "script = document.createElement('script');script.type = \"text/javascript\";";
+			$jsText .= "script.src=\"".$this->mapProviders[$key]."\";";
+			$jsText .= "document.getElementsByTagName('head')[0].appendChild(script);\n";
 		}
 		return $jsText;
 	}
 	
 	
 	//RESITUTISCO GIA LA MAPPA OL
-	function OLMap($mapProviders = false){
+	function OLMap(){
 
 		//CONFIGURAZIONE OPENLAYERS MAP
 		$mapOptions = array('"allOverlays":false');
@@ -697,21 +701,14 @@ class gcMap{
 					if(is_array($layer)) $aLayerText[] = $this->_layerText($layer);
 			}
 		}
-		
 
-
-		$jsText ='OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;OpenLayers.Util.onImageLoadErrorColor = "transparent";OpenLayers.DOTS_PER_INCH = '.$this->mapOptions["dpi"].";\n";
-		if($mapProviders){//COME SI FA?????? NON CARICA LE LIBRERIE IN TEMPO
-			$jsText .= "var newJs; var headID = document.getElementsByTagName('head')[0];\n"; 
-			foreach($this->listProviders as $key){
-				$jsText .= "newJs = document.createElement('script');newJs.src = '".$this->mapProviders[$key]."';headID.appendChild(newJs);\n";
-			}
-		};
-		
+		$jsText=$this->_setMapProviders();
+		$jsText .='OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;OpenLayers.Util.onImageLoadErrorColor = "transparent";OpenLayers.DOTS_PER_INCH = '.$this->mapOptions["dpi"].";\n";
 		$mapsetOptions = '"name":"'.addslashes($this->mapOptions["mapset"]).'","title":"'.addslashes($this->mapOptions["title"]).'","project":"'.addslashes($this->mapOptions["project"]).'","projectTitle":"'.addslashes($this->mapOptions["projectTitle"]).'","baseLayerId":"'.$this->activeBaseLayer.'","projectionDescription":"'.addslashes($this->mapOptions["projectionDescription"]).'","minZoomLevel":'.$this->mapOptions['minZoomLevel'];
 		if(isset($this->mapOptions['selgroup'])) $mapsetOptions .=',"selgroup":'.json_encode($this->mapOptions['selgroup']);
 		$jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
 		$jsText .= 'GisClient.mapset.push({'.$mapsetOptions.',"map":{'.implode(',',$mapOptions).',layers:['.implode(',',$aLayerText).']}});';
+		if($this->mapProviders[GMAP2_LAYER_TYPE] || $this->mapProviders[GMAP3_LAYER_TYPE]) $jsText .= 'GisClient.loader=true;';
 		return $jsText;
 	}
 
