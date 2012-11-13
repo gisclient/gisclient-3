@@ -1,4 +1,4 @@
-SET search_path = gisclient_31, pg_catalog;
+SET search_path = gisclient_32, pg_catalog;
 
 
 

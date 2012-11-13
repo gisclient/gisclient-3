@@ -958,6 +958,7 @@ INSERT INTO e_resultype VALUES (30, 'Nascondi in scheda', 6);
 
 ------ GISCLIENT 3.1 -----------
 ---- da qui in poi, tutte le modifiche a partire dallo schema di gisclient 3.1
+SET search_path = gisclient_32, pg_catalog;
 
 
 -- 2012-01-09: metadata_url per collegamento con geonetwork, trasparenza per gestirla su client

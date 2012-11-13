@@ -1,4 +1,4 @@
-SET search_path = gisclient_31, pg_catalog;
+SET search_path = gisclient_32, pg_catalog;
 
 DELETE FROM e_level;
 INSERT INTO e_level VALUES (1, 'root', NULL, 1, NULL, NULL, 0, 0, NULL, NULL, 2);
