@@ -709,7 +709,7 @@ Class saveData{
 					}
 					break;
 				case "chiave_esterna":
-					$val=($campo=="symbol_ttf_name")?("'$val'"):($val);
+					$val=($campo=="symbol_ttf_name")?("$val"):($val);
 					break;
 				case "check1":
 					$val=(isset($this->data[$curr_rec][$campo]))?($this->data[$curr_rec][$campo]):(0);
