@@ -195,7 +195,7 @@ switch($_REQUEST['action']) {
 		
 		if(!tableAlreadyExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
 		
-        $export = new GCExport('shp');
+        $export = new GCExport($dataDb, 'shp');
         $tables = array(
             array(
                 'db'=>$dbParams['db_name'],

@@ -50,7 +50,7 @@
 						foreach($mapsets as $mapset) {
 							echo '<tr>
 								<td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
-								<td><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WMS" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
+								<td><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
 								<td><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
 							</tr>';
 						}

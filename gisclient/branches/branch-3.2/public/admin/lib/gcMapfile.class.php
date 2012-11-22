@@ -69,12 +69,18 @@ class gcMapfile{
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
 				$fieldsMapset="mapset_name,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";
 				$sqlParams['keyvalue'] = $keyvalue;
+                
+                $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute(array('mapset'=>$keyvalue));
+                $projectName = $stmt->fetchColumn(0);
 				
 		} elseif($keytype=="project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO
 				$filter="project.project_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
 				$fieldsMapset="mapset_name,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
 				$sqlParams['keyvalue'] = $keyvalue;
+                $projectName = $keyvalue;
 		
 		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
 				$filter="layergroup.layergroup_id=:keyvalue";
@@ -93,7 +99,7 @@ class gcMapfile{
 		}
 		
 		if(!empty($this->languageId)) { // inizializzo l'oggetto i18n per le traduzioni
-			$this->i18n = new GCi18n($keyvalue, $this->languageId);
+			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,layergroup_single,tiletype_id,layer_id,layer_name,layer_title,layertype_id, project_title
