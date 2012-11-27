@@ -997,3 +997,4 @@ alter table qtfield add column lookup_name character varying;
 
 -- 2012-11-27: campo per filtro a cascata
 alter table qtfield add column filter_field_name character varying;
+insert into e_searchtype (searchtype_id, searchtype_name) values (6, 'Lista di valori, non WFS');

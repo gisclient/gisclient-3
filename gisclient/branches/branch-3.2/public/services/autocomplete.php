@@ -50,6 +50,10 @@ if(!empty($_REQUEST['filter'])) {
     array_push($constraints, ' '.$fieldName.' ilike :filter');
     $params['filter'] = '%'.$_REQUEST['filter'].'%';
 }
+if(!empty($_REQUEST['do_id'])) {
+    array_push($constraints, ' do_id = :do_id ');
+    $params['do_id'] = $_REQUEST['do_id'];
+}
 
 $sql = 'select distinct '.$fieldName.' from '.$schema.'.'.$catalog['table'].' as '.$alias;
 if(!empty($constraints)) {

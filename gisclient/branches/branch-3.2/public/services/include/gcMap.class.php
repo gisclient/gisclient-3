@@ -489,7 +489,7 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, qtfield_id, qtfield_name, field_header, fieldtype_id, qtrelation_name, qtrelationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, qtfield.editable as field_editable, qtfield_groups.groupname as field_group,qtfield_groups.editable as group_editable, layer.data_type, qtfield.lookup_table, qtfield.lookup_id, qtfield.lookup_name
+		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, qtfield_id, qtfield_name, filter_field_name, field_header, fieldtype_id, qtrelation_name, qtrelationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, qtfield.editable as field_editable, qtfield_groups.groupname as field_group,qtfield_groups.editable as group_editable, layer.data_type, qtfield.lookup_table, qtfield.lookup_id, qtfield.lookup_name
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -583,6 +583,7 @@ class gcMap{
 					'editable'=>$userCanEdit ? (empty($row['group_editable']) ? intval($row['field_editable']): intval($row['group_editable'])) : 0, // DA VEDERE!!!!!!!!!!!!!!!!!!
 					"relationType"=>intval($row["qtrelationtype_id"]),
 					"resultType"=>intval($row["resultype_id"]),
+                    'filterFieldName'=>$row['filter_field_name'],
 					"fieldFilter"=>intval($row["field_filter"]),
 					'isPrimaryKey'=>$isPrimaryKey
 				);
