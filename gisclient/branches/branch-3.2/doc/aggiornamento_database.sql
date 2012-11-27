@@ -993,3 +993,7 @@ create table users_options (
 alter table qtfield add column lookup_table character varying;
 alter table qtfield add column lookup_id character varying;
 alter table qtfield add column lookup_name character varying;
+
+
+-- 2012-11-27: campo per filtro a cascata
+alter table qtfield add column filter_field_name character varying;
