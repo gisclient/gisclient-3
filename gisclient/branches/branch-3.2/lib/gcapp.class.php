@@ -347,4 +347,14 @@ class GCUtils {
 		list($r, $t) = explode(' ', $split[1]);
 		return array($l, $b, $r, $t);
 	}
+    
+    public static function deleteOldFiles($path) {
+        $files = glob($path.'*');
+		foreach($files as $file) {
+			$isold = (time() - filectime($file)) > 5 * 60 * 60;
+			if (is_file($file) && $isold) {
+				@unlink($file);
+			}
+		}
+    }
 }

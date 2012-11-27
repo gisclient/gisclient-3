@@ -35,8 +35,9 @@ class Symbol{
 	function createIcon(){
 		$dbSchema=DB_SCHEMA;
 		$mapDir=ROOT_PATH."map/tmp";
-		if(!is_dir($mapDir)) mkdir($mapDir);	
-		$this->mapfile=ROOT_PATH.'map/tmp/tmp.map';
+		if(!is_dir($mapDir)) mkdir($mapDir);
+        GCUtils::deleteOldFiles($mapDir);
+		$this->mapfile=ROOT_PATH.'map/tmp/tmp'.rand(0,99999999).'.map';
 		$this->simbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 		$aClass=array();
 		
@@ -53,7 +54,7 @@ class Symbol{
 			$sql.=" order by style_order;";
 			$this->db->sql_query($sql);
 
-			$res=$this->db->sql_fetchrowset();	
+			$res=$this->db->sql_fetchrowset();
 			$aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
 			for($i=0;$i<count($res);$i++){
 				$aClass[$res[$i]["class_id"]]["icontype"]=$res[$i]["layertype_ms"];
@@ -80,7 +81,6 @@ class Symbol{
 					if(!in_array($sSy,$aSymbol)) $aSymbol[]=$sSy;
 				}
 			}
-			
 			$this->_createMapFile($aSymbol);
 			foreach($aClass as $classId=>$class){
 				$oIcon = $this->_iconFromClass($class);
@@ -90,24 +90,25 @@ class Symbol{
 					$image_data = ob_get_contents();
 					ob_clean();
 					//echo $image_data;
-					$img = imagecreatefromstring($image_data);
+					//$img = imagecreatefromstring($image_data);
 					//imagecolorallocatealpha ($img, 255, 255, 255, 127);
 					//$bg = imagecolorallocate($img, 255, 255, 255);
-					$index = imagecolorexact($img, 255, 255, 255);
-					imagecolortransparent($img, $index);
-					imagepng($img);
-					imagedestroy($img);
+					//$index = imagecolorexact($img, 255, 255, 255);
+					//imagecolortransparent($img, $index);
+					//imagepng($img);
+					//imagedestroy($img);
 				
 					
 					//$image_data=pg_escape_bytea();
 					//echo $image_data;
 
-					$image_data = pg_escape_bytea(ob_get_contents());
-					ob_end_clean();
-					$oIcon->free();
-					$sql="update $dbSchema.class set class_image='{$image_data}' where class_id=$classId;";
+					//$image_data = pg_escape_bytea(ob_get_contents());3
+                    //$image_data = ob_get_contents();
+					//ob_end_clean();
+					//$oIcon->free();
+					//$sql="update $dbSchema.class set class_image='{$image_data}' where class_id=$classId;";
 					//echo ($sql."<br>");
-					$this->db->sql_query($sql);
+					//$this->db->sql_query($sql);
 				}
 			}
 		}
@@ -132,12 +133,13 @@ class Symbol{
 				if($oIcon){
 					ob_start();
 					$oIcon->saveImage('');
-					$image_data =pg_escape_bytea(ob_get_contents());
+					$image_data = ob_get_contents();
+					//$image_data =pg_escape_bytea(ob_get_contents());
 					ob_end_clean();
 					$oIcon->free();
 					$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='".$style["symbol"]."';";
 					//echo ($sql."<br>");
-					$this->db->sql_query($sql);
+					//$this->db->sql_query($sql);
 				}
 			}
 		}
@@ -163,16 +165,17 @@ class Symbol{
 				if($oIcon){
 					ob_start();
 					$oIcon->saveImage('');
-					$image_data =pg_escape_bytea(ob_get_contents());
+					//$image_data =pg_escape_bytea(ob_get_contents());
+					$image_data = ob_get_contents();
 					ob_end_clean();
 					$oIcon->free();
 					$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
 					//echo ($sql."<br>");
-					$this->db->sql_query($sql);
+					//$this->db->sql_query($sql);
 				}
 			}
 		}
-
+        return $image_data;
 		if(!DEBUG) unlink($this->mapfile);	
 	}
 	
@@ -228,7 +231,6 @@ class Symbol{
 		}
 		//print_array($oClass);
 		//print_array($oClass->getStyle(0));
-
 		$icoImg = @$oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
 		return $icoImg;
 	}
