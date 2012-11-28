@@ -580,7 +580,7 @@ class gcMap{
 					"fieldType"=>intval($row["fieldtype_id"]),
 					"dataType"=>intval($row["datatype_id"]),
 					"searchType"=>intval($row["searchtype_id"]),
-					'editable'=>$userCanEdit ? (empty($row['group_editable']) ? intval($row['field_editable']): intval($row['group_editable'])) : 0, // DA VEDERE!!!!!!!!!!!!!!!!!!
+					'editable'=>$userCanEdit ? $row['field_editable'] : 0,
 					"relationType"=>intval($row["qtrelationtype_id"]),
 					"resultType"=>intval($row["resultype_id"]),
                     'filterFieldName'=>$row['filter_field_name'],

@@ -137,7 +137,7 @@
 			
                         // FIXME: column menu_field does not exist
                         // $sql="select id as val,name as key,menu_field as field from ".DB_SCHEMA.".e_level order by id";
-                        $sql="select id as val,name as key from ".DB_SCHEMA.".e_level order by id";
+                        $sql="select id as val,name as key from ".DB_SCHEMA.".e_level order by \"order\"";
                        
                         $stmt = $this->db->prepare($sql);
                         $success = $stmt->execute();

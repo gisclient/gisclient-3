@@ -6,7 +6,7 @@
 				</div>
 				<div id="clientLogo" class="shadow">
 					<?php if(defined('CLIENT_LOGO') && CLIENT_LOGO != null) { ?>
-						<img src="<?php echo CLIENT_LOGO ?>">
+						<img src="<?php echo CLIENT_LOGO ?>" height="60">
 					<?php } else { ?>
 						Logo Cliente
 					<?php } ?>
