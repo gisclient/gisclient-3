@@ -63,6 +63,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 		$oLay->set('connection', $url);
 		if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
 			$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
+            $oLay->setMetaData("wms_force_separate_request", 1);
 		}
 		if(!empty($layer['PARAMETERS']['SLD'])) {
 			$oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);
