@@ -998,3 +998,21 @@ alter table qtfield add column lookup_name character varying;
 -- 2012-11-27: campo per filtro a cascata
 alter table qtfield add column filter_field_name character varying;
 insert into e_searchtype (searchtype_id, searchtype_name) values (6, 'Lista di valori, non WFS');
+
+-- 2012-12-03: aggiorna la view vista_qtfield per permettere la visualizzazione del campo "editable" nei tab
+DROP VIEW vista_qtfield;
+
+CREATE OR REPLACE VIEW vista_qtfield AS 
+ SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.resultype_id, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name,qtfield.editable
+   FROM qtfield
+   JOIN e_fieldtype USING (fieldtype_id)
+   JOIN ( SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name
+      FROM (         SELECT 0 AS qtrelation_id, 'Data Layer'::character varying AS name, 0 AS qtrelationtype_id
+           UNION 
+                    SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id
+                      FROM qtrelation) y
+   JOIN (         SELECT 0 AS qtrelationtype_id, ''::character varying AS qtrelationtype_name
+           UNION 
+                    SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
+                      FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
+  ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
