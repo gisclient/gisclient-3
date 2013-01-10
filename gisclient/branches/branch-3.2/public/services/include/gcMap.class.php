@@ -371,6 +371,9 @@ class gcMap{
 			}
 				
 			elseif($layerType==TMS_LAYER_TYPE){//TMS
+                            $layerOptions["layers"] = $row['layers']; 
+
+                            
 				$layerUrl = isset($row["url"])?$row["url"]:$tiles_cache_url.$this->projectName;
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
