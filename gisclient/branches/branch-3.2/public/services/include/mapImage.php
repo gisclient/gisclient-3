@@ -81,6 +81,19 @@ class mapImage {
                 $parameters[strtoupper($key)] = $val;
             }
             
+            // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
+            $parsedUrl = parse_url($url);
+            if(!empty($parsedUrl['query'])) {
+                $urlParams = array();
+                parse_str($parsedUrl['query'], $urlParams);
+                foreach($urlParams as $key => $val) {
+                    unset($urlParams[$key]);
+                    $urlParams[strtoupper($key)] = $val;
+                }
+                if(!empty($urlParams['PROJECT']) && !empty($parameters['PROJECT'])) unset($parameters['PROJECT']);
+                if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
+            }
+            
             if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
             
             array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
