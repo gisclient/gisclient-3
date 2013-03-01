@@ -73,23 +73,17 @@ class mapImage {
 	
 	protected function buildWmsList() {
 		foreach($this->tiles as $key => $tile) {
-			$pos = strpos($tile['url'], '?');
-			if($pos == false) throw new Exception('URL without query string');
-			
-			$queryString = substr($tile['url'], ($pos+1));
-			$parameters = array();
-            $tmpParameters = array();
-			parse_str($queryString, $tmpParameters);
-            foreach($tmpParameters as $parameterName => $parameterValue) {
-                $parameters[strtoupper($parameterName)] = $parameterValue;
-            }
-			if(isset($tile['opacity']) && !isset($parameters['OPACITY'])) $parameters['OPACITY'] = $tile['opacity'];
+            $url = trim($tile['url'], '?');
+            $url = printDocument::addPrefixToRelativeUrl($url);
             
-			$url = substr($tile['url'], 0, $pos);
-			$url = printDocument::addPrefixToRelativeUrl($url);
-			
-			$wms = array('URL'=>$url,'PARAMETERS'=>$parameters);
-			array_push($this->wmsList, $wms);
+            $parameters = array();
+            foreach($tile['parameters'] as $key => $val) {
+                $parameters[strtoupper($key)] = $val;
+            }
+            
+            if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
+            
+            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
 		}
 	}
 	
