@@ -175,7 +175,7 @@ class printDocument {
 			$dom = $this->buildDOM(true);
 			$xml = $dom->saveXML();
 
-			$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'GCPrintMap_'.date('Ymd_His').'_'.rand(0,999).'.pdf'));
+			$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
 			$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
 		} catch (Exception $e) {
 			throw $e;
