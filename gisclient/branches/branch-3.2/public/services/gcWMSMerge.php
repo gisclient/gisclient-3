@@ -36,7 +36,7 @@ $oMap->web->set('imageurl', IMAGE_URL);
 
 $sessionId = null;
 if(isset($mapConfig['GC_SESSION_ID']) && !empty($mapConfig['GC_SESSION_ID'])) $sessionId = $mapConfig['GC_SESSION_ID'];
-
+file_put_contents('debug.txt', var_export($mapConfig, true), FILE_APPEND);
 foreach($mapConfig['layers'] as $key => $layer) {
 
 	if(isset($layer['URL'])) {
@@ -54,7 +54,11 @@ foreach($mapConfig['layers'] as $key => $layer) {
         if(!empty($layer['PARAMETERS']['LANG'])) $url .= '&LANG='.$layer['PARAMETERS']['LANG'];
 		if(!empty($sessionId)) $url .= '&GC_SESSION_ID='.$sessionId;
 		if(!empty($mapConfig['resolution'])) $url.= '&RESOLUTION='.$mapConfig['resolution'];
-		$layerNames = !empty($layer['PARAMETERS']['LAYERS']) ? $layer['PARAMETERS']['LAYERS'] : '';
+        $layerNames = '';
+        if(!empty($layer['PARAMETERS']['LAYERS'])) {
+            if(is_array($layer['PARAMETERS']['LAYERS'])) $layerNames = implode(',', $layer['PARAMETERS']['LAYERS']);
+            else $layerNames = $layer['PARAMETERS']['LAYERS'];
+        }
 		
 		$oLay = ms_newLayerObj($oMap);
 		$oLay->set('name', 'print_layer_'.$key);
@@ -111,7 +115,7 @@ if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format
 ms_ResetErrorList();
 
 $oImage = $oMap->draw();
-
+//$oMap->save('debug.map');
 if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format'] != 'gtiff') {
 	$oMap->embedScalebar($oImage);
 	$oMap->drawLabelCache($oImage);
