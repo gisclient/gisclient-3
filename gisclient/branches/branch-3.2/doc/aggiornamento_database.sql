@@ -16,7 +16,7 @@
 
 
 
-SET search_path = gisclient_31, pg_catalog;
+SET search_path = gisclient_32, pg_catalog;
 
 ALTER TABLE e_level DROP CONSTRAINT e_level_parent_id_fkey;
 DELETE FROM form_level;
@@ -1016,3 +1016,27 @@ CREATE OR REPLACE VIEW vista_qtfield AS
                     SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
                       FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
   ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
+
+-- 2013-08-01: crea la view vista_project_languages per permettere la visualizzazione del campo "lingua" nei tab  
+  CREATE OR REPLACE VIEW vista_project_languages AS 
+ SELECT project_languages.project_name, project_languages.language_id, e_language.language_name, e_language.language_order
+   FROM project_languages
+   JOIN e_language ON project_languages.language_id = e_language.language_id
+  ORDER BY e_language.language_order;
+  
+  -- 2013-11-01: inserisce outputformat AGG PNG default
+	  INSERT INTO e_outputformat VALUES (9,'AGG PNG','AGG/PNG','image/png','RGB','png','    FORMATOPTION "QUANTIZE_FORCE=ON"
+		FORMATOPTION "QUANTIZE_DITHER=OFF"
+		FORMATOPTION "QUANTIZE_COLORS=256"',NULL);
+
+ --2013-02-04: ordina i cataloghi per nome
+ CREATE OR REPLACE VIEW seldb_catalog AS 
+         SELECT (-1) AS id, 'Seleziona ====>'::character varying AS opzione, '0'::character varying AS project_name
+UNION ALL 
+         SELECT foo.id, foo.opzione, foo.project_name
+           FROM ( SELECT catalog.catalog_id AS id, catalog.catalog_name AS opzione, catalog.project_name
+                   FROM catalog
+                  ORDER BY catalog.catalog_name) foo;
+				  
+
+  
