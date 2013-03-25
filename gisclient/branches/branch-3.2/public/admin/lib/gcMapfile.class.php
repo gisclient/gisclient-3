@@ -246,6 +246,14 @@ class gcMapfile{
 		if(!empty($this->layersWithAccessConstraints)) {
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
 		}
+        
+        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . 'project='.$this->projectName.'&map='.$mapFile : null;
+        $wms_onlineresource = '';
+        $wfs_onlineresource = '';
+        if(!empty($owsUrl)) {
+            $wms_onlineresource = "\t".'"wms_onlineresource" "'.$owsUrl.'"' : '';
+            $wfs_onlineresource = "\t".'"wfs_onlineresource" "'.$owsUrl.'"' : '';
+        }
 		
 		$layerText = $this->layerText;
 		$mapProjection = "\t\"init=epsg:".$this->mapsetSrid."\"";
@@ -270,6 +278,8 @@ WEB
 	$ows_title
 	$ows_abstract
 	$ows_wfs_encoding
+    $wms_onlineresource
+    $wfs_onlineresource
 	$wms_mime_type
 	$wfs_namespace_prefix
 	$ows_srs
