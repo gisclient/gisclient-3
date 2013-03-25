@@ -11,8 +11,14 @@ $config = $GEOLOCATOR_CONFIG[$_REQUEST['mapset']];
 $ajax = new GCAjax();
 $db = GCApp::getDB();
 
+$sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:name';
+$stmt = $db->prepare($sql);
+$stmt->execute(array('name'=>$config['catalogname']));
+$catalogPath = $stmt->fetchColumn(0);
+$dataDb = GCApp::getDataDB($catalogPath);
+
 if($_REQUEST['action'] == 'search') {
-    if(empty($_REQUEST['key'])) $ajax->error('Undefined key')
+    if(empty($_REQUEST['key'])) $ajax->error('Undefined key');
     $key = str_replace(' ', '%', trim($_REQUEST['key']));
     $key = str_replace('%%', '%', trim($key));
     $key = str_replace('%%', '%', trim($key));
@@ -23,7 +29,7 @@ if($_REQUEST['action'] == 'search') {
     $sql .= ' limit 30';
 
     try {
-        $stmt = $db->prepare($sql);
+        $stmt = $dataDb->prepare($sql);
         $stmt->execute(array('key'=>'%'.$key.'%'));
         $results = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -38,7 +44,7 @@ if($_REQUEST['action'] == 'search') {
     
     $sql = ' select astext('.$config['geomfield'].') from '.$config['tablename'].' where '.$config['idfield'].' = :id ';
     try {
-        $stmt = $db->prepare($sql);
+        $stmt = $dataDb->prepare($sql);
         $stmt->execute(array('id'=>$_REQUEST['id']));
         $data = $stmt->fetchColumn(0);
     } catch(Exception $e) {
