@@ -359,6 +359,8 @@ switch($_REQUEST['action']) {
 		} catch(Exception $e) {
 			$ajax->error($e->getMessage());
 		}
+        
+        $dataDb->exec('GRANT SELECT ON TABLE '.$schema.'.'.$_REQUEST['table_name'].' TO '.MAP_USER);
 		
 		$dataDb->commit();
 		
