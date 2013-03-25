@@ -48,9 +48,9 @@ if($lang) {
         $localized = $stmt->fetchColumn(0);
         if($localized) {
             $field['qtfield_name'] = $localized;
-        } else echo '!localized';
-    } else echo '!i18nfield';
-} else echo '!lang';
+        }
+    }
+}
 
 
 $dataDb = GCApp::getDataDB($catalog['catalog_path']);
