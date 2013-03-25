@@ -12,7 +12,10 @@ $ajax = new GCAjax();
 $db = GCApp::getDB();
 
 if($_REQUEST['action'] == 'search') {
-    if(empty($_REQUEST['key'])) $ajax->error('Undefined key');
+    if(empty($_REQUEST['key'])) $ajax->error('Undefined key')
+    $key = str_replace(' ', '%', trim($_REQUEST['key']));
+    $key = str_replace('%%', '%', trim($key));
+    $key = str_replace('%%', '%', trim($key));
     
     $sql = ' select '.$config['namefield'].' as name, '.$config['idfield'].' as id from '.$config['tablename'].' where '.$config['namefield'].' ilike :key ';
     if(!empty($config['where'])) $sql .= ' and '.$config['where'];
@@ -21,7 +24,7 @@ if($_REQUEST['action'] == 'search') {
 
     try {
         $stmt = $db->prepare($sql);
-        $stmt->execute(array('key'=>'%'.$_REQUEST['key'].'%'));
+        $stmt->execute(array('key'=>'%'.$key.'%'));
         $results = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             array_push($results, $row);
