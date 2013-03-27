@@ -188,6 +188,7 @@ class gcFeature{
 	function getLayerText($layergroupName,$maxScale,$minScale){
 		
 		if(!$this->aFeature) return false;
+        $this->_getLayerData();
 		$this->aFeature['layergroup_name'] = $layergroupName;
 		$this->aSymbols = array();//Elenco dei simboli usati nelle classi della feature
 		$aMapservUnitDef = array(1=>"pixels",2=>"feet",3=>"inches",4=>"kilometers",5=>"meters",6=>"miles",7=>"nauticalmiles");
@@ -406,6 +407,7 @@ class gcFeature{
 		
 		
 		$fieldString = "*";
+        $groupBy = '';
 
 		//Elenco dei campi definiti
 		if($aFeature["fields"]){
@@ -459,19 +461,24 @@ class gcFeature{
 						//$keyList = array();
 						//foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
 						//$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
-						
+						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
+                        $groupBy = ' group by  '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey;
+                        if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
+                        array_push($this->aFeature['1n_count_fields'], 'num_'.$idrel);
+
 					}
-					else{
+
 						
-						$joinList=array();
-						for($i=0;$i<count($rel["join_field"]);$i++){
-							$joinList[]=DATALAYER_ALIAS_TABLE.".".$rel["join_field"][$i][0]."=".$relationAliasTable.".".$rel["join_field"][$i][1];
-							//$flagField = $relationAliasTable.".".$rel["join_field"][$i][1]." AS " .$relationAliasTable;   //tengo un campo della tabella in relazione per sapere in caso di secondarie se il dato � presente
-						}
-						$joinFields=implode(" AND ",$joinList);
-						$joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";	
-						//Se non sto visualizzando la secondaria e la relazione � 1 a molti genero il campo che dar� origine al link alla tabella
-					}
+                    $joinList=array();
+                    for($i=0;$i<count($rel["join_field"]);$i++){
+                        $joinList[]=DATALAYER_ALIAS_TABLE.".".$rel["join_field"][$i][0]."=".$relationAliasTable.".".$rel["join_field"][$i][1];
+                        //$flagField = $relationAliasTable.".".$rel["join_field"][$i][1]." AS " .$relationAliasTable;   //tengo un campo della tabella in relazione per sapere in caso di secondarie se il dato � presente
+                    }
+
+                    $joinFields=implode(" AND ",$joinList);
+                    $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";	
+                    //Se non sto visualizzando la secondaria e la relazione � 1 a molti genero il campo che dar� origine al link alla tabella
+
 
 					
 				}
@@ -481,7 +488,7 @@ class gcFeature{
 			$fieldString = implode(",",$fieldList);
 		}
 		
-		$datalayerTable = "gc_geom FROM (SELECT ".DATALAYER_ALIAS_TABLE.".".$datalayerKey." as gc_objid,".DATALAYER_ALIAS_TABLE.".".$datalayerGeom." as gc_geom, $fieldString FROM $joinString) AS foo";
+		$datalayerTable = "gc_geom FROM (SELECT ".DATALAYER_ALIAS_TABLE.".".$datalayerKey." as gc_objid,".DATALAYER_ALIAS_TABLE.".".$datalayerGeom." as gc_geom, $fieldString FROM $joinString $groupBy) AS foo";
 		print_debug($datalayerTable,null,'datalayer');
 		return $datalayerTable;
 
@@ -508,6 +515,11 @@ class gcFeature{
 				foreach($this->aFeature['fields'] as $field) {
 					if($field['result_type'] != 5) array_push($includeItems, $field['field_name']);
 				}
+                if(!empty($this->aFeature['1n_count_fields'])) {
+                    foreach($this->aFeature['1n_count_fields'] as $fieldName) {
+                        array_push($includeItems, $fieldName);
+                    }
+                }
 				if(!empty($includeItems)) $aMeta['gml_include_items'] = implode(',', $includeItems);
 			} else {
 				$aMeta["gml_include_items"] = "all";
