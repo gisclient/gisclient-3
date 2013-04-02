@@ -251,8 +251,8 @@ class gcMapfile{
         $wms_onlineresource = '';
         $wfs_onlineresource = '';
         if(!empty($owsUrl)) {
-            $wms_onlineresource = "\t".'"wms_onlineresource" "'.$owsUrl.'"' : '';
-            $wfs_onlineresource = "\t".'"wfs_onlineresource" "'.$owsUrl.'"' : '';
+            $wms_onlineresource = "\t".'"wms_onlineresource" "'.$owsUrl.'"';
+            $wfs_onlineresource = "\t".'"wfs_onlineresource" "'.$owsUrl.'"';
         }
 		
 		$layerText = $this->layerText;
