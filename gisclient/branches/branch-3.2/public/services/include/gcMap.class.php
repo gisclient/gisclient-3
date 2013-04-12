@@ -658,12 +658,13 @@ class gcMap{
 	
 	//Elenco delle librerie per i providers usati
 	function _setMapProviders(){
-		$jsText = "var script;";
+		$jsText = "";
 		foreach($this->listProviders as $key){
 			$jsText .= "script = document.createElement('script');script.type = \"text/javascript\";";
 			$jsText .= "script.src=\"".$this->mapProviders[$key]."\";";
 			$jsText .= "document.getElementsByTagName('head')[0].appendChild(script);\n";
 		}
+		if($jsText) $jsText = "var script;".$jsText;
 		return $jsText;
 	}
 	
@@ -702,14 +703,15 @@ class gcMap{
 					if(is_array($layer)) $aLayerText[] = $this->_layerText($layer);
 			}
 		}
-
+		$loader=false;
 		$jsText=$this->_setMapProviders();
+		if($jsText) $loader = true;
 		$jsText .='OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;OpenLayers.Util.onImageLoadErrorColor = "transparent";OpenLayers.DOTS_PER_INCH = '.$this->mapOptions["dpi"].";\n";
 		$mapsetOptions = '"name":"'.addslashes($this->mapOptions["mapset"]).'","title":"'.addslashes($this->mapOptions["title"]).'","project":"'.addslashes($this->mapOptions["project"]).'","projectTitle":"'.addslashes($this->mapOptions["projectTitle"]).'","baseLayerId":"'.$this->activeBaseLayer.'","projectionDescription":"'.addslashes($this->mapOptions["projectionDescription"]).'","minZoomLevel":'.$this->mapOptions['minZoomLevel'];
 		if(isset($this->mapOptions['selgroup'])) $mapsetOptions .=',"selgroup":'.json_encode($this->mapOptions['selgroup']);
 		$jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
 		$jsText .= 'GisClient.mapset.push({'.$mapsetOptions.',"map":{'.implode(',',$mapOptions).',layers:['.implode(',',$aLayerText).']}});';
-		if($this->mapProviders[GMAP_LAYER_TYPE]) $jsText .= 'GisClient.loader=true;';
+		if($this->mapProviders[GMAP_LAYER_TYPE] && $loader) $jsText .= 'GisClient.loader=true;';
 		return $jsText;
 	}
 
