@@ -100,7 +100,7 @@ $gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP
 		//se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
 		
 		$aRes=array();
-		if($srid==900913){
+		if(($srid==900913)|($srid==3857)){
 			$aRes = array_limit(array_slice(GCAuthor::$gMapResolutions,GMAP_MIN_ZOOM_LEVEL),$maxRes,$minRes);
 		}
 		else{
