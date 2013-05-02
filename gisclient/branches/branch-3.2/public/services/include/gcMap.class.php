@@ -90,10 +90,10 @@ class gcMap{
 		$stmt->execute(array($mapsetName));
 		
 		if($stmt->rowCount() == 0){
-			echo $mapsetName.'<br>';
-			echo $stmt->queryString.'<br>';
-			echo $sql;
-			die('Il mapset non esiste');
+		    echo "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
+			echo "{$stmt->queryString}<br />\n";
+			// echo "{$sql}<br />\n";
+			die();
 		}
 		
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
