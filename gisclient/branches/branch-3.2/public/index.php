@@ -8,10 +8,14 @@ header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Pragma: no-cache");
 
-if(!empty($_REQUEST["logout"])){
-	unset($_SESSION["USERNAME"]);
-	unset($_SESSION["GROUPS"]);
-	unset($_SESSION["ROLE"]);
+$user = new GCUser();
+
+if(!empty($_REQUEST["logout"])) {
+    $user->logout();
+}
+var_export($_REQUEST);
+if(!empty($_POST['username']) && !empty($_POST['password'])) {
+    $user->login($_POST['username'], $_POST['password']);
 }
 
 $db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
@@ -49,7 +53,7 @@ foreach($mapset as $key=>$map){
 	';
 }
 
-if(!isset($_SESSION["USERNAME"])){
+if(!$user->isAuthenticated()){
 	$logTitle="Login";
 	$logJs="javascript:return encript_pwd('password','frm_enter');";
 	$logout=0;
@@ -65,7 +69,6 @@ else{
 	$usrEnabled="disabled";
 	$pwdEnabled="disabled";
 }
-$user=(empty($_SESSION["USERNAME"]))?("GUEST"):(($_SESSION["USERNAME"]==SUPER_USER)?("AMMINISTRATORE"):($_SESSION["USERNAME"]));
 
 ?><!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -78,7 +81,6 @@ $user=(empty($_SESSION["USERNAME"]))?("GUEST"):(($_SESSION["USERNAME"]==SUPER_US
 	<script type="text/javascript" src="./admin/js/jquery/jquery-ui.js"></script>
 	<script type="text/javascript" src="./admin/js/jquery/layout.js"></script>
 	<script language="javascript" src="./admin/js/administrator.js" type="text/javascript"></script>
-	<script language="javascript" src="./admin/js/md5.js" type="text/javascript"></script>
 	<script  type="text/javascript">
 		function showMaps(img,id){
 			if($(id).style.display=='none'){
@@ -96,7 +98,7 @@ $user=(empty($_SESSION["USERNAME"]))?("GUEST"):(($_SESSION["USERNAME"]==SUPER_US
 			/* jquerylayout */
 			myLayout = $('#container').layout({
 				north: { size: 90, spacing_open: 10, closable: false, resizable: false },
-				east: { size: 250, maxSize: 500, spacing_open: 10, closable: true, resizable: false, initClosed: <?php echo empty($_SESSION['USERNAME']) ? 'false' : 'true'; ?> },
+				east: { size: 250, maxSize: 500, spacing_open: 10, closable: true, resizable: false, initClosed: <?php echo $user->isAuthenticated() ? 'true' : 'false'; ?> },
 				south: { size: 20, spacing_open: 10, closable: false, resizable: false }
 				//useStateCookie: true,
 				//cookie: { name: "GisClientAuthor", expires: 10, keys: "west.size" }
@@ -136,16 +138,13 @@ $user=(empty($_SESSION["USERNAME"]))?("GUEST"):(($_SESSION["USERNAME"]==SUPER_US
 			?>
 			<div class="formRow">
 				<label>Nome Utente:</label>
-				<input name="username" type="text" id="username" value="<?php if(!empty($_SESSION['USERNAME'])) echo $_SESSION['USERNAME'] ?>" tabindex=1 <?php echo $usrEnabled?>>
+				<input name="username" type="text" id="username" value="" tabindex=1 <?php echo $usrEnabled?>>
 			</div>
 			<div class="formRow">
 				<label>Password:</label>
 				<input name="password" type="password" id="password" tabindex=2 <?php echo $pwdEnabled?>>
-				<input name="enc_password" type="hidden" id="enc_password" tabindex=2>
-				<input name="logout" type="hidden" value="<?php echo $logout;?>">
 			</div>
 			<div class="formRow">
-				<input name="login" type="hidden" value="1" tabindex=2>
 				<input type="submit" class="submit" name="azione" value="<?php echo $btn;?>" tabindex="3" onclick="<?php echo $logJs;?>">
 			</div>
 			

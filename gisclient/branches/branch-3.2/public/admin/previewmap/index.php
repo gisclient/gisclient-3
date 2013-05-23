@@ -30,8 +30,9 @@ if(empty($mapConfig['max_extent_scale'])) die('Missing project max extent');
 
 $layerTitle = $mapConfig['layergroup_title'];
 $layerName = $mapConfig['layergroup_name'];
-$user = new userApps(array());
-$user->status = true;
+//$user = new userApps(array());
+//$user->status = true;
+$user = new GCUser();
 $user->setAuthorizedLayers(array('theme_name'=>$mapConfig['theme_name']));
 
 $scales = explode(',',SCALE);

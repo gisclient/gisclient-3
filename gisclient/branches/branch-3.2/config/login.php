@@ -1,4 +1,11 @@
 <?php
+require_once(ROOT_PATH.'/lib/gcuser.class.php');
+
+class GCUser extends AbstractUser {
+}
+
+
+/*
 
 //Accesso validato al GisClient
 if(defined('USER_SCHEMA') && USER_SCHEMA == "public"){ //Utenti PLONE
@@ -27,5 +34,4 @@ else{
         if(isset($_POST['username'])) $message='Errore login';
     }
 }
-
-?>
+*/

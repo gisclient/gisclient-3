@@ -153,7 +153,8 @@ class gcMap{
 		
 		//$this->_setAutorizedLayers();
 		
-		$user = new userApps(array("user"=>"username","pwd"=>"enc_password"));
+		//$user = new userApps(array("user"=>"username","pwd"=>"enc_password"));
+        $user = new GCUser();
 		$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));
 		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName));
 		
@@ -483,7 +484,8 @@ class gcMap{
 		
 		//Restituisce le features e i range di scala
 		$userGroupFilter = '';
-		if(empty($_SESSION['USERNAME']) || $_SESSION['USERNAME'] != SUPER_USER) {
+        $user = new GCUser();
+		if(!$user->isAdmin($this->projectName)) {
 			$userGroup = '';
 			if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
@@ -542,7 +544,7 @@ class gcMap{
 			}
 			
 			$userCanEdit = false;
-			if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || (!empty($_SESSION['USERNAME']) && $_SESSION['USERNAME'] == SUPER_USER)) $userCanEdit = true;
+			if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || $user->isAdmin($this->projectName)) $userCanEdit = true;
 			
 			if(!empty($row["selection_color"]) && !empty($row["selection_width"])){
 				$color = "RGB(".str_replace(" ",",",$row["selection_color"]).")";$size = intval($row["selection_width"]);
@@ -552,7 +554,7 @@ class gcMap{
 			
 	
 			//TODO DA VERIFICARE DA VEDERE ANCHE L'OPZIONE PER IL CAMPO EDITABILE CHE SOVRASCRIVE QUELLO DI DEFAULT
-			if(($fieldName = $row["qtfield_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || (!empty($_SESSION['USERNAME']) || $_SESSION['USERNAME'] == SUPER_USER))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
+			if(($fieldName = $row["qtfield_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
 				/*
 				if(!empty($row["qtrelation_name"])){
 					$fieldName = $row["qtrelation_name"] . "_" . NameReplace($row["field_header"]);
@@ -801,10 +803,12 @@ class gcMap{
 	}
 	
 	function _getUsercontext($contextId) {
-		if(empty($_SESSION) || empty($_SESSION['USERNAME'])) return array();
+        $user = new GCUser();
+        if(!$user->isAuthenticated()) return array();
+		//if(empty($_SESSION) || empty($_SESSION['USERNAME'])) return array();
 		$sql = "SELECT context FROM ".DB_SCHEMA.".usercontext WHERE username=:username AND mapset_name=:mapset_name AND id=:id";
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array(':username'=>$_SESSION["USERNAME"], ':mapset_name'=>$this->mapsetName, ':id'=>$contextId));
+		$stmt->execute(array(':username'=>$user->getUsername(), ':mapset_name'=>$this->mapsetName, ':id'=>$contextId));
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		if(!empty($row)) return json_decode($row["context"], true);
 		else return array();

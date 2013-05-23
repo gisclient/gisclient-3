@@ -60,6 +60,21 @@ $(document).ready(function() {
 		scriptData: {action:'upload-xls'}
 	});
 	
+	$('#csv_file_upload').uploadify({
+		uploader: 'js/jquery/uploadify/uploadify.swf',
+		script: 'ajax/datamanager.php',
+		cancelImg: 'js/jquery/uploadify/cancel.png',
+		folder: 'import',
+		auto: true,
+		multi: true,
+		onAllComplete: function(event, data) {
+			dataManager.getFileList();
+		},
+		fileExt: '*.csv;',
+		fileDesc: 'CSV files',
+		scriptData: {action:'upload-csv'}
+	});
+	
 	$('#raster_file_upload').uploadify({
 		uploader: 'js/jquery/uploadify/uploadify.swf',
 		script: 'ajax/datamanager.php',
@@ -114,8 +129,9 @@ $(document).ready(function() {
 		
 		dataManager.createTable();
 	});
-	$('div#import_dialog input[name="shp_insert_method"]').click(function(event) {
-		dataManager.changeShpImportMethod($(this).val());
+	$('div#import_dialog input[name$="_insert_method"]').click(function(event) {
+        var type = $(this).attr('name').substr(0, 3);
+		dataManager.changeImportMethod(type, $(this).val());
 	});
 });
 
@@ -127,7 +143,8 @@ function GCDataManager(catalogId) {
 		0: 'shp',
 		1: 'raster',
 		2: 'postgis',
-		3: 'xls'
+		3: 'xls',
+        4: 'csv'
 	};
 	this.columnTypes = {
 		text: 'Text',
@@ -173,6 +190,9 @@ function GCDataManager(catalogId) {
 			break;
 			case 3:
 				self.fileType = 'xls';
+			break;
+			case 4:
+				self.fileType = 'csv';
 			break;
 			default:
 				alert('Not implemented');
@@ -244,7 +264,7 @@ function GCDataManager(catalogId) {
 					} else {
 						html += '<tr><td>'+table.name+'</td><td></td><td>Alphanumeric</td>'+
 							'<td><a href="#" class="button" data-action="delete" data-table="'+table.name+'">Delete</a>'+
-							'<a href="#" class="button" data-action="export_xls" data-table="'+table.name+'">Export XLS</a></td></tr>';
+							'<a href="#" class="button" data-action="export_xls" data-table="'+table.name+'">Export XLS</a><a href="#" class="button" data-action="export_csv" data-table="'+table.name+'">CSV</a></td></tr>';
 					}
 				});
 				html += '</table>';
@@ -268,50 +288,62 @@ function GCDataManager(catalogId) {
 					var tableName = $(this).attr('data-table');
 					self.exportXls(tableName);
 				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="export_csv"]').button().click(function(event) {
+					event.preventDefault();
+					
+					var tableName = $(this).attr('data-table');
+					self.exportCsv(tableName);
+				});
 			}
 		});
 	};
 	
-	this.changeShpImportMethod = function(method) {
+	this.changeImportMethod = function(type, method) {
 		var self = this;
 		
 		$('div#import_dialog div.logs').empty();
 		
 		if(method == 'create') {
-			$('div#import_dialog input[name="shp_table_name"]').show();
-			$('div#import_dialog input[name="shp_srid"]').attr('disabled', false);
-			$('div#import_dialog select[name="shp_table_name_select"]').hide();
+			$('div#import_dialog input[name="'+type+'_table_name"]').show();
+			$('div#import_dialog input[name="'+type+'_srid"]').attr('disabled', false);
+			$('div#import_dialog select[name="'+type+'_table_name_select"]').hide();
 		} else {
-			if($('div#import_dialog select[name="shp_table_name_select"] option').length == 0) {
-				self.populateTableListSelect();
+			if($('div#import_dialog select[name="'+type+'_table_name_select"] option').length == 0) {
+				self.populateTableListSelect(type);
 			}
-			$('div#import_dialog input[name="shp_table_name"]').hide();
-			$('div#import_dialog input[name="shp_srid"]').attr('disabled', true);
-			$('div#import_dialog select[name="shp_table_name_select"]').show();
+			$('div#import_dialog input[name="'+type+'_table_name"]').hide();
+			$('div#import_dialog input[name="'+type+'_srid"]').attr('disabled', true);
+			$('div#import_dialog select[name="'+type+'_table_name_select"]').show();
 		}
 	};
 	
-	this.populateTableListSelect = function() {
+	this.populateTableListSelect = function(type) {
 		var self = this;
 		
 		$('div#import_dialog div.logs').empty();
+        
+        var params = {
+            action: 'get-postgis-tables',
+            alhpaOnly: (type == 'xls' || type == 'csv') ? true : false,
+            geomOnly: (type == 'shp') ? true : false
+        };
 		
 		self.ajaxRequest({
-			data: {action:'get-postgis-tables'},
+			data: params,
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
 					return alert('Error');
 				}
 				
-				$('div#import_dialog select[name="shp_table_name_select"]').empty();
+				$('div#import_dialog select[name="'+type+'_table_name_select"]').empty();
 				var html = '<option value="" data-srid="" selected>Select</option>';
 				$.each(response.data, function(e, table) {
 					html += '<option value="'+table.name+'" data-srid="'+table.srid+'">'+table.name+'</option>';	
 				});
-				$('div#import_dialog select[name="shp_table_name_select"]').html(html);
-				$('div#import_dialog select[name="shp_table_name_select"]').change(function(event) {
-					var srid = $('div#import_dialog select[name="shp_table_name_select"] option:selected').attr('data-srid');
-					$('div#import_dialog input[name="shp_srid"]').val(srid);
+				$('div#import_dialog select[name="'+type+'_table_name_select"]').html(html);
+				$('div#import_dialog select[name="'+type+'_table_name_select"]').change(function(event) {
+					var srid = $('div#import_dialog select[name="'+type+'_table_name_select"] option:selected').attr('data-srid');
+					$('div#import_dialog input[name="'+type+'_srid"]').val(srid);
 				});
 			}
 		});
@@ -395,9 +427,19 @@ function GCDataManager(catalogId) {
 				$('div#import_dialog button[name="tileindex"]').show();
 			break;
 			case 'xls':
+                var replace;
 				$('div#import_dialog input[name="xls_file_name"]').val(fileName);
-				var fileNameWoExtension = fileName.replace('.xls', '');
+                if(fileName.substr(-4) == 'xlsx') replace = '.xlsx';
+                else if(fileName.substr(-4) == '.xls') replace = '.xls';
+                else return alert('Invalid filename');
+				var fileNameWoExtension = fileName.replace(replace, '');
 				$('div#import_dialog input[name="xls_table_name"]').val(fileNameWoExtension);
+				$('div#import_dialog button[name="import"]').show();
+			break;
+			case 'csv':
+				$('div#import_dialog input[name="csv_file_name"]').val(fileName);
+				var fileNameWoExtension = fileName.replace('.csv', '');
+				$('div#import_dialog input[name="csv_table_name"]').val(fileNameWoExtension);
 				$('div#import_dialog button[name="import"]').show();
 			break;
 			default:
@@ -424,7 +466,14 @@ function GCDataManager(catalogId) {
 	this.importXls = function() {
 		var self = this;
 		
-		self.ajaxImport('xls', 'import-xls');
+        var customParams = {};
+        
+		customParams.mode = $('div#import_dialog input[name="xls_insert_method"]:checked').val();
+		if(customParams.mode != 'create') {
+			customParams.table_name = $('div#import_dialog select[name="xls_table_name_select"]').val();
+		}
+        
+		self.ajaxImport('xls', 'import-xls', customParams);
 	};
 	
 	this.exportShp = function(tableName) {
@@ -452,6 +501,25 @@ function GCDataManager(catalogId) {
 		self.ajaxRequest({
 			type: 'POST',
 			data: {action:'export-xls', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					if(typeof(response.result) != 'undefined' && response.result == 'error' && typeof(response.error) != 'undefined') {
+						return $('div#import_dialog div.logs').html(response.error).focus();
+					}
+					return alert('Error');
+				}
+				
+				$('div#import_dialog div.logs').html('Operation done succesfully<br><a href="export/'+response.filename+'" target="_blank">Click here</a> to download').focus();
+			}
+		});
+	};
+	
+	this.exportCsv = function(tableName) {
+		var self = this;
+		
+		self.ajaxRequest({
+			type: 'POST',
+			data: {action:'export-csv', table_name:tableName},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
 					if(typeof(response.result) != 'undefined' && response.result == 'error' && typeof(response.error) != 'undefined') {

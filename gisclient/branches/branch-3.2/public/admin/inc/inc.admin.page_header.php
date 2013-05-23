@@ -12,7 +12,7 @@
 					<?php } ?>
 				</div>
 				<div id="topMenu">
-					<?php if (!empty($_SESSION["USERNAME"])) { ?>
+					<?php if ($user->isAuthenticated()) { ?>
 						<?php if(!empty($isAuthor)) { ?>
 						<a class="button" href="../">Home</a>
 						<a class="button" data-action="data_manager" style="display:none;">Data manager</a>
@@ -107,6 +107,7 @@
 						<li><a href="#import_dialog_raster">Raster</a></li>
 						<li><a href="#import_dialog_postgis">PostgreSQL</a></li>
 						<li><a href="#import_dialog_xls">XLS</a></li>
+						<!--<li><a href="#import_dialog_csv">CSV</a></li>-->
 					</ul>
 					<div id="import_dialog_shp">
 						<input id="shp_file_upload" name="file_upload" type="file" />
@@ -159,7 +160,18 @@
 						</div>
 						<hr>
 						File: <input type="text" name="xls_file_name" disabled="disabled"><br />
-						Tablename: <input type="text" name="xls_table_name"><br />
+						Method: <input type="radio" name="xls_insert_method" value="create" checked>Create <input type="radio" name="xls_insert_method" value="append">Append <input type="radio" name="xls_insert_method" value="replace">Replace <br />
+						Tablename: <select name="xls_table_name_select" style="display:none;"></select><input type="text" name="xls_table_name"><br />
+						<button name="import" style="display;none">Import</button>
+					</div>
+					<div id="import_dialog_csv">
+						<input id="csv_file_upload" name="file_upload" type="file" />
+						<div data-role="file_list">
+						</div>
+						<hr>
+						File: <input type="text" name="csv_file_name" disabled="disabled"><br />
+						Method: <input type="radio" name="csv_insert_method" value="create" checked>Create <input type="radio" name="csv_insert_method" value="append">Append <input type="radio" name="csv_insert_method" value="replace">Replace <br />
+						Tablename: <select name="csv_table_name_select" style="display:none;"></select><input type="text" name="csv_table_name"><br />
 						<button name="import" style="display;none">Import</button>
 					</div>
 				</div>

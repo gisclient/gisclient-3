@@ -25,7 +25,8 @@ switch($_REQUEST['action']) {
 			0=>'shp',
 			1=>'raster',
 			2=>'postgis',
-			3=>'xls'
+			3=>'xls',
+            4=>'csv'
 		);
 		if(empty($_REQUEST['catalog_id'])) $ajax->error();
 		$dir = filesPathFromCatalog($_REQUEST['catalog_id']);
@@ -34,6 +35,7 @@ switch($_REQUEST['action']) {
 		$ajax->success(array('imports'=>$imports));
 	break;
 	case 'upload-xls':
+	case 'upload-csv':
 	case 'upload-shp':
 		$tempFile = $_FILES['Filedata']['tmp_name'];
 		$targetFile = IMPORT_PATH . $_FILES['Filedata']['name'];
@@ -68,8 +70,12 @@ switch($_REQUEST['action']) {
 			$files = elenco_dir($dir);
 		} else if($_REQUEST['file_type'] == 'xls') {
 			$files = elenco_file(IMPORT_PATH, array('xls','xlsx'));
+		} else if($_REQUEST['file_type'] == 'csv') {
+			$files = elenco_file(IMPORT_PATH, array('csv'));
 		} else $ajax->error();
 		
+        if(empty($files) || !is_array($files)) $files = array();
+        
 		$data = array();
 		foreach($files as $file) {
 			array_push($data, array('file_name'=>$file));
@@ -79,6 +85,8 @@ switch($_REQUEST['action']) {
 	break;
 	case 'get-postgis-tables':
 		if(empty($_REQUEST['catalog_id'])) $ajax->error();
+        $alphaOnly = !empty($_REQUEST['alhpaOnly']) && $_REQUEST['alhpaOnly'] != 'false';
+        $geomOnly = !empty($_REQUEST['geomOnly']) && $_REQUEST['geomOnly'] != 'false';
 		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
 		$stmt = $db->prepare($sql);
 		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
@@ -90,7 +98,10 @@ switch($_REQUEST['action']) {
 		$sql = 'select table_name as name, coord_dimension as dim, srid, type '.
 			' from information_schema.tables '.
 			' left outer join geometry_columns on tables.table_name=geometry_columns.f_table_name and f_table_schema = :schema '.
-			' where table_schema = :schema order by table_name ';
+			' where table_schema = :schema ';
+        if($alphaOnly) $sql .= ' and coord_dimension is null ';
+        if($geomOnly) $sql .= ' and coord_dimension is not null ';
+        $sql .= ' order by table_name ';
 		$stmt = $dataDb->prepare($sql);
 		$stmt->execute(array(':schema'=>$schema));
 		$data = array();
@@ -141,6 +152,31 @@ switch($_REQUEST['action']) {
 		$ajax->success();
 		
 	break;
+    case 'export-csv':
+		if(empty($_REQUEST['catalog_id'])) $ajax->error('catalog_id');
+		if(empty($_REQUEST['table_name'])) $ajax->error('table_name');
+		
+		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+		$catalogPath = $stmt->fetchColumn(0);
+		$dataDb = GCApp::getDataDB($catalogPath);
+		$dbParams = GCApp::getDataDBParams($catalogPath);
+		
+		if(!tableAlreadyExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
+        
+        $sql = 'select * from '.$dbParams['schema'].'.'.$_REQUEST['table_name'];
+        $data = $dataDb->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+		$fileName = $_REQUEST['table_name'].'_'.date('YmdHis').'_'.rand(0,9999);
+        $filePath = ROOT_PATH.'public/admin/export/'.$fileName.'.csv';
+        $handle = fopen($filePath, 'w');
+        fputcsv($handle, array_keys(reset($data)));
+        foreach($data as $row) fputcsv($handle, $row);
+        fclose($handle);
+        
+		$ajax->success(array('filename'=>$fileName.'.csv'));
+    break;
 	case 'export-xls':
 		if(empty($_REQUEST['catalog_id'])) $ajax->error('catalog_id');
 		if(empty($_REQUEST['table_name'])) $ajax->error('table_name');
@@ -274,6 +310,28 @@ switch($_REQUEST['action']) {
 		
 		$ajax->success();
 	break;
+    case 'import-csv':
+		if(empty($_REQUEST['file_name'])) $ajax->error('file_name');
+		if(empty($_REQUEST['catalog_id'])) $ajax->error('catalog_id');
+		if(empty($_REQUEST['table_name'])) $ajax->error('table_name');
+		$_REQUEST['table_name'] = trim($_REQUEST['table_name']);
+		
+		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+		$catalogPath = $stmt->fetchColumn(0);
+		
+		$dataDb = GCApp::getDataDB($catalogPath);
+		$schema = GCApp::getDataDBSchema($catalogPath);
+		
+		$tableExists = tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name']);
+		if($_REQUEST['mode'] == 'create' && $tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
+		if($_REQUEST['mode'] != 'create' && !$tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
+		
+		if($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) $ajax->error('Invalid table name '.$_REQUEST['table_name']);
+        
+        // TODO
+    break;
 	case 'import-xls':
 		if(empty($_REQUEST['file_name'])) $ajax->error('file_name');
 		if(empty($_REQUEST['catalog_id'])) $ajax->error('catalog_id');
@@ -288,7 +346,9 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$schema = GCApp::getDataDBSchema($catalogPath);
 		
-		if(tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
+		$tableExists = tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name']);
+		if($_REQUEST['mode'] == 'create' && $tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
+		if($_REQUEST['mode'] != 'create' && !$tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
 		
 		if($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) $ajax->error('Invalid table name '.$_REQUEST['table_name']);
 		
@@ -338,13 +398,21 @@ switch($_REQUEST['action']) {
 		}
 
 		$dataDb->beginTransaction();
+        
+        $create = ($_REQUEST['mode'] == 'create' || $_REQUEST['mode'] == 'replace');
+        if($_REQUEST['mode'] == 'replace') {
+            $sql = 'drop table '.$schema.'.'.$_REQUEST['table_name'];
+            $dataDb->exec($sql);
+        }
 		
-		$sql = 'create table '.$schema.'.'.$_REQUEST['table_name'].' ('.implode(',', $sqlColumns).');';
-		try {
-			$dataDb->exec($sql);
-		} catch(Exception $e) {
-			$ajax->error($e->getMessage());
-		}
+        if($create) {
+            $sql = 'create table '.$schema.'.'.$_REQUEST['table_name'].' ('.implode(',', $sqlColumns).');';
+            try {
+                $dataDb->exec($sql);
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage());
+            }
+        }
 		
 		$sql = 'insert into '.$schema.'.'.$_REQUEST['table_name'].' ('.implode(',', $columns).') values ('.implode(',', $sqlParams).');';
 		try {

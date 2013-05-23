@@ -142,24 +142,10 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 			header('WWW-Authenticate: Basic realm="Gisclient"');
 			header('HTTP/1.0 401 Unauthorized');
 		} else {
-			$userData = array(
-				"user"=>"username",
-				"pwd"=>"password",
-				'request_data'=>array(
-					'username'=>$_SERVER['PHP_AUTH_USER'],
-					'password'=>md5($_SERVER['PHP_AUTH_PW'])
-				)
-			);
-			$user = new userApps($userData);
-			if ($_SERVER['PHP_AUTH_USER'] == SUPER_USER && $_SERVER['PHP_AUTH_PW'] == SUPER_PWD){
-				$_SESSION["USERNAME"] = SUPER_USER;
-				$user->status = true;
-			} else {
-				$user->checkUser();
-			}
-			if($user->status) {
-				$user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
-			}
+            $user = new GCUser();
+            if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+                $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
+            }
 		}
 	}
 }

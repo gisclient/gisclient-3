@@ -26,13 +26,15 @@
 		
 		// Costruttore della classe
 		function page($param=Array()){
+            $user = new GCUser();
 			//Recupero Le Chiavi Primarie
 			$pk=_getPKeys();
 			$this->primary_keys=$pk["pkey"];
 			//Inizializzo l'oggetto con i parametri (di REQUEST)
 			$this->_get_parameter($param);
 			//Setto Il tipo di Amministratore
-			$this->admintype=($_SESSION["USERNAME"]==SUPER_USER)?(1):(2);
+			//$this->admintype=($_SESSION["USERNAME"]==SUPER_USER)?(1):(2);
+            $this->admintype = $user->isAdmin() ? 1 : 2;
 			//Inizializzo l'oggetto DB
 			$this->db = GCApp::getDB();
 			if(is_null($this->db))  die( "Impossibile connettersi al database ".DB_NAME);
@@ -366,6 +368,7 @@
 		//Metodo che scrive il Form in modalit� List  Elenco dei Child
 		
 		private function writeListForm($tab,$el,&$prm){
+            $user = new GCUser();
 			switch ($tab["tab_type"]){
 				case 0:	//elenco con molteplici valori (TABELLA H)
 					$prm["livello"]=$tab["level"];
@@ -378,8 +381,8 @@
 					
 					foreach($this->pageKeys as $key) if ($el["value"]) $flt[]="$key = ".$this->db->quote($el["value"]);
 					$filter=@implode(" AND ",$flt);
-					if($tab["level"]=="project" && $_SESSION["USERNAME"]!=SUPER_USER && defined('USER_SCHEMA'))
-						$filter="project_name in (SELECT DISTINCT project_name FROM ".DB_SCHEMA.".project_admin WHERE username=".$this->db->quote($_SESSION[USERNAME]).")";
+					if($tab["level"]=="project" && !$user->isAdmin() && defined('USER_SCHEMA'))
+						$filter="project_name in (SELECT DISTINCT project_name FROM ".DB_SCHEMA.".project_admin WHERE username=".$this->db->quote($user->getUsername()).")";
 					$butt="nuovo";
 					if($tab["level"]=="project" && $this->admintype==2) $butt="";
 					if($tab["level"]=='tb_logs') $butt="";

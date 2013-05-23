@@ -23,20 +23,21 @@ if(empty($_REQUEST['action']) || !in_array($_REQUEST['action'], array('list', 'c
 }
 
 $db = GCApp::getDB();
+$user = new GCUser();
 
 if($_REQUEST['action'] != 'get') {
 	if($_REQUEST['action'] != 'delete') {
 		if(empty($_REQUEST['mapset'])) $ajax->error('Empty mapset');
 	}
-	$username = getUsername();
-    if(!$username) $ajax->error('Permission denied');
+	//$username = getUsername();
+    if(!$user->isAuthenticated()) $ajax->error('Permission denied');
 }
 
 switch($_REQUEST['action']) {
 	case 'list':
 		$sql = "select usercontext_id as id, title from ".DB_SCHEMA.".usercontext where username=:username and mapset_name=:mapset order by id desc";
 		$stmt = $db->prepare($sql);
-		$stmt->execute(array(':username'=>$username, ':mapset'=>$_REQUEST['mapset']));
+		$stmt->execute(array(':username'=>$user->getUsername(), ':mapset'=>$_REQUEST['mapset']));
 		
 		$contextes = array();
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) array_push($contextes, $row);
@@ -85,7 +86,7 @@ switch($_REQUEST['action']) {
 		$field = 'usercontext_id';
 		if(empty($_REQUEST['id'])) {
 			$field = 'username';
-			$param = getUsername();
+			$param = $user->getUsername();
             if(!$param) $ajax->success(array('context'=>array()));
 		} else {
 			$param = $_REQUEST['id'];
@@ -101,16 +102,3 @@ switch($_REQUEST['action']) {
 	break;
 }
 
-
-
-
-
-function getUsername() {
-	if(empty($_SESSION)) {
-        if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
-        session_start();
-    }
-	if(empty($_SESSION)) die(json_encode(array('result'=>'error', 'error'=>'Permission denied')));
-	if(empty($_SESSION['USERNAME']) || $_SESSION['USERNAME'] == 'GUEST') return false;
-	return $_SESSION['USERNAME'];
-}

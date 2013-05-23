@@ -40,7 +40,6 @@
 <div id="container_login">
 	<div class="ui-layout-north">
 		<?php
-		session_destroy();
 		include (ADMIN_PATH."inc/inc.admin.page_header.php");
 		?>
 	</div>
@@ -59,12 +58,11 @@
 			<div class="formRow">
 				<label>Password:</label>
 				<input name="password" type="password" id="password" tabindex=2>
-				<input name="enc_password" type="hidden" id="enc_password" tabindex=2>
 			</div>
 			<div class="formRow">
 				<label>&nbsp;</label>
 				<input name="login" type="hidden" value="1" tabindex=2>
-				<input type="submit" class="submit" name="azione" value="Entra" tabindex="3" onclick="return encript_pwd('password','frm_enter');">
+				<input type="submit" class="submit" name="azione" value="Entra" tabindex="3">
 			</div>
 		</form>
 	</div>

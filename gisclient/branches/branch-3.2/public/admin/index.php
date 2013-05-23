@@ -33,15 +33,17 @@ header("Pragma: no-cache");
 $Errors=array();
 $Notice=array();
 
-if(isset($_REQUEST["logout"]) && $_REQUEST["logout"]==1){
-	unset($_SESSION["USERNAME"]);
-	unset($_SESSION["GROUPS"]);
-	unset($_SESSION["ROLE"]);
-	$usr->status=false;
-	header('Location: ../');
-} 
+$user = new GCUser();
+if(!empty($_REQUEST['logout'])) {
+    $user->logout();
+    header('Location: ../');
+}
 
-if (!$usr->status) {
+if(!empty($_POST['username']) && !empty($_POST['password'])) {
+    $user->login($_POST['username'], $_POST['password']);
+}
+
+if (!$user->isAuthenticated()) {
 	include_once ADMIN_PATH."enter.php";
 	exit;
 }

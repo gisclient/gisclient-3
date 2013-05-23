@@ -5,12 +5,12 @@ $project = null;
 $typeName = null;
 $parts = explode('/', $_SERVER['REQUEST_URI']);
 $startIndex = array_search('tinyows', $parts);
-if(!isset($parts[$startIndex+1])) die();
+if(!isset($parts[$startIndex+1])) die('a');
 else $project = $parts[$startIndex+1];
-if(!isset($parts[$startIndex+2])) die();
+if(!isset($parts[$startIndex+2])) die('b');
 else $typeName = $parts[$startIndex+2];
 
-if(!file_exists(ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml')) die();
+if(!file_exists(ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml')) die('c');
 
 
 if(defined('DEBUG') && DEBUG == 1) {
@@ -37,36 +37,22 @@ $sql = 'select project_name from '.DB_SCHEMA.'.theme
 $stmt = $db->prepare($sql);
 $stmt->execute(array(':lg_name'=>$layergroupName, ':l_name'=>$layerName));
 $projectName = $stmt->fetchColumn(0);
-if(empty($projectName)) die();
+if(empty($projectName)) die('d');
 
 if(!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
 		header('WWW-Authenticate: Basic realm="Gisclient"');
 		header('HTTP/1.0 401 Unauthorized');
 	} else {
-		$userData = array(
-			"user"=>"username",
-			"pwd"=>"password",
-			'request_data'=>array(
-				'username'=>$_SERVER['PHP_AUTH_USER'],
-				'password'=>md5($_SERVER['PHP_AUTH_PW'])
-			)
-		);
-		$user = new userApps($userData);
-		if ($_SERVER['PHP_AUTH_USER'] == SUPER_USER && $_SERVER['PHP_AUTH_PW'] == SUPER_PWD){
-			$_SESSION["USERNAME"] = SUPER_USER;
-			$user->status = true;
-		} else {
-			$user->checkUser();
-		}
-		if($user->status) {
-			$user->setAuthorizedLayers(array('project_name'=>$projectName));
-		}
+        $user = new GCUser();
+        if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+            $user->setAuthorizedLayers(array('project_name'=>$projectName));
+        }
 	}
 }
 
 $authorized = false;
-if(!empty($_SESSION['USERNAME']) && $_SESSION['USERNAME'] == SUPER_USER) $authorized = true;
+//if(!empty($_SESSION['USERNAME']) && $_SESSION['USERNAME'] == SUPER_USER) $authorized = true; non serve piu
 if(!empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$typeName]['WFST'])) $authorized = true;
 if(!$authorized) die('<?xml version="1.0" encoding="UTF-8"?><ServiceExceptionReport xmlns="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.1.1/OGC-exception.xsd" version="1.2.0"><ServiceException code="PermissionDenied">Permission Denied</ServiceException></ServiceExceptionReport>');
 
