@@ -115,11 +115,11 @@ abstract class AbstractUser {
             case when layer.private = 1 then wfs else 1 end as wfs,
             case when layer.private = 1 then wfst else 1 end as wfst,
             layer_order
-            FROM gisclient_trunk.theme 
-            INNER JOIN gisclient_trunk.layergroup USING (theme_id) 
-            INNER JOIN gisclient_trunk.mapset_layergroup using (layergroup_id)
-            LEFT JOIN gisclient_trunk.layer USING (layergroup_id)
-            left JOIN gisclient_trunk.layer_groups USING (layer_id)
+            FROM '.DB_SCHEMA.'.theme 
+            INNER JOIN '.DB_SCHEMA.'.layergroup USING (theme_id) 
+            INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
+            LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
+            left JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
             WHERE '.$sqlFilter.' AND '.$authClause;
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
