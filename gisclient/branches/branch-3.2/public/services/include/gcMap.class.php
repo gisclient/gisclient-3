@@ -193,6 +193,7 @@ class gcMap{
 		$aLayers = array();
 		
 		$featureTypes = $this->_getFeatureTypes();
+        $extents = $this->_getMaxExtents();
 
 		$sqlParams = array();
 		$sqlPrivateLayers = "";
@@ -243,6 +244,7 @@ class gcMap{
 			if($row["isbaselayer"] == 1 && $row["status"] == 1) $this->activeBaseLayer = $layerId;
 			if($row['opacity'] != null && $row['opacity'] != 100) $layerOptions['opacity'] = $row['opacity']/100;
 			if(!empty($row['metadata_url'])) $layerOptions['metadataUrl'] = $row['metadata_url'];
+            if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
 			
 			//$maxRes = ($row["layergroup_maxscale"]>0)?min($row["layergroup_maxscale"]/$convFact,$this->maxResolution):$this->maxResolution;
 			//$minRes = ($row["layergroup_minscale"]>0)?max($row["layergroup_minscale"]/$convFact,$this->minResolution):$this->minResolution;
@@ -506,6 +508,7 @@ class gcMap{
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->mapsetName));
 		$featureTypes = array();
+        $layersWith1n = array();
 
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			if(!empty($this->i18n)) {
@@ -525,6 +528,12 @@ class gcMap{
 			$index = ($row['theme_single'] == 1 ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
 			if(!isset($featureTypes[$index])) $featureTypes[$index] = array();
 			if(!isset($featureTypes[$index][$typeName])) $featureTypes[$index][$typeName] = array();
+            if($row['qtrelationtype_id'] == 2) {
+                if(!isset($layersWith1n[$index])) $layersWith1n[$index] = array();
+                if(!isset($layersWith1n[$index][$typeName])) $layersWith1n[$index][$typeName] = array();
+                if(!in_array($row['qtrelation_id'], $layersWith1n[$index][$typeName])) array_push($layersWith1n[$index][$typeName], $row);
+                continue;
+            }
 			
 			$featureTypes[$index][$typeName]["typeName"] = $typeName;	
 			$featureTypes[$index][$typeName]["title"] = $typeTitle;	
@@ -602,6 +611,28 @@ class gcMap{
 				$featureTypes[$index][$typeName]["properties"][] = $fieldSpecs;
 			}
 		}
+        foreach($layersWith1n as $index => $arr) {
+            foreach($arr as $typeName => $qtRelations) {
+                foreach($qtRelations as $qtRelation) {
+                    $featureTypes[$index][$typeName]['relation1n'] = $qtRelation;
+                    array_push($featureTypes[$index][$typeName]['properties'], array(
+                        'name'=>'num_'.$qtRelation['qtrelation_id'],
+                        'header'=>'Num',
+                        'type'=>'String',
+                        'fieldId'=>9999999,
+                        'fieldType'=>1,
+                        'dataType'=>2,
+                        'searchType'=>0,
+                        'editable'=>0,
+                        'relationType'=>null,
+                        'resultType'=>1,
+                        'filterFieldName'=>null,
+                        'isPrimaryKey'=>false,
+                        'is1nCountField'=>true
+                    ));
+                }
+            }
+        }
 		return $featureTypes;
 	}
 	
@@ -813,6 +844,56 @@ class gcMap{
 		if(!empty($row)) return json_decode($row["context"], true);
 		else return array();
 	}
+    
+    function _getMaxExtents() {
+        $extents = array();
+		$userGroupFilter = '';
+		if(empty($_SESSION['USERNAME']) || $_SESSION['USERNAME'] != SUPER_USER) {
+			$userGroup = '';
+			if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
+			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
+		}
+		
+		$sql = "SELECT layergroup_id, layer_id, data_extent
+				FROM ".DB_SCHEMA.".layer 
+				INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id) 
+				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
+				WHERE mapset_layergroup.mapset_name=:mapset_name 
+                order BY layergroup_id ";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(array($this->mapsetName));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        array_push($rows, array('layergroup_id'=>-1));
+        //var_export($rows);
+        $lgId = 0;
+        $complete = true;
+        $groupExtents = array();
+        foreach($rows as $row) {
+            if($lgId != $row['layergroup_id']) {
+                if($complete && !empty($groupExtents)) {
+                    $extent = array(null, null, null, null);
+                    foreach($groupExtents as $ext) {
+                        list($x1, $y1, $x2, $y2) = explode(' ', $ext);
+                        if(empty($extent[0]) || $x1 < $extent[0]) $extent[0] = $x1;
+                        if(empty($extent[1]) || $y1 < $extent[1]) $extent[1] = $y1;
+                        if(empty($extent[2]) || $x2 > $extent[2]) $extent[2] = $x2;
+                        if(empty($extent[3]) || $y2 > $extent[3]) $extent[3] = $y2;
+                    }
+                    $extents[$lgId] = $extent;
+                }
+                $complete = true;
+                $groupExtents = array();
+            }
+            $lgId = $row['layergroup_id'];
+            if(empty($row['data_extent'])) $complete = false;
+            else {
+                array_push($groupExtents, $row['data_extent']);
+            }
+        }
+        //var_export($extents);
+        return $extents;
+    }
 	
 	
 	

@@ -324,12 +324,15 @@ function checkLayer($project, $service, $layerName){
 }
 
 function getRequestedLayers($layersParameter) {
-	global $oMap;
+	global $oMap, $objRequest;
 	$layersArray = array();
 	$layerNames = explode(',', $layersParameter);
 	// ciclo i layers e costruisco un array di singoli layers
 	foreach($layerNames as $name) {
 		$layerIndexes = $oMap->getLayersIndexByGroup($name);
+        if(!$layerIndexes && count($layerNames) == 1 && $name == $objRequest->getvaluebyname('map')) {
+            $layerIndexes = array_keys($oMap->getAllLayerNames());
+        }
 		// è un layergroup
 		if(is_array($layerIndexes)) {
 			foreach($layerIndexes as $index) {

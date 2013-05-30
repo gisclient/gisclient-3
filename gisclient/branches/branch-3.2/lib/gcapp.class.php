@@ -113,6 +113,16 @@ class GCApp {
         $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName));
         return $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
     }
+    
+    public static function getTablePKey($db, $schema, $tableName) {
+        $sql = "select column_name from 
+            information_schema.table_constraints c
+            inner join information_schema.key_column_usage k on c.constraint_schema = k.constraint_schema and c.constraint_name = k.constraint_name
+            where c.table_schema = :schema and c.table_name = :table and c.constraint_type = 'PRIMARY KEY'";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array('schema'=>$schema, 'table'=>$tableName));
+        return $stmt->fetchColumn(0);
+    }
 }
 
 class GCDataDB {
