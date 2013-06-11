@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
-if(isset($_REQUEST["LAYER"])){
+if($objRequest->getvaluebyname('layer')){
 	//PRENDO TUTTI I LIVELLI DEL GRUPPO E CREO UNA LEGENDA CON TUTTE LE CLASSI DI TUTTI I LIVELLI
 	$ruleLayerName=false;
 	$ruleClassName=false;
@@ -62,146 +62,148 @@ if(isset($_REQUEST["LAYER"])){
         $gcLegendText = false;
     }
 
+    $layers = array();
+    if($aLayersIndexes=$oMap->getLayersIndexByGroup($objRequest->getvaluebyname('layer'))){
+		for($j=0;$j<count($aLayersIndexes);$j++) array_push($layers, $oMap->getLayer($aLayersIndexes[$j]));
+    } else {
+        array_push($layers, $oMap->getLayerByName($objRequest->getvaluebyname('layer')));
+    }
 
-	if($aLayersIndexes=$oMap->getLayersIndexByGroup($_REQUEST["LAYER"])){
-		$dy=0;
+    $dy=0;
+    foreach($layers as $oLayer) {			
+        if($oLayer->connectiontype == MS_WMS) {
+            $url = $oLayer->connection;
+            if(strpos($url, '?') === false) $url .= '?';
+            else if(substr($url, 0, -1) != '&' && substr($url, 0, -1) != '?') $url .= '&';
+            $params = array(
+                'request'=>'getlegendgraphic',
+                'service'=>'wms',
+                'format'=>'image/png',
+                'width'=>$iconW,
+                'height'=>$iconH,
+                'layer'=>$oLayer->getMetaData('wms_name'),
+                'version'=>$oLayer->getMetaData('wms_server_version')
+            );
+            $options = array(
+                CURLOPT_URL => $url. http_build_query($params), 
+                CURLOPT_HEADER => 0, 
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_BINARYTRANSFER => true
+            ); 
+            $ch = curl_init(); 
+            curl_setopt_array($ch, $options);
+            $result = @curl_exec($ch);
+            if($result) {
+                array_push($iconsArray, $result);
+            }
+            curl_close($ch); 
+            continue;
+        }
+        
+        $oLayer->set('sizeunits',MS_PIXELS);
+        #echo '<pre>'; var_export($oLayer);
+        if(!$ruleLayerName || $ruleLayerName == $oLayer->name){
+            $numCls = $oLayer->numclasses;
 
-		for($j=0;$j<count($aLayersIndexes);$j++){
-			$oLayer=$oMap->getLayer($aLayersIndexes[$j]);
-			
-			if($oLayer->connectiontype == MS_WMS) {
-				$url = $oLayer->connection;
-				if(strpos($url, '?') === false) $url .= '?';
-				else if(substr($url, 0, -1) != '&' && substr($url, 0, -1) != '?') $url .= '&';
-				$params = array(
-					'request'=>'getlegendgraphic',
-					'service'=>'wms',
-					'format'=>'image/png',
-					'width'=>$iconW,
-					'height'=>$iconH,
-					'layer'=>$oLayer->getMetaData('wms_name'),
-					'version'=>$oLayer->getMetaData('wms_server_version')
-				);
-				$options = array(
-					CURLOPT_URL => $url. http_build_query($params), 
-					CURLOPT_HEADER => 0, 
-					CURLOPT_RETURNTRANSFER => true,
-					CURLOPT_BINARYTRANSFER => true
-				); 
-				$ch = curl_init(); 
-				curl_setopt_array($ch, $options);
-				$result = @curl_exec($ch);
-				if($result) {
-					array_push($iconsArray, $result);
-				}
-				curl_close($ch); 
-				continue;
-			}
-			
-			$oLayer->set('sizeunits',MS_PIXELS);
-			#echo '<pre>'; var_export($oLayer);
-			if(!$ruleLayerName || $ruleLayerName == $oLayer->name){
-				$numCls = $oLayer->numclasses;
-
-				//!!!!!!!!!!!!!!!!! DEFINIRE QUI IL FILTRO PER SCALE O IL FILTRO SULL'ESISTENZA DEGLI OGGETTI TANTO CARO A PAOLO (OCCORRE PASSARE EXTENT!!) !!!!!!
-				
-				//!!!!!!!!!!!!! CICLARE SU TUTTI I LAYER E CREARE UNA LEGENDA UNICA  PER OGNI LEGENDA DI LAYER
-			
-				//if((($oLayer->maxscale == -1) || ($scale <= $oLayer->maxscale)) && (($oLayer->minscale == -1) || ($scale >= $oLayer->minscale))){
+            //!!!!!!!!!!!!!!!!! DEFINIRE QUI IL FILTRO PER SCALE O IL FILTRO SULL'ESISTENZA DEGLI OGGETTI TANTO CARO A PAOLO (OCCORRE PASSARE EXTENT!!) !!!!!!
+            
+            //!!!!!!!!!!!!! CICLARE SU TUTTI I LAYER E CREARE UNA LEGENDA UNICA  PER OGNI LEGENDA DI LAYER
+        
+            //if((($oLayer->maxscale == -1) || ($scale <= $oLayer->maxscale)) && (($oLayer->minscale == -1) || ($scale >= $oLayer->minscale))){
 
 
-				//verifica sulle classi
-				$classToRemove=array();
-				for ($clno=0; $clno < $numCls; $clno++) {
-					$oClass = $oLayer->getClass($clno);
-					$className = $oClass->name;
-					if($oClass->title) $oClass->set('name',$oClass->title);
-					
-					//VORREI TOGLIERE LA CLASSE DALLA LEGENDA MA NON TROVO UN MODO MIGLIORE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-					//if($oClass->getMetaData("gc_no_image")) $oClass->set('maxscaledenom',1);
-					if($oClass->getMetaData("gc_no_image") == 1)
-						$classToRemove[] = $oClass->title;
-					elseif(!$ruleClassName || $ruleClassName == $className){
-						//RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ... 
-						//if(($oClass->getMetaData("gc_no_image")!='1') && (!$ruleClassName || $ruleClassName == $className)){
-						//if((($oClass->maxscale == -1) || ($scale <= $oClass->maxscale)) && (($oClass->minscale == -1) || ($scale >= $oClass->minscale))){
-						
-						$char=$oClass->getTextString();
-						//echo 'oclass '; var_export($char); echo "<br>\n";
-						//SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
-						if(strlen($char)==3){//USARE REGEXP, non è detto che questa stringa sia lunga 3 !!!!
-							$lbl=$oClass->label;
-							$idSymbol = ms_newSymbolObj($oMap, "v");
-							$oSymbol = $oMap->getSymbolObjectById($idSymbol);
-							$oSymbol->set('type',MS_SYMBOL_TRUETYPE);
-							$oSymbol->set('font',$lbl->font);
-							$oSymbol->set('character',substr($char,1,1));
-							$oSymbol->set('antialias',1);
+            //verifica sulle classi
+            $classToRemove=array();
+            for ($clno=0; $clno < $numCls; $clno++) {
+                $oClass = $oLayer->getClass($clno);
+                $className = $oClass->name;
+                if($oClass->title) $oClass->set('name',$oClass->title);
+                
+                //VORREI TOGLIERE LA CLASSE DALLA LEGENDA MA NON TROVO UN MODO MIGLIORE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //if($oClass->getMetaData("gc_no_image")) $oClass->set('maxscaledenom',1);
+                if($oClass->getMetaData("gc_no_image") == 1)
+                    $classToRemove[] = $oClass->title;
+                elseif(!$ruleClassName || $ruleClassName == $className){
+                    //RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ... 
+                    //if(($oClass->getMetaData("gc_no_image")!='1') && (!$ruleClassName || $ruleClassName == $className)){
+                    //if((($oClass->maxscale == -1) || ($scale <= $oClass->maxscale)) && (($oClass->minscale == -1) || ($scale >= $oClass->minscale))){
+                    
+                    $char=$oClass->getTextString();
+                    //echo 'oclass '; var_export($char); echo "<br>\n";
+                    //SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
+                    if(strlen($char)==3){//USARE REGEXP, non è detto che questa stringa sia lunga 3 !!!!
+                        $lbl=$oClass->label;
+                        $idSymbol = ms_newSymbolObj($oMap, "v");
+                        $oSymbol = $oMap->getSymbolObjectById($idSymbol);
+                        $oSymbol->set('type',MS_SYMBOL_TRUETYPE);
+                        $oSymbol->set('font',$lbl->font);
+                        $oSymbol->set('character',substr($char,1,1));
+                        $oSymbol->set('antialias',1);
 
-							$oStyle=ms_newStyleObj($oClass);
-							$oStyle->set("size",$iconW/2);//DA VERERE !!!!!
-							//$oStyle->set("offsetx",-25);
-							//$oStyle->set("offsety",25);
-							$oStyle->set('symbolname','v');
-							$oStyle->color->setRGB($lbl->color->red,$lbl->color->green,$lbl->color->blue);
-						}
+                        $oStyle=ms_newStyleObj($oClass);
+                        $oStyle->set("size",$iconW/2);//DA VERERE !!!!!
+                        //$oStyle->set("offsetx",-25);
+                        //$oStyle->set("offsety",25);
+                        $oStyle->set('symbolname','v');
+                        $oStyle->color->setRGB($lbl->color->red,$lbl->color->green,$lbl->color->blue);
+                    }
 
-						if($legend){
-							$icoImg = $oClass->createLegendIcon($iconW,$iconH);
-							header("Content-type: image/png");
-							$icoImg->saveImage('');
-							$icoImg->free();
-							die();
-						}
-					}
-				}
-
-                if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
-					//Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
-					foreach($classToRemove as $className){
-						for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
-							$oClass = $oLayer->getClass($clno);
-							if($oClass->name == $className) $oLayer->removeClass($clno);
-						}
-					};
-					//print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
-					if($oLayer->numclasses>0){
-						ms_ioinstallstdouttobuffer(); 
-						$objRequest->setParameter('LAYER', $oLayer->name);
-						$objRequest->setParameter('WIDTH', $totWidth);
-                        if(!empty($_REQUEST['SCALE'])) {
-                            $objRequest->setParameter('SCALE', intval($_REQUEST["SCALE"]-10));
-                        }
-						
-						$oMap->owsdispatch($objRequest);
-						$contenttype = ms_iostripstdoutbuffercontenttype(); 
-
-						ob_start();
-						ms_iogetStdoutBufferBytes();
-						ms_ioresethandlers();
-						$imageContent = ob_get_contents();
-						array_push($iconsArray, $imageContent);
-						ob_end_clean();
-					}
-					
-                } else {
-                    $numCls = $oLayer->numclasses;
-                    for ($clno=0; $clno < $numCls; $clno++) {
-                        $oClass = $oLayer->getClass($clno);
-						$check = $oClass->getMetaData('gc_no_image');
-						if(!empty($check)) continue;
+                    if($legend){
                         $icoImg = $oClass->createLegendIcon($iconW,$iconH);
-                        ob_start();
+                        header("Content-type: image/png");
                         $icoImg->saveImage('');
-                        $imageContent = ob_get_contents();
-                        ob_end_clean();
                         $icoImg->free();
-                        array_push($iconsArray, $imageContent);
+                        die();
                     }
                 }
-			}
-		}
-	}
+            }
+
+            if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
+                //Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
+                foreach($classToRemove as $className){
+                    for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
+                        $oClass = $oLayer->getClass($clno);
+                        if($oClass->name == $className) $oLayer->removeClass($clno);
+                    }
+                };
+                //print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
+                if($oLayer->numclasses>0){
+                    ms_ioinstallstdouttobuffer(); 
+                    $objRequest->setParameter('LAYER', $oLayer->name);
+                    $objRequest->setParameter('WIDTH', $totWidth);
+                    if(!empty($_REQUEST['SCALE'])) {
+                        //$objRequest->setParameter('SCALE', intval($_REQUEST["SCALE"]-10));
+                    }
+                    
+                    $oMap->owsdispatch($objRequest);
+                    $contenttype = ms_iostripstdoutbuffercontenttype(); 
+
+                    ob_start();
+                    ms_iogetStdoutBufferBytes();
+                    ms_ioresethandlers();
+                    $imageContent = ob_get_contents();
+                    //die($imageContent);
+                    array_push($iconsArray, $imageContent);
+                    ob_end_clean();
+                }
+                
+            } else {
+                $numCls = $oLayer->numclasses;
+                for ($clno=0; $clno < $numCls; $clno++) {
+                    $oClass = $oLayer->getClass($clno);
+                    $check = $oClass->getMetaData('gc_no_image');
+                    if(!empty($check)) continue;
+                    $icoImg = $oClass->createLegendIcon($iconW,$iconH);
+                    ob_start();
+                    $icoImg->saveImage('');
+                    $imageContent = ob_get_contents();
+                    ob_end_clean();
+                    $icoImg->free();
+                    array_push($iconsArray, $imageContent);
+                }
+            }
+        }
+    }
 }
 
 if(!$legend) {
