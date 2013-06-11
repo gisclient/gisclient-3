@@ -169,7 +169,9 @@ if(isset($_REQUEST["LAYER"])){
 						ms_ioinstallstdouttobuffer(); 
 						$objRequest->setParameter('LAYER', $oLayer->name);
 						$objRequest->setParameter('WIDTH', $totWidth);
-						$objRequest->setParameter('SCALE', intval($_REQUEST["SCALE"]-10));
+                        if(!empty($_REQUEST['SCALE'])) {
+                            $objRequest->setParameter('SCALE', intval($_REQUEST["SCALE"]-10));
+                        }
 						
 						$oMap->owsdispatch($objRequest);
 						$contenttype = ms_iostripstdoutbuffercontenttype(); 
@@ -207,7 +209,8 @@ if(!$legend) {
 	$h = 1;
 	
 	foreach($iconsArray as $icon) {
-		$gdImage = imagecreatefromstring($icon);
+		$gdImage = @imagecreatefromstring($icon);
+        if(!$gdImage) continue;
 		$h += (imagesy($gdImage)+2);
 	}
 	$legendImage = imagecreatetruecolor($w, $h);
@@ -216,7 +219,8 @@ if(!$legend) {
 	$offset = 1;
 	
 	foreach($iconsArray as $key => $icon) {
-		$img = imagecreatefromstring($icon);
+		$img = @imagecreatefromstring($icon);
+        if(!$img) continue;
 		$size = array(imagesx($img), imagesy($img));
 		imagealphablending($img, true);
 		imagesavealpha($img, true);
