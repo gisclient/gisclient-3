@@ -11,6 +11,7 @@ $db = GCApp::getDB();
 
 $sql = 'select qtrelation_id, catalog.catalog_id, catalog_path, qtrelation_name, qtrelationtype_id, data_field_1, table_name, table_field_1, layer_id, layer.data as layer_table
     from '.DB_SCHEMA.'.qtrelation inner join '.DB_SCHEMA.'.catalog using(catalog_id) inner join '.DB_SCHEMA.'.layer using(layer_id) where qtrelation_id = :qtrelation_id';
+
 $stmt = $db->prepare($sql);
 $stmt->execute(array('qtrelation_id'=>$_REQUEST['qtrelation_id']));
 $qtRelation = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -21,7 +22,7 @@ $fields = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 if(empty($fields)) $ajax->error('No fields defined');
 
 $fieldsName = array();
-foreach($fields as $field) array_push($fieldsName, $field['qtfield_name']);
+foreach($fields as $field) array_push($fieldsName, 't_'.$field['qtrelation_id'].'.'.$field['qtfield_name']);
 
 $sql = 'select catalog_path from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog using(catalog_id) where layer_id = '.$qtRelation['layer_id'];
 $layerCatalogPath = $db->query($sql)->fetchColumn(0);
@@ -35,8 +36,9 @@ $layerTable = $qtRelation['layer_table'];
 $relationTable = $qtRelation['table_name'];
 
 
-$sql = 'select '.implode(', ', $fieldsName).' from '.$layerSchema.'.'.$layerTable.' left join '.$relationSchema.'.'.$relationTable.' on '.$relationTable.'.'.$qtRelation['table_field_1'].' = '.$layerTable.'.'.$qtRelation['data_field_1'].' where '.$layerTable.'.'.$qtRelation['data_field_1'].' = :value';
-$stmt = $db->prepare($sql);
+$sql = 'select '.implode(', ', $fieldsName).' from '.$layerSchema.'.'.$layerTable.' as t_0 left join '.$relationSchema.'.'.$relationTable.' as t_'.$qtRelation['qtrelation_id'].'  on t_'.$qtRelation['qtrelation_id'].'.'.$qtRelation['table_field_1'].' = t_0.'.$qtRelation['data_field_1'].' where t_0.'.$qtRelation['data_field_1'].' = :value';
+
+$stmt = $layerDataDb->prepare($sql);
 
 $stmt->execute(array('value'=>$_REQUEST['f_key_value']));
 $results = array(

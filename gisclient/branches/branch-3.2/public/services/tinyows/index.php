@@ -15,13 +15,13 @@ if(!file_exists(ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml')) die('c');
 
 if(defined('DEBUG') && DEBUG == 1) {
 	$string = var_export($_REQUEST, true)."\n\n".file_get_contents('php://input');
-	file_put_contents('tinyows-logs.txt', $string);
+	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', $string);
 }
 
 $descriptorspec = array(
    0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
    1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
-   2 => array("file", "tinyows-errors.txt", "a") // stderr is a file to write to
+   2 => array("file", DEBUG_DIR."tinyows-errors.txt", "a") // stderr is a file to write to
 );
 
 $envVars = array(
@@ -65,9 +65,9 @@ if(!empty($_GET)) {
 	$envVars['REQUEST_METHOD'] = 'POST';
 	$envVars['CONTENT_LENGTH'] = strlen($fileContent);
 	$envVars['CONTENT_TYPE'] = 'text/xml';
-	if(defined('DEBUG') && DEBUG == 1) file_put_contents('tinyows-input.txt', $fileContent);
+	if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-input.txt', $fileContent);
 }
-if(defined('DEBUG') && DEBUG == 1) file_put_contents('tinyows-input.txt', var_export($envVars, true), FILE_APPEND);
+if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-input.txt', var_export($envVars, true), FILE_APPEND);
 $pipes = array();
 
 $process = proc_open(TINYOWS_EXEC, $descriptorspec, $pipes, TINYOWS_PATH, $envVars);
@@ -84,8 +84,8 @@ if(is_resource($process)) {
 	if($pos !== false) {
 		$response = substr($response, $pos);
 	}
-	if(defined('DEBUG') && DEBUG == 1) file_put_contents('tinyows-output.txt', $response);
+	if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-output.txt', $response);
 	echo $response;
 } else {
-	if(defined('DEBUG') && DEBUG == 1) file_put_contents('tinyows-errors.txt', var_export($envVars, true)."\n\n".$fileContent);
+	if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-errors.txt', var_export($envVars, true)."\n\n".$fileContent);
 }

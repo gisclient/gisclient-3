@@ -412,11 +412,11 @@ class gcFeature{
 		//Elenco dei campi definiti
 		if($aFeature["fields"]){
 			$fieldList = array();
+            $groupByFieldList = array();
 			
 			foreach($aFeature["fields"] as $idField=>$aField){
 
 				if($aField["relation"] == 0 || $aFeature["relation"][$aField["relation"]]["relation_type"] == 1){
-		
 				
 					if($aField["relation"] != 0){//Il campo appartiene alla relazione e non alla tabella del layer 
                         $idRelation = $aField["relation"];
@@ -424,6 +424,7 @@ class gcFeature{
 					}else{
 						$aliasTable = DATALAYER_ALIAS_TABLE;
 					}
+                    $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
 					
 					//Campi calcolati non metto tabella.campo
 					//if(strpos($aField["field_name"],'(')!==false)
@@ -461,8 +462,10 @@ class gcFeature{
 						//$keyList = array();
 						//foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
 						//$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
+                        
+                        $groupBy = ' group by  '.implode(', ', $groupByFieldList).', '.$datalayerGeom;
 						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
-                        $groupBy = ' group by  '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey;
+                        
                         if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
                         array_push($this->aFeature['1n_count_fields'], 'num_'.$idrel);
 
