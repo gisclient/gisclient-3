@@ -202,6 +202,20 @@ if(!empty($layersParameter)) {
 				$layer->setFilter($filter);
 			}
 		}
+		
+		if(!empty($_SESSION['GC_LAYER_FILTERS'])) {
+            if(!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
+                $filter = $layer->getFilterString();
+                $filter = trim($filter, '"');
+                if(!empty($filter)) {
+                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
+                } else {
+                    $filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
+                }
+                $layer->setFilter($filter);
+            }
+        }
+		
 		if(!in_array($layer->name, $layersToRemove)) array_push($layersToInclude, $layer->name);
 	}
 	
