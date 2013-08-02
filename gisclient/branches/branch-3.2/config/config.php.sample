@@ -43,6 +43,7 @@ define('MAP_URL', 'http://localhost/gisclient-3.0/template/');
 define('IMAGE_PATH','/ms4w/apps/tmp/ms_tmp/');
 define('IMAGE_URL','/tmp/');
 define('TILES_CACHE','/ms4w/apps/gisclient-3.0/public/services/tms/');
+define('OPENLAYERS','http://openlayers.org/dev/OpenLayers.js');
 //define('PROJ_LIB',"/msiis/proj/nad/");
 /*******************                  *************************/
 

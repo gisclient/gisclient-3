@@ -51,7 +51,7 @@ $maxExtent = array(
 ?><!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>Author - Preview Map</title>
-<script type="text/javascript" src="../../jslib/openlayers/OpenLayers.js"></script>
+<script type="text/javascript" src="<?php echo OPENLAYERS ?>"></script>
 <script type="text/javascript">
 function init() {
 	var layerParameters = {
