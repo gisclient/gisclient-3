@@ -1,0 +1,27 @@
+[standard]
+table = "layergroup"
+pkey = "layergroup_id"
+dato[] = "Name;layergroup_name;30;text"
+dato[] = "Titel;layergroup_title;55;text"
+dato[] = "Link;layergroup_link;55;text"
+dato[] = "Sichtbarer Maßstab:<br>Höchstens;layergroup_maxscale;8;intero|Mindestens;layergroup_minscale;8;intero|Am besten;layergroup_smbscale;8;intero"
+dato[] = "Wiedergruppiert;multi;3;noyes"
+dato[] = "Reihenfolge;layergroup_order;3;intero"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit|Kopieren von;kopieren;#get_azioni#theme;button;new|Verschieben;verschieben;#get_azioni#layergroup;button;edit|Exportieren;azione;;submit;edit|Importieren;azione;;submit;new|Raster importieren;azione;120;submit;edit|Wizard WMS;azione;120;submit;new"
+[list]
+table = "layergroup"
+pkey = "layergroup_id"
+order_fld = "layergroup_title#layergroup_order"
+dato[] = ";layergroup_id;3%;info"
+dato[] = "Titel;layergroup_title;50%#layergroup_id;goto"
+dato[] = "Name;layergroup_name;40%;text"
+dato[] = "Reihenfolge;layergroup_order;7%;text"
+
+[title]
+edit = "Daten der Layerguppe"
+view = "Daten der Layerguppe"
+new = "Neue Layerguppe"
+list = "Layerguppe"
+
+[message]
+nodata = ""

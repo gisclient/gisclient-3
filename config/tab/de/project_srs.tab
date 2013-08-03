@@ -1,0 +1,22 @@
+[standard]
+table = "project_srs"
+pkey = "project_name;srid"
+dato[] = "srid;srid;5;intero"
+dato[] = "Parameter;param;50;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+[list]
+table = "project_srs"
+pkey = "project_name;srid"
+order_fld = "srid"
+dato[] = ";srid;3%#project_name;info"
+dato[] = "srid;srid;12%#srid#project_name;goto"
+dato[] = "Parameter;param;85%;text"
+
+[title]
+edit = "Korrektionsparameter"
+view = "Korrektionsparameter"
+new = "Neue Korrektionsparameter"
+list = "Korrektionsparameter"
+
+[message]
+nodata = ""

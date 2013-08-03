@@ -1,0 +1,36 @@
+[standard]
+table = "qtfield"
+pkey = "qtfield_id"
+dato[] = "Beziehung;qtrelation_id;200#seldb_qtrelation#qt_id;selectdb"
+dato[] = "Feld;qtfield_name;50;text|Liste Felder;qtfield_name;100#get_elenco#qt#qtrelation_id;button"
+dato[] = "Titel;field_header;40;text"
+dato[] = "Feldtyp;fieldtype_id;200#seldb_fieldtype;selectdb"
+dato[] = "Datentyp;datatype_id;200#seldb_datatype;selectdb"
+dato[] = "Format;field_format;48x2;textarea|Liste Formate;field_format;100#get_elenco;button"
+dato[] = "Suchmodus;searchtype_id;200#seldb_searchtype;selectdb"
+dato[] = "Feld zeigen in;resultype_id;200#seldb_resultype;selectdb"
+dato[] = "Reihenfolge;orderby_id;200#seldb_orderby;selectdb"
+dato[] = "Filter Feld;field_filter;200#seldb_field_filter#qt_id#qtfield_id;selectdb"
+dato[] = "Reihenfolge;qtfield_order;3;intero"
+dato[] = "Breite %;column_width;3;intero"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+[list]
+table = "vista_qtfield"
+pkey = "qtfield_id"
+order_fld = "qtrelation_name#field_header"
+dato[] = ";qtfield_id;3%;info"
+dato[] = "Überschrift;field_header;20%#qtfield_id;goto"
+dato[] = "Feld;qtfield_name;20%;text"
+dato[] = "Feldtyp;fieldtype_id;20%#e_fieldtype#fieldtype_name;chiave_esterna"
+dato[] = "Beziehung;qtrelation_name;15%;text"
+dato[] = "Breite %;column_width;10%;text"
+dato[] = "Reihenfolge;qtfield_order;5%;text"
+
+[title]
+edit = "Daten des Feldes des Suchmodells"
+view = "Daten des Feldes des Suchmodells"
+new = "Neues Feld des Suchmodells"
+list = "Felder des Suchmodells"
+
+[message]
+nodata = "Kein Feld des Suchmodells"

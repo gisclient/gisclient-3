@@ -1,0 +1,28 @@
+[standard]
+table = "selgroup_layer"
+pkey = "selgroup_id;layer_id";
+order_fld = "theme_title"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;layer_id;9%#layer_id#presente;check1"
+dato[] = "Layer;layer_name;30%;string"
+dato[] = "LayerGroup;layergroup_name;30%;text"
+dato[] = "Tema;theme_title;30%;text"
+[list]
+table = "selgroup_layer"
+pkey = "selgroup_id;layer_id";
+order_fld = "theme_title#layergroup_name#layer_name"
+dato[] = "Layer interrogabile;layer_name;30%;text"
+dato[] = "LayerGroup;layergroup_name;30%;text"
+dato[] = "Tema;theme_title;30%;text"
+
+[title]
+edit = "Layers interrogabili del gruppo di interrogazione"
+view = "Layers interrogabili del gruppo di interrogazione"
+new = "Layers interrogabili del gruppo di interrogazione"
+list = "Layers interrogabili del gruppo di interrogazione"
+
+[menu]
+standard = "Layers interrogabili del gruppo di interrogazione"
+
+[message]
+nodata = "Nessun Layer interrogabile"

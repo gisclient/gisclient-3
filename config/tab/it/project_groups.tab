@@ -1,0 +1,30 @@
+[standard]
+table = "project_groups"
+pkey = "project_name;group_name"
+order_fld = "group_name"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;group_name;7%#group_name#presente;check1"
+dato[] = "Nome;group_name;30;text"
+
+[list]
+table = "project_groups"
+pkey = "project_name;group_name"
+order_fld = "group_name"
+dato[] = "Nome;group_name;50%;text"
+[save]
+table = "project_groups"
+pkey = "project_name;group_name"
+dato[] = "Gruppo;group_name;50;text"
+
+[title]
+edit = "Gruppi di Utenti del Progetto"
+view = "Gruppi di Utenti del Progetto"
+new = "Gruppi di Utenti del Progetto"
+list = "Gruppi di Utenti del Progetto"
+
+[menu]
+
+standard = "Gruppi del Progetto"
+
+[message]
+nodata = ""

@@ -1,0 +1,23 @@
+[standard]
+table = "language_qt"
+pkey = "language_id;qt_id"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb"
+dato[] = "Name;name;60;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+
+[list]
+table = "language_qt"
+pkey = "language_id;qt_id"
+order_fld = "title"
+dato[] = ";language_id;3%#qt_id;info"
+dato[] = "Name;name;60#language_id#qt_id;goto"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Alternative Titel des Suchmodells"
+view = "Alternative Titel des Suchmodells"
+new = "Neuer Titel des Suchmodells"
+list = "Alternative Titel des Suchmodells"
+
+[message]
+nodata = ""

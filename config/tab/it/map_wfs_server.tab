@@ -1,0 +1,7 @@
+[standard]
+table = ""
+pkey = "wfs_title"
+dato[] = "Titolo;wfs_title;40;text"
+dato[] = "URL del Servizio;wfs_onlineresource;40x2;textarea"
+dato[] = "SRS;wfs_srs;40;text"
+dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"

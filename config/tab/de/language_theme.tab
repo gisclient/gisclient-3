@@ -1,0 +1,24 @@
+[standard]
+table = "language_theme"
+pkey = "language_id;theme_id"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb"
+dato[] = "Titel;title;60;text"
+dato[] = "Link;link;100;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+
+[list]
+table = "language_theme"
+pkey = "language_id;theme_id"
+order_fld = "language_id"
+dato[] = ";language_id;3%#theme_id;info"
+dato[] = "Titel;title;60#language_id#theme_id;goto"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Alternative Titel des Themas"
+view = "Alternative Titel des Themas"
+new = "Neuer Titel des Themas"
+list = "Alternative Titel des Themas"
+
+[message]
+nodata = ""

@@ -1,0 +1,23 @@
+[standard]
+table = "language_mapset"
+pkey = "language_id;mapset_name"
+dato[] = "Lingua;language_id;250#seldb_language#;selectdb"
+dato[] = "Titolo;title;60;text"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit"
+
+[list]
+table = "language_mapset"
+pkey = "language_id;mapset_name"
+order_fld = "title"
+dato[] = ";language_id;3%#mapset_name;info"
+dato[] = "Titolo;title;60#language_id#mapset_name;goto"
+dato[] = "Lingua;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Titoli alternativi del Mapset"
+view = "Titoli alternativi del Mapset"
+new = "Nuovo Titolo del Mapset"
+list = "Titoli alternativi del Mapset"
+
+[message]
+nodata = ""

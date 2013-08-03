@@ -1,0 +1,7 @@
+[standard]
+table = ""
+pkey = "wfs_title"
+dato[] = "Titolo;wfs_title;40;text"
+dato[] = "SRS;wfs_srs;40;text"
+dato[] = "GML Feature ID;gml_featureid;;text"
+dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"

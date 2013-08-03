@@ -1,0 +1,25 @@
+[standard]
+table = "language_class"
+pkey = "language_id;class_id"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb"
+dato[] = "Titel;title;60;text"
+dato[] = "Template;template;60;text"
+dato[] = "Link;link;100;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+
+[list]
+table = "language_class"
+pkey = "language_id;class_id"
+order_fld = "title"
+dato[] = ";language_id;3%#class_id;info"
+dato[] = "Titel;title;60#language_id#class_id;goto"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Alternative Titel der Klasse"
+view = "Alternative Titel der Klasse"
+new = "Neuer Titel der Klasse"
+list = "Alternative Titel der Klasse"
+
+[message]
+nodata = ""

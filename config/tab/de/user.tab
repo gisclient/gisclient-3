@@ -1,0 +1,25 @@
+[standard]
+table = "users"
+pkey = "username"
+dato[] = "Benutzername;username;15;text"
+dato[] = "Nachname;cognome;30;text"
+dato[] = "Vorname;nome;30;text"
+dato[] = "Passwort;pwd;10;pword"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+[list]
+table = "users"
+pkey = "username"
+order_fld = "username"
+dato[] = ";username;3%;info"
+dato[] = "Benutzername;username;20%#username;goto"
+dato[] = "Nachname;cognome;40%;text"
+dato[] = "Vorname;nome;37%;text"
+
+[title]
+edit = "Benutzerdaten"
+view = "Benutzerdaten"
+new = "Neuer Benutzer"
+list = "Benutzer"
+
+[message]
+nodata = "Kein Benutzer vorhanden"
