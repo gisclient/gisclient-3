@@ -33,13 +33,13 @@ dato[] = ";layergroup_id;1%;edit"
 dato[] = ";layergroup_id;1%;delete"
 
 [title]
-edit = "Modifica layergroup"
-view = "Visualizza layergroup"
-new = "Inserisci layergroup"
-list = "Layergroups"
+edit = "Modifica gruppo di layer"
+view = "Visualizza gruppo di layer"
+new = "Inserisci gruppo di layer"
+list = "Gruppi di layers"
 
 [menu]
-new = "Nuovo layergroup"
+new = "Nuovo gruppo di layer"
 standard = "layergroup_name"
 
 [message]

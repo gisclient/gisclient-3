@@ -135,6 +135,7 @@ class gcMap{
 		//Normalizzo rispetto all'array delle risoluzioni
 		$mapOptions["resolutions"] = $this->_getResolutions();
 		$mapOptions["minZoomLevel"] = $this->_array_index($mapOptions["resolutions"],$maxRes);
+		if(!$mapOptions["minZoomLevel"]) $mapOptions["minZoomLevel"]=0;
 		$mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
 		$this->maxResolution = $mapOptions["resolutions"][0];
 		$mapOptions["minResolution"] = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];

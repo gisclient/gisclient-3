@@ -52,9 +52,9 @@ class gcFeature{
 	}
 
 	function __construct($i18n = null){
-		
-                $this->db = GCApp::getDB();
+        $this->db = GCApp::getDB();
 		$this->i18n = $i18n;
+		$this->msVersion = substr(ms_GetVersionInt(),0,1);
 	}
 
 
@@ -615,7 +615,7 @@ class gcFeature{
 			$clsText[]="\tFONT \"".$aClass["label_font"]."\"";		
 			if($aClass["label_angle"]) $clsText[]="\tANGLE ".$aClass["label_angle"];				
 			if($aClass["label_color"]) $clsText[]="\tCOLOR ".$aClass["label_color"];			
-			if($aClass["label_bgcolor"]) $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
+			if($aClass["label_bgcolor"] && $this->msVersion=='5') $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
 			if($aClass["label_outlinecolor"]) $clsText[]="\tOUTLINECOLOR " .$aClass["label_outlinecolor"];	
 			if($aClass["label_size"]) $clsText[]="\tSIZE ".$aClass["label_size"];	
 			if($aClass["label_minsize"]) $clsText[]="\tMINSIZE ".$aClass["label_minsize"];	
@@ -667,7 +667,7 @@ class gcFeature{
 			$styText[]="WIDTH ".$aStyle["width"];
 		else
 			$styText[]="WIDTH 1";//pach mapserver 5.6 non disegna un width di default
-		if(isset($aStyle["pattern_def"]) && ms_GetVersionInt()>502000) $styText[]=$aStyle["pattern_def"];
+		if(isset($aStyle["pattern_def"]) && $this->msVersion=='6') $styText[]=$aStyle["pattern_def"];
 		if(!empty($aStyle["minwidth"])) $styText[]="MINWIDTH ".$aStyle["minwidth"];
 		if(!empty($aStyle["maxwidth"])) $styText[]="MAXWIDTH ".$aStyle["maxwidth"];
 		if((!empty($aStyle["symbol_name"]))) $this->aSymbols[$aStyle["symbol_name"]]=$aStyle["symbol_name"];

@@ -31,22 +31,23 @@ class Symbol{
 	function createIcon(){
 		$dbSchema=DB_SCHEMA;
 		$this->mapfile=ROOT_PATH.'map/tmp.map';
-		$this->simbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
+		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 		$aClass=array();
 		
+		
 		if($this->table=='class'){
-			$sql="select class.class_id,layertype_ms,style_id,color,outlinecolor,bgcolor,angle,size,width,symbol_name,symbol_def
+			$sql="select class.class_id,layertype_ms,style_id,color,outlinecolor,bgcolor,angle,size,width,symbol.*
 			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
 			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name) 
 			inner join $dbSchema.e_layertype using (layertype_id)
 			left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name)";
-			
-		
+
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" order by style_order;";
 			$this->db->sql_query($sql);
 			$res=$this->db->sql_fetchrowset();	
 			$aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
+
 			for($i=0;$i<count($res);$i++){
 				$aClass[$res[$i]["class_id"]]["icontype"]=$res[$i]["layertype_ms"];
 				if($res[$i]["style_id"]){
@@ -59,17 +60,25 @@ class Symbol{
 					$aStyle["symbol"]=$res[$i]["symbol_name"];	
 					$aClass[$res[$i]["class_id"]]["style"][]=$aStyle;				
 				}
-				if($res[$i]["symbol_def"]){
-					$sSy="SYMBOL\nNAME \"".$res[$i]["symbol_name"]."\"\n".$res[$i]["symbol_def"]."\nEND";
-					if(!in_array($sSy,$aSymbol)) $aSymbol[]=$sSy;
-				}
+				if($res[$i]["symbol_name"]){
+					$smbText=array();
+					$smbText[]="SYMBOL";
+					$smbText[]="\tNAME \"".$res[$i]["symbol_name"]."\"";
+					if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
+					if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
+					if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".($res[$i]["ascii_code"]==92?chr(92):'').chr($res[$i]["ascii_code"])."\"";
+					if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
+					if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
+					if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
+					if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
+					$smbText[]="END";
+					if(!in_array($smbText,$aSymbol)) $aSymbol[]=implode("\n",$smbText);				
+				}		
 			}
-			
-	
+
 			
 			$this->_createMapFile($aSymbol);
-			
-			
+
 			foreach($aClass as $classId=>$class){
 				$oIcon = $this->_iconFromClass($class);
 				if($oIcon){
@@ -85,50 +94,60 @@ class Symbol{
 		}
 
 		elseif($this->table=='symbol'){
-			$sql="select symbol_name,icontype,symbol_def from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
+			$sql="select symbol.* from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			if($this->filter) $sql.=" where ".$this->filter;
+			$sql.=" LIMIT 200;";
 			$this->db->sql_query($sql);
 			$res=$this->db->sql_fetchrowset();	
+
 			for($i=0;$i<count($res);$i++){
-				$class=array();$style=array();
-				$class["icontype"]=$res[$i]["icontype"];
-				$style["symbol"]=$res[$i]["symbol_name"];
-				$style["color"]=array(0,0,0);
-				$class["style"][]=$style;
-				$aClass[]=$class;
-				$aSymbol[]="SYMBOL\nNAME \"".$res[$i]["symbol_name"]."\"\n".$res[$i]["symbol_def"]."\nEND";
+			    $aClass[$res[$i]["symbol_name"]]["icontype"]=$res[$i]["icontype"];
+				$aStyle=array();
+				$aStyle["symbol"]=$res[$i]["symbol_name"];
+				$aStyle["color"]=array(0,0,0);
+				$aStyle["size"]=$this->symbolSize[$res[$i]["icontype"]];
+				$aClass[$res[$i]["symbol_name"]]["style"][]=$aStyle;	
+				$smbText=array();
+				$smbText[]="SYMBOL";
+				$smbText[]="\tNAME \"".$res[$i]["symbol_name"]."\"";
+				if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
+				if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
+				if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".($res[$i]["ascii_code"]==92?chr(92):'').chr($res[$i]["ascii_code"])."\"";
+				if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
+				if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
+				if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
+				if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
+				$smbText[]="END";
+				
+				$aSymbol[]=implode("\n",$smbText);		
+
+			}
+			$this->_createMapFile($aSymbol);
+    
+			foreach($aClass as $symbolName=>$class){
 			
-				$this->_createMapFile($aSymbol);
 				$oIcon = $this->_iconFromClass($class);
+				
 				if($oIcon){
 					ob_start();
 					$oIcon->saveImage('');
 					$image_data =pg_escape_bytea(ob_get_contents());
 					ob_end_clean();
-					$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='".$style["symbol"]."';";
+					$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='$symbolName';";
 					//echo ($sql."<br>");
 					$this->db->sql_query($sql);
 				}
 			}
+			
 		}
 
-		if(!DEBUG) unlink($this->mapfile);	
+		//if(!DEBUG) unlink($this->mapfile);	
 	}
 	
 
 	function _iconFromClass($class){
 		//creo la mappa 
 		$oMap = $this->oMap;
-		$error = ms_GetErrorObj();
-		if($error->code != MS_NOERR){
-			$this->mapError=150;
-			while($error->code != MS_NOERR){
-				print("MAPFILE ERROR ". $this->mapfile."<br>");
-				printf("Error in %s: %s<br>\n", $error->routine, $error->message);
-				$error = $error->next();
-			}
-			return;
-		}
 		$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');		
 		$oMap->outputformat->set('name','PNG');
 		$oMap->outputformat->set('driver','GD/PNG');
@@ -137,7 +156,7 @@ class Symbol{
 		$oLay=ms_newLayerObj($oMap);
 		$oLay->set('type', $class["icontype"]);	
 		$oClass=ms_newClassObj($oLay);
-		$smbSize=$this->simbolSize[$class["icontype"]];
+		$smbSize=$this->symbolSize[$class["icontype"]];
 		$style=isset($class["style"])?$class["style"]:array();
 		//print_array($class);
 		//Aggiungo gli stili
@@ -155,17 +174,6 @@ class Symbol{
 			
 
 		}
-		//Aggiungo lo stile per il simbolo ttf
-		if(!empty($class["symbol_ttf"])){
-			$oStyle=ms_newStyleObj($oClass);
-			$oStyle->set("size",$smbSize);	
-			$oStyle->set('symbolname',$class['symbol_ttf']);
-			$oLay->set('postlabelcache', 'true');
-			if(count($class['label_color'])==3) $oStyle->color->setRGB($class['label_color'][0],$class['label_color'][1],$class['label_color'][2]);
-			//if(count($class['label_bgcolor'])==3)$oStyle->backgroundcolor->setRGB($class['label_bgcolor'][0],$class['label_bgcolor'][1],$class['label_bgcolor'][2]);
-		}
-		//print_array($oClass);
-		//print_array($oClass->getStyle(0));
 
 		$icoImg = @$oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
 		return $icoImg;
@@ -178,7 +186,25 @@ class Symbol{
 		$mapText[] = "EXTENT 0 0 180 180";
 		$mapText[] = implode("\n",$aSymbol);
 		$mapText[] = "END";
-		$this->oMap = ms_newMapObjFromString(implode("\n",$mapText),ROOT_PATH.'mapset/map');
+	    //test sintassi mapfile		
+		ms_ResetErrorList();
+		try {
+			print_debug(implode("\n",$mapText),null,'symbolmap');
+			$this->oMap = @ms_newMapObjFromString(implode("\n",$mapText),ROOT_PATH.'map');
+		} 
+		catch (Exception $e) {
+			$error = ms_GetErrorObj();		
+			if($error->code != MS_NOERR){
+				$this->mapError=150;
+				while(is_object($error) && $error->code != MS_NOERR) {
+					print("MAPFILE ERROR <br>");
+					printf("Error in %s: %s<br>\n", $error->routine, $error->message);
+					$error = $error->next();
+				}
+				return;
+			}	
+			return;
+		}
 	}
 	
 	//RESTITUISCE UN ELENCO DI SIMBOLI FILTRATI

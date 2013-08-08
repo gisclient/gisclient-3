@@ -260,6 +260,7 @@ ms_ioinstallstdouttobuffer();
 /* Eexecute request */ 
 $oMap->owsdispatch($objRequest);
 
+
 $contenttype = ms_iostripstdoutbuffercontenttype(); 
 $ctt = explode("/",$contenttype); 
 

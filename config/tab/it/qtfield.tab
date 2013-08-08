@@ -2,7 +2,7 @@
 table = "qtfield"
 pkey = "qtfield_id"
 dato[] = "Layer o Relazione;qtrelation_id;200#seldb_qtrelation#layer_id;selectdb"
-dato[] = "Campo;qtfield_name;60;text|Elenco campi;qtfield_name;100#openList#layer#qtrelation_id;button"
+dato[] = "Campo;qtfield_name;100;text|Elenco campi;qtfield_name;100#openList#layer#qtrelation_id;button"
 dato[] = "Titolo;field_header;40;text"
 dato[] = "Tipo di Campo;fieldtype_id;200#seldb_fieldtype;selectdb"
 dato[] = "Tipo di Dato;datatype_id;200#seldb_datatype;selectdb"

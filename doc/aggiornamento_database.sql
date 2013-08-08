@@ -16,7 +16,7 @@
 
 
 
-SET search_path = gisclient_37, pg_catalog;
+SET search_path = gisclient_33, pg_catalog;
 
 ALTER TABLE e_level DROP CONSTRAINT e_level_parent_id_fkey;
 DELETE FROM form_level;
@@ -394,9 +394,6 @@ UNION
       JOIN qtfield y USING (layer_id)
      WHERE x.qtfield_id <> y.qtfield_id
      ORDER BY x.qtfield_id, x.qtfield_order); 
-ALTER TABLE qtfield DROP COLUMN qt_id CASCADE;
-ALTER TABLE qtrelation DROP COLUMN qt_id CASCADE;
-
   
 --AGGIORNAMENTO DEL VALORE DI EXPRESSION IN CLASS (AGGIUNTE LE PARENTESI)
 update class set expression='('||expression||')' where (expression like '(''[%' or expression like '''[%'  or expression like '[%' ) and not expression like '(%)';
@@ -741,6 +738,21 @@ insert into form_level values (516, 51, 1, 209, 1, 1);
 insert into form_level values (517, 51, 2, 209, 1, 1);
 
 
+ALTER TABLE qtfield ADD COLUMN editable numeric(1,0) DEFAULT 0;
+-- AGGIUNTO IL CAMPO FORMULA
+ALTER TABLE qtfield ADD COLUMN formula character varying;
+
+-- SPOSTO NEL CAMPO FORMULA QUELLO CHE INDEBITAMENTE è STATO MESSO IN field_name e assegno un nuovo field_name
+UPDATE qtfield SET qtfield_name = 'formula_'||qtfield_id, formula=qtfield_name WHERE qtfield_name LIKE '%(%' OR qtfield_name LIKE '%::%' OR qtfield_name LIKE '%||%';
+
+-- SPOSTO NEL CAMPO FORMULA I CAMPI CHE SONO DUPLICATI DEI MODELLI DI RICERCA e assegno un nuovo field_name
+UPDATE qtfield SET qtfield_name = 'formula_'||qtfield.qtfield_id, formula=qtfield.qtfield_name 
+FROM (select layer_id,qtfield_name from qtfield where qtrelation_id=0 group by 1,2 having count(qtfield_name)>1) as q
+WHERE qtfield.layer_id=q.layer_id AND qtfield.qtfield_name=q.qtfield_name;
+
+--UNICITA' DEI NOMI DEI CAMPI NEI LAYERS
+ALTER TABLE qtfield ADD CONSTRAINT qtfield_qtfield_name_layer_id_key UNIQUE(qtfield_name, qtrelation_id, layer_id);
+
 -- UN PO' DI PULIZIA
 ALTER TABLE "class" DROP COLUMN class_link;
 ALTER TABLE layer DROP COLUMN requires;
@@ -760,6 +772,9 @@ DROP TABLE mapset_groups CASCADE;
 DROP TABLE mapset_link CASCADE;
 DROP TABLE mapset_qt CASCADE;
 
+ALTER TABLE qtfield DROP COLUMN qt_id CASCADE;
+ALTER TABLE qtrelation DROP COLUMN qt_id CASCADE;
+
 delete from e_form cascade where config_file='mapset_link';
 delete from e_form cascade where config_file='mapset_qt';
 delete from e_form cascade where config_file='qt_links';
@@ -768,18 +783,6 @@ update e_form set save_data=null where config_file='project';
 update e_form set save_data=null where config_file='mapset_layergroup';
 update e_form set save_data=null where config_file='layergroup';
 update e_form set save_data=null where config_file='admin_project';
-
-ALTER TABLE qtfield ADD COLUMN editable numeric(1,0) DEFAULT 0;
-
-
---AGGIUNTO IL CAMPO FORMULA
-ALTER TABLE qtfield ADD COLUMN formula character varying;
-UPDATE qtfield SET formula=qtfield_name WHERE qtfield_name LIKE '%(%' OR qtfield_name LIKE '%::%' OR qtfield_name LIKE '%||%';
-UPDATE qtfield SET qtfield_name = 'formula_'||qtfield_id WHERE qtfield_name LIKE '%(%' OR qtfield_name LIKE '%::%' OR qtfield_name LIKE '%||%';
---UNICITA' DI FIELDNAME SU LAYER
-ALTER TABLE qtfield ADD CONSTRAINT qtfield_qtfield_name_layer_id_key UNIQUE(qtfield_name, layer_id);
---delete from qtfield where qtfield_id in(select qtfield_id from qtfield, (select layer_id as a,qtfield_name as b from qtfield group  by 1,2 having count(qtfield_name)>1) as foo where layer_id=a and qtfield_name=b and qtrelation_id<>0)
---UPDATE qtfield SET qtfield_name = 'formula_'||qtfield_id WHERE qtfield_id in(select qtfield_id from qtfield, (select layer_id as a,qtfield_name as b from qtfield group  by 1,2 having count(qtfield_name)>1) as foo where layer_id=a and qtfield_name=b)
 
 
 --AUTORIZZAZIONI SUI CAMPI
@@ -1042,73 +1045,7 @@ UNION ALL
 				  
 ------ GISCLIENT 3.2 -----------
 ---- da qui in poi, tutte le modifiche a partire dallo schema di gisclient 3.2		  
-
---2013-02-08: COMPATIBILITA' CON MAPSERVER 6 --
-
--- *********** SIMBOLOGIA LINEARE: SOSTITUZIONE DI STYLE CON PATTERN *********************
-CREATE TABLE e_pattern
-(
-  pattern_id serial NOT NULL,
-  pattern_name character varying NOT NULL,
-  pattern_def character varying NOT NULL,
-  pattern_order smallint,
-  CONSTRAINT e_pattern_pkey PRIMARY KEY (pattern_id )
-);
-ALTER TABLE style ADD COLUMN pattern_id integer;
-
-ALTER TABLE style  ADD CONSTRAINT pattern_id_fkey FOREIGN KEY (pattern_id)
-      REFERENCES e_pattern (pattern_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE NO ACTION;
-	  
-CREATE INDEX fki_pattern_id_fkey ON style USING btree (pattern_id );
-
-CREATE OR REPLACE VIEW seldb_pattern AS 
-         SELECT (-1) AS id, 'Seleziona ====>' AS opzione
-UNION ALL 
-         SELECT pattern_id AS id, pattern_name AS opzione
-           FROM e_pattern;
-
---UPGRADE DELLA TABELLA DEI SIMBOLI		   
-ALTER TABLE symbol ADD COLUMN symbol_type character varying;
-ALTER TABLE symbol ADD COLUMN font_name character varying;
-ALTER TABLE symbol ADD COLUMN ascii_code integer;
-ALTER TABLE symbol ADD COLUMN filled numeric(1,0) DEFAULT 0;
-ALTER TABLE symbol ADD COLUMN points character varying;
-ALTER TABLE symbol ADD COLUMN image character varying;
-		   
-		   
-		   
---INSERISCO I PATTERN EREDITATI DAGLI STYLE CHE VENGONO APPLICATI ALLE LINEE NELLA VECCHIA VERSIONE
-insert into e_pattern(pattern_name,pattern_def)
-select symbol_name,'PATTERN' ||replace(substring(symbol_def from 'STYLE(.+)END'),'\n',' ') || 'END' from symbol where symbol_def like '%STYLE%';
-
---AGGIORNO IL pattern_id DELLA TABELLA style CON I VALORI DELLE CHIAVI
-update style set pattern_id=e_pattern.pattern_id,symbol_name=null from e_pattern where e_pattern.pattern_name=style.symbol_name;
-
---TOLGO DAI SIMBOLI QUELLI CHE SERVIVANO SOLO PER IL PATTERN
-delete from symbol where symbol_def like '%STYLE%';
---ELIMINO LE KEYWORDS NON COMPATIBILI (	CONTROLLARE IL RISULTATO)
-update symbol  set symbol_def=regexp_replace(symbol_def, '\nGAP(.+)', '')  where symbol_def like '%GAP%';
-delete from symbol where symbol_def like '%CARTOLINE%';
-
-		   
--- *********** SIMBOLOGIA PUNTUALE: CREAZIONE DI SIMBOLI TRUETYPE IN SOSTITUZIONE DEL CARATTERE IN CLASS_TEXT *********************
---INSERISCO I NUOVI SIMBOLI NELLA TABELLA
-insert into symbol (symbol_name,symbolcategory_id,icontype,symbol_type,font_name,ascii_code,symbol_def)
-select  symbol_ttf_name||'_'||font_name,1,0,'TRUETYPE',font_name,ascii_code,'ANTIALIAS TRUE' from symbol_ttf;
-
---AGGIUNGO GLI STILI ALLE CLASSI---
-insert into style(style_id,class_id,style_name,symbol_name,color,angle,size,minsize,maxsize)
-select class_id+10000,class_id,symbol_ttf_name,symbol_ttf_name||'_'||label_font,label_color,label_angle,label_size,label_minsize,label_maxsize from class where coalesce(symbol_ttf_name,'')<>'' and coalesce(label_font,'')<>'';
-
---TOLGO I SYMBOLI TTF DA CLASSI
-update class set symbol_ttf_name=null,label_font=null where coalesce(symbol_ttf_name,'')<>'' and coalesce(label_font,'')<>'';
-
---PULIZIA
---DROP TABLE symbol_ttf;
---DROP SEQUENCE gisclient_25.e_pattern_pattern_id_seq;
---ALTER TABLE e_pattern ALTER COLUMN pattern_id TYPE smallint;		   
-		   
+   
 --FONT SIZE IN LEGEND
 ALTER TABLE project ADD COLUMN legend_font_size integer default 8;
 
