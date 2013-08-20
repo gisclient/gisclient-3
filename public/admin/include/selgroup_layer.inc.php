@@ -4,24 +4,28 @@ require_once "../../config/config.php";
 	$selgroup=$this->parametri["selgroup"];
 	$db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
 	if(!$db->db_connect_id) die("<p>Impossibile connettersi al database!</p>");
-	$JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
+	$JOIN=($this->mode==0)?(" INNER JOIN "):(" , ");
+	$JOINFIELD=($this->mode==0)?(" USING (layer_id) "):("");
 	$sql="SELECT DISTINCT 
-    selgroup_id,A.layer_name,coalesce(layer_id,0) as layer_id,
-    CASE WHEN COALESCE(selgroup_id, 0) > 0 THEN 1 ELSE 0 END  AS presente,
+    selgroup_id,A.layer_id,A.layer_name,
+    CASE WHEN COALESCE(B.layer_id, 0) > 0 THEN 1 ELSE 0 END  AS presente,
     coalesce(layergroup_title,'') as layergroup_name,
     coalesce(theme_title,'') as theme_title
-    from ((".DB_SCHEMA.".layer inner join ".DB_SCHEMA.".layergroup using(layergroup_id)) inner join ".DB_SCHEMA.".theme using(theme_id)) A $JOIN
-    (select * from ".DB_SCHEMA.".selgroup_layer inner join ".DB_SCHEMA.".selgroup using(selgroup_id) where selgroup_id=$selgroup) as foo using (layer_id) WHERE queryable=1 and A.project_name='$project' order by theme_title,layergroup_name,layer_name";
-	//echo "<p>$sql</p>";
+    FROM 
+	((".DB_SCHEMA.".layer INNER JOIN ".DB_SCHEMA.".layergroup using(layergroup_id)) INNER JOIN ".DB_SCHEMA.".theme using(theme_id)) A $JOIN
+    (select * from ".DB_SCHEMA.".selgroup_layer RIGHT JOIN ".DB_SCHEMA.".selgroup using(selgroup_id) where selgroup_id=$selgroup) as B $JOINFIELD 
+	WHERE 
+	queryable=1 and A.project_name='$project' order by theme_title,layergroup_name,layer_name";
+	
 	if($db->sql_query($sql)){
 		$ris=$db->sql_fetchrowset();
 		if (count($ris)){
-			foreach($ris as $val){
-				extract($val);
+		
+			for($k=0;$k<count($ris);$k++){
+				extract($ris[$k]);
 				if($this->mode!=0 || $presente==1)
-					$data[]=Array("project_name"=>$project_name,"selgroup_id"=>$selgroup_id,"layer_id"=>$layer_id,"presente"=>$presente,"layer_name"=>$layer_name,"layergroup_name"=>$layergroup_name,"theme_title"=>$selgroup_name,"theme_title"=>$theme_title);
+					$data[]=Array("theme_title"=>$theme_title,"selgroup_id"=>$selgroup_id,"layer_id"=>$layer_id,"presente"=>$presente,"layer_name"=>$layer_name,"layergroup_name"=>$layergroup_name);
 			}
-			
 		}
 		else{
 			$data=Array();

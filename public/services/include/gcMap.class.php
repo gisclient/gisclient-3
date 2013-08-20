@@ -26,6 +26,7 @@
 ******************************************************************************/
 
 define('WMS_LAYER_TYPE',1);
+define('WMTS_LAYER_TYPE',2);
 define('GMAP_LAYER_TYPE',7);
 define('VMAP_LAYER_TYPE',3);
 define('YMAP_LAYER_TYPE',4);
@@ -84,11 +85,14 @@ class gcMap{
 		$sql = "SELECT mapset.*, ".
 			" x(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
 			" y(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
-			" max_extent_scale, project_title FROM ".DB_SCHEMA.".mapset ".
-			" INNER JOIN ".DB_SCHEMA.".project USING (project_name) WHERE mapset_name=?";
+			" max_extent_scale, project_title, mapset_grid, tilegrid_extent FROM ".DB_SCHEMA.".mapset ".
+			" INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
+			" LEFT JOIN (SELECT project_name,srid as mapset_srid,tilegrid_name as mapset_grid,tilegrid_extent FROM ".DB_SCHEMA.".project_srs INNER JOIN ".DB_SCHEMA.".e_tilegrid USING (tilegrid_id)) AS tilegrid USING (project_name,mapset_srid) ".
+			" WHERE mapset_name=?";
+		
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($mapsetName));
-		
+
 		if($stmt->rowCount() == 0){
 		    echo "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
 			echo "{$stmt->queryString}<br />\n";
@@ -108,7 +112,7 @@ class gcMap{
 		$this->mapsetName = $row["mapset_name"];
 		$sizeUnitId = empty($row["sizeunits_id"]) ? 5 : intval($row["sizeunits_id"]);
 		if($row["mapset_srid"]==4326) $sizeUnitId = 7; //Forzo dd se in 4326
-		
+				
 		$mapOptions=array();
 		$mapOptions["mapset"] = $row["mapset_name"];
 		$mapOptions["title"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
@@ -120,6 +124,14 @@ class gcMap{
 		$mapOptions['projectionDescription'] = $this->_getProjectionDescription('EPSG', $row['mapset_srid']);
 		if(!empty($row["displayprojection"])) $mapOptions["displayProjection"] = "EPSG:".$row["displayprojection"];
 		$this->mapsetSRID = $row["mapset_srid"];
+		
+		//TILES
+		if(!empty($row["mapset_grid"])){
+			$v = explode($this->coordSep,$row["tilegrid_extent"]); 
+			$this->mapsetGRID = $row["mapset_grid"];
+			$this->tilesExtent = array(floatval($v[0]),floatval($v[1]),floatval($v[2]),floatval($v[3])); 
+		} 
+		
 		$this->fractionalZoom = 1;
 		
 		
@@ -135,13 +147,34 @@ class gcMap{
 		//Normalizzo rispetto all'array delle risoluzioni
 		$mapOptions["resolutions"] = $this->_getResolutions();
 		$mapOptions["minZoomLevel"] = $this->_array_index($mapOptions["resolutions"],$maxRes);
-		if(!$mapOptions["minZoomLevel"]) $mapOptions["minZoomLevel"]=0;
 		$mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
-		$this->maxResolution = $mapOptions["resolutions"][0];
 		$mapOptions["minResolution"] = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];
-		$this->minResolution = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];
-		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$maxRes);
+		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$mapOptions["resolutions"][$mapOptions["minZoomLevel"]]);
+					
+		//$mapOptions["maxExtent"] = $this->_getExtent(0,0,$mapOptions["resolutions"][0]);
+//$mapOptions["minZoomLevel"]=0;
 		
+		
+		//$this->maxResolution = $mapOptions["resolutions"][$mapOptions["minZoomLevel"]];
+		
+		//if(!$mapOptions["minZoomLevel"]) $mapOptions["minZoomLevel"]=0;
+		
+		//$this->maxResolution = $mapOptions["resolutions"][0];
+		//$this->minResolution = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];
+
+	
+		
+		//$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->maxResolution);
+		//$this->maxExtent = $mapOptions["maxExtent"];
+		//$this->myRes = $mapOptions["resolutions"][$mapOptions["minZoomLevel"]];
+		//print ($this->maxResolution);
+		//print_r($this->maxExtent);		
+		
+
+
+
+		
+
 		//Limita estensione:
 		if(($row["mapset_extent"])){
 			$ext = explode($this->coordSep,$row["mapset_extent"]);
@@ -212,7 +245,6 @@ class gcMap{
 		$stmt->execute();
 						
 		$ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
-		$tiles_cache_url = (defined('GISCLIENT_TMS_URL')) ? GISCLIENT_TMS_URL : "../../services/tms/";	
 
 		$rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		for($i=0; $i < count($rowset); $i++){
@@ -371,34 +403,53 @@ class gcMap{
 				if($row["status"] == 1) $this->activeBaseLayer = $layerId;	
 			}
 				
-			elseif($layerType==TMS_LAYER_TYPE){//TMS
-                            $layerOptions["layers"] = $row['layers']; 
-
-                            
-				$layerUrl = isset($row["url"])?$row["url"]:$tiles_cache_url.$this->projectName;
+			elseif(!empty($this->mapsetGRID) && $layerType == WMTS_LAYER_TYPE){// WMTS
+				$layerParameters=array();
+				$layerParameters["SERVICE"] = "WMTS";
+				$layerParameters["VERSION"] = GISCLIENT_WMTS_VERSION;
+				$layerParameters["name"] = $layergroupTitle;
+				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL;
+				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
+				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
+				$layerParameters["matrixSet"] = $this->mapsetGRID;
+				$layerParameters["format"] = $row["outputformat_mimetype"];
+				$layerParameters["maxExtent"] = $this->tilesExtent;	
+				$layerParameters["serverResolutions"] = $this->mapOptions["resolutions"];
+				$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
+				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
+				$layerParameters["zoomOffset"] = 0;   //LO METTIAMO NELLA FORM?        //$this->_array_index($this->_getResolutions(),$this->maxResolution);
+				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
+				if($row["gutter"]>0) $layerParameters["gutter"] = intval($row["gutter"]);
+				$layerParameters["buffer"] = intval($row["buffer"]);
+				$layerParameters["gc_id"] = $layerId;
+				$layerParameters["group"] = $layerTreeGroup;			
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
-				$layerOptions["layername"] = $layergroupName;
-				$layerOptions["serviceVersion"] = "EPSG_".$this->mapsetSRID;
+				$aLayers[$themeName][$layergroupName]["type"] = $layerType;	
+				$aLayers[$themeName][$layergroupName]["parameters"] = $layerParameters;
+			}
+
+			elseif(!empty($this->mapsetGRID) && $layerType==TMS_LAYER_TYPE){//TMS
+				$layerUrl = isset($row["url"])?$row["url"]:GISCLIENT_TMS_URL;
+				$layerOptions["layername"] =  isset($row["layers"])?$row["layers"]:$layergroupName."@".$this->mapsetGRID;
+				$this->allOverlays = 0;
+				$this->fractionalZoom = 0;
+				$layerOptions["serviceVersion"] = GISCLIENT_TMS_VERSION;
 				$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
 				$layerOptions["type"] = $row['outputformat_extension'];
-				if($row["isbaselayer"]==1) $layerOptions["isBaseLayer"] = true;
-				//$layerOptions["getURL"] = "OpenLayers.Util.GisClient.TMSurl"; 
-				$layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions(),$this->maxResolution);
+				$layerOptions["isBaseLayer"] = $row["isbaselayer"]==1;
+				$layerOptions["zoomOffset"] = 0;   //LO METTIAMO NELLA FORM?        //$this->_array_index($this->_getResolutions(),$this->maxResolution);
 				$layerOptions["buffer"] = intval($row["buffer"]);
-				if(!empty($row["tiles_extent"]) && !empty($row["tiles_extent_srid"]))
-						$layerOptions["maxExtent"] = $this->_getTMSExtent($row["tiles_extent"], $row["tiles_extent_srid"]);
+				$layerOptions["serverResolutions"] = $this->mapOptions["resolutions"];
+				$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
 				$layerOptions["gc_id"] = $layerId;
 				$layerOptions["group"] = $layerTreeGroup;
-				$layerOptions["minZoomLevel"] = SERVICE_MIN_ZOOM_LEVEL;
-				$layerOptions["maxZoomLevel"] = SERVICE_MAX_ZOOM_LEVEL;
 				$aLayers[$themeName][$layergroupName]["type"] = $layerType;	
 				$aLayers[$themeName][$layergroupName]["title"] = $layergroupTitle;
 				$aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
 				$aLayers[$themeName][$layergroupName]["options"]= $layerOptions;
+			}		
 
-			}
-			
 			//FD add overview and legend
 			if($row['refmap']){
 				$aLayers[$themeName][$layergroupName]['overview'] = $row['refmap'];
@@ -756,33 +807,32 @@ class gcMap{
 			case WMS_LAYER_TYPE:
 				return 'new OpenLayers.Layer.WMS("'.$aLayer["title"].'","'.$aLayer["url"].'",'.json_encode($aLayer["parameters"]).','.json_encode($aLayer["options"]).')';
 			case GMAP_LAYER_TYPE:
-				if($this->mapsetSRID == GOOGLESRID)
+				if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
 					//return 'new OpenLayers.Layer.Google("'.$aLayer["title"].'",{type:'.$aLayer["options"]["type"].',sphericalMercator:true,group:"'.$aLayer["options"]["group"].'"})';
-					return 'new OpenLayers.Layer.Google("'.$aLayer["title"].'",{"type":"'.$aLayer["options"]["type"].'","sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
-				break;
-			case VMAP_LAYER_TYPE:
-				if($this->mapsetSRID == GOOGLESRID)
-					//return 'new OpenLayers.Layer.VirtualEarth("'.$aLayer["title"].'",{type:'.$aLayer["options"]["type"].',sphericalMercator:true,group:"'.$aLayer["options"]["group"].'"})';
-					return 'new OpenLayers.Layer.VirtualEarth("'.$aLayer["title"].'",{"type":'.$aLayer["options"]["type"].',"sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
+					return 'new OpenLayers.Layer.Google("'.$aLayer["title"].'",{"type":"'.$aLayer["options"]["type"].'","sphericalMercator":true,"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
 				break;
 			case BING_LAYER_TYPE:
-				if($this->mapsetSRID == GOOGLESRID)
+				if(defined('BINGKEY') && ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913))
 					//return 'new OpenLayers.Layer.Bing({"name":"'.$aLayer["title"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
-					return 'new OpenLayers.Layer.Bing({"name":"'.$aLayer["title"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
+					//return 'new OpenLayers.Layer.Bing({"resolutions":['.implode(',',$this->mapOptions['resolutions']).'],"name":"'.$aLayer["title"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","sphericalMercator":true,"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
+					return 'new OpenLayers.Layer.Bing({"name":"'.$aLayer["title"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
 
 				break;	
 			case YMAP_LAYER_TYPE:
-				if($this->mapsetSRID == GOOGLESRID)
+				if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
 					//return 'new OpenLayers.Layer.Yahoo("'.$aLayer["title"].'",{type:'.$aLayer["options"]["type"].',sphericalMercator:true,group:"'.$aLayer["options"]["group"].'"})';
 					return 'new OpenLayers.Layer.Yahoo("'.$aLayer["title"].'",{"type":'.$aLayer["options"]["type"].',"sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
 				break;
 			case OSM_LAYER_TYPE:
-				if($this->mapsetSRID == GOOGLESRID)
+				if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
 					return 'new OpenLayers.Layer.OSM("'.$aLayer["title"].'",null,'.json_encode($aLayer["options"]).')';
 				break;
+			case WMTS_LAYER_TYPE:
+				return 'new OpenLayers.Layer.WMTS('.json_encode($aLayer["parameters"]).')';
+
 			case TMS_LAYER_TYPE:
-				return 'new OpenLayers.Layer.TMS("'.$aLayer["title"].'","'.$aLayer["url"].'/",{"visibility":'.(!empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.(empty($aLayer["options"]["isBaseLayer"])?'false':'true').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"serviceVersion":"'.$aLayer["options"]["serviceVersion"].'","owsurl":"'.$aLayer["options"]["owsurl"].'","type":"'.$aLayer["options"]["type"].'","zoomOffset":'.$aLayer["options"]["zoomOffset"].',"maxExtent":new OpenLayers.Bounds('.implode(",",$aLayer["options"]["maxExtent"]).'),"tileOrigin":new OpenLayers.LonLat('.$aLayer["options"]["maxExtent"][0].','.$aLayer["options"]["maxExtent"][1].'),"gc_id":"'.$aLayer["options"]["gc_id"].'","minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"group":"'.$aLayer["options"]["group"].'"})';
-		}
+				return 'new OpenLayers.Layer.TMS("'.$aLayer["title"].'","'.$aLayer["url"].'/",{"visibility":'.($aLayer["options"]["visibility"]?'true':'false').',"isBaseLayer":'.($aLayer["options"]["isBaseLayer"]?'true':'false').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"owsurl":"'.$aLayer["options"]["owsurl"].'","type":"'.$aLayer["options"]["type"].'","tileOrigin":new OpenLayers.LonLat('.implode(",",$aLayer["options"]["tileOrigin"]).'),"zoomOffset":'.$aLayer["options"]["zoomOffset"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
+			}
 	}
 	
     function _getScaleList() {        
@@ -804,7 +854,7 @@ class gcMap{
 	function _getResolutions(){
 		//se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
 		$aRes=array();
-		if($this->mapsetSRID == GOOGLESRID){
+		if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913){
 		    for($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) 
 				$aRes[] = SERVICE_MAX_RESOLUTION / pow(2,$lev);
 		}
@@ -825,14 +875,16 @@ class gcMap{
 	}
 	
 	function _getExtent($xCenter,$yCenter,$Resolution){
-		//4tiles
 		$aExtent=array();
-		$aExtent[0] = $xCenter - $Resolution * TILE_SIZE ;
-		$aExtent[1] = $yCenter - $Resolution * TILE_SIZE ;
-		$aExtent[2] = $xCenter + $Resolution * TILE_SIZE ;
-		$aExtent[3] = $yCenter + $Resolution * TILE_SIZE ;
-		return $aExtent;
+		$extent = $Resolution * TILE_SIZE / 2;
+		//echo $extent;return;
+		$aExtent[0] = $xCenter - $extent;
+		$aExtent[1] = $yCenter - $extent;
+		$aExtent[2] = $xCenter + $extent;
+		$aExtent[3] = $yCenter + $extent;
 		
+
+		return $aExtent;
 	}
 	
 	function _getUsercontext($contextId) {
@@ -909,9 +961,9 @@ class gcMap{
 	}
 	
 	function _array_index($aList, $value){
-		$retval=false;
+		$retval=0;
 		for($i=0;$i<count($aList);$i++){
-			if($value<=$aList[$i]) $retval=$i;
+			if($value<$aList[$i]) $retval=$i-1;
 		}
 		return $retval;
 	}

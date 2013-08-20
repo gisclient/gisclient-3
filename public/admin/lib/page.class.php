@@ -64,7 +64,7 @@
 			return $out;
 		}
 		private function _get_pkey($lev){
-			return $this->primary_keys[$lev];
+			return @$this->primary_keys[$lev];
 		}
 		private function _get_pkey_value($pk){
 			foreach($this->parametri as $k=>$v){
@@ -88,7 +88,8 @@
 			$tmp=array();
 			foreach($this->parametri as $key=>$val){
 				$ris=$this->_get_pkey($key);
-				foreach($ris as $val){
+				for($k=0;$k<count($ris);$k++){
+					$val=$ris[$k];
 					$v=$this->_get_pkey_value($val);
 					if($v)
 						$tmp[$val]=$v;
@@ -454,7 +455,7 @@
 					$enabled=1;
 					if ($tab["save_data"])
 						include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
-
+					print_debug($tab,null,"tab_obj");
 					$tb->set_titolo($tb->FileTitle,"modifica",$prm);
 					
 					$tb->tag=$tab["level"];
