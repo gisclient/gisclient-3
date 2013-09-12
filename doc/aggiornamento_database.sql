@@ -1093,4 +1093,15 @@ UPDATE layergroup SET layers='roadmap',owstype_id=7 WHERE layers='G_NORMAL_MAP';
 UPDATE layergroup SET layers='hybrid',owstype_id=7 WHERE layers='G_HYBRID_MAP';
 UPDATE layergroup SET layers='terrain',owstype_id=7 WHERE layers='G_PHYSICAL_MAP';
 
+--2013-08-20
+--UNIVOCITA' DEL NOME DEL LAYERGROUP NEL PROGETTO (CE LO SIAMO PERSO DA QUALCHE PARTE MA SE TENIAMO IL LAYERGROUP COME NOME LAYER QUESTO DEVE ESSERE UNIVOCO SUL MAPFILE)
+UPDATE layergroup SET layergroup_name=layergroup_name||'_'||layergroup_id WHERE layergroup_name IN (SELECT layergroup_name FROM layergroup GROUP BY 1 HAVING count(layergroup_name) > 1)
+ALTER TABLE layergroup DROP CONSTRAINT layergroup_theme_key;
+ALTER TABLE layergroup ADD CONSTRAINT layergroup_unique_key UNIQUE(layergroup_name );
+
+--2013-08-28
+--AGGIORNATI NOMI TIPO 
+UPDATE e_owstype SET owstype_name='WMS' WHERE owstype_id = 1;
+UPDATE e_owstype SET owstype_name='Google' WHERE owstype_id = 7;
+UPDATE e_owstype SET owstype_name='Bing' WHERE owstype_id = 8;
 
