@@ -348,8 +348,8 @@ function getRequestedLayers($layersParameter) {
         if(!$layerIndexes && count($layerNames) == 1 && $name == $objRequest->getvaluebyname('map')) {
             $layerIndexes = array_keys($oMap->getAllLayerNames());
         }
-		// è un layergroup
-		if(is_array($layerIndexes)) {
+		// è un layergroup (mapserver 6 restituisce sempre un array)
+		if(is_array($layerIndexes) && count($layerIndexes)>0) {
 			foreach($layerIndexes as $index) {
 				array_push($layersArray, $oMap->getLayer($index));
 			}

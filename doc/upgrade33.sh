@@ -4,5 +4,3 @@ psql -f gc33.sql mydb
 psql -f aggiornamento_database.sql mydb
 psql -f aggiornamento_database_mapserver_6.sql mydb
 
-ryryrtyr
-

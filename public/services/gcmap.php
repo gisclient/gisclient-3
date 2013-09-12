@@ -24,6 +24,8 @@
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 *
 ******************************************************************************/
+if(empty($_REQUEST['mapset'])) die("alert('Manca il parametro mapset');");
+
 require_once('../../config/config.php');
 require_once (ADMIN_PATH."lib/functions.php");
 require_once (ROOT_PATH."lib/i18n.php");
@@ -47,9 +49,9 @@ if(!empty($_REQUEST["jsonformat"])){
 	
 	//IO HO MESSO QUESTO MA HO DEI PROBLEMI CON I CARATTERI
 	if(empty($_GET["jsoncallback"]))
-		echo json_encode($objMapset->mapOptions);
+		echo json_encode($objMapset->mapConfig);
 	else
-		echo $_GET["jsoncallback"]."(".json_encode($objMapset->mapOptions).")";
+		echo $_GET["jsoncallback"]."(".json_encode($objMapset->mapConfig).")";
 
 }
 else{
@@ -57,6 +59,9 @@ else{
 	//header("Content-Type: application/x-www-form-urlencoded; Charset=". CHAR_SET);
 	header("Content-type: text/javascript; Charset=UTF-8");
 	echo $objMapset->OLMap();
+	//echo $objMapset->GisClient();
+
+	
 }
 
 ?>

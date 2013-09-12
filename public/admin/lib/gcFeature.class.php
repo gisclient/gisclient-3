@@ -424,16 +424,21 @@ class gcFeature{
 					}else{
 						$aliasTable = DATALAYER_ALIAS_TABLE;
 					}
-                    $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
 					
 					//Campi calcolati non metto tabella.campo
 					//if(strpos($aField["field_name"],'(')!==false)
 					//if(preg_match('|[(](.+)[)]|i',$aField["field_name"]) || strpos($aField["field_name"],"||"))
-					if($aField["formula"])
+					if($aField["formula"]){
 						$fieldName = $aField["formula"] . " AS " . $aField["field_name"];// . " AS " . strtolower(NameReplace($aField["field_title"]));
-					else
+						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
+                    				$groupByFieldList[] = $aField['field_name'];
+					}
+					else{
 						$fieldName = $aliasTable . "." . $aField["field_name"];
-					
+						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
+                    				$groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
+					}					
+
 					$fieldList[] = $fieldName;
 					
 					/*
@@ -463,7 +468,12 @@ class gcFeature{
 						//foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
 						//$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
                         
-                        $groupBy = ' group by  '.implode(', ', $groupByFieldList).', '.$datalayerGeom;
+			// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessario specificare che la dataLayerGeom è quella della tab. layer ****
+                        $groupBy = ' group by  '.implode(', ', $groupByFieldList).', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom;
+			// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessarioaggiungere il campo ID alla group by ****
+			if (!array_search($groupByFieldList, $datalayerKey))
+				$groupBy .= ', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerKey;
+ 
 						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
                         
                         if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
