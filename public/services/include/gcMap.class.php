@@ -202,7 +202,7 @@ class gcMap{
 
 		$mapConfig["layers"] = $this->mapLayers;
 		$mapConfig["featureTypes"] = $this->featureTypes;
-		$mapConfig["baseLayerName"] = $this->activeBaseLayer;
+		if($this->activeBaseLayer) $mapConfig["baseLayerName"] = $this->activeBaseLayer;
 		if($this->fractionalZoom == 1) $mapConfig["mapOptions"]["fractionalZoom"] = true;
 		
 		if($this->selgroupList)
@@ -619,7 +619,7 @@ class gcMap{
                 continue;
             }
 			
-			$featureTypes[$index][$typeName]["WMSLayerName"] = $row['layergroup_name'];	
+			$featureTypes[$index][$typeName]["WMSLayerName"] = $row['theme_single']?$row['theme_name']:$row['layergroup_name'];	
 			$featureTypes[$index][$typeName]["typeName"] = $typeName;	
 			$featureTypes[$index][$typeName]["title"] = $typeTitle;	
 			$featureTypes[$index][$typeName]["text"] = $typeTitle;	

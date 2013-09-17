@@ -471,7 +471,7 @@ class gcFeature{
 			// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessario specificare che la dataLayerGeom è quella della tab. layer ****
                         $groupBy = ' group by  '.implode(', ', $groupByFieldList).', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom;
 			// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessarioaggiungere il campo ID alla group by ****
-			if (!array_search($groupByFieldList, $datalayerKey))
+			if (!array_search($datalayerKey, $groupByFieldList))
 				$groupBy .= ', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerKey;
  
 						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
