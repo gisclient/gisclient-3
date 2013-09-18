@@ -41,9 +41,7 @@ header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 header ("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); // always modified
 header ("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header ("Pragma: no-cache"); // HTTP/1.0
-header("Content-Type: application/json; Charset=UTF-8");
-if(empty($_GET["jsoncallback"]))
-	echo json_encode($objMapset->mapConfig);
-else
-	echo $_GET["jsoncallback"]."(".json_encode($objMapset->mapConfig).")";
+header("Content-type: text/javascript; Charset=UTF-8");
+echo $objMapset->OLMap();
+
 ?>
