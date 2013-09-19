@@ -411,6 +411,7 @@ class gcMap{
 					$layerOptions["name"] = $aLayer["name"];
 					$layerOptions["key"] = BINGKEY;
 				}
+				$layerOptions["sphericalMercator"] = true;
 				$layerOptions["minZoomLevel"] = $this->minZoomLevel;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
 				unset($layerOptions["minScale"]);
@@ -423,6 +424,7 @@ class gcMap{
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
 				if(!in_array($layerType,$this->listProviders)) $this->listProviders[] = $layerType;
+				$layerOptions["sphericalMercator"] = true;
 				$layerOptions["zoomOffset"] = $this->minZoomLevel; 
 				$aLayer["options"]= $layerOptions;
 				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
@@ -558,12 +560,7 @@ class gcMap{
 	
 	
 	function _getFeatureTypes(){
-	/*
-		$returnFeatureTypes = array(
-			'theme'=>array(),
-			'layergroup'=>array()
-		);
-	*/
+
 		$wfsGeometryType = array("point" => "PointPropertyType","multipoint" => "MultiPointPropertyType","linestring" => "LineStringPropertyType","multilinestring" => "MultiLineStringPropertyType","polygon" => "PolygonPropertyType" ,"multipolygon" => "MultiPolygonPropertyType","geometry" => "GeometryPropertyType");
 		
 		$featureTypesLinks = $this->_getFeatureTypesLinks();
@@ -803,24 +800,23 @@ class gcMap{
 		//CONFIGURAZIONE OPENLAYERS MAP
 		$aLayerText = array();
 		foreach($this->mapConfig["layers"] as $layer){
-			$aLayerText[] = $this->_layerText($layer);
+			$aLayerText[] = $this->_OLlayerText($layer);
 		}
 
 		$loader=false;
 		$jsText=$this->_setMapProviders();
-		echo $jsText;
 		if($jsText) $loader = true;
-		$jsText .='OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;OpenLayers.Util.onImageLoadErrorColor = "transparent";OpenLayers.DOTS_PER_INCH = '.$this->mapConfig["dpi"].";\n";
-		$mapsetOptions = '"name":"'.addslashes($this->mapConfig["name"]).'","title":"'.addslashes($this->mapConfig["title"]).'","project":"'.addslashes($this->mapConfig["projectName"]).'","projectTitle":"'.addslashes($this->mapConfig["projectTitle"]).'","baseLayerId":"'.$this->activeBaseLayer.'","projectionDescription":"'.addslashes($this->mapConfig["projectionDescription"]).'","minZoomLevel":'.$this->mapConfig['mapOptions']['minZoomLevel'];
+
+		$mapsetOptions = '"name":"'.addslashes($this->mapConfig["name"]).'","title":"'.addslashes($this->mapConfig["title"]).'","project":"'.addslashes($this->mapConfig["projectName"]).'","projectTitle":"'.addslashes($this->mapConfig["projectTitle"]).'","baseLayerName":"'.$this->activeBaseLayer.'","projectionDescription":"'.addslashes($this->mapConfig["projectionDescription"]).'","minZoomLevel":'.$this->mapConfig['mapOptions']['minZoomLevel'];
 		//if(isset($this->mapConfig['selgroup'])) $mapsetOptions .=',"selgroup":'.json_encode($this->mapConfig['selgroup']);
-		
+		//$this->mapConfig["mapOptions"]["resolutions"] = array_slice($this->mapConfig["mapOptions"]["serverResolutions"],$this->mapConfig["mapOptions"]["minZoomLevel"],$this->mapConfig["mapOptions"]["numZoomLevels"]);
 		$jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
 		$jsText .= 'GisClient.mapset.push({'.$mapsetOptions.',"map":'.json_encode($this->mapConfig["mapOptions"]).',"layers":['.implode(',',$aLayerText).'],"featureTypes":'.json_encode($this->mapConfig["featureTypes"]).'});';
 		if($this->mapProviders[GMAP_LAYER_TYPE] && $loader) $jsText .= 'GisClient.loader=true;';
 		return $jsText;
 	}
 	
-	function _layerText($aLayer){
+	function _OLlayerText($aLayer){
 		switch ($aLayer["type"]){
 			case "WMS":
 				$aLayer["options"]["group"] = $aLayer["options"]["theme"];
@@ -832,14 +828,10 @@ class gcMap{
 				break;
 			case "Bing":
 				$aLayer["options"]["group"] = $aLayer["options"]["theme"];
+				$aLayer["options"]["name"] = $aLayer["name"];
 				if(defined('BINGKEY') && ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913))
-					return 'new OpenLayers.Layer.Bing({"name":"'.$aLayer["name"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","group":"'.$aLayer["options"]["group"].'"})';
+					return 'new OpenLayers.Layer.Bing('.json_encode($aLayer["options"]).')';
 				break;	
-			case "Yahoo":
-				$aLayer["options"]["group"] = $aLayer["options"]["theme"];
-				if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
-					return 'new OpenLayers.Layer.Yahoo("'.$aLayer["name"].'",{"type":'.$aLayer["options"]["type"].',"sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"group":"'.$aLayer["options"]["group"].'"})';
-				break;
 			case "OSM":
 				$aLayer["options"]["group"] = $aLayer["options"]["theme"];
 				if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
@@ -847,13 +839,11 @@ class gcMap{
 				break;
 			case "WMTS":
 				$aLayer["paramaters"]["group"] = $aLayer["parameters"]["theme"];
-				$aLayer["parameters"]["gcname"]=$aLayer["name"];
+				$aLayer["parameters"]["name"]=$aLayer["name"];
 				return 'new OpenLayers.Layer.WMTS('.json_encode($aLayer["parameters"]).')';
 			case "TMS":
 				$aLayer["options"]["group"] = $aLayer["options"]["theme"];
-				//return 'new OpenLayers.Layer.TMS("'.$aLayer["name"].'","'.$aLayer["url"].'/",{"visibility":'.($aLayer["options"]["visibility"]?'true':'false').',"isBaseLayer":'.($aLayer["options"]["isBaseLayer"]?'true':'false').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"owsurl":"'.$aLayer["options"]["owsurl"].'","type":"'.$aLayer["options"]["type"].'","tileOrigin":new OpenLayers.LonLat('.implode(",",$aLayer["options"]["tileOrigin"]).'),"zoomOffset":'.$aLayer["options"]["zoomOffset"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
-				return 'new OpenLayers.Layer.TMS("'.$aLayer["name"].'","'.$aLayer["url"].'",'.json_encode($aLayer["options"]).')';
-
+				return 'new OpenLayers.Layer.TMS("'.$aLayer["name"].'","'.$aLayer["url"].'/",{"visibility":'.(empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.($aLayer["options"]["isBaseLayer"]?'true':'false').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"type":"'.$aLayer["options"]["type"].'","tileOrigin":new OpenLayers.LonLat('.implode(",",$aLayer["options"]["tileOrigin"]).'),"zoomOffset":'.$aLayer["options"]["zoomOffset"].',"group":"'.$aLayer["options"]["group"].'"})';
 			}
 	}
 	
