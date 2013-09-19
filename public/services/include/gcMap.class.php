@@ -807,6 +807,7 @@ class gcMap{
 		$jsText=$this->_setMapProviders();
 		if($jsText) $loader = true;
 
+		$this->mapConfig["mapOptions"]["allOverlays"] = false;
 		$mapsetOptions = '"name":"'.addslashes($this->mapConfig["name"]).'","title":"'.addslashes($this->mapConfig["title"]).'","project":"'.addslashes($this->mapConfig["projectName"]).'","projectTitle":"'.addslashes($this->mapConfig["projectTitle"]).'","baseLayerName":"'.$this->activeBaseLayer.'","projectionDescription":"'.addslashes($this->mapConfig["projectionDescription"]).'","minZoomLevel":'.$this->mapConfig['mapOptions']['minZoomLevel'];
 		//if(isset($this->mapConfig['selgroup'])) $mapsetOptions .=',"selgroup":'.json_encode($this->mapConfig['selgroup']);
 		//$this->mapConfig["mapOptions"]["resolutions"] = array_slice($this->mapConfig["mapOptions"]["serverResolutions"],$this->mapConfig["mapOptions"]["minZoomLevel"],$this->mapConfig["mapOptions"]["numZoomLevels"]);
@@ -815,7 +816,7 @@ class gcMap{
 		if($this->mapProviders[GMAP_LAYER_TYPE] && $loader) $jsText .= 'GisClient.loader=true;';
 		return $jsText;
 	}
-	
+
 	function _OLlayerText($aLayer){
 		switch ($aLayer["type"]){
 			case "WMS":
@@ -896,7 +897,7 @@ class gcMap{
 			if(array_index($this->serverResolutions,$res)!==false)
 				$maxResIndex = array_index($this->serverResolutions,$res);
 		}
-		
+
 		$this->minZoomLevel = $maxResIndex;
 		$this->maxZoomLevel = $minResIndex;
 		$this->numZoomLevels = $minResIndex-$maxResIndex;
