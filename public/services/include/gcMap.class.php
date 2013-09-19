@@ -887,13 +887,16 @@ class gcMap{
 		$maxResIndex = 0;
 		if($minScale){
 			$res = floatval($minScale)/$convFact;
-			$minResIndex = array_index($this->serverResolutions,$res);
+			if(array_index($this->serverResolutions,$res)!==false)
+				$minResIndex = array_index($this->serverResolutions,$res);
 		}
 		
 		if($maxScale){
 			$res = floatval($maxScale)/$convFact;
-			$maxResIndex = array_index($this->serverResolutions,$res);
+			if(array_index($this->serverResolutions,$res)!==false)
+				$maxResIndex = array_index($this->serverResolutions,$res);
 		}
+		
 		$this->minZoomLevel = $maxResIndex;
 		$this->maxZoomLevel = $minResIndex;
 		$this->numZoomLevels = $minResIndex-$maxResIndex;
