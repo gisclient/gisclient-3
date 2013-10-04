@@ -1038,5 +1038,6 @@ UNION ALL
                    FROM catalog
                   ORDER BY catalog.catalog_name) foo;
 				  
-
+--2013-10-04: campo per specificare se la geometria dev'essere nascosta nell'interrogazione (per esempio nel caso di interrogazione dei comuni che vanno a coprire inutilmente tutti gli altri oggetti interrogati)
+alter table gisclient_32.layer add column hide_vector_geom numeric(1,0) default 0;
   
