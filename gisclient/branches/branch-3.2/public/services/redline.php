@@ -61,8 +61,8 @@ if($_REQUEST["REQUEST"] == "DeleteLayer"){
 
 $geomTypes = array(
 	'Point'=>array('db_type'=>'POINT', 'db_field'=>'point_geom', 'ms_type'=>MS_LAYER_POINT),
-	'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'line_geom', 'ms_type'=>MS_LAYER_LINE),
-	'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON)
+	'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'line_geom', 'ms_type'=>MS_LAYER_LINE, 'label_function'=>'st_endpoint'),
+	'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON, 'label_function'=>'st_centroid')
 );
 
 if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
@@ -184,7 +184,9 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('type', $type['ms_type']);
 		$oLay->setConnectionType(MS_POSTGIS);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
-		$oLay->set('data', $type['db_field']." from ".REDLINE_SCHEMA.".".REDLINE_TABLE." using unique id using srid=".REDLINE_SRID);
+        $geom = !empty($type['label_function']) ? $type['label_function'].'('.$type['db_field'].')' : $type['db_field'];
+        $data = "the_geom from (select id, note, color, redline_id, $geom as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID;
+		$oLay->set('data', $data);
 		$oLay->setFilter("redline_id=".$_REQUEST['REDLINEID']);
 		$oLay->setProjection($layerProjString);
 		$oLay->set('sizeunits',MS_PIXELS);
