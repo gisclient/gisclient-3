@@ -780,10 +780,10 @@ function getTable($data,$level,$header){
 	}
 	
 	function niceName($name) {
-	        $name = preg_replace('/\s+/', '_', $name);
-	        $name = preg_replace('/_{2,}/', '_', $name);
-	        $name = preg_replace('/^_+/', '', $name);
-	        $name = preg_replace('/_+$/', '', $name);
+        $name = preg_replace('/\s+/', '_', $name);
+        $name = preg_replace('/_{2,}/', '_', $name);
+        $name = preg_replace('/^_+/', '', $name);
+        $name = preg_replace('/_+$/', '', $name);
 		$name = NameReplace($name);
 		$name = preg_replace('/[^a-z0-9_]+/i', '', $name);
 		return $name;

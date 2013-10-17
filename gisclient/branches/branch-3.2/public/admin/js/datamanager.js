@@ -21,7 +21,7 @@ $(document).ready(function() {
 	
 	$('div#import_dialog').dialog({
 		title: 'Import Data',
-		width: 800,
+		width: 1000,
 		height: 600,
 		autoOpen: false,
 		open: function() {
@@ -112,18 +112,37 @@ $(document).ready(function() {
 		dataManager.createTileindex();
 	});
 	
+    var fieldTypeOptions = '';
+    $.each(dataManager.columnTypes, function(dbType, type) {
+        fieldTypeOptions += '<option value="'+dbType+'">'+type+'</option>';
+    });
+    
 	$('div#import_dialog a[data-action="add_column"]').click(function(event) {
 		event.preventDefault();
 		
 		var numColumns = $('div#import_dialog input[name="num_columns"]').val();
-		var html = '<tr><td><input type="text" name="column_name_'+numColumns+'"></td><td><select name="column_type_'+numColumns+'">';
-		$.each(dataManager.columnTypes, function(dbType, type) {
-			html += '<option value="'+dbType+'">'+type+'</option>';
-		});
-		html += '</select></td></tr>';
+		var html = '<tr><td><input type="text" name="column_name_'+numColumns+'"></td><td><select name="column_type_'+numColumns+'">' +
+            fieldTypeOptions + '</select></td></tr>';
 		$('div#import_dialog table[data-role="columns"]').append(html);
 		$('div#import_dialog input[name="num_columns"]').val(parseInt(numColumns)+1);
 	});
+    
+    $('div#add_column_dialog').dialog({
+		title: 'Add column',
+		width: 500,
+		height: 200,
+		autoOpen: false
+	});
+    var html = '<tr><td><input type="text" name="column_name"></td><td><select name="column_type">' +
+        fieldTypeOptions + '</select></td></tr>';
+    $('div#add_column_dialog table[data-role="columns"]').append(html);
+    
+    $('div#add_column_dialog button[name="add_column"]').click(function(event) {
+        event.preventDefault();
+        
+        dataManager.addColumn();
+    });
+    
 	$('div#import_dialog button[name="create_table"]').click(function(event) {
 		event.preventDefault();
 		
@@ -170,6 +189,9 @@ function GCDataManager(catalogId) {
 						$('div#import_dialog div#import_dialog_tabs').tabs('disable', parseInt(index));
 					}
 				});
+                
+                self.hasLastEditColumn = !!response.lastEditColumn;
+                self.hasMeasureColumn = !!response.measureColumn;
 			}
 		});
 	}
@@ -241,6 +263,62 @@ function GCDataManager(catalogId) {
 			}
 		});
 	};
+    
+	this.emptyTable = function(tableName) {
+		var self = this;
+		
+		$('div#import_dialog div.logs').empty();
+		
+		if(!confirm('Are you sure?')) return;
+		
+		self.ajaxRequest({
+			data: {action:'empty-table', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					alert('Error');
+					return;
+				}
+				
+				self.getTableList();
+			}
+		});
+	};	
+    
+	this.addLastEditColumn = function(tableName) {
+		var self = this;
+		
+		$('div#import_dialog div.logs').empty();
+		
+		self.ajaxRequest({
+			data: {action:'add-last-edit-column', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					alert('Error');
+					return;
+				}
+				
+				self.getTableList();
+			}
+		});
+	};
+	
+	this.addMeasureColumn = function(tableName) {
+		var self = this;
+		
+		$('div#import_dialog div.logs').empty();
+		
+		self.ajaxRequest({
+			data: {action:'add-measure-column', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					alert('Error');
+					return;
+				}
+				
+				self.getTableList();
+			}
+		});
+	};
 	
 	this.getTableList = function() {
 		var self = this;
@@ -259,11 +337,21 @@ function GCDataManager(catalogId) {
 					if(typeof(table.type) != 'undefined' && table.type != null) {
 						html += '<tr><td>'+table.name+'</td><td>'+table.srid+'</td><td>'+table.type+' ('+table.dim+'d)</td>'+
 							'<td><a href="#" class="button" data-action="delete" data-table="'+table.name+'">Delete</a>'+
-							'<a href="#" class="button" data-action="export_shp" data-table="'+table.name+'">Export SHP</a></td>'+
-							'</tr>';
+                            '<a href="#" class="button" data-action="empty" data-table="'+table.name+'">Empty</a>'+
+							'<a href="#" class="button" data-action="add_column" data-table="'+table.name+'">Add column</a>'+
+							'<a href="#" class="button" data-action="export_shp" data-table="'+table.name+'">Export SHP</a>';
+                        if(self.hasLastEditColumn && !table.has_last_edit_date_column && !table.has_last_edit_date_column) {
+                            html += '<a href="#" class="button" data-action="add_lastedit_column" data-table="'+table.name+'">Add Last edit col</a>';
+                        }
+                        if(self.hasMeasureColumn && !table.has_length_column && !table.has_area_column && !table.has_pointx_column && !table.has_pointy_column) {
+                            html += '<a href="#" class="button" data-action="add_measure_column" data-table="'+table.name+'">Add measure col</a>';
+                        }
+                        html += '</td></tr>';
+
 					} else {
 						html += '<tr><td>'+table.name+'</td><td></td><td>Alphanumeric</td>'+
 							'<td><a href="#" class="button" data-action="delete" data-table="'+table.name+'">Delete</a>'+
+                            '<a href="#" class="button" data-action="empty" data-table="'+table.name+'">Empty</a>'+
 							'<a href="#" class="button" data-action="export_xls" data-table="'+table.name+'">Export XLS</a><a href="#" class="button" data-action="export_csv" data-table="'+table.name+'">CSV</a></td></tr>';
 					}
 				});
@@ -293,6 +381,35 @@ function GCDataManager(catalogId) {
 					
 					var tableName = $(this).attr('data-table');
 					self.exportCsv(tableName);
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="empty"]').button().click(function(event) {
+					event.preventDefault();
+					
+					var tableName = $(this).attr('data-table');
+					self.emptyTable(tableName);
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="add_column"]').button().click(function(event) {
+					event.preventDefault();
+					
+					var tableName = $(this).attr('data-table');
+					self.showAddColumnDialog(tableName);
+                    
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="add_lastedit_column"]').button().click(function(event) {
+					event.preventDefault();
+                    
+                    $('span', $(this)).html('Loading..');
+					
+					var tableName = $(this).attr('data-table');
+                    self.addLastEditColumn(tableName);
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="add_measure_column"]').button().click(function(event) {
+					event.preventDefault();
+                    
+                    $('span', $(this)).html('Loading..');
+					
+					var tableName = $(this).attr('data-table');
+                    self.addMeasureColumn(tableName);
 				});
 			}
 		});
@@ -631,7 +748,44 @@ function GCDataManager(catalogId) {
 			}
 		});		
 	};
+    
+    this.showAddColumnDialog = function(tableName) {
+        $('div#add_column_dialog span[data-role="tablename"]').html(tableName);
+        $('div#add_column_dialog').dialog('open');
+        console.log($('div#add_column_dialog'));
+    };
 	
+    this.addColumn = function() {
+        var self = this;
+        
+        var tableName = $('div#add_column_dialog span[data-role="tablename"]').html();
+        var columnName = $('div#add_column_dialog input[name="column_name"]').val();
+        var columnType = $('div#add_column_dialog select[name="column_type"]').val();
+        
+        if(columnName == '') return alert('Please insert a column name');
+        
+		var params = {
+			action: 'add-column',
+			table_name: tableName,
+			column_name: columnName,
+			column_type: columnType
+		};
+				
+		self.ajaxRequest({
+			type: 'POST',
+			data: params,
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					if(typeof(response.result) != 'undefined' && response.result == 'error' && typeof(response.error) != 'undefined') {
+						return $('div#add_column_dialog div.logs').html(response.error).focus();
+					}
+					return alert('Error');
+				}
+				$('div#add_column_dialog').dialog('close');
+			}
+		});		
+    };
+    
 	this.showLoading = function() {
 		$('div#import_dialog div.loading').show();
 	};

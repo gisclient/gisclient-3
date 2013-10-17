@@ -107,7 +107,7 @@
 						<li><a href="#import_dialog_raster">Raster</a></li>
 						<li><a href="#import_dialog_postgis">PostgreSQL</a></li>
 						<li><a href="#import_dialog_xls">XLS</a></li>
-						<!--<li><a href="#import_dialog_csv">CSV</a></li>-->
+						<li><a href="#import_dialog_csv">CSV</a></li>
 					</ul>
 					<div id="import_dialog_shp">
 						<input id="shp_file_upload" name="file_upload" type="file" />
@@ -181,4 +181,13 @@
 					<img src="../images/ajax_loading.gif">
 				</div>
 			</div>
+            <div id="add_column_dialog" style="display:none;">
+                <p>Add column to <span data-role="tablename"></span></p>
+                <table data-role="columns">
+                <caption>Fields</caption>
+                <tr><th>Field name</th><th>Field type</th></tr>
+                </table>
+                <button name="add_column">Add</button>
+                <div class="logs" style="color:red;" tabindex="100"></div>
+            </div>
 		<!-- ### STANDARD  PAGE  HEADER  FINE ##################################################### -->
