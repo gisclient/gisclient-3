@@ -1018,7 +1018,7 @@
 					$btn  = "\n\t<div id=\"footerButton\">";
 					$btn .= "<input type=\"button\" class=\"hexfield\" value=\"".GCAuthor::t('button_back')."\" onclick=\"javascript:navigate([$keys],[$values])\">";
 					if($this->initI18n()) {
-						$btn .= "<input type=\"button\" class=\"hexfield\" id=\"i18n\" value=\"Traduzioni\">";
+						$btn .= "<input type=\"button\" class=\"hexfield\" id=\"i18n\" value=\"".GCAuthor::t('translations')."\">";
 					}
 					$btn .= "</div>";
 					echo $btn;

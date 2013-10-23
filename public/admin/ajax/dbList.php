@@ -55,7 +55,7 @@ switch($selectedField) {
 				$result['fields']['font'] = 'Font';
 				$result['fields']['position'] = GCAuthor::t('position');
 				foreach($smbList['values'] as $symbol) {
-					$result['data'][$n] = array_merge($symbol, array('image'=>'<img src="getImage.php?table=symbol_ttf&font='.$symbol["font"].'&id='.$symbol["symbol"].'">'));
+					$result['data'][$n] = array_merge($symbol, array('image'=>'<img src="getImage.php?table=symbol_ttf&font='.$symbol["font"].'&id='.urlencode($symbol["symbol"]).'">'));
 					$result['data_objects'][$n] = array('fk_symbol_ttf_name'=>$symbol['symbol'], 'label_font'=>$symbol['font'], 'label_position'=>$symbol['position']);
 					$n++;
 				}

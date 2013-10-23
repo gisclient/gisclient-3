@@ -1,7 +1,7 @@
 [standard]
 table = ""
 pkey = "wfs_title"
-dato[] = "Titel;wfs_title;40;text"
-dato[] = "URL des Dienstes;wfs_onlineresource;40x2;textarea"
+dato[] = "Titolo;wfs_title;40;text"
+dato[] = "URL del Servizio;wfs_onlineresource;40x2;textarea"
 dato[] = "SRS;wfs_srs;40;text"
-dato[] = "Speichern;;#wmsSave;button;all|Abbrechen;;#closeWin;button;all"
+dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"

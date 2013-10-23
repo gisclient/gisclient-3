@@ -1,6 +1,6 @@
 [standard]
 table = ""
 pkey = "wms_title"
-dato[] = "Titel;wms_title;40;text"
+dato[] = "Titolo;wms_title;40;text"
 dato[] = "SRS;wms_srs;40;text"
-dato[] = "Speichern;;#wmsSave;button;all|Abbrechen;;#closeWin;button;all"
+dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"

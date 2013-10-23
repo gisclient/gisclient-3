@@ -30,7 +30,8 @@ class Symbol{
 
 	function createIcon(){
 		$dbSchema=DB_SCHEMA;
-		$this->mapfile=ROOT_PATH.'map/tmp.map';
+        if(!is_dir(ROOT_PATH.'tmp')) mkdir(ROOT_PATH.'tmp');
+		$this->mapfile=ROOT_PATH.'map/tmp/tmp.map';
 		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 		$aClass=array();
 		
@@ -44,6 +45,7 @@ class Symbol{
 
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" order by style_order;";
+
 			$this->db->sql_query($sql);
 			$res=$this->db->sql_fetchrowset();	
 			$aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
@@ -69,7 +71,7 @@ class Symbol{
 					if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".($res[$i]["ascii_code"]==92?chr(92):'').chr($res[$i]["ascii_code"])."\"";
 					if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
 					if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
-					if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
+					if($res[$i]["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$res[$i]["image"]."\"";
 					if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
 					$smbText[]="END";
 					if(!in_array($smbText,$aSymbol)) $aSymbol[]=implode("\n",$smbText);				
@@ -83,20 +85,19 @@ class Symbol{
 				$oIcon = $this->_iconFromClass($class);
 				if($oIcon){
 					ob_start();
-					$oIcon->saveImage('');
-					$image_data =pg_escape_bytea(ob_get_contents());
+					$oIcon->saveImage();
+					$image_data = ob_get_contents();
 					ob_end_clean();
-					$sql="update $dbSchema.class set class_image='{$image_data}' where class_id=$classId;";
-					//echo ($sql."<br>");
-					$this->db->sql_query($sql);
 				}
 			}
+            
 		}
 
 		elseif($this->table=='symbol'){
 			$sql="select symbol.* from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" LIMIT 200;";
+            
 			$this->db->sql_query($sql);
 			$res=$this->db->sql_fetchrowset();	
 
@@ -115,33 +116,35 @@ class Symbol{
 				if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".($res[$i]["ascii_code"]==92?chr(92):'').chr($res[$i]["ascii_code"])."\"";
 				if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
 				if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
-				if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
+				if($res[$i]["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$res[$i]["image"]."\"";
 				if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
 				$smbText[]="END";
 				
 				$aSymbol[]=implode("\n",$smbText);		
 
 			}
+
 			$this->_createMapFile($aSymbol);
-    
 			foreach($aClass as $symbolName=>$class){
 			
 				$oIcon = $this->_iconFromClass($class);
 				
 				if($oIcon){
 					ob_start();
-					$oIcon->saveImage('');
-					$image_data =pg_escape_bytea(ob_get_contents());
+					$oIcon->saveImage();
+					$image_data = ob_get_contents();
 					ob_end_clean();
-					$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='$symbolName';";
+					//$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='$symbolName';";
 					//echo ($sql."<br>");
-					$this->db->sql_query($sql);
+					//$this->db->sql_query($sql);
 				}
 			}
-			
 		}
 
-		//if(!DEBUG) unlink($this->mapfile);	
+        //questo è un mezzo accrocchio... ma non ho capito dove altro serve sta cosa...
+        //quando viene renderizzata l'immaginetta preview della classe nell'author, abbiamo sempre una sola classe da visualizzare e bisogna ritornarla a chi chiama questa funzione
+        //negli altri casi boh?
+        if($this->filter) return $image_data;
 	}
 	
 
@@ -174,8 +177,9 @@ class Symbol{
 			
 
 		}
-
-		$icoImg = @$oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
+        
+//$oMap->save(ROOT_PATH.'config/debug/debug.map');
+		$icoImg = $oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
 		return $icoImg;
 	}
 	
@@ -208,7 +212,7 @@ class Symbol{
 	}
 	
 	//RESTITUISCE UN ELENCO DI SIMBOLI FILTRATI
-	function getList(){
+	function getList($assoc = false){
 		$dbSchema=DB_SCHEMA;
 		$table=$this->table;
         $values=array();
@@ -222,18 +226,26 @@ class Symbol{
 			$values=array();
 			$this->db->sql_query($sql);
 			while($row=$this->db->sql_fetchrow()){
-				$values[]=array("table=class&id=".$row["class_id"],$row["class"],$row["layer"],$row["layergroup"],$row["theme"],$row["project"]);
+				if(!$assoc) {
+					$values[]=array("table=class&id=".$row["class_id"],$row["class"],$row["layer"],$row["layergroup"],$row["theme"],$row["project"]);
+				} else {
+					array_push($values, $row);
+				}
 			}
 		}
 		elseif($table=='symbol'){
 			$sql="select symbol_name as symbol,symbolcategory_name as category from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			
 			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.="  order by 1";
+			$sql.="  order by symbolcategory_name, symbol_name";
 			$headers = array("Image","Symbol","Category");
 			$this->db->sql_query($sql);
 			while($row=$this->db->sql_fetchrow()){
-				$values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
+				if(!$assoc) {
+					$values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
+				} else {
+					array_push($values, $row);
+				}
 			}
 		}
 

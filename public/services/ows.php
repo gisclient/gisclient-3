@@ -215,6 +215,18 @@ if(!empty($layersParameter)) {
                 $layer->setFilter($filter);
             }
         }
+        
+        if($objRequest->getValueByName('format') == 'kml') {
+            $layer->set('labelmaxscaledenom', 999999999999);
+            $layer->set('labelminscaledenom', 1);
+            for($i = 0; $i < $layer->numclasses; $i++) {
+                $class = $layer->getClass($i);
+                for($j = 0; $j < $class->numstyles; $j++) {
+                    $style = $class->getStyle($j);
+                    $style->set('symbol', null);
+                }
+            }
+        }
 		
 		if(!in_array($layer->name, $layersToRemove)) array_push($layersToInclude, $layer->name);
 	}
@@ -305,7 +317,12 @@ if ($ctt[0] == 'image') {
 	}
     
 	ms_iogetStdoutBufferBytes(); 
-} else { 
+} else if($ctt[1] == 'vnd.google-earth.kml+xml') {
+    header("content-type: application/vnd.google-earth.kml+xml");
+    header('Content-Disposition: attachment; filename="export.kml"');
+    ms_iogetStdoutBufferBytes(); 
+} else {
+    //vnd.google-earth.kml+xml
 	header("Content-Type: application/xml"); 
 	ms_iogetStdoutBufferBytes(); 
 } 

@@ -61,8 +61,8 @@ if($_REQUEST["REQUEST"] == "DeleteLayer"){
 
 $geomTypes = array(
 	'Point'=>array('db_type'=>'POINT', 'db_field'=>'point_geom', 'ms_type'=>MS_LAYER_POINT),
-	'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'line_geom', 'ms_type'=>MS_LAYER_LINE),
-	'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON)
+	'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'line_geom', 'ms_type'=>MS_LAYER_LINE, 'label_function'=>'st_endpoint'),
+	'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON, 'label_function'=>'st_centroid')
 );
 
 if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
@@ -201,21 +201,25 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('type', MS_LAYER_ANNOTATION);
 		$oLay->setConnectionType(MS_POSTGIS);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
-		$oLay->set('data', "the_geom from (select id, note, color, redline_id, ST_EndPoint(".$type['db_field'].") as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID);
+        $geom = !empty($type['label_function']) ? $type['label_function'].'('.$type['db_field'].')' : $type['db_field'];
+        $data = "the_geom from (select id, note, color, redline_id, $geom as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID;
+		$oLay->set('data', $data);
 		$oLay->setFilter("redline_id=".$_REQUEST['REDLINEID']);
 		$oLay->setProjection($layerProjString);
 		$oLay->set('sizeunits', MS_PIXELS);
 		$oLay->set('labelitem', "note");
 		
+        // Label properties
 		$oClass = ms_newClassObj($oLay);
-		// Label properties
-		$oClass->label->set("position", MS_UR);
-		$oClass->label->set("offsetx", 5);
-		$oClass->label->set("offsety", 10);
-		$oClass->label->set("font", REDLINE_FONT);
-		$oClass->label->set("type", MS_TRUETYPE);
-		$oClass->label->set("size", 14);
-		$oClass->label->setbinding(MS_LABEL_BINDING_COLOR, "color");
+        $oLabel = new labelObj();
+        $oLabel->set('position', MS_UR);
+        $oLabel->set('offsetx', 5);
+        $oLabel->set('offsety', 5);
+        $oLabel->set('font', REDLINE_FONT);
+        $oLabel->type = MS_TRUETYPE;
+        $oLabel->size = 14;
+        $oLabel->setbinding(MS_LABEL_BINDING_COLOR, "color");
+        $oClass->addLabel($oLabel);
 		$oLay->set('status', MS_ON);
 	}
 

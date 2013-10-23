@@ -424,6 +424,7 @@ class gcFeature{
 					}else{
 						$aliasTable = DATALAYER_ALIAS_TABLE;
 					}
+                    $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
 					
 					//Campi calcolati non metto tabella.campo
 					//if(strpos($aField["field_name"],'(')!==false)
@@ -431,14 +432,13 @@ class gcFeature{
 					if($aField["formula"]){
 						$fieldName = $aField["formula"] . " AS " . $aField["field_name"];// . " AS " . strtolower(NameReplace($aField["field_title"]));
 						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
-                    				$groupByFieldList[] = $aField['field_name'];
+                    	$groupByFieldList[] = $aField['field_name'];
 					}
 					else{
 						$fieldName = $aliasTable . "." . $aField["field_name"];
 						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
-                    				$groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
-					}					
-
+                    	$groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
+					}
 					$fieldList[] = $fieldName;
 					
 					/*
@@ -468,12 +468,11 @@ class gcFeature{
 						//foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
 						//$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
                         
-			// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessario specificare che la dataLayerGeom è quella della tab. layer ****
-                        $groupBy = ' group by  '.implode(', ', $groupByFieldList).', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom;
-			// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessarioaggiungere il campo ID alla group by ****
-			if (!array_search($datalayerKey, $groupByFieldList))
-				$groupBy .= ', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerKey;
- 
+						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessario specificare che la dataLayerGeom è quella della tab. layer ****
+							$groupBy = ' group by  '.implode(', ', $groupByFieldList).', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom;
+						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessarioaggiungere il campo ID alla group by ****
+						if (!array_search($datalayerKey, $groupByFieldList))
+							$groupBy .= ', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerKey;
 						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
                         
                         if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
@@ -533,11 +532,15 @@ class gcFeature{
                         array_push($includeItems, $fieldName);
                     }
                 }
-				if(!empty($includeItems)) $aMeta['gml_include_items'] = implode(',', $includeItems);
+				if(!empty($includeItems)) {
+                    $aMeta['ows_include_items'] = implode(',', $includeItems);
+                    $aMeta['gml_include_items'] = implode(',', $includeItems);
+                }
 			} else {
+				$aMeta["ows_include_items"] = "all";
 				$aMeta["gml_include_items"] = "all";
 				$aMeta["wms_include_items"] = "all";
-				$aMeta["gml_exclude_items"] = $this->aFeature["data_geom"];	
+				$aMeta["ows_exclude_items"] = $this->aFeature["data_geom"];	
 				$aMeta["gml_featureid"] = $this->aFeature["data_unique"];
 			}
 			if(strpos($this->aFeature['metadata'], "gml_".$this->aFeature["data_geom"]."_type") === false) {
@@ -640,7 +643,7 @@ class gcFeature{
 			$clsText[]="END";	
 		}
 		
-		$sql="select style_id,angle,color,outlinecolor,bgcolor,size,minsize,maxsize,minwidth,width,style_def,symbol.symbol_name
+		$sql="select style_id,angle,color,outlinecolor,bgcolor,size,minsize,maxsize,minwidth,width,style_def,symbol.symbol_name, pattern_def
                     from ".DB_SCHEMA.".style left join ".DB_SCHEMA.".symbol using (symbol_name) left join ".DB_SCHEMA.".e_pattern using(pattern_id)
                     where class_id=? order by style_order;";
 
@@ -650,7 +653,6 @@ class gcFeature{
                 $res = $stmt->fetchAll();
 		for($i=0;$i<count($res);$i++){
 			$aStyle=$res[$i];
-			
 			if(!empty($this->i18n)) {
 				$aStyle = $this->i18n->translateRow($aStyle, 'style', $aStyle['style_id']);
 			}
@@ -677,7 +679,7 @@ class gcFeature{
 			$styText[]="WIDTH ".$aStyle["width"];
 		else
 			$styText[]="WIDTH 1";//pach mapserver 5.6 non disegna un width di default
-		if(isset($aStyle["pattern_def"]) && $this->msVersion=='6') $styText[]=$aStyle["pattern_def"];
+		if(!empty($aStyle["pattern_def"]) && $this->msVersion=='6') $styText[]=$aStyle["pattern_def"];
 		if(!empty($aStyle["minwidth"])) $styText[]="MINWIDTH ".$aStyle["minwidth"];
 		if(!empty($aStyle["maxwidth"])) $styText[]="MAXWIDTH ".$aStyle["maxwidth"];
 		if((!empty($aStyle["symbol_name"]))) $this->aSymbols[$aStyle["symbol_name"]]=$aStyle["symbol_name"];

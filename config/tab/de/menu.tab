@@ -1,56 +1,62 @@
 [root]
-standard = "'Admin'"
+standard = "'Hauptseite'"
 [project]
 standard = "project_name"
-constant = "'Nuovo Progetto'"
+constant = "'Projekt hinzufügen'"
 [groups]
 standard = "groupname"
-constant = "'Nuovo Gruppo'"
+constant = "'Gruppe hinzufügen'"
 [users]
 standard = "username"
-constant = "'Nuovo Utente'"
+constant = "'Benutzer hinzufügen'"
 [theme]
 standard = "theme_name"
-constant = "'Nuovo Tema'"
+constant = "'Thema hinzufügen'"
 [project_srs]
 standard = "srid"
-constant = "'Nuovo Sistema di Riferimento'"
+constant = "'Koordinatesystem hinzufügen'"
 [catalog]
 standard = "catalog_name"
-constant = "'Nuovo Catalogo'"
+constant = "'Katalog hinzufügen'"
 [mapset]
 standard = "mapset_name"
-constant = "'Nuovo Mapset'"
+constant = "'Mapset hinzufügen'"
 [link]
 standard = "link_name"
-constant = "'Nuovo Link'"
+constant = "'Link hinzufügen'"
 [layergroup]
 standard = "layergroup_name"
-constant = "'Nuovo Layergroup'"
+constant = "'Layergruppe hinzufügen'"
 [layer]
 standard = "layer_name"
-constant = "'Nuovo Layer'"
+constant = "'Neue Layer'"
+[layer_groups]
+standard = "'Benutzergruppe des Layers '||coalesce(layer_name,'')"
+constant = "'Benutzergruppe des Layers '"
+[classgroup]
+standard = "classgroup_name"
+constant = "'Nuova Vestizione'"
 [class]
 standard = "class_name"
-constant = "'Nuova Classe'"
+constant = "'Klasse hinzufügen'"
 [qt]
 standard = "qt_name"
 constant = "'Nuovo Query Template'"
 [style]
 standard = "style_name"
-constant = "'Nuovo Stile'"
+constant = "'Stylus hinzufügen'"
 [qtrelation]
 standard = "qtrelation_name"
-constant = "'Nuova Relazione'"
+constant = "'Relation hinzufügen'"
 [qtfield]
 standard = "qtfield_name"
-constant = "'Nuovo Campo'"
+constant = "'Felder hinzufügen'"
 [qt_link]
 constant = "''"
 [mapset_groups]
 standard = "'Gruppi del Mapset '||mapset_name"
 [mapset_layergroup]
-standard = "'LayerGroup del Mapset '||mapset_name"
+standard = "'Auswahl der Layergruppen des Mapset: '||mapset_name"
 [mapset_qt]
 standard = "'QT del mapset '||mapset_name"
 [mapset_link]
@@ -62,23 +68,20 @@ constant = "'Nuovo Gruppo di Selezione'"
 constant = "'QT del Gruppo di Selezione'"
 [project_admin]
 standard = "'Amministratori del Progetto '||project_name"
-[language_theme]
-constant = "'Titoli del Tema '"
-[language_layer]
-constant = "'Titoli del Layer '"
-[language_mapset]
-constant = "'Titoli del Mapset '"
-[language_project]
-constant = "'Titoli del Progetto '"
-[language_layergroup]
-constant = "'Titoli del Layergroup '"
-[language_class]
-constant = "'Titoli della Classe '"
 [group_users]
-constant = "'Utenti del Gruppo'"
+constant = "'Benutzer der Gruppe'"
 [user_groups]
-constant = "'Gruppi Utente'"
+constant = "'Benutzergruppen'"
 [project_groups]
-constant = "'Gruppi del Progetto'"
+constant = "'Benutzergruppen hinzufügen'"
 [user_project]
-constant = "'Utenti del Progetto'"
+constant = "'Benutzer hinzufügen'"
+[project_languages]
+constant = "'Sprache hinzufügen'"
+[authfilter]
+standard = "filter_name"
+constant = "'Authentifizierungsfilter hinzufügen'"
+[layer_authfilter]
+constant = "'Filtri autenticazione del Layer'"
+[group_authfilter]
+constant = "'Filtri autenticazione Gruppo'"

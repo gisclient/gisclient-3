@@ -105,6 +105,16 @@ class GCApp {
         return ($stmt->rowCount() > 0);
     }
     
+    public static function columnExists($dataDb, $schema, $tableName, $columnName) {
+        $sql = "SELECT column_name from information_schema.columns " .
+                "WHERE table_schema=:schema AND table_name=:table " .
+                " AND column_name = :column ";
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName, ':column'=>$columnName));
+        $result = $stmt->fetchColumn(0);
+        return !empty($result);
+    }
+    
     public static function getColumns($dataDb, $schema, $tableName) {
         $sql = "SELECT column_name from information_schema.columns " .
                 "WHERE table_schema=:schema AND table_name=:table " .
@@ -330,7 +340,9 @@ class GCAuthor {
 		'layergroup'=>array('it'=>'Layergroup', 'de'=>'Layergruppe'),
 		'layer'=>array('it'=>'Layer', 'de'=>'Layer'),
 		'lookup_id'=>array('it'=>'Campo chiave lookup', 'de'=>'Schlüsselfeld in der Nachschlagetabelle'),
-		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle')
+		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle'),
+        'confirm_delete'=>array('it'=>'Sei sicuro di voler eliminare il record?', 'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'),
+        'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen')
 	);
 }
 

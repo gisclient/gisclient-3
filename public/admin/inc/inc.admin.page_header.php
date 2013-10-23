@@ -107,7 +107,7 @@
 						<li><a href="#import_dialog_raster">Raster</a></li>
 						<li><a href="#import_dialog_postgis">PostgreSQL</a></li>
 						<li><a href="#import_dialog_xls">XLS</a></li>
-						<!--<li><a href="#import_dialog_csv">CSV</a></li>-->
+						<li><a href="#import_dialog_csv">CSV</a></li>
 					</ul>
 					<div id="import_dialog_shp">
 						<input id="shp_file_upload" name="file_upload" type="file" />

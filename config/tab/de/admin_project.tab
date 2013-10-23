@@ -2,19 +2,22 @@
 table = "project_admin"
 pkey = "project_name;username"
 order_fld = "username"
-dato[] = "Vorhanden;username;10%#username#presente;check1"
-dato[] = "Benutzername;username;;text"
+dato[] = "Presente;username;10%#username#presente;check1"
+dato[] = "Nome Utente;username;;text"
 [list]
 table = "project_admin"
 pkey = "project_name;username"
 order_fld = "username"
-dato[] = "Benutzername;username;;text"
+dato[] = "Nome Utente;username;;text"
 
 [title]
-edit = "Liste der Administratoren des Projekts"
-view = "Liste der Administratoren des Projekts"
-new = "Liste der Administratoren des Projekts"
-list = "Administratoren des Projekts"
+edit = "Elenco degli amministratori del progetto"
+view = "Elenco degli amministratori del progetto"
+new = "Elenco degli amministratori del progetto"
+list = "Amministratori del Progetto"
+
+[menu]
+standard = "Amministratori"
 
 [message]
 nodata = ""

@@ -21,7 +21,7 @@ $(document).ready(function() {
 	
 	$('div#import_dialog').dialog({
 		title: 'Import Data',
-		width: 800,
+		width: 1000,
 		height: 600,
 		autoOpen: false,
 		open: function() {
@@ -241,6 +241,62 @@ function GCDataManager(catalogId) {
 			}
 		});
 	};
+    
+	this.emptyTable = function(tableName) {
+		var self = this;
+		
+		$('div#import_dialog div.logs').empty();
+		
+		if(!confirm('Are you sure?')) return;
+		
+		self.ajaxRequest({
+			data: {action:'empty-table', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					alert('Error');
+					return;
+				}
+				
+				self.getTableList();
+			}
+		});
+	};	
+    
+	this.addLastEditColumn = function(tableName) {
+		var self = this;
+		
+		$('div#import_dialog div.logs').empty();
+		
+		self.ajaxRequest({
+			data: {action:'add-last-edit-column', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					alert('Error');
+					return;
+				}
+				
+				self.getTableList();
+			}
+		});
+	};
+	
+	this.addMeasureColumn = function(tableName) {
+		var self = this;
+		
+		$('div#import_dialog div.logs').empty();
+		
+		self.ajaxRequest({
+			data: {action:'add-measure-column', table_name:tableName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					alert('Error');
+					return;
+				}
+				
+				self.getTableList();
+			}
+		});
+	};
 	
 	this.getTableList = function() {
 		var self = this;
@@ -259,11 +315,19 @@ function GCDataManager(catalogId) {
 					if(typeof(table.type) != 'undefined' && table.type != null) {
 						html += '<tr><td>'+table.name+'</td><td>'+table.srid+'</td><td>'+table.type+' ('+table.dim+'d)</td>'+
 							'<td><a href="#" class="button" data-action="delete" data-table="'+table.name+'">Delete</a>'+
-							'<a href="#" class="button" data-action="export_shp" data-table="'+table.name+'">Export SHP</a></td>'+
-							'</tr>';
+                            '<a href="#" class="button" data-action="empty" data-table="'+table.name+'">Empty</a>'+
+							'<a href="#" class="button" data-action="export_shp" data-table="'+table.name+'">Export SHP</a>';
+                        if(!table.has_last_edit_date_column && !table.has_last_edit_date_column) {
+                            html += '<a href="#" class="button" data-action="add_lastedit_column" data-table="'+table.name+'">Add Last edit col</a>';
+                        }
+                        if(!table.has_length_column && !table.has_area_column && !table.has_pointx_column && !table.has_pointy_column) {
+                            html += '<a href="#" class="button" data-action="add_measure_column" data-table="'+table.name+'">Add measure col</a>';
+                        }
+                        html += '</td></tr>';
 					} else {
 						html += '<tr><td>'+table.name+'</td><td></td><td>Alphanumeric</td>'+
 							'<td><a href="#" class="button" data-action="delete" data-table="'+table.name+'">Delete</a>'+
+                            '<a href="#" class="button" data-action="empty" data-table="'+table.name+'">Empty</a>'+
 							'<a href="#" class="button" data-action="export_xls" data-table="'+table.name+'">Export XLS</a><a href="#" class="button" data-action="export_csv" data-table="'+table.name+'">CSV</a></td></tr>';
 					}
 				});
@@ -293,6 +357,28 @@ function GCDataManager(catalogId) {
 					
 					var tableName = $(this).attr('data-table');
 					self.exportCsv(tableName);
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="empty"]').button().click(function(event) {
+					event.preventDefault();
+					
+					var tableName = $(this).attr('data-table');
+					self.emptyTable(tableName);
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="add_lastedit_column"]').button().click(function(event) {
+					event.preventDefault();
+                    
+                    $('span', $(this)).html('Loading..');
+					
+					var tableName = $(this).attr('data-table');
+                    self.addLastEditColumn(tableName);
+				});
+				$('div#import_dialog div[data-role="table_list"] a[data-action="add_measure_column"]').button().click(function(event) {
+					event.preventDefault();
+                    
+                    $('span', $(this)).html('Loading..');
+					
+					var tableName = $(this).attr('data-table');
+                    self.addMeasureColumn(tableName);
 				});
 			}
 		});

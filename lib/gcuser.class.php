@@ -75,6 +75,7 @@ abstract class AbstractUser {
     
 	public function setAuthorizedLayers($filter) {
 		$db = GCApp::getDB();
+		
 		if(isset($filter['mapset_name'])) {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
@@ -109,7 +110,7 @@ abstract class AbstractUser {
         
         $authClause = '(layer.private=1 '.$groupFilter.' ) OR (layer.private=0)';
         
-        $sql = ' SELECT project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,
+        $sql = ' SELECT project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name,
             case when layer.private = 1 then wms else 1 end as wms,
             case when layer.private = 1 then wfs else 1 end as wfs,
             case when layer.private = 1 then wfst else 1 end as wfst,
@@ -117,13 +118,13 @@ abstract class AbstractUser {
             FROM '.DB_SCHEMA.'.theme 
             INNER JOIN '.DB_SCHEMA.'.layergroup USING (theme_id) 
             INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
-            INNER JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
-            LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
-            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order;';
-            //PERCHE' GROUP BY ??????????????
-			//' group by project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name, layer.layer_title, layer.private, wms, wfs, wfst, layer_order ';
+            LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
+            left JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
+            WHERE ('.$sqlFilter.') AND ('.$authClause.')
+            group by project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name, layer.private, wms, wfs, wfst, layer_order ';
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
+        
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			$featureType = $row['layergroup_name'].".".$row['layer_name'];
 			$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
@@ -135,22 +136,25 @@ abstract class AbstractUser {
 					if(!isset($_SESSION['GISCLIENT']['AUTHFILTERS'][$filterName])) continue;
 				}
 				$this->authorizedLayers[] = $row['layer_id'];
-				// create arrays if not exists
-				if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
-				if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array();
-				array_push($this->mapLayers[$row['theme_name']][$row['layergroup_name']], array("name" => $row['layergroup_name'].".".$row['layer_name'], "title" => $row['layer_title']?$row['layer_title']:$row['layer_name'], "grouptitle" => $row['layergroup_title'], "minScale" => $row['minscale'], "maxScale" => $row['maxscale']));
 			}
+			// create arrays if not exists
+			if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
+			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array();
+			
+			array_push($this->mapLayers[$row['theme_name']][$row['layergroup_name']], $featureType);
 		};
 	}
-
-	public function getAuthorizedLayers() {
+	
+	public function getAuthorizedLayers($filter) { //TODO: controllare chi la usa
+		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->authorizedLayers;
 	}
 	
-	public function getMapLayers() {
+	public function getMapLayers($filter) { //TODO: controllare chi la usa
+		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->mapLayers;
-	}	
-
+	}
+	
 	public function saveUserOption($key, $value) {
 		$db = GCApp::getDB();
 		$sql = 'delete from '.DB_SCHEMA.'.users_options where option_key=:key and username=:username';

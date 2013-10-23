@@ -198,7 +198,7 @@ if($objRequest->getvaluebyname('layer')){
                     $icoImg->saveImage('');
                     $imageContent = ob_get_contents();
                     ob_end_clean();
-                    $icoImg->free();
+                    //$icoImg->free();
                     array_push($iconsArray, $imageContent);
                 }
             }

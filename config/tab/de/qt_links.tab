@@ -1,9 +1,9 @@
 [standard]
 table = "qt_link"
 pkey = "qt_id;link_id"
-dato[] = "Name;link_id;200#seldb_link#project;selectdb"
+dato[] = "Name *;link_id;200#seldb_link#project;selectdb"
 dato[] = "Ergebnistyp;resultype_id;200#seldb_resultype;selectdb"
-dato[] = "Schließen;azione;;submit|Hinzufügen;azione;;submit"
+dato[] = "SchlieÃŸen;azione;;submit|HinzufÃ¼gen;azione;;submit"
 [list]
 table = "qt_link"
 pkey = "qt_id;link_id"

@@ -12,6 +12,15 @@ $extensions = array(
 $exportExtensions = array('shp', 'shx', 'dbf', 'prj', 'cpg');
 $columnTypes = array('double precision', 'text', 'date');
 
+$autoUpdaters = array(
+    'last_edit_user' => defined('LAST_EDIT_USER_COL_NAME') ? LAST_EDIT_USER_COL_NAME : false,
+    'last_edit_date' => defined('LAST_EDIT_DATE_COL_NAME') ? LAST_EDIT_DATE_COL_NAME : false,
+    'area' => defined('MEASURE_AREA_COL_NAME') ? MEASURE_AREA_COL_NAME : false,
+    'length' => defined('MEASURE_LENGTH_COL_NAME') ? MEASURE_LENGTH_COL_NAME : false,
+    'pointx'=> defined('COORDINATE_X_COL_NAME') ? COORDINATE_X_COL_NAME : false,
+    'pointy'=> defined('COORDINATE_Y_COL_NAME') ? COORDINATE_Y_COL_NAME : false
+);
+
 // real path per browsing
 
 $ajax = new GCAjax();
@@ -87,6 +96,7 @@ switch($_REQUEST['action']) {
 		if(empty($_REQUEST['catalog_id'])) $ajax->error();
         $alphaOnly = !empty($_REQUEST['alhpaOnly']) && $_REQUEST['alhpaOnly'] != 'false';
         $geomOnly = !empty($_REQUEST['geomOnly']) && $_REQUEST['geomOnly'] != 'false';
+        
 		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
 		$stmt = $db->prepare($sql);
 		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
@@ -105,9 +115,305 @@ switch($_REQUEST['action']) {
 		$stmt = $dataDb->prepare($sql);
 		$stmt->execute(array(':schema'=>$schema));
 		$data = array();
-		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) array_push($data, $row);
+        
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            foreach($autoUpdaters as $type => $colName) {
+                if(!$colName) continue;
+                $row['has_'.$type.'_column'] = GCApp::columnExists($dataDb, $schema, $row['name'], $colName);
+            }
+            array_push($data, $row);
+        }
 		$ajax->success(array('data'=>$data));
 	break;
+	case 'add-last-edit-column':
+		if(empty($_REQUEST['catalog_id'])) $ajax->error();
+		if(empty($_REQUEST['table_name'])) $ajax->error();
+		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+		$catalogPath = $stmt->fetchColumn(0);
+		
+		$dataDb = GCApp::getDataDB($catalogPath);
+		$schema = GCApp::getDataDBSchema($catalogPath);
+        $results = array();
+        
+        if(!GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error();
+        
+        $dataDb->beginTransaction();
+        
+        if($autoUpdaters['last_edit_user']) {
+            array_push($results, 'usiamo last_edit_user');
+            $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
+            $stmt = $dataDb->prepare($sql);
+            $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_user'));
+            $updateUserExists = ($stmt->fetchColumn(0) > 0);
+            if(!$updateUserExists) {
+                array_push($results, 'non esiste la funzione gc_auto_update_user');
+                try {
+                    $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_user ()
+                            RETURNS trigger AS
+                            $body$'.
+                            "DECLARE
+                                rec record;
+                                BEGIN
+                                    BEGIN
+                                        DELETE FROM temporary_trigger_function_user;
+                                        INSERT INTO temporary_trigger_function_user SELECT NEW.*;
+                                    EXCEPTION WHEN OTHERS THEN
+                                        CREATE TEMPORARY TABLE temporary_trigger_function_user as SELECT NEW.*;
+                                    END;
+
+                                    execute 'UPDATE temporary_trigger_function_user set ' || TG_ARGV[0] || '= (select username from ".CURRENT_EDITING_USER_TABLE." where id = 1)';
+
+                                    SELECT * from temporary_trigger_function_user into rec;
+                                    return rec;
+                                END;".
+                            '$body$'.
+                            "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
+                    $dataDb->exec($sql);
+                    array_push($results, 'creata la funzione gc_auto_update_user');
+                } catch(Exception $e) {
+                    $ajax->error($e->getMessage());
+                }
+            }
+            
+            try {
+                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['last_edit_user'].' text';
+                $dataDb->exec($sql);
+                array_push($results, 'creata la colonna '.$autoUpdaters['last_edit_user']);
+                
+                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_last_edit_user_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
+                        EXECUTE PROCEDURE public.gc_auto_update_user('".$autoUpdaters['last_edit_user']."');";
+                $dataDb->exec($sql);
+                array_push($results, 'creato il trigger ..._last_edit_user_auto_updater ');
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage());
+            }
+        }
+        
+        if($autoUpdaters['last_edit_date']) {
+            array_push($results, 'usiamo last_edit_date');
+            $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
+            $stmt = $dataDb->prepare($sql);
+            $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_date'));
+            $updateDateExists = ($stmt->fetchColumn(0) > 0);
+            
+            if(!$updateDateExists) {
+                array_push($results, 'non esiste la funzione gc_auto_update_date');
+                try {
+                    $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_date ()
+                            RETURNS trigger AS
+                            $body$'.
+                            " DECLARE
+                                rec record;
+                                BEGIN
+                                    BEGIN
+                                        DELETE FROM temporary_trigger_function_date;
+                                        INSERT INTO temporary_trigger_function_date SELECT NEW.*;
+                                    EXCEPTION WHEN OTHERS THEN
+                                        CREATE TEMPORARY TABLE temporary_trigger_function_date as SELECT NEW.*;
+                                    END;
+                                    
+                                    execute 'UPDATE temporary_trigger_function_date set ' || TG_ARGV[0] || '= NOW()';
+                                    SELECT * from temporary_trigger_function_date into rec;
+                                    return rec;
+                                END;".
+                            '$body$'.
+                            "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
+                    $dataDb->exec($sql);
+                    array_push($results, 'creata la funzione gc_auto_update_date');
+                } catch(Exception $e) {
+                    $ajax->error($e->getMessage());
+                }
+            }
+            
+            try {
+                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['last_edit_date'].' timestamp without time zone';
+                $dataDb->exec($sql);
+                array_push($results, 'aggiunta la colonna '.$autoUpdaters['last_edit_date']);
+                
+                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_last_edit_date_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
+                        EXECUTE PROCEDURE public.gc_auto_update_date('".$autoUpdaters['last_edit_date']."');";
+                $dataDb->exec($sql);
+                array_push($results, 'aggiunto il trigger ..._last_edit_date_auto_updater');
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage());
+            }
+        }
+        $dataDb->commit();
+
+		$ajax->success($results);
+	break;
+	case 'add-measure-column':
+		if(empty($_REQUEST['catalog_id'])) $ajax->error();
+		if(empty($_REQUEST['table_name'])) $ajax->error();
+		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+		$catalogPath = $stmt->fetchColumn(0);
+		
+		$dataDb = GCApp::getDataDB($catalogPath);
+		$schema = GCApp::getDataDBSchema($catalogPath);
+        
+        $sql = 'select type, f_geometry_column as column_name from public.geometry_columns where f_table_schema = :schema and f_table_name = :table';
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array('schema'=>$schema, 'table'=>$_REQUEST['table_name']));
+        $geomColumn = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if(!$geomColumn) $ajax->error();
+        
+        $dataDb->beginTransaction();
+        
+        // controllo e inserimento funzione per aggiornare lunghezza e area
+        $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_measure'));
+        $res = $stmt->fetchColumn(0);
+        
+        if(empty($res)) {
+            try {
+                $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_measure ()
+                        RETURNS trigger AS
+                        $body$'.
+                        "DECLARE
+                            rec record;
+                            val double precision;
+                            BEGIN
+                                BEGIN
+                                    DELETE FROM temporary_trigger_function_measure;
+                                    INSERT INTO temporary_trigger_function_measure SELECT NEW.*;
+                                EXCEPTION WHEN OTHERS THEN
+                                    CREATE TEMPORARY TABLE temporary_trigger_function_measure as SELECT NEW.*;
+                                END;
+
+                                execute 'SELECT ' || TG_ARGV[1] || '(($1).' || TG_ARGV[2] || ') ' into val using new;                                    
+                                execute 'UPDATE temporary_trigger_function_measure set ' || TG_ARGV[0] || '=' || val;
+                                SELECT * from temporary_trigger_function_measure into rec;
+                                --DROP TABLE temporary_trigger_function_measure;
+                                return rec;
+                            END;".
+                        '$body$'.
+                        "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
+                $dataDb->exec($sql);
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage());
+            }
+        }
+        
+        // controllo e inserimento funzione per aggiornare le coordinate del punto
+        $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_coordinates'));
+        $res = $stmt->fetchColumn(0);
+        
+        if(empty($res)) {
+            try {
+                $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_coordinates ()
+                        RETURNS trigger AS
+                        $body$'.
+                        "DECLARE
+                            rec record;
+                            x double precision;
+                            y double precision;
+                            BEGIN
+                            
+                                BEGIN
+                                    DELETE FROM temporary_trigger_function_coordinates;
+                                    INSERT INTO temporary_trigger_function_coordinates SELECT NEW.*;
+                                EXCEPTION WHEN OTHERS THEN
+                                    CREATE TEMPORARY TABLE temporary_trigger_function_coordinates as SELECT NEW.*;
+                                END;
+                            
+                                execute 'SELECT st_x(($1).' || TG_ARGV[2] || ') ' into x using new;
+                                execute 'UPDATE temporary_trigger_function_coordinates set ' || TG_ARGV[0] || '=' || x;
+                                execute 'SELECT st_y(($1).' || TG_ARGV[2] || ') ' into y using new;
+                                execute 'UPDATE temporary_trigger_function_coordinates set ' || TG_ARGV[1] || '=' || y;
+                                SELECT * from temporary_trigger_function_coordinates into rec;
+                                return rec;
+                            END;".
+                        '$body$'.
+                        "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
+                $dataDb->exec($sql);
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage());
+            }
+        }
+
+        //controllo tipo geometria per area/lunghezza
+        $columnName = $measureFunction = null;
+        if(in_array($geomColumn['type'], array('POLYGON', 'MULTIPOLYGON')) && $autoUpdaters['area']) {
+            $columnName = $autoUpdaters['area'];
+            $measureFunction = 'st_area';
+        } else if(in_array($geomColumn['type'], array('LINESTRING', 'MULTILINESTRING')) && $autoUpdaters['length']) {
+            $columnName = $autoUpdaters['length'];
+            $measureFunction = 'st_length';
+        }
+        
+        if($columnName && $measureFunction) { //aggiungo colonne e trigger per lunghezza/area
+            try {
+                $sql = 'DROP TRIGGER IF EXISTS trigger_'.$_REQUEST['table_name'].'_measure_auto_updater ON '.$schema.'.'.$_REQUEST['table_name'];
+                $dataDb->exec($sql);
+                
+                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$columnName.' float';
+                $dataDb->exec($sql);
+                
+                $sql = 'update '.$schema.'.'.$_REQUEST['table_name'].' set '.$columnName.' = '.$measureFunction.'('.$geomColumn['column_name'].')';
+                $dataDb->exec($sql);
+                
+                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_measure_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
+                        EXECUTE PROCEDURE public.gc_auto_update_measure('$columnName', '$measureFunction', '".$geomColumn['column_name']."');";
+                $dataDb->exec($sql);
+                
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage() .' on '.$sql);
+            }
+            //aggiungo colonne e trigger per coordinate
+        } else if(in_array($geomColumn['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
+            try {
+                $sql = 'DROP TRIGGER IF EXISTS trigger_'.$_REQUEST['table_name'].'_coordinates_auto_updater ON '.$schema.'.'.$_REQUEST['table_name'];
+                $dataDb->exec($sql);
+                
+                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['pointx'].' float';
+                $dataDb->exec($sql);
+                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['pointy'].' float';
+                $dataDb->exec($sql);
+                
+                $sql = 'update '.$schema.'.'.$_REQUEST['table_name'].' set '.$autoUpdaters['pointx'].'=st_x('.$geomColumn['column_name'].'), '.$autoUpdaters['pointy'].'=st_y('.$geomColumn['column_name'].')';
+                $dataDb->exec($sql);
+                
+                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_coordinates_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
+                        EXECUTE PROCEDURE public.gc_auto_update_coordinates('".$autoUpdaters['pointx']."', '".$autoUpdaters['pointy']."', '".$geomColumn['column_name']."');";
+                $dataDb->exec($sql);
+            } catch(Exception $e) {
+                $ajax->error($e->getMessage() .' on '.$sql);
+            }
+        }
+        $dataDb->commit();
+        
+		$ajax->success();
+        
+	break;
+    case 'empty-table':
+		if(empty($_REQUEST['catalog_id'])) $ajax->error();
+		if(empty($_REQUEST['table_name'])) $ajax->error();
+		$sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+		$catalogPath = $stmt->fetchColumn(0);
+		
+		$dataDb = GCApp::getDataDB($catalogPath);
+		$schema = GCApp::getDataDBSchema($catalogPath);
+        
+        if(!GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error('table does not exist');
+        
+        $sql = 'truncate table '.$_REQUEST['table_name'];
+        try {
+            $db->exec($sql);
+        } catch(Exception $e) {
+            $ajax->error($e->getMessage() .' on '.$sql);
+        }
+
+    break;
 	case 'delete-table':
 		if(empty($_REQUEST['catalog_id'])) $ajax->error();
 		if(empty($_REQUEST['table_name'])) $ajax->error();
@@ -152,6 +458,30 @@ switch($_REQUEST['action']) {
 		$ajax->success();
 		
 	break;
+	case 'delete-file':
+		if(empty($_REQUEST['file_name'])) $ajax->error();
+		if(empty($_REQUEST['file_type'])) $ajax->error();
+		
+		if($_REQUEST['file_type'] == 'shp') {
+			if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error();
+			$fileName = substr($_REQUEST['file_name'], 0, strrpos($_REQUEST['file_name'], '.'));
+			foreach($extensions['shp'] as $extension) {
+				if(file_exists(IMPORT_PATH.$fileName.'.'.$extension)) @unlink(IMPORT_PATH.$fileName.'.'.$extension);
+			}
+		} else if($_REQUEST['file_type'] == 'raster') {
+			if(empty($_REQUEST['catalog_id'])) $ajax->error();
+			$dir = filesPathFromCatalog($_REQUEST['catalog_id']);
+			if(!is_dir($dir)) $ajax->error();
+			rrmdir($dir.$_REQUEST['file_name']);
+		} else if($_REQUEST['file_type'] == 'xls') {
+            if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error();
+        } else $ajax->error();
+		
+		@unlink(IMPORT_PATH.$_REQUEST['file_name']);
+		
+		$ajax->success();
+		
+	break;
     case 'export-csv':
 		if(empty($_REQUEST['catalog_id'])) $ajax->error('catalog_id');
 		if(empty($_REQUEST['table_name'])) $ajax->error('table_name');
@@ -163,7 +493,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$dbParams = GCApp::getDataDBParams($catalogPath);
 		
-		if(!tableAlreadyExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
+		if(!GCApp::tableExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
         
         $sql = 'select * from '.$dbParams['schema'].'.'.$_REQUEST['table_name'];
         $data = $dataDb->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -188,7 +518,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$dbParams = GCApp::getDataDBParams($catalogPath);
 		
-		if(!tableAlreadyExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
+		if(!GCApp::tableExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
 		
         $sql = "SELECT column_name FROM information_schema.columns WHERE " .
                 "  table_schema=:schema AND table_name=:table ORDER BY ordinal_position";
@@ -229,7 +559,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$dbParams = GCApp::getDataDBParams($catalogPath);
 		
-		if(!tableAlreadyExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
+		if(!GCApp::tableExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) $ajax->error('table does not exist');
 		
         $export = new GCExport($dataDb, 'shp');
         $tables = array(
@@ -260,7 +590,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$schema = GCApp::getDataDBSchema($catalogPath);
 		
-		$tableExists = tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name']);
+		$tableExists = GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name']);
 		if($_REQUEST['mode'] == 'create' && $tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
 		if($_REQUEST['mode'] != 'create' && !$tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
 		
@@ -324,7 +654,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$schema = GCApp::getDataDBSchema($catalogPath);
 		
-		$tableExists = tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name']);
+		$tableExists = GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name']);
 		if($_REQUEST['mode'] == 'create' && $tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
 		if($_REQUEST['mode'] != 'create' && !$tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
 		
@@ -346,7 +676,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$schema = GCApp::getDataDBSchema($catalogPath);
 		
-		$tableExists = tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name']);
+		$tableExists = GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name']);
 		if($_REQUEST['mode'] == 'create' && $tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
 		if($_REQUEST['mode'] != 'create' && !$tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
 		
@@ -494,7 +824,7 @@ switch($_REQUEST['action']) {
 		$dataDb = GCApp::getDataDB($catalogPath);
 		$schema = GCApp::getDataDBSchema($catalogPath);
 		
-		if(tableAlreadyExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error('Table already exists');
+		if(GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error('Table already exists');
 		
 		if($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
 			$ajax->error('Invalid table name');
@@ -589,19 +919,26 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
 	);
 	$options = array_merge($defaultOptions, $options);
 	
+    $index = '';
 	switch($options['mode']) {
 		case 'create':
 			$mode = '-c';
+            $index = '-I';
 		break;
 		case 'append':
 			$mode = '-a';
 		break;
 		case 'replace':
 			$mode = '-d';
+            $index = '-I';
 		break;
 	}
+    
+    if(defined('SET_BYTEA_OUTPUT')) {
+        putenv("PGOPTIONS=-c bytea_output=".SET_BYTEA_OUTPUT);
+    }
 	
-	$cmd = "shp2pgsql -W '".escapeshellarg($options['charset'])."' -s $srid $mode " . escapeshellarg($shapefile) . " " . 
+	$cmd = "shp2pgsql $index -W '".escapeshellarg($options['charset'])."' -s $srid $mode " . escapeshellarg($shapefile) . " " . 
 		escapeshellarg($tableName) . " > " . 
 		escapeshellarg($outputFile) . " 2> " . escapeshellarg($errorFile);
 
@@ -618,7 +955,7 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
 }
 
 function tableAlreadyExists($dataDb, $schema, $tableName) {
-    //deprecated, sostituire
+    //deprecated
     return GCApp::tableExists($dataDb, $schema, $tableName);
 }
 

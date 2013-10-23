@@ -1093,6 +1093,7 @@ UPDATE layergroup SET layers='roadmap',owstype_id=7 WHERE layers='G_NORMAL_MAP';
 UPDATE layergroup SET layers='hybrid',owstype_id=7 WHERE layers='G_HYBRID_MAP';
 UPDATE layergroup SET layers='terrain',owstype_id=7 WHERE layers='G_PHYSICAL_MAP';
 
+
 --2013-08-20
 --UNIVOCITA' DEL NOME DEL LAYERGROUP NEL PROGETTO (CE LO SIAMO PERSO DA QUALCHE PARTE MA SE TENIAMO IL LAYERGROUP COME NOME LAYER QUESTO DEVE ESSERE UNIVOCO SUL MAPFILE)
 UPDATE layergroup SET layergroup_name=layergroup_name||'_'||layergroup_id WHERE layergroup_name IN (SELECT layergroup_name FROM layergroup GROUP BY 1 HAVING count(layergroup_name) > 1)
@@ -1105,3 +1106,15 @@ UPDATE e_owstype SET owstype_name='WMS' WHERE owstype_id = 1;
 UPDATE e_owstype SET owstype_name='Google' WHERE owstype_id = 7;
 UPDATE e_owstype SET owstype_name='Bing' WHERE owstype_id = 8;
 
+-- SET POSTLABELCACHE DEFAULT FALSE
+ALTER TABLE layer
+   ALTER COLUMN postlabelcache SET DEFAULT 0;
+ALTER TABLE layer DROP CONSTRAINT layer_layergroup_id_fkey;
+ALTER TABLE layer ADD CONSTRAINT layer_layergroup_id_fkey FOREIGN KEY (layergroup_id)
+      REFERENCES layergroup (layergroup_id) MATCH FULL
+      ON UPDATE CASCADE ON DELETE CASCADE;
+update layer set postlabelcache = 0;
+
+--2013-10-04: campo per specificare se la geometria dev'essere nascosta nell'interrogazione (per esempio nel caso di interrogazione dei comuni che vanno a coprire inutilmente tutti gli altri oggetti interrogati)
+alter table layer add column hide_vector_geom numeric(1,0) default 0;
+  

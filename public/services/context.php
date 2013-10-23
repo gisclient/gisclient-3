@@ -47,6 +47,8 @@ switch($_REQUEST['action']) {
 	case 'replace':	
 	case 'create':
 		if(empty($_REQUEST['context'])) $ajax->error('Empty context');
+        $username = $user->getUsername();
+        if(empty($username)) $ajax->error('Permission denied');
 		$context = json_encode($_REQUEST['context']);
 		if($_REQUEST['action'] == 'replace') {
 			$sql = 'delete from '.DB_SCHEMA.'.usercontext where username=?';

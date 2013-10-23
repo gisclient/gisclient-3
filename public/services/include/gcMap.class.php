@@ -238,8 +238,8 @@ class gcMap{
 		$user = new GCUser();
 		$user->setAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
 
-		$authorizedLayers = $user->getAuthorizedLayers();
-		$userLayers = $user->getMapLayers();
+		$authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
+		$userLayers = $user->getMapLayers(array('mapset_name'=>$this->mapsetName));
         $extents = $this->_getMaxExtents();
 		//print_array($userLayers);
 

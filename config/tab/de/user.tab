@@ -1,25 +1,31 @@
 [standard]
 table = "users"
 pkey = "username"
-dato[] = "Benutzername;username;15;text"
+dato[] = "Username *;username;15;text"
+dato[] = "Password *;pwd;10;pword"
 dato[] = "Nachname;cognome;30;text"
-dato[] = "Vorname;nome;30;text"
-dato[] = "Passwort;pwd;10;pword"
-dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|L�schen;azione;;submit;edit"
+dato[] = "Name;nome;30;text"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
 [list]
 table = "users"
 pkey = "username"
 order_fld = "username"
-dato[] = ";username;3%;info"
-dato[] = "Benutzername;username;20%#username;goto"
+dato[] = "Username;username;20%#username;goto"
+dato[] = "Name;nome;37%;text"
 dato[] = "Nachname;cognome;40%;text"
-dato[] = "Vorname;nome;37%;text"
+dato[] = ";username;1%;info"
+dato[] = ";username;1%;edit"
+dato[] = ";username;1%;delete"
 
 [title]
-edit = "Benutzerdaten"
-view = "Benutzerdaten"
-new = "Neuer Benutzer"
+edit = "Benutzer ändern"
+view = "Benutzer anzeigen"
+new = "Benutzer hinzufügen"
 list = "Benutzer"
 
+[menu]
+new = "Neuer Benutzer"
+standard = "username"
+
 [message]
-nodata = "Kein Benutzer vorhanden"
+nodata = ""
