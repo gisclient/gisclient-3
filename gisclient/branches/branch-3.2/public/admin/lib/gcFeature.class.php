@@ -185,9 +185,10 @@ class gcFeature{
 		return ($this->aFeature['private'] > 0);
 	}
 	
-	function getLayerText($layergroupName,$maxScale,$minScale){
-		
+	function getLayerText($layergroupName, $layergroup){
 		if(!$this->aFeature) return false;
+        $maxScale = $layergroup['layergroup_maxscale'];
+        $minScale = $layergroup['layergroup_minscale'];
         $this->_getLayerData();
 		$this->aFeature['layergroup_name'] = $layergroupName;
 		$this->aSymbols = array();//Elenco dei simboli usati nelle classi della feature
@@ -200,7 +201,7 @@ class gcFeature{
 		$layText[] = "TYPE ". $aGCLayerType[$this->aFeature["layertype_id"]];	
 		$layText[] = "STATUS OFF";
 		$layText[] = "METADATA";
-		$layText[] = "\t\"wms_group_title\" \"$layergroupName\"";
+		$layText[] = "\t\"wms_group_title\" \"".$layergroup['layergroup_title']."\"";
 		$layText[] = $this->_getMetadata();
 		$layText[] = "END";
 		

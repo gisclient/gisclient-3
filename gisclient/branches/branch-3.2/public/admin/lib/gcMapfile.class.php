@@ -174,7 +174,7 @@ class gcMapfile{
 			$oFeature->initFeature($aLayer["layer_id"]);
 			//if(!$this->printMap) $mapName = $projectName;//$themeName;
 			
-			$layerText = $oFeature->getLayerText($layergroupName,$aLayer["layergroup_maxscale"],$aLayer["layergroup_minscale"]);
+			$layerText = $oFeature->getLayerText($layergroupName, $aLayer);
 			if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
 
 			if(!empty($this->i18n)) {
