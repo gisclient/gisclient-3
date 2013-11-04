@@ -19,6 +19,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+define('WMS_LAYER_TYPE',1);
+define('WMTS_LAYER_TYPE',2);
+define('TMS_LAYER_TYPE',6);
 
 class gcMapfile{
 	var $db;
@@ -106,7 +109,9 @@ class gcMapfile{
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
 
-		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,layergroup_single,tree_group,tiletype_id,layer_id,layer_name,layer_title,layertype_id, project_title
+		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,
+		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
+		layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title
 		from ".DB_SCHEMA.".layer 
 		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
 		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
@@ -115,14 +120,6 @@ class gcMapfile{
 		
 		print_debug($sql,null,'writemap');
 
-/*		
-		$sql="select project_name,base_url,max_extent_scale,project_srid,xc,yc,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,layergroup_single,tiletype_id,layer_id,layer_name,layer_title,layertype_id, project_title
-		from ".DB_SCHEMA.".layer 
-		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
-		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
-		INNER JOIN ".DB_SCHEMA.".project using (project_name) 		
-		where ".$filter." order by layer_order,layergroup_order;";
-*/
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute($sqlParams);
 		$res = $stmt->fetchAll();
@@ -160,11 +157,17 @@ class gcMapfile{
 		$symbolsList=array();
 		$oFeature = new gcFeature($this->i18n);
 
+		//mapproxy
+		$mpxLayers=array();
+		$mpxCaches=array();
+
 		$this->_setMapProjections();
 		$oFeature->srsParams = $this->srsParams;
 
 		//print_debug($res,null,'features');
 		
+
+
 		if($this->printMap) $mapName = time().'_print';
 		
 		foreach ($res as $aLayer){
@@ -202,10 +205,48 @@ class gcMapfile{
 			if(defined('TINYOWS_PATH') && $oFeature->isEditable()) {
 				array_push($this->tinyOWSLayers, $oFeature->getTinyOWSLayerParams());
 			}
+
+			if(defined('MAPPROXY')){
+				//DEFINIZIONE DEI LAYER PER MAPPROXY (COSTRUISCO UN LAYER WMS ANCHE PER I WMTS/TMS PER I TEST)
+				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
+
+				if(!empty($aLayer["layer_name"]){
+					if(empty($mpxLayers[$aLayer["theme_name"]])) $mpxLayers[$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
+					if(empty($mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
+
+					if($aLayer["layergroup_single"] == 1){
+						$mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array("mapserver_source:".$aLayer["layergroup_name"]);
+					}else{
+						if(empty($mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
+						if($aLayer["hidden"]!=1) array_push($mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array("name"=>$aLayer["layer_name"],"title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],"sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])));
+					}
+				}
+
+				//SE IL LAYERGROUP E' DI TIPO TMS/WMTS AGGIUNGO ANCHE IL LAYER WMTS/TMS E LA CACHE
+				if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
+					$layergroupName = $aLayer["layergroup_name"].(($aLayer["owstype_id"] == WMTS_LAYER_TYPE)?"_wmts":"_tms");
+					$mpxLayers[$aLayer["theme_name"]]["layers"][$layergroupName] = array("name"=>$layergroupName,"title"=>$aLayer["layergroup_title"],"sources"=>array($layergroupName."_cache"));
+					array_push($mpxCaches, array("sources"=>array("mapserver_source:".$aLayer["layergroup_name"])));
+
+					//TODO scrivere le grid e le altre impostazioni, verificare il problema della incompatibilità wmts tms ????
+				}
+			}
 		}
-		
-		//print_debug($mapText,null,'writemap');
-		
+
+
+		if(defined('MAPPROXY')){
+			//NORMALIZZO L'ARRAY DEI LIVELLI
+			foreach ($mpxLayers as $th => $grp) {
+				ksort($mpxLayers[$th]["layers"]);
+				$mpxLayers[$th]["layers"] = array_values($mpxLayers[$th]["layers"]); 
+			}
+			ksort($mpxLayers);
+			$this->_writeMapProxyConfig($mpxLayers,$mpxCaches);
+		}
+
+
+
+
 		foreach($mapText as $mapName=>$mapContent){
 			//SE NON HO EXTENT LO PRENDO DAL PROGETTO E SE SRID DIVERSO LO RIPROIETTO
 			if(empty($mapExtent[$mapName])){			
@@ -558,6 +599,15 @@ END";
 			$epsgList[] = "EPSG:".$row["id"];
 		}
 		$this->epsgList = implode(" ",$epsgList);
+	}
+
+	function _writeMapProxyConfig($mapproxyLayers){
+
+		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
+
+		print_debug(yaml_emit(array_values($mapproxyLayers),YAML_UTF8_ENCODING),null,'mapproxy');
+
+
 	}
 	
 

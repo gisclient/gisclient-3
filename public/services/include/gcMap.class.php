@@ -390,7 +390,7 @@ class gcMap{
 				//Layergroup con singoli layer distinti				(DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)		
 				else { 	
 					$aLayer["parameters"]["layers"] = array();
-					$aLayer["nodes"] = array();					
+					$aLayer["nodes"] = array();			
 					foreach($userLayers[$themeName][$layergroupName] as $userLayer) {
 						array_push($aLayer["parameters"]["layers"], $userLayer["name"]);
 						$arr = array("layer"=>$userLayer["name"], "title"=>$userLayer["title"]);
