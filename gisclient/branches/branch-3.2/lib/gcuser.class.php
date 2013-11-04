@@ -55,6 +55,7 @@ abstract class AbstractUser {
 		session_destroy();
 		unset($_SESSION);
         if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
+        $this->username = null;
 		session_start();
     }
     
@@ -95,7 +96,8 @@ abstract class AbstractUser {
         $projectName = $stmt->fetchColumn(0);
         
         $groupFilter = '';
-        if(!$this->isAdmin() && !$this->isAdmin($projectName)) {
+        $isAdmin = ($this->isAdmin() || $this->isAdmin($projectName));
+        if(!$isAdmin) {
             if(!empty($this->groups)) {
                 $in = array();
                 foreach($this->groups as $k => $groupId) {
@@ -111,9 +113,9 @@ abstract class AbstractUser {
         $authClause = '(layer.private=1 '.$groupFilter.' ) OR (layer.private=0)';
         
         $sql = ' SELECT project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name,
-            case when layer.private = 1 then wms else 1 end as wms,
-            case when layer.private = 1 then wfs else 1 end as wfs,
-            case when layer.private = 1 then wfst else 1 end as wfst,
+            case when layer.private = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
+            case when layer.private = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
+            case when layer.private = 1 then '.($isAdmin ? '1' : 'wfst').' else 1 end as wfst,
             layer_order
             FROM '.DB_SCHEMA.'.theme 
             INNER JOIN '.DB_SCHEMA.'.layergroup USING (theme_id) 
