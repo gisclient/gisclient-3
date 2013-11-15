@@ -385,7 +385,7 @@ class gcMap{
 				//$layerOptions["getURL"] = "OpenLayers.Util.GisClient.TMSurl"; 
 				$layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions(),$this->maxResolution);
 				$layerOptions["buffer"] = intval($row["buffer"]);
-                if(!empty($row["tile_origin"])) $layerOptions["tile_origin"] = $row["tile_origin"];
+                if(!empty($row["tile_origin"])) $layerOptions["tileOrigin"] = $row["tile_origin"];
 				if(!empty($row["tiles_extent"]) && !empty($row["tiles_extent_srid"]))
 						$layerOptions["maxExtent"] = $this->_getTMSExtent($row["tiles_extent"], $row["tiles_extent_srid"]);
 				$layerOptions["gc_id"] = $layerId;
