@@ -1052,4 +1052,7 @@ insert into e_datatype (datatype_id, datatype_name) values (10, 'Immagine'), (15
 ALTER TABLE layer ALTER COLUMN postlabelcache SET DEFAULT 0;
 update layer set postlabelcache = 0;
 
+--2013-11-15: tile origin su layergroup
+alter table layergroup add column tile_origin TEXT;
+
   
