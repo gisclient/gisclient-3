@@ -296,7 +296,6 @@ class gcMap{
 				if($row["transition"]==1) $layerOptions["transitionEffect"] = "resize";
 				if($row["gutter"]>0) $layerOptions["gutter"] = intval($row["gutter"]);
 				if($row["tiletype_id"]==0) $layerOptions["singleTile"] = true;
-				if(!empty($row["tile_origin"])) $layerOptions["tile_origin"] = $row["tile_origin"];
 
 				if($row["theme_single"]==1){
 					//setto tutti i parametri come da 1 layer
@@ -386,6 +385,7 @@ class gcMap{
 				//$layerOptions["getURL"] = "OpenLayers.Util.GisClient.TMSurl"; 
 				$layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions(),$this->maxResolution);
 				$layerOptions["buffer"] = intval($row["buffer"]);
+                if(!empty($row["tile_origin"])) $layerOptions["tile_origin"] = $row["tile_origin"];
 				if(!empty($row["tiles_extent"]) && !empty($row["tiles_extent_srid"]))
 						$layerOptions["maxExtent"] = $this->_getTMSExtent($row["tiles_extent"], $row["tiles_extent_srid"]);
 				$layerOptions["gc_id"] = $layerId;
