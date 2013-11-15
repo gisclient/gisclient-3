@@ -1017,14 +1017,14 @@ CREATE OR REPLACE VIEW vista_qtfield AS
                       FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
   ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
 
--- 2013-08-01: crea la view vista_project_languages per permettere la visualizzazione del campo "lingua" nei tab  
+-- 2013-01-08: crea la view vista_project_languages per permettere la visualizzazione del campo "lingua" nei tab  
   CREATE OR REPLACE VIEW vista_project_languages AS 
  SELECT project_languages.project_name, project_languages.language_id, e_language.language_name, e_language.language_order
    FROM project_languages
    JOIN e_language ON project_languages.language_id = e_language.language_id
   ORDER BY e_language.language_order;
   
-  -- 2013-11-01: inserisce outputformat AGG PNG default
+  -- 2013-01-11: inserisce outputformat AGG PNG default
 	  INSERT INTO e_outputformat VALUES (9,'AGG PNG','AGG/PNG','image/png','RGB','png','    FORMATOPTION "QUANTIZE_FORCE=ON"
 		FORMATOPTION "QUANTIZE_DITHER=OFF"
 		FORMATOPTION "QUANTIZE_COLORS=256"',NULL);
@@ -1039,5 +1039,17 @@ UNION ALL
                   ORDER BY catalog.catalog_name) foo;
 				  
 --2013-10-04: campo per specificare se la geometria dev'essere nascosta nell'interrogazione (per esempio nel caso di interrogazione dei comuni che vanno a coprire inutilmente tutti gli altri oggetti interrogati)
-alter table gisclient_32.layer add column hide_vector_geom numeric(1,0) default 0;
+alter table layer add column hide_vector_geom numeric(1,0) default 0;
+
+--2013-10-15: metto fieldtype File per gestire gli upload e i link in interrogazione
+update e_fieldtype set fieldtype_name = 'File' where fieldtype_id = 10;
+update e_fieldtype set fieldtype_name = 'Immagine' where fieldtype_id = 8;
+
+insert into e_datatype (datatype_id, datatype_name) values (10, 'Immagine'), (15, 'File');
+
+
+--2013-10-17: postlabelcache di default FALSE
+ALTER TABLE layer ALTER COLUMN postlabelcache SET DEFAULT 0;
+update layer set postlabelcache = 0;
+
   

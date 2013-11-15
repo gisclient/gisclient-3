@@ -296,6 +296,7 @@ class gcMap{
 				if($row["transition"]==1) $layerOptions["transitionEffect"] = "resize";
 				if($row["gutter"]>0) $layerOptions["gutter"] = intval($row["gutter"]);
 				if($row["tiletype_id"]==0) $layerOptions["singleTile"] = true;
+				if(!empty($row["tile_origin"])) $layerOptions["tile_origin"] = $row["tile_origin"];
 
 				if($row["theme_single"]==1){
 					//setto tutti i parametri come da 1 layer
