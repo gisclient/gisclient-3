@@ -1055,4 +1055,7 @@ update layer set postlabelcache = 0;
 --2013-11-15: tile origin su layergroup
 alter table layergroup add column tile_origin TEXT;
 
+--2013-11-19: server resolutions su layergroup per TMS
+alter table layergroup add column tile_resolutions TEXT;
+
   
