@@ -645,8 +645,11 @@ switch($_REQUEST['action']) {
 			for ($col = 0; $col < $lastColumnIndex; ++ $col) {
 				$cell = $worksheet->getCellByColumnAndRow($col, $row);
 				$val = $cell->getValue();
-				if($row == 1) $columns[$col] = $val;
-				else $data[$row][$col] = $val;
+				if($row == 1) {
+                    if(!empty($val)) $columns[$col] = $val;
+                } else {
+                    if(isset($columns[$col])) $data[$row][$col] = $val;
+                }
 			}
 		}
 		
