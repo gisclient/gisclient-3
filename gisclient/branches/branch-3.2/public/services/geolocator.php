@@ -3,10 +3,30 @@ require_once('../../config/config.php');
 require_once ROOT_PATH.'lib/ajax.class.php';
 $ajax = new GCAjax();
 
-if(empty($_REQUEST['action']) || !in_array($_REQUEST['action'], array('search', 'get-geom'))) $ajax->error('Invalid action');
-if(empty($_REQUEST['mapset'])) $ajax->error('Undefined mapset');
-if(empty($GEOLOCATOR_CONFIG) || empty($GEOLOCATOR_CONFIG[$_REQUEST['mapset']])) $ajax->error('Manca configurazione geolocator');
-$config = $GEOLOCATOR_CONFIG[$_REQUEST['mapset']];
+if(empty($GEOLOCATOR_CONFIG)) {
+	$ajax->error('Missing geolocator configuration');
+}	
+
+if(empty($_REQUEST['action']) || !in_array($_REQUEST['action'], array('search', 'get-geom'))) {
+	$ajax->error('Invalid action');
+}
+
+if(empty($_REQUEST['mapset'])) {
+	$ajax->error('Undefined mapset');
+}
+$mapset = $_REQUEST['mapset'];
+if(!empty($_REQUEST['lang'])) {
+	$mapset = "{$mapset}_{$_REQUEST['lang']}";
+	if(empty($GEOLOCATOR_CONFIG[$mapset])) {
+		// language mapset configuration not available
+		$mapset = $_REQUEST['mapset'];  
+	}
+}
+
+if(empty($GEOLOCATOR_CONFIG[$mapset])) {
+	$ajax->error("Missing geolocator configuration \"{mapset}\"");
+}	
+$config = $GEOLOCATOR_CONFIG[$mapset];
 
 $ajax = new GCAjax();
 $db = GCApp::getDB();
@@ -15,7 +35,11 @@ $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:name'
 $stmt = $db->prepare($sql);
 $stmt->execute(array('name'=>$config['catalogname']));
 $catalogPath = $stmt->fetchColumn(0);
+if (empty($catalogPath)) {
+	$ajax->error("Invalid catalog name \"{$config['catalogname']}\" in configuration");
+}
 $dataDb = GCApp::getDataDB($catalogPath);
+
 
 if($_REQUEST['action'] == 'search') {
     if(empty($_REQUEST['key'])) $ajax->error('Undefined key');

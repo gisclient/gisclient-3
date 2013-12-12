@@ -184,8 +184,7 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('type', $type['ms_type']);
 		$oLay->setConnectionType(MS_POSTGIS);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
-        $geom = !empty($type['label_function']) ? $type['label_function'].'('.$type['db_field'].')' : $type['db_field'];
-        $data = "the_geom from (select id, note, color, redline_id, $geom as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID;
+        $data = "the_geom from (select id, note, color, redline_id, ".$type['db_field']." as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID;
 		$oLay->set('data', $data);
 		$oLay->setFilter("redline_id=".$_REQUEST['REDLINEID']);
 		$oLay->setProjection($layerProjString);
@@ -203,7 +202,8 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('type', MS_LAYER_ANNOTATION);
 		$oLay->setConnectionType(MS_POSTGIS);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
-		$oLay->set('data', "the_geom from (select id, note, color, redline_id, ST_EndPoint(".$type['db_field'].") as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID);
+        $geom = !empty($type['label_function']) ? $type['label_function'].'('.$type['db_field'].')' : $type['db_field'];
+		$oLay->set('data', "the_geom from (select id, note, color, redline_id, $geom as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID);
 		$oLay->setFilter("redline_id=".$_REQUEST['REDLINEID']);
 		$oLay->setProjection($layerProjString);
 		$oLay->set('sizeunits', MS_PIXELS);
