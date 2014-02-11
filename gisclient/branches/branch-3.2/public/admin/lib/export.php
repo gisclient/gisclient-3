@@ -93,6 +93,9 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 
 					$flt[]="project.project_name='$parentName'";
 					$tables[]=DB_SCHEMA.'.project';
+					if (in_array(DB_SCHEMA.'.qtrelation', $tables) && in_array(DB_SCHEMA.'.layer', $tables)) {
+						$flt[] = "qtrelation.layer_id=layer.layer_id";
+					}
 					$sqlVal="SELECT $fld as val FROM ".implode(",",array_unique($tables))." WHERE ".implode(' AND ',array_unique($flt)).";";
 					if($db->sql_query($sqlVal)){
 						$newVal=$db->sql_fetchfield('val');
