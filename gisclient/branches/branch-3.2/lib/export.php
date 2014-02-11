@@ -17,11 +17,17 @@ class GCExport {
         $this->errorPath = DEBUG_DIR;
     }
     
+    public function getExportUrl() {
+        return $this->exportUrl;
+    }
+    
     public function export($tables, array $options = array()) {
         $defaultOptions = array(
             'name'=>'export',
             'extent'=>null,
-            'srid'=>null
+            'srid'=>null,
+            'add_to_zip'=>null,
+            'return_url'=>true
         );
         $options = array_merge($defaultOptions, $options);
         
@@ -51,15 +57,23 @@ class GCExport {
         		
 		$zip = new ZipArchive;
 		
-        $zipName = $this->_getFileName($options['name']).'.zip';
+        if($options['add_to_zip']) {
+            $zipName = $options['add_to_zip'];
+            $openZipFlag = ZIPARCHIVE::CHECKCONS;
+        } else {
+            $zipName = $this->_getFileName($options['name']).'.zip';
+            $openZipFlag = ZIPARCHIVE::CREATE;
+        }
         $zipPath = $this->exportPath.$zipName;
         
-		if(!$zip->open($zipPath, ZIPARCHIVE::CREATE)) throw new Exception('Error creating zip file');
+		if(!$zip->open($zipPath, $openZipFlag)) throw new Exception('Error creating zip file');
         foreach($files as $niceName => $realName) {
 			if(!$zip->addFile($realName, $niceName)) throw new Exception('Error adding file '.$realName.' to zip file');
 		}
 		if(!$zip->close()) throw new Exception('Error closing zip file');
-        return $this->exportUrl.$zipName;
+        
+        $return = $options['return_url'] ? $this->exportUrl.$zipName : $zipName;
+        return $return;
     }
     
     protected function _exportShp($dbName, $table, $schema = null, array $options = array()) {
@@ -81,9 +95,8 @@ class GCExport {
 		
 		exec($cmd, $pgsql2shpOutput, $retVal);
 		if($retVal != 0) {
-            $errorText = 'Postgres to SHP error: '.file_get_contents($errorFile);
 			file_put_contents($errorFile, $cmd, FILE_APPEND);
-            throw new Exception('Postgres to SHP error: '.file_get_contents($errorFile));
+            throw new Exception('Postgres to SHP error: ');
 		}
 		// charset related operations
         if(($dbfFile = fopen($filePath . '.dbf', "r+")) === FALSE) throw new Exception('Unable to edit dbf encoding');
