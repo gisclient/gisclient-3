@@ -123,7 +123,8 @@ abstract class AbstractUser {
             LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
             left JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
             WHERE ('.$sqlFilter.') AND ('.$authClause.')
-            group by project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name, layer.private, wms, wfs, wfst, layer_order ';
+            group by project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name, layer.private, wms, wfs, wfst, layer_order 
+            order by layer_order ';
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
         
