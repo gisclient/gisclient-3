@@ -192,7 +192,7 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oClass = ms_newClassObj($oLay);
 		$oStyle = ms_newStyleObj($oClass);
 		$oStyle->setbinding(MS_STYLE_BINDING_OUTLINECOLOR, "color");	
-		$oStyle->set("width", 2);
+		$oStyle->set("width", 1);
 		$oLay->set('status', MS_ON);
 
 		//Annotazione
