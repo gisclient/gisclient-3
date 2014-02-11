@@ -2,7 +2,13 @@
 require_once('../../config/config.php');
 require_once 'include/mapImage.php';
 
-$options = array('image_format'=>'gtiff');
+$options = array('image_format'=>'gtiff', 'output_format'=>'geotiff');
+if($_REQUEST['format'] == 'png') {
+    $options['image_format'] = 'png';
+    $options['output_format'] = 'png';
+    $options['save_image'] = true;
+    $options['file_name'] = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'gc_mapimage', 'png');
+}
 
 if(!empty($_REQUEST['tiles']) && is_array($_REQUEST['tiles'])) {
 	$tiles = $_REQUEST['tiles'];
@@ -33,4 +39,4 @@ try {
 } catch (Exception $e) {
     die(json_encode(array('result' => 'error', 'error' => $e->getMessage())));
 }
-die(json_encode(array('result' => 'ok', 'file' => $imageUrl, 'format' => 'geotiff')));
+die(json_encode(array('result' => 'ok', 'file' => $imageUrl, 'format' => $options['output_format'])));

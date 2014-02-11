@@ -35,8 +35,8 @@ $oMap->web->set('imagepath', IMAGE_PATH);
 $oMap->web->set('imageurl', IMAGE_URL);
 
 $sessionId = null;
-if(isset($mapConfig['GC_SESSION_ID']) && !empty($mapConfig['GC_SESSION_ID'])) $sessionId = $mapConfig['GC_SESSION_ID'];
-file_put_contents('debug.txt', var_export($mapConfig, true), FILE_APPEND);
+if(isset($mapConfig[GC_SESSION_NAME]) && !empty($mapConfig[GC_SESSION_NAME])) $sessionId = $mapConfig[GC_SESSION_NAME];
+
 foreach($mapConfig['layers'] as $key => $layer) {
 
 	if(isset($layer['URL'])) {
@@ -50,9 +50,10 @@ foreach($mapConfig['layers'] as $key => $layer) {
 		
 		if(!empty($layer['PARAMETERS']['PROJECT'])) $url .= 'PROJECT='.$layer['PARAMETERS']['PROJECT'];
 		if(!empty($layer['PARAMETERS']['MAP'])) $url .= '&MAP='.$layer['PARAMETERS']['MAP'];
+		if(!empty($layer['PARAMETERS']['TIME'])) $url .= '&TIME='.$layer['PARAMETERS']['TIME'];
 		if(!empty($layer['PARAMETERS']['REDLINEID'])) $url .= '&REDLINEID='.$layer['PARAMETERS']['REDLINEID'];
         if(!empty($layer['PARAMETERS']['LANG'])) $url .= '&LANG='.$layer['PARAMETERS']['LANG'];
-		if(!empty($sessionId)) $url .= '&GC_SESSION_ID='.$sessionId;
+		if(!empty($sessionId)) $url .= '&'.GC_SESSION_NAME.'='.$sessionId;
 		if(!empty($mapConfig['resolution'])) $url.= '&RESOLUTION='.$mapConfig['resolution'];
         $layerNames = '';
         if(!empty($layer['PARAMETERS']['LAYERS'])) {

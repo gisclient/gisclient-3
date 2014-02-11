@@ -3,6 +3,8 @@
 define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
 
+if(!defined('GC_SESSION_NAME')) die('Undefined GC_SESSION_NAME in config');
+
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
 	include ("./include/putrequest.php");
@@ -117,9 +119,9 @@ if($objRequest->getValueByName('service') == 'WMS') {
 
 // avvio la sessione
 if(!isset($_SESSION)) {
-    if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
-	if(isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
-		session_id($_REQUEST['GC_SESSION_ID']);
+    session_name(GC_SESSION_NAME);
+	if(isset($_REQUEST[GC_SESSION_NAME]) && !empty($_REQUEST[GC_SESSION_NAME])) {
+		session_id($_REQUEST[GC_SESSION_NAME]);
 	}
 	session_start();
 }

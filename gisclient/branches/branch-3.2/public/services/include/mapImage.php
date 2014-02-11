@@ -106,6 +106,9 @@ class mapImage {
 			if($this->options['image_format'] == 'gtiff') $extension = 'tif';
 			
 			$this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
+            
+            $saveImage = true;
+            if(empty($this->options['save_image']) && $this->options['image_format'] == 'gtiff') $saveImage = false;
 			
 			$requestParameters = json_encode(array(
 				'layers'=>$this->wmsList,
@@ -117,7 +120,7 @@ class mapImage {
 				'resolution'=>$this->options['dpi'],
 				'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
 				'format'=>$this->options['image_format'],
-				'GC_SESSION_ID'=>session_id()
+				GC_SESSION_NAME => session_id()
 			));
 			session_write_close();
 			
