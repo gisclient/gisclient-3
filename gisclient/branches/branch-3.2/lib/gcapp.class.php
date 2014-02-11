@@ -45,6 +45,15 @@ class GCApp {
 			);
 		}
 	}
+    
+    public static function getCatalogPath($catalogName) {
+        $db = GCApp::getDB();
+        
+        $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:catalog_name';
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array('catalog_name'=>$catalogName));
+        return $stmt->fetchColumn(0);
+    }
 
 	public static function prepareInStatement($values) {
 
