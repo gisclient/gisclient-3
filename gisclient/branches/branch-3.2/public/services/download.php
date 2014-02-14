@@ -28,10 +28,12 @@ if(strpos($_REQUEST['srid'], ':') !== false) {
 }
 
 if(!empty($_REQUEST['scale_mode'])) $options['scale_mode'] = $_REQUEST['scale_mode'];
+if(!empty($_REQUEST['fixed_size'])) $options['fixed_size'] = $_REQUEST['fixed_size'];
 if(!empty($_REQUEST['pixels_distance'])) $options['pixels_distance'] = $_REQUEST['pixels_distance'];
 if(!empty($_REQUEST['center'])) $options['center'] = $_REQUEST['center'];
 if(!empty($_REQUEST['dpi']) && is_numeric($_REQUEST['dpi'])) $options['dpi'] = (int) $_REQUEST['dpi'];
 if(!empty($_REQUEST['extent'])) $options['extent'] = explode(',', $_REQUEST['extent']);
+if(isset($_REQUEST['scalebar'])) $options['scalebar'] = $_REQUEST['scalebar'];
 			
 try {
 	$mapImage = new mapImage($tiles, $imageSize, $srid, $options);

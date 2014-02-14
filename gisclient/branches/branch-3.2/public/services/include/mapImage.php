@@ -21,6 +21,7 @@ class mapImage {
 			'image_format'=>'png', // or gtiff
 			'pixels_distance'=>null, //define the scale (how many meters are represented in the current viewport)
 			'auth_name'=>'EPSG',
+			'scalebar'=>true,
 			'request_type'=>'get-map',
 			'fixed_size'=>$imageSize,
             'TMP_PATH' => GC_WEB_TMP_DIR,
@@ -115,7 +116,7 @@ class mapImage {
 				'size'=>$this->imageSize,
 				'extent'=>$this->extent,
 				'srs'=>$this->options['auth_name'].':'.$this->srid,
-				'scalebar' => true,
+				'scalebar' => $this->options['scalebar'],
 				'save_image'=>($this->options['image_format'] != 'gtiff'),
 				'resolution'=>$this->options['dpi'],
 				'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
