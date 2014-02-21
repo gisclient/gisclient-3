@@ -22,7 +22,7 @@ class printDocument {
 			'A0' => array('w'=>115,'h'=>77)
 		)
 	);
-	protected $WMSMergeUrl = 'services/gcWMSMerge.php';
+	protected $WMSMergeUrl = 'services/gcWMSMerge.php'; 
 	protected $wmsList = array();
 	protected $imageSize = array();
 	protected $documentSize = array();
@@ -299,6 +299,10 @@ class printDocument {
 	protected function getMapImage() {
 		try {
 			$this->calculateSizes();
+            
+            if(!empty($this->vectors)) {
+                $this->options['vectors'] = $this->vectors;
+            }
 			
 			$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
 			$this->wmsList = $mapImage->getWmsList();
