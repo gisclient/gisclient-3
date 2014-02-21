@@ -1,0 +1,133 @@
+<StyledLayerDescriptor version="1.1.0" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc"
+	xmlns:ows="http://www.opengis.net/ows" xmlns="http://www.opengis.net/sld"
+	xmlns:wms="http://www.opengis.net/ows" xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd"> 
+	<NamedLayer> 
+		<Name>printvectors_POINT</Name>
+		<UserStyle>
+			<Name>printvectors_POINT</Name>
+			<FeatureTypeStyle>
+				<Rule> 
+					<Name>printvectors_POINT</Name> 
+					<PointSymbolizer>
+                        <Graphic>
+                            <Mark>
+                                <WellKnownName>CIRCLE</WellKnownName>
+                                <Fill>
+                                    <CssParameter name="fill">#00FFFF</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#0000FF</CssParameter>
+                                </Stroke>
+                            </Mark>
+                            <Size>20</Size>
+                            <Opacity>0.5</Opacity>
+                        </Graphic>
+                    </PointSymbolizer>
+				</Rule> 
+			</FeatureTypeStyle> 
+		</UserStyle> 
+	</NamedLayer> 
+	<NamedLayer> 
+		<Name>printvectors_MULTIPOINT</Name>
+		<UserStyle>
+			<Name>printvectors_MULTIPOINT</Name>
+			<FeatureTypeStyle>
+				<Rule> 
+					<Name>printvectors_MULTIPOINT</Name> 
+					<PointSymbolizer>
+                        <Graphic>
+                            <Mark>
+                                <WellKnownName>CIRCLE</WellKnownName>
+                                <Fill>
+                                    <CssParameter name="fill">#00FFFF</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#0000FF</CssParameter>
+                                </Stroke>
+                            </Mark>
+                            <Size>20</Size>
+                            <Opacity>0.5</Opacity>
+                        </Graphic>
+                    </PointSymbolizer>
+				</Rule> 
+			</FeatureTypeStyle> 
+		</UserStyle> 
+	</NamedLayer> 
+	<NamedLayer> 
+		<Name>printvectors_LINESTRING</Name>
+		<UserStyle>
+			<Name>printvectors_LINESTRING</Name>
+			<FeatureTypeStyle>
+				<Rule> 
+					<Name>printvectors_LINESTRING</Name> 
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#00FFFF</CssParameter>
+							<CssParameter name="stroke-width">3</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+				</Rule> 
+			</FeatureTypeStyle> 
+		</UserStyle> 
+	</NamedLayer> 
+	<NamedLayer> 
+		<Name>printvectors_MULTILINESTRING</Name>
+		<UserStyle>
+			<Name>printvectors_MULTILINESTRING</Name>
+			<FeatureTypeStyle>
+				<Rule> 
+					<Name>printvectors_MULTILINESTRING</Name> 
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#00FFFF</CssParameter>
+							<CssParameter name="stroke-width">3</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+				</Rule> 
+			</FeatureTypeStyle> 
+		</UserStyle> 
+	</NamedLayer> 
+	<NamedLayer> 
+		<Name>printvectors_POLYGON</Name>
+		<UserStyle>
+			<Name>printvectors_POLYGON</Name>
+			<FeatureTypeStyle>
+				<Rule> 
+					<Name>printvectors_POLYGON</Name> 
+					<PolygonSymbolizer>
+                        <Fill>
+                            <CssParameter name="fill">#00FFFF</CssParameter>
+                            <CssParameter name="fill-opacity">0.70</CssParameter>
+                        </Fill>
+                        <Stroke>
+                            <CssParameter name="stroke">#0000FF</CssParameter>
+                            <CssParameter name="stroke-width">1.00</CssParameter>
+                        </Stroke>
+                    </PolygonSymbolizer>
+				</Rule> 
+			</FeatureTypeStyle> 
+		</UserStyle> 
+	</NamedLayer> 
+	<NamedLayer> 
+		<Name>printvectors_MULTIPOLYGON</Name>
+		<UserStyle>
+			<Name>printvectors_MULTIPOLYGON</Name>
+			<FeatureTypeStyle>
+				<Rule> 
+					<Name>printvectors_MULTIPOLYGON</Name> 
+					<PolygonSymbolizer>
+                        <Fill>
+                            <CssParameter name="fill">#00FFFF</CssParameter>
+                            <CssParameter name="fill-opacity">0.70</CssParameter>
+                        </Fill>
+                        <Stroke>
+                            <CssParameter name="stroke">#0000FF</CssParameter>
+                            <CssParameter name="stroke-width">1.00</CssParameter>
+                        </Stroke>
+                    </PolygonSymbolizer>
+				</Rule> 
+			</FeatureTypeStyle> 
+		</UserStyle> 
+	</NamedLayer> 
+</StyledLayerDescriptor>
