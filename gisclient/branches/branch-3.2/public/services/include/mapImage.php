@@ -9,15 +9,27 @@ class mapImage {
 	protected $imageSize = array();
 	protected $mapSize = array();
 	protected $db = null;
+	protected $vectorId = null;
 	protected $options = array();
 	protected $imageFileName = null;
 	protected $srid = null;
-	
+    //public static $vectorTypes = array('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
+	public static $vectorTypes = array(
+        'MultiPolygon'=>array('db_type'=>'MULTIPOLYGON', 'db_field'=>'multipolygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
+        'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
+        'Point'=>array('db_type'=>'POINT', 'db_field'=>'point_geom', 'ms_type'=>MS_LAYER_POINT),
+        'MultiPoint'=>array('db_type'=>'MULTIPOINT', 'db_field'=>'multipoint_geom', 'ms_type'=>MS_LAYER_POINT),
+        'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'linestring_geom', 'ms_type'=>MS_LAYER_LINE),
+        'MultiLineString'=>array('db_type'=>'MULTILINESTRING', 'db_field'=>'multilinestring_geom', 'ms_type'=>MS_LAYER_LINE),
+    );
+    
+    
 	function __construct($tiles, $imageSize, $srid, $options) {
 		$defaultOptions = array(
 			'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale (requires pixels_distance)
 			'extent'=>array(),
 			'center'=>array(),
+            'vectors'=>null,
 			'image_format'=>'png', // or gtiff
 			'pixels_distance'=>null, //define the scale (how many meters are represented in the current viewport)
 			'auth_name'=>'EPSG',
@@ -45,6 +57,11 @@ class mapImage {
 			if(empty($this->options['extent'])) throw new Exception('Missing extent');
 			$this->extent = $this->adaptExtentToSize($this->options['extent']);
 		}
+        
+        if(!empty($this->options['vectors'])) {
+            $this->vectorId = $this->importVectors();
+        }
+        
 		if($this->options['request_type'] == 'get-map') {
 			$this->buildWmsList();
 		}
@@ -99,6 +116,16 @@ class mapImage {
             
             array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
 		}
+        
+        if(!empty($this->vectorId)) {
+            $url = PUBLIC_URL.'services/vectors.php';
+            $parameters = array(
+                'LAYERS'=>$this->vectorId,
+                'VERSION'=>'1.1.1',
+                'FORMAT'=>'image/png'
+            );
+            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
+        }
 	}
 	
 	protected function getMapImage() {
@@ -207,4 +234,76 @@ class mapImage {
 		}
 		return $parsedBoxes;
 	}
+    
+
+    protected function importVectors() {
+        if(!defined('PRINT_VECTORS_TABLE')) throw new Exception('Undefined PRINT_VECTORS_TABLE');
+        if(!defined('PRINT_VECTORS_SRID')) throw new Exception('Undefined PRINT_VECTORS_SRID');
+        
+        $tableName = PRINT_VECTORS_TABLE;
+        $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
+        
+        $db = GCApp::getDB();
+        
+        if(!GCApp::tableExists($db, $schema, $tableName)) {
+            $sql = 'create sequence '.$schema.'.'.$tableName.'_print_id_seq ';
+            $db->exec($sql);
+            $sql = 'create table '.$schema.'.'.$tableName.' (gid serial, print_id integer, insert_time timestamp without time zone not null default now()) WITH (OIDS=FALSE)';
+            $db->exec($sql);
+            $sql = 'select addgeometrycolumn(:schema, :table, :column, :srid, :type, 2)';
+            $addGeometryColumn = $db->prepare($sql);
+            foreach(self::$vectorTypes as $key => $type) {
+                $addGeometryColumn->execute(array(
+                    'schema'=>$schema,
+                    'table'=>$tableName,
+                    'srid'=>PRINT_VECTORS_SRID,
+                    'column'=>strtolower($type).'_geom',
+                    'type'=>$type['db_field']
+                ));
+            }
+            $sql = 'GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER;
+            $db->exec($sql);
+        }
+        
+        $sql = "select nextval('".$schema.".".$tableName."_print_id_seq')";
+        $printId = $db->query($sql)->fetchColumn(0);
+        
+        $vectors = array();
+        foreach($this->options['vectors'] as $vector) {
+            $type = $vector['type'];
+            if(!isset(self::$vectorTypes[$type])) continue;
+            if(!isset($vectors[$type])) $vectors[$type] = array();
+            array_push($vectors[$type], $vector);
+        }
+        
+        foreach($vectors as $type => $features) {
+            $field = self::$vectorTypes[$type]['db_field'];
+            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$field.') values (:print_id, st_geomfromtext(:geom, :srid))';
+            $stmt = $db->prepare($sql);
+            foreach($features as $feature) {
+                $stmt->execute(array(
+                    'print_id'=>$printId,
+                    'geom'=>$feature['geometry'],
+                    'srid'=>PRINT_VECTORS_SRID
+                ));
+            }
+        }
+        
+        $this->cleanVectors();
+        
+        return $printId;
+    }
+    
+    protected function cleanVectors() {
+        if(!defined('PRINT_VECTORS_TABLE')) throw new Exception('Undefined PRINT_VECTORS_TABLE');
+        if(!defined('PRINT_VECTORS_SRID')) throw new Exception('Undefined PRINT_VECTORS_SRID');
+        
+        $tableName = PRINT_VECTORS_TABLE;
+        $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
+        
+        $db = GCApp::getDB();
+        
+        $sql = 'delete from '.$schema.'.'.$tableName." where (insert_time + interval '1 day') < NOW()";
+        $db->exec($sql);
+    }
 }
