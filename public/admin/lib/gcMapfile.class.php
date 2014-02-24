@@ -105,7 +105,8 @@ class gcMapfile{
 			$filter = "project_name||'.'||theme_name||'.'||layergroup_name in (".$inQuery.")";
 		}
 		
-		if(!empty($this->languageId)) { // inizializzo l'oggetto i18n per le traduzioni
+		if(!empty($this->languageId)) { 
+		  // inizializzo l'oggetto i18n per le traduzioni
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
 
@@ -193,9 +194,9 @@ class gcMapfile{
 				$mapText[$mapName][] = $layerText;
 				if(!isset($symbolsList[$mapName]))
 					$symbolsList[$mapName] = $oFeature->aSymbols;
-				else
+				else{
 					$symbolsList[$mapName] = array_merge($symbolsList[$mapName],$oFeature->aSymbols);
-				
+				}
 				//SE IL LAYER E' DI TIPO TILERASTER AGGIUNGO IL CORRISPONDENTE LAYER TILEINDEX DI TIPO POLYGON
 				if($aLayer["layertype_id"] == 10){
 					$mapText[$mapName][] = $oFeature->getTileIndexLayer();
@@ -210,7 +211,7 @@ class gcMapfile{
 				//DEFINIZIONE DEI LAYER PER MAPPROXY (COSTRUISCO UN LAYER WMS ANCHE PER I WMTS/TMS PER I TEST)
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
 
-				if(!empty($aLayer["layer_name"]){
+				if(!empty($aLayer["layer_name"])){
 					if(empty($mpxLayers[$aLayer["theme_name"]])) $mpxLayers[$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
 					if(empty($mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $mpxLayers[$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 

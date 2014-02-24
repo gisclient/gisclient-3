@@ -574,7 +574,7 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, qtfield_id, qtfield_name, filter_field_name, field_header, fieldtype_id, qtrelation_name, qtrelationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, qtfield.editable as field_editable, qtfield_groups.groupname as field_group,qtfield_groups.editable as group_editable, layer.data_type, qtfield.lookup_table, qtfield.lookup_id, qtfield.lookup_name,qtrelation.qtrelation_id, qtrelation.data_field_1, qtrelation.table_field_1
+		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, qtfield_id, qtfield_name, filter_field_name, field_header, fieldtype_id, qtrelation_name, qtrelationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, qtfield.editable as field_editable, qtfield_groups.groupname as field_group,qtfield_groups.editable as group_editable, layer.data_type, qtfield.lookup_table, qtfield.lookup_id, qtfield.lookup_name,qtrelation.qtrelation_id, qtrelation.data_field_1, qtrelation.table_field_1
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -606,6 +606,7 @@ class gcMap{
 			}
 		
 			$typeTitle = empty($row["layer_title"])?$typeName:$row["layer_title"];
+			$groupTitle = empty($row["theme_title"])?$row["theme_name"]:$row["theme_title"];
 			$index = ($row['theme_single'] == 1 ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
 			if(!isset($featureTypes[$index])) $featureTypes[$index] = array();
 			if(!isset($featureTypes[$index][$typeName])) $featureTypes[$index][$typeName] = array();
@@ -620,6 +621,7 @@ class gcMap{
 			$featureTypes[$index][$typeName]["typeName"] = $typeName;	
 			$featureTypes[$index][$typeName]["title"] = $typeTitle;	
 			$featureTypes[$index][$typeName]["text"] = $typeTitle;	
+			$featureTypes[$index][$typeName]["group"] = $groupTitle;	
 			if($row['field_editable'] == 1 && !isset($featureTypes[$index][$typeName]['towsFeatureType'])) {
 				$featureTypes[$index][$typeName]['towsFeatureType'] = $row['data'];
 			}
