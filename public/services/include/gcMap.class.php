@@ -104,8 +104,8 @@ class gcMap{
 		//if (defined('GMAPSENSOR')) $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=true"; else $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=false";
 	
 		$sql = "SELECT mapset.*, ".
-			" x(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
-			" y(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
+			" st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
+			" st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
 			" max_extent_scale, project_title, mapset_grid, tilegrid_extent,tilegrid_resolutions FROM ".DB_SCHEMA.".mapset ".
 			" INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
 			" LEFT JOIN (SELECT project_name,srid as mapset_srid,tilegrid_name as mapset_grid,tilegrid_extent,tilegrid_resolutions FROM ".DB_SCHEMA.".project_srs INNER JOIN ".DB_SCHEMA.".e_tilegrid USING (tilegrid_id)) AS tilegrid USING (project_name,mapset_srid) ".
@@ -303,6 +303,7 @@ class gcMap{
 			if(!empty($row['metadata_url'])) $layerOptions['metadataUrl'] = $row['metadata_url'];
             if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
  			$layerOptions["theme"] = $themeTitle;
+ 			$layerOptions["theme_id"] = $row['theme_name'];
  			$layerOptions["title"] = $layergroupTitle;            
 
 			//ALLA ROVESCIA RISPETTO A MAPSERVER
@@ -622,6 +623,7 @@ class gcMap{
 			$featureTypes[$index][$typeName]["title"] = $typeTitle;	
 			$featureTypes[$index][$typeName]["text"] = $typeTitle;	
 			$featureTypes[$index][$typeName]["group"] = $groupTitle;	
+
 			if($row['field_editable'] == 1 && !isset($featureTypes[$index][$typeName]['towsFeatureType'])) {
 				$featureTypes[$index][$typeName]['towsFeatureType'] = $row['data'];
 			}

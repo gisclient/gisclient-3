@@ -212,12 +212,68 @@ class printDocument {
 			}*/
 		}
 	}
+    
+    protected function getLegendsFromMapfile() {
+        $layers = array();
+        $project = $mapset = null;
+        $themes = array();
+        
+        foreach($this->wmsList as $wms) {
+            if(!empty($wms['PARAMETERS']['PROJECT']) && empty($project)) $project = $wms['PARAMETERS']['PROJECT'];
+            if(!empty($wms['PARAMETERS']['MAP']) && empty($mapset)) $mapset = $wms['PARAMETERS']['MAP'];
+            
+            foreach($wms['PARAMETERS']['LAYERS'] as $layerName) {
+                if(isset($wms['options']['theme_id'])) {
+                    if(!isset($themes[$wms['options']['theme_id']])) {
+                        $themes[$wms['options']['theme_id']] = array(
+                            'id'=>$wms['options']['theme_id'],
+                            'title'=>$wms['options']['theme_title'],
+                            'layers'=>array()
+                        );
+                    }
+                    $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
+                }
+            }
+        }
+
+        $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+        foreach($themes as &$theme) {
+            $theme['groups'] = array();
+            foreach($theme['layers'] as $layergroupName) {
+                $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
+                foreach($layerIndexes as $index) {
+                    $oLayer = $oMap->getLayer($index);
+                    $layerName = $oLayer->name;
+                    $group = array(
+                        'id'=>$layerName,
+                        'title'=>$oLayer->getMetaData('ows_title'),
+                        'layers'=>array()
+                    );
+                    for($n = 0; $n < $oLayer->numclasses; $n++) {
+                        $oClass = $oLayer->getClass($n);
+                        $exclude = $oClass->getMetaData('gc_no_image');
+                        if(!empty($exclude)) continue;
+                        array_push($group['layers'], array(
+                            'url'=>$layerName.'-'.$n,
+                            'title'=>$oClass->title
+                        ));
+                    }
+                    array_push($theme['groups'], $group);
+                }
+            }
+        }
+        unset($theme);
+        return array('themes'=>$themes);
+    }
 	
 	protected function buildLegendArray() {
 		if(empty($this->options['legend'])) return null;
 		$this->buildLegendGraphicWmsList();
 		try {
 			$legendImages = array();
+            if(!is_array($this->options['legend'])) {
+                $this->options['legend'] = $this->getLegendsFromMapfile();
+            }
 			foreach($this->options['legend']['themes'] as $theme) {
 				if(empty($theme['groups'])) continue;
 				$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
@@ -265,7 +321,7 @@ class printDocument {
 			$url = printDocument::addPrefixToRelativeUrl($url);
 			$ch = curl_init($url);
 			$fp = fopen($dest, "wb");
-
+file_put_contents(DEBUG_DIR.'getlegendgraphic.txt', $url."\n", FILE_APPEND);
 			$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
 			curl_setopt_array($ch, $options);
 

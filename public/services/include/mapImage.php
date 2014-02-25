@@ -96,7 +96,9 @@ class mapImage {
             
             if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
             
-            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
+            $options = !empty($tile['options']) ? $tile['options'] : array();
+            
+            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters, 'options'=>$options));
 		}
 	}
 	
