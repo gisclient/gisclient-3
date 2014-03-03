@@ -119,6 +119,7 @@ class mapImage {
         
         if(!empty($this->vectorId)) {
             $url = PUBLIC_URL.'services/vectors.php';
+            $url = printDocument::addPrefixToRelativeUrl($url);
             $parameters = array(
                 'LAYERS'=>$this->vectorId,
                 'VERSION'=>'1.1.1',
@@ -257,8 +258,8 @@ class mapImage {
                     'schema'=>$schema,
                     'table'=>$tableName,
                     'srid'=>PRINT_VECTORS_SRID,
-                    'column'=>strtolower($type).'_geom',
-                    'type'=>$type['db_field']
+                    'column'=>$type['db_field'],
+                    'type'=>$type['db_type']
                 ));
             }
             $sql = 'GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER;
