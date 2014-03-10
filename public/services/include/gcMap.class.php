@@ -586,7 +586,7 @@ class gcMap{
 				LEFT JOIN ".DB_SCHEMA.".qtrelation using(qtrelation_id)
 				LEFT JOIN ".DB_SCHEMA.".qtfield_groups using(qtfield_id)
 				WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
-		$sql .= " ORDER BY theme_order, theme_id, layergroup_order, layergroup_name, layer_order, qtfield_order;";
+		$sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, qtfield_order, field_header;";
 		
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->mapsetName));
