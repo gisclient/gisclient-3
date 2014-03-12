@@ -190,8 +190,8 @@ function GCDataManager(catalogId) {
 					}
 				});
                 
-                self.hasLastEditColumn = !!response.lastEditColumn;
-                self.hasMeasureColumn = !!response.measureColumn;
+                //self.hasLastEditColumn = !!response.lastEditColumn;
+                //self.hasMeasureColumn = !!response.measureColumn;
 			}
 		});
 	}
@@ -340,10 +340,10 @@ function GCDataManager(catalogId) {
                             '<a href="#" class="button" data-action="empty" data-table="'+table.name+'">Empty</a>'+
 							'<a href="#" class="button" data-action="add_column" data-table="'+table.name+'">Add column</a>'+
 							'<a href="#" class="button" data-action="export_shp" data-table="'+table.name+'">Export SHP</a>';
-                        if(self.hasLastEditColumn && !table.has_last_edit_date_column && !table.has_last_edit_date_column) {
+                        if(!table.has_last_edit_date_column && !table.has_last_edit_date_column) {
                             html += '<a href="#" class="button" data-action="add_lastedit_column" data-table="'+table.name+'">Add Last edit col</a>';
                         }
-                        if(self.hasMeasureColumn && !table.has_length_column && !table.has_area_column && !table.has_pointx_column && !table.has_pointy_column) {
+                        if(!table.has_length_column && !table.has_area_column && !table.has_pointx_column && !table.has_pointy_column) {
                             html += '<a href="#" class="button" data-action="add_measure_column" data-table="'+table.name+'">Add measure col</a>';
                         }
                         html += '</td></tr>';
