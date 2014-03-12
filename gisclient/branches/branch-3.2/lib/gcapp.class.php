@@ -114,6 +114,16 @@ class GCApp {
         return ($stmt->rowCount() > 0);
     }
     
+    public static function columnExists($dataDb, $schema, $tableName, $columnName) {
+        $sql = "SELECT column_name from information_schema.columns " .
+                "WHERE table_schema=:schema AND table_name=:table " .
+                " AND column_name = :column ";
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName, ':column'=>$columnName));
+        $result = $stmt->fetchColumn(0);
+        return !empty($result);
+    }
+    
     public static function getColumns($dataDb, $schema, $tableName) {
         $sql = "SELECT column_name from information_schema.columns " .
                 "WHERE table_schema=:schema AND table_name=:table " .
