@@ -424,7 +424,7 @@ class gcFeature{
 					}else{
 						$aliasTable = DATALAYER_ALIAS_TABLE;
 					}
-                    $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
+                    //$groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
 					
 					//Campi calcolati non metto tabella.campo
 					//if(strpos($aField["field_name"],'(')!==false)
