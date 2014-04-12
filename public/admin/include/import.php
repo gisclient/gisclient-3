@@ -3,14 +3,14 @@
 	include_once "../../config/config.php";
 	error_reporting (E_ERROR | E_PARSE);
 
-
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
-	$sql="SELECT project_name FROM ".DB_SCHEMA.".project;";
-	if(!$db->sql_query($sql))
-		echo "<p>Impossibile eseguire la query : $sql</p>";
-	else
-		$ris=$db->sql_fetchrowset();
+    $db = GCApp::getDB();
+    $sql="SELECT project_name FROM ".DB_SCHEMA.".project;";
+    try {
+        $ris = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    } catch(Exception $e) {
+        echo "<p>Impossibile eseguire la query : $sql</p>";
+    }
+	
 	$opt[]="<option value=\"-1\">Seleziona ===></option>";
 	$opt[]="<option value=\"0\">Tutti</option>";
 	for($i=0;$i<count($ris);$i++){
@@ -20,12 +20,16 @@
 	$prm=$this->parametri;
 	$pr=$this->parametri["project"];
 	if($_POST["livello"]=="qt" && !$_POST["importa"]){	
-		$theme_id=$this->parametri["theme"];
-		$sql="SELECT layer_id,layer_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id) WHERE theme_id=$theme_id order by layer_name";
-		if(!$db->sql_query($sql))
-			echo "<p>Impossibile eseguire la query : $sql</p>";
-		else
-			$ris=$db->sql_fetchrowset();
+		$sql="SELECT layer_id,layer_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id) WHERE theme_id=:theme_id order by layer_name";
+        $stmt = $db->prepare($sql);
+        try {
+            $stmt->execute(array('theme_id'=>$this->parametri["theme"]));
+        } catch(Exception $e) {
+            echo "<p>Impossibile eseguire la query : $sql</p>";
+        }
+        $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+            
 		for($i=0;$i<count($ris);$i++){
 			$lay=$ris[$i];
 			$opt2[]="<option value=\"$lay[layer_id]\">$lay[layer_name]</option>";
@@ -44,11 +48,14 @@
 		$newName=$_POST["name"];
 		$layer=$_POST["layer"];
 		if($project!=''){
-			$sql="SELECT project_name FROM ".DB_SCHEMA.".project WHERE project_name='$project';";
-			if(!$db->sql_query($sql))
-				echo "<p>Impossibile eseguire la query : $sql</p>";
-			else
-				$projectName=$db->sql_fetchfield("project_name");
+			$sql="SELECT project_name FROM ".DB_SCHEMA.".project WHERE project_name=:project";
+            $stmt = $db->prepare($sql);
+            try {
+                $stmt->execute(array('project'=>$project));
+            } catch(Exception $e) {
+                echo "<p>Impossibile eseguire la query : $sql</p>";
+            }
+            $projectName = $stmt->fetchColumn(0);
 		}
 		else
 			$projectName=$_POST["name"];
