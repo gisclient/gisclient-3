@@ -13,18 +13,18 @@ $user = new GCUser();
 if(!empty($_REQUEST["logout"])) {
     $user->logout();
 }
-var_export($_REQUEST);
+
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
     $user->login($_POST['username'], $_POST['password']);
 }
 
-$db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+$db = GCApp::getDB();
+if(!$db) die( "Impossibile connettersi al database");
 
 $dbSchema=DB_SCHEMA;
 $sql="SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";
-$db->sql_query ($sql);
-$ris=$db->sql_fetchrowset();
+//$db->sql_query ($sql);
+$ris = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
 $mapset=array();
 for($i=0;$i<count($ris);$i++){
