@@ -612,12 +612,12 @@ class gcMap{
 			$index = ($row['theme_single'] == 1 ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
 			if(!isset($featureTypes[$index])) $featureTypes[$index] = array();
 			if(!isset($featureTypes[$index][$typeName])) $featureTypes[$index][$typeName] = array();
-            if($row['qtrelationtype_id'] == 2) {
+/*             if($row['qtrelationtype_id'] == 2) {
                 if(!isset($layersWith1n[$index])) $layersWith1n[$index] = array();
                 if(!isset($layersWith1n[$index][$typeName])) $layersWith1n[$index][$typeName] = array();
                 if(!in_array($row['qtrelation_id'], $layersWith1n[$index][$typeName])) array_push($layersWith1n[$index][$typeName], $row);
                 continue;
-            }
+            } */
 			
 			$featureTypes[$index][$typeName]["WMSLayerName"] = $row['theme_single']?$row['theme_name']:$row['layergroup_name'];	
 			$featureTypes[$index][$typeName]["typeName"] = $typeName;	
@@ -699,7 +699,7 @@ class gcMap{
 				$featureTypes[$index][$typeName]["properties"][] = $fieldSpecs;
 			}
 		}
-        foreach($layersWith1n as $index => $arr) {
+/*         foreach($layersWith1n as $index => $arr) {
             foreach($arr as $typeName => $qtRelations) {
                 foreach($qtRelations as $qtRelation) {
                     $featureTypes[$index][$typeName]['relation1n'] = $qtRelation;
@@ -720,7 +720,7 @@ class gcMap{
                     ));
                 }
             }
-        }
+        } */
 		
 		foreach($featureTypes as $index => $arr) {
 			foreach($arr as $typeName => $ftype) {

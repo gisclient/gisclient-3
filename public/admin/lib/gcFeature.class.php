@@ -462,6 +462,8 @@ class gcFeature{
 					
 					//TODO RELAZIONI 1-MOLTI IN GC3
 					if($rel["relation_type"] == 2){
+                        continue; //Le relazioni 1n non vengon inserite nel mapfile
+                        
 						//aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore � vuoto
 						
 						//$keyList = array();
@@ -469,14 +471,14 @@ class gcFeature{
 						//$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
                         
 						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessario specificare che la dataLayerGeom è quella della tab. layer ****
-							$groupBy = ' group by  '.implode(', ', $groupByFieldList).', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom;
+							//$groupBy = ' group by  '.implode(', ', $groupByFieldList).', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom;
 						// **** Marco Giraudi (Old Snapo) 02/09/2013 - Nelle Join è necessarioaggiungere il campo ID alla group by ****
-						if (!array_search($datalayerKey, $groupByFieldList))
-							$groupBy .= ', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerKey;
-						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
+						//if (!array_search($datalayerKey, $groupByFieldList))
+							//$groupBy .= ', ' . DATALAYER_ALIAS_TABLE . "." . $datalayerKey;
+						//$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
                         
-                        if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
-                        array_push($this->aFeature['1n_count_fields'], 'num_'.$idrel);
+                        //if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
+                        //array_push($this->aFeature['1n_count_fields'], 'num_'.$idrel);
 
 					}
 
