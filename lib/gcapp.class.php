@@ -282,8 +282,8 @@ class GCAuthor {
 		$sql = "select project_name, theme_title, layergroup_title, layer_title, layergroup_name || '.' || layer_name as feature_type from ".DB_SCHEMA.".layer ".
 			" inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
 			" inner join ".DB_SCHEMA.".theme using(theme_id) ".
-			" inner join ".DB_SCHEMA.".qtfield using(layer_id) ".
-			" where layer.queryable=1 and qtfield.editable=1 and theme.project_name=? ".
+			" inner join ".DB_SCHEMA.".field using(layer_id) ".
+			" where layer.queryable=1 and field.editable=1 and theme.project_name=? ".
 			" group by project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type ".
 			" order by theme_title, layergroup_title, layer_title ";
 		$stmt = $db->prepare($sql);

@@ -45,11 +45,11 @@ constant = "'Nuovo Query Template'"
 [style]
 standard = "style_name"
 constant = "'Nuovo Stile'"
-[qtrelation]
-standard = "qtrelation_name"
+[relation]
+standard = "relation_name"
 constant = "'Nuova Relazione'"
-[qtfield]
-standard = "qtfield_name"
+[field]
+standard = "field_name"
 constant = "'Nuovo Campo'"
 [qtlink]
 constant = "'Link'"
@@ -85,5 +85,5 @@ constant = "'Nuovo Filtro autenticazione'"
 constant = "'Filtri autenticazione del Layer'"
 [group_authfilter]
 constant = "'Filtri autenticazione Gruppo'"
-[qtfield_groups]
+[field_groups]
 constant = "'Autorizzazioni sui campi del modello di ricerca'"
