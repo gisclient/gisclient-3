@@ -13,7 +13,7 @@ $db = GCApp::getDB();
 /* Recupero i dati del layer */
 //qt_filter -> data_filter
 //mapset_filter -> non c'è più
-$sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.qtfield using(layer_id) where qtfield_id=:field_id';
+$sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.field using(layer_id) where field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -29,13 +29,13 @@ $sTable = $datalayerSchema.".".$datalayerTable;
 
 /* Recupero i dati del campo */
 //field_filter -> non c'è più
-$sql = 'select qtfield.qtfield_id, qtfield_name, catalog_path,  qtrelation.qtrelation_name, qtrelation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.qtfield left join '.DB_SCHEMA.'.qtrelation using (qtrelation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where qtfield.qtfield_id=:field_id';
+$sql = 'select field.field_id, field_name, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.field left join '.DB_SCHEMA.'.relation using (relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where field.field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
 $field = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if(empty($field['qtrelation_id'])) {
-    $field["qtrelation_name"] = DATALAYER_ALIAS_TABLE;//alias per la tabella del livello
+if(empty($field['relation_id'])) {
+    $field["relation_name"] = DATALAYER_ALIAS_TABLE;//alias per la tabella del livello
     $field["schema"] = $datalayerSchema;
     $field["table_name"] = $datalayerTable;
 }else{
@@ -44,27 +44,27 @@ if(empty($field['qtrelation_id'])) {
 
 // +++++++++++++++++ FILTRO AUTOSUGGEST ++++++++++++++++++++++++++++++++++//
 //Info campo che fa da filtro: ho passato una stringa di filtro a un campo che ha il campo filtro, devo cercare il campo di filtro stesso
-//$qtfieldFilterId = $field["field_filter"];
-//$qtfiltervalue = $_REQUEST["filtervalue"];
+//$fieldFilterId = $field["field_filter"];
+//$filtervalue = $_REQUEST["filtervalue"];
 $joinList = array();
 $joinString = $sTable ." as " . DATALAYER_ALIAS_TABLE;
 $datalayerFilter = implode(' AND ', $filters);
 
-$fieldName = $field["qtfield_name"];
+$fieldName = $field["field_name"];
 if(!empty($field['formula'])) {
     $fieldName = $field['formula'];
 }
 
-if(!empty($field["qtrelation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
+if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
     if(empty($field['formula'])) {
-        $fieldName = $field['qtrelation_name'] . '.' . $fieldName;
+        $fieldName = $field['relation_name'] . '.' . $fieldName;
     }
     
-    if($field["data_field_1"] && $field["table_field_1"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_1"]."=\"".$field["qtrelation_name"]."\".".$field["table_field_1"];
-    if($field["data_field_2"] && $field["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_2"]."=\"".$field["qtrelation_name"]."\".".$field["table_field_2"];
-    if($field["data_field_3"] && $field["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_3"]."=\"".$field["qtrelation_name"]."\".".$field["table_field_3"];
+    if($field["data_field_1"] && $field["table_field_1"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_1"]."=\"".$field["relation_name"]."\".".$field["table_field_1"];
+    if($field["data_field_2"] && $field["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_2"]."=\"".$field["relation_name"]."\".".$field["table_field_2"];
+    if($field["data_field_3"] && $field["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_3"]."=\"".$field["relation_name"]."\".".$field["table_field_3"];
     $joinFields = implode(" AND ",$joinList);
-    $joinString .= " inner join ". $field["schema"].".".$field["table_name"]." as ". $field["qtrelation_name"]." on ($joinFields) ";
+    $joinString .= " inner join ". $field["schema"].".".$field["table_name"]." as ". $field["relation_name"]." on ($joinFields) ";
     $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " .$joinString ." WHERE ". $fieldName ." ilike :input_string $datalayerFilter";
 } else { //caso elementare: il campo è su tabella del layer
     $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " . $field["schema"].".". $field["table_name"] ." as " .DATALAYER_ALIAS_TABLE. " WHERE ". $fieldName ." ilike :input_string $datalayerFilter";

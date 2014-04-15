@@ -60,13 +60,13 @@ class gcFeature{
 
 	function initFeature($layerId){
 
-		$sqlField = "select qtfield.*,
-			qtrelation.qtrelation_name, qtrelation_id, qtrelationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
-			catalog_path, catalog_url from ".DB_SCHEMA.".qtfield 
-			left join ".DB_SCHEMA.".qtrelation using (layer_id,qtrelation_id) 
+		$sqlField = "select field.*,
+			relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
+			catalog_path, catalog_url from ".DB_SCHEMA.".field 
+			left join ".DB_SCHEMA.".relation using (layer_id,relation_id) 
 			left join ".DB_SCHEMA.".catalog using (catalog_id) 
-			where qtfield.layer_id = ? 
-			order by qtfield_order;";
+			where field.layer_id = ? 
+			order by field_order;";
 		print_debug($sqlField,null,'template');
 
 		$stmt = $this->db->prepare($sqlField);
@@ -79,35 +79,35 @@ class gcFeature{
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		
 			if(!empty($this->i18n)) {
-				$row = $this->i18n->translateRow($row, 'qtfield', $row['qtfield_id'], array('qtfield_name', 'field_header'));
+				$row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name', 'field_header'));
 			}
 		
-			$qtfieldId=$row["qtfield_id"];
-			$qField[$qtfieldId]["field_name"]=trim($row["qtfield_name"]);
-			$qField[$qtfieldId]["formula"]=trim($row["formula"]);
-			$qField[$qtfieldId]["field_title"]=trim($row["field_header"]);
-			$qField[$qtfieldId]["field_type"]=$row["fieldtype_id"];
-			$qField[$qtfieldId]["data_type"]=$row["datatype_id"];			
-			$qField[$qtfieldId]["order_by"]=$row["orderby_id"];
-			$qField[$qtfieldId]["field_format"]=$row["field_format"];
-			$qField[$qtfieldId]["editable"]=$row["editable"];
-			$qField[$qtfieldId]["search_type"]=trim($row["searchtype_id"]);
-			$qField[$qtfieldId]["result_type"]=trim($row["resultype_id"]);
-			$qField[$qtfieldId]["field_filter"]=trim($row["field_filter"]);
-			$qField[$qtfieldId]["search_function"]=(!empty($row["search_function"]))?trim($row["search_function"]):'';
-			$qField[$qtfieldId]["relation"]=$row["qtrelation_id"];
-			$qField[$qtfieldId]["column_width"]=$row["column_width"];
+			$fieldId=$row["field_id"];
+			$qField[$fieldId]["field_name"]=trim($row["field_name"]);
+			$qField[$fieldId]["formula"]=trim($row["formula"]);
+			$qField[$fieldId]["field_title"]=trim($row["field_header"]);
+			$qField[$fieldId]["field_type"]=$row["fieldtype_id"];
+			$qField[$fieldId]["data_type"]=$row["datatype_id"];			
+			$qField[$fieldId]["order_by"]=$row["orderby_id"];
+			$qField[$fieldId]["field_format"]=$row["field_format"];
+			$qField[$fieldId]["editable"]=$row["editable"];
+			$qField[$fieldId]["search_type"]=trim($row["searchtype_id"]);
+			$qField[$fieldId]["result_type"]=trim($row["resultype_id"]);
+			$qField[$fieldId]["field_filter"]=trim($row["field_filter"]);
+			$qField[$fieldId]["search_function"]=(!empty($row["search_function"]))?trim($row["search_function"]):'';
+			$qField[$fieldId]["relation"]=$row["relation_id"];
+			$qField[$fieldId]["column_width"]=$row["column_width"];
 			$f=array();
-			if($qtrelationId=$row["qtrelation_id"]){
+			if($relationId=$row["relation_id"]){
 				if(($row["data_field_1"])&&($row["table_field_1"])) $f[]=array(trim($row["data_field_1"]),trim($row["table_field_1"]));
 				if(($row["data_field_2"])&&($row["table_field_2"])) $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
 				if(($row["data_field_3"])&&($row["table_field_3"])) $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
-				$qRelation[$qtrelationId]["join_field"]=$f;
-				$qRelation[$qtrelationId]["name"]=NameReplace($row["qtrelation_name"]);
-				$qRelation[$qtrelationId]["table_name"]=trim($row["table_name"]);
-				$qRelation[$qtrelationId]["catalog_path"]=trim($row["catalog_path"]);
-				$qRelation[$qtrelationId]["catalog_url"]=trim($row["catalog_url"]);
-				$qRelation[$qtrelationId]["relation_type"]=$row["qtrelationtype_id"];				
+				$qRelation[$relationId]["join_field"]=$f;
+				$qRelation[$relationId]["name"]=NameReplace($row["relation_name"]);
+				$qRelation[$relationId]["table_name"]=trim($row["table_name"]);
+				$qRelation[$relationId]["catalog_path"]=trim($row["catalog_path"]);
+				$qRelation[$relationId]["catalog_url"]=trim($row["catalog_url"]);
+				$qRelation[$relationId]["relation_type"]=$row["relationtype_id"];				
 			}
 		}	
 		

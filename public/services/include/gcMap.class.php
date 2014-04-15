@@ -576,17 +576,17 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, qtfield_id, qtfield_name, filter_field_name, field_header, fieldtype_id, qtrelation_name, qtrelationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, qtfield.editable as field_editable, qtfield_groups.groupname as field_group,qtfield_groups.editable as group_editable, layer.data_type, qtfield.lookup_table, qtfield.lookup_id, qtfield.lookup_name,qtrelation.qtrelation_id, qtrelation.data_field_1, qtrelation.table_field_1
+		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
 				INNER JOIN ".DB_SCHEMA.".layer using (layergroup_id)
 				INNER JOIN ".DB_SCHEMA.".catalog using (catalog_id)
-				LEFT JOIN ".DB_SCHEMA.".qtfield using(layer_id)
-				LEFT JOIN ".DB_SCHEMA.".qtrelation using(qtrelation_id)
-				LEFT JOIN ".DB_SCHEMA.".qtfield_groups using(qtfield_id)
+				LEFT JOIN ".DB_SCHEMA.".field using(layer_id)
+				LEFT JOIN ".DB_SCHEMA.".relation using(relation_id)
+				LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
 				WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
-		$sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, qtfield_order, field_header;";
+		$sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, field_order, field_header;";
 		
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->mapsetName));
@@ -596,7 +596,7 @@ class gcMap{
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			if(!empty($this->i18n)) {
 				$row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
-				$row = $this->i18n->translateRow($row, 'qtfield', $row['qtfield_id'], array('qtfield_name','field_header'));
+				$row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name','field_header'));
 			}
 	
 			//DETTAGLIO AUTORIZZAZIONI
@@ -612,10 +612,10 @@ class gcMap{
 			$index = ($row['theme_single'] == 1 ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
 			if(!isset($featureTypes[$index])) $featureTypes[$index] = array();
 			if(!isset($featureTypes[$index][$typeName])) $featureTypes[$index][$typeName] = array();
-/*             if($row['qtrelationtype_id'] == 2) {
+/*             if($row['relationtype_id'] == 2) {
                 if(!isset($layersWith1n[$index])) $layersWith1n[$index] = array();
                 if(!isset($layersWith1n[$index][$typeName])) $layersWith1n[$index][$typeName] = array();
-                if(!in_array($row['qtrelation_id'], $layersWith1n[$index][$typeName])) array_push($layersWith1n[$index][$typeName], $row);
+                if(!in_array($row['relation_id'], $layersWith1n[$index][$typeName])) array_push($layersWith1n[$index][$typeName], $row);
                 continue;
             } */
 			
@@ -651,10 +651,10 @@ class gcMap{
 			
 	
 			//TODO DA VERIFICARE DA VEDERE ANCHE L'OPZIONE PER IL CAMPO EDITABILE CHE SOVRASCRIVE QUELLO DI DEFAULT
-			if(($fieldName = $row["qtfield_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
+			if(($fieldName = $row["field_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
 				/*
-				if(!empty($row["qtrelation_name"])){
-					$fieldName = $row["qtrelation_name"] . "_" . NameReplace($row["field_header"]);
+				if(!empty($row["relation_name"])){
+					$fieldName = $row["relation_name"] . "_" . NameReplace($row["field_header"]);
 				}
 				*/
 				//AGGIUNGO IL CAMPO GEOMETRIA COME PRIMO CAMPO			
@@ -675,12 +675,12 @@ class gcMap{
 					"name"=>$fieldName,		
 					"header"=>(strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["field_header"]):$row["field_header"],
 					"type"=>"String",//TODO
-					"fieldId"=>intval($row["qtfield_id"]),
+					"fieldId"=>intval($row["field_id"]),
 					"fieldType"=>intval($row["fieldtype_id"]),
 					"dataType"=>intval($row["datatype_id"]),
 					"searchType"=>intval($row["searchtype_id"]),
 					'editable'=>$userCanEdit ? $row['field_editable'] : 0,
-					"relationType"=>intval($row["qtrelationtype_id"]),
+					"relationType"=>intval($row["relationtype_id"]),
 					"resultType"=>intval($row["resultype_id"]),
                     'filterFieldName'=>$row['filter_field_name'],
 					"fieldFilter"=>intval($row["field_filter"]),
@@ -700,11 +700,11 @@ class gcMap{
 			}
 		}
 /*         foreach($layersWith1n as $index => $arr) {
-            foreach($arr as $typeName => $qtRelations) {
-                foreach($qtRelations as $qtRelation) {
-                    $featureTypes[$index][$typeName]['relation1n'] = $qtRelation;
+            foreach($arr as $typeName => $Relations) {
+                foreach($Relations as $Relation) {
+                    $featureTypes[$index][$typeName]['relation1n'] = $Relation;
                     array_push($featureTypes[$index][$typeName]['properties'], array(
-                        'name'=>'num_'.$qtRelation['qtrelation_id'],
+                        'name'=>'num_'.$Relation['relation_id'],
                         'header'=>'Num',
                         'type'=>'String',
                         'fieldId'=>9999999,
