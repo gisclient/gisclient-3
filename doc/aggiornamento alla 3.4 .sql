@@ -450,7 +450,7 @@ CREATE TABLE qt_field
   CONSTRAINT qtfield_qt_id_fkey FOREIGN KEY (qt_id)
       REFERENCES qt (qt_id) MATCH FULL
       ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT qtfield_qtfield_name_qt_id_key UNIQUE (qtfield_name, qtrelation_id, qt_id),
+  CONSTRAINT qtfield_qt_id_key UNIQUE (qt_id, field_header),
   CONSTRAINT qtfield_qtrelation_id_check CHECK (qtrelation_id >= 0)
 );
 
@@ -510,3 +510,13 @@ CREATE TABLE qt_link
 );
 CREATE INDEX fki_qt_link_link_id_fkey ON qt_link USING btree (link_id);
 CREATE INDEX fki_qt_link_qt_id_fkey ON qt_link USING btree (qt_id);
+
+
+
+
+
+--AGGIORNAMENTO DEI DATI
+insert into qt select * from gisclient_22.qt;
+insert into qt_field select * from gisclient_22.qtfield;
+insert into qt_relation select * from gisclient_22.qtrelation;
+insert into qt_link select * from gisclient_22.qt_link;
