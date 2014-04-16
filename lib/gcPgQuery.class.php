@@ -67,13 +67,13 @@ class PgQuery{
 		$sqlQt = '';
 		if($_REQUEST["mode"]=="select"){
 			if($_REQUEST["item"]=="layers_all")//tutti i modelli di ricerca abilitati per i layer presenti nel mapset
-				$sqlQt=" in (select qt_id from $dbschema.mapset_qt where mapset_name='".$_REQUEST["mapset"]."')";
+				$sqlQt=" in (select id from $dbschema.mapset_qt where mapset_name='".$_REQUEST["mapset"]."')";
 			elseif($_REQUEST["item"]=="layers_on"){//tutti i modelli di ricerca abilitati per i layer attivi
 				$layersOn = implode(',',$_SESSION[$myMap]["GROUPS_ON"]);
-				$sqlQt=" in (select qt_id from $dbschema.mapset_qt inner join $dbschema.qt using(qt_id) inner join $dbschema.layer using(layer_id) inner join $dbschema.layergroup using(layergroup_id)  where layergroup_id in($layersOn) and  mapset_name='".$_REQUEST["mapset"]."')";
+				$sqlQt=" in (select id from $dbschema.mapset_qt inner join $dbschema.qt using(id) inner join $dbschema.layer using(layer_id) inner join $dbschema.layergroup using(layergroup_id)  where layergroup_id in($layersOn) and  mapset_name='".$_REQUEST["mapset"]."')";
 			}
 			else//tutti i modelli di ricerca per il gruppo di selezione
-				$sqlQt=" in (select qt_id from $dbschema.selgroup inner join $dbschema.qt_selgroup using(selgroup_id) where selgroup_id=".$_REQUEST["item"].")";
+				$sqlQt=" in (select id from $dbschema.selgroup inner join $dbschema.selgroup using(selgroup_id) where selgroup_id=".$_REQUEST["item"].")";
 			
 		}elseif($_REQUEST["mode"]=="search" || $_REQUEST["mode"]=="table"){//restituisco le info per questo modello di ricerca  oppure restituisco le info per la tabella secondaria
 			$sqlQt .= " = " . $_REQUEST["item"];				
@@ -82,46 +82,50 @@ class PgQuery{
 			return;
 		}
 		
+		//************** CABLO IKL LAYER ID *************
+		$sqlQt = "=783";
+
 		//costruzione oggetto querytemplate
-		$sqlField="select qtfield.*,qtrelation.qtrelation_name,qtrelation_id,qtrelationtype_id,data_field_1,data_field_2,data_field_3,table_field_1,table_field_2,table_field_3,table_name,catalog_path,catalog_url from $dbschema.qtfield left join $dbschema.qtrelation using (qtrelation_id) left join $dbschema.catalog using (catalog_id) where resultype_id in (".$this->resultype.",".RESULT_TYPE_ALL.",".RESULT_TYPE_NONE.") and qtfield.qt_id $sqlQt order by qtfield_order;";
-		
+		$sqlField="select field.*,relation.relation_name,relation_id,relationtype_id,data_field_1,data_field_2,data_field_3,table_field_1,table_field_2,table_field_3,table_name,catalog_path,catalog_url from $dbschema.field left join $dbschema.relation using (relation_id) left join $dbschema.catalog using (catalog_id) where resultype_id in (".$this->resultype.",".RESULT_TYPE_ALL.",".RESULT_TYPE_NONE.") and field.layer_id ".$sqlQt." order by field_order;";
+		echo $sqlField;
 		print_debug($sqlField,null,'template');
 		$db->sql_query ($sqlField);
 		$qRelation = array();
 		$qField = array();
 		while($row=$db->sql_fetchrow()){
-			$qtId=$row["qt_id"];
-			$qtfieldId=$row["qtfield_id"];
-			$qField[$qtId][$qtfieldId]["field_name"]=trim($row["qtfield_name"]);
-			$qField[$qtId][$qtfieldId]["field_alias"]=trim($row["field_header"]);
-			$qField[$qtId][$qtfieldId]["field_type"]=$row["fieldtype_id"];
-			$qField[$qtId][$qtfieldId]["data_type"]=$row["datatype_id"];			
-			$qField[$qtId][$qtfieldId]["order_by"]=$row["orderby_id"];
-			$qField[$qtId][$qtfieldId]["field_format"]=$row["field_format"];
-			$qField[$qtId][$qtfieldId]["search_type"]=trim($row["searchtype_id"]);
-			$qField[$qtId][$qtfieldId]["result_type"]=trim($row["resultype_id"]);
-			$qField[$qtId][$qtfieldId]["field_filter"]=trim($row["field_filter"]);
-			$qField[$qtId][$qtfieldId]["search_function"]=(isset($row["search_function"]))?trim($row["search_function"]):'';
-			$qField[$qtId][$qtfieldId]["relation"]=$row["qtrelation_id"];
-			$qField[$qtId][$qtfieldId]["column_width"]=$row["column_width"];
+			$Id=$row["layer_id"];
+			$fieldId=$row["field_id"];
+			$qField[$Id][$fieldId]["field_name"]=trim($row["field_name"]);
+			$qField[$Id][$fieldId]["field_alias"]=trim($row["field_header"]);
+			$qField[$Id][$fieldId]["field_type"]=$row["fieldtype_id"];
+			$qField[$Id][$fieldId]["data_type"]=$row["datatype_id"];			
+			$qField[$Id][$fieldId]["order_by"]=$row["orderby_id"];
+			$qField[$Id][$fieldId]["field_format"]=$row["field_format"];
+			$qField[$Id][$fieldId]["search_type"]=trim($row["searchtype_id"]);
+			$qField[$Id][$fieldId]["result_type"]=trim($row["resultype_id"]);
+			$qField[$Id][$fieldId]["field_filter"]=trim($row["field_filter"]);
+			$qField[$Id][$fieldId]["search_function"]=(isset($row["search_function"]))?trim($row["search_function"]):'';
+			$qField[$Id][$fieldId]["relation"]=$row["relation_id"];
+			$qField[$Id][$fieldId]["column_width"]=$row["column_width"];
 			$f=array();
-			if($qtrelationId=$row["qtrelation_id"]){
+			if($relationId=$row["relation_id"]){
 				if(($row["data_field_1"])&&($row["table_field_1"])) $f[]=array(trim($row["data_field_1"]),trim($row["table_field_1"]));
 				if(($row["data_field_2"])&&($row["table_field_2"])) $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
 				if(($row["data_field_3"])&&($row["table_field_3"])) $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
-				$qRelation[$qtId][$qtrelationId]["join_field"]=$f;
-				$qRelation[$qtId][$qtrelationId]["name"]=trim($row["qtrelation_name"]);
-				$qRelation[$qtId][$qtrelationId]["table_name"]=trim($row["table_name"]);
-				$qRelation[$qtId][$qtrelationId]["path"]=trim($row["catalog_path"]);
-				$qRelation[$qtId][$qtrelationId]["catalog_url"]=trim($row["catalog_url"]);
-				if($row["qtrelationtype_id"]==100){
-					$row["qtrelationtype_id"]=2;
+				$qRelation[$Id][$relationId]["join_field"]=$f;
+				$qRelation[$Id][$relationId]["name"]=trim($row["relation_name"]);
+				$qRelation[$Id][$relationId]["table_name"]=trim($row["table_name"]);
+				$qRelation[$Id][$relationId]["path"]=trim($row["catalog_path"]);
+				$qRelation[$Id][$relationId]["catalog_url"]=trim($row["catalog_url"]);
+				if($row["relationtype_id"]==100){
+					$row["relationtype_id"]=2;
 					$this->isGraph=1;
 				}
-				$qRelation[$qtId][$qtrelationId]["relation_type"]=$row["qtrelationtype_id"];				
+				$qRelation[$Id][$relationId]["relation_type"]=$row["relationtype_id"];				
 			}
 		}
 		
+		//print("<pre>");print_r($qField);
 		//Assegno alle relazioni i valori  di schema e connessione
 		foreach($qRelation as $qt=>$aRel){
 			foreach($aRel as $qtrel=>$row){
@@ -130,12 +134,12 @@ class PgQuery{
 				$qRelation[$qt][$qtrel]["table_schema"] = $aConnInfo[1];
 			}
 		}
-
+		print("<pre>");print_r($qRelation);
 		//Aggiungo eventuali hyperlink relativi ai query_template	
-		$sqlLink="select qt_link.qt_id,link.link_id,link_def,link.link_name,winw,winh,link_order from $dbschema.link inner join $dbschema.mapset_link using (link_id) inner join $dbschema.qt_link using (link_id) where mapset_name = '". $_REQUEST["mapset"]."' and resultype_id in (".$this->resultype.",3) and qt_link.qt_id $sqlQt order by link_order;";
+		$sqlLink="select link.id,link.link_id,link_def,link.link_name,winw,winh,link_order from $dbschema.link inner join $dbschema.mapset_link using (link_id) inner join $dbschema.link using (link_id) where mapset_name = '". $_REQUEST["mapset"]."' and resultype_id in (".$this->resultype.",3) and link.id $sqlQt order by link_order;";
 		$db->sql_query ($sqlLink);		
 		while($row=$db->sql_fetchrow()){
-			$qtId=intval($row["qt_id"]);
+			$qtId=intval($row["id"]);
 			$linkId=intval($row["link_id"]);
 			$link=$row["link_def"];
 			$linkTitle=$row["link_name_alt"]?$row["link_name_alt"]:$row["link_name"];
@@ -144,14 +148,14 @@ class PgQuery{
 		print_debug($sqlLink,null,'template');
 
 		//query template *******************
-		$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,qt_id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,qt_name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,qt_filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.qt_id $sqlQt order by qt_order;";
+		$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.id $sqlQt order by order;";
 		print_debug($sqlTemplate,null,'template');
 		
 		$db->sql_query ($sqlTemplate);
 		//Tutti i query template dei modelli di ricerca interessati
 		$allTemplates = array();
 		while($row=$db->sql_fetchrow()){
-			$qtId=$row["qt_id"];
+			$qtId=$row["id"];
 			$allTemplates[$qtId]=$row;
 			$allTemplates[$qtId]["field"]= (isset($qField[$qtId]))?$qField[$qtId]:null;
 			$allTemplates[$qtId]["relation"]= (isset($qRelation[$qtId]))?$qRelation[$qtId]:null;
@@ -175,6 +179,11 @@ class PgQuery{
 			unset($_SESSION[$myMap]["SELECTION_ACTIVE"]);
 			$this->mapToUpdate=1;
 		}
+
+
+		print_r($allTemplates);die();
+
+
 	}
 
 
@@ -230,11 +239,11 @@ class PgQuery{
 	//Per ogni querytemplate ritorna un array di risultati
 	function _getInfoByTemplate($aTemplate){
 		$myMap = "MAPSET_".$_REQUEST["mapset"];
-		$templateId = $aTemplate["qt_id"];
+		$templateId = $aTemplate["id"];
 		$layerId=$aTemplate["layer_id"];
 		$layerName=$aTemplate["layer_name"];
 		$layergroupId=$aTemplate["layergroup_id"];
-		$templateTitle=$aTemplate["qt_name"];
+		$templateTitle=$aTemplate["name"];
 		$datalayerTable=$aTemplate["data"];	
 		$datalayerGeom=$aTemplate["data_geom"];			
 		$datalayerKey=$aTemplate["data_unique"];	
@@ -261,11 +270,11 @@ class PgQuery{
 		$datalayerFilter = null;
 		if($aTemplate["mapset_filter"]==1)
 			$datalayerFilter=$_SESSION[$myMap]["FILTER"];
-		if($aTemplate["qt_filter"]){
+		if($aTemplate["filter"]){
 			if($datalayerFilter) 
-				$datalayerFilter.=" AND " . $aTemplate["qt_filter"];
+				$datalayerFilter.=" AND " . $aTemplate["filter"];
 			else
-				$datalayerFilter = $aTemplate["qt_filter"];
+				$datalayerFilter = $aTemplate["filter"];
 		}	
 		if($aTemplate["data_filter"]){
 			if($datalayerFilter) 
@@ -933,13 +942,13 @@ class PgQuery{
 	//Setta l'array di request per chiamate esterne
 	function _setRequest(){
 		$dbschema=DB_SCHEMA;
-		$sql="select mapset_qt.qt_id,layer.layergroup_id,theme.theme_id from $dbschema.mapset_qt inner join $dbschema.qt using(qt_id) inner join $dbschema.theme using(theme_id) inner join $dbschema.layer using(layer_id) where lower(theme_name)=lower('".$_REQUEST["theme"]."') and lower(qt_name)=lower('".$_REQUEST["qt"]."');";
+		$sql="select mapset_qt.id,layer.layergroup_id,theme.theme_id from $dbschema.mapset_qt inner join $dbschema.qt using(id) inner join $dbschema.theme using(theme_id) inner join $dbschema.layer using(layer_id) where lower(theme_name)=lower('".$_REQUEST["theme"]."') and lower(name)=lower('".$_REQUEST["qt"]."');";
 		print_debug($sql,null,'extcall');
 		$this->db->sql_query($sql);
-		$qtId = $this->db->sql_fetchfield('qt_id');
+		$qtId = $this->db->sql_fetchfield('id');
 		$layergroupId = $this->db->sql_fetchfield('layergroup_id');
 		$themeId = $this->db->sql_fetchfield('theme_id');
-		$sql="select qtfield_id,field_header from $dbschema.qtfield where qt_id=$qtId";
+		$sql="select qtfield_id,field_header from $dbschema.qtfield where id=$qtId";
 		$this->db->sql_query($sql);
 		$qfdata=array();
 		while($row = $this->db->sql_fetchrow()){
