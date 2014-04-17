@@ -9,7 +9,7 @@
 	//Elenco dei progetti a disposizione dell'Utente
 	$projectList=@implode(",",$_SESSION["PROJECT"]);
 	$sql="SELECT project_id,project_name FROM ".DB_SCHEMA.".project WHERE project_id IN ($projectList)";
-	if(!$db->sql_query($sql)) print_debug($sql)
+	if(!$db->sql_query($sql)) print_debug($sql);
 	$ris=$db->sql_fetchrowset();
 	$projectOpt[]="<option value=\"-1\">Seleziona ====></option>";
 	if (count($ris)>1) $projectOpt[]="<option value=\"0\">Tutti</option>";
