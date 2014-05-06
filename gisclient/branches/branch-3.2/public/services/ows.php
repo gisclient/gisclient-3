@@ -34,7 +34,16 @@ if(defined('DEBUG') && DEBUG == true) {
 }
 
 $objRequest = ms_newOwsrequestObj();
-foreach ($_REQUEST as $k => $v) if (is_string($v)) $objRequest->setParameter($k, stripslashes($v));
+foreach ($_REQUEST as $k => $v) {
+    // SLD parameter is handled later (to work also with getlegendgraphic)
+    // skipping this parameter does avoid a second request made by mapserver
+    if (in_array($k, array('SLD'))) {
+        continue;
+    }
+    if (is_string($v)) {
+        $objRequest->setParameter($k, stripslashes($v));
+    }
+}
 
 //OGGETTO MAP MAPSCRIPT
 $directory = "../../map/".$objRequest->getvaluebyname('project')."/";
