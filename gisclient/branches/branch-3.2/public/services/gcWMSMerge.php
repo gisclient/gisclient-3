@@ -1,17 +1,73 @@
 <?php
 require_once "../../config/config.php";
+
+// eventually handle debug at the mapserver level, including some timing information
+$enableDebug = false;
+$logfile = "/tmp/mapfile.debug";
+if (defined('DEBUG') && DEBUG) {
+	$enableDebug = true;
+	$logfile = DEBUG_DIR . "/mapfile.debug";
+}
+
+/**
+ * MapServer, at least of version 5.6, is not too happy if there are some
+ * parameters in the request.
+ */
+function cleanWMSRequest($url) {
+	// this list should propably include all WMS parameters
+	$bannedParameters = array('version');
+	$urlParts = parse_url($url);
+	if (isset($urlParts['query'])) {
+		parse_str($urlParts['query'], $queryParts);
+		foreach ($queryParts as $paramName => $paramValue) {
+			if(in_array(strtolower($paramName), $bannedParameters)) {
+				unset($queryParts[$paramName]);
+			}
+		}
+		$urlParts['query'] = http_build_query($queryParts);
+	}
+	$cleanUrl = '';
+	if (isset($urlParts['scheme'])) {
+		$cleanUrl .= $urlParts['scheme'] . '://';
+	}
+
+	if (isset($urlParts['user'])) {
+		$cleanUrl .= $urlParts['user'];
+		if (isset($urlParts['pass'])) {
+			$cleanUrl .= ':'. $urlParts['pass'];
+		}
+		$cleanUrl .= '@';
+	}
+	if (isset($urlParts['host'])) {
+		$cleanUrl .= $urlParts['host'];
+	}
+	if (isset($urlParts['path'])) {
+		$cleanUrl .= $urlParts['path'];
+	}
+	if (isset($urlParts['query'])) {
+		$cleanUrl .= '?'.$urlParts['query'];
+	}
+	if (isset($urlParts['fragment'])) {
+		$cleanUrl .= $urlParts['fragment'];
+	}
+	return $cleanUrl;
+}
+
 // i config li facciamo arrivare dalla classe php che abbiamo fatto noi per la stampa
 // li c'è il calcolo di scala, dimensioni etc
 // c'è anche la legenda e la generazione dell'html
 // questo file si occuperà solo di creare l'immagine e può essere usato anche per fare il download dell'immagine di mappa
 $mapConfig = json_decode($_REQUEST['options'], true);
-//file_put_contents('debug.txt', var_export($mapConfig, true));
 
 $oMap=ms_newMapObj('');
 if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB); 
 $oMap->setSize(intval($mapConfig['size'][0]), intval($mapConfig['size'][1]));
 $oMap->setProjection("init=".strtolower($mapConfig['srs']));
 $oMap->extent->setextent($mapConfig['extent'][0], $mapConfig['extent'][1], $mapConfig['extent'][2], $mapConfig['extent'][3]);
+if ($enableDebug) { 
+	$oMap->setConfigOption("MS_ERRORFILE", $logfile);
+	$oMap->set('debug', 5);
+}
 if(!empty($mapConfig['resolution'])) {
 	$oMap->set('resolution', (int)$mapConfig['resolution']);
 } else {
@@ -51,7 +107,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 		if(!empty($layer['PARAMETERS']['PROJECT'])) $url .= 'PROJECT='.$layer['PARAMETERS']['PROJECT'];
 		if(!empty($layer['PARAMETERS']['MAP'])) $url .= '&MAP='.$layer['PARAMETERS']['MAP'];
 		if(!empty($layer['PARAMETERS']['TIME'])) $url .= '&TIME='.$layer['PARAMETERS']['TIME'];
-        if(!empty($layer['PARAMETERS']['PREV_TIME'])) $url .= '&PREV_TIME='.$layer['PARAMETERS']['PREV_TIME'];
+		if(!empty($layer['PARAMETERS']['PREV_TIME'])) $url .= '&PREV_TIME='.$layer['PARAMETERS']['PREV_TIME'];
 		if(!empty($layer['PARAMETERS']['REDLINEID'])) $url .= '&REDLINEID='.$layer['PARAMETERS']['REDLINEID'];
         if(!empty($layer['PARAMETERS']['LANG'])) $url .= '&LANG='.$layer['PARAMETERS']['LANG'];
 		if(!empty($sessionId)) $url .= '&'.GC_SESSION_NAME.'='.$sessionId;
@@ -61,12 +117,15 @@ foreach($mapConfig['layers'] as $key => $layer) {
             if(is_array($layer['PARAMETERS']['LAYERS'])) $layerNames = implode(',', $layer['PARAMETERS']['LAYERS']);
             else $layerNames = $layer['PARAMETERS']['LAYERS'];
         }
-		
+
 		$oLay = ms_newLayerObj($oMap);
 		$oLay->set('name', 'print_layer_'.$key);
 		$oLay->set('type', MS_LAYER_RASTER);
+		if ($enableDebug) {
+			$oLay->set('debug', 5);
+		}
 		$oLay->setConnectionType(MS_WMS);
-		$oLay->set('connection', $url);
+		$oLay->set('connection', cleanWMSRequest($url));
 		if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
 			$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
             $oLay->setMetaData("wms_force_separate_request", 1);
@@ -117,7 +176,10 @@ if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format
 ms_ResetErrorList();
 
 $oImage = $oMap->draw();
-//$oMap->save('debug.map');
+
+if ($enableDebug) { 
+	$oMap->save('debug.map');
+}
 if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format'] != 'gtiff') {
 	$oMap->embedScalebar($oImage);
 	$oMap->drawLabelCache($oImage);
@@ -136,5 +198,3 @@ if($mapConfig['format'] == 'gtiff') {
 } else {
 	$oImage->saveImage('');
 }
-
-die();
