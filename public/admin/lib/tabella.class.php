@@ -187,9 +187,9 @@ class Tabella{
                             ' FROM '.$this->schemadb.'.'.$this->tabelladb.
                             ' '.$data.' '.$order.';';
                         print_debug($this->config_file."\n".$sql,null,"tabella");
-                        $stmt = $this->db->prepare($sql);
-						$success = $stmt->execute();
-                        if ($success){
+                        try {
+                            $stmt = $this->db->prepare($sql);
+                            $success = $stmt->execute();
                             $this->array_dati=$stmt->fetchAll();
                             if (count($this->array_dati)==1){
                                 foreach($this->pkeys as $key=>$val)
@@ -202,6 +202,8 @@ class Tabella{
                                 }
                             }
                             $this->num_record=$stmt->rowCount();
+                        } catch(Exception $e) {
+                            print_debug($sql,null,"errors");
                         }
 			$this->curr_record=0;	
 			return  $this->num_record;	
