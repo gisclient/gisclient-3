@@ -1,4 +1,44 @@
 <?php
+
+require_once('../../config/config.php');
+require_once (ROOT_PATH.'lib/functions.php');
+require_once(ROOT_PATH.'lib/gcPgQuery.class.php');//Definizione dell'oggetto PgQuery
+
+$db = GCApp::getDB();
+
+$request = $_REQUEST;
+
+$sql = 'select layer_id from '.DB_SCHEMA.'.layer
+    inner join '.DB_SCHEMA.'.layergroup on layer.layergroup_id = layergroup.layergroup_id
+    inner join '.DB_SCHEMA.'.mapset_layergroup on mapset_layergroup.layergroup_id = layergroup.layergroup_id
+    where mapset_name = :mapset_name and layergroup_name = :layergroup_name and layer_name = :layer_name';
+$stmt = $db->prepare($sql);
+
+list($layergroupName, $layerName) = explode('.', $_REQUEST['featureType']);
+
+$stmt->execute(array(
+    'mapset_name'=>$_REQUEST['mapsetName'],
+    'layergroup_name'=>$layergroupName,
+    'layer_name'=>$layerName
+));
+
+$request['layer_id'] = $stmt->fetchColumn(0);
+
+$oQuery = new PgQuery($request);
+
+die(json_encode($oQuery->query($request['layer_id'])));
+
+
+
+
+
+
+
+
+die();
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+
 /*
 Ricerca da form senza filtro geometrico:
 gisclient/services/xMapQuery.php?action=info&bufferSelected=0&geoPix=0.959240700661&imageHeight=667&imageWidth=911&item=2&mapset=reti_grg_tb&mode=search&oXgeo=1018083.23&oYgeo=5527050.37&op_qf%5B189%5D=%3D&op_qf%5B23%5D=%3D&op_qf%5B84%5D=%3D&qf%5B189%5D=AV&qf%5B23%5D=VIA%20CAPPELLETTA%20-%20AV&qf%5B84%5D=PE&queryOp=AND&resultAction=2&resultype=1&selectMode=0&spatialQuery=0
@@ -24,7 +64,10 @@ $_SESSION["MAPSET_reti_grg_tb"] = array(
 
 
 
-
+$_REQUEST = array(
+    'layer_id'=>783,
+    'project'=>'geoweb_genova',
+);
 
 
 

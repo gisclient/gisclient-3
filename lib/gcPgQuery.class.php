@@ -39,6 +39,8 @@ class PgQuery{
 	var $aggregateFunction = array(101=>'sum',102=>'avg',103=>'min',104=>'max',105=>'count',106=>'variance',107=>'stddev');
 	var $resultHeaders = array();
 	var $isGraph = 0;
+    var $request;
+    var $templates;
 	
 	function __destruct (){
 		//$this->db->sql_close();
@@ -47,24 +49,27 @@ class PgQuery{
 		//unset($this->mapError);
 	}
 
-	function __construct(){
-		$db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-		if(!$db->db_connect_id) die( "Impossibile connettersi al database ");
+	function __construct($request){
+		//$db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
+        $this->request = $request;
+        $db = GCApp::getDB();
+		//if(!$db->db_connect_id) die( "Impossibile connettersi al database ");
 		$this->db=$db;
 		$dbschema=DB_SCHEMA;
-		$myMap = "MAPSET_".$_REQUEST["mapset"];
-		$this->queryGeom=false;
+		//$myMap = "MAPSET_".$_REQUEST["mapset"];
+		//$this->queryGeom=false;
 		
 		//Se ho una chiamata esterna (zoomobject da querystring) riassegno le variabili di request
 		//if($_REQUEST["action"]=="zoom_object") $this->_setRequest();
 		
 		//Risultato su tabella o singoli oggetti?
-		$this->resultype = isset($_REQUEST["resultype"])?$_REQUEST["resultype"]:2;
-        if(!isset($_REQUEST["spatialQuery"])) $_REQUEST["spatialQuery"]=0;
-        if(!isset($_REQUEST["resultAction"])) $_REQUEST["resultAction"]=2;
+		//$this->resultype = isset($request["resultype"])?$request["resultype"]:2;
+        //if(!isset($request["spatialQuery"])) $request["spatialQuery"]=0;
+        //if(!isset($_REQUEST["resultAction"])) $_REQUEST["resultAction"]=2; //FD: questo non serve più
 	
 		//In funzione del tipo di richiesta creo la query che restituisce la struttura delle info
-		$sqlQt = '';
+        //FD: questa roba non serve per adesso, passiamo un solo layer!
+/* 		$sqlQt = '';
 		if($_REQUEST["mode"]=="select"){
 			if($_REQUEST["item"]=="layers_all")//tutti i modelli di ricerca abilitati per i layer presenti nel mapset
 				$sqlQt=" in (select id from $dbschema.mapset_qt where mapset_name='".$_REQUEST["mapset"]."')";
@@ -80,23 +85,27 @@ class PgQuery{
 		}else{
 			echo("Modalità di selezione/ricerca non prevista");
 			return;
-		}
+		} */
 		
-		//************** CABLO IKL LAYER ID *************
-		$sqlQt = "=783";
 
 		//costruzione oggetto querytemplate
-		$sqlField="select field.*,relation.relation_name,relation_id,relationtype_id,data_field_1,data_field_2,data_field_3,table_field_1,table_field_2,table_field_3,table_name,catalog_path,catalog_url from $dbschema.field left join $dbschema.relation using (relation_id) left join $dbschema.catalog using (catalog_id) where resultype_id in (".$this->resultype.",".RESULT_TYPE_ALL.",".RESULT_TYPE_NONE.") and field.layer_id ".$sqlQt." order by field_order;";
-		echo $sqlField;
-		print_debug($sqlField,null,'template');
-		$db->sql_query ($sqlField);
+		$sqlField="select field.*, relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, catalog_url
+        from $dbschema.field 
+        left join $dbschema.relation using (relation_id) 
+        left join $dbschema.catalog using (catalog_id) 
+        where field.layer_id = :layer_id 
+        order by field_order;";
+
+        $stmt = $db->prepare($sqlField);
+        $stmt->execute(array('layer_id'=>$request['layer_id']));
 		$qRelation = array();
 		$qField = array();
-		while($row=$db->sql_fetchrow()){
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			$Id=$row["layer_id"];
 			$fieldId=$row["field_id"];
 			$qField[$Id][$fieldId]["field_name"]=trim($row["field_name"]);
 			$qField[$Id][$fieldId]["field_alias"]=trim($row["field_header"]);
+			$qField[$Id][$fieldId]["formula"]=trim($row["formula"]);
 			$qField[$Id][$fieldId]["field_type"]=$row["fieldtype_id"];
 			$qField[$Id][$fieldId]["data_type"]=$row["datatype_id"];			
 			$qField[$Id][$fieldId]["order_by"]=$row["orderby_id"];
@@ -108,7 +117,8 @@ class PgQuery{
 			$qField[$Id][$fieldId]["relation"]=$row["relation_id"];
 			$qField[$Id][$fieldId]["column_width"]=$row["column_width"];
 			$f=array();
-			if($relationId=$row["relation_id"]){
+            if(!empty($row['relation_id'])) {
+                $relationId = $row['relation_id'];
 				if(($row["data_field_1"])&&($row["table_field_1"])) $f[]=array(trim($row["data_field_1"]),trim($row["table_field_1"]));
 				if(($row["data_field_2"])&&($row["table_field_2"])) $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
 				if(($row["data_field_3"])&&($row["table_field_3"])) $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
@@ -124,8 +134,8 @@ class PgQuery{
 				$qRelation[$Id][$relationId]["relation_type"]=$row["relationtype_id"];				
 			}
 		}
-		
-		//print("<pre>");print_r($qField);
+/*         echo 'Fields<br><pre>';
+		var_export($qField); */
 		//Assegno alle relazioni i valori  di schema e connessione
 		foreach($qRelation as $qt=>$aRel){
 			foreach($aRel as $qtrel=>$row){
@@ -134,8 +144,12 @@ class PgQuery{
 				$qRelation[$qt][$qtrel]["table_schema"] = $aConnInfo[1];
 			}
 		}
-		print("<pre>");print_r($qRelation);
+/*         echo 'Relations<br><pre>';
+		var_export($qRelation); */
 		//Aggiungo eventuali hyperlink relativi ai query_template	
+        
+        $qLink = array();
+        if(false) { //FD: lasciamo un attimo via i link...
 		$sqlLink="select link.id,link.link_id,link_def,link.link_name,winw,winh,link_order from $dbschema.link inner join $dbschema.mapset_link using (link_id) inner join $dbschema.link using (link_id) where mapset_name = '". $_REQUEST["mapset"]."' and resultype_id in (".$this->resultype.",3) and link.id $sqlQt order by link_order;";
 		$db->sql_query ($sqlLink);		
 		while($row=$db->sql_fetchrow()){
@@ -146,45 +160,60 @@ class PgQuery{
 			$qLink[$qtId][$linkId]=array($link,$linkTitle,intval($row["winw"]),intval($row["winh"]));
 		}		
 		print_debug($sqlLink,null,'template');
+        }
 
 		//query template *******************
-		$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.id $sqlQt order by order;";
+		//$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.id $sqlQt order by order;";
+		$sqlTemplate="select layer.layer_id, layer_name, layer.layergroup_id, layergroup.hidden, catalog_path, catalog_url, connection_type, data, data_geom, data_filter, data_unique, data_srid, layertype_ms 
+        from $dbschema.layer
+        inner join $dbschema.e_layertype using (layertype_id) 
+        inner join $dbschema.catalog using (catalog_id) 
+        inner join $dbschema.layergroup using (layergroup_id) 
+        where layer_id = :layer_id order by layer_order;";
 		print_debug($sqlTemplate,null,'template');
 		
-		$db->sql_query ($sqlTemplate);
+        $stmt = $db->prepare($sqlTemplate);
+        $stmt->execute(array('layer_id'=>$request['layer_id']));
 		//Tutti i query template dei modelli di ricerca interessati
 		$allTemplates = array();
-		while($row=$db->sql_fetchrow()){
-			$qtId=$row["id"];
-			$allTemplates[$qtId]=$row;
-			$allTemplates[$qtId]["field"]= (isset($qField[$qtId]))?$qField[$qtId]:null;
-			$allTemplates[$qtId]["relation"]= (isset($qRelation[$qtId]))?$qRelation[$qtId]:null;
-			$allTemplates[$qtId]["link"]=(isset($qLink[$qtId]))?array_values($qLink[$qtId]):array();
-		}		
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+			$layerId=$row["layer_id"];
+			$allTemplates[$layerId]=$row;
+			$allTemplates[$layerId]["field"]= (isset($qField[$layerId]))?$qField[$layerId]:null;
+			$allTemplates[$layerId]["relation"]= (isset($qRelation[$layerId]))?$qRelation[$layerId]:null;
+			$allTemplates[$layerId]["link"]=(isset($qLink[$layerId]))?array_values($qLink[$layerId]):array();
+		}
 		//nel caso di query point devo settare il valore della query per ogni qt che contiene la definizione del buffer
-		if($_REQUEST["spatialQuery"] != QUERY_POINT) $this->_setQueryGeom();
+        //FD: l'eventuale geometria da aggiungere alla where arriverà direttamente dal client
+		//if($_REQUEST["spatialQuery"] != QUERY_POINT) $this->_setQueryGeom();
 		
 		//Memorizzo il valore per verificare se devo comunque ripulire la mappa dalla selezione corrente.
-		$this->mapToUpdate = isset($_SESSION[$myMap]["RESULT"])?1:0;
-		$this->zoomToResult = 0;
+        //FD: tutte queste cose non servono più
+		//$this->mapToUpdate = isset($_SESSION[$myMap]["RESULT"])?1:0;
+		//$this->zoomToResult = 0;
 		//Svuoto la sessione con i risultati della query precedente
-		unset($_SESSION[$myMap]["RESULT"]);
+		//unset($_SESSION[$myMap]["RESULT"]);
 		
 		//ritorno le informazioni per ogni querytemplate
-		foreach ($allTemplates as $aTemplate)
-			$this->_getInfoByTemplate($aTemplate);
 		
 		//Se resultAction non prevede l'aggiornameto della mappa devo verificare l'esistenza del poligono di selezione, nel caso lo tolgo e aggiorno la mappa
-		if(isset($_SESSION[$myMap]["SELECTION_ACTIVE"]) && $_REQUEST["resultAction"]==0){
-			unset($_SESSION[$myMap]["SELECTION_ACTIVE"]);
-			$this->mapToUpdate=1;
-		}
+		//if(isset($_SESSION[$myMap]["SELECTION_ACTIVE"]) && $_REQUEST["resultAction"]==0){
+			//unset($_SESSION[$myMap]["SELECTION_ACTIVE"]);
+			//$this->mapToUpdate=1;
+		//}
 
 
-		print_r($allTemplates);die();
+/* 		echo 'AllTemplates<br><pre>';
+        var_export($allTemplates); */
 
+        $this->templates = $allTemplates;
 
+			//return $this->_getInfoByTemplate($aTemplate);
 	}
+    
+    public function query($layerId) {
+        return $this->_getInfoByTemplate($this->templates[$layerId]);
+    }
 
 
 	function _setQueryGeom($buffer=false){
@@ -238,12 +267,56 @@ class PgQuery{
 			
 	//Per ogni querytemplate ritorna un array di risultati
 	function _getInfoByTemplate($aTemplate){
-		$myMap = "MAPSET_".$_REQUEST["mapset"];
-		$templateId = $aTemplate["id"];
+		//$myMap = "MAPSET_".$_REQUEST["mapset"];
+		//$templateId = $aTemplate["layer_id"];
+        
+        $dataDB = GCApp::getDataDB($aTemplate['catalog_path']);
+        $datalayerSchema = GCApp::getDataDBSchema($aTemplate['catalog_path']);
+        $aTemplate['table_schema'] = $datalayerSchema;
+        $aTemplate['fields'] = $aTemplate['field']; //temporaneo
+        
+        $options = array('include_1n_relations'=>true, 'getGeomAs'=>'text');
+        if(!empty($this->request['srid'])) $options['srid'] = $this->request['srid'];
+        if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') $options['group_1n'] = false;
+        //if voglio vedere i dati della secondaria (1-n)
+        //$options['group_1n'] = false;
+        
+        $queryString = GCAuthor::buildFeatureQuery($aTemplate, $options);
+        
+        $params = array();
+        $whereClause = null;
+        
+        if(!empty($this->request['query'])) {
+            $whereClause = $this->request['query'];
+            if(!empty($this->request['values'])) {
+                $params = $this->request['values'];
+            }
+        } else if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') {
+            $whereClause = $aTemplate['data_unique'].' = :'.$aTemplate['data_unique'];
+            $params[$aTemplate['data_unique']] = $this->request['featureId'];
+        }
+        
+        if(!empty($whereClause)) {
+            if(strpos($queryString, 'group by')) {
+                $queryString = str_replace('group by', ' WHERE '.$whereClause.' GROUP BY ', $queryString);
+            } else {
+                $queryString .= ' WHERE '.$whereClause;
+            }
+        }
+        
+        $stmt = $dataDB->prepare($queryString);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $results;
+        die(json_encode($results));
+        
+        
+        
 		$layerId=$aTemplate["layer_id"];
 		$layerName=$aTemplate["layer_name"];
 		$layergroupId=$aTemplate["layergroup_id"];
-		$templateTitle=$aTemplate["name"];
+		//$templateTitle=$aTemplate["name"];
 		$datalayerTable=$aTemplate["data"];	
 		$datalayerGeom=$aTemplate["data_geom"];			
 		$datalayerKey=$aTemplate["data_unique"];	
@@ -256,26 +329,29 @@ class PgQuery{
 		
 		$this->resultHeaders = array();
 		
-		$aConnInfo = connInfofromPath($aTemplate["catalog_path"]);
-		$connString = $aConnInfo[0];
-		$datalayerSchema = $aConnInfo[1];		
+		//$aConnInfo = connInfofromPath($aTemplate["catalog_path"]);
+		//$connString = $aConnInfo[0];
+		//$datalayerSchema = $aConnInfo[1];	
+
 
 		print_debug($aTemplate,null,'template');
 		
 		//In caso di query puntuale devo chiamare la setQueryGeom per ogni qt in modo da usare il corrispondente valore di tolerance
-		if($_REQUEST["spatialQuery"] == QUERY_POINT)
-			$this->_setQueryGeom(isset($aTemplate["tolerance"])?$aTemplate["tolerance"]:DEFAULT_TOLERANCE);
+        //FD: per adesso togliamo, poi verranno gestite un pò diversamente le where spaziali
+		//if($_REQUEST["spatialQuery"] == QUERY_POINT)
+			//$this->_setQueryGeom(isset($aTemplate["tolerance"])?$aTemplate["tolerance"]:DEFAULT_TOLERANCE);
 			
 		//Se ho un filtro sul mapset lo aggiungo a quello del layer
 		$datalayerFilter = null;
-		if($aTemplate["mapset_filter"]==1)
-			$datalayerFilter=$_SESSION[$myMap]["FILTER"];
-		if($aTemplate["filter"]){
-			if($datalayerFilter) 
-				$datalayerFilter.=" AND " . $aTemplate["filter"];
-			else
-				$datalayerFilter = $aTemplate["filter"];
-		}	
+        //FD: mapset_filter e filter (del modello di ricercA) non esistono più
+		//if($aTemplate["mapset_filter"]==1)
+			//$datalayerFilter=$_SESSION[$myMap]["FILTER"];
+		//if($aTemplate["filter"]){
+			//if($datalayerFilter) 
+				//$datalayerFilter.=" AND " . $aTemplate["filter"];
+			//else
+				//$datalayerFilter = $aTemplate["filter"];
+		//}	
 		if($aTemplate["data_filter"]){
 			if($datalayerFilter) 
 				$datalayerFilter.=" AND " . $aTemplate["data_filter"];
@@ -296,6 +372,9 @@ class PgQuery{
 		$fieldString = '';
 		$orderbyString = '';
 		//Elenco dei campi
+        
+        //FD: fare il merge con gcFeatureClass.php
+        // valutare se metterlo in un solo punto del codice invece che duplicarlo...
 		if($aTemplate["field"]){
 
 			$HfieldList=array();
@@ -330,7 +409,7 @@ class PgQuery{
 					1 - il campo � previsto come campo risultato($aField["result_type"]!=RESULT_TYPE_NONE)
 					2 - non sto restituendo la tabella secondaria e il campo non appartiene alla secondaria oppure sto restituendo la tabella secondaria e il campo appartiene alla secondaria
 					*/
-					if(($aField["result_type"]!=RESULT_TYPE_NONE) && (($_REQUEST["mode"]!='table' && @$aTemplate["relation"][$idRelation]["relation_type"]!=ONE_TO_MANY_RELATION)||(($_REQUEST["mode"]=='table') && ($idRelation==$_REQUEST["relation"]) && (@$aTemplate["relation"][$idRelation]["relation_type"]==ONE_TO_MANY_RELATION )))){
+					if(($aField["result_type"]!=RESULT_TYPE_NONE) && ((/* $_REQUEST["mode"]!='table' &&  */@$aTemplate["relation"][$idRelation]["relation_type"]!=ONE_TO_MANY_RELATION)/* ||(($_REQUEST["mode"]=='table') && ($idRelation==$_REQUEST["relation"]) && (@$aTemplate["relation"][$idRelation]["relation_type"]==ONE_TO_MANY_RELATION )) */)){
 					//if(($aField["result_type"]!=RESULT_TYPE_NONE) && (!($_REQUEST["mode"]=='table' && ($idRelation>0) && $aTemplate["relation"][$idRelation]["relation_type"]==ONE_TO_MANY_RELATION)||(($_REQUEST["mode"]=='table') && ($idRelation==$_REQUEST["relation"]) && ($aTemplate["relation"][$idRelation]["relation_type"]==ONE_TO_MANY_RELATION )))){
 						$header["TITLE"]=$aField["field_alias"];
 						$header["TYPE"]=$aField["field_type"];
@@ -368,7 +447,8 @@ class PgQuery{
 				}
 				
 				//campi con funzioni di aggregazione (tabella a parte solo in caso di risultato su tabella)
-				if(($_REQUEST["mode"]=="table" || $this->resultype==RESULT_TYPE_TABLE) && $aField["field_type"] > 100 ){
+                //FD: tolgo per adesso
+				if(false && ($_REQUEST["mode"]=="table" || $this->resultype==RESULT_TYPE_TABLE) && $aField["field_type"] > 100 ){
 					$header["TITLE"]=$aField["field_alias"];
 					$header["TYPE"]=$aField["field_type"];
 					$header["FORMAT"]=$aField["field_format"];
@@ -426,29 +506,32 @@ class PgQuery{
 			$boolOp=$_REQUEST["queryOp"];
 			if (count($whereFieldList)>0) $whereList[] = "(" . implode(" $boolOp ",$whereFieldList) . ")";//Filtro sui campi
 		}
-		if($_REQUEST["mode"]=='table')//se richiedo la tabella secondaria devo filtrare su objid
-			$whereList[] = DATALAYER_ALIAS_TABLE.".".$datalayerKey." in (".$_REQUEST["objid"].")";	
-		elseif ($datalayerFilter)
+        //FD: niente mode=table per adesso
+		//if($_REQUEST["mode"]=='table')//se richiedo la tabella secondaria devo filtrare su objid
+			//$whereList[] = DATALAYER_ALIAS_TABLE.".".$datalayerKey." in (".$_REQUEST["objid"].")";	
+		//elseif ($datalayerFilter)
 			$whereList[] = "(".DATALAYER_ALIAS_TABLE.".".$datalayerKey." in (select $datalayerKey from $datalayerTable where (" . $datalayerFilter . ")))";//SE C'E UN FILTRO APPLICATO AL LIVELLO LO APPLICO		
 
 		//Connessione al db della tabella relativa al livello		
-		$dbData = pg_connect($connString);	
+/* 		$dbData = pg_connect($connString);	
 		if(!$dbData){
 			print ($templateTitle.":<br>Connessione al db fallita<br>$connString");
 			return;
-		}
+		} */
 
 		//SE C'E UNA QUERY CARTOGRAFICA LA APPLICO
-		$srid = $_SESSION[$myMap]["SRID"];
+        //FD: no no no (per adesso)
+/* 		$srid = $_SESSION[$myMap]["SRID"];
 		if($srid>0 && $srid!=$datalayerSRID){
 			$layerSRS = $_SESSION[$myMap]["SRS"][$datalayerSRID];
 			$mapsetSRS = $_SESSION[$myMap]["SRS"][$srid];
 			$geomColumn="transform_geometry(".DATALAYER_ALIAS_TABLE.".".$datalayerGeom.",'$layerSRS','$mapsetSRS',$srid)";
 		}
-		else
+		else */
 			$geomColumn=DATALAYER_ALIAS_TABLE.".".$datalayerGeom;	
 		
-		if(($_REQUEST["mode"]!='table') && ($this->queryGeom)){
+        //FD: da rivedere
+/* 		if(($_REQUEST["mode"]!='table') && ($this->queryGeom)){
 			$mslayerType=$aTemplate["layertype_ms"];		
 			$queryGeom=$this->queryGeom;
 			$op=($_REQUEST["selectMode"]==1)?'st_contains':'st_intersects';
@@ -457,7 +540,7 @@ class PgQuery{
 			$whereList[] = $sqlGeom;
 			//$groupbyList[] = DATALAYER_ALIAS_TABLE.".".$datalayerGeom;
 			
-		}
+		} */
 		
 		//Se sono in modalit� chiamata esterna passo solo l'objectid
 		if(isset($_REQUEST["zoomobj"])){
@@ -483,16 +566,18 @@ class PgQuery{
 
 
 		//buffer per gli oggetti risultato(scarto il valore 0)
-		if($srid == 4326)
+/* 		if($srid == 4326)
 			$zoomBuffer = 0.05;
 		else
-			$zoomBuffer = $aTemplate["zoom_buffer"]?$aTemplate["zoom_buffer"]:DEFAULT_ZOOM_BUFFER;
+			$zoomBuffer = $aTemplate["zoom_buffer"]?$aTemplate["zoom_buffer"]:DEFAULT_ZOOM_BUFFER; */
+        $zoomBuffer = DEFAULT_ZOOM_BUFFER; //FD: sennò devo pasticciare tutta la query sotto
+        $maxrows= MAX_REPORT_ROWS;
 
 		if($fieldString) $fieldString = ','.$fieldString;
 		
 
 		//********************* DEFINIZIONE DELLA QUERY ******************************
-		if($_REQUEST["mode"]=='table' or isset($_REQUEST["printTable"])){
+		if(/* $_REQUEST["mode"]=='table' or  */isset($_REQUEST["printTable"])){
 			$queryString="select distinct ".DATALAYER_ALIAS_TABLE.".$datalayerKey as objid $fieldString from $joinString $whereString $orderbyString ";		
 			$pageIndex=1;
             if($_REQUEST["printTable"]){
@@ -516,8 +601,8 @@ class PgQuery{
 				else{//Ho fissato un max numero di risultati sul query template: alla prima chiamata conto il totale risultati
 					$countString="select count(*) from (select distinct ".DATALAYER_ALIAS_TABLE.".$datalayerKey from $joinString $whereString) as foo;";
 					print_debug($countString,null,'template_query');
-					$result = pg_query($dbData, $countString);
-					$totalrows = pg_fetch_result($result, 0, 0);
+                    $totalrows = $dataDB->query($countString)->fetchColumn(0);
+                    
 					$queryString.="LIMIT $maxrows";
 				}
 			}
@@ -525,12 +610,21 @@ class PgQuery{
 		
             if($pageIndex>1){
     			//$numpages=ceil(intval($totalrows/$maxrows));
+                //FD: questo mi sa di baco...
     			$maxrows=min(pg_num_rows($result),$maxrows);
     		}
     		
 
         
         }
+        echo '</pre>';
+        die($queryString."\n\n");
+        
+        $results = $db->query($queryString)->fetchAll(PDO::FETCH_ASSOC);
+        var_export($results);
+        die();
+        
+        
 		print_debug($queryString,null,"pgquery");
 		print_debug($queryString,null,'template_query');		
 		$result = pg_query($dbData, $queryString);
@@ -541,7 +635,6 @@ class PgQuery{
         }
 		
 		
-
 		
 		
 

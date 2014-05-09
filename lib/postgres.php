@@ -80,6 +80,8 @@ class sql_db
 		}
 
 		$this->persistency = $persistency;
+        //var_export(debug_backtrace());
+        //die();
 		$this->db_connect_id = ( $this->persistency ) ? pg_pconnect($this->connect_string) : pg_connect($this->connect_string);
 
 		return ( $this->db_connect_id ) ? $this->db_connect_id : false;
