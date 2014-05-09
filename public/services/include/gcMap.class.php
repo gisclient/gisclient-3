@@ -732,6 +732,8 @@ class gcMap{
 	}
 	
 	private function _getFeatureTypesLinks() {
+        //FD: questi adesso sono qt_link oppure layer_link?!?!
+        return array();
 		$sql = "select layer_id, link_name, link_def, winw, winh ".
 			" from ".DB_SCHEMA.".link inner join ".DB_SCHEMA.".qtlink using(link_id) ".
 			" INNER JOIN ".DB_SCHEMA.".layer using (layer_id) ".
