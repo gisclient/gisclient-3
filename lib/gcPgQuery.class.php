@@ -297,13 +297,10 @@ class PgQuery{
         }
         
         if(!empty($whereClause)) {
-            if(strpos($queryString, 'group by')) {
-                $queryString = str_replace('group by', ' WHERE '.$whereClause.' GROUP BY ', $queryString);
-            } else {
-                $queryString .= ' WHERE '.$whereClause;
-            }
+            $queryString = 'select * from ('.$queryString.') as foo where '.$whereClause;
         }
         
+        //die($queryString);
         $stmt = $dataDB->prepare($queryString);
         $stmt->execute($params);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
