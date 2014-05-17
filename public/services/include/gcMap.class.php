@@ -587,7 +587,6 @@ class gcMap{
 				LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
 				WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
 		$sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, field_order, field_header;";
-		
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->mapsetName));
 		$featureTypes = array();
@@ -634,8 +633,8 @@ class gcMap{
 			if(!empty($row["geometryType"])) $featureTypes[$index][$typeName]["data_type"] = $row["data_type"];
 			if(!empty($row["maxvectfeatures"])) $featureTypes[$index][$typeName]["maxvectfeatures"] = intval($row["maxvectfeatures"]);
 			if(!empty($row["zoom_buffer"])) $featureTypes[$index][$typeName]["zoombuffer"] = intval($row["zoom_buffer"]);
-			$featureTypes[$index][$typeName]['hidden'] = $row['hidden'];
-			$featureTypes[$index][$typeName]['searchable'] = $row['searchable'];
+			$featureTypes[$index][$typeName]['hidden'] = intval($row['hidden']);
+			$featureTypes[$index][$typeName]['searchable'] = intval($row['searchable']);
 			if(isset($featureTypesLinks[$row['layer_id']])) {
 				$featureTypes[$index][$typeName]['link'] = $featureTypesLinks[$row['layer_id']];
 			}
@@ -679,14 +678,20 @@ class gcMap{
 					"fieldType"=>intval($row["fieldtype_id"]),
 					"dataType"=>intval($row["datatype_id"]),
 					"searchType"=>intval($row["searchtype_id"]),
-					'editable'=>$userCanEdit ? $row['field_editable'] : 0,
-					"relationType"=>intval($row["relationtype_id"]),
+					'editable'=>$userCanEdit ? intval($row['field_editable']) : 0,
 					"resultType"=>intval($row["resultype_id"]),
-                    'filterFieldName'=>$row['filter_field_name'],
-					"fieldFilter"=>intval($row["field_filter"]),
 					'isPrimaryKey'=>$isPrimaryKey
 				);
-				
+
+				if($row["relationtype_id"]){
+					$fieldSpecs["relationType"] = intval($row["relationtype_id"]);
+					$fieldSpecs["relationName"] =  $row["relation_name"];
+				}
+				if($row["filter_field_name"]){
+					$fieldSpecs["filterFieldName"] = $row["filter_field_name"];intval($row["field_filter"]);
+					$fieldSpecs["fieldFilter"] =  intval($row["field_filter"]);
+				}
+
 				if(!empty($row['lookup_table']) && !empty($row['lookup_id']) && !empty($row['lookup_name'])) {
 					$fieldSpecs['lookup'] = array(
 						'catalog'=>$row['catalog_id'],
