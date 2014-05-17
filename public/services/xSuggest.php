@@ -5,14 +5,17 @@ require_once ROOT_PATH.'lib/ajax.class.php';
 $ajax = new GCAjax();
 
 if(empty($_REQUEST['field_id'])) $ajax->error('Undefined fieldId');
-if(empty($_REQUEST['suggest'])) $ajax->error('Undefined suggest');
-$inputString = '%' . $_REQUEST['suggest'] . '%';
+$params = array();
+if(empty($_REQUEST['suggest'])) {
+    $inputString = '%' . $_REQUEST['suggest'] . '%';
+    $params['input_string'] = $inputString;
+}
 
 $db = GCApp::getDB();
 
 /* Recupero i dati del layer */
 //qt_filter -> data_filter
-//mapset_filter -> non c'è più
+//mapset_filter -> non c'Ã¨ piÃ¹
 $sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.field using(layer_id) where field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
@@ -28,7 +31,7 @@ $sTable = $datalayerSchema.".".$datalayerTable;
 
 
 /* Recupero i dati del campo */
-//field_filter -> non c'è più
+//field_filter -> non c'Ã¨ piÃ¹
 $sql = 'select field.field_id, field_name, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.field left join '.DB_SCHEMA.'.relation using (relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where field.field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
@@ -48,14 +51,14 @@ if(empty($field['relation_id'])) {
 //$filtervalue = $_REQUEST["filtervalue"];
 $joinList = array();
 $joinString = $sTable ." as " . DATALAYER_ALIAS_TABLE;
-$datalayerFilter = implode(' AND ', $filters);
+//$datalayerFilter = implode(' AND ', $filters);
 
 $fieldName = $field["field_name"];
 if(!empty($field['formula'])) {
     $fieldName = $field['formula'];
 }
 
-if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
+if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest Ã¨ su tabella secondaria
     if(empty($field['formula'])) {
         $fieldName = $field['relation_name'] . '.' . $fieldName;
     }
@@ -65,13 +68,24 @@ if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabell
     if($field["data_field_3"] && $field["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_3"]."=\"".$field["relation_name"]."\".".$field["table_field_3"];
     $joinFields = implode(" AND ",$joinList);
     $joinString .= " inner join ". $field["schema"].".".$field["table_name"]." as ". $field["relation_name"]." on ($joinFields) ";
-    $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " .$joinString ." WHERE ". $fieldName ." ilike :input_string $datalayerFilter";
-} else { //caso elementare: il campo è su tabella del layer
-    $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " . $field["schema"].".". $field["table_name"] ." as " .DATALAYER_ALIAS_TABLE. " WHERE ". $fieldName ." ilike :input_string $datalayerFilter";
+    $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " .$joinString;
+} else { //caso elementare: il campo Ã¨ su tabella del layer
+    $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " . $field["schema"].".". $field["table_name"] ." as " .DATALAYER_ALIAS_TABLE;
 }
+
+if(!empty($params)) {
+    array_push($filters, $fieldName . ' ilike :input_string ');
+}
+
+if(!empty($filters)) {
+    $sqlQuery .= ' where '.implode(' and ', $filters);
+}
+
+$sqlQuery .= "limit 25";
+
 try {
     $stmt = $dataDb->prepare($sqlQuery);
-    $stmt->execute(array('input_string'=>$inputString));
+    $stmt->execute($params);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch(Exception $e) {
     echo $sqlQuery;
