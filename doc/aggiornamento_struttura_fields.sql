@@ -354,3 +354,5 @@ ALTER TABLE layer_link
 DROP INDEX fki_qt_link_link_id_fkey;
 CREATE INDEX fki_layer_link_link_id_fkey ON layer_link USING btree (link_id);
 DROP TABLE qt CASCADE;
+
+ALTER TABLE relation ADD COLUMN relation_title character varying;

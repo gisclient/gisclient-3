@@ -576,7 +576,7 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -670,6 +670,16 @@ class gcMap{
 					$isPrimaryKey = 0;
 				}
 				
+				$aRel=array();
+				if($row["relation_name"]){
+					$aRel["relationName"] =  $row["relation_name"];
+					$aRel["relationType"] = intval($row["relationtype_id"]);
+					$aRel["relationTitle"] =  $row["relation_title"]?$row["relation_title"]:$row["relation_name"];
+					if(!isset($featureTypes[$index][$typeName]["relations"])) $featureTypes[$index][$typeName]["relations"] = array();
+				}
+                if($aRel && (!in_array($aRel, $featureTypes[$index][$typeName]["relations"])))
+                	$featureTypes[$index][$typeName]["relations"][] = $aRel;
+
 				$fieldSpecs = array(
 					"name"=>$fieldName,		
 					"header"=>(strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["field_header"]):$row["field_header"],
@@ -683,10 +693,9 @@ class gcMap{
 					'isPrimaryKey'=>$isPrimaryKey
 				);
 
-				if($row["relationtype_id"]){
-					$fieldSpecs["relationType"] = intval($row["relationtype_id"]);
+                if($row["relation_name"]){
 					$fieldSpecs["relationName"] =  $row["relation_name"];
-				}
+                }
 				if($row["filter_field_name"]){
 					$fieldSpecs["filterFieldName"] = $row["filter_field_name"];intval($row["field_filter"]);
 					$fieldSpecs["fieldFilter"] =  intval($row["field_filter"]);

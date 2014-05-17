@@ -2,6 +2,7 @@
 table = "relation"
 pkey = "relation_id"
 dato[] = "Nome;relation_name;40;text"
+dato[] = "Titolo;relation_title;40;text"
 dato[] = "Catalogo;catalog_id;200#seldb_catalog#project_name;selectdb"
 dato[] = "Relazione;table_name;55;text|Elenco Data;table_name;100#openList#catalog_id;button"
 dato[] = "1° Campo Join Data Layer;data_field_1;40;text|Elenco Data;data_field_1;100#openList#layer;button"
