@@ -81,7 +81,7 @@ if(!empty($filters)) {
     $sqlQuery .= ' where '.implode(' and ', $filters);
 }
 
-$sqlQuery .= "limit 25";
+$sqlQuery .= "order by ".$fieldName." limit 25";
 
 try {
     $stmt = $dataDb->prepare($sqlQuery);
