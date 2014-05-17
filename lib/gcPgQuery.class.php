@@ -277,9 +277,12 @@ class PgQuery{
         
         $options = array('include_1n_relations'=>true, 'getGeomAs'=>'text');
         if(!empty($this->request['srid'])) $options['srid'] = $this->request['srid'];
-        if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') $options['group_1n'] = false;
-        //if voglio vedere i dati della secondaria (1-n)
-        //$options['group_1n'] = false;
+        if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') {
+            $options['group_1n'] = false;
+            if(!empty($this->request['relationName'])) {
+                $options['show_relation'] = $this->request['relationName'];
+            }
+        }
         
         $queryString = GCAuthor::buildFeatureQuery($aTemplate, $options);
         

@@ -241,6 +241,7 @@ class GCAuthor {
         $defaultOptions = array(
             'include_1n_relations'=>false, //se true, le relazioni 1-n vengono incluse nella query (se, per esempio, si vuole filtrare su un campo della secondaria)
             'group_1n'=>true, //se false, vengono inclusi i campi della secondaria, di conseguenza i records non sono più raggruppati per i campi della primaria (se, per esempio, si vogliono visualizzare i dati della secondaria in tabella),
+            'show_relation'=>null, //se voglio visualizzare i dati di una sola secondaria, popolo questo con il nome della relazione da visualizzare
             'getGeomAs'=>null, // se text, viene usato st_astext, altrimenti nulla (astext serve per le interrogazioni, nulla serve per il mapfile)
             'srid'=>null //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
         );
@@ -279,6 +280,10 @@ class GCAuthor {
                 //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
                 if(!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
                     if(!$options['include_1n_relations'] || $options['group_1n']) continue;
+                    else if(!empty($options['show_relation'])) {
+                        //se voglio vedere i dati della secondaria di una sola relazione, escludo i campi delle altre
+                        if($options['show_relation'] != $aFeature['relation'][$aField['relation']]['name']) continue;
+                    }
                 }
             
                 //field su layer oppure su relazione 1-1
@@ -308,6 +313,7 @@ class GCAuthor {
                     //se vogliamo i dati della secondaria, elimina il groupBy
 					if($rel["relation_type"] == 2) {
                         if(!$options['include_1n_relations']) continue;
+                        if(!empty($options['show_relation']) && $rel['name'] != $options['show_relation']) continue;
                         
                         if(!$options['group_1n']) {
                             $groupByFieldList = null;
