@@ -253,7 +253,7 @@ class gcMap{
 				SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL
 			) AND mapset_name = :mapset_name
                         ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;"; 
-			
+		//die($sqlAuthorizedLayers);
 		$stmt = $this->db->prepare($sqlLayers);
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
@@ -434,14 +434,16 @@ class gcMap{
 				
 			elseif(!empty($this->mapsetGRID) && $layerType == WMTS_LAYER_TYPE){// WMTS
 				$layerParameters=array();
-				$layerParameters["SERVICE"] = "WMTS";
-				$layerParameters["VERSION"] = GISCLIENT_WMTS_VERSION;
+				//$layerParameters["SERVICE"] = "WMTS";
+				$layerParameters["requestEncoding"] = "REST";
 				$layerParameters["name"] = $aLayer["name"];
 				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL;
 				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
+
+				$layerParameters["url"] = "http://gisclient.rr.nu/ows/reti_grg_tb/wmts/".$layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
 				$layerParameters["matrixSet"] = $this->mapsetGRID;
-				$layerParameters["format"] = $row["outputformat_mimetype"];
+				//$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
 				//$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
@@ -460,10 +462,10 @@ class gcMap{
 
 			elseif(!empty($this->mapsetGRID) && $layerType==TMS_LAYER_TYPE){//TMS
 				$aLayer["url"] = isset($row["url"])?$row["url"]:GISCLIENT_TMS_URL;
-				$layerOptions["layername"] =  isset($row["layers"])?$row["layers"]:$layergroupName."@".$this->mapsetGRID;
+				$layerOptions["serviceVersion"] =  isset($row["layers"])?$row["layers"]:$layergroupName."@".$this->mapsetGRID;
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
-				$layerOptions["serviceVersion"] = GISCLIENT_TMS_VERSION;
+				$layerOptions["layername"] = GISCLIENT_TMS_VERSION;
 				//$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
 				$layerOptions["type"] = $row['outputformat_extension'];
 				$layerOptions["isBaseLayer"] = $row["isbaselayer"]==1;	
