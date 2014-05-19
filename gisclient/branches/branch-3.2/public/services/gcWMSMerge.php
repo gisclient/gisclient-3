@@ -178,7 +178,7 @@ ms_ResetErrorList();
 $oImage = $oMap->draw();
 
 if ($enableDebug) { 
-	$oMap->save('debug.map');
+	$oMap->save(DEBUG_DIR . 'debug.map');
 }
 if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format'] != 'gtiff') {
 	$oMap->embedScalebar($oImage);
