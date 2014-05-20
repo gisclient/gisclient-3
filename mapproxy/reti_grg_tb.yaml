@@ -80,10 +80,36 @@ caches:
     grids: [g2,gb]
     sources: ['mapserver_source:sfondo_tiles']
     cache:
-      #type: mbtiles
-      #filename: /data/tiles/mymapserver.mbtiles
-      type: file
-      #directory: ciccio
+      type: mbtiles
+      filename: /data/tiles/sfondo.mbtiles
+
+  base_cartografica_cache:
+    grids: [g2,gb]
+    sources:  ['mapserver_source:bc_acquedotto_storico,bc_altimetria,bc_argine,bc_civici,bc_civici_comune,bc_confini_comunali,bc_curve_livello,bc_edifici,bc_edifici_estendimenti,bc_elementi_dubbi,bc_idrografia,bc_idrografia_estendimenti,bc_incongruenza,bc_linea_costa,bcest_linea_costa,bc_localita,bcest_localita,bcest_morfologia,bc_nome_localita,bc_punti_quotati,bc_simboli,bcest_simboli,bc_viabilita,bcest_viabilita,bc_vie']
+    cache:
+      type: mbtiles
+      filename: /data/tiles/basecartografica.mbtiles
+
+  gas_bassa_cache:
+    grids: [g2,gb]
+    sources:   ['mapserver_source:rggb_traccia,rggb_traccia_provvisoria,rggb_valvola_generica,rggb_derivazioni_utenza,rggb_derivazioni_utenza_provv,rggb_quote,gas_bassa_annotazioni,rggb_quote_du,gas_bassa_annotazioni_du,rggb_regolatore_taglio,rggb_montante,rggb_fine_rete,rggb_gruppo_ricompressione,gas_bassa_pezzi_speciali,gas_bassa_particolari']
+    cache:
+      type: mbtiles
+      filename: /data/tiles/gas_bassa.mbtiles
+   
+  gas_media_cache:
+    grids: [g2,gb]
+    sources:  ['mapserver_source:rggm_traccia,rggm_traccia_provvisoria,rggm_valvola_generica,rggm_cameretta_1_2_salto,rggm_cameretta_regolazione,rggm_derivazioni_utenza,rggm_derivazioni_utenza_provv,rggm_quote,gas_media_annotazioni,rggm_quote_du,gas_media_annotazioni_du,rggm_regolatore_utenza,rggm_montante,gas_media_pezzi_speciali,gas_media_particolari']
+    cache:
+      type: mbtiles
+      filename: /data/tiles/gas_media.mbtiles    
+
+  gas_altri_elementi_cache:
+    grids: [g2,gb]
+    sources:  ['mapserver_source:rgmt_traccia,rgmt_valvola_generica,rgmt_quote,gas_metanodotto_annotazioni,gas_metanodotto_particolari,rgmt_montante,gas_metanodotto_pezzi_speciali,rgfuori_servizio_traccia,rgfuori_servizio_altro,rggplm_traccia,rggplm_quote,gpl_media_annotazioni,gpl_media_particolari,gpl_media_pezzi_speciali,rggplb_traccia,rggplb_quote,gpl_bassa_annotazioni,gpl_bassa_particolari,gpl_bassa_pezzi_speciali,rg_intersezioni_argine,rg_intersezioni_ferrovia,gas_squadro_1000']
+    cache:
+      type: mbtiles
+      filename: /data/tiles/gas_altri_elementi.mbtiles   
 
 sources:
   mapserver_source:
@@ -156,9 +182,31 @@ globals:
     #meta_buffer: 80
 
 layers:
-  - name: mymapservercache
-    title: Prova mapserver
-    sources: [my_ms_cache]
+
+  - name: sfondo_tiles
+    title: Sfondo Cartografico IREN
+    sources: 
+    - my_ms_cache
+
+  - name: base_cartografica_tiles
+    title: Base Cartografica
+    sources: 
+    - base_cartografica_cache
+
+  - name: gas_bassa_tiles
+    title: Gas bassa
+    sources: 
+    - gas_bassa_cache
+
+  - name: gas_media_tiles
+    title: Gas media
+    sources: 
+    - gas_media_cache
+
+  - name: gas_altri_elementi_tiles
+    title: Gas Altri Elementi
+    sources: 
+    - gas_altri_elementi_cache
 
   # feature information layer
   - name: feature_layer

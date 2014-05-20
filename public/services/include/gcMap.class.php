@@ -171,7 +171,9 @@ class gcMap{
 		$mapOptions["numZoomLevels"] = $this->numZoomLevels;
 
 		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->serverResolutions[$this->minZoomLevel]);
-
+		$mapOptions["tilesExtent"] = $this->tilesExtent;
+		$mapOptions["matrixSet"] = $this->mapsetGRID;
+		//$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
 		//Limita estensione:
 		if(($row["mapset_extent"])){
 			$ext = explode($this->coordSep,$row["mapset_extent"]);
@@ -380,6 +382,7 @@ class gcMap{
 						unset($this->mapLayers[$idx]["options"]["maxScale"]);
 
 					array_push($this->mapLayers[$idx]["nodes"], $node);	
+
 					continue;
 				}
 				
@@ -435,14 +438,13 @@ class gcMap{
 			elseif(!empty($this->mapsetGRID) && $layerType == WMTS_LAYER_TYPE){// WMTS
 				$layerParameters=array();
 				//$layerParameters["SERVICE"] = "WMTS";
-				$layerParameters["requestEncoding"] = "REST";
 				$layerParameters["name"] = $aLayer["name"];
-				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL;
 				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
-
-				$layerParameters["url"] = "http://gisclient.rr.nu/ows/reti_grg_tb/wmts/".$layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL;
+				$layerParameters["url"] .= "/".$this->mapsetName."/wmts/".$layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
 				$layerParameters["matrixSet"] = $this->mapsetGRID;
+				$layerParameters["requestEncoding"] = "REST";
 				//$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
 				//$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
