@@ -1138,7 +1138,7 @@ DELETE from e_form where name like '%authfilter';
 
 
 
---
+--2014-5-23 cambio modalità searchable
 ALTER TABLE layer RENAME searchable  TO searchable_id;
 
 CREATE TABLE e_searchable
@@ -1156,3 +1156,6 @@ INSERT INTO e_searchable values (2,'Solo ricerca veloce',2);
 CREATE OR REPLACE VIEW seldb_searchable AS 
 SELECT searchable_id AS id, searchable_name AS opzione
 FROM e_searchable;
+
+--2014-5-23 nascosti filtri di autenticazione
+UPDATE form_level set visible=0 where id in (511,512,514);

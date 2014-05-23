@@ -18,7 +18,6 @@ define('MAP_USER','<MY_DB_MAPSERVER_USER>');
 define('MAP_PWD','<MY_DB_MAPSERVER_PASSWORD>');
 
 //Superutente per l'accesso ad Author
-define('SUPER_USER','<MY_AUTHOR_USER>');
-define('SUPER_PWD','<MY_AUTHOR_PASSWORD>');
+define('SUPER_USER','<MY_AUTHOR_SUPER_USER>');
 
 ?>

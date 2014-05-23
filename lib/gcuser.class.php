@@ -4,7 +4,7 @@ abstract class AbstractUser {
     protected $options;
     protected $username;
     protected $groups;
-    protected $adminUsername = 'admin';
+    protected $adminUsername = SUPER_USER;
     protected $authorizedLayers = array();
     protected $mapLayers = array();
     
