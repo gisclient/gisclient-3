@@ -576,8 +576,7 @@ function get_chiave_esterna($val,$fld,$tab,$campo){
 
 	if ($val==-1)
 		return GCAuthor::t('undefined');
-	elseif(!$val){
-		
+	elseif(strlen($val)==0){
 		switch($tab){
 			case "e_searchtype":
 				$fkey="Nessuna Ricerca";

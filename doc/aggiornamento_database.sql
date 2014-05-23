@@ -1136,4 +1136,23 @@ ALTER FUNCTION gisclient_33.set_layer_name()
 
 DELETE from e_form where name like '%authfilter';
 
-  
+
+
+--
+ALTER TABLE layer RENAME searchable  TO searchable_id;
+
+CREATE TABLE e_searchable
+(
+  searchable_id smallint NOT NULL,
+  searchable_name character varying NOT NULL,
+  searchable_order smallint,
+  CONSTRAINT e_searchable_pkey PRIMARY KEY (searchable_id)
+);
+
+INSERT INTO e_searchable values (0,'Non visualizzato',0);
+INSERT INTO e_searchable values (1,'Visualizzato in ricerca',1);
+INSERT INTO e_searchable values (2,'Solo ricerca veloce',2);
+
+CREATE OR REPLACE VIEW seldb_searchable AS 
+SELECT searchable_id AS id, searchable_name AS opzione
+FROM e_searchable;

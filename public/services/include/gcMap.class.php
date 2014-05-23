@@ -580,7 +580,7 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+		$sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -638,7 +638,7 @@ class gcMap{
 			if(!empty($row["maxvectfeatures"])) $featureTypes[$index][$typeName]["maxvectfeatures"] = intval($row["maxvectfeatures"]);
 			if(!empty($row["zoom_buffer"])) $featureTypes[$index][$typeName]["zoombuffer"] = intval($row["zoom_buffer"]);
 			$featureTypes[$index][$typeName]['hidden'] = intval($row['hidden']);
-			$featureTypes[$index][$typeName]['searchable'] = intval($row['searchable']);
+			$featureTypes[$index][$typeName]['searchable'] = intval($row['searchable_id']);
 			if(isset($featureTypesLinks[$row['layer_id']])) {
 				$featureTypes[$index][$typeName]['link'] = $featureTypesLinks[$row['layer_id']];
 			}
