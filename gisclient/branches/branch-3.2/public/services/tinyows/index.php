@@ -10,12 +10,24 @@ else $project = $parts[$startIndex+1];
 if(!isset($parts[$startIndex+2])) die('b');
 else $typeName = $parts[$startIndex+2];
 
-if(!file_exists(ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml')) die('c');
+$configFile = ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml';
 
+if(!file_exists($configFile)) die('c');
+
+$autoUpdateUser = (defined('LAST_EDIT_USER_COL_NAME') && LAST_EDIT_USER_COL_NAME);
+if($autoUpdateUser) {
+    $xml = simplexml_load_file($configFile);
+    $connection = $xml->pg->attributes();
+    $params = array();
+    foreach($connection as $k => $v) $params[$k] = (string)$v;
+    $table = $xml->layer->attributes();
+    foreach($table as $k => $v) $params[$k] = (string)$v;
+    $dataDb = GCApp::getDataDb($params['dbname'].'/'.$params['schema']);
+}
 
 if(defined('DEBUG') && DEBUG == 1) {
 	$string = var_export($_REQUEST, true)."\n\n".file_get_contents('php://input');
-	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', $string);
+	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', $string."\n\n\n");
 }
 
 $descriptorspec = array(
@@ -25,7 +37,7 @@ $descriptorspec = array(
 );
 
 $envVars = array(
-	'TINYOWS_CONFIG_FILE' => ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml'
+	'TINYOWS_CONFIG_FILE' => $configFile
 );
 
 $db = GCApp::getDB();
@@ -62,6 +74,7 @@ if(!empty($_GET)) {
 	$envVars['QUERY_STRING'] = $_SERVER['QUERY_STRING'];
 } else {
 	$fileContent = file_get_contents('php://input');
+    
 	$envVars['REQUEST_METHOD'] = 'POST';
 	$envVars['CONTENT_LENGTH'] = strlen($fileContent);
 	$envVars['CONTENT_TYPE'] = 'text/xml';
@@ -69,6 +82,35 @@ if(!empty($_GET)) {
 }
 if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-input.txt', var_export($envVars, true), FILE_APPEND);
 $pipes = array();
+
+if($autoUpdateUser) {
+    if(!GCApp::tableExists($dataDb, 'public', CURRENT_EDITING_USER_TABLE)) {
+        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'creo la tabella '.CURRENT_EDITING_USER_TABLE."\n\n", FILE_APPEND);
+        $sql = 'create table '.CURRENT_EDITING_USER_TABLE.' (id integer, username text, editingdate timestamp without time zone default NOW(), CONSTRAINT current_editing_user_pkey PRIMARY KEY (id));';
+        $dataDb->exec($sql);
+    }
+
+    $n = 0;
+    while(anotherUserIsEditing($dataDb)) {
+        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'another user is editing .. '.$n."\n\n", FILE_APPEND);
+        if($n > 4) {
+            file_put_contents(DEBUG_DIR.'tinyows-errors.txt', 'current_editing_table is not empty after 2 minutes... give up!');
+            die('Another user is currently editing, please try again');
+        }
+        sleep(30);
+        $n++;
+    }
+    
+    try {
+        $sql = 'insert into '.CURRENT_EDITING_USER_TABLE.' (id, username) values (1, :username)';
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array('username'=>$_SESSION['USERNAME']));
+        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'inserted user '.$_SESSION['USERNAME']."\n\n", FILE_APPEND);
+    } catch(Exception $e) {
+        file_put_contents(DEBUG_DIR.'tinyows-errors.txt', 'cannot insert into '.CURRENT_EDITING_USER_TABLE.', maybe there is still an user there!');
+        die('Another user is currently editing, please try again');
+    }
+}
 
 $process = proc_open(TINYOWS_EXEC, $descriptorspec, $pipes, TINYOWS_PATH, $envVars);
 if(is_resource($process)) {
@@ -85,7 +127,24 @@ if(is_resource($process)) {
 		$response = substr($response, $pos);
 	}
 	if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-output.txt', $response);
+    header('Content-Type: text/xml; charset=utf-8');
 	echo $response;
 } else {
 	if(defined('DEBUG') && DEBUG == 1) file_put_contents(DEBUG_DIR.'tinyows-errors.txt', var_export($envVars, true)."\n\n".$fileContent);
+}
+if($autoUpdateUser) {
+    $sql = 'delete from '.CURRENT_EDITING_USER_TABLE;
+    $dataDb->exec($sql);
+    file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'deleted user '."\n\n", FILE_APPEND);
+}
+
+
+
+function anotherUserIsEditing($db) {
+    
+    $sql = "delete from ".CURRENT_EDITING_USER_TABLE." where editingdate < (NOW() - interval '5 minutes')";
+    $db->exec($sql);
+    
+    $sql = "select count(*) from ".CURRENT_EDITING_USER_TABLE;
+    return ($db->query($sql)->fetchColumn(0) > 0);
 }
