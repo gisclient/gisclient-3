@@ -12,7 +12,9 @@ else $typeName = $parts[$startIndex+2];
 
 $configFile = ROOT_PATH.'map/'.$project.'/'.$typeName.'.xml';
 
-if(!file_exists($configFile)) die('c');
+if(!file_exists($configFile)) {
+    die("Configuration file \"{$configFile}\" not found");
+}
 
 $autoUpdateUser = (defined('LAST_EDIT_USER_COL_NAME') && LAST_EDIT_USER_COL_NAME);
 if($autoUpdateUser) {
