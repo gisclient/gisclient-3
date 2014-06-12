@@ -853,9 +853,10 @@ class gcMap{
 	}
     
     function _getMaxExtents() {
+        $user = new GCUser();
         $extents = array();
 		$userGroupFilter = '';
-		if(empty($_SESSION['USERNAME']) || $_SESSION['USERNAME'] != SUPER_USER) {
+        if(!$user->isAdmin($this->projectName)) {
 			$userGroup = '';
 			if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
