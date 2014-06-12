@@ -14,7 +14,7 @@ $mapfile = new gcMapfile();
 $mapfile->setTarget("tmp");
 $tmpMap = $mapfile->writeMap("layergroup",$layergroupId);
 
-$sql = "select project_name, theme_name, project_srid, xc, yc, max_extent_scale, layergroup_name, layergroup_title".
+$sql = "select project_name, theme_name, project_srid, xc, yc, max_extent_scale, layergroup_name, layergroup_title, sld ".
 	" from ".DB_SCHEMA.".project ".
 	" inner join ".DB_SCHEMA.".theme using(project_name) ".
 	" inner join ".DB_SCHEMA.".layergroup using(theme_id) ".
@@ -61,6 +61,9 @@ function init() {
 		//tmp: 1,
 		format: 'image/png; mode=24bit'
 	};
+    <?php if(!empty($mapConfig['sld'])) { ?>
+    layerParameters.sld = '<?php echo $mapConfig['sld']; ?>';
+    <?php } ?>
 	var mapOptions = {
 		projection: new OpenLayers.Projection('EPSG:<?php echo $mapConfig['project_srid'] ?>'),
 		units: 'm',
