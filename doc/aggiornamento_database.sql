@@ -1157,5 +1157,9 @@ CREATE OR REPLACE VIEW seldb_searchable AS
 SELECT searchable_id AS id, searchable_name AS opzione
 FROM e_searchable;
 
+
+
 --2014-5-23 nascosti filtri di autenticazione
 UPDATE form_level set visible=0 where id in (511,512,514);
+
+

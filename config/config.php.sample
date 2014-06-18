@@ -78,6 +78,12 @@ define('REDLINE_TABLE', 'annotazioni');
 define('REDLINE_SRID', '4326');
 define('REDLINE_FONT', 'arial'); // non obbligatorio, default arial
 
+/************* MAPPROXY ***************/
+define('MAPPROXY', true);
+define('MAPPROXY_URL', 'http://gisclient.rr.nu/ows/');
+define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
+define('MAPPROXY_CACHE_PATH', '/data/tiles/');
+
 require_once (ROOT_PATH."lib/postgres.php");
 require_once (ROOT_PATH."lib/debug.php");
 require_once (ROOT_PATH."config/config.db.php");
