@@ -9,6 +9,18 @@
 #from mapproxy.wsgiapp import make_wsgi_app
 #application = make_wsgi_app(r'/opt/mapproxy/gwmapproxy/mapproxy.yaml')
 
+from mapproxy.util.yaml import load_yaml_file
+from mapproxy.multiapp import make_wsgi_app
+from mapproxy.client.cgi import CGIClient
+from mapproxy.service.wms import PERMIT_ALL_LAYERS
+from mapproxy.exception import RequestError
+from urlparse import parse_qs
+from urllib import urlencode, unquote
+from json import dumps as jsdumps
+from json import loads as jsloads
+import Cookie
+import requests
+import os.path
 
 class SimpleAuthFilter(object):
     """
