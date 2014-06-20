@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # WSGI module for use with Apache mod_wsgi or gunicorn
 
 # # uncomment the following lines for logging
@@ -8,6 +10,9 @@
 
 #from mapproxy.wsgiapp import make_wsgi_app
 #application = make_wsgi_app(r'/opt/mapproxy/gwmapproxy/mapproxy.yaml')
+
+activate_this = '/opt/wsgi-env/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
 
 from mapproxy.util.yaml import load_yaml_file
 from mapproxy.multiapp import make_wsgi_app
@@ -33,10 +38,10 @@ class SimpleAuthFilter(object):
         self.app = app
         self.prefix = prefix
 
-    def __call__(self, environ, start_reponse):
+    def __call__(self, environ, start_response):
         # put authorize callback function into environment
         environ['mapproxy.authorize'] = self.authorize
-        return self.app(environ, start_reponse)
+        return self.app(environ, start_response)
 
     def authorize(self, service, layers=[], environ=None, **kw):
         allowed = denied = False
@@ -167,28 +172,16 @@ class AuthProxy(object):
 
     def __call__(self, environ, start_response):
         self._load_configuation(environ)
-        headers = {'Content-Type': 'text/ascii'}
         cookies = self.load_auth(environ)
         query = _parse_query_string(environ['QUERY_STRING'])
         # TODO: capire perché :-)
         environ['wfs'] = WFSProxy(self.app_name, self.conf['sources']['mapserver_source']['mapserver'])
+        another_start_response = lambda s,h: start_response(s, h+cookies)
 
         # TEST ###
         if 'TEST' in query:
-
-            if  query['TEST'].lower()=='url':
-                out = self._get_auth_info_from_gcmap(environ)
-            if query['TEST'].lower()=='gcmap':
-                headers['Content-Type'] = 'text/json'
-                out = jsdumps(self._test_gcmap(environ))
-            if query['TEST'].lower()=='env':
-                out = str(dict(environ))
-
-            start_response('200 OK', headers.items()+cookies)
-            return [out]
+            return self._test(query['TEST'].lower(), environ, another_start_response)
         # ###
-
-        another_start_response = lambda s,h: start_response(s, h+cookies)
 
         environ['mapproxy.authorize'] = self.authorize # authorize callback
         service = query['SERVICE'].upper() if 'SERVICE' in query else None
@@ -196,6 +189,20 @@ class AuthProxy(object):
             return environ['wfs'](environ, another_start_response)
         else:
             return self.app(environ, another_start_response)
+
+    def _test(self, value, environ, start_response, cookies=[], **kw):
+        # WARNING: just a helper function with development porposes
+        headers = {'Content-Type': 'text/ascii'}
+        if value == 'url':
+            out = self._get_auth_info_from_gcmap(environ)
+        if value == 'env':
+            out = str(environ)
+        if value == 'gcmap':
+            headers['Content-Type'] = 'text/json'
+            out = jsdumps(self._test_gcmap(environ))
+
+        start_response('200 OK', headers.items())
+        return [out]
 
     def _load_configuation(self, environ):
         """ Loads app configuration from file """
@@ -316,7 +323,7 @@ class AuthProxy(object):
                 }
 
     def get_ordered_layers(self):
-        """ Returns layer iterator """
+        """ Returns WMS layer iterator """
 
         for layer in self.conf["layers"]:
             if not 'layers' in layer:
@@ -326,13 +333,14 @@ class AuthProxy(object):
                     yield sub_layer['name']
 
     def authorize(self, service, layers=[], environ=None, **kw):
-        """ """
+        """ The auth callback """
 
         # TODO: considerare l'opzione utente non-autenticato se utile
         # ### {'authorized': 'unauthenticated'} ###
 
         # ### TEST ###
-        if environ['REQUEST_URI'].split('?')[0].split('/')[3] == 'demo':
+        uri = environ['REQUEST_URI'].split('?')[0].split('/')
+        if len(uri)>3 and uri[3]=='demo':
             return {'authorized': 'full'}
         # ###
 
@@ -374,9 +382,7 @@ class SimpleRequestFilter(object):
             proxy = WFSProxy(environ, self.app)
             return proxy(query, start_response)
 
-
-activate_this = '/home/plone/Plone/Python-2.7/bin/activate_this.py'
-execfile(activate_this, dict(__file__=activate_this))
+config_dir = '/apps/GisClient-3.3/mapproxy/'
 from mapproxy.multiapp import make_wsgi_app
-application = make_wsgi_app('/apps/GisClient-3.3/mapproxy/', allow_listing=True)
+application = make_wsgi_app(config_dir, allow_listing=True)
 application = AuthProxy(application)
