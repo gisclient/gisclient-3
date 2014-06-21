@@ -214,7 +214,7 @@ class gcMapfile{
                     'grids'=>array_keys($this->grids),
                     'cache'=>array(
                         'type'=>'mbtiles',
-                        'filename'=>MAPPROXY_CACHE_PATH.$cacheName.'.mbtiles'
+                        'filename'=>MAPPROXY_CACHE_PATH.$aLayer['theme_name'].'.mbtiles'
                     ),
                     'layergroups'=>array(),
                     'theme_name'=>$aLayer['theme_name'],
@@ -259,7 +259,21 @@ class gcMapfile{
 					if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
 					if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 
-					if($aLayer["layergroup_single"] == 1){
+					
+					if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
+						//echo $aLayer["layergroup_name"];
+						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
+                    	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
+	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
+	                        'cache'=>array(
+	                            'type'=>'mbtiles',
+	                            'filename'=>MAPPROXY_CACHE_PATH.$aLayer["layergroup_name"].'.mbtiles'
+	                        ),
+	                        'grids'=>array_keys($this->grids)
+                    	);
+
+					}
+					elseif($aLayer["layergroup_single"] == 1){
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array("mapserver_source:".$aLayer["layergroup_name"]);
 					}else{
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
@@ -272,7 +286,7 @@ class gcMapfile{
                         }
 					}
 				}
-
+/*
 				//SE IL LAYERGROUP E' DI TIPO TMS/WMTS AGGIUNGO ANCHE IL LAYER WMTS/TMS E LA CACHE
 				if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
 					$layergroupName = $aLayer["layergroup_name"].(($aLayer["owstype_id"] == WMTS_LAYER_TYPE)?"_wmts":"_tms");
@@ -289,7 +303,9 @@ class gcMapfile{
 
 					//TODO scrivere le grid e le altre impostazioni, verificare il problema della incompatibilità wmts tms ????
 				}
+	*/
 			}
+
 		}
 
 
@@ -762,6 +778,7 @@ END";
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
         
         $content = yaml_emit($config,YAML_UTF8_ENCODING);
+
         file_put_contents(ROOT_PATH.'mapproxy/'.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
 

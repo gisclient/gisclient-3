@@ -8,6 +8,9 @@
 # import os.path
 # fileConfig(r'/opt/mapproxy/gwmapproxy/log.ini', {'here': os.path.dirname(__file__)})
 
+
+#!!!!!!!!!!!!!!!!!!!!!! AGGIUNGERE MODULO REQUESTS
+
 #from mapproxy.wsgiapp import make_wsgi_app
 #application = make_wsgi_app(r'/opt/mapproxy/gwmapproxy/mapproxy.yaml')
 
@@ -386,4 +389,4 @@ class SimpleRequestFilter(object):
 config_dir = '/apps/GisClient-3.3/mapproxy/'
 from mapproxy.multiapp import make_wsgi_app
 application = make_wsgi_app(config_dir, allow_listing=True)
-application = AuthProxy(application)
+#application = AuthProxy(application)

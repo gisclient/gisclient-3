@@ -348,7 +348,8 @@ class gcMap{
 					$newFlag = false;
 					if($idx==-1){
 						$aLayer["name"] = $themeName;
-						$aLayer["nodes"] = array();		
+						$aLayer["nodes"] = array();
+                        $aLayer['theme_single'] = true; 
 						$aLayer["options"]["title"] = $themeTitle;	
 						$aLayer["options"]["visibility"] = false;
 						$aLayer["parameters"]["layers"] = array();				
@@ -440,8 +441,8 @@ class gcMap{
 				//$layerParameters["SERVICE"] = "WMTS";
 				$layerParameters["name"] = $aLayer["name"];
 				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
-				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL;
-				$layerParameters["url"] .= "/".$this->mapsetName."/wmts/".$layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL."/".$this->mapsetName."/wmts/";
+				$layerParameters["url"] .= $layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
 				$layerParameters["matrixSet"] = $this->mapsetGRID;
 				$layerParameters["requestEncoding"] = "REST";
