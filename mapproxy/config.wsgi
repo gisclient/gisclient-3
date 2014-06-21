@@ -11,7 +11,8 @@
 #from mapproxy.wsgiapp import make_wsgi_app
 #application = make_wsgi_app(r'/opt/mapproxy/gwmapproxy/mapproxy.yaml')
 
-activate_this = '/opt/wsgi-env/bin/activate_this.py'
+#activate_this = '/opt/wsgi-env/bin/activate_this.py'
+activate_this = '/home/plone/Plone/Python-2.7/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
 from mapproxy.util.yaml import load_yaml_file
