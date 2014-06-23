@@ -6,7 +6,7 @@ $ajax = new GCAjax();
 
 if(empty($_REQUEST['field_id'])) $ajax->error('Undefined fieldId');
 $params = array();
-if(empty($_REQUEST['suggest'])) {
+if(!empty($_REQUEST['suggest'])) {
     $inputString = '%' . $_REQUEST['suggest'] . '%';
     $params['input_string'] = $inputString;
 }
@@ -81,7 +81,7 @@ if(!empty($filters)) {
     $sqlQuery .= ' where '.implode(' and ', $filters);
 }
 
-$sqlQuery .= "order by ".$fieldName." limit 25";
+$sqlQuery .= " order by ".$fieldName." limit 25";
 
 try {
     $stmt = $dataDb->prepare($sqlQuery);
