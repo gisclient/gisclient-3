@@ -214,7 +214,7 @@ class gcMapfile{
                     'grids'=>array_keys($this->grids),
                     'cache'=>array(
                         'type'=>'mbtiles',
-                        'filename'=>MAPPROXY_CACHE_PATH.$aLayer['theme_name'].'.mbtiles'
+                        'filename'=>$aLayer['theme_name'].'.mbtiles'
                     ),
                     'layergroups'=>array(),
                     'theme_name'=>$aLayer['theme_name'],
@@ -267,7 +267,7 @@ class gcMapfile{
 	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
 	                        'cache'=>array(
 	                            'type'=>'mbtiles',
-	                            'filename'=>MAPPROXY_CACHE_PATH.$aLayer["layergroup_name"].'.mbtiles'
+	                            'filename'=>$aLayer["layergroup_name"].'.mbtiles'
 	                        ),
 	                        'grids'=>array_keys($this->grids)
                     	);
@@ -279,7 +279,7 @@ class gcMapfile{
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
 						if($aLayer["hidden"]!=1) {
                             array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
-                                "name"=>$aLayer["layer_name"],
+                                "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
                                 "title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],
                                 "sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])
                             ));
@@ -397,7 +397,7 @@ class gcMapfile{
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
 		}
         
-        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . 'project='.$this->projectName.'&map='.$mapFile : null;
+        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . '?project='.$this->projectName.'&map='.$mapFile : null;
         $wms_onlineresource = '';
         $wfs_onlineresource = '';
         if(!empty($owsUrl)) {
@@ -766,9 +766,9 @@ END";
                     'proj_data_dir'=>'/usr/share/proj'
                 ),
                 'cache'=>array(
-                    'base_dir'=>'/data/tiles/',
-                    'lock_dir'=>'/data/tiles/locks/',
-                    'tile_lock_dir'=>'/data/tiles/tile_locks/',
+                    'base_dir'=>TILES_CACHE.$this->projectName.'/',
+                    'lock_dir'=>TILES_CACHE.'locks/',
+                    'tile_lock_dir'=>TILES_CACHE.'tile_locks/',
                 )
             ),
             'layers'=>$this->mpxLayers[$mapName]
@@ -776,6 +776,9 @@ END";
         
         if(!is_dir(ROOT_PATH.'mapproxy/')) mkdir(ROOT_PATH.'mapproxy');
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
+
+        //Verifica esistenza cartella dei tiles
+        if(!is_dir(TILES_CACHE.$this->projectName)) mkdir(TILES_CACHE.$this->projectName);
         
         $content = yaml_emit($config,YAML_UTF8_ENCODING);
 

@@ -242,6 +242,7 @@ class gcMap{
 
 		$authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
 		$userLayers = $user->getMapLayers(array('mapset_name'=>$this->mapsetName));
+		//print_array($userLayers);die();
         $extents = $this->_getMaxExtents();
 		//print_array($userLayers);
 
@@ -259,9 +260,15 @@ class gcMap{
 		$stmt = $this->db->prepare($sqlLayers);
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
-						
-		$ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
 
+		if(defined('MAPPROXY_URL')){
+			$ows_url = MAPPROXY_URL.$this->mapsetName."/service";
+		}elseif (defined('GISCLIENT_OWS_URL')){
+			$ows_url = GISCLIENT_OWS_URL;
+		}else{
+			$ows_url = "../../services/ows.php?";
+		}
+						
 		$rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 		$themeMinScale = false; $themeMaxScale = false;
@@ -316,12 +323,14 @@ class gcMap{
 				//TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
 				$aLayer["url"] = isset($row["url"])?$row["url"]:$ows_url;
 				$layerParameters=array();
-				$layerParameters["project"] = $this->projectName;
-				$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
+				if(!defined('MAPPROXY_URL')){
+					$layerParameters["project"] = $this->projectName;
+					$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
+					$layerParameters['gisclient_map'] = 1;
+				}
 				$layerParameters["exceptions"] = (defined('DEBUG') && DEBUG==1)?'xml':'blank';				
 				$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["transparent"] = true;
-				$layerParameters['gisclient_map'] = 1;
                 if (!empty($row['sld'])) $layerParameters["sld"] = $row["sld"];
 				if (!empty($_REQUEST["tmp"])) $layerParameters['tmp'] = 1;
                     
@@ -342,10 +351,12 @@ class gcMap{
                    $aLayer["parameters"]["layers"] = explode(",",$row['layers']);
  		        } 
 
+
 				//Tema singola immagine: passo tutti i layergroupname come layer e prendo le impostazioni di base dal primo wms
 				elseif($row["theme_single"]==1){ 
 					$idx = $this->_getThemeLayerIndex($themeName);
 					$newFlag = false;
+
 					if($idx==-1){
 						$aLayer["name"] = $themeName;
 						$aLayer["nodes"] = array();
@@ -359,9 +370,35 @@ class gcMap{
 					}
 
 					//Override dei valori
-					if($row["status"] == 1) array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
+					//if($row["status"] == 1) array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
 					$this->mapLayers[$idx]["options"]["visibility"] = $this->mapLayers[$idx]["options"]["visibility"] || ($row["status"] == 1);
-					$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
+					//$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
+
+
+					//Layergroup singola immagine: passo solo il layergroupname
+					if($row["layergroup_single"] == 1){ 
+						if($row["status"] == 1) array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
+						$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
+					}
+
+
+					//Layergroup con singoli layer distinti				(DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)		
+					else { 	
+						$nodes = array();
+						$layers = array();
+						foreach($userLayers[$themeName][$layergroupName] as $userLayer) {							
+
+							if($row["status"] == 1) array_push($this->mapLayers[$idx]["parameters"]["layers"], $userLayer["name"]);
+							$arr = array("layer"=>$userLayer["name"], "title"=>$userLayer["title"]);
+							if($userLayer["minScale"]) $arr["minScale"] = floatval($userLayer["minScale"]);
+							if($userLayer["maxScale"]) $arr["maxScale"] = floatval(+$userLayer["maxScale"]);
+							$nodes[] = $arr;
+							$layers[] = $userLayer["name"];
+						}
+						$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1 , "nodes" => $nodes);
+
+					}
+
 
 					//INIZIALIZZO IL VALORE PER VERIFICARE CHE SIANO SETTATI MAXSCALE E MINSCALE PER TUTTI I LAYER DEL TEMA ALTRIMENTI NON SETTO IL VALORE NEL TEMA LAYER
 					if($newFlag && !empty($layerOptions["minScale"])) $this->mapLayers[$idx]["options"]["minScale"] = $layerOptions["minScale"];
