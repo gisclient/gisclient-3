@@ -719,6 +719,15 @@ SELECT searchable_id AS id, searchable_name AS opzione
 FROM e_searchable;
 
 
+
+--2014-6-20 aggiornamento del campo data_type
+UPDATE layer SET data_type = 'point' WHERE layertype_id=1;
+UPDATE layer SET data_type = 'linestring' WHERE layertype_id=2;
+UPDATE layer SET data_type = 'multipolygon' WHERE layertype_id=3;
+UPDATE layer SET data_type = 'point' WHERE layertype_id=4;
+UPDATE layer SET data_type = 'point' WHERE layertype_id=5;
+
+
 --2014-6-20 tabelle con i campi e relazioni
 CREATE TABLE field
 (
@@ -845,6 +854,17 @@ CREATE INDEX fki_layer_link_link_id_fkey
 
 --2014-06-20 INSERIMENTO DEI CAMPI DEI MODELLI DI RICARCA 1 A 1 CON I LAYER
 --select qt_id from qt group by qt_id having count(layer_id) =1
+
+CREATE TABLE e_relationtype
+(
+  relationtype_id integer NOT NULL,
+  relationtype_name character varying NOT NULL,
+  relationtype_order smallint,
+  CONSTRAINT e_relationtype_pkey PRIMARY KEY (relationtype_id)
+);
+
+INSERT INTO e_relationtype values (1,'Dettaglio (1 a 1)',1);
+INSERT INTO e_relationtype values (2,'Secondaria (Info 1 a molti)',2);
 
 
 --INSERISCO LE RELAZIONI 1 A 1 
@@ -1012,6 +1032,24 @@ CREATE OR REPLACE VIEW vista_qtfield AS
                     SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
                       FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
   ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
+
+
+
+CREATE OR REPLACE VIEW vista_field AS 
+ SELECT field.field_id, field.layer_id, field.fieldtype_id, x.relation_id, field.field_name, field.resultype_id, field.field_header, field.field_order, COALESCE(field.column_width, 0) AS column_width, x.name AS relation_name, x.relationtype_id, x.relationtype_name, field.editable
+   FROM field
+   JOIN e_fieldtype USING (fieldtype_id)
+   JOIN ( SELECT y.relationtype_id, y.relation_id, y.name, z.relationtype_name
+      FROM (         SELECT 0 AS relation_id, 'Data Layer'::character varying AS name, 0 AS relationtype_id
+           UNION 
+                    SELECT relation.relation_id, COALESCE(relation.relation_name, 'Nessuna Relazione'::character varying) AS name, relation.relationtype_id
+                      FROM relation relation) y
+   JOIN (         SELECT 0 AS relationtype_id, ''::character varying AS relationtype_name
+           UNION 
+                    SELECT e_relationtype.relationtype_id, e_relationtype.relationtype_name
+                      FROM e_relationtype) z USING (relationtype_id)) x USING (relation_id)
+  ORDER BY field.field_id, x.relation_id, x.relationtype_id;
+
 
 
 

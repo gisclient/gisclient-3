@@ -1,26 +1,31 @@
 <?php
 
+//todo:  aggiungere anche la parte di codice delle formule!!!
+
 include('config/config.php');
 
 echo '<pre>';
+
+$sqlLayer = ($_REQUEST["layerid"])? " and layer_id=" . $_REQUEST["layerid"]:"";
 
 $db = GCApp::getDB();
 //$db->beginTransaction();
 
 $sql = 'insert into '.DB_SCHEMA.'.field (field_id, field_name, field_header, fieldtype_id, searchtype_id, resultype_id, layer_id)
-    values (:field_id, :field_name, :field_header, 1, 0, 4, :layer_id)';
+    values (:field_id, :field_name, :field_header, 1, 1, 4, :layer_id)';
 $insertField = $db->prepare($sql);
 
 $sql = 'select layer_id, data, layer_title, data_unique, data_filter, classitem, labelitem, labelsizeitem, catalog_path
     from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog using(catalog_id) 
-    where connection_type = 6';
+    where connection_type = 6' . $sqlLayer;
 //$sql .= ' limit 20';
 $layers = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
 $sql = 'select expression, label_def, label_angle, label_color, label_outlinecolor, label_size, 
     color, outlinecolor, angle
-    from '.DB_SCHEMA.'.style inner join '.DB_SCHEMA.'.class using(class_id)
+    from '.DB_SCHEMA.'.style right join '.DB_SCHEMA.'.class using(class_id)
     where layer_id = :layer';
+
 $getClasses = $db->prepare($sql);
 
 $sql = 'select field_id from '.DB_SCHEMA.'.field where layer_id = :layer and field_name = :field_name';
@@ -47,6 +52,7 @@ foreach($layers as $layer) {
         //se il campo è usato nelle classi o negli stili del layer
         if(!$used) {
             $getClasses->execute(array('layer'=>$layer['layer_id']));
+
             
             $styles = $getClasses->fetchAll(PDO::FETCH_ASSOC);
             foreach($styles as $style) {
@@ -54,7 +60,14 @@ foreach($layers as $layer) {
                     $used = true;
                     break;
                 }
-                
+                if(strpos($style['label_angle'], $field) !== false) {
+                    $used = true;
+                    break;
+                }
+                if(strpos($style['label_size'], $field) !== false) {
+                    $used = true;
+                    break;
+                }
                 if(in_array($field, $style)) {
                     $used = true;
                     break;
