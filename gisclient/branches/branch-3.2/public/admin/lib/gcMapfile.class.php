@@ -67,7 +67,7 @@ class gcMapfile{
 		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
 				$filter="mapset.mapset_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_name,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";
+				$fieldsMapset="mapset_name,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def, mapset.private AS mapset_private, ";
 				$sqlParams['keyvalue'] = $keyvalue;
                 
                 $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
@@ -78,7 +78,7 @@ class gcMapfile{
 		} elseif($keytype=="project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO
 				$filter="project.project_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_name,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
+				$fieldsMapset="mapset_name,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def, mapset.private AS mapset_private, ";
 				$sqlParams['keyvalue'] = $keyvalue;
                 $projectName = $keyvalue;
 		
@@ -93,9 +93,9 @@ class gcMapfile{
 				$_in = GCApp::prepareInStatement($keyvalue);
 				$sqlParams = $_in['parameters'];
 				$inQuery = $_in['inQuery'];
-
-			$this->printMap = true;
-			$filter = "project_name||'.'||theme_name||'.'||layergroup_name in (".$inQuery.")";
+                $fieldsMapset = 'true'; // dummy field
+                $this->printMap = true;
+                $filter = "project_name||'.'||theme_name||'.'||layergroup_name in (".$inQuery.")";
 		}
 		
 		if(!empty($this->languageId)) { // inizializzo l'oggetto i18n per le traduzioni
@@ -172,7 +172,11 @@ class gcMapfile{
 			$mapExtent[$mapName] = $aLayer["mapset_extent"];	
 			
 			$oFeature->initFeature($aLayer["layer_id"]);
-			//if(!$this->printMap) $mapName = $projectName;//$themeName;
+
+            // Force layer to be private if the mapset is private
+            if (!empty($aLayer["mapset_private"]) && $aLayer["mapset_private"]) {
+                $oFeature->setPrivate(true);
+            }
 			
 			$layerText = $oFeature->getLayerText($layergroupName, $aLayer);
 			if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());

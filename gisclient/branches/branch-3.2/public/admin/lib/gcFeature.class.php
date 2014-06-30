@@ -43,6 +43,7 @@ class gcFeature{
 	var $srsList;
 	var $srsParams;
 	var $dataTypes;
+    var $forcePrivate = false;
 	
 	private $i18n;
 	
@@ -59,6 +60,7 @@ class gcFeature{
 
 
 	function initFeature($layerId){
+        $this->forcePrivate = false;
 
 		$sqlField = "select qtfield.*,
 			qtrelation.qtrelation_name, qtrelation_id, qtrelationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
@@ -182,7 +184,12 @@ class gcFeature{
 	}
 	
 	function isPrivate() {
-		return ($this->aFeature['private'] > 0);
+		return $this->forcePrivate || ($this->aFeature['private'] > 0);
+	}
+    
+    // Used to force private layer in mapset is private
+    function setPrivate($private) {
+        $this->forcePrivate = $private;
 	}
 	
 	function getLayerText($layergroupName, $layergroup){
@@ -204,7 +211,6 @@ class gcFeature{
 		$layText[] = "\t\"wms_group_title\" \"".$layergroup['layergroup_title']."\"";
 		$layText[] = $this->_getMetadata();
 		$layText[] = "END";
-		
 		if(!empty($this->aFeature["data_srid"])){
 			$layText[] = "PROJECTION";
 			$layText[] = "\t\"init=epsg:".$this->aFeature["data_srid"]."\"";
@@ -546,8 +552,13 @@ class gcFeature{
 		
 		}
 
-		if(!empty($this->aFeature['hidden']) && $this->aFeature["hidden"]==1) $aMeta["gc_hide_layer"] = '1';
-		if(!empty($this->aFeature['private']) && $this->aFeature["private"]==1) $aMeta["gc_private_layer"] = '1';
+		if(!empty($this->aFeature['hidden']) && $this->aFeature["hidden"]==1) {
+            $aMeta["gc_hide_layer"] = '1';
+        }    
+		if($this->forcePrivate || 
+           (!empty($this->aFeature['private']) && $this->aFeature["private"]==1)) {
+            $aMeta["gc_private_layer"] = '1';
+        }
 		
 		$sql = "select af.filter_name, laf.required ".
 			" from ".DB_SCHEMA.".authfilter af inner join ".DB_SCHEMA.".layer_authfilter laf using(filter_id) ".
@@ -565,7 +576,7 @@ class gcFeature{
 			$metaText .= "\t\"$key\"\t\"$value\"\n\t";
 		}
 		if(!empty($this->aFeature["metadata"]))  $metaText .= "\t".str_replace("\n","\n\t\t",$this->aFeature["metadata"]);
-		$metaText;
+		//$metaText;
 		return $metaText;
 		
 	}
