@@ -632,7 +632,15 @@ END";
 			if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
 			if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
 			//if($res[$i]["ascii_code"]) $smbText[]="\tCHARACTER \"&#".$res[$i]["ascii_code"].";\"";//IN MAPSERVER 5.0 SEMBRA DARE PROBLEMI
-			if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".chr($res[$i]["ascii_code"])."\"";
+			if($res[$i]["ascii_code"]) {
+				if($res[$i]["ascii_code"]==34)
+					$smbText[]="\tCHARACTER '".chr($res[$i]["ascii_code"])."'";
+				else if($res[$i]["ascii_code"]==92)
+					$smbText[]="\tCHARACTER '".chr($res[$i]["ascii_code"]).chr($res[$i]["ascii_code"])."'";
+				else
+					$smbText[]="\tCHARACTER \"".chr($res[$i]["ascii_code"])."\"";
+
+			}
 			if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
 			if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
 			if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
