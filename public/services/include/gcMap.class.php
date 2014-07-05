@@ -120,6 +120,7 @@ class gcMap{
 			// echo "{$sql}<br />\n";
 			die();
 		}
+
 		
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		
@@ -152,15 +153,18 @@ class gcMap{
 
 		//GRID & TILES
 		if(!empty($row["mapset_grid"])){
+			$precision = $sizeUnitId == 7?10:6;
 			$this->tilesExtent = explode($this->coordSep,$row["tilegrid_extent"]); 
+            foreach($this->tilesExtent as &$res) $res = round((float)$res,$precision);
+            unset($res);
 			$this->serverResolutions = explode($this->coordSep,$row["tilegrid_resolutions"]); 
 			$this->mapsetGRID = $row["mapset_grid"];
-			//array_walk($this->serverResolutions, '_toFloat');
 
-
-			foreach ($this->tilesExtent as $key => $value)  $this->tilesExtent[$key] = floatval($value);
-			//IN PHP NON VIENE, FATTO IN JS
-			//foreach ($serverRes as $key => $value)  $this->serverResolutions[$key] = _toFloat($value);
+			//ATTENZIONE SU QUALCHE VERSIONE PHP NON ARROTONDAVA CORRETTAMENTE
+			//for($i=0;$i<count($this->serverResolutions);$i++) $this->serverResolutions [$i] = round(floatval($this->serverResolutions [$i]),$precision);
+			//for($i=0;$i<count($this->serverResolutions);$i++) $this->serverResolutions [$i] = floatval($this->serverResolutions [$i]);
+            foreach($this->serverResolutions as &$res) $res = round((float)$res,$precision);
+            unset($res);
 		}
 
 		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$sizeUnitId);
@@ -243,12 +247,12 @@ class gcMap{
 		$authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
 		$userLayers = $user->getMapLayers(array('mapset_name'=>$this->mapsetName));
 		//print_array($userLayers);die();
-        $extents = $this->_getMaxExtents();
+        //$extents = $this->_getMaxExtents();
 		//print_array($userLayers);
 
 		$sqlParams = array();
 		$sqlAuthorizedLayers = "";
-		if (count($authorizedLayers)>0) $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', array_keys($authorizedLayers)).")";
+		if (count($authorizedLayers)>0) $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', $authorizedLayers).")";
 		$sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id) 
 			WHERE layergroup_id IN (
 				SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
@@ -302,7 +306,6 @@ class gcMap{
 			
 			//$aLayer["typeId"] = $layerType;
 			$aLayer["type"] = $row["owstype_name"];
-			
 			$layerOptions = array();
 			if($row["status"] == 0) $layerOptions["visibility"] = false;
 			if($row["hidden"] == 1) $layerOptions["displayInLayerSwitcher"] = false;
@@ -310,10 +313,11 @@ class gcMap{
 			if($row["isbaselayer"] == 1 && $row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 			if($row['opacity'] != null && $row['opacity'] != 100) $layerOptions['opacity'] = $row['opacity']/100;
 			if(!empty($row['metadata_url'])) $layerOptions['metadataUrl'] = $row['metadata_url'];
-            if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
+            //if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
  			$layerOptions["theme"] = $themeTitle;
  			$layerOptions["theme_id"] = $row['theme_name'];
- 			$layerOptions["title"] = $layergroupTitle;            
+ 			$layerOptions["title"] = $layergroupTitle;
+            if($row["refmap"]) $layerOptions["refmap"] = true;
 
 			//ALLA ROVESCIA RISPETTO A MAPSERVER
 			if($row["layergroup_maxscale"]>0) $layerOptions["minScale"] = floatval($row["layergroup_maxscale"]);
@@ -331,7 +335,7 @@ class gcMap{
 				$layerParameters["exceptions"] = (defined('DEBUG') && DEBUG==1)?'xml':'blank';				
 				$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["transparent"] = true;
-                if (!empty($row['sld'])) $layerParameters["sld"] = $row["sld"];
+                if (!empty($row['sld'])) $layerParameters["sld"] = PUBLIC_URL."sld/".$this->projectName."/".$row["sld"];
 				if (!empty($_REQUEST["tmp"])) $layerParameters['tmp'] = 1;
                     
                 // TODO: check for layergroup.layername
@@ -432,14 +436,18 @@ class gcMap{
 				//Layergroup con singoli layer distinti				(DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)		
 				else { 	
 					$aLayer["parameters"]["layers"] = array();
-					$aLayer["nodes"] = array();			
+					$aLayer["nodes"] = array();	
+					$hidden=true;		
 					foreach($userLayers[$themeName][$layergroupName] as $userLayer) {
 						array_push($aLayer["parameters"]["layers"], $userLayer["name"]);
 						$arr = array("layer"=>$userLayer["name"], "title"=>$userLayer["title"]);
 						if($userLayer["minScale"]) $arr["minScale"] = floatval($userLayer["minScale"]);
 						if($userLayer["maxScale"]) $arr["maxScale"] = floatval(+$userLayer["maxScale"]);
 						array_push($aLayer["nodes"], $arr);
+						if($userLayer["hidden"]==0) $hidden=false;
 					}
+					if($hidden) $aLayer["options"]["displayInLayerSwitcher"]=false;
+
 				}
 				array_push($this->mapLayers, $aLayer);
 			}
@@ -456,6 +464,8 @@ class gcMap{
 				$layerOptions["sphericalMercator"] = true;
 				$layerOptions["minZoomLevel"] = $this->minZoomLevel;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
+				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
+
 				unset($layerOptions["minScale"]);
 				unset($layerOptions["maxScale"]);
 				$aLayer["options"]= $layerOptions;
@@ -468,6 +478,7 @@ class gcMap{
 				if(!in_array($layerType,$this->listProviders)) $this->listProviders[] = $layerType;
 				$layerOptions["sphericalMercator"] = true;
 				$layerOptions["zoomOffset"] = $this->minZoomLevel; 
+				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 				$aLayer["options"]= $layerOptions;
 				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
 				array_push($this->mapLayers, $aLayer);
@@ -480,6 +491,7 @@ class gcMap{
 				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
 				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL."/".$this->mapsetName."/wmts/";
 				$layerParameters["url"] .= $layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+				if($row["status"] == 0) $layerParameters["visibility"] = false;
 				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
 				$layerParameters["matrixSet"] = $this->mapsetGRID;
 				$layerParameters["requestEncoding"] = "REST";
