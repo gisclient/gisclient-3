@@ -113,12 +113,14 @@ class gcMapfile{
         
         if(!empty($projectName)) {
             $sql = 'select srid, e_tilegrid.* from '.DB_SCHEMA.'.project_srs
-                left join '.DB_SCHEMA.'.e_tilegrid using(tilegrid_id)
+                inner join '.DB_SCHEMA.'.e_tilegrid using(tilegrid_id)
                 where project_name = :project';
             $stmt = $this->db->prepare($sql);
             $stmt->execute(array('project'=>$projectName));
             while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $resolutions = explode(' ', $row['tilegrid_resolutions']);
+                //for($i=0;$i<count($resolutions);$i++) $resolutions [$i] = floatval($resolutions [$i]);
+
                 foreach($resolutions as &$res) $res = (float)$res;
                 unset($res);
                 
@@ -174,8 +176,7 @@ class gcMapfile{
 		else{
 			$this->projectMaxScale = GCAuthor::$defaultScaleList[0];
 		}
-		$this->projectExtent = $this->_calculateExtentFromCenter($aLayer['xc'], $aLayer['yc']);
-		
+		$this->projectExtent = $this->_calculateExtentFromCenter($aLayer['xc'], $aLayer['yc']);		
 		
 
 		$mapText=array();
@@ -256,11 +257,29 @@ class gcMapfile{
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
 
 				if(!empty($aLayer["layer_name"])){
-					if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
-					if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 
-					
-					if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
+					if($aLayer["owstype_id"] == WMS_LAYER_TYPE){
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
+						if($aLayer["layergroup_single"] == 1){
+							$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array("mapserver_source:".$aLayer["layergroup_name"]);
+						}else{
+							if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
+							if($aLayer["hidden"]!=1) {
+	                            array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
+	                                "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
+	                                "title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],
+	                                "sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])
+	                            ));
+	                        }
+						}
+
+
+					}
+	
+					else if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 						//echo $aLayer["layergroup_name"];
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
                     	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
@@ -273,18 +292,7 @@ class gcMapfile{
                     	);
 
 					}
-					elseif($aLayer["layergroup_single"] == 1){
-						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array("mapserver_source:".$aLayer["layergroup_name"]);
-					}else{
-						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
-						if($aLayer["hidden"]!=1) {
-                            array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
-                                "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
-                                "title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],
-                                "sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])
-                            ));
-                        }
-					}
+
 				}
 /*
 				//SE IL LAYERGROUP E' DI TIPO TMS/WMTS AGGIUNGO ANCHE IL LAYER WMTS/TMS E LA CACHE
@@ -676,6 +684,7 @@ END";
 			2 => $x + $maxResolution * TILE_SIZE,
 			3 => $y + $maxResolution * TILE_SIZE
 		);
+
 		
 	}
 	
@@ -718,6 +727,9 @@ END";
 
         $config = array(
             'services'=>array(
+            	'demo'=>array(
+            		'name'=>$mapName
+            	),
                 'tms'=>array(
                     'srs'=>explode(' ', $this->epsgList),
                     'use_grid_names'=>true,
