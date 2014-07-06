@@ -77,6 +77,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 		if(!empty($layer['PARAMETERS']['SLD'])) {
 			$oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);
 		}
+        if($mapConfig['srs'] == 'EPSG:900913') $mapConfig['srs'] = 'EPSG:3857';
 		$oLay->setMetaData("wms_srs", $mapConfig['srs']);
 		$oLay->setMetaData("wms_name", $layerNames);
 		$oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);
