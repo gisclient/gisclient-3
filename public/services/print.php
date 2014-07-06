@@ -33,6 +33,7 @@ try {
         $file = $printMap->printMapPDF();
     }
 } catch (Exception $e) {
+    //var_export($e);
 	$ajax->error($e->getMessage());
 }
 $ajax->success(array('file'=>$file, 'format'=>$_REQUEST['format']));

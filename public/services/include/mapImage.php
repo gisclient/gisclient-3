@@ -73,32 +73,52 @@ class mapImage {
 	
 	protected function buildWmsList() {
 		foreach($this->tiles as $key => $tile) {
-            $url = trim($tile['url'], '?');
-            $url = printDocument::addPrefixToRelativeUrl($url);
-            
-            $parameters = array();
-            foreach($tile['parameters'] as $key => $val) {
-                $parameters[strtoupper($key)] = $val;
+            switch($tile['type']) {
+                case 'external_provider':
+                    array_push($this->wmsList, array(
+                        'URL'=>GISCLIENT_OWS_URL.'PROJECT='.$tile['project'].'&MAP='.$tile['map'],
+                        'PARAMETERS'=>array(
+                            //'MAP'=>$tile['map'],
+                            //'PROJECT'=>$tile['project'],
+                            'FORMAT'=>'image/png; mode=24bit',
+                            'LAYERS'=>array($tile['name']),
+                            'SERVICE'=>'WMS',
+                            'VERSION'=>'1.1.1',
+                            'REQUEST'=>'GetMap',
+                            'SRS'=>'EPSG:3857'
+                        )
+                    ));
+                break;
+                
+                default:
+                    $url = trim($tile['url'], '?');
+                    $url = printDocument::addPrefixToRelativeUrl($url);
+                    
+                    $parameters = array();
+                    foreach($tile['parameters'] as $key => $val) {
+                        $parameters[strtoupper($key)] = $val;
+                    }
+                    
+                    // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
+                    $parsedUrl = parse_url($url);
+                    if(!empty($parsedUrl['query'])) {
+                        $urlParams = array();
+                        parse_str($parsedUrl['query'], $urlParams);
+                        foreach($urlParams as $key => $val) {
+                            unset($urlParams[$key]);
+                            $urlParams[strtoupper($key)] = $val;
+                        }
+                        if(!empty($urlParams['PROJECT']) && !empty($parameters['PROJECT'])) unset($parameters['PROJECT']);
+                        if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
+                    }
+                    
+                    if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
+                    
+                    $options = !empty($tile['options']) ? $tile['options'] : array();
+                    
+                    array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters, 'options'=>$options));
+                break;
             }
-            
-            // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
-            $parsedUrl = parse_url($url);
-            if(!empty($parsedUrl['query'])) {
-                $urlParams = array();
-                parse_str($parsedUrl['query'], $urlParams);
-                foreach($urlParams as $key => $val) {
-                    unset($urlParams[$key]);
-                    $urlParams[strtoupper($key)] = $val;
-                }
-                if(!empty($urlParams['PROJECT']) && !empty($parameters['PROJECT'])) unset($parameters['PROJECT']);
-                if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
-            }
-            
-            if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
-            
-            $options = !empty($tile['options']) ? $tile['options'] : array();
-            
-            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters, 'options'=>$options));
 		}
 	}
 	

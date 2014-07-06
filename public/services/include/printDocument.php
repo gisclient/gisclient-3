@@ -194,7 +194,9 @@ class printDocument {
 	
 	protected function buildLegendGraphicWmsList() {
 		foreach($this->wmsList as $wms) {
-            if($wms['PARAMETERS']['MAP'] == 'REDLINE') continue;
+            if(empty($wms['PARAMETERS']['MAP']) ||
+                $wms['PARAMETERS']['MAP'] == 'REDLINE' || 
+                empty($wms['PARAMETERS']['PROJECT'])) continue;
 			$legendGraphicRequest = array_merge($wms['PARAMETERS'], array(
 				'url'=>(!empty($wms['URL'])?$wms['URL']:$wms['baseURL']),
 				'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
@@ -236,33 +238,35 @@ class printDocument {
             }
         }
 
-        $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
-        foreach($themes as &$theme) {
-            $theme['groups'] = array();
-            foreach($theme['layers'] as $layergroupName) {
-                $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
-                foreach($layerIndexes as $index) {
-                    $oLayer = $oMap->getLayer($index);
-                    $layerName = $oLayer->name;
-                    $group = array(
-                        'id'=>$layerName,
-                        'title'=>$oLayer->getMetaData('ows_title'),
-                        'layers'=>array()
-                    );
-                    for($n = 0; $n < $oLayer->numclasses; $n++) {
-                        $oClass = $oLayer->getClass($n);
-                        $exclude = $oClass->getMetaData('gc_no_image');
-                        if(!empty($exclude)) continue;
-                        array_push($group['layers'], array(
-                            'url'=>$layerName.'-'.$n,
-                            'title'=>$oClass->title
-                        ));
+        if(!empty($project) && !empty($mapset)) {
+            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+            foreach($themes as &$theme) {
+                $theme['groups'] = array();
+                foreach($theme['layers'] as $layergroupName) {
+                    $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
+                    foreach($layerIndexes as $index) {
+                        $oLayer = $oMap->getLayer($index);
+                        $layerName = $oLayer->name;
+                        $group = array(
+                            'id'=>$layerName,
+                            'title'=>$oLayer->getMetaData('ows_title'),
+                            'layers'=>array()
+                        );
+                        for($n = 0; $n < $oLayer->numclasses; $n++) {
+                            $oClass = $oLayer->getClass($n);
+                            $exclude = $oClass->getMetaData('gc_no_image');
+                            if(!empty($exclude)) continue;
+                            array_push($group['layers'], array(
+                                'url'=>$layerName.'-'.$n,
+                                'title'=>$oClass->title
+                            ));
+                        }
+                        array_push($theme['groups'], $group);
                     }
-                    array_push($theme['groups'], $group);
                 }
             }
+            unset($theme);
         }
-        unset($theme);
         return array('themes'=>$themes);
     }
 	
@@ -288,7 +292,8 @@ class printDocument {
 							$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
 						}
 						if(!$legendImages[$layer['url']]) continue;
-						$source = imagecreatefrompng($legendImages[$layer['url']]);
+						$source = @imagecreatefrompng($legendImages[$layer['url']]);
+                        if(!$source) continue;
 						$dest = imagecreatetruecolor(24, 16);
 						$offset = $key*16;
 						imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
