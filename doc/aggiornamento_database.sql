@@ -590,7 +590,7 @@ alter table layer_groups alter column layer_groups_id set default nextval('layer
 update layer_groups set layer_groups_id = nextval('layer_groups_seq');
 ALTER TABLE layer_groups ADD PRIMARY KEY (layer_groups_id);
 
--- 2012-01-16: searchable su layer: se no, il layer è interrogabile ma non compare nei modelli di ricerca
+-- 2012-01-16: searchable su layer: se no, il layer Ã¨ interrogabile ma non compare nei modelli di ricerca
 alter table layer add column searchable numeric(1,0) DEFAULT 0;
 update layer set searchable=1 where queryable=1;
 
@@ -699,7 +699,7 @@ ALTER FUNCTION gisclient_33.set_layer_name()
 
 
 
---2014-5-23 cambio modalità searchable
+--2014-5-23 cambio modalitÃ  searchable
 ALTER TABLE layer RENAME searchable  TO searchable_id;
 
 CREATE TABLE e_searchable
@@ -817,7 +817,7 @@ CREATE OR REPLACE FUNCTION delete_relation()
   RETURNS trigger AS
 $BODY$
 BEGIN
-	delete from field where relation_id=old.relation_id;
+	delete from gisclient_33.field where relation_id=old.relation_id;
 	return old;
 END
 $BODY$
@@ -870,168 +870,17 @@ INSERT INTO e_relationtype values (2,'Secondaria (Info 1 a molti)',2);
 --INSERISCO LE RELAZIONI 1 A 1 
 insert into relation(relation_id,catalog_id,relation_name,relationtype_id,data_field_1,data_field_2,data_field_3,table_name,table_field_1,table_field_2,table_field_3,language_id,layer_id,relation_title)
 select qtrelation_id,catalog_id,lower(qtrelation_name),qtrelationtype_id,data_field_1,data_field_2,data_field_3,table_name,table_field_1,table_field_2,table_field_3,language_id,layer_id,qtrelation_name
-from qtrelation inner join qt using(qt_id) where qtrelationtype_id=1
-
---INSERISCO I CAMPI CHE NON APPARTENGOLO A RELAZIONI
--- SPOSTO NEL CAMPO FORMULA QUELLO CHE INDEBITAMENTE è STATO MESSO IN field_name e assegno un nuovo field_name
-ALTER TABLE qtfield ADD COLUMN formula character varying;
-UPDATE qtfield SET qtfield_name = 'formula_'||qtfield_id, formula=qtfield_name WHERE qtfield_name LIKE '%(%' OR qtfield_name LIKE '%::%' OR qtfield_name LIKE '%||%';
-UPDATE qtfield SET qtfield_name = 'formula_'||qtfield_id, formula=qtfield_name WHERE qtfield_name in (
-select qtfield_name from qtfield inner join qt using(qt_id) group by qtfield_name,layer_id having count(qtfield_name)>1)
-
-insert into field(field_id,relation_id,field_name,field_header,fieldtype_id,searchtype_id,resultype_id,field_format,column_width,orderby_id,field_filter,datatype_id,field_order,default_op,layer_id)
-select qtfield_id,qtrelation_id,qtfield_name,field_header,fieldtype_id,searchtype_id,resultype_id,field_format,column_width,orderby_id,field_filter,datatype_id,qtfield_order,default_op, layer_id from qtfield inner join qt using(qt_id) 
-where fieldtype_id<10 and layer_id in(select layer_id from qt group by layer_id having count(qt_id) =1)
-
-
-
-
---AGGIORNAMENTO QT => LAYER
-ALTER TABLE qtfield ADD COLUMN layer_id integer;
-ALTER TABLE qtrelation ADD COLUMN layer_id integer;
-UPDATE qtfield SET layer_id=qt.layer_id FROM qt WHERE qtfield.qt_id=qt.qt_id;
-UPDATE qtrelation SET layer_id=qt.layer_id FROM qt WHERE qtrelation.qt_id=qt.qt_id;
-ALTER TABLE qtfield DROP CONSTRAINT qtfield_qt_id_fkey;
-ALTER TABLE qtfield
-  ADD CONSTRAINT qtfield_layer_id_fkey FOREIGN KEY (layer_id)
-      REFERENCES layer (layer_id) MATCH FULL
-      ON UPDATE CASCADE ON DELETE CASCADE;
-	  
-ALTER TABLE qtrelation DROP CONSTRAINT qtrelation_qt_id_fkey;
-ALTER TABLE qtrelation
-  ADD CONSTRAINT qtrelation_layer_id_fkey FOREIGN KEY (layer_id)
-      REFERENCES layer (layer_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE CASCADE;
-	  
-DROP VIEW vista_qtfield;
-CREATE OR REPLACE VIEW vista_qtfield AS 
- SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, qtfield.resultype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name
-   FROM qtfield
-   JOIN e_fieldtype USING (fieldtype_id)
-   JOIN ( SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name
-      FROM (         SELECT 0 AS qtrelation_id, 'Data Layer' AS name, 0 AS qtrelationtype_id
-           UNION 
-                    SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id
-                      FROM qtrelation) y
-   JOIN (         SELECT 0 AS qtrelationtype_id, '' AS qtrelationtype_name
-           UNION 
-                    SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
-                      FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
-  ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
-
-DROP VIEW seldb_qtrelation;
-CREATE OR REPLACE VIEW seldb_qtrelation AS 
-        SELECT 0 AS id, 'layer' AS opzione, 0 AS layer_id
-UNION 
-        SELECT qtrelation.qtrelation_id AS id, qtrelation.qtrelation_name AS opzione, qtrelation.layer_id
-           FROM qtrelation;
-
+from qtrelation inner join qt using(qt_id)
 
 DROP VIEW seldb_field_filter;
-CREATE OR REPLACE VIEW seldb_field_filter AS 
-         SELECT (-1) AS id, 'Nessuno' AS opzione, 0 AS qtfield_id, 0 AS qt_id
+CREATE OR REPLACE VIEW seldb_qtfield_filter AS 
+         SELECT (-1) AS id, 'Nessuno'::character varying AS opzione, 0 AS qtfield_id, 0 AS qt_id
 UNION 
-        ( SELECT x.qtfield_id AS id, x.field_header AS opzione, y.qtfield_id, x.layer_id
-           FROM qtfield x
-      JOIN qtfield y USING (layer_id)
+        ( SELECT x.qtfield_id AS id, x.field_header AS opzione, y.qtfield_id, x.qt_id
+           FROM gisclient_33.qtfield x
+      JOIN gisclient_33.qtfield y USING (qt_id)
      WHERE x.qtfield_id <> y.qtfield_id
-     ORDER BY x.qtfield_id, x.qtfield_order); 
-
-
-
-
-UPDATE qtfield set resultype_id=1 where resultype_id!=4;
-
-UPDATE qtrelation SET qtrelation_name=lower(qtrelation_name);
-UPDATE qtrelation SET table_name=lower(table_name);
-ALTER TABLE qtrelation ADD CONSTRAINT qtrelation_name_lower_case CHECK (qtrelation_name=lower(qtrelation_name));
-ALTER TABLE qtrelation ADD CONSTRAINT qtrelation_table_name_lower_case CHECK (table_name=lower(table_name));
-
-ALTER TABLE qtfield ADD COLUMN editable numeric(1,0) DEFAULT 0;
--- AGGIUNTO IL CAMPO FORMULA
-ALTER TABLE qtfield ADD COLUMN formula character varying;
-
--- SPOSTO NEL CAMPO FORMULA QUELLO CHE INDEBITAMENTE è STATO MESSO IN field_name e assegno un nuovo field_name
-UPDATE qtfield SET qtfield_name = 'formula_'||qtfield_id, formula=qtfield_name WHERE qtfield_name LIKE '%(%' OR qtfield_name LIKE '%::%' OR qtfield_name LIKE '%||%';
-
--- SPOSTO NEL CAMPO FORMULA I CAMPI CHE SONO DUPLICATI DEI MODELLI DI RICERCA e assegno un nuovo field_name
-UPDATE qtfield SET qtfield_name = 'formula_'||qtfield.qtfield_id, formula=qtfield.qtfield_name 
-FROM (select layer_id,qtfield_name from qtfield where qtrelation_id=0 group by 1,2 having count(qtfield_name)>1) as q
-WHERE qtfield.layer_id=q.layer_id AND qtfield.qtfield_name=q.qtfield_name;
-
---UNICITA' DEI NOMI DEI CAMPI NEI LAYERS
-ALTER TABLE qtfield ADD CONSTRAINT qtfield_qtfield_name_layer_id_key UNIQUE(qtfield_name, qtrelation_id, layer_id);
-
-ALTER TABLE qtfield DROP COLUMN qt_id CASCADE;
-ALTER TABLE qtrelation DROP COLUMN qt_id CASCADE;
-
---AUTORIZZAZIONI SUI CAMPI
-CREATE TABLE qtfield_groups
-(
-  qtfield_id integer NOT NULL,
-  groupname character varying NOT NULL,
-  editable numeric(1,0) DEFAULT 0,
-  CONSTRAINT qtfield_groups_pkey PRIMARY KEY (qtfield_id, groupname),
-  CONSTRAINT qtfield_groups_qtfield_id_fkey FOREIGN KEY (qtfield_id)
-      REFERENCES qtfield (qtfield_id) MATCH FULL
-      ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-
-
---ELIMINO LA TABELLA QT_SELGROUP PERCHE' E' CAMBIATA LA FUNZIONE
--- ATTENZIONE: migrare i gruppi, se presenti nel progetto su gisclient 2
-DROP TABLE qt_selgroup;
-CREATE TABLE selgroup_layergroup
-(
-  selgroup_id integer NOT NULL,
-  layergroup_id integer NOT NULL,
-  CONSTRAINT selgroup_layergroup_pkey PRIMARY KEY (layergroup_id, selgroup_id),
-  CONSTRAINT selgroup_layergroup_layergroup_id_fkey FOREIGN KEY (layergroup_id)
-      REFERENCES layergroup (layergroup_id) MATCH FULL
-      ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT selgroup_layergroup_selgroup_fkey FOREIGN KEY (selgroup_id)
-      REFERENCES selgroup (selgroup_id) MATCH FULL
-      ON UPDATE CASCADE ON DELETE CASCADE
-);
-update e_level set name = 'selgroup_layergroup', "table" = 'selgroup_layergroup' where name = 'qt_selgroup';
-
-
-
-
---SPOSTO I LINK SUL LAYER COME PER I CAMPI (qtfield)
-ALTER TABLE qt_link ADD COLUMN layer_id integer;
-UPDATE qt_link set layer_id=qt.layer_id FROM qt WHERE qt.qt_id=qt_link.qt_id;
-ALTER TABLE qt_link DROP COLUMN qt_id CASCADE;
-
-ALTER TABLE qt_link RENAME TO qtlink;
-ALTER TABLE qtlink ADD CONSTRAINT qtlink_pkey PRIMARY KEY(layer_id, link_id);
-ALTER TABLE qtlink ADD CONSTRAINT qtlink_layer_id_fkey FOREIGN KEY (layer_id)
-      REFERENCES layer (layer_id) MATCH FULL
-      ON UPDATE CASCADE ON DELETE CASCADE;
-ALTER TABLE qtlink ADD CONSTRAINT qtlink_link_id_fkey FOREIGN KEY (link_id)
-      REFERENCES link (link_id) MATCH FULL
-      ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
--- 2011-11-24: AGGIUNTO resultype_id alla vista vista_qtfield per visualizzare il campo in elenco 
-DROP VIEW vista_qtfield;
-
-CREATE OR REPLACE VIEW vista_qtfield AS 
- SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.resultype_id, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name
-   FROM qtfield
-   JOIN e_fieldtype USING (fieldtype_id)
-   JOIN ( SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name
-      FROM (         SELECT 0 AS qtrelation_id, 'Data Layer' AS name, 0 AS qtrelationtype_id
-           UNION 
-                    SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id
-                      FROM qtrelation) y
-   JOIN (         SELECT 0 AS qtrelationtype_id, '' AS qtrelationtype_name
-           UNION 
-                    SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
-                      FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
-  ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
+     ORDER BY x.qtfield_id, x.qtfield_order);
 
 
 
@@ -1053,38 +902,13 @@ CREATE OR REPLACE VIEW vista_field AS
 
 
 
-
--- 2012-01-20: lookup per editing
-alter table qtfield add column lookup_table character varying;
-alter table qtfield add column lookup_id character varying;
-alter table qtfield add column lookup_name character varying;
-
-
--- 2012-11-27: campo per filtro a cascata
-alter table qtfield add column filter_field_name character varying;
-insert into e_searchtype (searchtype_id, searchtype_name) values (6, 'Lista di valori, non WFS');
-
--- 2012-12-03: aggiorna la view vista_qtfield per permettere la visualizzazione del campo "editable" nei tab
-DROP VIEW vista_qtfield;
-
-CREATE OR REPLACE VIEW vista_qtfield AS 
- SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.resultype_id, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name,qtfield.editable
-   FROM qtfield
-   JOIN e_fieldtype USING (fieldtype_id)
-   JOIN ( SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name
-      FROM (         SELECT 0 AS qtrelation_id, 'Data Layer'::character varying AS name, 0 AS qtrelationtype_id
-           UNION 
-                    SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id
-                      FROM qtrelation) y
-   JOIN (         SELECT 0 AS qtrelationtype_id, ''::character varying AS qtrelationtype_name
-           UNION 
-                    SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
-                      FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
-  ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
-
-
-
 -- ********************** MAPSERVER 6 *************************************************
+--RGBA IN OUTPUTFORMAT
+UPDATE e_outputformat set outputformat_imagemode='RGBA' where outputformat_imagemode='RGB';
+
+
+
+
 -- *********** SIMBOLOGIA LINEARE: SOSTITUZIONE DI STYLE CON PATTERN *********************
 CREATE TABLE e_pattern
 (
@@ -1115,3 +939,39 @@ ALTER TABLE symbol ADD COLUMN ascii_code integer;
 ALTER TABLE symbol ADD COLUMN filled numeric(1,0) DEFAULT 0;
 ALTER TABLE symbol ADD COLUMN points character varying;
 ALTER TABLE symbol ADD COLUMN image character varying;
+
+--INSERISCO I PATTERN EREDITATI DAGLI STYLE CHE VENGONO APPLICATI ALLE LINEE NELLA VECCHIA VERSIONE
+insert into e_pattern(pattern_name,pattern_def)
+select symbol_name,'PATTERN' ||replace(substring(symbol_def from 'STYLE(.+)END'),'\n',' ') || 'END' from symbol where symbol_def like '%STYLE%';
+
+--AGGIORNO IL pattern_id DELLA TABELLA style CON I VALORI DELLE CHIAVI
+update style set pattern_id=e_pattern.pattern_id,symbol_name=null from e_pattern where e_pattern.pattern_name=style.symbol_name;
+
+--TOLGO DAI SIMBOLI QUELLI CHE SERVIVANO SOLO PER IL PATTERN
+delete from symbol where symbol_def like '%STYLE%';
+--ELIMINO LE KEYWORDS NON COMPATIBILI ( CONTROLLARE IL RISULTATO)
+update symbol  set symbol_def=regexp_replace(symbol_def, '\nGAP(.+)', '')  where symbol_def like '%GAP%';
+delete from symbol where symbol_def like '%CARTOLINE%';
+
+
+--INSERISCO I NUOVI SIMBOLI NELLA TABELLA
+insert into symbol (symbol_name,symbolcategory_id,icontype,symbol_type,font_name,ascii_code,symbol_def)
+select  font_name||'_'||symbol_ttf_name,1,0,'TRUETYPE',font_name,ascii_code,'ANTIALIAS TRUE' from symbol_ttf order by 1;
+
+--AGGIUNGO GLI STILI ALLE CLASSI---
+insert into style(style_id,class_id,style_name,symbol_name,color,angle,size,minsize,maxsize)
+select class_id+(select max(style_id)from style),class_id,symbol_ttf_name,label_font||'_'||symbol_ttf_name,label_color,label_angle,label_size,label_minsize,label_maxsize from class where symbol_ttf_name is not null and label_font is not null;
+
+--INSERISCO I NUOVI SIMBOLI NELLA TABELLA
+insert into symbol (symbol_name,symbolcategory_id,icontype,symbol_type,font_name,ascii_code,symbol_def)
+select symbol_ttf_name,1,0,'TRUETYPE',font_name,ascii_code,'ANTIALIAS TRUE' from symbol_ttf 
+where symbol_ttf_name not in (select symbol_name from symbol)
+order by 1;
+
+--AGGIUNGO GLI STILI ALLE CLASSI---
+--insert into style(style_id,class_id,style_name,symbol_name,color,angle,size,minsize,maxsize)
+--select class_id+10000,class_id,symbol_ttf_name,symbol_ttf_name,label_color,label_angle,label_size,label_minsize,label_maxsize from class where not label_font like 'esri%' and symbol_ttf_name is not null and label_font is not null;
+
+
+
+UPDATE mapset set template='jquery/mobile.html';

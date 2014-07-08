@@ -747,7 +747,7 @@ END";
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
-                        'online_resource'=>MAPPROXY_URL,
+                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&map=".$mapName,
                         'contact'=>array(
                             //ma serve sta roba?!?!
                             'person'=>'Roberto',

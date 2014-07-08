@@ -4,7 +4,8 @@ function GCList(field) {
 		'ajax/dataList.php': ['data'],
 		'ajax/lookupList.php': ['lookup_table'],
 		'ajax/fieldList.php': ['class_text','label_angle','label_color','label_outlinecolor','label_size','label_font','label_priority','angle','color','outlinecolor','size','labelitem','labelsizeitem','classitem','classtitle','qtfield_name','field_name','data_field_1','data_field_2','data_field_3','table_field_1','table_field_2','table_field_3','filter_field_name'],
-		'ajax/dbList.php': ['field_format','table_name','symbol_ttf_name','symbol_name']
+		'ajax/dbList.php': ['field_format','table_name','symbol_ttf_name','symbol_name'],
+        'ajax/layerList.php': ['layer_id']
 	};
 	this.requireSquareBrackets = ['class_text','label_angle','label_color','label_outlinecolor','label_size','label_font','label_priority','angle','color','outlinecolor','size','classtitle'];
 	this.listData = {};
@@ -29,6 +30,7 @@ function GCList(field) {
 		});
 		if(requestUrl == null) {
 			alert('Not implemented');
+            console.log(params, self.field);
 			return;
 		}
 		
@@ -83,7 +85,7 @@ function GCList(field) {
 				$('#list_dialog table td').click(function(event) {
 					var rowId = $(this).parent().attr('data-row_id');
 					$.extend(self.selectedData, self.listData[rowId]);
-					
+
 					if(self.currentStep == self.totSteps || typeof(self.listData[rowId].is_final_step) != 'undefined' && self.listData[rowId].is_final_step == 1) {
 						$.each(self.selectedData, function(key, val) {
 							if($.inArray(key, self.requireSquareBrackets) > -1) val = '['+val+']';

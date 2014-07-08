@@ -497,7 +497,7 @@ class gcMap{
 				$layerParameters["requestEncoding"] = "REST";
 				//$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
-				//$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
+				$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$this->mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
 				$layerParameters["zoomOffset"] = $this->minZoomLevel; 
 				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
