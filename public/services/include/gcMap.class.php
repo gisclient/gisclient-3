@@ -227,6 +227,11 @@ class gcMap{
         if(!empty($row['bg_color']) && $row['bg_color'] != '255 255 255') {
             $mapConfig['bg_color'] = $row['bg_color'];
         }
+        
+        $user = new GCUser();
+        if($user->isAuthenticated()) {
+            $mapConfig['logged_username'] = $user->getUsername();
+        }
 
 		//$this->maxRes = $maxRes;
 		//$this->minRes = $minRes;
