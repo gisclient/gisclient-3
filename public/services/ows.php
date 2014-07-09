@@ -256,7 +256,7 @@ if ((isset($_REQUEST['REQUEST']) &&
 }
 
 if(strtoupper($objRequest->getvaluebyname('request')) == 'GETLEGENDGRAPHIC') {
-	include './include/wmsGetLegendGraphic.php';
+	//include './include/wmsGetLegendGraphic.php';
 }
 
 //SE NON SONO IN CGI CARICO I PARAMETRI
