@@ -185,7 +185,7 @@ class mapImage {
 			$width = $measures['w'];
 		} else {
 			$longEdge = 'h';
-			$height = $measures['h'];
+            $height = $measures['h'];
 			$width = ($measures['h']/$this->imageSize[1])*$this->imageSize[0];
 			$buffer = ($width - $measures['w'])/2;
 		}

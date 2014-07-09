@@ -24,6 +24,7 @@ if(empty($_REQUEST['action']) || !in_array($_REQUEST['action'], array('list', 'c
 
 $db = GCApp::getDB();
 $user = new GCUser();
+$username = $user->getUsername();
 
 if($_REQUEST['action'] != 'get') {
 	if($_REQUEST['action'] != 'delete') {

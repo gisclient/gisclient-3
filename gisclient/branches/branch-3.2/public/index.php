@@ -151,7 +151,13 @@ else{
 		</form>
 	</div>
 	<div class="ui-layout-south">
-		GisClient<span class="color">Author</span> - Configurazione progetti GisClient - &copy; 2011
+		GisClient<span class="color">Author </span>
+        <?php 
+        $sql="SELECT version_name FROM {$dbSchema}.vista_version ORDER BY version_id DESC LIMIT 1"; 
+        $db->sql_query ($sql);
+        $ris=$db->sql_fetchrowset();
+        echo $ris[0]['version_name'];
+        ?>
 	</div>
 </div>
 </body>
