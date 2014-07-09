@@ -14,10 +14,14 @@
 		return;
 	}
 	$project=$prm["project"];
-	$usr=new userApps();
-	$ris=$usr->getGisclientAdmin($project,$this->mode);
-	if (is_array($ris) && count($ris)>0){
-		foreach ($ris as $val){
+    
+    $db = GCApp::getDB();
+    $JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
+    $sql="select distinct '$project' as project_name,user_group.username,case when (coalesce(X.username,'')<>'') then 1 else 0 end as presente from ".USER_SCHEMA.".user_group $JOIN (SELECT username FROM ".DB_SCHEMA.".project_admin WHERE project_name='$project') X on (user_group.username=X.username) where coalesce(user_group.username,'')<>'' order by user_group.username";
+    $results = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+	if (is_array($results) && count($results)>0){
+		foreach ($results as $val){
 			$data[]=Array("presente"=>$val["presente"],"project_name"=>$val["project_name"],"username"=>$val["username"],"groupname"=>$groupname);
 		}
 	}

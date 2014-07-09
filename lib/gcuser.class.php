@@ -32,7 +32,20 @@ abstract class AbstractUser {
     
     public function isAdmin($project = null) {
         //$project serve a vedere se è admin del progetto
-        return ($this->username == $this->adminUsername);
+        if(!$project) {
+            return ($this->username == $this->adminUsername);
+        } else {
+            $db = GCApp::getDB();
+            $sql = 'select uername from '.DB_SCHEMA.'.project_admin 
+                where project_name = :project and username = :username';
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array(
+                'username'=>$this->username,
+                'project'=>$project
+            ));
+            $result = $stmt->fetchColumn(0);
+            return !empty($result);
+        }
     }
     
     public function login($username, $password) {
