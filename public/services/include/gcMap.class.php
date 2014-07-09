@@ -143,7 +143,8 @@ class gcMap{
 		if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
 		$mapConfig["dpi"] = MAP_DPI;
 		$mapConfig['projectionDescription'] = $this->_getProjectionDescription('EPSG', $row['mapset_srid']);
-	
+		$mapConfig['projdefs'] = $this->_getProj4jsDefs();
+
 		$mapOptions=array();
 		$mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
 		$mapOptions["units"] = $this->aUnitDef[$sizeUnitId];
@@ -992,6 +993,17 @@ class gcMap{
 		return trim(substr($parts[0], strpos($parts[0], '[')+1), '"');
 	}
 	
+	function _getProj4jsDefs() {
+		$sql = "SELECT 'EPSG:'||auth_srid as epsg, proj4text||coalesce('+towgs84='||projparam,'') as srstext FROM ".DB_SCHEMA.".project_srs INNER JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name and srid not in (4326,3857,900913)";
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(array(':project_name'=>$this->projectName));
+		$list = array();
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			$list[$row["epsg"]]=$row["srstext"];
+		}
+		return $list;
+	}
+
 	function _getExtent($xCenter,$yCenter,$Resolution){
 		$aExtent=array();
 		$extent = $Resolution * TILE_SIZE / 2;
