@@ -32,7 +32,7 @@ dato[] = "POSTLABELCACHE;postlabelcache;3;noyes"
 dato[] = "Visibilità etichette:<br>Scala max.;labelmaxscale;8;intero|Scala min.;labelminscale;8;intero"
 
 dato[] = "Dimesione selezione;selection_width;3;text|Colore selezione;selection_color;11;color"
-dato[] = "Ordine;layer_order;5;intero"
+dato[] = "Zoom buffer;zoom_buffer;3;intero|Ordine;layer_order;5;intero"
 dato[] = "Ultimo aggiornamento;last_update;44;text"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;layergroup;#openCopy;button|Sposta;layergroup;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Wizard WMS;azione;120;submit;new;wizard wms|Classifica;azione;120;submit;edit;classifica"
 [list]

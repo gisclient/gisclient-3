@@ -51,6 +51,7 @@ class gcMap{
 	var $mapsetName;
 	var $mapConfig;
 	var $mapsetSRID;
+	var $mapsetGRID;
 	var $serverResolutions = array();
 	var $mapsetResolutions = array();
 	var $tilesExtent;
@@ -691,7 +692,7 @@ class gcMap{
 			if(!empty($row["data_type"])) $featureTypes[$index][$typeName]["data_type"] = $row["data_type"];
 			if(!empty($row["geometryType"])) $featureTypes[$index][$typeName]["data_type"] = $row["data_type"];
 			if(!empty($row["maxvectfeatures"])) $featureTypes[$index][$typeName]["maxvectfeatures"] = intval($row["maxvectfeatures"]);
-			if(!empty($row["zoom_buffer"])) $featureTypes[$index][$typeName]["zoombuffer"] = intval($row["zoom_buffer"]);
+			if(!empty($row["zoom_buffer"])) $featureTypes[$index][$typeName]["zoomBuffer"] = intval($row["zoom_buffer"]);
 			$featureTypes[$index][$typeName]['hidden'] = intval($row['hidden']);
 			$featureTypes[$index][$typeName]['searchable'] = intval($row['searchable_id']);
 			if(isset($featureTypesLinks[$row['layer_id']])) {
