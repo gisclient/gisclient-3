@@ -988,6 +988,7 @@ create table users_options (
 );
 -- TODO: rivedere user, per mettere una fkey sulla username bisogna inserire l'admin in users
 
+------ GISCLIENT 3.2 -----------
 
 -- 2012-01-20: lookup per editing
 alter table qtfield add column lookup_table character varying;
@@ -1057,5 +1058,137 @@ alter table layergroup add column tile_origin TEXT;
 
 --2013-11-19: server resolutions su layergroup per TMS
 alter table layergroup add column tile_resolutions TEXT;
+
+--2014-03-17: ordina i font per nome
+CREATE OR REPLACE VIEW seldb_font AS 
+         SELECT foo.id, foo.opzione
+   FROM (         SELECT ''::character varying AS id, 'Seleziona ====>'::character varying AS opzione
+        UNION 
+                 SELECT font.font_name AS id, font.font_name AS opzione
+                   FROM font) foo
+  ORDER BY foo.id;
+
+--2014-03-17: ordina gli outputformat per nome
+CREATE OR REPLACE VIEW seldb_outputformat AS 
+ SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+   FROM e_outputformat
+  ORDER BY e_outputformat.outputformat_name;
+
+ALTER TABLE seldb_outputformat
+  OWNER TO gisclient;
+  
+--2014-03-17: ordina labelposition per nome
+  CREATE OR REPLACE VIEW seldb_lblposition AS 
+        SELECT '1'::character varying AS id, 'Seleziona ====>'::character varying AS opzione
+                  UNION all
+                 SELECT e_lblposition.lblposition_name AS id, e_lblposition.lblposition_name AS opzione FROM e_lblposition where lblposition_name='AUTO'
+                 UNION ALL
+			SELECT foo.id, foo.opzione FROM (                
+                 SELECT e_lblposition.lblposition_name AS id, e_lblposition.lblposition_name AS opzione FROM e_lblposition where lblposition_name!='AUTO'
+          ORDER BY e_lblposition.lblposition_order) foo;
+
+ALTER TABLE seldb_font
+  OWNER TO gisclient;
+  
+ --2014-04-16 Finalmente un po di pulizia
+alter table layer drop column if exists mapset_filter_ ;
+alter table layer drop column if exists locked_ ;
+alter table layer drop column if exists static_ ;
+alter table layer drop column if exists visible ;
+alter table layergroup drop column if exists layer_default ;
+
+--2014-04-17 Aggiunta della versione. DA QUESTO MOMENTO IN POI ESEGUIRE L'INSERT DELLA VERSIONE
+CREATE TABLE version
+(
+  version_id serial NOT NULL,
+  version_name character varying NOT NULL,
+  version_date date NOT NULL,
+  CONSTRAINT version_pkey PRIMARY KEY (version_id )
+)
+WITH (
+  OIDS=FALSE
+);
+
+create view vista_version as
+select version_id,version_name,version_date from version order by version_id desc limit 1;
+
+INSERT INTO version (version_name,version_date) values ('3.2.15','2014-04-17');
+
+
+-- 2014-05-22 AGGIUNGE CONTROLLO: non possono esistere due campi con lo stesso nome nello stesso layer
+-- ELIMINA I campi doppi
+DROP INDEX IF EXISTS qtfield_name_unique;
+CREATE UNIQUE INDEX qtfield_name_unique
+   ON qtfield (layer_id,qtfield_name);
+   
+   --!!! Se fallisce, eseguire la query di pulizia campi doppi:
+        /* delete from qtfield where qtfield_id in (select max(qtfield_id) as qtfield_id from qtfield where qtfield_name IN
+        (select distinct qtfield_name from qtfield
+        group by qtfield_name,layer_id having count(*) > 1)
+        and layer_id in 
+        (select distinct layer_id from qtfield
+        group by qtfield_name,layer_id having count(*) > 1)
+        group by layer_id,qtfield_name) */
+
+INSERT INTO version (version_name,version_date) values ('3.2.16','2014-05-22');
+   
+-- TRIGGER per impostare automaticamente enc_pwd e nascondere quella in chiaro
+update users set enc_pwd = md5(pwd) where coalesce(pwd,'') <> '';
+update users set pwd = NULL;
+
+CREATE OR REPLACE FUNCTION enc_pwd()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+	if (coalesce(new.pwd,'')<>'') then
+		new.enc_pwd:=md5(new.pwd);
+		new.pwd = null;
+	end if;
+	return new;
+END
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION enc_pwd()
+  OWNER TO gisclient;
+
+DROP TRIGGER if exists set_encpwd ON users;
+CREATE TRIGGER set_encpwd
+  BEFORE INSERT OR UPDATE
+  ON users
+  FOR EACH ROW
+  EXECUTE PROCEDURE enc_pwd();
+  
+INSERT INTO version (version_name,version_date) values ('3.2.17','2014-05-22');
+
+
+--2014-07-02: View bug & trigger bug
+CREATE OR REPLACE VIEW seldb_lblposition AS 
+SELECT ''::character varying AS id, 'Seleziona ====>'::character varying AS opzione
+UNION ALL
+SELECT e_lblposition.lblposition_name AS id, e_lblposition.lblposition_name AS opzione FROM e_lblposition where lblposition_name='AUTO'
+UNION ALL
+SELECT foo.id, foo.opzione FROM (                
+    SELECT e_lblposition.lblposition_name AS id, e_lblposition.lblposition_name AS opzione FROM e_lblposition WHERE lblposition_name!='AUTO' ORDER BY e_lblposition.lblposition_order
+) AS foo;
+
+ALTER TABLE seldb_lblposition OWNER TO gisclient;
+  
+CREATE OR REPLACE FUNCTION set_layer_name() RETURNS "trigger" AS
+$BODY$
+BEGIN
+	SELECT INTO NEW.layer_name layer_name FROM gisclient_32.layer WHERE layer_id=NEW.layer_id;
+	RETURN NEW;
+END
+$BODY$
+LANGUAGE 'plpgsql' VOLATILE;
+
+ALTER TABLE mapset alter COLUMN private set DEFAULT 0;
+  
+INSERT INTO version (version_name,version_date) values ('3.2.18','2014-07-02');
+
+
+
+
 
   
