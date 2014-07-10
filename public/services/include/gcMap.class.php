@@ -994,7 +994,7 @@ class gcMap{
 	}
 	
 	function _getProj4jsDefs() {
-		$sql = "SELECT 'EPSG:'||auth_srid as epsg, proj4text||coalesce('+towgs84='||projparam,'') as srstext FROM ".DB_SCHEMA.".project_srs INNER JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name and srid not in (4326,3857,900913)";
+		$sql = "SELECT 'EPSG:'||auth_srid as epsg, proj4text||coalesce('+towgs84='||projparam,'') as srstext FROM ".DB_SCHEMA.".project_srs INNER JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name and srid not in (4326,900913)";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':project_name'=>$this->projectName));
 		$list = array();
