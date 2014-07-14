@@ -6,7 +6,7 @@ include('../../config/config.php');
 
 echo '<pre>';
 
-$sqlLayer = ($_REQUEST["layerid"])? " and layer_id=" . $_REQUEST["layerid"]:"";
+$sqlLayer = ($_REQUEST["layer"])? " and layer_id=" . $_REQUEST["layer"]:"";
 
 $db = GCApp::getDB();
 //$db->beginTransaction();
@@ -30,7 +30,7 @@ $sql = 'select layer_id, data, layer_title, data_unique, data_filter, classitem,
 //$sql .= ' limit 20';
 $layers = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-$sql = 'select expression, label_def, label_angle, label_color, label_outlinecolor, label_size, 
+$sql = 'select expression, class_text, label_def, label_angle, label_color, label_outlinecolor, label_size, 
     color, outlinecolor, angle
     from '.DB_SCHEMA.'.style right join '.DB_SCHEMA.'.class using(class_id)
     where layer_id = :layer';
@@ -74,6 +74,7 @@ foreach($layers as $layer) {
             
             $styles = $getClasses->fetchAll(PDO::FETCH_ASSOC);
             foreach($styles as $style) {
+
                 if(strpos($style['expression'], $field) !== false) {
                     $used = true;
                     break;
@@ -83,6 +84,10 @@ foreach($layers as $layer) {
                     break;
                 }
                 if(strpos($style['label_size'], $field) !== false) {
+                    $used = true;
+                    break;
+                }
+                if(strpos($style['class_text'], $field) !== false) {
                     $used = true;
                     break;
                 }
