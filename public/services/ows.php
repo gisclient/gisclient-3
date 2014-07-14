@@ -10,6 +10,7 @@ if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_E
 }
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
+// ADESSO NON SERVE PIU SECONDO ME!
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
 	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
 	
@@ -35,12 +36,21 @@ $objRequest = ms_newOwsrequestObj();
 foreach ($_REQUEST as $k => $v) if (is_string($v)) $objRequest->setParameter($k, stripslashes($v));
 
 //OGGETTO MAP MAPSCRIPT
-$directory = ROOT_PATH."map/".$objRequest->getvaluebyname('project')."/";
+$mapfile = $objRequest->getvaluebyname('map');
+$isProjectMapfile = false;
+
+if($mapfile) {
+    $directory = ROOT_PATH."map/".$objRequest->getvaluebyname('project')."/";
+} else {
+    $directory = ROOT_PATH.'map/';
+    $mapfile = $objRequest->getvaluebyname('project');
+    $isProjectMapfile = true;
+}
 
 // se è definita una lingua, apro il relativo mapfile
-$mapfile = $objRequest->getvaluebyname('map');
-if($objRequest->getvaluebyname('lang') && file_exists($directory.$objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang').'.map')) {
-	$mapfile = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
+
+if($objRequest->getvaluebyname('lang') && file_exists($directory.$mapfile.'_'.$objRequest->getvaluebyname('lang').'.map')) {
+	$mapfile = $mapfile.'_'.$objRequest->getvaluebyname('lang');
 }
 //Files temporanei
 $showTmpMapfile = $objRequest->getvaluebyname('tmp');
@@ -86,7 +96,12 @@ if($objRequest->getvaluebyname('srs')) $oMap->setProjection($projString="+init="
 
 
 $url = currentPageURL();
-$oMap->setMetaData("ows_onlineresource",$url.'?project='.$objRequest->getvaluebyname('project')."&map=".$objRequest->getvaluebyname('map'));
+if($isProjectMapfile) {
+    $onlineResource = $url.'?project='.$objRequest->getvaluebyname('project');
+} else {
+    $onlineResource = $url.'?project='.$objRequest->getvaluebyname('project')."&map=".$mapfile;
+}
+$oMap->setMetaData("ows_onlineresource",$onlineResource);
 
 
 if(!empty($_REQUEST['GCFILTERS'])){
@@ -144,7 +159,11 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 		} else {
             $user = new GCUser();
             if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-                $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
+                if($isProjectMapfile) {
+                    $user->setAuthorizedLayers(array('project_name'=>$objRequest->getValueByName('project')));
+                } else {
+                    $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
+                }
             }
 		}
 	}
@@ -362,7 +381,7 @@ function getRequestedLayers($layersParameter) {
 	// ciclo i layers e costruisco un array di singoli layers
 	foreach($layerNames as $name) {
 		$layerIndexes = $oMap->getLayersIndexByGroup($name);
-        if(!$layerIndexes && count($layerNames) == 1 && $name == $objRequest->getvaluebyname('map')) {
+        if(!$layerIndexes && count($layerNames) == 1 && $name == $mapfile) {
             $layerIndexes = array_keys($oMap->getAllLayerNames());
         }
 		// è un layergroup (mapserver 6 restituisce sempre un array)

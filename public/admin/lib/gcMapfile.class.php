@@ -39,6 +39,7 @@ class gcMapfile{
 	var $epsgList;
 	var $mapInfo=array();
 	var $srsCustom=array();
+    public $writeProjectMapfile = false;
 	private $target = 'public';
 	private $iconSize = array(16,10);
 	private $tinyOWSLayers = array();
@@ -71,7 +72,7 @@ class gcMapfile{
 	function writeMap($keytype,$keyvalue){
 		
         $sqlParams = array();
-
+        
 		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
 				$filter="mapset.mapset_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
@@ -83,13 +84,17 @@ class gcMapfile{
                 $stmt->execute(array('mapset'=>$keyvalue));
                 $projectName = $stmt->fetchColumn(0);
 				
-		} elseif($keytype=="project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO
-				$filter="project.project_name=:keyvalue";
+		} elseif($keytype=="project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO OPPURE UNICO MAPFILE PER PROGETTO
+            $filter="project.project_name=:keyvalue";
+            if($this->writeProjectMapfile) {
+                $joinMapset="";
+                $fieldsMapset = 'project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
+            } else {
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
 				$fieldsMapset="mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
-				$sqlParams['keyvalue'] = $keyvalue;
-                $projectName = $keyvalue;
-		
+            }
+            $sqlParams['keyvalue'] = $keyvalue;
+            $projectName = $keyvalue;
 		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
 				$filter="layergroup.layergroup_id=:keyvalue";
 				$joinMapset="";
@@ -129,7 +134,7 @@ class gcMapfile{
                 unset($val);
                 
                 $this->grids['grid_'.$row['srid']] = array(
-                    'name'=>$row['tilegrid_name'],
+                    'name'=>$row['tilegrid_name']."_".$row['srid'],
                     'srs'=>'EPSG:'.$row['srid'],
                     'res'=>$resolutions,
                     'bbox'=>$extent,
@@ -206,6 +211,7 @@ class gcMapfile{
 			$layerTreeGroup = $aLayer["tree_group"];
 			$mapSrid[$mapName] = $aLayer["mapset_srid"];	
 			$mapExtent[$mapName] = $aLayer["mapset_extent"];	
+            //$mapExtent[$mapName] = $this->writeProjectMapfile ? $this->projectExtent : $aLayer["mapset_extent"];
 			$mapTitle[$mapName] = $aLayer["mapset_title"];
             if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
             if(empty($this->mpxCaches[$mapName])) $this->mpxCaches[$mapName] = array();
@@ -421,13 +427,16 @@ class gcMapfile{
         if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
         else $maxSize = '4096';
 		
+        $fontList = '../fonts/'.$fontList.'.list';
+        if(!$this->writeProjectMapfile) $fontList = '../'.$fontList;
+        
 		$fileContent=
 "MAP
 NAME \"$mapFile\"
 SIZE $size	
 MAXSIZE $maxSize
 $imgResolution
-FONTSET ../../fonts/$fontList.list
+FONTSET $fontList
 $projLib
 WEB
 	METADATA
@@ -464,12 +473,18 @@ END #MAP";
 				$mapFile = 'tmp.'.$mapFile;
 			}
 			if(!is_dir(ROOT_PATH.$mapfileDir)) mkdir(ROOT_PATH.$mapfileDir);
-			if(!is_dir(ROOT_PATH.$mapfileDir.$projectName)) mkdir(ROOT_PATH.$mapfileDir.$projectName);
+            if(!$this->writeProjectMapfile) {
+                if(!is_dir(ROOT_PATH.$mapfileDir.$projectName)) mkdir(ROOT_PATH.$mapfileDir.$projectName);
+            }
 			if(!empty($this->i18n)) {
 				$languageId = $this->i18n->getLanguageId();
 				$mapFile.= "_".$languageId;
 			}
-			$mapFilePath = ROOT_PATH.$mapfileDir.$projectName."/".$mapFile.".map";
+            if(!$this->writeProjectMapfile) {
+                $mapFilePath = ROOT_PATH.$mapfileDir.$projectName."/".$mapFile.".map";
+            } else {
+                $mapFilePath = ROOT_PATH.$mapfileDir.$mapFile.".map";
+            }
 		}
 		$f = fopen ($mapFilePath,"w");
 		$ret=fwrite($f, $fileContent);
@@ -747,7 +762,7 @@ END";
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
-                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&map=".$mapName,
+                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName,
                         'contact'=>array(
                             //ma serve sta roba?!?!
                             'person'=>'Roberto',
@@ -760,15 +775,14 @@ END";
             'caches'=>$this->mpxCaches[$mapName],
             'sources'=>array(
                 'mapserver_source'=>array(
-                    'type'=>'mapserver',
+                    'type'=>'wms',
                     'supported_srs'=>explode(' ', $this->epsgList),
                     'req'=>array(
-                        'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
-                        'format'=>'image/png; mode=24bit'
-                    ),
-                    'mapserver'=>array(
-                        'binary'=>MAPSERVER_BINARY_PATH,
-                        'working_dir'=>ROOT_PATH.'map/'.$this->projectName
+                    	'url'=> 'http://localhost/cgi-bin/mapserv?',
+                        'map'=>ROOT_PATH.'map/'.$this->projectName.".map",
+                        'format'=>'image/png',
+                        'transparent'=> true,
+                        'exceptions'=> 'inimage'
                     ),
                     'coverage'=>array(
                         'bbox'=>$mapsetExtent,

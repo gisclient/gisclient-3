@@ -178,7 +178,7 @@ class gcMap{
 
 		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->serverResolutions[$this->minZoomLevel]);
 		$mapOptions["tilesExtent"] = $this->tilesExtent;
-		$mapOptions["matrixSet"] = $this->mapsetGRID;
+		$mapOptions["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
 		//$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
 		//Limita estensione:
 		if(($row["mapset_extent"])){
@@ -273,7 +273,7 @@ class gcMap{
 		$stmt->execute();
 
 		if(defined('MAPPROXY_URL')){
-			$ows_url = MAPPROXY_URL.$this->mapsetName."/service";
+			$ows_url = MAPPROXY_URL.$this->projectName."/service";
 		}elseif (defined('GISCLIENT_OWS_URL')){
 			$ows_url = GISCLIENT_OWS_URL;
 		}else{
@@ -312,6 +312,7 @@ class gcMap{
 			//$aLayer["title"] = $layergroupTitle;
 			
 			//$aLayer["typeId"] = $layerType;
+			$aLayer["typeId"] = intval($row["owstype_id"]);
 			$aLayer["type"] = $row["owstype_name"];
 			$layerOptions = array();
 			if($row["status"] == 0) $layerOptions["visibility"] = false;
@@ -336,8 +337,8 @@ class gcMap{
 				$layerParameters=array();
 				if(!defined('MAPPROXY_URL')){
 					$layerParameters["project"] = $this->projectName;
-					$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
-					$layerParameters['gisclient_map'] = 1;
+					//$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
+					//$layerParameters['gisclient_map'] = 1;
 				}
 				$layerParameters["exceptions"] = (defined('DEBUG') && DEBUG==1)?'xml':'blank';				
 				$layerParameters["format"] = $row["outputformat_mimetype"];
@@ -496,15 +497,15 @@ class gcMap{
 				//$layerParameters["SERVICE"] = "WMTS";
 				$layerParameters["name"] = $aLayer["name"];
 				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
-				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL."/".$this->mapsetName."/wmts/";
+				$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL."/".$this->projectName."/wmts/";
 				$layerParameters["url"] .= $layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				if($row["status"] == 0) $layerParameters["visibility"] = false;
 				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
-				$layerParameters["matrixSet"] = $this->mapsetGRID;
+				$layerParameters["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
 				$layerParameters["requestEncoding"] = "REST";
 				//$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
-				$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$this->mapsetName;
+				$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
 				$layerParameters["zoomOffset"] = $this->minZoomLevel; 
 				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
@@ -513,6 +514,7 @@ class gcMap{
 				$layerParameters["theme"] = $themeTitle;
 				$layerParameters["title"] = $layergroupTitle;
 				$layerParameters["theme_id"] = $row['theme_name'];
+				//$layerParameters["displayInLayerSwitcher"] = true;
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
 				$aLayer["parameters"] = $layerParameters;

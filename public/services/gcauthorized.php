@@ -15,11 +15,15 @@ $layers = array();
 foreach($userLayers as $theme) {
 	foreach($theme as $layergroup) {
 		if(isset($layergroup["name"])){
-			$layers[$layergroup["name"]] = array("tile"=>true,"map"=>true,"featureinfo"=>true,"legendgraphic"=>true,"limited_to"=>array("geometry"=>"qualcosa","srs"=>"EPSG:3003"));
+			$layers[$layergroup["name"]] = array("tile"=>true,"map"=>true,"featureinfo"=>true,"legendgraphic"=>true);
+			//$layers[$layergroup["name"]] = array("tile"=>true,"map"=>true,"featureinfo"=>true,"legendgraphic"=>true,"limited_to"=>array("geometry"=>"qualcosa","srs"=>"EPSG:3003"));
+
 		}
 		else{
 			for($i=0;$i<count($layergroup);$i++)
-				$layers[$layergroup[$i]["name"]] = array("tile"=>true,"map"=>true,"featureinfo"=>true,"legendgraphic"=>true,"limited_to"=>array("geometry"=>"qualcosa","srs"=>"EPSG:3003"));
+				$layers[$layergroup[$i]["name"]] = array("tile"=>true,"map"=>true,"featureinfo"=>true,"legendgraphic"=>true);
+				//$layers[$layergroup[$i]["name"]] = array("tile"=>true,"map"=>true,"featureinfo"=>true,"legendgraphic"=>true,"limited_to"=>array("geometry"=>"qualcosa","srs"=>"EPSG:3003"));
+
 		}
 
 	}
@@ -29,7 +33,7 @@ $ret["authorized"] = "partial";
 
 //TODO SE HO SETTAO UN LIMITE PER TUTTLE LE RICHIESTE DELL'UTENTE LO METTO QUI
 //dove lo setto il limite utente????
-if(true) $ret["limit_to"] = array("geometry"=>"qualcosaaltro ma dove???","srs"=>"EPSG:3003");
+//if(true) $ret["limit_to"] = array("geometry"=>"qualcosaaltro ma dove???","srs"=>"EPSG:3003");
 $ret["layers"]=$layers;
 
 
