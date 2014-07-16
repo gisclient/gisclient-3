@@ -62,7 +62,7 @@ $params = array();
 $fieldName = $field['qtfield_name'];
 $alias = 'aliastable';
 if($isLayer) {
-    if(!empty($catalog['data_filter'])) array_push($constraints, $catalog['data_filter']);
+	if(!empty($catalog['data_filter'])) array_push($constraints, '('.$catalog['data_filter'].')');
 } else {
     $alias = $catalog['alias'];
     $fieldName = $field['formula'];
