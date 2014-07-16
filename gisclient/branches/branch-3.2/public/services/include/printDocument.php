@@ -22,7 +22,7 @@ class printDocument {
 			'A0' => array('w'=>115,'h'=>77)
 		)
 	);
-	protected $WMSMergeUrl = 'services/gcWMSMerge.php'; 
+	protected $WMSMergeUrl = 'services/gcWMSMerge.php';
 	protected $wmsList = array();
 	protected $imageSize = array();
 	protected $documentSize = array();
@@ -264,12 +264,19 @@ class printDocument {
 			$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
 			$url = printDocument::addPrefixToRelativeUrl($url);
 			$ch = curl_init($url);
-			$fp = fopen($dest, "wb");
-
+			if (false === (fopen($dest, "wb"))) {
+				throw new Exception("Unable to open file $dest in write mode");
+			}
 			$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
 			curl_setopt_array($ch, $options);
 
-			curl_exec($ch);
+			if (false === curl_exec($ch)) {
+				$errMsg = "Call to $url returned with error ".curl_error($ch);
+				throw new Exception($errMsg);
+			}
+			if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+				throw new Exception("Call to $url return HTTP code $httpCode");
+			}
 			curl_close($ch);
 			fclose($fp);
 		} catch(Exception $e) {
@@ -299,10 +306,6 @@ class printDocument {
 	protected function getMapImage() {
 		try {
 			$this->calculateSizes();
-            
-            if(!empty($this->vectors)) {
-                $this->options['vectors'] = $this->vectors;
-            }
 			
 			$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
 			$this->wmsList = $mapImage->getWmsList();
