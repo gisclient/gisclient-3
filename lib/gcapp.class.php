@@ -97,6 +97,14 @@ class GCApp {
             return $filename;
     }
     
+    public static function schemaExists($dataDb, $schema) {
+        $sql = 'select schema_name from information_schema.schemata '.
+            ' where schema_name = :schema ';
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array('schema'=>$schema));
+        return ($stmt->rowCount() > 0);
+    }
+    
     public static function tableExists($dataDb, $schema, $tableName) {
         $sql = "select table_name from information_schema.tables ".
             " where table_schema=:schema and table_name=:table ";
@@ -502,7 +510,8 @@ class GCAuthor {
 		'lookup_id'=>array('it'=>'Campo chiave lookup', 'de'=>'Schlüsselfeld in der Nachschlagetabelle'),
 		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle'),
         'confirm_delete'=>array('it'=>'Sei sicuro di voler eliminare il record?', 'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'),
-        'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen')
+        'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen'),
+        'project'=>array('it'=>'Progetto', 'de'=>'Progetto'),
 	);
 }
 

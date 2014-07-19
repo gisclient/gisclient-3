@@ -78,6 +78,9 @@
 		}
 	}
 ?>
+<div class="tableHeader ui-widget ui-widget-header ui-corner-top">
+	
+<b>Importa</b></div>
 <table cellPadding="2" border="0" class="stiletabella" width="90%">
 	<tr>
 		<!--<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>File dal Progetto</b></font></td>
@@ -89,8 +92,8 @@
 	</tr>-->
 <?php if($_POST["livello"]=="qt"){?>
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Layer</b></font></td>
-		<td>
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Layer</b></font></td>
+		<td colspan="2">
 			<select name="layer" class="textbox">
 				<?php echo @implode('\n',$opt2)?>
 			</select>
@@ -98,15 +101,15 @@
 	</tr>
 <?php }?>
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Nome File</b></font></td>
-		<td valign="middle">
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Nome File</b></font></td>
+		<td valign="middle" colspan="2">
 			<input type="text" class="textbox" size="50" value="<?php echo $fName?>" name="filename" id="filename">
-			<input type="button" class="hexfield" value="Elenco File" onclick="javascript:get_elenco('filename',['project','livello']);">
+			<input type="button" class="hexfield ui-button ui-widget ui-state-default ui-corner-all" style="width:100px" value="Elenco File" onclick="javascript:openList('filename',['project','livello']);">
 		</td>
 	</tr>
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Elimina File</b></font></td>
-		<td valign="middle">
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Elimina File</b></font></td>
+		<td valign="middle" colspan="2">
 			<SELECT class="textbox" name="overwrite" >
 				<OPTION value="0" selected>No</OPTION>
 				<OPTION value="1">Si</OPTION>
@@ -115,13 +118,14 @@
 	</tr>
 
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Nuovo Nome</b></font></td>
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Nuovo Nome</b></font></td>
 		<td valign="middle">
 			<input type="text" class="textbox" size="50" value="" name="name" id="name">
 		</td>
 	</tr>
 
 	<tr>
+        <td class="label ui-widget ui-state-default">&nbsp;</td>
 		<td colspan="2">
 		<hr>
 			<input type="hidden" name="importa" value="1">

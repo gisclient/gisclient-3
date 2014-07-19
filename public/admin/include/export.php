@@ -51,18 +51,20 @@ error_reporting (E_ERROR | E_PARSE);
 		}
 
 	</script>
-
-<table cellPadding="2" border="0" class="stiletabella" width="90%">
+<div class="tableHeader ui-widget ui-widget-header ui-corner-top">
+	
+<b>Esporta</b></div>
+<table class="stiletabella">
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Nome File</b></font></td>
-		<td valign="middle">
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Nome File</b></font></td>
+		<td valign="middle" colspan="2">
 			<input type="text" class="textbox" value="<?php echo $fName?>" name="filename" id="filename">
 		</td>
 	</tr>
 
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Sovrascrivi File</b></font></td>
-		<td valign="middle">
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Sovrascrivi File</b></font></td>
+		<td valign="middle" colspan="2">
 			<SELECT class="textbox" name="overwrite" >
 				<OPTION value="0" selected>No</OPTION>
 				<OPTION value="1">Si</OPTION>
@@ -70,6 +72,7 @@ error_reporting (E_ERROR | E_PARSE);
 		</td>
 	</tr>
 	<tr>
+        <td class="label ui-widget ui-state-default">&nbsp;</td>
 		<td colspan="2">
 		<hr>
 			<input type="hidden" name="esporta" value="1">

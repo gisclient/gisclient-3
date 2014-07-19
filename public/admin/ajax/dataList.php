@@ -33,7 +33,12 @@ switch($catalogData["connection_type"]){
 			$sql="select base_path from ".DB_SCHEMA.".project where project_name=?";
 			$stmt = $db->prepare($sql);
 			$stmt->execute(array($_REQUEST['project']));
-			$projectPath = addFinalSlash($stmt->fetchColumn(0));
+            $projectPath = $stmt->fetchColumn(0);
+            if(!empty($projectPath)) {
+                $projectPath = addFinalSlash($projectPath);
+            } else {
+                $projectPath = addFinalSlash(ROOT_PATH);
+            }
 			$baseDir = $projectPath.$baseDir;	
 		}
 		$navDir = '';
@@ -44,7 +49,7 @@ switch($catalogData["connection_type"]){
 			$n++;
 		}
 		$sourceDir = $baseDir . $navDir;
-		
+
 		$directories = elenco_dir($sourceDir);
 		sort($directories);
 		foreach($directories as $directory) {
@@ -52,7 +57,7 @@ switch($catalogData["connection_type"]){
 			$result['data_objects'][$n] = array('directory'=>$navDir.addFinalSlash($directory));
 			$n++;
 		}
-		
+
 		$allowedExtensions = explode(",",strtolower(CATALOG_EXT));
 		foreach($allowedExtensions as $extension){
 			$files = elenco_file($sourceDir, $extension);
