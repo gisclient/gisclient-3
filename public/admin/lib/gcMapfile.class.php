@@ -299,7 +299,21 @@ class gcMapfile{
 
 					}
 
+					//VEDO SE CI SONO DEI LIVELLI MAPSERVER DENTRO I LAYERGROUP DEI SERVIZI WEB
+					else{
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
+						if($aLayer["hidden"]!=1) {
+	                        array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
+	                            "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
+	                            "title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],
+	                            "sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])
+	                        ));
+		                }
+					}
+
 				}
+
 /*
 				//SE IL LAYERGROUP E' DI TIPO TMS/WMTS AGGIUNGO ANCHE IL LAYER WMTS/TMS E LA CACHE
 				if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
@@ -747,18 +761,17 @@ END";
             	),
                 'tms'=>array(
                     'srs'=>explode(' ', $this->epsgList),
-                    'use_grid_names'=>true,
+                    'use_grid_names'=>false,
                     'origin'=>'nw'
                 ),
                 'kml'=>array(
-                    'use_grid_names'=>true,
+                    'use_grid_names'=>false,
                 ),
                 'wmts'=>array(
                     'srs'=>explode(' ', $this->epsgList),
                 ),
                 'wms'=>array(
                     'srs'=>explode(' ', $this->epsgList),
-                    'attribution'=>array('text'=>'GisClient'),
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
@@ -807,8 +820,12 @@ END";
             ),
             'layers'=>$this->mpxLayers[$mapName]
         );
+
+		if(count($this->mpxCaches[$mapName])==0) unset($config["caches"]);
+		if(count($this->grids)==0) unset($config["grids"]);
+
         
-        if(!is_dir(ROOT_PATH.'mapproxy/')) mkdir(ROOT_PATH.'mapproxy');
+        if(!is_dir(MAPPROXY_CONFIG_PATH)) mkdir(MAPPROXY_CONFIG_PATH);
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
 
         //Verifica esistenza cartella dei tiles
@@ -816,7 +833,7 @@ END";
         
         $content = yaml_emit($config,YAML_UTF8_ENCODING);
 
-        file_put_contents(ROOT_PATH.'mapproxy/'.$mapName.'.yaml', $content);
+        file_put_contents(MAPPROXY_CONFIG_PATH.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
 
 	}
