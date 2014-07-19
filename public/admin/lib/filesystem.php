@@ -31,7 +31,7 @@ function elenco_dir($p){
 			}
 			closedir($dh);
 		}
-	}
+	} else echo 'no dir';
 	return $elenco;
 }
 
