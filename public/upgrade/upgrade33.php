@@ -4,11 +4,88 @@
 
 include('../../config/config.php');
 
-echo '<pre>';
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+set_time_limit(0);
 
-$sqlLayer = ($_REQUEST["layer"])? " and layer_id=" . $_REQUEST["layer"]:"";
+if(empty($_POST)) {
+    echo '<html><head><title>Aggiornamento GisClient</title></head><body>';
+    echo '<form method="post">';
+    echo 'Migrazione database da GisClient 2 a GisClient 3<br><br>';
+    echo 'Nome database '.DB_NAME.'<br><br>';
+    echo 'Nome schema GisClient 2 <input type="text" name="old_schema"><br><br>';
+    echo 'Schema GisClient 3: '.DB_SCHEMA.' (<input type="checkbox" name="drop_schema" value="yes">Drop if exists)<br><br>';
+    echo '<input type="submit" name="submit" value="Esegui">';
+    echo '</form></body></html>';
+    die();
+}
+
+if(empty($_POST['old_schema'])) die('Specificare il nome dello schema GisClient 2');
+
+echo '<pre>';
+echo 'Migrazione schema da '.$_POST['old_schema'].' a '.DB_SCHEMA.' nel database '.DB_NAME."\n\n";
+
+$workingDir = ROOT_PATH.'tmp/';
+if(!is_writable($workingDir)) die('La directory '.$workingDir.' non è scrivibile');
 
 $db = GCApp::getDB();
+if(!GCApp::schemaExists($db, $_POST['old_schema'])) die('Lo schema '.$_POST['old_schema'].' non esiste');
+
+if(!empty($_POST['drop_schema'])) {
+    $db->exec('drop schema if exists '.DB_SCHEMA.' cascade');
+}
+
+$authCmd = 'export PGPASSWORD='.DB_PWD.' && export PGUSER='.DB_USER.' && ';
+$unsetAuthCmd = ' && unset PGPASSWORD && unset PGUSER';
+$host = DB_HOST;
+if($host == 'localhost') $host = '127.0.0.1'; //per come è configurato di solito pg_hba.conf
+
+//DUMP
+$exportFile = $workingDir.'gc21.sql';
+$outputFile = $workingDir.'dump_output.txt';
+$errorFile = $workingDir.'dump_errors.txt';
+$cmd = $authCmd.'pg_dump -h '.$host.' -f '.$exportFile.' -n '.$_POST['old_schema'].' '.DB_NAME.' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
+exec($cmd, $output, $return); //TODO: aggiungere output degli errori
+if($return != 0) {
+    die('Errore nel dump '."\n\n".file_get_contents($errorFile));
+}
+
+if(!file_exists($exportFile)) die('Errore nel dump dello schema');
+
+//sostizione schema vecchio / schema nuovo sul file dump
+$content = file_get_contents($exportFile);
+$content = str_replace($_POST['old_schema'], DB_SCHEMA, $content);
+file_put_contents($exportFile, $content);
+
+//importazione su schema nuovo
+$outputFile = $workingDir.'import_output.txt';
+$errorFile = $workingDir.'import_errors.txt';
+$cmd = $authCmd . 'psql -h '.$host.' -f '.$exportFile.' '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
+exec($cmd, $output, $return);
+if($return != 0) {
+    die('Errore in importazione '."\n\n".file_get_contents($errorFile));
+}
+
+//upgrade33
+$content = file_get_contents('upgrade33.sql');
+$sql = 'set search_path to '.DB_SCHEMA.', public; '.$content;
+$db->exec($sql);
+
+//aggiornamento ms6
+$outputFile = $workingDir.'ms6_output.txt';
+$errorFile = $workingDir.'ms6_errors.txt';
+$cmd = $authCmd . 'psql --quiet -h '.$host.' -f '.ROOT_PATH.'doc/aggiornamento_database_mapserver_6.sql '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
+exec($cmd, $output, $return);
+if($return != 0) {
+    die('Errore in aggiornamento mapserver 6 '."\n\n".file_get_contents($errorFile));
+}
+
+/*
+non so se è applicabile anche in questo caso dove dumpo tutto...
+$sqlLayer = ($_REQUEST["layer"])? " and layer_id=" . $_REQUEST["layer"]:"";
+*/
+$sqlLayer = '';
+
 //$db->beginTransaction();
 
 $sql = "insert into ".DB_SCHEMA.".field (field_id,relation_id,field_name,field_header,fieldtype_id,searchtype_id,resultype_id,field_format,column_width,orderby_id,field_filter,datatype_id,field_order,default_op,layer_id,formula)
@@ -120,6 +197,8 @@ foreach($layers as $layer) {
 
     
 }
+
+die('fatto!');
 
 //$db->rollback();
 
