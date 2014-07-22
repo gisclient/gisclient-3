@@ -131,7 +131,7 @@ if($objRequest->getvaluebyname('layer')){
                     $char=$oClass->getTextString();
                     //echo 'oclass '; var_export($char); echo "<br>\n";
                     //SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
-                    if(strlen($char)==3){//USARE REGEXP, non è detto che questa stringa sia lunga 3 !!!!
+                    if(strlen($char)==3){//USARE REGEXP, non ï¿½ detto che questa stringa sia lunga 3 !!!!
                         $lbl=$oClass->label;
                         $idSymbol = ms_newSymbolObj($oMap, "v");
                         $oSymbol = $oMap->getSymbolObjectById($idSymbol);
@@ -152,14 +152,16 @@ if($objRequest->getvaluebyname('layer')){
                         $icoImg = $oClass->createLegendIcon($iconW,$iconH);
                         header("Content-type: image/png");
                         $icoImg->saveImage('');
-                        $icoImg->free();
+						if (ms_GetVersionInt() < 60000) {
+							$icoImg->free();
+						}
                         die();
                     }
                 }
             }
 
             if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
-                //Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
+                //Elimino le classi non visibili: devo cercarle una ad una perchï¿½ il removeclass rinumera le classi ogni volta
                 foreach($classToRemove as $className){
                     for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
                         $oClass = $oLayer->getClass($clno);
@@ -198,7 +200,9 @@ if($objRequest->getvaluebyname('layer')){
                     $icoImg->saveImage('');
                     $imageContent = ob_get_contents();
                     ob_end_clean();
-                    $icoImg->free();
+					if (ms_GetVersionInt() < 60000) {
+                        $icoImg->free();
+                    }
                     array_push($iconsArray, $imageContent);
                 }
             }

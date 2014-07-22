@@ -247,10 +247,14 @@ for($z=$startLevel;$z < $maxLevel;$z++){
 					imagedestroy($img);
 					imagedestroy($cropped_img);
 					ob_end_clean();
-					$oImage->free();
+					if (ms_GetVersionInt() < 60000) {
+                        $oImage->free();
+                    }
 				}else{
 					$oImage->saveImage($filename);
-					$oImage->free();
+					if (ms_GetVersionInt() < 60000) {
+                        $oImage->free();
+                    }
 				}
 				print ($z."/".$j."/".$i."\n");
 			}

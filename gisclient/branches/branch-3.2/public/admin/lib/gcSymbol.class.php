@@ -136,7 +136,9 @@ class Symbol{
 					$image_data = ob_get_contents();
 					//$image_data =pg_escape_bytea(ob_get_contents());
 					ob_end_clean();
-					$oIcon->free();
+					if (ms_GetVersionInt() < 60000) {
+                        $oIcon->free();
+                    }
 					$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='".$style["symbol"]."';";
 					//echo ($sql."<br>");
 					//$this->db->sql_query($sql);
@@ -168,7 +170,9 @@ class Symbol{
 					//$image_data =pg_escape_bytea(ob_get_contents());
 					$image_data = ob_get_contents();
 					ob_end_clean();
-					$oIcon->free();
+					if (ms_GetVersionInt() < 60000) {
+                        $oIcon->free();
+                    }
 					$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
 					//echo ($sql."<br>");
 					//$this->db->sql_query($sql);
