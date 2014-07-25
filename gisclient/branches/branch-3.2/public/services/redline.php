@@ -204,20 +204,30 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
         $geom = !empty($type['label_function']) ? $type['label_function'].'('.$type['db_field'].')' : $type['db_field'];
 		$oLay->set('data', "the_geom from (select id, note, color, redline_id, $geom as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID);
+
 		$oLay->setFilter("redline_id=".$_REQUEST['REDLINEID']);
 		$oLay->setProjection($layerProjString);
 		$oLay->set('sizeunits', MS_PIXELS);
 		$oLay->set('labelitem', "note");
 		
+		// TODO: already called some lines before. Can this be removed?
 		$oClass = ms_newClassObj($oLay);
 		// Label properties
-		$oClass->label->set("position", MS_UR);
-		$oClass->label->set("offsetx", 5);
-		$oClass->label->set("offsety", 10);
-		$oClass->label->set("font", REDLINE_FONT);
-		$oClass->label->set("type", MS_TRUETYPE);
-		$oClass->label->set("size", 14);
-		$oClass->label->setbinding(MS_LABEL_BINDING_COLOR, "color");
+		$lbl = null;
+		if (ms_GetVersionInt() < 60200) {
+			$lbl = $oClass->label;
+		} else if($oClass->numlabels > 0) {
+			$lbl = $oClass->getLabel(0);
+		}
+		if ($lbl) {
+			$lbl->set("position", MS_UR);
+			$lbl->set("offsetx", 5);
+			$lbl->set("offsety", 10);
+			$lbl->set("font", REDLINE_FONT);
+			$lbl->set("type", MS_TRUETYPE);
+			$lbl->set("size", 14);
+			$lbl->setbinding(MS_LABEL_BINDING_COLOR, "color");
+		}
 		$oLay->set('status', MS_ON);
 	}
 
