@@ -32,12 +32,12 @@ class mapImage {
 			'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale (requires pixels_distance)
 			'extent'=>array(),
 			'center'=>array(),
-            'vectors'=>null,
+			'vectors'=>null,
 			'image_format'=>'png', // or gtiff
 			'auth_name'=>'EPSG',
 			'scalebar'=>true,
 			'request_type'=>'get-map',
-            'TMP_PATH' => GC_WEB_TMP_DIR,
+			'TMP_PATH' => GC_WEB_TMP_DIR,
 			'TMP_URL' => GC_WEB_TMP_URL,
 			'dpi' => 72
 		);
@@ -59,9 +59,9 @@ class mapImage {
 			if(empty($this->options['extent'])) {
 				throw new Exception('Missing extent');
 			}
-			$this->extent = $this->adaptExtentToSize($this->options['extent']);
+			$this->extent = $this->adaptExtentToSize($this->options['extent'], $this->imageSize);
 			$paperSize = $this->paperSize($imageSize, $this->options['dpi']);
-			$this->scale = $this->extent[0] / $paperSize;
+			$this->scale = $this->extent[0] / $paperSize[0];
 		}
         
         if(!empty($this->options['vectors'])) {
@@ -154,7 +154,7 @@ class mapImage {
 			'resolution'=>$this->options['dpi'],
 			'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
 			'format'=>$this->options['image_format'],
-			GC_SESSION_NAME => session_id()
+			'GC_SESSION_ID' => session_id()
 		));
 		session_write_close();
 
