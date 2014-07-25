@@ -128,9 +128,11 @@ if($objRequest->getValueByName('service') == 'WMS') {
 
 // avvio la sessione
 if(!isset($_SESSION)) {
-    session_name(GC_SESSION_NAME);
-	if(isset($_REQUEST[GC_SESSION_NAME]) && !empty($_REQUEST[GC_SESSION_NAME])) {
-		session_id($_REQUEST[GC_SESSION_NAME]);
+	if(defined('GC_SESSION_NAME')) {
+		session_name(GC_SESSION_NAME);
+		if(isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
+			session_id($_REQUEST['GC_SESSION_ID']);
+ 		}
 	}
 	session_start();
 }
@@ -343,7 +345,12 @@ function checkLayer($project, $service, $layerName){
 	$check = false;
 	if(!empty($_SESSION['GISCLIENT_USER_LAYER']) && !empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName])) {
 		$layerAuth = $_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName];
-		if((strtoupper($service) == 'WMS' && ($layerAuth['WMS']==1)) || (strtoupper($service) == 'WFS' && ($layerAuth['WFS']==1 ))) $check = true;
+		// There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
+		if(strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS']==1)) {
+			$check = true;
+		} else if (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS']==1 )) {
+			$check = true;
+		}
 	}
 	return $check;
 }
