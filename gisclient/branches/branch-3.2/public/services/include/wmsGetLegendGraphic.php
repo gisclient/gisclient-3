@@ -70,7 +70,14 @@ if($objRequest->getvaluebyname('layer')){
     }
 
     $dy=0;
-    foreach($layers as $oLayer) {			
+    foreach($layers as $oLayer) {
+        $private = $oLayer->getMetaData('gc_private_layer');
+        if(!empty($private)) {
+			if(!checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $oLayer->name)) {
+				continue;
+			}
+        }
+		
         if($oLayer->connectiontype == MS_WMS) {
             $url = $oLayer->connection;
             if(strpos($url, '?') === false) $url .= '?';
@@ -84,33 +91,38 @@ if($objRequest->getvaluebyname('layer')){
                 'layer'=>$oLayer->getMetaData('wms_name'),
                 'version'=>$oLayer->getMetaData('wms_server_version')
             );
+			
+            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
+
+                $params['GC_SESSION_ID'] = session_id();
+            }
+            $urlWmsRequest = $url. http_build_query($params);
+			
             $options = array(
-                CURLOPT_URL => $url. http_build_query($params), 
+                CURLOPT_URL => $urlWmsRequest, 
                 CURLOPT_HEADER => 0, 
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_BINARYTRANSFER => true
             ); 
             $ch = curl_init(); 
             curl_setopt_array($ch, $options);
-            $result = @curl_exec($ch);
-            if($result) {
-                array_push($iconsArray, $result);
+            $result = curl_exec($ch);
+            if($result === false) {
+				throw new RunTimeException("Could not call $urlWmsRequest: " . curl_error($ch));
+            } else if($result) {
+				array_push($iconsArray, $result);
             }
             curl_close($ch); 
             continue;
         }
         
         $oLayer->set('sizeunits',MS_PIXELS);
-        #echo '<pre>'; var_export($oLayer);
         if(!$ruleLayerName || $ruleLayerName == $oLayer->name){
             $numCls = $oLayer->numclasses;
 
             //!!!!!!!!!!!!!!!!! DEFINIRE QUI IL FILTRO PER SCALE O IL FILTRO SULL'ESISTENZA DEGLI OGGETTI TANTO CARO A PAOLO (OCCORRE PASSARE EXTENT!!) !!!!!!
-            
             //!!!!!!!!!!!!! CICLARE SU TUTTI I LAYER E CREARE UNA LEGENDA UNICA  PER OGNI LEGENDA DI LAYER
-        
             //if((($oLayer->maxscale == -1) || ($scale <= $oLayer->maxscale)) && (($oLayer->minscale == -1) || ($scale >= $oLayer->minscale))){
-
 
             //verifica sulle classi
             $classToRemove=array();
@@ -129,7 +141,6 @@ if($objRequest->getvaluebyname('layer')){
                     //if((($oClass->maxscale == -1) || ($scale <= $oClass->maxscale)) && (($oClass->minscale == -1) || ($scale >= $oClass->minscale))){
                     
                     $char=$oClass->getTextString();
-                    //echo 'oclass '; var_export($char); echo "<br>\n";
                     //SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
                     if(strlen($char)==3){//USARE REGEXP, non � detto che questa stringa sia lunga 3 !!!!
                         $lbl=$oClass->label;

@@ -22,7 +22,7 @@ class printDocument {
 			'A0' => array('w'=>115,'h'=>77)
 		)
 	);
-	protected $WMSMergeUrl = 'services/gcWMSMerge.php';
+	protected $wmsMergeUrl = 'services/gcWMSMerge.php';
 	protected $wmsList = array();
 	protected $imageSize = array();
 	protected $documentSize = array();
@@ -110,7 +110,7 @@ class printDocument {
 			if(empty($options['extent']))
 				throw new Exception('For auto scale mode, the extend must be provided');
 		}
-		$this->WMSMergeUrl = PUBLIC_URL.$this->WMSMergeUrl;
+		$this->wmsMergeUrl = PUBLIC_URL.$this->wmsMergeUrl;
 		
 		$this->db = GCApp::getDB();
 		

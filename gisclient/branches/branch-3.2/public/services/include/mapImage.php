@@ -16,7 +16,6 @@ class mapImage {
 	protected $srid = null;
 	protected $scale;
 	
-    //public static $vectorTypes = array('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
 	public static $vectorTypes = array(
         'MultiPolygon'=>array('db_type'=>'MULTIPOLYGON', 'db_field'=>'multipolygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
         'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
@@ -168,7 +167,7 @@ class mapImage {
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
 		if (false === ($mapImage = curl_exec($ch))) {
-			throw new Exception("Could not curl_exec");
+			throw new Exception("Could not curl_exec" . curl_error($ch));
 		}
 		if(!$requestParameters['save_image']) {
 			$filename = $this->options['TMP_PATH'].$this->imageFileName;
