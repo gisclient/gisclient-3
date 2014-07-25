@@ -437,7 +437,9 @@ class gcMap{
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
-                $sldContent = curl_exec($ch);
+                if (false === $sldContent = curl_exec($ch)) {
+			throw new Exception(curl_error($ch));
+		}
                 curl_close($ch);
                 
                 $this->oMap->applySLD($sldContent);
