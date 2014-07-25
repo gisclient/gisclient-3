@@ -45,12 +45,8 @@ class printDocument {
 			'legend' => null,
 			'scale_mode' => 'auto',
 			'image_format'=>'png',
-			'extent' => null,
-			'viewport_size' => array(),
-			'center' => array(),
 			'srid' => null,
 			'auth_name'=>'EPSG',
-			'pixels_distance' => null
         );
 		
 		$options = array();
@@ -69,8 +65,8 @@ class printDocument {
 			$options['scale_mode'] = $_REQUEST['scale_mode'];
 		if (!empty($_REQUEST['legend']))
 			$options['legend'] = $_REQUEST['legend'];
-		if (!empty($_REQUEST['current_scale'])) // non serve
-			$options['current_scale'] = $_REQUEST['current_scale'];
+		if (!empty($_REQUEST['scale'])) // non serve
+			$options['scale'] = $_REQUEST['scale'];
 		if (!empty($_REQUEST['printFormat']))
 			$options['format'] = $_REQUEST['printFormat'];
 		if (!empty($_REQUEST['direction']) && in_array($_REQUEST['direction'], array('horizontal', 'vertical')))
@@ -83,10 +79,7 @@ class printDocument {
 				list($options['auth_name'], $options['srid']) = explode(':', $_REQUEST['srid']);
 			}
 		}
-		if (!empty($_REQUEST['pixels_distance']))
-			$options['pixels_distance'] = $_REQUEST['pixels_distance'];
-		if (!empty($_REQUEST['viewport_size'])) // non serve
-			$options['viewport_size'] = $_REQUEST['viewport_size'];
+		
 		if (!empty($_REQUEST['center']))
 			$options['center'] = $_REQUEST['center'];
 		if(!empty($_REQUEST['vectors'])) { // non serve
@@ -97,7 +90,7 @@ class printDocument {
 		
 		if(substr($this->options['TMP_PATH'], -1) != '/') $this->options['TMP_PATH'] .= '/';
 		if(!is_dir($this->options['TMP_PATH']) || !is_writeable($this->options['TMP_PATH'])) {
-			throw new Exception('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
+			throw new RuntimeException('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
 		}
 		if(substr($this->options['TMP_URL'], -1) != '/') $this->options['TMP_URL'] .= '/';
 		
@@ -109,11 +102,13 @@ class printDocument {
 		if(!isset($this->dimensions[$this->options['direction']][$this->options['format']])) throw new Exception('Invalid print format');
 		
 		if($options['scale_mode'] == 'user') {
-			if(empty($options['extent']) || count($options['extent']) != 4)
-				throw new Exception('For user-defined scale mode, an array of bottom, left, top, right coordinates must be provided');
+			if(empty($options['scale']))
+				throw new Exception('For user-defined scale mode, the scale must be provided');
+			if(empty($options['center']) || count($options['center']) != 2)
+				throw new Exception('For user-defined scale mode, an array of center coordinates must be provided');
 		} else {
-			if(empty($options['pixels_distance']) || empty($options['viewport_size']) || empty($options['center']))
-				throw new Exception('For auto scale mode, pixels_distance, viewport_size and center must be provided');
+			if(empty($options['extent']))
+				throw new Exception('For auto scale mode, the extend must be provided');
 		}
 		$this->WMSMergeUrl = PUBLIC_URL.$this->WMSMergeUrl;
 		
@@ -147,46 +142,40 @@ class printDocument {
 	
 	public function printMapHTML() {
 		$xslFile = GC_PRINT_TPL_DIR.'print_map_html.xsl';
-		if(!file_exists($xslFile)) throw new Exception('XSL file ('.$xslFile.') not found');
+		if(!file_exists($xslFile)) throw new RuntimeException('XSL file ('.$xslFile.') not found');
 		
-		try {
-			$dom = $this->buildDOM();
-			$tmpdoc = new DOMDocument();
-			$xsl = new XSLTProcessor();
 
-			$tmpdoc->load($xslFile);
-			$xsl->importStyleSheet($tmpdoc);
+		$dom = $this->buildDOM();
+		$tmpdoc = new DOMDocument();
+		$xsl = new XSLTProcessor();
 
-			$content = $xsl->transformToXML($dom);
-			$filename = 'printmap_'.rand(0,99999999).'.html';
-			file_put_contents($this->options['TMP_PATH'].$filename, $content);
-			$this->deleteOldTmpFiles();
-		} catch(Exception $e) {
-			throw $e;
+		$tmpdoc->load($xslFile);
+		$xsl->importStyleSheet($tmpdoc);
+
+		$content = $xsl->transformToXML($dom);
+		$filename = 'printmap_'.rand(0,99999999).'.html';
+		$mapHtmlFile = $this->options['TMP_PATH'].$filename;
+		if (false === file_put_contents($mapHtmlFile, $content)) {
+			throw new RuntimeException("Could not write to $mapHtmlFile");
 		}
+		$this->deleteOldTmpFiles();
 		return $this->options['TMP_URL'].$filename;
 	}
 	
 	public function printMapPDF() {
 		$xslFile = GC_PRINT_TPL_DIR.'print_map.xsl';
-		if(!file_exists($xslFile)) throw new Exception('XSL file not found');
+		if(!file_exists($xslFile)) throw new RuntimeException('XSL file not found');
 		
-		try {
-			$dom = $this->buildDOM(true);
-			$xml = $dom->saveXML();
+		$dom = $this->buildDOM(true);
+		$xml = $dom->saveXML();
 
-			$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
-			$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
-		} catch (Exception $e) {
-			throw $e;
-		}
+		$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
+		$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
 		return $pdfFile;
 	}
 	
 	public function getBox() {
 		$this->calculateSizes();
-		
-		$options = array_merge($this->options, array('request_type'=>'get-box'));
 		
 		$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
 		return $mapImage->getExtent();
@@ -216,36 +205,33 @@ class printDocument {
 	protected function buildLegendArray() {
 		if(empty($this->options['legend'])) return null;
 		$this->buildLegendGraphicWmsList();
-		try {
-			$legendImages = array();
-			foreach($this->options['legend']['themes'] as $theme) {
-				if(empty($theme['groups'])) continue;
-				$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
-				foreach($theme['groups'] as $group) {
-					$groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
-					if(empty($group['layers'])) continue;
-					foreach($group['layers'] as $key => $layer) {
-						$tmpFileId = $theme['id'].'-'.$group['id'];
-						if(!isset($legendImages[$layer['url']])) {
-							if(isset($group['sld'])) $sld = $group['sld'];
-							else $sld = null;
-							$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
-						}
-						if(!$legendImages[$layer['url']]) continue;
-						$source = imagecreatefrompng($legendImages[$layer['url']]);
-						$dest = imagecreatetruecolor(24, 16);
-						$offset = $key*16;
-						imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
-						$filename = $tmpFileId.'-'.$key.'.png';
-						imagepng($dest, $this->options['TMP_PATH'].$filename);
-						array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
+		$legendImages = array();
+		foreach($this->options['legend']['themes'] as $theme) {
+			if(empty($theme['groups'])) continue;
+			$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
+			foreach($theme['groups'] as $group) {
+				$groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
+				if(empty($group['layers'])) continue;
+				foreach($group['layers'] as $key => $layer) {
+					$tmpFileId = $theme['id'].'-'.$group['id'];
+					if(!isset($legendImages[$layer['url']])) {
+						if(isset($group['sld'])) $sld = $group['sld'];
+						else $sld = null;
+						$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
 					}
-					array_push($themeArray['groups'], $groupArray);
+					if(!$legendImages[$layer['url']]) continue;
+					// TODO: add some check if the image is high enough to be sliced
+					$source = imagecreatefrompng($legendImages[$layer['url']]);
+					$dest = imagecreatetruecolor(24, 16);
+					$offset = $key*16;
+					imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
+					$filename = $tmpFileId.'-'.$key.'.png';
+					imagepng($dest, $this->options['TMP_PATH'].$filename);
+					array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
 				}
-				array_push($this->legendArray, $themeArray);
+				array_push($themeArray['groups'], $groupArray);
 			}
-		} catch(Exception $e) {
-			throw $e;
+			array_push($this->legendArray, $themeArray);
 		}
 	}
 	
@@ -260,28 +246,24 @@ class printDocument {
 	}
 	
 	protected function getLegendImage($url, $tmpFileId) {
-		try {
-			$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
-			$url = printDocument::addPrefixToRelativeUrl($url);
-			$ch = curl_init($url);
-			if (false === (fopen($dest, "wb"))) {
-				throw new Exception("Unable to open file $dest in write mode");
-			}
-			$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
-			curl_setopt_array($ch, $options);
-
-			if (false === curl_exec($ch)) {
-				$errMsg = "Call to $url returned with error ".curl_error($ch);
-				throw new Exception($errMsg);
-			}
-			if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-				throw new Exception("Call to $url return HTTP code $httpCode");
-			}
-			curl_close($ch);
-			fclose($fp);
-		} catch(Exception $e) {
-			throw $e;
+		$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
+		$url = printDocument::addPrefixToRelativeUrl($url);
+		$ch = curl_init($url);
+		if (false === (fopen($dest, "wb"))) {
+			throw new RuntimeException("Unable to open file $dest in write mode");
 		}
+		$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
+		curl_setopt_array($ch, $options);
+
+		if (false === curl_exec($ch)) {
+			$errMsg = "Call to $url returned with error ".curl_error($ch);
+			throw new RuntimeException($errMsg);
+		}
+		if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+			throw new RuntimeException("Call to $url return HTTP code $httpCode");
+		}
+		curl_close($ch);
+		fclose($fp);
 		return $dest;
 	}
 	
@@ -292,37 +274,23 @@ class printDocument {
 		);
 
 		$this->imageSize = array(
-			(int)round(($dimension['w']/(2.54))*$this->options['dpi']), 
-			(int)round(($dimension['h']/(2.54))*$this->options['dpi'])
+			(int)round($dimension['w'] * ($this->options['dpi'] / 2.54)), 
+			(int)round($dimension['h'] * ($this->options['dpi'] / 2.54)),
 		);
-		$this->options['fixed_size'] = array(
-			(int)round(($dimension['w']/(2.54))*72), 
-			(int)round(($dimension['h']/(2.54))*72)
-		);
-		
 		$this->documentSize = $dimension;
 	}
 	
 	protected function getMapImage() {
-		try {
-			$this->calculateSizes();
-			
-			$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
-			$this->wmsList = $mapImage->getWmsList();
-			$this->imageFileName = $mapImage->getImageFileName();
-			
-		} catch(Exception $e) {
-			throw $e;
-		}
+		$this->calculateSizes();
+
+		$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
+		$this->wmsList = $mapImage->getWmsList();
+		$this->imageFileName = $mapImage->getImageFileName();
 	}
 	
 	protected function buildDOM($absoluteUrls = false) {
-		try {
-			$this->getMapImage();
-			$this->buildLegendArray();
-		} catch(Exception $e) {
-			throw $e;
-		}
+		$this->getMapImage();
+		$this->buildLegendArray();
 
 		$dom = new DOMDocument('1.0', 'utf-8');
 		$dom->formatOutput = true;
@@ -395,7 +363,10 @@ class printDocument {
 		}
 		
 		$xmlContent = $dom->saveXML();
-		file_put_contents($this->options['TMP_PATH'].'print.xml', $xmlContent);
+		$xmlFile = $this->options['TMP_PATH'].'print.xml';
+		if (false === file_put_contents($xmlFile, $xmlContent)) {
+			throw new RuntimeException("Could not write to $xmlFile");
+		}
 		
 		return $dom;
 	}
@@ -409,9 +380,10 @@ class printDocument {
 
 				$name = $this->options['TMP_PATH'] . '/' . $file;
 				$isold = (time() - filectime($name)) > 5 * 60 * 60;
-				$ext = strtolower(strrchr($name, '.'));
 				if (is_file($name) && $isold) {
-					unlink($name);
+					if (false === unlink($name)) {
+						throw new RuntimeException("Could not remove $name");
+					}
 				}
 			}
 			closedir($handle);

@@ -1,8 +1,9 @@
 <?php
 include_once('printDocument.php');
+
 class mapImage {
 
-	protected $WMSMergeUrl = 'services/gcWMSMerge.php';
+	protected $wmsMergeUrl = 'services/gcWMSMerge.php';
 	protected $tiles = array();
 	protected $extent = array();
 	protected $wmsList = array();
@@ -13,6 +14,8 @@ class mapImage {
 	protected $options = array();
 	protected $imageFileName = null;
 	protected $srid = null;
+	protected $scale;
+	
     //public static $vectorTypes = array('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
 	public static $vectorTypes = array(
         'MultiPolygon'=>array('db_type'=>'MULTIPOLYGON', 'db_field'=>'multipolygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
@@ -24,18 +27,16 @@ class mapImage {
     );
     
     
-	function __construct($tiles, $imageSize, $srid, $options) {
+	function __construct($tiles, array $imageSize, $srid, array $options) {
 		$defaultOptions = array(
 			'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale (requires pixels_distance)
 			'extent'=>array(),
 			'center'=>array(),
             'vectors'=>null,
 			'image_format'=>'png', // or gtiff
-			'pixels_distance'=>null, //define the scale (how many meters are represented in the current viewport)
 			'auth_name'=>'EPSG',
 			'scalebar'=>true,
 			'request_type'=>'get-map',
-			'fixed_size'=>$imageSize,
             'TMP_PATH' => GC_WEB_TMP_DIR,
 			'TMP_URL' => GC_WEB_TMP_URL,
 			'dpi' => 72
@@ -46,16 +47,21 @@ class mapImage {
 		$this->imageSize = $imageSize;
 		$this->db = GCApp::getDB();
 		$this->srid = $srid;
-		$this->WMSMergeUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->WMSMergeUrl);
+		$this->wmsMergeUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->wmsMergeUrl);
 		
 		if($this->options['scale_mode'] == 'user') {
-			if(empty($this->options['center']) || empty($this->options['pixels_distance'])) {
+			if(empty($this->options['center']) || empty($this->options['scale'])) {
 				throw new Exception('Missing center or pixels_distance');
 			}
-			$this->extent = $this->calculateExtent($this->options['center'], $this->options['pixels_distance']);
+			$this->extent = $this->calculateExtent($this->options['center'], $imageSize, $this->options['dpi'], $this->options['scale']);
+			$this->scale = $this->options['scale'];
 		} else {
-			if(empty($this->options['extent'])) throw new Exception('Missing extent');
+			if(empty($this->options['extent'])) {
+				throw new Exception('Missing extent');
+			}
 			$this->extent = $this->adaptExtentToSize($this->options['extent']);
+			$paperSize = $this->paperSize($imageSize, $this->options['dpi']);
+			$this->scale = $this->extent[0] / $paperSize;
 		}
         
         if(!empty($this->options['vectors'])) {
@@ -85,8 +91,8 @@ class mapImage {
 		return $this->imageFileName;
 	}
 	
-	public function getScale($imageWidth) { //imageWidth in meters, get the ratio between the represented meters and the image meters in the horizontal dimension
-		return round($this->mapSize[0] / $imageWidth);
+	public function getScale() {
+		return $this->scale;
 	}
 	
 	protected function buildWmsList() {
@@ -99,7 +105,7 @@ class mapImage {
                 $parameters[strtoupper($key)] = $val;
             }
             
-            // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
+            // nell'url puÃ² esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
             $parsedUrl = parse_url($url);
             if(!empty($parsedUrl['query'])) {
                 $urlParams = array();
@@ -130,113 +136,101 @@ class mapImage {
 	}
 	
 	protected function getMapImage() {
-		try {
-			$extension = 'png';
-			if($this->options['image_format'] == 'gtiff') $extension = 'tif';
-			
-			$this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
-            
-            $saveImage = true;
-            if(empty($this->options['save_image']) && $this->options['image_format'] == 'gtiff') $saveImage = false;
-			
-			$requestParameters = json_encode(array(
-				'layers'=>$this->wmsList,
-				'size'=>$this->imageSize,
-				'extent'=>$this->extent,
-				'srs'=>$this->options['auth_name'].':'.$this->srid,
-				'scalebar' => $this->options['scalebar'],
-				'save_image'=>($this->options['image_format'] != 'gtiff'),
-				'resolution'=>$this->options['dpi'],
-				'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
-				'format'=>$this->options['image_format'],
-				GC_SESSION_NAME => session_id()
-			));
-			session_write_close();
-			
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $this->WMSMergeUrl);
-			curl_setopt($ch, CURLOPT_HEADER, 0);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_POST, 1);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
-			$mapImage = curl_exec($ch);
-			if(!$requestParameters['save_image']) {
-				file_put_contents($this->options['TMP_PATH'].$this->imageFileName, $mapImage);
+		$extension = 'png';
+		if($this->options['image_format'] == 'gtiff') $extension = 'tif';
+
+		$this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
+
+		$saveImage = true;
+		if(empty($this->options['save_image']) && $this->options['image_format'] == 'gtiff') $saveImage = false;
+
+		$requestParameters = json_encode(array(
+			'layers'=>$this->wmsList,
+			'size'=>$this->imageSize,
+			'extent'=>$this->extent,
+			'srs'=>$this->options['auth_name'].':'.$this->srid,
+			'scalebar' => $this->options['scalebar'],
+			'save_image'=>($this->options['image_format'] != 'gtiff'),
+			'resolution'=>$this->options['dpi'],
+			'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
+			'format'=>$this->options['image_format'],
+			GC_SESSION_NAME => session_id()
+		));
+		session_write_close();
+
+		if (false === ($ch = curl_init())) {
+			throw new Exception("Could not init curl");
+		}
+		curl_setopt($ch, CURLOPT_URL, $this->wmsMergeUrl);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
+		if (false === ($mapImage = curl_exec($ch))) {
+			throw new Exception("Could not curl_exec");
+		}
+		if(!$requestParameters['save_image']) {
+			$filename = $this->options['TMP_PATH'].$this->imageFileName;
+			if (false === file_put_contents($filename, $mapImage)) {
+				throw new Exception("Could not save map image to $filename");
 			}
-			curl_close($ch);	
-		} catch(Exception $e) {
-			throw $e;
 		}
+		curl_close($ch);
 	}
 	
-	protected function adaptExtentToSize($extent) {
-		$leftBottom = "st_geomfromtext('POINT(".$extent[0]." ".$extent[1].")', ".$this->srid.")";
-		$rightBottom = "st_geomfromtext('POINT(".$extent[2]." ".$extent[1].")', ".$this->srid.")";
-		$rightTop = "st_geomfromtext('POINT(".$extent[2]." ".$extent[3].")', ".$this->srid.")";
-		$leftTop = "st_geomfromtext('POINT(".$extent[0]." ".$extent[3].")', ".$this->srid.")";
-		$sql = "select st_length(st_makeline($leftBottom, $rightBottom)) as w, st_length(st_makeline($leftBottom, $leftTop)) as h";
-		$measures = $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
+	protected function adaptExtentToSize(array $extent, array $imageSize) {
+		$extentCenter = array(
+			0.5 * ($extent[0] + $extent[2]),
+			0.5 * ($extent[1] + $extent[3]),
+		);
 		
-		if($measures['w'] > $measures['h']) {
-			$longEdge = 'w';
-			$height = ($measures['w']/$this->imageSize[0])*$this->imageSize[1];
-			$buffer = ($height - $measures['h'])/2;
-			$width = $measures['w'];
+		$extentSize = array(
+			$extent[2] - $extent[0],
+			$extent[3] - $extent[1],
+		);
+		
+		$widthRatio = $extentSize[0] / $imageSize[0];
+		$heightRatio = $extentSize[1] / $imageSize[1];
+		
+		if($widthRatio >= $heightRatio) {
+			$extentSize[1] *= ($widthRatio/$heightRatio);
 		} else {
-			$longEdge = 'h';
-            $height = $measures['h'];
-			$width = ($measures['h']/$this->imageSize[1])*$this->imageSize[0];
-			$buffer = ($width - $measures['w'])/2;
+			$extentSize[0] *= ($heightRatio/$widthRatio);
 		}
-		$this->mapSize = array($width, $height);
+		
+		$adaptedExtend = array(
+			$extentCenter[0] - 0.5 * $extentSize[0],
+			$extentCenter[1] - 0.5 * $extentSize[1],
+			$extentCenter[0] + 0.5 * $extentSize[0],
+			$extentCenter[1] + 0.5 * $extentSize[1],
+		);
+		
+		return $adaptedExtend;
+	}
+	
+	protected function paperSize(array $imageSize, $dpi) {
+		return array(
+			$imageSize[0] / ($dpi * 100/2.54),
+			$imageSize[1] / ($dpi * 100/2.54),
+		);
+	}
+	
+	protected function calculateExtent(array $center, array $imageSize, $dpi, $scale) {
+		$paperSize = $this->paperSize($imageSize, $dpi);
+		
+		$extentWidth = $scale *  $paperSize[0];
+		$extentHeight = $scale * $paperSize[1];
 
-		$extentPolygon = "st_polygon(st_makeline(ARRAY[$leftBottom, $rightBottom, $rightTop, $leftTop, $leftBottom]), ".$this->srid.")";
-		
-		$sql = "select box2d(st_buffer((".$extentPolygon."), $buffer))";
-		$box = $this->db->query($sql)->fetchColumn(0);
-		$box = GCUtils::parseBox($box);
-		
-		if($longEdge == 'w') {
-			return array($extent[0], $box[1], $extent[2], $box[3]);
-		} else {
-			return array($box[0], $extent[1], $box[2], $extent[3]);
-		}
+		$extent = array(
+			$center[0] - 0.5 * $extentWidth,
+			$center[1] - 0.5 * $extentHeight,
+			$center[0] + 0.5 * $extentWidth,
+			$center[1] + 0.5 * $extentHeight,
+		);
+		return $extent;
 	}
 	
-	protected function calculateExtent($center, $pixelDistance) {
-		if($this->options['fixed_size'][0] > $this->options['fixed_size'][1]) {
-			$longEdge = 'w';
-			$shortEdgeDividend = $this->options['fixed_size'][1];
-			$longEdgeDividend = $this->options['fixed_size'][0];
-		} else {
-			$longEdge = 'h';
-			$shortEdgeDividend = $this->options['fixed_size'][0];
-			$longEdgeDividend = $this->options['fixed_size'][1];
-		}
-
-		$shortBuffer = ($shortEdgeDividend / $pixelDistance)/2;
-		$longBuffer = ($longEdgeDividend / $pixelDistance)/2;
-		$center = "st_geomfromtext('POINT(".$center[0]." ".$center[1].")', ".$this->srid.")";
-		$sql = "select box2d(st_buffer($center, $shortBuffer)) as short, box2d(st_buffer($center, $longBuffer)) as long";
-		$boxes = $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
-		$boxes = $this->parseBoxes($boxes);
-		
-		if($longEdge == 'w') {
-			return array($boxes['long'][0], $boxes['short'][1], $boxes['long'][2], $boxes['short'][3]);
-		} else {
-			return array($boxes['short'][0], $boxes['long'][1], $boxes['short'][2], $boxes['long'][3]);
-		}
-	}
-	
-	protected function parseBoxes($boxes) {
-		$parsedBoxes = array();
-		foreach(array('long', 'short') as $type) {
-			$parsedBoxes[$type] = GCUtils::parseBox($boxes[$type]);
-		}
-		return $parsedBoxes;
-	}
-    
 
     protected function importVectors() {
         if(!defined('PRINT_VECTORS_TABLE')) throw new Exception('Undefined PRINT_VECTORS_TABLE');
