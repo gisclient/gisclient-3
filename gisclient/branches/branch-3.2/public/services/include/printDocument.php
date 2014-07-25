@@ -86,7 +86,7 @@ class printDocument {
 			$this->vectors = $_REQUEST['vectors'];
 		}
 
-        $this->options = array_merge($defaultOptions, $options);
+		$this->options = array_merge($defaultOptions, $options);
 		
 		if(substr($this->options['TMP_PATH'], -1) != '/') $this->options['TMP_PATH'] .= '/';
 		if(!is_dir($this->options['TMP_PATH']) || !is_writeable($this->options['TMP_PATH'])) {
@@ -192,13 +192,11 @@ class printDocument {
 				'ICONH' => 16,
 				'GCLEGENDTEXT' => 0
 			));
+			if(defined("GC_SESSION_NAME")){
+				$legendGraphicRequest['GC_SESSION_ID'] = session_id();
+            }
 			$this->getLegendGraphicWmsList[$wms['PARAMETERS']['MAP']] = $legendGraphicRequest;
 			$this->getLegendGraphicRequest = $legendGraphicRequest;
-			/*
-			$layers = explode(',',$wms['PARAMETERS']['LAYERS']);
-			foreach($layers as $layer) {
-				$this->getLegendGraphicWmsList[$wms] = $legendGraphicRequest;
-			}*/
 		}
 	}
 	
@@ -249,7 +247,7 @@ class printDocument {
 		$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
 		$url = printDocument::addPrefixToRelativeUrl($url);
 		$ch = curl_init($url);
-		if (false === (fopen($dest, "wb"))) {
+		if (false === ($fp = fopen($dest, "wb"))) {
 			throw new RuntimeException("Unable to open file $dest in write mode");
 		}
 		$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
