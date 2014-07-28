@@ -364,7 +364,7 @@ $all="center";
 
 	function get_chiave_esterna($val,$fld,$tab,$campo){
 		if ($val==-1)
-			return "Non definito";
+			return GCAuthor::t('undefined');
 		elseif(!$val){
 			
 			switch($tab){
@@ -379,7 +379,7 @@ $all="center";
 					$fkey="";
 					break;
 				default:
-					$fkey="Non definito";
+					$fkey=GCAuthor::t('undefined');
 					break;
 			}
 			return $fkey;
