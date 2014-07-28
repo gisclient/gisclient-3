@@ -5,7 +5,7 @@ class GCApp {
 	static private $dataDBs = array();
 	
 	public static function getDB() {
-		if(empty($db)) {
+		if(empty(self::$db)) {
 			$dsn = 'pgsql:dbname='.DB_NAME.';host='.DB_HOST;
 			if(defined('DB_PORT')) $dsn .= ';port='.DB_PORT;
 			try {
@@ -350,7 +350,9 @@ class GCAuthor {
 		'layergroup'=>array('it'=>'Layergroup', 'de'=>'Layergruppe'),
 		'layer'=>array('it'=>'Layer', 'de'=>'Layer'),
 		'lookup_id'=>array('it'=>'Campo chiave lookup', 'de'=>'Schlüsselfeld in der Nachschlagetabelle'),
-		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle')
+		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle'),
+		'confirm_delete'=>array('it'=>'Sei sicuro di voler eliminare il record?', 'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'),
+		'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen')
 	);
 }
 
