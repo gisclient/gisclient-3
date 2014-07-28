@@ -904,11 +904,6 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
 	return true;	
 }
 
-function tableAlreadyExists($dataDb, $schema, $tableName) {
-    //deprecated
-    return GCApp::tableExists($dataDb, $schema, $tableName);
-}
-
 function simpleCharsOnly($string) {
 	$pattern = '/^[a-z0-9_]*$/';
 	return preg_match($pattern, $string) > 0;
