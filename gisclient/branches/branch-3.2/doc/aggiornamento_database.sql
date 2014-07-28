@@ -974,7 +974,7 @@ alter table layer_groups alter column layer_groups_id set default nextval('layer
 update layer_groups set layer_groups_id = nextval('layer_groups_seq');
 ALTER TABLE layer_groups ADD PRIMARY KEY (layer_groups_id);
 
--- 2012-01-16: searchable su layer: se no, il layer è interrogabile ma non compare nei modelli di ricerca
+-- 2012-01-16: searchable su layer: se no, il layer ï¿½ interrogabile ma non compare nei modelli di ricerca
 alter table layer add column searchable numeric(1,0) DEFAULT 0;
 update layer set searchable=1 where queryable=1;
 
@@ -1187,8 +1187,48 @@ ALTER TABLE mapset alter COLUMN private set DEFAULT 0;
   
 INSERT INTO version (version_name,version_date) values ('3.2.18','2014-07-02');
 
+-- MS6:
+ALTER TABLE layer DROP CONSTRAINT layer_layergroup_id_fkey;
+ALTER TABLE layer ADD CONSTRAINT layer_layergroup_id_fkey FOREIGN KEY (layergroup_id) 
+    REFERENCES layergroup (layergroup_id) MATCH FULL 
+	ON UPDATE CASCADE ON DELETE CASCADE; 
 
+-- *********** SIMBOLOGIA LINEARE: SOSTITUZIONE DI STYLE CON PATTERN *********************
+CREATE TABLE e_pattern
+(
+  pattern_id serial NOT NULL,
+  pattern_name character varying NOT NULL,
+  pattern_def character varying NOT NULL,
+  pattern_order smallint,
+  CONSTRAINT e_pattern_pkey PRIMARY KEY (pattern_id )
+);
+ALTER TABLE style ADD COLUMN pattern_id integer;
 
+ALTER TABLE style  ADD CONSTRAINT pattern_id_fkey FOREIGN KEY (pattern_id)
+      REFERENCES e_pattern (pattern_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE NO ACTION;
+	  
+CREATE INDEX fki_pattern_id_fkey ON style USING btree (pattern_id );
+
+CREATE OR REPLACE VIEW seldb_pattern AS 
+         SELECT (-1) AS id, 'Seleziona ====>' AS opzione
+UNION ALL 
+         SELECT pattern_id AS id, pattern_name AS opzione
+           FROM e_pattern;
+
+--UPGRADE DELLA TABELLA DEI SIMBOLI		   
+ALTER TABLE symbol ADD COLUMN symbol_type character varying;
+ALTER TABLE symbol ADD COLUMN font_name character varying;
+ALTER TABLE symbol ADD COLUMN ascii_code integer;
+ALTER TABLE symbol ADD COLUMN filled numeric(1,0) DEFAULT 0;
+ALTER TABLE symbol ADD COLUMN points character varying;
+ALTER TABLE symbol ADD COLUMN image character varying;
+
+ALTER TABLE version ADD COLUMN version_key varchar;
+UPDATE version SET version_key='author';
+ALTER TABLE version ALTER COLUMN version_key SET NOT NULL;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.19', 'author', '2014-07-14');
 
 
   
