@@ -186,9 +186,9 @@ if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format
 }
 
 if(!empty($mapConfig['format']) && $mapConfig['format'] == 'gtiff') {
-	header("Content-type:image/tiff");
+	header("Content-type: image/tiff");
 } else {
-	header("Content-type:image/png");
+	header("Content-type: image/png");
 }
 
 if($mapConfig['format'] == 'gtiff') {
