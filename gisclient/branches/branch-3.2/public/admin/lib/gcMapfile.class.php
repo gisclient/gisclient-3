@@ -44,7 +44,6 @@ class gcMapfile{
 	function __construct ($languageId = null){
 		$this->db = GCApp::getDB();
 		$this->languageId = $languageId;
-		
 		if(isset($_SESSION['save_to_tmp_map']) && $_SESSION['save_to_tmp_map'] === true ) $this->target = 'tmp';
 	}
 	
@@ -230,7 +229,11 @@ class gcMapfile{
 		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
 		$outputFormat = $this->_getOutputFormat($mapFile);
 		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
-		$metadata_inc = '';
+		if (ms_GetVersionInt() >= 600000) {
+			$metadata_inc = "\t\"wms_enable_request\" \"*\"";
+		} else {
+			$metadata_inc = '';
+		}
 		//$legend_inc = file_get_contents (ROOT_PATH."config/mapfile.legend.inc");
         $legend_inc = $this->_getLegendSettings();
 		//$legend_inc = '';
@@ -301,24 +304,53 @@ $layerText
 $legend_inc
 $outputFormat
 END #MAP";
-
+		if (!is_dir(ROOT_PATH)) {
+			$errorMsg = ROOT_PATH . " is not a directory";
+			GCError::register($errorMsg);
+			return;
+		}
+		
 		if($this->printMap) {
-			$mapFile=ROOT_PATH."map/tmp/".$mapFile.".map";
+			$mapfileDir = ROOT_PATH."map/tmp/";
+			if(!is_dir($mapfileDir)) {
+				$rv = mkdir($mapfileDir, 0777, true);
+				if ($rv === false) {
+					$errorMsg = "Could not create directory $mapfileDir";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
+			$mapFilePath=$mapfileDir.$mapFile.".map";
 		} else {
-			$mapfileDir = 'map/';
+			$mapfileDir = ROOT_PATH.'map/';
 			if($this->target == 'tmp') {
 				$mapFile = 'tmp.'.$mapFile;
 			}
-			if(!is_dir(ROOT_PATH.$mapfileDir)) mkdir(ROOT_PATH.$mapfileDir);
-			if(!is_dir(ROOT_PATH.$mapfileDir.$projectName)) mkdir(ROOT_PATH.$mapfileDir.$projectName);
+			
+			if(!is_dir($mapfileDir.$projectName)) {
+				$rv = mkdir($mapfileDir.$projectName, 0777, true);
+				if ($rv === false) {
+					$errorMsg = "Could not create directory $mapfileDir.$projectName";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
 			if(!empty($this->i18n)) {
 				$languageId = $this->i18n->getLanguageId();
 				$mapFile.= "_".$languageId;
 			}
-			$mapFilePath = ROOT_PATH.$mapfileDir.$projectName."/".$mapFile.".map";
+			$mapFilePath = $mapfileDir.$projectName."/".$mapFile.".map";
 		}
-		$f = fopen ($mapFilePath,"w");
-		$ret=fwrite($f, $fileContent);
+		if (false === ($f = fopen ($mapFilePath,"w"))) {
+			$errorMsg = "Could not open $mapFilePath for writing";
+			GCError::register($errorMsg);
+			return;
+		}
+		if (false === (fwrite($f, $fileContent))) {
+			$errorMsg = "Could not write to $mapFilePath";
+			GCError::register($errorMsg);
+			return;
+		}
 		fclose($f);
 		
 		if(!$this->printMap && empty($this->i18n) && !empty($this->tinyOWSLayers)) {
@@ -333,18 +365,28 @@ END #MAP";
 		
 		//test sintassi mapfile
 		ms_ResetErrorList();	
-		$this->map = @ms_newMapObj($mapFilePath);
-		$error = ms_GetErrorObj();
-		if($error->code != MS_NOERR){
-			$this->mapError=150;
-			while(is_object($error) && $error->code != MS_NOERR) {
-				$errorMsg = "MAPFILE ERROR $mapFile<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
-				GCError::register($errorMsg);
-				$error = $error->next();
+		try {
+			@ms_newMapobj($mapFilePath);
+			if (ms_GetVersionInt() < 600000) {
+				// before MS6, no Exception was thrown
+				$error = ms_GetErrorObj();
+				throw new Exception("Could not read map file $mapFilePath");
 			}
-			return;
-		}	
-		
+		} 
+		catch (Exception $e) {
+			if (ms_GetVersionInt() > 600000) {
+				$error = ms_GetErrorObj();
+			}
+			
+			if($error->code != MS_NOERR){
+				$this->mapError=150;
+				while(is_object($error) && $error->code != MS_NOERR) {
+					$errorMsg = "MAPFILE ERROR $mapFile<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
+					GCError::register($errorMsg);
+					$error = $error->next();
+				}
+			}
+		}
 	}
 	
 	
