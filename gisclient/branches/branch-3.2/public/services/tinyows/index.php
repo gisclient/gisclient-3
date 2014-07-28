@@ -76,7 +76,7 @@ if(!empty($_GET)) {
 	$envVars['QUERY_STRING'] = $_SERVER['QUERY_STRING'];
 } else {
 	$fileContent = file_get_contents('php://input');
-    
+	
 	$envVars['REQUEST_METHOD'] = 'POST';
 	$envVars['CONTENT_LENGTH'] = strlen($fileContent);
 	$envVars['CONTENT_TYPE'] = 'text/xml';
