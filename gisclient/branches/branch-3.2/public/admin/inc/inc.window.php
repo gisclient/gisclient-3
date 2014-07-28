@@ -7,6 +7,6 @@
 	<div id="i18n_dialog">
 		<table cellpadding="5">
 		</table>
-		<input type="button" name="submit" value="Salva">
+		<input type="button" name="submit" value="<?php echo GCAuthor::t('button_save') ?>">
 	</div>
 </div>
