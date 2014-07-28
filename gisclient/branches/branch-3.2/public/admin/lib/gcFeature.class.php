@@ -53,8 +53,7 @@ class gcFeature{
 	}
 
 	function __construct($i18n = null){
-		
-                $this->db = GCApp::getDB();
+		$this->db = GCApp::getDB();
 		$this->i18n = $i18n;
 	}
 
@@ -500,6 +499,7 @@ class gcFeature{
 		
 		$datalayerTable = "gc_geom FROM (SELECT ".DATALAYER_ALIAS_TABLE.".".$datalayerKey." as gc_objid,".DATALAYER_ALIAS_TABLE.".".$datalayerGeom." as gc_geom, $fieldString FROM $joinString $groupBy) AS foo";
 		print_debug($datalayerTable,null,'datalayer');
+
 		return $datalayerTable;
 
 	}
@@ -509,6 +509,7 @@ class gcFeature{
 		$ageometryType = array("point" => "point","multipoint" => "multipoint","linestring" => "line","multilinestring" => "multiline","polygon" => "polygon" ,"multipolygon" => "multipolygon");
 		$metaText = '';
 		$aMeta["ows_title"] = empty($this->aFeature["layer_title"])?$this->aFeature["layer_name"]:$this->aFeature["layer_title"];
+		$aMeta["wms_title"] = empty($this->aFeature["layer_title"])?$this->aFeature["layer_name"]:$this->aFeature["layer_title"];
 	
 		if($this->srsList){
 			$aMeta["ows_extent"] = $this->srsList[$this->aFeature["data_srid"]]["extent"];
@@ -530,10 +531,15 @@ class gcFeature{
                         array_push($includeItems, $fieldName);
                     }
                 }
-				if(!empty($includeItems)) $aMeta['gml_include_items'] = implode(',', $includeItems);
+				if(!empty($includeItems)) { 
+					$aMeta['ows_include_items'] = implode(',', $includeItems); 
+					$aMeta['gml_include_items'] = implode(',', $includeItems); 
+				} 				
 			} else {
+				$aMeta["ows_include_items"] = "all";
 				$aMeta["gml_include_items"] = "all";
 				$aMeta["wms_include_items"] = "all";
+				$aMeta["ows_exclude_items"] = $this->aFeature["data_geom"];
 				$aMeta["gml_exclude_items"] = $this->aFeature["data_geom"];	
 				$aMeta["gml_featureid"] = $this->aFeature["data_unique"];
 			}
@@ -627,7 +633,7 @@ class gcFeature{
 			$clsText[]="\tFONT \"".$aClass["label_font"]."\"";		
 			if($aClass["label_angle"]) $clsText[]="\tANGLE ".$aClass["label_angle"];				
 			if($aClass["label_color"]) $clsText[]="\tCOLOR ".$aClass["label_color"];			
-			if($aClass["label_bgcolor"]) $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
+			if($aClass["label_bgcolor"] && ms_GetVersionInt() < 600000) $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
 			if($aClass["label_outlinecolor"]) $clsText[]="\tOUTLINECOLOR " .$aClass["label_outlinecolor"];	
 			if($aClass["label_size"]) $clsText[]="\tSIZE ".$aClass["label_size"];	
 			if($aClass["label_minsize"]) $clsText[]="\tMINSIZE ".$aClass["label_minsize"];	
@@ -642,8 +648,8 @@ class gcFeature{
 			$clsText[]="END";	
 		}
 		
-		$sql="select style_id,angle,color,outlinecolor,bgcolor,size,minsize,maxsize,minwidth,width,style_def,symbol.symbol_name
-                    from ".DB_SCHEMA.".style left join ".DB_SCHEMA.".symbol using (symbol_name) 
+		$sql="select style_id,angle,color,outlinecolor,bgcolor,size,minsize,maxsize,minwidth,width,style_def,symbol.symbol_name, pattern_def
+                    from ".DB_SCHEMA.".style left join ".DB_SCHEMA.".symbol using (symbol_name) left join ".DB_SCHEMA.".e_pattern using(pattern_id)
                     where class_id=? order by style_order;";
 
                 $stmt = $this->db->prepare($sql);
@@ -665,7 +671,8 @@ class gcFeature{
 	}
 	
 	
-	function _getStyleText($aStyle){	
+	function _getStyleText($aStyle){
+		
 		$styText=array();
 		if(!empty($aStyle["color"])) $styText[]="COLOR ".$aStyle["color"];
 		if(!empty($aStyle["symbol_name"])) $styText[]="SYMBOL \"".$aStyle["symbol_name"]."\"";
@@ -675,12 +682,17 @@ class gcFeature{
 		if(!empty($aStyle["minsize"])) $styText[]="MINSIZE ".$aStyle["minsize"];
 		if(!empty($aStyle["maxsize"])) $styText[]="MAXSIZE ".$aStyle["maxsize"];
 		if(!empty($aStyle["angle"])) $styText[]="ANGLE ".$aStyle["angle"];
-		if(!empty($aStyle["width"])) $styText[]="WIDTH ".$aStyle["width"]; 
+		if(isset($aStyle["width"]) && $aStyle["width"]) 
+			$styText[]="WIDTH ".$aStyle["width"];
+		else
+			$styText[]="WIDTH 1";//pach mapserver 5.6 non disegna un width di default
+		if(!empty($aStyle["pattern_def"]) && ms_GetVersionInt() >= 600000) $styText[]=$aStyle["pattern_def"];
 		if(!empty($aStyle["minwidth"])) $styText[]="MINWIDTH ".$aStyle["minwidth"];
 		if(!empty($aStyle["maxwidth"])) $styText[]="MAXWIDTH ".$aStyle["maxwidth"];
 		if((!empty($aStyle["symbol_name"]))) $this->aSymbols[$aStyle["symbol_name"]]=$aStyle["symbol_name"];
 		if(!empty($aStyle["style_def"])) $styText[]=$aStyle["style_def"];
-		return "\t".implode("\n\t\t\t",$styText);	
+		$styleText =  "\t".implode("\n\t\t\t",$styText);
+		return $styleText;
 	}
 	
 	// SERVE A MARCO??????
