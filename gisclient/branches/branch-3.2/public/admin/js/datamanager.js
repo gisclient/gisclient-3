@@ -361,12 +361,14 @@ function GCDataManager(catalogId) {
 				$('div#import_dialog div[data-role="table_list"] a[data-action="delete"]').button().click(function(event) {
 					event.preventDefault();
 					
+                    $('span', $(this)).html('Loading..');
 					var tableName = $(this).attr('data-table');
 					self.deleteTable(tableName);
 				});
 				$('div#import_dialog div[data-role="table_list"] a[data-action="export_shp"]').button().click(function(event) {
 					event.preventDefault();
 					
+                    $('span', $(this)).html('Loading..');
 					var tableName = $(this).attr('data-table');
 					self.exportShp(tableName);
 				});
