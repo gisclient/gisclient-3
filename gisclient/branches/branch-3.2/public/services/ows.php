@@ -270,7 +270,7 @@ if (substr($sapi_type, 0, 3) != 'cgi') {
 /* Enable output buffer */ 
 ms_ioinstallstdouttobuffer(); 
 
-/* Eexecute request */ 
+/* Execute request */ 
 $oMap->owsdispatch($objRequest);
 
 $contenttype = ms_iostripstdoutbuffercontenttype(); 
@@ -357,6 +357,7 @@ function checkLayer($project, $service, $layerName){
 
 function getRequestedLayers($layersParameter) {
 	global $oMap, $objRequest;
+	
 	$layersArray = array();
 	$layerNames = explode(',', $layersParameter);
 	// ciclo i layers e costruisco un array di singoli layers
@@ -366,7 +367,7 @@ function getRequestedLayers($layersParameter) {
             $layerIndexes = array_keys($oMap->getAllLayerNames());
         }
 		// è un layergroup
-		if(is_array($layerIndexes)) {
+		if(is_array($layerIndexes) && count($layerIndexes) > 0) {
 			foreach($layerIndexes as $index) {
 				array_push($layersArray, $oMap->getLayer($index));
 			}
