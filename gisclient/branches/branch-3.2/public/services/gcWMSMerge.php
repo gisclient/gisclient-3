@@ -91,7 +91,7 @@ $oMap->web->set('imagepath', IMAGE_PATH);
 $oMap->web->set('imageurl', IMAGE_URL);
 
 $sessionId = null;
-if(isset($mapConfig[GC_SESSION_NAME]) && !empty($mapConfig[GC_SESSION_NAME])) $sessionId = $mapConfig[GC_SESSION_NAME];
+if(isset($mapConfig['GC_SESSION_ID']) && !empty($mapConfig['GC_SESSION_ID'])) $sessionId = $mapConfig['GC_SESSION_ID'];
 
 foreach($mapConfig['layers'] as $key => $layer) {
 
@@ -110,7 +110,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 		if(!empty($layer['PARAMETERS']['PREV_TIME'])) $url .= '&PREV_TIME='.$layer['PARAMETERS']['PREV_TIME'];
 		if(!empty($layer['PARAMETERS']['REDLINEID'])) $url .= '&REDLINEID='.$layer['PARAMETERS']['REDLINEID'];
         if(!empty($layer['PARAMETERS']['LANG'])) $url .= '&LANG='.$layer['PARAMETERS']['LANG'];
-		if(!empty($sessionId)) $url .= '&'.GC_SESSION_NAME.'='.$sessionId;
+		if(!empty($sessionId)) $url .= '&GC_SESSION_ID='.$sessionId;
 		if(!empty($mapConfig['resolution'])) $url.= '&RESOLUTION='.$mapConfig['resolution'];
         $layerNames = '';
         if(!empty($layer['PARAMETERS']['LAYERS'])) {
