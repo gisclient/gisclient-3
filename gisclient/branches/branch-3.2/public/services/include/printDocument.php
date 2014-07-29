@@ -82,7 +82,7 @@ class printDocument {
 		
 		if (!empty($_REQUEST['center']))
 			$options['center'] = $_REQUEST['center'];
-		if(!empty($_REQUEST['vectors'])) { // non serve
+		if(!empty($_REQUEST['vectors'])) {
 			$this->vectors = $_REQUEST['vectors'];
 		}
 
@@ -281,6 +281,10 @@ class printDocument {
 	protected function getMapImage() {
 		$this->calculateSizes();
 
+		if(!empty($this->vectors)) {
+			$this->options['vectors'] = $this->vectors;
+		}
+		
 		$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
 		$this->wmsList = $mapImage->getWmsList();
 		$this->imageFileName = $mapImage->getImageFileName();
