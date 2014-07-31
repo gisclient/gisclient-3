@@ -35,7 +35,11 @@ class Symbol{
 	function createIcon(){
 		$dbSchema=DB_SCHEMA;
 		$mapDir=ROOT_PATH."map/tmp";
-		if(!is_dir($mapDir)) mkdir($mapDir);
+		if(!is_dir($mapDir)) {
+			if (false === mkdir($mapDir)) {
+				throw new RuntimeException("Could not create directory $mapDir");
+			}
+		}
         GCUtils::deleteOldFiles($mapDir);
 		$this->mapfile=ROOT_PATH.'map/tmp/tmp'.rand(0,99999999).'.map';
 		$this->simbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
@@ -179,15 +183,15 @@ class Symbol{
 				}
 			}
 		}
-        return $image_data;
 		if(!DEBUG) unlink($this->mapfile);	
+        return $image_data;
 	}
 	
 
 	function _iconFromClass($class){
 
 		//creo la mappa 
-		$oMap=ms_newMapObj($this->mapfile);
+		$oMap = ms_newMapObj($this->mapfile);
 		$error = ms_GetErrorObj();
 		if($error->code != MS_NOERR){
 			$this->mapError=150;
@@ -235,7 +239,7 @@ class Symbol{
 		}
 		//print_array($oClass);
 		//print_array($oClass->getStyle(0));
-		$icoImg = @$oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
+		$icoImg = $oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
 		return $icoImg;
 	}
 	
@@ -303,13 +307,17 @@ class Symbol{
 		
 	function updateFileSmb(){
 		$smbfile = fopen ("smb.map","w");
+		if ($smbfile === false) {
+			throw new RuntimeException("Could not open smb.map");
+		}
+		throw new Exception("Internal error, $style undefined!!");
 		for($i=0;$i<count($style);$i++){
-				fwrite($smbfile, "SYMBOL\n");
-				fwrite($smbfile, "NAME \"".$style[$i]["symbol_name"]."\"\n");
-				fwrite($smbfile, $style[$i]["def"]."\n");
-				fwrite($smbfile, "END\n");				
-			}
-			fclose($smbfile);
+			fwrite($smbfile, "SYMBOL\n");
+			fwrite($smbfile, "NAME \"".$style[$i]["symbol_name"]."\"\n");
+			fwrite($smbfile, $style[$i]["def"]."\n");
+			fwrite($smbfile, "END\n");				
+		}
+		fclose($smbfile);
 	
 	}
 	
@@ -356,12 +364,17 @@ class Symbol{
 		$dbSchema=DB_SCHEMA;
 		$sql="select font_name,file from $dbSchema.font;";
 		$this->db->sql_query($sql);
-		$file = fopen (ROOT_PATH.'fonts/fonts.list',"w");
+		
+		$fontlistFile = ROOT_PATH.'fonts/fonts.list';
+		$file = fopen ($fontlistFile,"w");
+		if ($file === false) {
+			throw new RuntimeException("Could not open $fontlistFile");
+		}
+
 		while($row=$this->db->sql_fetchrow())
 			$text[]=$row["font_name"]."\t".$row["file"];
 		fwrite($file, implode("\n",$text));
 		fclose($file);
 	}
 
-}//END CLASS
-?>
+}
