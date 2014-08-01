@@ -1,5 +1,5 @@
 <?php
-include('../../../config/config.php');
+include '../../../config/config.php';
 require_once ADMIN_PATH."lib/functions.php";
 require_once ADMIN_PATH.'lib/gcFeature.class.php';
 require_once ADMIN_PATH.'lib/gcMapfile.class.php';
@@ -48,16 +48,19 @@ $maxExtent = array(
 	$mapConfig['yc'] + $resolutions[0] * TILE_SIZE
 );
 
+if (!defined('OPENLAYERS')) {
+	throw new Exception ("constant OPENLAYERS not defined");
+}
 ?><!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>Author - Preview Map</title>
-<script type="text/javascript" src="<?php echo OPENLAYERS ?>"></script>
+<script type="text/javascript" src="<?php echo OPENLAYERS; ?>"></script>
 <script type="text/javascript">
 function init() {
 	var layerParameters = {
-		project: '<?php echo $mapConfig['project_name'] ?>',
-		map: '<?php echo $tmpMap ?>',
-		layers: '<?php echo $layerName ?>',
+		project: '<?php echo $mapConfig['project_name']; ?>',
+		map: '<?php echo $tmpMap; ?>',
+		layers: '<?php echo $layerName; ?>',
 		//tmp: 1,
 		format: 'image/png; mode=24bit'
 	};
