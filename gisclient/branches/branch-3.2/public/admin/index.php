@@ -166,7 +166,7 @@ if(isset($p->parametri['project'])) {
 		</div>
 	</div>
 	<div class="ui-layout-south">
-		GisClient<span class="color">Author</span> - &copy; 2012
+		GisClient<span class="color">Author</span> - &copy; 2014
 	</div>
 </div>
 </div>
