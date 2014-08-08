@@ -1,5 +1,5 @@
 <?php
-//define('DEBUG', true);
+
 define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
 
@@ -8,7 +8,7 @@ if(!defined('GC_SESSION_NAME')) die('Undefined GC_SESSION_NAME in config');
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
 	include ("./include/putrequest.php");
-	die();
+	exit(0);
 }
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
@@ -18,14 +18,20 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
 	$fileContent = file_get_contents('php://input');
 	file_put_contents('/tmp/postrequest.xml', $fileContent);
 	
-	$curl = curl_init();
-	curl_setopt($curl, CURLOPT_URL, $url);
-	curl_setopt($curl, CURLOPT_POST, true);
-	
-	curl_setopt($curl, CURLOPT_POSTFIELDS, array('file' => '@/tmp/postrequest.xml'));
-	$return = curl_exec($curl);
-	if(!$return) var_export(curl_error($curl));
-	exit;
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => '@/tmp/postrequest.xml'));
+	$return = curl_exec($ch);
+	if($return === false) {
+                throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
+	}
+	if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+		throw new RuntimeException("Call to $url return HTTP code $httpCode");
+	}
+	curl_close($ch);
+
+	exit(0);
 }
 
 if(defined('DEBUG') && DEBUG == true) {
@@ -43,6 +49,27 @@ foreach ($_REQUEST as $k => $v) {
     if (is_string($v)) {
         $objRequest->setParameter($k, stripslashes($v));
     }
+}
+
+/* ------ stabilisco i layer da usare ------ */
+
+// recupero lista layer dal parametro layers
+$layersParameter = null;
+$parameterName = null;
+if($objRequest->getValueByName('service') == 'WMS') {
+	$parameterName = 'LAYERS';
+	$layersParameter = $objRequest->getValueByName('layers');
+} else if($objRequest->getValueByName('service') == 'WFS') {
+	$parameterName = 'TYPENAME';
+	$layersParameter = $objRequest->getValueByName('typename');
+}
+
+// EXPERIMENTAL: add debug info, if required
+if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
+	$debugFile = DEBUG_DIR.$objRequest->getvaluebyname('project').".".
+		$objRequest->getvaluebyname('map').".{$layersParameter}.debug";
+	putenv("MS_ERRORFILE='$debugFile'");
+	putenv("MS_DEBUGLEVEL=5");
 }
 
 //OGGETTO MAP MAPSCRIPT
@@ -75,18 +102,22 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
         $oMap->applySLD($sldContent); // for getlegendgraphic
     }
 } else if(!empty($_REQUEST['SLD'])) {
-    $ch = curl_init($_REQUEST['SLD']);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-    curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
-    $sldContent = curl_exec($ch);
-    curl_close($ch);
+	$ch = curl_init($_REQUEST['SLD']);
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+	curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+	$sldContent = curl_exec($ch);
+        if($sldContent === false) {
+                throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
+	}
+        if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+                throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
+        }
+	curl_close($ch);
     
-	if($sldContent !== false) {
         $objRequest->setParameter('SLD_BODY', $sldContent);
         $oMap->applySLD($sldContent); // for getlegendgraphic
-    }
 }
 
 
@@ -113,18 +144,6 @@ if(!empty($_REQUEST['GCFILTERS'])){
 
 }
 
-/* ------ stabilisco i layer da usare ------ */
-
-// recupero lista layer dal parametro layers
-$layersParameter = null;
-$parameterName = null;
-if($objRequest->getValueByName('service') == 'WMS') {
-	$parameterName = 'LAYERS';
-	$layersParameter = $objRequest->getValueByName('layers');
-} else if($objRequest->getValueByName('service') == 'WFS') {
-	$parameterName = 'TYPENAME';
-	$layersParameter = $objRequest->getValueByName('typename');
-}
 
 // avvio la sessione
 if(!isset($_SESSION)) {
@@ -272,7 +291,6 @@ ms_ioinstallstdouttobuffer();
 
 /* Execute request */ 
 $oMap->owsdispatch($objRequest);
-
 $contenttype = ms_iostripstdoutbuffercontenttype(); 
 $ctt = explode("/",$contenttype); 
 
