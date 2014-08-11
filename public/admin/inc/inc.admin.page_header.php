@@ -93,7 +93,7 @@
 			<div id="mapfiles_manager" style="display:none;" data-title="<?php echo GCAuthor::t('online_maps') ?>">
                 <?php if(!empty($p->parametri['project'])) { ?>
                 <!--<a href="#" data-action="refresh" data-projectmap="1" data-target="tmp" data-project="<?= $p->parametri['project'] ?>"><?= GCAuthor::t('update') ?></a>TMP | <a href="#" data-action="refresh" data-projectmap="1" data-target="public" data-project="<?= $p->parametri['project'] ?>"><?= GCAuthor::t('update') ?></a>PUBLIC<br>-->
-                <?php } ?>
+                
 				<table border="1" cellpadding="3" class="stiletabella">
 				<tr class="ui-widget ui-state-default">
 					<th>Mapset</th>
@@ -116,6 +116,8 @@
 				}
 				?>
 				</table>
+                
+                <?php } ?>
 			</div>
 			<div id="import_dialog" style="display:none;">
 				<div id="import_dialog_tabs">
