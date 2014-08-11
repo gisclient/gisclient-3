@@ -111,20 +111,26 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
         if($sldContent === false) {
                 throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
 	}
-        if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-                throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
-        }
+	if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+		throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
+	}
 	curl_close($ch);
     
-        $objRequest->setParameter('SLD_BODY', $sldContent);
-        $oMap->applySLD($sldContent); // for getlegendgraphic
+	$objRequest->setParameter('SLD_BODY', $sldContent);
+	$oMap->applySLD($sldContent); // for getlegendgraphic
 }
 
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
 if($objRequest->getvaluebyname('srsname')) $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
 if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
-if($objRequest->getvaluebyname('srs')) $oMap->setProjection($projString="+init=".strtolower($objRequest->getvaluebyname('srs')));
+if($objRequest->getvaluebyname('srs')) {
+	$srs = strtolower($objRequest->getvaluebyname('srs'));
+	if (substr($srs, 0, 16) == 'urn:ogc:def:crs:') {
+		$srs = substr($srs, 16);
+	}
+	$oMap->setProjection($projString="+init=".strtolower($srs));
+}
 
 
 $url = currentPageURL();
