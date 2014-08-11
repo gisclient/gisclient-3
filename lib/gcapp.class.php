@@ -465,7 +465,11 @@ class GCAuthor {
 	
 	public static function translate($key) {
 		$lang = self::getLang();
-		return self::$translations[$key][$lang];
+        if(!empty(self::$translations[$key]) && !empty(self::$translations[$key][$lang])) {
+            return self::$translations[$key][$lang];
+        } else {
+            return $key;
+        }
 	}
 	
 	static private $translations = array(
