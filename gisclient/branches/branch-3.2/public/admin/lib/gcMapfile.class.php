@@ -229,7 +229,7 @@ class gcMapfile{
 		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
 		$outputFormat = $this->_getOutputFormat($mapFile);
 		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
-		if (ms_GetVersionInt() >= 600000) {
+		if (ms_GetVersionInt() >= 60000) {
 			$metadata_inc = "\t\"wms_enable_request\" \"*\"";
 		} else {
 			$metadata_inc = '';
@@ -367,14 +367,14 @@ END #MAP";
 		ms_ResetErrorList();	
 		try {
 			@ms_newMapobj($mapFilePath);
-			if (ms_GetVersionInt() < 600000) {
+			if (ms_GetVersionInt() < 60000) {
 				// before MS6, no Exception was thrown
 				$error = ms_GetErrorObj();
 				throw new Exception("Could not read map file $mapFilePath");
 			}
 		} 
 		catch (Exception $e) {
-			if (ms_GetVersionInt() > 600000) {
+			if (ms_GetVersionInt() > 60000) {
 				$error = ms_GetErrorObj();
 			}
 			

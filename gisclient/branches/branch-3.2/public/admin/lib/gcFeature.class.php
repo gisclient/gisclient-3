@@ -633,7 +633,7 @@ class gcFeature{
 			$clsText[]="\tFONT \"".$aClass["label_font"]."\"";		
 			if($aClass["label_angle"]) $clsText[]="\tANGLE ".$aClass["label_angle"];				
 			if($aClass["label_color"]) $clsText[]="\tCOLOR ".$aClass["label_color"];			
-			if($aClass["label_bgcolor"] && ms_GetVersionInt() < 600000) $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
+			if($aClass["label_bgcolor"] && ms_GetVersionInt() < 60000) $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
 			if($aClass["label_outlinecolor"]) $clsText[]="\tOUTLINECOLOR " .$aClass["label_outlinecolor"];	
 			if($aClass["label_size"]) $clsText[]="\tSIZE ".$aClass["label_size"];	
 			if($aClass["label_minsize"]) $clsText[]="\tMINSIZE ".$aClass["label_minsize"];	
@@ -686,7 +686,7 @@ class gcFeature{
 			$styText[]="WIDTH ".$aStyle["width"];
 		else
 			$styText[]="WIDTH 1";//pach mapserver 5.6 non disegna un width di default
-		if(!empty($aStyle["pattern_def"]) && ms_GetVersionInt() >= 600000) $styText[]=$aStyle["pattern_def"];
+		if(!empty($aStyle["pattern_def"]) && ms_GetVersionInt() >= 60000) $styText[]=$aStyle["pattern_def"];
 		if(!empty($aStyle["minwidth"])) $styText[]="MINWIDTH ".$aStyle["minwidth"];
 		if(!empty($aStyle["maxwidth"])) $styText[]="MAXWIDTH ".$aStyle["maxwidth"];
 		if((!empty($aStyle["symbol_name"]))) $this->aSymbols[$aStyle["symbol_name"]]=$aStyle["symbol_name"];
