@@ -385,7 +385,9 @@ class GCUtils {
 		foreach($files as $file) {
 			$isold = (time() - filectime($file)) > 5 * 60 * 60;
 			if (is_file($file) && $isold) {
-				@unlink($file);
+				if (false === unlink($file)) {
+					echo __FILE__.":".__LINE__." Could not remove $file";
+				}
 			}
 		}
     }
