@@ -110,14 +110,6 @@ class gcMapfile{
 		
 		print_debug($sql,null,'writemap');
 
-/*		
-		$sql="select project_name,base_url,max_extent_scale,project_srid,xc,yc,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,layergroup_single,tiletype_id,layer_id,layer_name,layer_title,layertype_id, project_title
-		from ".DB_SCHEMA.".layer 
-		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
-		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
-		INNER JOIN ".DB_SCHEMA.".project using (project_name) 		
-		where ".$filter." order by layer_order,layergroup_order;";
-*/
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute($sqlParams);
 		$res = $stmt->fetchAll();
@@ -136,18 +128,15 @@ class gcMapfile{
 		$this->projectTitle = $aLayer['project_title'];
 		
 		//SCALA MASSIMA DEL PROGETTO
-		if($aLayer["max_extent_scale"])
+		if ($aLayer["max_extent_scale"]) {
 			$this->projectMaxScale = $aLayer["max_extent_scale"];
-		elseif (defined('SCALE')) {
-            $v = explode(",",SCALE);
+		} elseif (defined('SCALE')) {
+			$v = explode(",",SCALE);
 			$this->projectMaxScale = $v[0];
-		}
-		else{
+		} else {
 			$this->projectMaxScale = GCAuthor::$defaultScaleList[0];
 		}
 		$this->projectExtent = $this->_calculateExtentFromCenter($aLayer['xc'], $aLayer['yc']);
-		
-		
 
 		$mapText=array();
 		$mapSrid=array();
@@ -227,6 +216,12 @@ class gcMapfile{
 		$projectName = $this->projectName;
 		$fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts';	
 		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
+		$configDebugfile = '';
+		$debugLevel = '';
+		if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
+			$configDebugfile = "CONFIG 'MS_ERRORFILE' '".DEBUG_DIR.basename($mapFile).".debug'";
+			$debugLevel = "DEBUG 5";
+		}
 		$outputFormat = $this->_getOutputFormat($mapFile);
 		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
 		if (ms_GetVersionInt() >= 60000) {
@@ -234,9 +229,7 @@ class gcMapfile{
 		} else {
 			$metadata_inc = '';
 		}
-		//$legend_inc = file_get_contents (ROOT_PATH."config/mapfile.legend.inc");
-        $legend_inc = $this->_getLegendSettings();
-		//$legend_inc = '';
+		$legend_inc = $this->_getLegendSettings();
 		
 		$imgPath = "IMAGEPATH \"".IMAGE_PATH."\"";
 		$imgUrl = "IMAGEURL \"".IMAGE_URL."\"";
@@ -278,6 +271,8 @@ MAXSIZE $maxSize
 $imgResolution
 FONTSET ../../fonts/$fontList.list
 $projLib
+$configDebugfile
+$debugLevel
 WEB
 	METADATA
         # for mapserver 6.0
@@ -326,11 +321,11 @@ END #MAP";
 			if($this->target == 'tmp') {
 				$mapFile = 'tmp.'.$mapFile;
 			}
-			
-			if(!is_dir($mapfileDir.$projectName)) {
-				$rv = mkdir($mapfileDir.$projectName, 0777, true);
+			$projectDir = $mapfileDir.$projectName.'/';
+			if(!is_dir($projectDir)) {
+				$rv = mkdir($projectDir, 0777, true);
 				if ($rv === false) {
-					$errorMsg = "Could not create directory $mapfileDir.$projectName";
+					$errorMsg = "Could not create directory $projectDir";
 					GCError::register($errorMsg);
 					return;
 				}
@@ -339,7 +334,7 @@ END #MAP";
 				$languageId = $this->i18n->getLanguageId();
 				$mapFile.= "_".$languageId;
 			}
-			$mapFilePath = $mapfileDir.$projectName."/".$mapFile.".map";
+			$mapFilePath = $projectDir.$mapFile.".map";
 		}
 		if (false === ($f = fopen ($mapFilePath,"w"))) {
 			$errorMsg = "Could not open $mapFilePath for writing";
@@ -359,7 +354,13 @@ END #MAP";
 				$fileContent = '<tinyows online_resource="'.$towsOnlineResource.'" schema_dir="'.TINYOWS_SCHEMA_DIR.'" check_schema="0" check_valid_geom="1" meter_precision="7" expose_pk="1" log_level="7"><pg host="'.DB_HOST.'" user="'.DB_USER.'" password="'.DB_PWD.'" dbname="'.$layer['database'].'" port="'.DB_PORT.'"/><metadata name="TinyOWS Server" title="TinyOWS Server" /><contact name="Admin" site="http://gisclient.net" email="admin@gisclient.net" />';
 				$fileContent .= '<layer retrievable="1" writable="1" ns_prefix="feature" ns_uri="http://www.tinyows.org/" schema="'.$layer['schema'].'" name="'.$layer['name'].'" title="'.$layer['title'].'" />';
 				$fileContent .= '</tinyows>';
-				file_put_contents(ROOT_PATH.$mapfileDir.$projectName.'/'.$layer['feature'].'.xml', $fileContent);
+				
+				$tinyOwsConfigFile = $projectDir.'/'.$layer['feature'].'.xml';
+				if (false === file_put_contents($tinyOwsConfigFile, $fileContent)) {
+					$errorMsg = "Could not write to $tinyOwsConfigFile";
+					GCError::register($errorMsg);
+					return;
+				}
 			}
 		}
 		
