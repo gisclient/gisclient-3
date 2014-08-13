@@ -65,6 +65,10 @@ define('GC_FOP_LIB', '/lib/fop.php');
 define('GC_PRINT_SAVE_IMAGE', true); // baco mapscript: il saveImage a volte funziona solo specificando il nome del file, altre volte funziona solo se NON si specifica il nome del file
 define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL è relativo, questo prefisso viene aggiunto in fase di stampa
 
+/****** print vectors ********/
+define('PRINT_VECTORS_TABLE', 'print_vectors');
+define('PRINT_VECTORS_SRID', 32632);
+
 /******************* TINYOWS **************/
 define('TINYOWS_PATH', '/var/www/cgi-bin');
 define('TINYOWS_EXEC', 'tinyows');
