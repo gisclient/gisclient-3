@@ -59,10 +59,22 @@ function cleanWMSRequest($url) {
 // questo file si occuperà solo di creare l'immagine e può essere usato anche per fare il download dell'immagine di mappa
 $mapConfig = json_decode($_REQUEST['options'], true);
 
+ms_ResetErrorList();
 $oMap=ms_newMapObj('');
 if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB); 
 $oMap->setSize(intval($mapConfig['size'][0]), intval($mapConfig['size'][1]));
-$oMap->setProjection("init=".strtolower($mapConfig['srs']));
+$sridParts = explode(':', strtolower($mapConfig['srs']));
+if (count($sridParts) == 2) {
+	// e.g.: EPSG:4306
+	$srs = $sridParts[0].':'.$sridParts[1];
+} elseif (count($sridParts) == 7) {
+	// e.g.: urn:ogc:def:crs:EPSG::4306
+	$srs = $sridParts[4].':'.$sridParts[6];
+} else {
+	throw new Exception("Could not parse ".$_REQUEST['srid']." as srid");
+}
+
+$oMap->setProjection("init={$srs}");
 $oMap->extent->setextent($mapConfig['extent'][0], $mapConfig['extent'][1], $mapConfig['extent'][2], $mapConfig['extent'][3]);
 if ($enableDebug) { 
 	$oMap->setConfigOption("MS_ERRORFILE", $logfile);
@@ -173,12 +185,14 @@ if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format
 	$oMap->scalebar->updateFromString($scalebar);
 }
 
-ms_ResetErrorList();
-
-$oImage = $oMap->draw();
-
 if ($enableDebug) { 
 	$oMap->save(DEBUG_DIR . 'debug.map');
+}
+
+$oImage = $oMap->draw();
+if (is_null($oImage)) {
+	$error = ms_GetErrorObj();
+	throw new RuntimeException($error->message);
 }
 if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format'] != 'gtiff') {
 	$oMap->embedScalebar($oImage);
