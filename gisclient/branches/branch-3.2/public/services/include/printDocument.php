@@ -76,7 +76,18 @@ class printDocument {
 		if (!empty($_REQUEST['srid'])) {
 			$options['srid'] = $_REQUEST['srid'];
 			if (strpos($_REQUEST['srid'], ':') !== false) {
-				list($options['auth_name'], $options['srid']) = explode(':', $_REQUEST['srid']);
+				$sridParts = explode(':', $_REQUEST['srid']);
+				if (count($sridParts) == 2) {
+					// e.g.: EPSG:4306
+					$options['auth_name'] = $sridParts[0];
+					$options['srid'] = $sridParts[1];
+				} elseif (count($sridParts) == 7) {
+					// e.g.: urn:ogc:def:crs:EPSG::4306
+					$options['auth_name'] = $sridParts[4];
+					$options['srid'] = $sridParts[6];
+				} else {
+					throw new Exception("Could not parse ".$_REQUEST['srid']." as srid");
+				}
 			}
 		}
 		
