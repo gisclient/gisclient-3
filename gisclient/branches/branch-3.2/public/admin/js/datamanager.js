@@ -185,12 +185,21 @@ function GCDataManager(catalogId) {
 		3: 'xls',
         4: 'csv'
 	};
+    
 	this.columnTypes = {
 		text: 'Text',
 		date: 'Date',
 		'double precision': 'Number'
 	};
 	
+    this.showErrorReponseAlert = function(response) {
+        if ('error' in response) {
+            alert(response.error);
+        } else {
+            alert('Error');
+        }
+    }
+    
 	this.checkAvailableImports = function() {
 		var self = this;
 		
@@ -200,8 +209,8 @@ function GCDataManager(catalogId) {
 			data: {action:'get-available-imports'},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
-					return;
+                    self.showErrorReponseAlert(response);
+                    return;
 				}
 				
 				$.each(self.tileTypes, function(index, name) {
@@ -237,7 +246,7 @@ function GCDataManager(catalogId) {
 				self.fileType = 'csv';
 			break;
 			default:
-				alert('Not implemented');
+				alert('file type ' + index + 'Not implemented');
 				return;
 			break;
 		}
@@ -255,7 +264,7 @@ function GCDataManager(catalogId) {
 			data: {action:'delete-file', file_name:fileName, file_type:self.fileType},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				
@@ -275,7 +284,7 @@ function GCDataManager(catalogId) {
 			data: {action:'delete-table', table_name:tableName},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				
@@ -295,7 +304,7 @@ function GCDataManager(catalogId) {
 			data: {action:'empty-table', table_name:tableName},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				
@@ -313,7 +322,7 @@ function GCDataManager(catalogId) {
 			data: {action:'add-last-edit-column', table_name:tableName},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				
@@ -331,7 +340,7 @@ function GCDataManager(catalogId) {
 			data: {action:'add-measure-column', table_name:tableName},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				
@@ -349,7 +358,7 @@ function GCDataManager(catalogId) {
 			data: {action:'get-postgis-tables'},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					return alert('Error');
+                    self.showErrorReponseAlert(response);
 				}
 				
 				var html = '<table><tr><th>Tablename</th><th>SRID</th><th>Type</th><th></th></tr>';
@@ -471,7 +480,7 @@ function GCDataManager(catalogId) {
 			data: params,
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					return alert('Error');
+                    self.showErrorReponseAlert(response);
 				}
 				
 				$('div#import_dialog select[name="'+type+'_table_name_select"]').empty();
@@ -497,7 +506,7 @@ function GCDataManager(catalogId) {
 			data: {action:'check-upload-folder', directory:directory},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				if(response.data != 'ok') {
@@ -519,7 +528,7 @@ function GCDataManager(catalogId) {
 			data: {action:'get-uploaded-files', file_type:self.fileType},
 			success: function(response) {
 				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
-					alert('Error');
+                    self.showErrorReponseAlert(response);
 					return;
 				}
 				
@@ -582,7 +591,7 @@ function GCDataManager(catalogId) {
 				$('div#import_dialog button[name="import"]').show();
 			break;
 			default:
-				return alert('System error');
+				return alert('unknown file type "' + self.fileType + '"');
 			break;
 		}
 	};
