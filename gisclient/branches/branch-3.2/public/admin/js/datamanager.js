@@ -1,3 +1,20 @@
+flashIsAvailable = function () {
+    var hasFlash = false;
+    try {
+      var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
+      if (fo) {
+        hasFlash = true;
+      }
+    } catch (e) {
+      if (navigator.mimeTypes
+            && navigator.mimeTypes['application/x-shockwave-flash'] !== undefined
+            && navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin) {
+        hasFlash = true;
+      }
+    }
+    return hasFlash;
+}
+
 $(document).ready(function() {
 	if(initDataManager != true || $('#catalog').length < 1) {
 		return;
@@ -7,6 +24,9 @@ $(document).ready(function() {
 	dataManager.checkAvailableImports();
 	
 	$('a[data-action="data_manager"]').show().click(function(event) {
+        if (!flashIsAvailable()) {
+            $('span.flash_is_missing_message').css('display', 'inline-block');
+        }
 		event.preventDefault();
 		
 		$('div#import_dialog').dialog('open');
