@@ -5,6 +5,7 @@ include_once ADMIN_PATH.'lib/functions.php';
 include_once ROOT_PATH.'lib/export.php';
 
 define('IMPORT_PATH', ROOT_PATH.'import/');
+
 $extensions = array(
 	'shp'=>array('shp', 'shx', 'dbf'),
 	'raster'=>array('tif', 'tiff', 'ecw', 'jpg', 'jpeg', 'png')
@@ -22,11 +23,19 @@ $autoUpdaters = array(
 );
 
 // real path per browsing
-
 $ajax = new GCAjax();
 $db = GCApp::getDB();
 
-if(empty($_REQUEST['action'])) $ajax->error();
+if(empty($_REQUEST['action'])){
+	$ajax->error("Required parameter 'action' is missing");
+}
+
+if (!is_dir(IMPORT_PATH)) {
+	 $ajax->error(IMPORT_PATH . ' is not a directory');
+}
+if (!is_writable(IMPORT_PATH)) {
+	 $ajax->error(IMPORT_PATH . ' is not writable');
+}
 
 switch($_REQUEST['action']) {
 	case 'get-available-imports':
@@ -54,7 +63,9 @@ switch($_REQUEST['action']) {
 	case 'upload-shp':
 		$tempFile = $_FILES['Filedata']['tmp_name'];
 		$targetFile = IMPORT_PATH . $_FILES['Filedata']['name'];
-		move_uploaded_file($tempFile, $targetFile);
+		if (false === move_uploaded_file($tempFile, $targetFile)) {
+			throw new Exception("Could not move_uploaded_file($tempFile, $targetFile)");
+		}
 		echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 	break;
 	case 'upload-raster':
