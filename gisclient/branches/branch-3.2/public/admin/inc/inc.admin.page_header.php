@@ -120,7 +120,7 @@
 						Method: <input type="radio" name="shp_insert_method" value="create" checked>Create <input type="radio" name="shp_insert_method" value="append">Append <input type="radio" name="shp_insert_method" value="replace">Replace <br />
 						Tablename: <select name="shp_table_name_select" style="display:none;"></select><input type="text" name="shp_table_name"><br />
 						SRID: <input type="text" name="shp_srid"><br />
-						<button name="import" style="display;none">Import</button>
+						<button name="import" style="display:none">Import</button>
 					</div>
 					<div id="import_dialog_raster">
 						Directory: <input type="text" name="dir_name"><br />
@@ -132,7 +132,7 @@
 						Directory: <input type="text" name="raster_file_name" disabled="disabled"><br />
 						SRID: <input type="text" name="raster_srid"><br />
 						Tablename: <input type="text" name="raster_table_name"><br />
-						<button name="tileindex" style="display;none">Tileindex</button>
+						<button name="tileindex" style="display:none">Tileindex</button>
 					</div>
 					<div id="import_dialog_postgis">
 						<div data-role="table_list">
@@ -165,7 +165,7 @@
 						File: <input type="text" name="xls_file_name" disabled="disabled"><br />
 						Method: <input type="radio" name="xls_insert_method" value="create" checked>Create <input type="radio" name="xls_insert_method" value="append">Append <input type="radio" name="xls_insert_method" value="replace">Replace <br />
 						Tablename: <select name="xls_table_name_select" style="display:none;"></select><input type="text" name="xls_table_name"><br />
-						<button name="import" style="display;none">Import</button>
+						<button name="import" style="display:none">Import</button>
 					</div>
 					<div id="import_dialog_csv">
 						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
@@ -176,7 +176,7 @@
 						File: <input type="text" name="csv_file_name" disabled="disabled"><br />
 						Method: <input type="radio" name="csv_insert_method" value="create" checked>Create <input type="radio" name="csv_insert_method" value="append">Append <input type="radio" name="csv_insert_method" value="replace">Replace <br />
 						Tablename: <select name="csv_table_name_select" style="display:none;"></select><input type="text" name="csv_table_name"><br />
-						<button name="import" style="display;none">Import</button>
+						<button name="import" style="display:none">Import</button>
 					</div>
 				</div>
 				<div class="logs" style="color:red;" tabindex="100">
