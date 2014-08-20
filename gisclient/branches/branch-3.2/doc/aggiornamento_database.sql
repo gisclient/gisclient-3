@@ -1230,5 +1230,59 @@ ALTER TABLE version ALTER COLUMN version_key SET NOT NULL;
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.19', 'author', '2014-07-14');
 
-
+--2014-08-19: ordina tipi layer
+CREATE OR REPLACE VIEW seldb_layertype AS 
+         SELECT foo.id, foo.opzione
+   FROM (         SELECT (-1) AS id, 'Seleziona ====>'::character varying AS opzione
+        UNION 
+                 SELECT e_layertype.layertype_id AS id, e_layertype.layertype_name AS opzione
+                   FROM e_layertype) foo
+  ORDER BY foo.id;
   
+--2014-08-19: ordina tipi di misure
+CREATE OR REPLACE VIEW seldb_sizeunits AS 
+         SELECT foo.id, foo.opzione
+   FROM (         SELECT (-1)::SMALLINT  AS id, 'Seleziona ====>'::character varying AS opzione
+        UNION 
+                 SELECT e_sizeunits.sizeunits_id AS id, e_sizeunits.sizeunits_name AS opzione
+                   FROM e_sizeunits) foo
+  ORDER BY foo.id;
+  
+--2014-08-19: ordina charset_encodings
+CREATE OR REPLACE VIEW seldb_charset_encodings AS 
+         SELECT foo.id, foo.opzione, foo.option_order
+   FROM (         SELECT (-1)  AS id, 'Seleziona ====>'::character varying AS opzione, 0::SMALLINT as option_order
+        UNION 
+                 SELECT e_charset_encodings.charset_encodings_id AS id, e_charset_encodings.charset_encodings_name AS opzione, e_charset_encodings.charset_encodings_order AS option_order
+                   FROM e_charset_encodings) foo
+  ORDER BY foo.id;
+  
+--2014-08-19: ordina tipi di misure
+CREATE OR REPLACE VIEW seldb_outputformat AS 
+         SELECT foo.id, foo.opzione
+   FROM (         SELECT (-1)::SMALLINT  AS id, 'Seleziona ====>'::character varying AS opzione
+        UNION 
+                 SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+                   FROM e_outputformat) foo
+  ORDER BY foo.id;
+ 
+ --2014-08-19: ordina tipi di outputformat 
+  DROP VIEW  seldb_outputformat;
+CREATE OR REPLACE VIEW seldb_outputformat AS 
+         SELECT foo.id, foo.opzione
+   FROM (        SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+                   FROM e_outputformat where outputformat_id = 7
+        UNION ALL
+                 SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+                   FROM e_outputformat where outputformat_id = 1
+        UNION ALL
+                 SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+                   FROM e_outputformat where outputformat_id = 9
+        UNION ALL
+                 SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+                   FROM e_outputformat where outputformat_id = 3
+        UNION ALL
+                 SELECT e_outputformat.outputformat_id AS id, e_outputformat.outputformat_name AS opzione
+                   FROM e_outputformat where outputformat_id not in (1,3,7,9)) foo;
+  
+   INSERT INTO version (version_name,version_key, version_date) values ('3.2.20', 'author', '2014-08-19');
