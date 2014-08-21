@@ -6,11 +6,11 @@ require_once "../../config/config.php";
 	$project=$this->parametri["project"];
 	$map=$this->parametri["mapset"];
 	$JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
-	//$sql="SELECT DISTINCT coalesce(mapset_name,'') as mapset_name,group_name, CASE WHEN COALESCE(mapset_name, '') <> '' THEN 1 ELSE 0 END  AS presente,project_name,edit from ".DB_SCHEMA.".project_groups $JOIN (select * from ".DB_SCHEMA.".mapset_groups where mapset_name='$map') as foo using (group_name) where project_name='$project' order by group_name";
-	$sqlVirtual= ($_SESSION["VIRTUAL_GROUPS"])?(" union (select '".implode("','",$_SESSION["VIRTUAL_GROUPS"])."' as groupname) "):("");
+	
+	$sqlVirtual= (empty($_SESSION["VIRTUAL_GROUPS"]))?"":" union (select '".implode("','",$_SESSION["VIRTUAL_GROUPS"])."' as groupname) ";
 	
 	$sql="SELECT DISTINCT coalesce(mapset_name,'') as mapset_name,X.groupname as group_name, CASE WHEN COALESCE(mapset_name, '') <> '' THEN 1 ELSE 0 END  AS presente,'$project' as project_name,edit,redline from ((select groupname from ".USER_SCHEMA.".groups) $sqlVirtual) X $JOIN (select * from ".DB_SCHEMA.".mapset_groups where mapset_name='$map') as foo on (X.groupname=group_name) order by X.groupname";
-	//echo $sql;
+	
 	if($db->sql_query($sql)){
 		$ris=$db->sql_fetchrowset();
 		if (count($ris)){
