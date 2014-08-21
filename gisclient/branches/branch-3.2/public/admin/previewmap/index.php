@@ -7,7 +7,8 @@ require_once ROOT_PATH."lib/i18n.php";
 
 $db = GCApp::getDB();
 
-if(empty($_REQUEST['layergroup_id'])) die('Missing required params');
+// FIXME: generate decent error message and return code
+if(empty($_REQUEST['layergroup_id'])) die("Missing required parameter 'layergroup_id'");
 $layergroupId = (int)$_REQUEST['layergroup_id'];
 
 $mapfile = new gcMapfile();
@@ -49,6 +50,9 @@ $maxExtent = array(
 );
 
 if (!defined('OPENLAYERS')) {
+	// FIXME: handle error in more sensible way
+	// this generates an empty page when display_error = Off
+	// handle like the above error check
 	throw new Exception ("constant OPENLAYERS not defined");
 }
 ?><!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
