@@ -63,7 +63,7 @@ define('GC_PRINT_LOGO_SX', 'http://localhost/images/logo_sx.gif');
 define('GC_PRINT_LOGO_DX', 'http://localhost/images/logo_dx.gif');
 define('GC_FOP_LIB', '/lib/fop.php');
 define('GC_PRINT_SAVE_IMAGE', true); // baco mapscript: il saveImage a volte funziona solo specificando il nome del file, altre volte funziona solo se NON si specifica il nome del file
-define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL è relativo, questo prefisso viene aggiunto in fase di stampa
+define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL Ã¨ relativo, questo prefisso viene aggiunto in fase di stampa
 
 /****** print vectors ********/
 define('PRINT_VECTORS_TABLE', 'print_vectors');
@@ -122,6 +122,9 @@ define('COLOR_REDLINE','0 0 255');//Colore Line di contorno oggetti poligono o l
 define('OBJ_COLOR_SELECTION','255 255 0');//Colore Line di contorno oggetti poligono o linea selezionati
 define('MAP_DPI',72);//Mapserver map resolution
 define('TILE_SIZE',256);//Mapserver map resolution
+// define('SERVICE_MAX_RESOLUTION',156543.03392812); // WMTS: Calcolare in base al valore presente nel campo ScaleDenominator del GetCapabilities (nella TileMatrix 0)
+// define('SERVICE_MIN_ZOOM_LEVEL',7); // WMTS: min zoom level (default: 0 for google maps)
+// define('SERVICE_MAX_ZOOM_LEVEL',19); // WMTS: max zoom level (default: 21 for google maps)
 define('PDF_K',2);//Mapserver map resolution
 
 define('SCALE','1000000,500000,250000,100000,50000,25000,10000,7500,5000,4000,3000,2000,1000,900,800,700,600,500,400,300,200,100,50');

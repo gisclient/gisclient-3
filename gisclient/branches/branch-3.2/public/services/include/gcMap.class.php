@@ -32,10 +32,17 @@ define('YMAP_LAYER_TYPE',4);
 define('OSM_LAYER_TYPE',5);
 define('TMS_LAYER_TYPE',6);
 define('BING_LAYER_TYPE',8);
+define('WMTS_LAYER_TYPE',9);
 define('GOOGLESRID',3857);
-define('SERVICE_MAX_RESOLUTION',156543.03390625);
-define('SERVICE_MIN_ZOOM_LEVEL',0);
-define('SERVICE_MAX_ZOOM_LEVEL',21);
+if (!defined('SERVICE_MAX_RESOLUTION')) {
+	define('SERVICE_MAX_RESOLUTION',156543.03390625);
+}
+if (!defined('SERVICE_MIN_ZOOM_LEVEL')) {
+	define('SERVICE_MIN_ZOOM_LEVEL',0);
+}
+if (!defined('SERVICE_MIN_ZOOM_LEVEL')) {
+	define('SERVICE_MAX_ZOOM_LEVEL',21);
+}
 
 
 class gcMap{
@@ -122,23 +129,35 @@ class gcMap{
 		$this->mapsetSRID = $row["mapset_srid"];
 		$this->fractionalZoom = 1;
 		
-		
 		//Fattore di conversione tra dpi e unità della mappa
-		$convFact = GCAuthor::$aInchesPerUnit[$sizeUnitId]*MAP_DPI;
-		$this->conversionFactor = $convFact;
-		$maxRes = ($row["max_extent_scale"])?(floatval($row["max_extent_scale"])/$convFact):false;
+		$pixelsPerUnit = GCAuthor::$aInchesPerUnit[$sizeUnitId]*MAP_DPI;
+		$this->conversionFactor = $pixelsPerUnit;
 		
-		$maxRes = ($row["maxscale"])?($maxRes?min($maxRes,(floatval($row["maxscale"])/$convFact)):(floatval($row["maxscale"])/$convFact)):$maxRes;
-		$minRes = ($row["minscale"])?floatval($row["minscale"])/$convFact:false;
+		// resolution is m/px
+		if ($row["max_extent_scale"] > 0) {
+			$maxRes = $row["max_extent_scale"]/$pixelsPerUnit;
+			if ($row["maxscale"] > 0) {
+				$maxRes = min($maxRes,floatval($row["maxscale"])/$pixelsPerUnit);
+			}
+		} elseif ($row["maxscale"] > 0) {
+			$maxRes = floatval($row["maxscale"])/$pixelsPerUnit;
+		} else {
+			$maxRes = false;
+		}
 		
+		if ($row["minscale"] > 0) {
+			$minRes = floatval($row["minscale"])/$pixelsPerUnit;
+		} else {
+			$minRes = false;
+		}		
 		
 		//Normalizzo rispetto all'array delle risoluzioni
 		$mapOptions["resolutions"] = $this->_getResolutions();
 		$mapOptions["minZoomLevel"] = $this->_array_index($mapOptions["resolutions"],$maxRes);
 		$mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
-		$this->maxResolution = $mapOptions["resolutions"][0];
+		$this->maxResolution = $mapOptions["maxResolution"];
 		$mapOptions["minResolution"] = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];
-		$this->minResolution = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];
+		$this->minResolution = $mapOptions["minResolution"];
 		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$maxRes);
 		
 		//Limita estensione:
@@ -386,6 +405,54 @@ class gcMap{
 				$layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions(),$this->maxResolution);
 				$layerOptions["buffer"] = intval($row["buffer"]);
                 if(!empty($row["tile_origin"])) $layerOptions["tileOrigin"] = $row["tile_origin"];
+                if(!empty($row['tile_resolutions'])) {
+                    $scales = explode(',', $row['tile_resolutions']);
+                    $layerOptions['serverResolutions'] = array();
+                    foreach($scales as $scale) $layerOptions['serverResolutions'][] = $scale / $this->conversionFactor;
+                }
+				if(!empty($row["tiles_extent"]) && !empty($row["tiles_extent_srid"]))
+						$layerOptions["maxExtent"] = $this->_getTMSExtent($row["tiles_extent"], $row["tiles_extent_srid"]);
+				$layerOptions["gc_id"] = $layerId;
+				$layerOptions["group"] = $layerTreeGroup;
+				$layerOptions["minZoomLevel"] = SERVICE_MIN_ZOOM_LEVEL;
+				$layerOptions["maxZoomLevel"] = SERVICE_MAX_ZOOM_LEVEL;
+				$aLayers[$themeName][$layergroupName]["type"] = $layerType;	
+				$aLayers[$themeName][$layergroupName]["title"] = $layergroupTitle;
+				$aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
+				$aLayers[$themeName][$layergroupName]["options"]= $layerOptions;
+
+			}
+            
+            elseif($layerType==WMTS_LAYER_TYPE){//TMS
+                            $layerOptions["layers"] = $row['layers']; 
+
+                            
+				$layerUrl = isset($row["url"])?$row["url"]:$tiles_cache_url.$this->projectName;
+				$this->allOverlays = 0;
+				$this->fractionalZoom = 0;
+				$layerOptions["layername"] = $layergroupName;
+				$layerOptions["serviceVersion"] = "EPSG_".$this->mapsetSRID;
+				$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$themeName;
+				$layerOptions["type"] = $row['outputformat_extension'];
+				if($row["isbaselayer"]==1) $layerOptions["isBaseLayer"] = true;
+				//$layerOptions["getURL"] = "OpenLayers.Util.GisClient.TMSurl"; 
+				$layerOptions["zoomOffset"] = SERVICE_MIN_ZOOM_LEVEL;
+				$layerOptions["buffer"] = intval($row["buffer"]);
+				if(!empty($row["tile_origin"])) {
+					$layerOptions["tileOrigin"] = $row["tile_origin"];
+				} else {
+					throw new Exception("tile_origin is required for wmts layers");
+				}
+				if(!empty($row["tile_matrix_set"])) {
+					$layerOptions["matrixSet"] = $row["tile_matrix_set"];
+				} else {
+					throw new Exception("tile_matrix_set is required for wmts layers");
+				}
+				if (!empty($row['style'])) {
+					$layerOptions["style"] = $row["style"];
+				} else {
+					throw new Exception("style is required for wmts layers");
+				}
                 if(!empty($row['tile_resolutions'])) {
                     $scales = explode(',', $row['tile_resolutions']);
                     $layerOptions['serverResolutions'] = array();
@@ -789,6 +856,8 @@ class gcMap{
 				break;
 			case TMS_LAYER_TYPE:
 				return 'new OpenLayers.Layer.TMS("'.$aLayer["title"].'","'.$aLayer["url"].'/",{"visibility":'.(!empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.(empty($aLayer["options"]["isBaseLayer"])?'false':'true').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"serviceVersion":"'.$aLayer["options"]["serviceVersion"].'","owsurl":"'.$aLayer["options"]["owsurl"].'","type":"'.$aLayer["options"]["type"].'","zoomOffset":'.$aLayer["options"]["zoomOffset"].',"maxExtent":new OpenLayers.Bounds('.implode(",",$aLayer["options"]["maxExtent"]).'),"tileOrigin":new OpenLayers.LonLat('.$aLayer["options"]["maxExtent"][0].','.$aLayer["options"]["maxExtent"][1].'),"gc_id":"'.$aLayer["options"]["gc_id"].'","minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"group":"'.$aLayer["options"]["group"].'"})';
+            case WMTS_LAYER_TYPE:
+                throw new Exception("wmts layer not supported");
 		}
 	}
 	
@@ -916,10 +985,20 @@ class gcMap{
 		return array_values(array_diff($aList,$ar));
 	}
 	
-	function _array_index($aList, $value){
+	/**
+	 * Return key of first value, such that $aList[$retval] <= $value
+	 *  
+	 * @param array $aList array with monotone descending values
+	 * @param type $value
+	 * @return type
+	 */
+	private function _array_index(array $aList, $value){
 		$retval=false;
 		for($i=0;$i<count($aList);$i++){
-			if($value<=$aList[$i]) $retval=$i;
+			if($value<=$aList[$i]) {
+				$retval=$i;
+				break;
+			}
 		}
 		return $retval;
 	}

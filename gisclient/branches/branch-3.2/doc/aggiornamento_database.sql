@@ -1286,3 +1286,11 @@ CREATE OR REPLACE VIEW seldb_outputformat AS
                    FROM e_outputformat where outputformat_id not in (1,3,7,9)) foo;
   
    INSERT INTO version (version_name,version_key, version_date) values ('3.2.20', 'author', '2014-08-19');
+   
+-- 2014-08-20: support of WMTS layergroup
+INSERT INTO e_owstype VALUES (9, 'WMTS', 9) ;
+ALTER TABLE layergroup
+  ADD COLUMN tile_matrix_set character varying;
+
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.21', 'author', '2014-08-20');
