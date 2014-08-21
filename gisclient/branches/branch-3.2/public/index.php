@@ -13,7 +13,7 @@ $user = new GCUser();
 if(!empty($_REQUEST["logout"])) {
     $user->logout();
 }
-var_export($_REQUEST);
+
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
     $user->login($_POST['username'], $_POST['password']);
 }
