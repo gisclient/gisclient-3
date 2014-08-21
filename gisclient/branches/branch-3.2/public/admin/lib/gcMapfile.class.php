@@ -86,15 +86,17 @@ class gcMapfile{
 				$joinMapset="";
 				$fieldsMapset="layergroup_name as mapset_name,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
 				$sqlParams['keyvalue'] = $keyvalue;
-	
 		
-		} elseif($keytype="print"){ //GENERO UN MAPFILE PER LA STAMPA
+		} elseif($keytype == "print"){ //GENERO UN MAPFILE PER LA STAMPA
 				$_in = GCApp::prepareInStatement($keyvalue);
 				$sqlParams = $_in['parameters'];
 				$inQuery = $_in['inQuery'];
                 $fieldsMapset = 'true'; // dummy field
                 $this->printMap = true;
                 $filter = "project_name||'.'||theme_name||'.'||layergroup_name in (".$inQuery.")";
+				
+		} else {
+			throw new RuntimeException("Unknown keytype '$keytype'");
 		}
 		
 		if(!empty($this->languageId)) { // inizializzo l'oggetto i18n per le traduzioni
@@ -153,7 +155,7 @@ class gcMapfile{
 		
 		foreach ($res as $aLayer){
 		
-		//TODO DA SISTEMARE SU DB
+		//TODO: DA SISTEMARE SU DB
 			$mapName = $aLayer["mapset_name"];
 			$layergroupName = NameReplace($aLayer["layergroup_name"]);
 			$mapSrid[$mapName] = $aLayer["mapset_srid"];	
@@ -192,7 +194,6 @@ class gcMapfile{
 		}
 		
 		//print_debug($mapText,null,'writemap');
-		
 		foreach($mapText as $mapName=>$mapContent){
 			//SE NON HO EXTENT LO PRENDO DAL PROGETTO E SE SRID DIVERSO LO RIPROIETTO
 			if(empty($mapExtent[$mapName])){			
@@ -213,6 +214,7 @@ class gcMapfile{
 	}
 	
 	function _writeFile(&$mapFile){
+		// TODO: remove pass by reference
 		$projectName = $this->projectName;
 		$fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts';	
 		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
@@ -223,9 +225,9 @@ class gcMapfile{
 			$debugLevel = "DEBUG 5";
 		}
 		$outputFormat = $this->_getOutputFormat($mapFile);
-		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
 		if (ms_GetVersionInt() >= 60000) {
-			$metadata_inc = "\t\"wms_enable_request\" \"*\"";
+			$metadata_inc = "\t\"wms_enable_request\" \"*\"\n";
+			$metadata_inc .= "\t\"ows_enable_request\" \"*\"";
 		} else {
 			$metadata_inc = '';
 		}
@@ -275,8 +277,6 @@ $configDebugfile
 $debugLevel
 WEB
 	METADATA
-        # for mapserver 6.0
-        \"ows_enable_request\" \"*\"
 	$ows_title
 	$ows_abstract
 	$ows_wfs_encoding
@@ -586,7 +586,6 @@ END";
 		}
 		$this->epsgList = implode(" ",$epsgList);
 	}
-	
 
 }
 ?>
