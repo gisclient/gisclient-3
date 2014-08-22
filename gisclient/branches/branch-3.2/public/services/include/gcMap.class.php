@@ -125,7 +125,10 @@ class gcMap{
 		$mapOptions["dpi"] = MAP_DPI;
 		$mapOptions["projection"] = "EPSG:".$row["mapset_srid"];
 		$mapOptions['projectionDescription'] = $this->_getProjectionDescription('EPSG', $row['mapset_srid']);
-		if(!empty($row["displayprojection"])) $mapOptions["displayProjection"] = "EPSG:".$row["displayprojection"];
+		if(!empty($row["displayprojection"])) {
+			$mapOptions["displayProjection"] = "EPSG:".$row["displayprojection"];
+			$mapOptions["displayProjectionDescription"] = $this->_getProjectionDescription('EPSG', $row['displayprojection']);
+		}
 		$this->mapsetSRID = $row["mapset_srid"];
 		$this->fractionalZoom = 1;
 		
