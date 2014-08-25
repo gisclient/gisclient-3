@@ -394,29 +394,59 @@ switch($_REQUEST['action']) {
 	break;
 	
 	case 'delete-file':
-		if(empty($_REQUEST['file_name'])) $ajax->error();
-		if(empty($_REQUEST['file_type'])) $ajax->error();
+		if(empty($_REQUEST['file_name'])) {
+			$ajax->error("missing parameter 'file_name'");
+		}
+		if(empty($_REQUEST['file_type'])) {
+			$ajax->error("missing parameter 'file_type'");
+		}
 		
+		$filePath = IMPORT_PATH.$_REQUEST['file_name'];
 		if($_REQUEST['file_type'] == 'shp') {
-			if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error();
+			if(!file_exists($filePath)) {
+				$ajax->error("File '$filePath' does not exist");
+			}
 			$fileName = substr($_REQUEST['file_name'], 0, strrpos($_REQUEST['file_name'], '.'));
 			foreach($extensions['shp'] as $extension) {
-				if(file_exists(IMPORT_PATH.$fileName.'.'.$extension)) @unlink(IMPORT_PATH.$fileName.'.'.$extension);
+				$delendum = IMPORT_PATH.$fileName.'.'.$extension;
+				if(file_exists($delendum)) {
+					if (false === unlink($delendum)) {
+						$ajax->error("Could not remove '$delendum'");
+					}
+				}
 			}
 		} else if($_REQUEST['file_type'] == 'raster') {
-			if(empty($_REQUEST['catalog_id'])) $ajax->error();
+			if(empty($_REQUEST['catalog_id'])) {
+				$ajax->error("missing parameter 'catalog_id'");
+			}
 			$dir = filesPathFromCatalog($_REQUEST['catalog_id']);
-			if(!is_dir($dir)) $ajax->error();
-			rrmdir($dir.$_REQUEST['file_name']);
+			if(!is_dir($dir)) {
+				$ajax->error("'$dir' is not a directory");
+			}
+			try {
+				rrmdir($dir.$_REQUEST['file_name']);
+			} catch (Excpetion $e) {
+				// TODO: add to log
+				$ajax->error($e->getMessage());
+			}
 		} else if($_REQUEST['file_type'] == 'xls') {
-            if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error();
-        } else $ajax->error();
+            if(!file_exists($filePath)) {
+				$ajax->error("File '$filePath' does not exist");
+			}
+
+        } else {
+			$ajax->error("file type '{$_REQUEST['file_type']}' can not be handled");
+		}
 		
-		@unlink(IMPORT_PATH.$_REQUEST['file_name']);
+		$fileName = IMPORT_PATH.$_REQUEST['file_name'];
+		if (false === unlink($fileName)) {
+			$ajax->error("File '$fileName' could not be removed");
+		}
 		
 		$ajax->success();
 		
 	break;
+	
     case 'export-csv':
 		if(empty($_REQUEST['catalog_id'])) $ajax->error('catalog_id');
 		if(empty($_REQUEST['table_name'])) $ajax->error('table_name');
@@ -897,17 +927,33 @@ function simpleCharsOnly($string) {
 	return preg_match($pattern, $string) > 0;
 }
 
-function rrmdir($dir) { 
-	if (is_dir($dir)) {
-		$objects = scandir($dir); 
-		foreach ($objects as $object) {
-			if ($object != "." && $object != "..") { 
-				if (filetype($dir."/".$object) == "dir") @rrmdir($dir."/".$object); else @unlink($dir."/".$object); 
+/**
+ * Recursively remove directory
+ * 
+ * @param type $dir
+ */
+function rrmdir($dir) {
+	if (!is_dir($dir)) {
+		// wouldn't it be better to simply remove the file?
+		throw new Exception("'$dir' is not a directory");
+	}
+	$objects = scandir($dir);
+	foreach ($objects as $object) {
+		if ($object === "." ||  $object === "..") {
+			continue;
+		}
+		if (filetype($dir . "/" . $object) == "dir") {
+			rrmdir($dir . "/" . $object);
+		} else {
+			if (false === unlink($dir . "/" . $object)) {
+				throw new Exception("Could not remove file '$dir/$object'");
 			}
-		} 
-		reset($objects); 
-		@rmdir($dir); 
-	} 
+		}
+	}
+	reset($objects);
+	if (false === rmdir($dir)) {
+		throw new Exception("Could not remove directory '$dir/$object'");
+	}
 }
 
 function createAutoUpdateUserFunction($dataDb) {
