@@ -410,8 +410,8 @@ switch($_REQUEST['action']) {
 			foreach($extensions['shp'] as $extension) {
 				$delendum = IMPORT_PATH.$fileName.'.'.$extension;
 				if(file_exists($delendum)) {
-					if (false === unlink($delendum)) {
-						$ajax->error("Could not remove '$delendum'");
+					if (false === @unlink($delendum)) {
+						$ajax->error("Could not remove '$delendum', $php_errormsg");
 					}
 				}
 			}
@@ -433,14 +433,15 @@ switch($_REQUEST['action']) {
             if(!file_exists($filePath)) {
 				$ajax->error("File '$filePath' does not exist");
 			}
-
+			if (false === @unlink($filePath)) {
+				$ajax->error("File '$filePath' could not be removed, $php_errormsg");
+			}
         } else {
 			$ajax->error("file type '{$_REQUEST['file_type']}' can not be handled");
 		}
 		
-		$fileName = IMPORT_PATH.$_REQUEST['file_name'];
-		if (false === unlink($fileName)) {
-			$ajax->error("File '$fileName' could not be removed");
+		if (file_exists($filePath)) {
+			$ajax->error("Internal error: File '$filePath' was not deleted");
 		}
 		
 		$ajax->success();
@@ -945,14 +946,14 @@ function rrmdir($dir) {
 		if (filetype($dir . "/" . $object) == "dir") {
 			rrmdir($dir . "/" . $object);
 		} else {
-			if (false === unlink($dir . "/" . $object)) {
-				throw new Exception("Could not remove file '$dir/$object'");
+			if (false === @unlink($dir . "/" . $object)) {
+				throw new Exception("Could not remove file '$dir/$object', $php_errormsg");
 			}
 		}
 	}
 	reset($objects);
-	if (false === rmdir($dir)) {
-		throw new Exception("Could not remove directory '$dir/$object'");
+	if (false === @rmdir($dir)) {
+		throw new Exception("Could not remove directory '$dir/$object', $php_errormsg");
 	}
 }
 
