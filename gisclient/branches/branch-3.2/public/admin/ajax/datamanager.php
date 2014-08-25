@@ -406,14 +406,10 @@ switch($_REQUEST['action']) {
 			if(!file_exists($filePath)) {
 				$ajax->error("File '$filePath' does not exist");
 			}
-			$fileName = substr($_REQUEST['file_name'], 0, strrpos($_REQUEST['file_name'], '.'));
-			foreach($extensions['shp'] as $extension) {
-				$delendum = IMPORT_PATH.$fileName.'.'.$extension;
-				if(file_exists($delendum)) {
-					if (false === @unlink($delendum)) {
-						$ajax->error("Could not remove '$delendum', $php_errormsg");
-					}
-				}
+			try {
+				deleteFilegroupByExtension($filePath, $extensions['shp']);
+			} catch (Exception $e) {
+				$ajax->error($e->getMessage());
 			}
 		} else if($_REQUEST['file_type'] == 'raster') {
 			if(empty($_REQUEST['catalog_id'])) {
@@ -833,7 +829,7 @@ switch($_REQUEST['action']) {
 		}
 		$dataDb->commit();
 		
-		deleteShapefile($shapeFile);
+		deleteFilegroupByExtension($shapeFile, $extensions['shp']);
 		@unlink($outputFile);
 		
 		$ajax->success();
@@ -872,12 +868,24 @@ function filesPathFromCatalog($catalogId) {
 	return addFinalSlash($basePath);
 }
 
-function deleteShapefile($fileFullPath) {
-	global $extensions;
-	
+/**
+ * Delete all files with share the same basename as the file
+ * 
+ * @param string $fileFullPath
+ * @param array $groupExtensions
+ * @throws Exception
+ */
+function deleteFilegroupByExtension($fileFullPath, array $groupExtensions) {
+	// TODO: optional parameter: fail_on_missing
+	// since shape files may have a differing number of files, this might make sense
 	$pathWoExtension = substr($fileFullPath, 0, strrpos($fileFullPath, '.'));
-	foreach($extensions['shp'] as $extension) {
-		@unlink($pathWoExtension.'.'.$extension);
+	foreach ($groupExtensions as $extension) {
+		$delendum = $pathWoExtension . '.' . $extension;
+		if (file_exists($delendum)) {
+			if (false === @unlink($delendum)) {
+				throw new Exception("Could not remove '$delendum', $php_errormsg");
+			}
+		}
 	}
 }
 
