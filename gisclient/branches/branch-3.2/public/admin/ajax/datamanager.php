@@ -392,30 +392,7 @@ switch($_REQUEST['action']) {
 		}
 		$ajax->success();
 	break;
-	case 'delete-file':
-		if(empty($_REQUEST['file_name'])) $ajax->error();
-		if(empty($_REQUEST['file_type'])) $ajax->error();
-		
-		if($_REQUEST['file_type'] == 'shp') {
-			if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error();
-			$fileName = substr($_REQUEST['file_name'], 0, strrpos($_REQUEST['file_name'], '.'));
-			foreach($extensions['shp'] as $extension) {
-				if(file_exists(IMPORT_PATH.$fileName.'.'.$extension)) @unlink(IMPORT_PATH.$fileName.'.'.$extension);
-			}
-		} else if($_REQUEST['file_type'] == 'raster') {
-			if(empty($_REQUEST['catalog_id'])) $ajax->error();
-			$dir = filesPathFromCatalog($_REQUEST['catalog_id']);
-			if(!is_dir($dir)) $ajax->error();
-			rrmdir($dir.$_REQUEST['file_name']);
-		} else if($_REQUEST['file_type'] == 'xls') {
-            if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error();
-        } else $ajax->error();
-		
-		@unlink(IMPORT_PATH.$_REQUEST['file_name']);
-		
-		$ajax->success();
-		
-	break;
+	
 	case 'delete-file':
 		if(empty($_REQUEST['file_name'])) $ajax->error();
 		if(empty($_REQUEST['file_type'])) $ajax->error();
