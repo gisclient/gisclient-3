@@ -857,7 +857,6 @@ switch($_REQUEST['action']) {
 }
 
 function filesPathFromCatalog($catalogId) {
-	global $ajax;
 	$db = GCApp::getDB();
 	
 	$sql = "select files_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
