@@ -85,9 +85,9 @@ $initI18n = 'false';
 if($p->initI18n()) $initI18n = 'true';
 
 $initDataManager = 'false';
+$db = GCApp::getDB();
 if(defined('USE_DATA_IMPORT') && USE_DATA_IMPORT == true && $p->livello == 'catalog' && $p->mode == 0) {
 	$sql = 'select connection_type from '.DB_SCHEMA.'.catalog where catalog_id=?';
-	$db = GCApp::getDB();
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array($p->parametri['catalog']));
 	$catalogType = $stmt->fetchColumn(0);
