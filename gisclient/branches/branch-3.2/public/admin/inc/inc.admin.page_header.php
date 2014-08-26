@@ -100,6 +100,7 @@
 				?>
 				</table>
 			</div>
+			<!-- TODO: allineare verticalmente, cosi è bruttino -->
 			<div id="import_dialog" style="display:none;">
 				<div id="import_dialog_tabs">
 					<ul>
@@ -107,7 +108,7 @@
 						<li><a href="#import_dialog_raster">Raster</a></li>
 						<li><a href="#import_dialog_postgis">PostgreSQL</a></li>
 						<li><a href="#import_dialog_xls">XLS</a></li>
-						<li><a href="#import_dialog_csv">CSV</a></li>
+						<!-- <li><a href="#import_dialog_csv">CSV</a></li> -->
 					</ul>
 					<div id="import_dialog_shp">
 						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
@@ -167,6 +168,7 @@
 						Tablename: <select name="xls_table_name_select" style="display:none;"></select><input type="text" name="xls_table_name"><br />
 						<button name="import" style="display:none">Import</button>
 					</div>
+					<!--
 					<div id="import_dialog_csv">
 						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
 						<input id="csv_file_upload" name="file_upload" type="file" />
@@ -178,6 +180,7 @@
 						Tablename: <select name="csv_table_name_select" style="display:none;"></select><input type="text" name="csv_table_name"><br />
 						<button name="import" style="display:none">Import</button>
 					</div>
+					-->
 				</div>
 				<div class="logs" style="color:red;" tabindex="100">
 				</div>
