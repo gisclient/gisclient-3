@@ -45,7 +45,7 @@ switch($_REQUEST['action']) {
 			1=>'raster',
 			2=>'postgis',
 			3=>'xls',
-            4=>'csv'
+			// 4=>'csv', // not working, yet
 		);
 		checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
 		$dir = filesPathFromCatalog($_REQUEST['catalog_id']);
@@ -415,7 +415,7 @@ switch($_REQUEST['action']) {
 			}
 			try {
 				rrmdir($dir.$_REQUEST['file_name']);
-			} catch (Excpetion $e) {
+			} catch (Exception $e) {
 				// TODO: add to log
 				$ajax->error($e->getMessage());
 			}
