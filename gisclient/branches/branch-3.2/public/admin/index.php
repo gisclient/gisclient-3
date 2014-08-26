@@ -170,7 +170,7 @@ if(isset($p->parametri['project'])) {
 	<div class="ui-layout-south">
 		GisClient<span class="color">Author</span>
 		<?php
-        $sql="SELECT version_name FROM " . DB_SCHEMA . ".vista_version WHERE version_key='author' ORDER BY version_id DESC LIMIT 1";
+        $sql="SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
         $version = $db->query($sql)->fetchColumn();
         echo $version;
         ?>
