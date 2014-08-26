@@ -200,7 +200,10 @@ switch($_REQUEST['action']) {
             try {
 				if(!$updateUserExists) {
 					array_push($results, 'non esiste la funzione gc_auto_update_user');
-					createAutoUpdateUserFunction($dataDb);
+					if (!defined('CURRENT_EDITING_USER_TABLE')) {
+						throw new Exception("constant CURRENT_EDITING_USER_TABLE is not defined");
+					}
+					createAutoUpdateUserFunction($dataDb, CURRENT_EDITING_USER_TABLE);
 					array_push($results, 'creata la funzione gc_auto_update_user');
 				}
                 $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['last_edit_user'].' text';
@@ -937,27 +940,29 @@ function rrmdir($dir) {
 	}
 }
 
-function createAutoUpdateUserFunction($dataDb) {
-    $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_user ()
-            RETURNS trigger AS
-            $body$'.
-            "DECLARE
-                rec record;
-                BEGIN
-                    BEGIN
-                        DELETE FROM temporary_trigger_function_user;
-                        INSERT INTO temporary_trigger_function_user SELECT NEW.*;
-                    EXCEPTION WHEN OTHERS THEN
-                        CREATE TEMPORARY TABLE temporary_trigger_function_user as SELECT NEW.*;
-                    END;
+function createAutoUpdateUserFunction($dataDb, $currentEditingUserTable) {
+    $sql = <<<EODDL
+CREATE OR REPLACE FUNCTION public.gc_auto_update_user ()
+	RETURNS trigger AS
+	\$body\$
+	DECLARE
+		rec record;
+		BEGIN
+			BEGIN
+				DELETE FROM temporary_trigger_function_user;
+				INSERT INTO temporary_trigger_function_user SELECT NEW.*;
+			EXCEPTION WHEN OTHERS THEN
+				CREATE TEMPORARY TABLE temporary_trigger_function_user as SELECT NEW.*;
+			END;
 
-                    execute 'UPDATE temporary_trigger_function_user set ' || TG_ARGV[0] || '= (select username from ".CURRENT_EDITING_USER_TABLE." where id = 1)';
+			EXECUTE 'UPDATE temporary_trigger_function_user set ' || TG_ARGV[0] || '= (SELECT username FROM {$currentEditingUserTable} WHERE id = 1)';
 
-                    SELECT * from temporary_trigger_function_user into rec;
-                    return rec;
-                END;".
-            '$body$'.
-            "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
+			SELECT * FROM temporary_trigger_function_user INTO rec;
+			RETURN rec;
+		END;
+	\$body\$
+LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;
+EODDL;
     $dataDb->exec($sql);
 }
 
