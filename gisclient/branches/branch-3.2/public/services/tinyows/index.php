@@ -2,7 +2,6 @@
 include '../../../config/config.php';
 $debugTinyOWS = defined('DEBUG') && DEBUG == 1;
 
-
 $parts = explode('/', $_SERVER['REQUEST_URI']);
 $startIndex = array_search('tinyows', $parts);
 if(!isset($parts[$startIndex+1]) || !isset($parts[$startIndex+2])) {
@@ -21,7 +20,16 @@ if($debugTinyOWS) {
 	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "HTTP method: $requestMethod\n");
 	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "_GET:\n".var_export($_GET, true)."\n\n", FILE_APPEND);
 	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "_POST:\n".var_export($_POST, true)."\n\n", FILE_APPEND);
+	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "_COOKIE:\n".var_export($_COOKIE, true)."\n\n", FILE_APPEND);
 	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "body:\n".file_get_contents('php://input')."\n\n", FILE_APPEND);
+}
+
+// try to start session
+if(!isset($_SESSION)) {
+	if(defined('GC_SESSION_NAME') && isset($_COOKIE[GC_SESSION_NAME])) {
+		session_name(GC_SESSION_NAME);
+	}
+	session_start();
 }
 
 $autoUpdateUser = (defined('LAST_EDIT_USER_COL_NAME') && LAST_EDIT_USER_COL_NAME);
@@ -62,6 +70,7 @@ if(empty($projectName)) {
 
 if(!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
+		file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "PHP_AUTH_USER not set, request authentication\n", FILE_APPEND);
 		header('WWW-Authenticate: Basic realm="Gisclient"');
 		header('HTTP/1.0 401 Unauthorized');
 	} else {
@@ -74,8 +83,14 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 
 $authorized = false;
 //if(!empty($_SESSION['USERNAME']) && $_SESSION['USERNAME'] == SUPER_USER) $authorized = true; non serve piu
-if(!empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$typeName]['WFST'])) $authorized = true;
+if(!empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$typeName]['WFST'])) {
+	$authorized = true;
+} else {
+	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', var_export($_SESSION['GISCLIENT_USER_LAYER'], true)."\n", FILE_APPEND);
+}
+
 if(!$authorized) {
+	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "missing authorization\n", FILE_APPEND);
 	header('HTTP/1.0 401 Unauthorized');
 	echo '<?xml version="1.0" encoding="UTF-8"?><ServiceExceptionReport xmlns="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.1.1/OGC-exception.xsd" version="1.2.0"><ServiceException code="PermissionDenied">Permission Denied</ServiceException></ServiceExceptionReport>';
 	exit(0);
@@ -97,6 +112,9 @@ if($debugTinyOWS) file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "envVars:\n".v
 $pipes = array();
 
 if($autoUpdateUser) {
+	if (!defined('CURRENT_EDITING_USER_TABLE')) {
+		throw new Exception("constant CURRENT_EDITING_USER_TABLE is not defined");
+	}
     if(!GCApp::tableExists($dataDb, 'public', CURRENT_EDITING_USER_TABLE)) {
         file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'creo la tabella '.CURRENT_EDITING_USER_TABLE."\n\n", FILE_APPEND);
         $sql = 'create table '.CURRENT_EDITING_USER_TABLE.' (id integer, username text, editingdate timestamp without time zone default NOW(), CONSTRAINT current_editing_user_pkey PRIMARY KEY (id));';
@@ -104,7 +122,7 @@ if($autoUpdateUser) {
     }
 
     $n = 0;
-    while(anotherUserIsEditing($dataDb)) {
+    while(anotherUserIsEditing($dataDb, CURRENT_EDITING_USER_TABLE)) {
         file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'another user is editing .. '.$n."\n\n", FILE_APPEND);
         if($n > 4) {
             file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'current_editing_table is not empty after 2 minutes... give up!', FILE_APPEND);
@@ -157,11 +175,10 @@ if($autoUpdateUser) {
 }
 
 
-function anotherUserIsEditing($db) {
-    
-    $sql = "delete from ".CURRENT_EDITING_USER_TABLE." where editingdate < (NOW() - interval '5 minutes')";
+function anotherUserIsEditing($db, $currentEditingUserTable) {
+	$sql = "delete from {$currentEditingUserTable} where editingdate < (NOW() - interval '5 minutes')";
     $db->exec($sql);
     
-    $sql = "select count(*) from ".CURRENT_EDITING_USER_TABLE;
+	$sql = "select count(*) from {$currentEditingUserTable}";
     return ($db->query($sql)->fetchColumn(0) > 0);
 }
