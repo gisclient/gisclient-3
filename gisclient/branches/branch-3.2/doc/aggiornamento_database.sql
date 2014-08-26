@@ -1294,3 +1294,12 @@ ALTER TABLE layergroup
 
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.21', 'author', '2014-08-20');
+
+CREATE OR REPLACE VIEW gisclient_32.vista_version AS 
+ SELECT version.version_id, version.version_name, version.version_date
+   FROM gisclient_32.version
+  WHERE version_key='author'
+  ORDER BY version.version_id DESC
+ LIMIT 1;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.22', 'author', '2014-08-26');
