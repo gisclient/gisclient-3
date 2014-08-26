@@ -143,6 +143,14 @@ define('PRINT_PDF_FONT','times');
 //define('TAB_DIR','geoweb');
 
 define('USE_DATA_IMPORT', false);
+// 
+//define('LAST_EDIT_USER_COL_NAME', 'gc_last_edit_user'); //funzione per aggiungere una colonna che in wfs-t viene popolata automaticamente con il nome utente di chi ha fatto l'ultima modifica
+//define('LAST_EDIT_DATE_COL_NAME', 'gc_last_edit_date'); //come sopra, ma con la data
+//define('MEASURE_AREA_COL_NAME', 'gc_area'); //funzione per aggiungere una colonna che viene popolata automaticamente con l'area del poligono editato
+//define('MEASURE_LENGTH_COL_NAME', 'gc_length'); //come sopra, ma con la lunghezza
+
+//define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user'); // tabella che contiene il nome dell'utente attuale
+
 define('CLIENT_LOGO', null);
 
 define('MAPFILE_MAX_SIZE', '4096');
