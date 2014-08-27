@@ -502,7 +502,7 @@ class GCAuthor {
 		'save_to_temp'=>array('it'=>'Salva in un mapfile temporaneo', 'de'=>'In einem temporären Mapfile abspeichern'),
 		'auto_refresh_mapfiles'=>array('it'=>'Rigenera automaticamente i mapfiles', 'de'=>'Aktualisiere automatisch Mapset'),
 		'save'=>array('it'=>'Salva', 'de'=>'Speichern'),
-		'all'=>array('it'=>'Tutti', 'de'=>'Alles'),
+		'all'=>array('it'=>'Rigenera tutti', 'de'=>'Alles'),
 		'online_maps'=>array('it'=>'Mappe online', 'de'=>'Mapset aktualisieren'),
 		'ogc_services'=>array('it'=>'Servizi OGC', 'de'=>'OGC Dienste'),
 		'update'=>array('it'=>'Aggiorna', 'de'=>'Aktualisieren'),

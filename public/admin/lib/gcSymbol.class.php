@@ -159,7 +159,8 @@ class Symbol{
 		$oLay=ms_newLayerObj($oMap);
 		$oLay->set('type', $class["icontype"]);	
 		$oClass=ms_newClassObj($oLay);
-		$smbSize=$this->symbolSize[$class["icontype"]];
+		if($this->symbolSize[$class["icontype"]])
+			$smbSize=$this->symbolSize[$class["icontype"]];
 		$style=isset($class["style"])?$class["style"]:array();
 		//print_array($class);
 		//Aggiungo gli stili

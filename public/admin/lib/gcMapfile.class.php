@@ -39,7 +39,6 @@ class gcMapfile{
 	var $epsgList;
 	var $mapInfo=array();
 	var $srsCustom=array();
-    public $writeProjectMapfile = false;
 	private $target = 'public';
 	private $iconSize = array(16,10);
 	private $tinyOWSLayers = array();
@@ -86,7 +85,7 @@ class gcMapfile{
 				
 		} elseif($keytype=="project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO OPPURE UNICO MAPFILE PER PROGETTO
             $filter="project.project_name=:keyvalue";
-            if($this->writeProjectMapfile) {
+            if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
                 $joinMapset="";
                 $fieldsMapset = 'project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
             } else {
@@ -369,19 +368,21 @@ class gcMapfile{
                 $layersToAdd = array();
                 
                 //popolo il source con i nomi dei layergroups
-                foreach($this->mpxCaches[$mapName] as $cacheName => &$cache) {
-                    if(!empty($cache['layergroups'])) {
-                        $cache['sources'] = array('mapserver_source:'.implode(',',array_unique($cache['layergroups'])));
-                        unset($cache['layergroups']);
-                        
-                        $layersToAdd[$cache['theme_name'].'_tiles'] = array(
-                            'title'=>$cache['theme_title'],
-                            'sources'=>array($cacheName)
-                        );
-                        unset($cache['theme_name'], $cache['theme_title']);
-                    }
-                }
-                unset($cache);
+                if($this->mpxCaches[$mapName]){
+	                foreach($this->mpxCaches[$mapName] as $cacheName => &$cache) {
+	                    if(!empty($cache['layergroups'])) {
+	                        $cache['sources'] = array('mapserver_source:'.implode(',',array_unique($cache['layergroups'])));
+	                        unset($cache['layergroups']);
+	                        
+	                        $layersToAdd[$cache['theme_name'].'_tiles'] = array(
+	                            'title'=>$cache['theme_title'],
+	                            'sources'=>array($cacheName)
+	                        );
+	                        unset($cache['theme_name'], $cache['theme_title']);
+	                    }
+	                }
+	                unset($cache);
+	            }
                 
                 foreach($layersToAdd as $name => $layer) {
                     $this->mpxLayers[$mapName][$name] = $layer;
@@ -440,10 +441,8 @@ class gcMapfile{
 
         if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
         else $maxSize = '4096';
-		
         $fontList = '../fonts/'.$fontList.'.list';
-        if(!$this->writeProjectMapfile) $fontList = '../'.$fontList;
-        
+
 		$fileContent=
 "MAP
 NAME \"$mapFile\"
@@ -486,19 +485,15 @@ END #MAP";
 			if($this->target == 'tmp') {
 				$mapFile = 'tmp.'.$mapFile;
 			}
-			if(!is_dir(ROOT_PATH.$mapfileDir)) mkdir(ROOT_PATH.$mapfileDir);
-            if(!$this->writeProjectMapfile) {
-                if(!is_dir(ROOT_PATH.$mapfileDir.$projectName)) mkdir(ROOT_PATH.$mapfileDir.$projectName);
-            }
+
 			if(!empty($this->i18n)) {
 				$languageId = $this->i18n->getLanguageId();
 				$mapFile.= "_".$languageId;
 			}
-            if(!$this->writeProjectMapfile) {
-                $mapFilePath = ROOT_PATH.$mapfileDir.$projectName."/".$mapFile.".map";
-            } else {
-                $mapFilePath = ROOT_PATH.$mapfileDir.$mapFile.".map";
-            }
+
+			if(!is_dir(ROOT_PATH.$mapfileDir)) mkdir(ROOT_PATH.$mapfileDir);
+			$mapFilePath = ROOT_PATH.$mapfileDir.$mapFile.".map";
+
 		}
 		$f = fopen ($mapFilePath,"w");
 		$ret=fwrite($f, $fileContent);
@@ -754,6 +749,7 @@ END";
         $mapsetExtent = explode(' ', $this->mapsetExtent);
         foreach($mapsetExtent as &$extent) $extent = (float)$extent;
 
+
         $config = array(
             'services'=>array(
             	'demo'=>array(
@@ -775,7 +771,7 @@ END";
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
-                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName,
+                        'online_resource'=>GISCLIENT_OWS_URL."?map=".$mapName,
                         'contact'=>array(
                             //ma serve sta roba?!?!
                             'person'=>'Roberto',
@@ -785,14 +781,13 @@ END";
                     )
                 )
             ),
-            'caches'=>$this->mpxCaches[$mapName],
             'sources'=>array(
                 'mapserver_source'=>array(
                     'type'=>'wms',
                     'supported_srs'=>explode(' ', $this->epsgList),
                     'req'=>array(
                     	'url'=> 'http://localhost/cgi-bin/mapserv?',
-                        'map'=>ROOT_PATH.'map/'.$this->projectName.".map",
+                        'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'format'=>'image/png',
                         'transparent'=> true,
                         'exceptions'=> 'inimage'
@@ -807,7 +802,6 @@ END";
                     )
                 )
             ),
-            'grids'=>$this->grids,
             'globals'=>array(
                 'srs'=>array(
                     'proj_data_dir'=>'/usr/share/proj'
@@ -817,12 +811,14 @@ END";
                     'lock_dir'=>TILES_CACHE.'locks/',
                     'tile_lock_dir'=>TILES_CACHE.'tile_locks/',
                 )
-            ),
-            'layers'=>$this->mpxLayers[$mapName]
+            )
         );
 
-		if(count($this->mpxCaches[$mapName])==0) unset($config["caches"]);
-		if(count($this->grids)==0) unset($config["grids"]);
+        if($this->grids) $config["grids"] = $this->grids;
+		if($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) $config["caches"] = $this->mpxCaches[$mapName];
+    	if($this->mpxLayers) $config["layers"] = $this->mpxLayers[$mapName];
+
+    	if(count($this->grids)==0) unset($config["grids"]);
 
         
         if(!is_dir(MAPPROXY_CONFIG_PATH)) mkdir(MAPPROXY_CONFIG_PATH);

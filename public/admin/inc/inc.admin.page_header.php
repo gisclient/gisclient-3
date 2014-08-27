@@ -90,6 +90,7 @@
                 </table>
                 <?php } ?>
             </div>
+
 			<div id="mapfiles_manager" style="display:none;" data-title="<?php echo GCAuthor::t('online_maps') ?>">
                 <?php if(!empty($p->parametri['project'])) { ?>
                 <!--<a href="#" data-action="refresh" data-projectmap="1" data-target="tmp" data-project="<?= $p->parametri['project'] ?>"><?= GCAuthor::t('update') ?></a>TMP | <a href="#" data-action="refresh" data-projectmap="1" data-target="public" data-project="<?= $p->parametri['project'] ?>"><?= GCAuthor::t('update') ?></a>PUBLIC<br>-->
@@ -101,24 +102,39 @@
 					<th><?php echo GCAuthor::t('temporary') ?></th>
 					<th><?php echo GCAuthor::t('public') ?></th>
 				</tr>
-				<!--<tr><td><b><?php echo GCAuthor::t('all') ?></b></td><td></td><td style="text-align:center;"><a href="#" data-action="refresh" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('update') ?></a></td><td style="text-align:center;"><a href="#" data-action="refresh" data-target="public" data-mapset=""><?php echo GCAuthor::t('update'); ?></a></td></tr>-->
-                <tr><td><b><?php echo GCAuthor::t('project') ?></b></td><td></td><td style="text-align:center;"><a href="#" data-action="refresh" data-projectmap="1" data-target="tmp" data-project="<?= $p->parametri['project'] ?>"><?php echo GCAuthor::t('update') ?></a></td><td style="text-align:center;"><a href="#" data-action="refresh" data-projectmap="1" data-target="public" data-project="<?= $p->parametri['project'] ?>"><?php echo GCAuthor::t('update'); ?></a></td></tr>
-				<?php
+
+				<?php if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE){?>
+				<tr><td><b><?php echo GCAuthor::t('project') ?></b></td><td></td><td style="text-align:center;"><a href="#" data-action="refresh" data-projectmap="1" data-target="tmp" data-project="<?= $p->parametri['project'] ?>"><?php echo GCAuthor::t('update') ?></a></td><td style="text-align:center;"><a href="#" data-action="refresh" data-projectmap="1" data-target="public" data-project="<?= $p->parametri['project'] ?>"><?php echo GCAuthor::t('update'); ?></a></td></tr>
+                <?php 
 				if(isset($mapsets)) {
 					foreach($mapsets as $mapset) {
 						echo '<tr>
 							<td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
 							<td></td>
-							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a><!--<a href="#" data-action="refresh" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a>--></td>
-							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a><!--<a href="#" data-action="refresh" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a>--></td>
+							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a></td>
+							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a></td>
+						</tr>';
+					}
+				}
+                }else{ 
+				if(isset($mapsets)) {
+					foreach($mapsets as $mapset) {
+						echo '<tr>
+							<td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
+							<td></td>
+							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
+							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
 						</tr>';
 					}
 				}
 				?>
+				<tr></tr>
+				<tr><td><b><?php echo GCAuthor::t('all') ?></b></td><td></td><td style="text-align:center;"><a href="#" data-action="refresh" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('update') ?></a></td><td style="text-align:center;"><a href="#" data-action="refresh" data-target="public" data-mapset=""><?php echo GCAuthor::t('update'); ?></a></td></tr>
 				</table>
                 
-                <?php } ?>
+                <?php }} ?>
 			</div>
+
 			<div id="import_dialog" style="display:none;">
 				<div id="import_dialog_tabs">
 					<ul>

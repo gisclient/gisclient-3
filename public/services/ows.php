@@ -12,7 +12,7 @@ if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_E
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 // ADESSO NON SERVE PIU SECONDO ME!
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
+	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['MAP'].'.map';
 	
 	$fileContent = file_get_contents('php://input');
 	file_put_contents('/tmp/postrequest.xml', $fileContent);
@@ -37,19 +37,11 @@ foreach ($_REQUEST as $k => $v) if (is_string($v)) $objRequest->setParameter($k,
 
 //OGGETTO MAP MAPSCRIPT
 $mapfile = $objRequest->getvaluebyname('map');
-$isProjectMapfile = false;
-
-if($mapfile) {
-    $directory = ROOT_PATH."map/".$objRequest->getvaluebyname('project')."/";
-} else {
-    $directory = ROOT_PATH.'map/';
-    $mapfile = $objRequest->getvaluebyname('project');
-    $isProjectMapfile = true;
-}
+$mapPath = ROOT_PATH.'map/';
 
 // se è definita una lingua, apro il relativo mapfile
 
-if($objRequest->getvaluebyname('lang') && file_exists($directory.$mapfile.'_'.$objRequest->getvaluebyname('lang').'.map')) {
+if($objRequest->getvaluebyname('lang') && file_exists($mapPath.$mapfile.'_'.$objRequest->getvaluebyname('lang').'.map')) {
 	$mapfile = $mapfile.'_'.$objRequest->getvaluebyname('lang');
 }
 //Files temporanei
@@ -58,7 +50,7 @@ if(!empty($showTmpMapfile)) {
 	$mapfile = "tmp.".$mapfile;
 }
 
-$oMap = ms_newMapobj($directory.$mapfile.".map");
+$oMap = ms_newMapobj($mapPath.$mapfile.".map");
 
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
@@ -96,11 +88,7 @@ if($objRequest->getvaluebyname('srs')) $oMap->setProjection($projString="+init="
 
 
 $url = currentPageURL();
-if($isProjectMapfile) {
-    $onlineResource = $url.'?project='.$objRequest->getvaluebyname('project');
-} else {
-    $onlineResource = $url.'?project='.$objRequest->getvaluebyname('project')."&map=".$mapfile;
-}
+$onlineResource = $url.'?map='.$mapfile;
 $oMap->setMetaData("ows_onlineresource",$onlineResource);
 
 
@@ -159,7 +147,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 		} else {
             $user = new GCUser();
             if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-                if($isProjectMapfile) {
+                if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
                     $user->setAuthorizedLayers(array('project_name'=>$objRequest->getValueByName('project')));
                 } else {
                     $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));

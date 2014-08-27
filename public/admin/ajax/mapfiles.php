@@ -10,7 +10,7 @@ switch($_REQUEST['action']) {
 	case 'refresh':
 		if(empty($_REQUEST['target'])) $ajax->error(1);
 		if(empty($_REQUEST['project'])) $ajax->error(2);
-        if(!empty($_REQUEST['projectMapfile'])) {
+		if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE){
             GCAuthor::refreshProjectMapfile($_REQUEST['project'], ($_REQUEST['target'] == 'public'));
         } else {
             if(empty($_REQUEST['mapset'])) {
