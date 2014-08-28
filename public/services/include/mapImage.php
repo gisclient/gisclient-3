@@ -76,7 +76,8 @@ class mapImage {
             switch($tile['type']) {
                 case 'external_provider':
                     array_push($this->wmsList, array(
-                        'URL'=>GISCLIENT_OWS_URL.'PROJECT='.$tile['project'].'&MAP='.$tile['map'],
+                        //'URL'=>GISCLIENT_OWS_URL.'PROJECT='.$tile['project'].'&MAP='.$tile['map'],
+                        'URL'=>GISCLIENT_OWS_URL.'?MAP='.$tile['map'],
                         'PARAMETERS'=>array(
                             //'MAP'=>$tile['map'],
                             //'PROJECT'=>$tile['project'],
