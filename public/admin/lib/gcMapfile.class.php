@@ -632,13 +632,13 @@ END";
         // mapfile snippet
         $formatText = "LEGEND\n" .
                       "    STATUS ON\n" .
+                      "    OUTLINECOLOR 0 0 0 \n" .
                       "    KEYSIZE ".$iconW." ".$iconH."\n" .
-                      "    TRANSPARENT ON\n" .
                       "    LABEL\n" .
                       "       TYPE TRUETYPE\n" .
                       "       FONT '{$legendFont}'\n" .
                       "       SIZE ".$fontSize."\n" .
-                      "       COLOR 1 1 1\n" .
+                      "       COLOR 0 0 0\n" .
                       "    END\n" .
                       "END\n";
 		
