@@ -196,10 +196,11 @@ class printDocument {
 		foreach($this->wmsList as $wms) {
             if(empty($wms['PARAMETERS']['MAP']) ||
                 $wms['PARAMETERS']['MAP'] == 'REDLINE' || 
-                empty($wms['PARAMETERS']['PROJECT'])) continue;
+                //empty($wms['PARAMETERS']['PROJECT'])) continue;
+                empty($wms['PARAMETERS'])) continue;
 			$legendGraphicRequest = array_merge($wms['PARAMETERS'], array(
 				'url'=>(!empty($wms['URL'])?$wms['URL']:$wms['baseURL']),
-				'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
+				//'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
 				'REQUEST' => 'GetLegendGraphic',
 				'ICONW' => 24,
 				'ICONH' => 16,
@@ -238,8 +239,9 @@ class printDocument {
             }
         }
 
-        if(!empty($project) && !empty($mapset)) {
-            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+        //if(!empty($project) && !empty($mapset)) {
+        if(!empty($mapset)) {
+            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$mapset.'.map');
             foreach($themes as &$theme) {
                 $theme['groups'] = array();
                 foreach($theme['layers'] as $layergroupName) {
@@ -278,6 +280,7 @@ class printDocument {
             if(!is_array($this->options['legend'])) {
                 $this->options['legend'] = $this->getLegendsFromMapfile();
             }
+            //var_export($this->options['legend']);
 			foreach($this->options['legend']['themes'] as $theme) {
 				if(empty($theme['groups'])) continue;
 				$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
@@ -294,9 +297,10 @@ class printDocument {
 						if(!$legendImages[$layer['url']]) continue;
 						$source = @imagecreatefrompng($legendImages[$layer['url']]);
                         if(!$source) continue;
-						$dest = imagecreatetruecolor(24, 16);
-						$offset = $key*16;
-						imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
+						$dest = imagecreatetruecolor(35, 28);
+                        imagecolortransparent($dest, imagecolorallocate($dest, 0, 0, 0));
+						$offset = $key*28;
+						imagecopy($dest, $source, 0, 0, 5, $offset, 35, 28);
 						$filename = $tmpFileId.'-'.$key.'.png';
 						imagepng($dest, $this->options['TMP_PATH'].$filename);
 						array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
@@ -305,6 +309,7 @@ class printDocument {
 				}
 				array_push($this->legendArray, $themeArray);
 			}
+            //var_export($this->legendArray);
 		} catch(Exception $e) {
 			throw $e;
 		}
