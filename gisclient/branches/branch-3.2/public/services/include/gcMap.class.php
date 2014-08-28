@@ -40,7 +40,7 @@ if (!defined('SERVICE_MAX_RESOLUTION')) {
 if (!defined('SERVICE_MIN_ZOOM_LEVEL')) {
 	define('SERVICE_MIN_ZOOM_LEVEL',0);
 }
-if (!defined('SERVICE_MIN_ZOOM_LEVEL')) {
+if (!defined('SERVICE_MAX_ZOOM_LEVEL')) {
 	define('SERVICE_MAX_ZOOM_LEVEL',21);
 }
 
