@@ -472,7 +472,6 @@ class gcMap{
 				$layerOptions["minZoomLevel"] = $this->minZoomLevel;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
 				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
-
 				unset($layerOptions["minScale"]);
 				unset($layerOptions["maxScale"]);
 				$aLayer["options"]= $layerOptions;
@@ -545,13 +544,13 @@ class gcMap{
 			unset($aLayer);
 
 			//OVERVIEW: FD add overview and legend  DA VEDERE PER FD
-			if($row['refmap']){
+/*			if($row['refmap']){
 				$aLayers[$themeName][$layergroupName]['overview'] = $row['refmap'];
 				if($row['hide'] == 1) $aLayers[$themeName][$layergroupName]['hide'] = 1;
 				if($this->getLegend) {
 					$aLayers[$themeName][$layergroupName]['legend'] = $this->_getLegendArray($row['layergroup_id']);
 				}
-			}
+			}*/
 		
 		}
 	}
