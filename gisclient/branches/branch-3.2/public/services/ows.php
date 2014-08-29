@@ -2,6 +2,7 @@
 
 define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
+require_once __DIR__.'/include/OwsHandler.php';
 
 if(!defined('GC_SESSION_NAME')) die('Undefined GC_SESSION_NAME in config');
 
@@ -13,24 +14,10 @@ if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_E
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
-	
-	$fileContent = file_get_contents('php://input');
-	file_put_contents('/tmp/postrequest.xml', $fileContent);
-	
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => '@/tmp/postrequest.xml'));
-	$return = curl_exec($ch);
-	if($return === false) {
-                throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
-	}
-	if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-		throw new RuntimeException("Call to $url return HTTP code $httpCode");
-	}
-	curl_close($ch);
-
+	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$request['PROJECT'].'/'.$request['MAP'].'.map';
+	$postFields = file_get_contents('php://input');
+	$owsHandler = new OwsHandler();
+	$owsHandler->post($url, $postFields);
 	exit(0);
 }
 
@@ -40,10 +27,14 @@ if(defined('DEBUG') && DEBUG == true) {
 }
 
 $objRequest = ms_newOwsrequestObj();
+$skippedParams = array();
+$invertedAxisOrderSrids = array(31467);
+
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
     // skipping this parameter does avoid a second request made by mapserver
-    if (in_array($k, array('SLD'))) {
+    if (in_array(strtolower($k), array('sld', 'filter'))) {
+		$skippedParams[strtolower($k)] = $k;
         continue;
     }
     if (is_string($v)) {
@@ -62,14 +53,11 @@ if($objRequest->getValueByName('service') == 'WMS') {
 } else if($objRequest->getValueByName('service') == 'WFS') {
 	$parameterName = 'TYPENAME';
 	$layersParameter = $objRequest->getValueByName('typename');
-}
-
-// EXPERIMENTAL: add debug info, if required
-if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
-	$debugFile = DEBUG_DIR.$objRequest->getvaluebyname('project').".".
-		$objRequest->getvaluebyname('map').".{$layersParameter}.debug";
-	putenv("MS_ERRORFILE='$debugFile'");
-	putenv("MS_DEBUGLEVEL=5");
+	if (isset($skippedParams['filter'])) {
+		$owsHandler = new OwsHandler();
+		$prunedFilter = $owsHandler->pruneSrsFromFilter($_REQUEST[$skippedParams['filter']], $invertedAxisOrderSrids);
+		$objRequest->setParameter($skippedParams['filter'], $prunedFilter);
+	}
 }
 
 //OGGETTO MAP MAPSCRIPT
@@ -125,15 +113,18 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 if($objRequest->getvaluebyname('srsname')) $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
 if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
 if($objRequest->getvaluebyname('srs')) {
-	$srs = strtolower($objRequest->getvaluebyname('srs'));
-	if (substr($srs, 0, 16) == 'urn:ogc:def:crs:') {
-		$srs = substr($srs, 16);
+	$srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
+	if (count($srsParts) == 7) {
+		// e.g.: 'urn:ogc:def:crs:EPSG::4306'
+		$srs = $srsParts[4].':'.$srsParts[6];
+	} elseif (count($srsParts) == 2) {
+		// e.g.: 'EPSG:4306'
+		$srs = $srsParts[0].':'.$srsParts[1];
 	}
-	$oMap->setProjection($projString="+init=".strtolower($srs));
+	$oMap->setProjection("+init=".strtolower($srs));
 }
 
-
-$url = currentPageURL();
+$url = OwsHandler::currentPageURL();
 $oMap->setMetaData("ows_onlineresource",$url.'?project='.$objRequest->getvaluebyname('project')."&map=".$objRequest->getvaluebyname('map'));
 
 
@@ -143,11 +134,10 @@ if(!empty($_REQUEST['GCFILTERS'])){
 	for($i=0;$i<count($v);$i++){
 		list($layerName,$gcFilter)=explode('@',$v[$i]);
 
-		@$oLayer = $oMap->getLayerByName($layerName);
-		if($oLayer) applyGCFilter($oLayer,$gcFilter);
+		$oLayer = $oMap->getLayerByName($layerName);
+		if($oLayer)	OwsHandler::applyGCFilter($oLayer,$gcFilter);
 		//print_debug($oLayer->getFilterString());
 	}
-
 }
 
 
@@ -166,7 +156,7 @@ $cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SE
 if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
 	$hasPrivateLayers = false;
 	if(!empty($layersParameter)) {
-		$layersArray = getRequestedLayers($layersParameter);
+		$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	}
 	foreach($layersArray as $layer) {
 		$privateLayer = $layer->getMetaData('gc_private_layer');
@@ -209,7 +199,7 @@ if(!empty($layersParameter)) {
 		// layer privato
 		$privateLayer = $layer->getMetaData('gc_private_layer');
 		if(!empty($privateLayer)) {
-			if(!checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
+			if(!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
 				array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
 				continue;
 			}
@@ -348,57 +338,3 @@ if ($ctt[0] == 'image') {
 
 ms_ioresethandlers();
 
-
-
-
-function currentPageURL() {
-	$pageURL = 'http';
-	if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') $pageURL .= 's';
-	$pageURL .= '://';
-	if($_SERVER["SERVER_PORT"] != "80") $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["PHP_SELF"];
-	else $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"];
-	return $pageURL;
-}
-
-function applyGCFilter(&$oLayer,$layerFilter){
-	if($oLayer->getFilterString()) $layerFilter = str_replace("\"","",$oLayer->getFilterString())." AND " .$layerFilter;
-	$oLayer->setFilter($layerFilter);
-}
-
-function checkLayer($project, $service, $layerName){
-	$check = false;
-	if(!empty($_SESSION['GISCLIENT_USER_LAYER']) && !empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName])) {
-		$layerAuth = $_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName];
-		// There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
-		if(strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS']==1)) {
-			$check = true;
-		} else if (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS']==1 )) {
-			$check = true;
-		}
-	}
-	return $check;
-}
-
-function getRequestedLayers($layersParameter) {
-	global $oMap, $objRequest;
-	
-	$layersArray = array();
-	$layerNames = explode(',', $layersParameter);
-	// ciclo i layers e costruisco un array di singoli layers
-	foreach($layerNames as $name) {
-		$layerIndexes = $oMap->getLayersIndexByGroup($name);
-        if(!$layerIndexes && count($layerNames) == 1 && $name == $objRequest->getvaluebyname('map')) {
-            $layerIndexes = array_keys($oMap->getAllLayerNames());
-        }
-		// è un layergroup
-		if(is_array($layerIndexes) && count($layerIndexes) > 0) {
-			foreach($layerIndexes as $index) {
-				array_push($layersArray, $oMap->getLayer($index));
-			}
-		// è un singolo layer
-		} else {
-			array_push($layersArray, $oMap->getLayerByName($name));
-		}
-	}
-	return $layersArray;
-}
