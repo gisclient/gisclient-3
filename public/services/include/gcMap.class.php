@@ -510,6 +510,9 @@ class gcMap{
 				$layerParameters["owsurl"] = $ows_url."?map=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
 				$layerParameters["zoomOffset"] = $this->minZoomLevel; 
+				//ALLA ROVESCIA RISPETTO A MAPSERVER
+				if($row["layergroup_maxscale"]>0) $layerParameters["minScale"] = floatval($row["layergroup_maxscale"]);
+				if($row["layergroup_minscale"]>0) $layerParameters["maxScale"] = floatval($row["layergroup_minscale"]);
 				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
 				if($row["gutter"]>0) $layerParameters["gutter"] = intval($row["gutter"]);
 				$layerParameters["buffer"] = intval($row["buffer"]);
