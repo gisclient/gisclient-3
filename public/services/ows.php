@@ -58,6 +58,8 @@ if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('defresolution', 96);
 }
 
+
+$projectName = $oMap->getMetaData("project_name");
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
 if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
@@ -148,7 +150,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
             $user = new GCUser();
             if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
                 if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
-                    $user->setAuthorizedLayers(array('project_name'=>$objRequest->getValueByName('project')));
+                    $user->setAuthorizedLayers(array('project_name'=>$objRequest->getValueByName('map')));
                 } else {
                     $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
                 }
@@ -178,7 +180,7 @@ if(!empty($layersParameter)) {
 		// layer privato
 		$privateLayer = $layer->getMetaData('gc_private_layer');
 		if(!empty($privateLayer)) {
-			if(!checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
+			if(!checkLayer($projectName, $objRequest->getvaluebyname('service'), $layer->name)) {
 				array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
 				continue;
 			}
@@ -237,7 +239,6 @@ if(!empty($layersParameter)) {
 		
 		if(!in_array($layer->name, $layersToRemove)) array_push($layersToInclude, $layer->name);
 	}
-	
 	// rimuovo i layer che l'utente non può visualizzare
 	foreach($layersToRemove as $layerName) {
 		$layer = $oMap->getLayerByName($layerName);

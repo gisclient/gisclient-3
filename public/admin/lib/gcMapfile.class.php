@@ -417,6 +417,7 @@ class gcMapfile{
 
 		$wms_mime_type = "\t\"wms_feature_info_mime_type\"	\"text/html\"";
 		$ows_title = "\t\"ows_title\"\t\"". $mapFile ."\"";
+		$project_name = "\t\"project_name\"\t\"". $projectName ."\"";
 		$ows_wfs_encoding = $this->_getEncoding();
 		$ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
 		$wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
@@ -426,7 +427,7 @@ class gcMapfile{
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
 		}
         
-        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . '?project='.$this->projectName.'&map='.$mapFile : null;
+        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . '?map='.$mapFile : null;
         $wms_onlineresource = '';
         $wfs_onlineresource = '';
         if(!empty($owsUrl)) {
@@ -455,6 +456,7 @@ WEB
 	METADATA
         # for mapserver 6.0
         \"ows_enable_request\" \"*\"
+	$project_name
 	$ows_title
 	$ows_abstract
 	$ows_wfs_encoding
