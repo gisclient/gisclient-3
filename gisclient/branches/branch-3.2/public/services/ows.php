@@ -14,7 +14,7 @@ if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_E
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$request['PROJECT'].'/'.$request['MAP'].'.map';
+	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
 	$postFields = file_get_contents('php://input');
 	$owsHandler = new OwsHandler();
 	$owsHandler->post($url, $postFields);
@@ -179,7 +179,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 }
 
 if(!empty($layersParameter)) {
-	$layersArray = OwsHandler::getRequestedLayers($layersParameter);
+	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();

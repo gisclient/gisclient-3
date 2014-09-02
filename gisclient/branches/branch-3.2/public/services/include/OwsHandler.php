@@ -5,11 +5,11 @@ class OwsHandler {
 	/**
 	 * 
 	 * 
-	 * @param array $url
-	 * @param type $postFields
+	 * @param string $url
+	 * @param string $postFields (xml)
 	 * @throws RuntimeException
 	 */
-	function post(array $url, $postFields) {
+	function post($url, $postFields) {
 
 		file_put_contents('/tmp/postrequest.xml', $postFields);
 
