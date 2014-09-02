@@ -179,7 +179,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 }
 
 if(!empty($layersParameter)) {
-	$layersArray = getRequestedLayers($layersParameter);
+	$layersArray = OwsHandler::getRequestedLayers($layersParameter);
 	
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();
