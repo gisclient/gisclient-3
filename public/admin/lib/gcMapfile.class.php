@@ -75,7 +75,7 @@ class gcMapfile{
 		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
 				$filter="mapset.mapset_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";
 				$sqlParams['keyvalue'] = $keyvalue;
                 
                 $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
@@ -87,17 +87,17 @@ class gcMapfile{
             $filter="project.project_name=:keyvalue";
             if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
                 $joinMapset="";
-                $fieldsMapset = 'project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
+                $fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
             } else {
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
             }
             $sqlParams['keyvalue'] = $keyvalue;
             $projectName = $keyvalue;
 		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
 				$filter="layergroup.layergroup_id=:keyvalue";
 				$joinMapset="";
-				$fieldsMapset="layergroup_name as mapset_name,layergroup_title as mapset_title,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
+				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
 				$sqlParams['keyvalue'] = $keyvalue;
 	
 		
@@ -122,15 +122,19 @@ class gcMapfile{
             $stmt = $this->db->prepare($sql);
             $stmt->execute(array('project'=>$projectName));
             while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $resolutions = explode(' ', $row['tilegrid_resolutions']);
-                //for($i=0;$i<count($resolutions);$i++) $resolutions [$i] = floatval($resolutions [$i]);
 
-                foreach($resolutions as &$res) $res = (float)$res;
-                unset($res);
-                
-                $extent = explode(' ', $row['tilegrid_extent']);
-                foreach($extent as &$val) $val = (float)$val;
-                unset($val);
+				$v = preg_split('/[\s]+/', $row['tilegrid_resolutions']);
+		        for ($i=0;$i<count($v);$i++){
+		        	$v[$i] = round(floatval($v[$i]),6);
+		        }
+                $resolutions = $v; 
+
+                $v = preg_split('/[\s]+/', $row['tilegrid_extent']);
+		        for ($i=0;$i<count($v);$i++){
+		        	$v[$i] = round(floatval($v[$i]),4);
+		        }
+                $extent = $v;
+
                 
                 $this->grids['grid_'.$row['srid']] = array(
                     'name'=>$row['tilegrid_name']."_".$row['srid'],
@@ -144,7 +148,7 @@ class gcMapfile{
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,
 		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
-		layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title
+		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title
 		from ".DB_SCHEMA.".layer 
 		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
 		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
@@ -210,26 +214,7 @@ class gcMapfile{
 			$layerTreeGroup = $aLayer["tree_group"];
 			$mapSrid[$mapName] = $aLayer["mapset_srid"];	
 			$mapExtent[$mapName] = $aLayer["mapset_extent"];	
-            //$mapExtent[$mapName] = $this->writeProjectMapfile ? $this->projectExtent : $aLayer["mapset_extent"];
 			$mapTitle[$mapName] = $aLayer["mapset_title"];
-            if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
-            if(empty($this->mpxCaches[$mapName])) $this->mpxCaches[$mapName] = array();
-            if($aLayer['theme_single']) {
-                $cacheName = $aLayer['theme_name'].'_cache';
-                if(empty($this->mpxCaches[$mapName][$cacheName])) $this->mpxCaches[$mapName][$cacheName] = array(
-                    'grids'=>array_keys($this->grids),
-                    'cache'=>array(
-                        'type'=>'mbtiles',
-                        'filename'=>$aLayer['theme_name'].'.mbtiles'
-                    ),
-                    'layergroups'=>array(),
-                    'theme_name'=>$aLayer['theme_name'],
-                    'theme_title'=>$aLayer['theme_title']
-                );
-                
-                array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
-            }
-			
 			$oFeature->initFeature($aLayer["layer_id"]);
 			//if(!$this->printMap) $mapName = $projectName;//$themeName;
 			
@@ -260,7 +245,28 @@ class gcMapfile{
 			if(defined('MAPPROXY')){
 				//DEFINIZIONE DEI LAYER PER MAPPROXY (COSTRUISCO UN LAYER WMS ANCHE PER I WMTS/TMS PER I TEST)
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
+				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
+            	if(empty($this->mpxCaches[$mapName])) $this->mpxCaches[$mapName] = array();
+				if(empty($this->defaultLayers[$mapName])) $this->defaultLayers[$mapName] = array();
+	/*          //CACHE PER I TEMI SINGLE
+	            if($aLayer['theme_single']) {
+	                $cacheName = $aLayer['theme_name'].'_cache';
+	                if(empty($this->mpxCaches[$mapName][$cacheName])) $this->mpxCaches[$mapName][$cacheName] = array(
+	                    'grids'=>array_keys($this->grids),
+	                    'cache'=>array(
+	                        'type'=>'mbtiles',
+	                        'filename'=>$aLayer['theme_name'].'.mbtiles'
+	                    ),
+	                    'layergroups'=>array(),
+	                    'theme_name'=>$aLayer['theme_name'],
+	                    'theme_title'=>$aLayer['theme_title']
+	                );
+	                
+	                array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
+	            }*/
 
+	            //LAYER ACCESI DI DEFAULT PER LA CACHE DEL MAPSET INTERO 
+				//$defaulMapsetLayers = array();
 				if(!empty($aLayer["layer_name"])){
 
 					if($aLayer["owstype_id"] == WMS_LAYER_TYPE){
@@ -278,7 +284,7 @@ class gcMapfile{
 	                            ));
 	                        }
 						}
-
+						if($aLayer["isbaselayer"]) array_push($this->defaultLayers[$mapName],$aLayer["layergroup_name"]);
 
 					}
 	
@@ -295,6 +301,7 @@ class gcMapfile{
 	                        ),
 	                        'grids'=>array_keys($this->grids)
                     	);
+						if($aLayer["isbaselayer"]) array_push($this->defaultLayers[$mapName],$aLayer["layergroup_name"]);
 
 					}
 
@@ -306,48 +313,35 @@ class gcMapfile{
 	                        array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
 	                            "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
 	                            "title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],
-	                            "sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])
+	                            "sources"=>array("mapserver_source:".$aLayer["layergroup_name"])
 	                        ));
 		                }
 					}
 
 				}
 
-/*
-				//SE IL LAYERGROUP E' DI TIPO TMS/WMTS AGGIUNGO ANCHE IL LAYER WMTS/TMS E LA CACHE
-				if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
-					$layergroupName = $aLayer["layergroup_name"].(($aLayer["owstype_id"] == WMTS_LAYER_TYPE)?"_wmts":"_tms");
-					$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$layergroupName] = array("name"=>$layergroupName,"title"=>$aLayer["layergroup_title"],"sources"=>array($layergroupName."_cache"));
-                    
-                    $this->mpxCaches[$mapName][$layergroupName."_cache"] = array(
-                        "sources"=>array("mapserver_source:".$layergroupName),
-                        'cache'=>array(
-                            'type'=>'mbtiles',
-                            'filename'=>MAPPROXY_CACHE_PATH.$layergroupName.'_cache.mbtiles'
-                        ),
-                        'grids'=>array_keys($this->grids)
-                    );
-
-					//TODO scrivere le grid e le altre impostazioni, verificare il problema della incompatibilità wmts tms ????
-				}
-	*/
 			}
 
 		}
-
 
 		foreach($mapText as $mapName=>$mapContent){
 			//SE NON HO EXTENT LO PRENDO DAL PROGETTO E SE SRID DIVERSO LO RIPROIETTO
 			if(empty($mapExtent[$mapName])){			
 				if($mapSrid[$mapName] == $this->projectSrid)
-					$mapExtent[$mapName] = implode (" ",$this->projectExtent);
+					$this->mapsetExtent = $this->projectExtent;
 				else
-					$mapExtent[$mapName] = $this->_transformExtent($mapSrid[$mapName]);
+					$this->mapsetExtent = $this->_transformExtent($mapSrid[$mapName]);
+			}else{
+				$v = preg_split('/[\s]+/', $mapExtent[$mapName]);
+		        for ($i=0;$i<count($v);$i++){
+		        	$v[$i] = round(floatval($v[$i]),4);
+		        }
+		        print_array($v);
+		        $this->mapsetExtent = $v;
 			}
 
 			$this->layerText = implode("\n",$mapContent);
 			$this->mapsetSrid = $mapSrid[$mapName];
-			$this->mapsetExtent = $mapExtent[$mapName];
 			$this->mapsetTitle = $mapTitle[$mapName];
 			
 			if($symbolsList[$mapName]) $this->layerText .= $this->_getSymbolText($symbolsList[$mapName]);
@@ -438,7 +432,7 @@ class gcMapfile{
 		$layerText = $this->layerText;
 		$mapProjection = "\t\"init=epsg:".$this->mapsetSrid."\"";
 		if(!empty($this->srsParams[$this->mapsetSrid])) $mapProjection .= "\n\t\"+towgs84=".$this->srsParams[$this->mapsetSrid]."\"";
-		$mapsetExtent = "EXTENT ". $this->mapsetExtent;
+		$mapsetExtent = "EXTENT ". implode(" ", $this->mapsetExtent);
 
         if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
         else $maxSize = '4096';
@@ -720,7 +714,7 @@ END";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute();
 		$res=$stmt->fetch(PDO::FETCH_ASSOC);
-		if(!empty($res)) return implode(" ",$res);
+		if(!empty($res)) return array_values($res);
 	
 	}
 	
@@ -744,21 +738,17 @@ END";
 		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
 			$epsgList[] = "EPSG:".$row["id"];
 		}
-		$this->epsgList = implode(" ",$epsgList);
+		$this->epsgList = $epsgList;
 	}
 
 	function _writeMapProxyConfig($mapName){
-        $mapsetExtent = explode(' ', $this->mapsetExtent);
-        foreach($mapsetExtent as &$extent) $extent = (float)$extent;
-
-
         $config = array(
             'services'=>array(
             	'demo'=>array(
             		'name'=>$mapName
             	),
                 'tms'=>array(
-                    'srs'=>explode(' ', $this->epsgList),
+                    'srs'=>$this->epsgList,
                     'use_grid_names'=>false,
                     'origin'=>'nw'
                 ),
@@ -766,10 +756,10 @@ END";
                     'use_grid_names'=>false,
                 ),
                 'wmts'=>array(
-                    'srs'=>explode(' ', $this->epsgList),
+                    'srs'=>$this->epsgList,
                 ),
                 'wms'=>array(
-                    'srs'=>explode(' ', $this->epsgList),
+                    'srs'=>$this->epsgList,
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
@@ -786,27 +776,42 @@ END";
             'sources'=>array(
                 'mapserver_source'=>array(
                     'type'=>'wms',
-                    'supported_srs'=>explode(' ', $this->epsgList),
+                    'supported_srs'=>$this->epsgList,
                     'req'=>array(
-                    	'url'=> 'http://localhost/cgi-bin/mapserv?',
+                    	'url'=>MAPSERVER_WMS_SOURCE,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'format'=>'image/png',
                         'transparent'=> true,
                         'exceptions'=> 'inimage'
                     ),
                     'coverage'=>array(
-                        'bbox'=>$mapsetExtent,
+                        'bbox'=>$this->mapsetExtent,
                         'srs'=>'EPSG:'.$this->mapsetSrid
                     ),
                     'image'=>array(
                         'transparent_color'=>'#ffffff',
-                        'transparent_color_tolerance'=>0,
+                        'transparent_color_tolerance'=>0
                     )
+                ),
+                'mapserver_bin_source'=>array(
+                    'type'=>'mapserver',
+                    'req'=>array(
+                        'map'=>ROOT_PATH.'map/'.$mapName.".map",
+                    ),
+                    'coverage'=>array(
+                        'bbox'=>$this->mapsetExtent,
+                        'srs'=>'EPSG:'.$this->mapsetSrid
+                    ),
+                    'mapserver'=>array(
+                        'binary'=>MAPSERVER_BINARY_PATH,
+                        'working_dir'=>ROOT_PATH.'map'
+                    )
+
                 )
             ),
             'globals'=>array(
                 'srs'=>array(
-                    'proj_data_dir'=>'/usr/share/proj'
+                    'proj_data_dir'=>PROJ_LIB
                 ),
                 'cache'=>array(
                     'base_dir'=>TILES_CACHE.$this->projectName.'/',
@@ -829,7 +834,10 @@ END";
         //Verifica esistenza cartella dei tiles
         if(!is_dir(TILES_CACHE.$this->projectName)) mkdir(TILES_CACHE.$this->projectName);
         
-        $content = yaml_emit($config,YAML_UTF8_ENCODING);
+        //$content = yaml_emit($config,YAML_UTF8_ENCODING);
+
+		print_debug($config,null,'yaml');
+        $content = Spyc::YAMLDump($config,1,250);
 
         file_put_contents(MAPPROXY_CONFIG_PATH.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)

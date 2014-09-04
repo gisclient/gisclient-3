@@ -201,6 +201,7 @@ class GCAuthor {
 	
 	public static function refreshProjectMapfile($project, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
+		require_once ADMIN_PATH.'lib/spyc.php';
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
@@ -225,6 +226,7 @@ class GCAuthor {
 	
 	public static function refreshMapfiles($project, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
+		require_once ADMIN_PATH.'lib/spyc.php';
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
@@ -248,6 +250,7 @@ class GCAuthor {
 	
 	public static function refreshMapfile($project, $mapset, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
+		require_once ADMIN_PATH.'lib/spyc.php';
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
