@@ -336,7 +336,6 @@ class gcMapfile{
 		        for ($i=0;$i<count($v);$i++){
 		        	$v[$i] = round(floatval($v[$i]),4);
 		        }
-		        print_array($v);
 		        $this->mapsetExtent = $v;
 			}
 
