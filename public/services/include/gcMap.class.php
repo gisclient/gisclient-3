@@ -503,8 +503,8 @@ class gcMap{
 				$layerParameters["url"] .= $layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				if($row["status"] == 0) $layerParameters["visibility"] = false;
 				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
-				$layerParameters["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
-				$layerParameters["requestEncoding"] = "REST";
+				//$layerParameters["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
+				//$layerParameters["requestEncoding"] = "REST";
 				//$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
 				$layerParameters["owsurl"] = $ows_url."?map=".$mapsetName;

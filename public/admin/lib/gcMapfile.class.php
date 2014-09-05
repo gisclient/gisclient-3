@@ -206,6 +206,7 @@ class gcMapfile{
 
 		if($this->printMap) $mapName = time().'_print';
 		
+		$defaultLayers = array();
 		foreach ($res as $aLayer){
 		
 		//TODO DA SISTEMARE SU DB
@@ -247,7 +248,7 @@ class gcMapfile{
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
 				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
             	if(empty($this->mpxCaches[$mapName])) $this->mpxCaches[$mapName] = array();
-				if(empty($this->defaultLayers[$mapName])) $this->defaultLayers[$mapName] = array();
+				if(empty($defaultLayers[$mapName])) $defaultLayers[$mapName] = array();
 	/*          //CACHE PER I TEMI SINGLE
 	            if($aLayer['theme_single']) {
 	                $cacheName = $aLayer['theme_name'].'_cache';
@@ -284,8 +285,8 @@ class gcMapfile{
 	                            ));
 	                        }
 						}
-						if($aLayer["isbaselayer"]) array_push($this->defaultLayers[$mapName],$aLayer["layergroup_name"]);
-
+						if(!in_array($aLayer["layergroup_name"],$defaultLayers[$mapName]) && ($aLayer["isbaselayer"]  == 0) && ($aLayer["layergroup_status"] == 1))
+							array_push($defaultLayers[$mapName],$aLayer["layergroup_name"]);
 					}
 	
 					else if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
@@ -301,8 +302,8 @@ class gcMapfile{
 	                        ),
 	                        'grids'=>array_keys($this->grids)
                     	);
-						if($aLayer["isbaselayer"]) array_push($this->defaultLayers[$mapName],$aLayer["layergroup_name"]);
-
+						if(!in_array($aLayer["layergroup_name"],$defaultLayers[$mapName]) && ($aLayer["isbaselayer"]  == 0) && ($aLayer["layergroup_status"] == 1))
+							array_push($defaultLayers[$mapName],$aLayer["layergroup_name"]);
 					}
 
 					//VEDO SE CI SONO DEI LIVELLI MAPSERVER DENTRO I LAYERGROUP DEI SERVIZI WEB
@@ -323,7 +324,6 @@ class gcMapfile{
 			}
 
 		}
-
 		foreach($mapText as $mapName=>$mapContent){
 			//SE NON HO EXTENT LO PRENDO DAL PROGETTO E SE SRID DIVERSO LO RIPROIETTO
 			if(empty($mapExtent[$mapName])){			
@@ -380,8 +380,25 @@ class gcMapfile{
                 foreach($layersToAdd as $name => $layer) {
                     $this->mpxLayers[$mapName][$name] = $layer;
                 }
-                
-                
+
+                //AGGIUNGO IL LAYER PER LA NAVIGAZIONE VELOCE
+                $this->mpxCaches[$mapName][$mapName."_cache"] = array(
+	                'sources'=>array('mapserver_bin_source:'.implode(",",$defaultLayers[$mapName])),
+	                'cache'=>array(
+	                    'type'=>'mbtiles',
+	                    'filename'=>$mapName.'.mbtiles'
+	                ),
+	                'grids'=>array_keys($this->grids)
+                );
+				$this->mpxLayers[$mapName][$mapName."_tiles"] = array(
+					'name'=>$mapName."_tiles",
+					'title'=>$mapName."_tiles",
+					'sources'=>array($mapName."_cache")
+
+
+				);
+
+
                 //$this->_writeMapProxyConfig($mpxLayers,$this->mpxCaches);
                 $this->_writeMapProxyConfig($mapName);
             }
@@ -414,7 +431,7 @@ class gcMapfile{
 		$ows_wfs_encoding = $this->_getEncoding();
 		$ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
 		$wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
-		$ows_srs = "\t\"wms_srs\"\t\"". $this->epsgList ."\"";
+		$ows_srs = "\t\"wms_srs\"\t\"". implode(" ",$this->epsgList) ."\"";
 		$ows_accessConstraints = '';
 		if(!empty($this->layersWithAccessConstraints)) {
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
@@ -752,10 +769,10 @@ END";
                     'origin'=>'nw'
                 ),
                 'kml'=>array(
-                    'use_grid_names'=>false,
+                    'use_grid_names'=>false
                 ),
                 'wmts'=>array(
-                    'srs'=>$this->epsgList,
+                    'srs'=>$this->epsgList
                 ),
                 'wms'=>array(
                     'srs'=>$this->epsgList,
@@ -765,10 +782,10 @@ END";
                         'online_resource'=>GISCLIENT_OWS_URL."?map=".$mapName,
                         'contact'=>array(
                             //ma serve sta roba?!?!
-                            'person'=>'Roberto',
+                            'person'=>'Roberto'
                         ),
                         'access_constraints'=>'None',
-                        'fees'=>'None',
+                        'fees'=>'None'
                     )
                 )
             ),
@@ -795,7 +812,9 @@ END";
                 'mapserver_bin_source'=>array(
                     'type'=>'mapserver',
                     'req'=>array(
+                    	'transparent'=>true,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
+                        'exceptions'=> 'inimage'
                     ),
                     'coverage'=>array(
                         'bbox'=>$this->mapsetExtent,
@@ -815,7 +834,7 @@ END";
                 'cache'=>array(
                     'base_dir'=>TILES_CACHE.$this->projectName.'/',
                     'lock_dir'=>TILES_CACHE.'locks/',
-                    'tile_lock_dir'=>TILES_CACHE.'tile_locks/',
+                    'tile_lock_dir'=>TILES_CACHE.'tile_locks/'
                 )
             )
         );
