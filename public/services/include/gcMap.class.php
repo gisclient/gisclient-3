@@ -27,6 +27,7 @@
 
 define('WMS_LAYER_TYPE',1);
 define('WMTS_LAYER_TYPE',2);
+define('WMS_CACHE_LAYER_TYPE',3);
 define('GMAP_LAYER_TYPE',7);
 define('VMAP_LAYER_TYPE',3);
 define('YMAP_LAYER_TYPE',4);
@@ -272,14 +273,11 @@ class gcMap{
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
 
+		$ows_url = (defined('GISCLIENT_OWS_URL'))?GISCLIENT_OWS_URL:'../../services/ows.php';
 		if(defined('MAPPROXY_URL')){
-			$ows_url = MAPPROXY_URL.$this->projectName."/service";
-		}elseif (defined('GISCLIENT_OWS_URL')){
-			$ows_url = GISCLIENT_OWS_URL;
-		}else{
-			$ows_url = "../../services/ows.php?";
+			$mapproxy_url = (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE)?MAPPROXY_URL."/".$this->projectName:MAPPROXY_URL."/".$this->mapsetName;
 		}
-						
+	
 		$rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 		$themeMinScale = false; $themeMaxScale = false;
@@ -331,14 +329,18 @@ class gcMap{
 			if($row["layergroup_maxscale"]>0) $layerOptions["minScale"] = floatval($row["layergroup_maxscale"]);
 			if($row["layergroup_minscale"]>0) $layerOptions["maxScale"] = floatval($row["layergroup_minscale"]);
 
-			if($layerType == WMS_LAYER_TYPE){ 
+			if($layerType == WMS_LAYER_TYPE || $layerType == WMS_CACHE_LAYER_TYPE){
 				//TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
-				$aLayer["url"] = isset($row["url"])?$row["url"]:$ows_url;
 				$layerParameters=array();
-				if(!defined('MAPPROXY_URL')){
-					$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
-					//$layerParameters['gisclient_map'] = 1;
+				if($layerType == WMS_CACHE_LAYER_TYPE){
+					if(!$mapproxy_url) continue;
+					$aLayer["url"] = $mapproxy_url."/service";
 				}
+				else{
+					$aLayer["url"] = empty($row["url"])?$ows_url:$row["url"];
+					$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
+				}
+
 				$layerParameters["exceptions"] = (defined('DEBUG') && DEBUG==1)?'xml':'blank';				
 				$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["transparent"] = true;
@@ -354,11 +356,17 @@ class gcMap{
 				//$aLayer["singleImage"] = intval($row["layergroup_single"]);
 
 				$aLayer["parameters"] = $layerParameters;
-				$aLayer["options"] = $layerOptions;		
+				$aLayer["options"] = $layerOptions;	
+
 
 				//SETTO IL PARAMETRO LAYERS	E LA STRUTTURA		
+				//DA RIVEDRE!!!!!!!!!!!!!!!!!
+				if($layerType == WMS_CACHE_LAYER_TYPE){
+					$aLayer["parameters"]["layers"] = $layergroupName;
+				}
+
 				// Layer impostati sul layergroup
-				if (!empty($row['url']) && (!empty($row['layers']) || $row['layers'] == '0')) { 
+				elseif (!empty($row['layers'])) { 
                    $aLayer["parameters"]["layers"] = explode(",",$row['layers']);
  		        } 
 
@@ -385,13 +393,11 @@ class gcMap{
 					$this->mapLayers[$idx]["options"]["visibility"] = $this->mapLayers[$idx]["options"]["visibility"] || ($row["status"] == 1);
 					//$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
 
-
 					//Layergroup singola immagine: passo solo il layergroupname
 					if($row["layergroup_single"] == 1){ 
 						if($row["status"] == 1) array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
 						$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
 					}
-
 
 					//Layergroup con singoli layer distinti				(DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)		
 					else { 	
@@ -410,11 +416,9 @@ class gcMap{
 
 					}
 
-
 					//INIZIALIZZO IL VALORE PER VERIFICARE CHE SIANO SETTATI MAXSCALE E MINSCALE PER TUTTI I LAYER DEL TEMA ALTRIMENTI NON SETTO IL VALORE NEL TEMA LAYER
 					if($newFlag && !empty($layerOptions["minScale"])) $this->mapLayers[$idx]["options"]["minScale"] = $layerOptions["minScale"];
 					if($newFlag && !empty($layerOptions["maxScale"])) $this->mapLayers[$idx]["options"]["maxScale"] = $layerOptions["maxScale"]; 
-
 
 					if(!empty($layerOptions["minScale"])) { 
 						$node["minScale"] = $layerOptions["minScale"];
@@ -492,24 +496,26 @@ class gcMap{
 				
 			elseif(!empty($this->mapsetGRID) && $layerType == WMTS_LAYER_TYPE){// WMTS
 				$layerParameters=array();
-				//$layerParameters["SERVICE"] = "WMTS";
 				$layerParameters["name"] = $aLayer["name"];
-				$layerParameters["layer"] = isset($row["layers"])?$row["layers"]:$layergroupName;
-				if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE)
-					$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL."/".$this->projectName."/wmts/";
-				else
-					$layerParameters["url"] = isset($row["url"])?$row["url"]:GISCLIENT_WMTS_URL."/".$mapsetName."/wmts/";
+				if(isset($row["url"])){
+					//?????????????????? TODO ???????????????????????
+					$layerParameters["url"] = $row["url"]."/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+				}
+				else{
+					if(!$mapproxy_url) continue;
+					$layerParameters["requestEncoding"] = "REST";
+					$layerParameters["style"] = empty($row["layers"])?$layergroupName:$row["layers"];
+					$layerParameters["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
+					$layerParameters["url"] = $mapproxy_url."/wmts/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+				}
 
-				$layerParameters["url"] .= $layerParameters["layer"]."/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				if($row["status"] == 0) $layerParameters["visibility"] = false;
-				$layerParameters["style"] = empty($row["style"])?'':$row["style"];
-				//$layerParameters["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
-				//$layerParameters["requestEncoding"] = "REST";
-				//$layerParameters["format"] = $row["outputformat_mimetype"];
+				$layerParameters["layer"] = empty($row["layers"])?$layergroupName:$row["layers"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
 				$layerParameters["owsurl"] = $ows_url."?map=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
 				$layerParameters["zoomOffset"] = $this->minZoomLevel; 
+
 				//ALLA ROVESCIA RISPETTO A MAPSERVER
 				if($row["layergroup_maxscale"]>0) $layerParameters["minScale"] = floatval($row["layergroup_maxscale"]);
 				if($row["layergroup_minscale"]>0) $layerParameters["maxScale"] = floatval($row["layergroup_minscale"]);

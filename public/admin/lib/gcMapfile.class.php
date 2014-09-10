@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 define('WMS_LAYER_TYPE',1);
 define('WMTS_LAYER_TYPE',2);
+define('WMS_CACHE_LAYER_TYPE',3);
 define('TMS_LAYER_TYPE',6);
 
 class gcMapfile{
@@ -243,7 +244,7 @@ class gcMapfile{
 				array_push($this->tinyOWSLayers, $oFeature->getTinyOWSLayerParams());
 			}
 
-			if(defined('MAPPROXY')){
+			if(defined('MAPPROXY_URL')){
 				//DEFINIZIONE DEI LAYER PER MAPPROXY (COSTRUISCO UN LAYER WMS ANCHE PER I WMTS/TMS PER I TEST)
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
 				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
@@ -289,7 +290,7 @@ class gcMapfile{
 							array_push($defaultLayers[$mapName],$aLayer["layergroup_name"]);
 					}
 	
-					else if($aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
+					else if($aLayer["owstype_id"] == WMS_CACHE_LAYER_TYPE || $aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE){
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("title"=>$aLayer["theme_title"],"layers"=>array());
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 						//echo $aLayer["layergroup_name"];

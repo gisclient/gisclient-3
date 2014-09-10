@@ -243,10 +243,11 @@ CREATE OR REPLACE VIEW seldb_owstype AS SELECT e_owstype.owstype_id AS id, e_ows
 
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (1, 'WMS', 1);
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (2, 'WMTS (tiles in cache)', 2);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'Mappe Yahoo', 6);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (4, 'Mappe Bing', 5);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (5, 'OpenStreetMap', 3);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (7, 'Mappe Google', 4);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'WMS (tiles in cache)', 3);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (4, 'Mappe Yahoo', 7);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (5, 'OpenStreetMap', 4);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'Mappe Bing', 6);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (7, 'Mappe Google', 5);
 
 
 DROP TABLE e_outputformat cascade;
