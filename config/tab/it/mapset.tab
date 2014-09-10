@@ -13,7 +13,7 @@ dato[] = "Scarica immagine;dl_image_res;20;text"
 dato[] = "Unità Misura;sizeunits_id;160#seldb_sizeunits;selectdb"
 dato[] = "Visualizza coordinate in;displayprojection;100#seldb_mapset_srid#project_name;selectdb"
 dato[] = "Colore sfondo;bg_color;11;color"
-dato[] = "Reference fissa;static_reference;;noyes"
+dato[] = "Reference fissa;static_reference;;noyes|Tiles;mapset_tiles;120#seldb_mapset_tiles;selectdb"
 dato[] = "Estensione Reference;refmap_extent;42;text"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 [list]

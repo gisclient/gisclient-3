@@ -142,6 +142,7 @@ class gcMap{
 		$mapConfig["title"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
 		$mapConfig["projectName"] = $row["project_name"];	
 		if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
+		$mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
 		$mapConfig["dpi"] = MAP_DPI;
 		$mapConfig['projectionDescription'] = $this->_getProjectionDescription('EPSG', $row['mapset_srid']);
 		$mapConfig['projdefs'] = $this->_getProj4jsDefs();
