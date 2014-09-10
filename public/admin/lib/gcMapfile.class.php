@@ -295,7 +295,7 @@ class gcMapfile{
 						//echo $aLayer["layergroup_name"];
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
                     	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
-	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
+	                        "sources"=>array("mapserver_bin_source:".$aLayer["layergroup_name"]),
 	                        'cache'=>array(
 	                            'type'=>'mbtiles',
 	                            'filename'=>$aLayer["layergroup_name"].'.mbtiles'
@@ -346,7 +346,7 @@ class gcMapfile{
 			if($symbolsList[$mapName]) $this->layerText .= $this->_getSymbolText($symbolsList[$mapName]);
 			$this->_writeFile($mapName);
             
-            if(defined('MAPPROXY')){
+            if(defined('MAPPROXY_URL')){
             
             
                 //NORMALIZZO L'ARRAY DEI LIVELLI
@@ -715,10 +715,10 @@ END";
 
 		$maxResolution = $this->projectMaxScale/( MAP_DPI * $factor );
 		return array(
-			0 => $x - $maxResolution * TILE_SIZE,
-			1 => $y - $maxResolution * TILE_SIZE,
-			2 => $x + $maxResolution * TILE_SIZE,
-			3 => $y + $maxResolution * TILE_SIZE
+			0 => round($x - $maxResolution * TILE_SIZE,6),
+			1 => round($y - $maxResolution * TILE_SIZE,6),
+			2 => round($x + $maxResolution * TILE_SIZE,6),
+			3 => round($y + $maxResolution * TILE_SIZE,6)
 		);
 
 		
@@ -850,6 +850,7 @@ END";
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
 
         //Verifica esistenza cartella dei tiles
+        if(!is_dir(TILES_CACHE)) mkdir(TILES_CACHE);
         if(!is_dir(TILES_CACHE.$this->projectName)) mkdir(TILES_CACHE.$this->projectName);
         
         //$content = yaml_emit($config,YAML_UTF8_ENCODING);
