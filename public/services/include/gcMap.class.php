@@ -39,7 +39,6 @@ define('SERVICE_MAX_RESOLUTION',156543.03390625);
 define('SERVICE_MIN_ZOOM_LEVEL',0);
 define('SERVICE_MAX_ZOOM_LEVEL',21);
 
-
 class gcMap{
 
 	var $db;
@@ -74,9 +73,6 @@ class gcMap{
 	private $i18n;
 	protected $oMap;
 	protected $sldContents = array();
-	
-
-	
 	
 	function __construct ($mapsetName, $getLegend = false, $languageId = null){
 
