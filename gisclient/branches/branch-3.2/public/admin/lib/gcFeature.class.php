@@ -58,7 +58,7 @@ class gcFeature{
 	}
 
 
-	function initFeature($layerId){
+	public function initFeature($layerId){
         $this->forcePrivate = false;
 
 		$sqlField = "select qtfield.*,
@@ -157,7 +157,7 @@ class gcFeature{
 		
 	}
 	
-	function isEditable() {
+	public function isEditable() {
 		if($this->aFeature['connection_type'] != 6) return false;
 		if($this->aFeature['queryable'] != 1) return false;
 		foreach($this->aFeature['fields'] as $k => $v) {
@@ -166,7 +166,7 @@ class gcFeature{
 		return false;
 	}
 	
-	function getTinyOWSLayerParams() {
+	public function getTinyOWSLayerParams() {
 		//TODO: così funziona solo per le definizioni DB_NAME/DB_SCHEMA
 		list($dbName, $dbSchema) = explode('/', $this->aFeature['catalog_path']);
 		return array(
@@ -178,23 +178,24 @@ class gcFeature{
 		);
 	}
 	
-	function getLayerName() {
+	public function getLayerName() {
 		return $this->aFeature['layer_name'];
 	}
 	
-	function isPrivate() {
+	public function isPrivate() {
 		return $this->forcePrivate || ($this->aFeature['private'] > 0);
 	}
     
     // Used to force private layer in mapset is private
-    function setPrivate($private) {
+    public function setPrivate($private) {
         $this->forcePrivate = $private;
 	}
 	
-	function getLayerText($layergroupName, $layergroup){
+	public function getLayerText($layergroupName, $layergroup){
 		if(!$this->aFeature) return false;
         $maxScale = $layergroup['layergroup_maxscale'];
         $minScale = $layergroup['layergroup_minscale'];
+        // FIXME: the following does not use the return value, can it be removed?
         $this->_getLayerData();
 		$this->aFeature['layergroup_name'] = $layergroupName;
 		$this->aSymbols = array();//Elenco dei simboli usati nelle classi della feature
@@ -274,7 +275,7 @@ class gcFeature{
 		
 	}
 	
-	function _getLayerConnection(&$layText){       
+	private function _getLayerConnection(&$layText){       
 		if($this->aFeature["layertype_id"] == 10 && !$this->aFeature["tileindex"]){//TILERASTER
 			$layText[]="TILEINDEX \"".$this->aFeature["layer_name"].".TILEINDEX\"";
 			$layText[]="TILEITEM \"location\"";
@@ -355,7 +356,7 @@ class gcFeature{
 
 	}
 	
-	function getTileIndexLayer(){
+	public function getTileIndexLayer(){
 		$layText = array();
 		$layText[] = "LAYER";
 		$layText[] = "\tNAME \"".$this->aFeature["layer_name"].".TILEINDEX\"";
@@ -374,7 +375,7 @@ class gcFeature{
 	}
 		
 	//ritorna la querystring per la feature da usare nel tag DATA del mapfile
-	function _getOracleLayerData() {
+	private function _getOracleLayerData() {
 		$string = $this->aFeature['data_geom'].' FROM ';
         return $string . $this->aFeature['data'];
         // questo sotto non sembra funzionare
@@ -387,7 +388,11 @@ class gcFeature{
 		return $string.' (SELECT '.implode(', ', $fields).' FROM '.$this->aFeature['data'].') as foo';
 	}
 	
-	function _getLayerData(){
+    /**
+     * Construct the DATA statement for the mapfile, http://mapserver.org/mapfile/layer.html
+     * @return string
+     */
+	private function _getLayerData(){
 	
 		$aFeature = $this->aFeature;
 		$layerId=$aFeature["layer_id"];
@@ -508,7 +513,7 @@ class gcFeature{
 
 	}
 
-	function _getMetadata(){
+	private function _getMetadata(){
 		$agmlType = array(1=>"Point",2=>"Line",3=>"Polygon",4=>"Point");
 		$ageometryType = array("point" => "point","multipoint" => "multipoint","linestring" => "line","multilinestring" => "multiline","polygon" => "polygon" ,"multipolygon" => "multipolygon");
 		$metaText = '';
@@ -601,7 +606,7 @@ class gcFeature{
 		return $projString;
 	}
 	
-	function _getClassText($aClass){
+	private function _getClassText($aClass){
 		
 		print_debug($aClass,null,'classi');
 		$clsText=array();
@@ -675,7 +680,7 @@ class gcFeature{
 	}
 	
 	
-	function _getStyleText($aStyle){
+	private function _getStyleText($aStyle){
 		
 		$styText=array();
 		if(!empty($aStyle["color"])) $styText[]="COLOR ".$aStyle["color"];
@@ -700,7 +705,7 @@ class gcFeature{
 	}
 	
 	// SERVE A MARCO??????
-	function getFeatureField($layerId=null){
+	public function getFeatureField($layerId=null){
 		$result=Array();
 		if ($layerId) $this->init($layerId);
 		$data=$this->_getLayerData();
@@ -724,7 +729,7 @@ class gcFeature{
 	}
 	
 
-	function _getMetadataFieldDataType($typeId) {
+	private function _getMetadataFieldDataType($typeId) {
 		if($typeId == 1 || $typeId == 3) return 'Character';
 		return false;
 	}
