@@ -76,7 +76,7 @@ class gcFeature{
 		$qRelation = array();
 		$qField = array();
 
-                //Costruzione dell'oggetto Feature
+        // Costruzione dell'oggetto Feature
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		
 			if(!empty($this->i18n)) {
@@ -128,10 +128,6 @@ class gcFeature{
 		$stmt = $this->db->prepare($sqlFeature);
 		$stmt->execute(array($layerId));
 
-		//print_debug($sqlFeature,null,'template');
-		//print_debug($sqlFeature,null,'template');
-
-		
 		$res = $stmt->fetchAll();
 		if($stmt->rowCount() == 0){
 			$this->aFeature =false;
@@ -302,10 +298,6 @@ class gcFeature{
 					$layText[]="CONNECTIONTYPE POSTGIS";
 					$layText[]="CONNECTION \"".$this->aFeature["connection_string"]."\"";
 					$sData = $this->_getLayerData();
-//					if($this->aFeature["fields"])
-//						$sData .= " USING UNIQUE gc_objid";
-//					elseif(!empty($this->aFeature["data_unique"]))
-//						$sData .= " USING UNIQUE ".$this->aFeature["data_unique"];
                     if (!empty($this->aFeature["data_unique"]))
                         $sData .= " USING UNIQUE gc_objid";
 					if(!empty($this->aFeature["data_srid"])) $sData .= " USING SRID=" . $this->aFeature["data_srid"];
@@ -395,13 +387,13 @@ class gcFeature{
 	private function _getLayerData(){
 	
 		$aFeature = $this->aFeature;
-		$layerId=$aFeature["layer_id"];
+		// $layerId=$aFeature["layer_id"]; // unused
 		$datalayerTable=$aFeature["data"];	
 		$datalayerGeom=$aFeature["data_geom"];			
 		$datalayerKey=$aFeature["data_unique"];	
-		$datalayerSRID=$aFeature["data_srid"];		
+		// $datalayerSRID=$aFeature["data_srid"]; // unused
 		$datalayerSchema = $aFeature["table_schema"];
-		$datalayerFilter = $aFeature["data_filter"];
+		// $datalayerFilter = $aFeature["data_filter"]; // unused
 
 		if($aFeature["tileindex"]) { //X TILERASTER
 			$location = "'".trim($aFeature["base_path"])."' || location as location";//value for location
@@ -415,8 +407,6 @@ class gcFeature{
 			$datalayerTable=$datalayerSchema.".".$datalayerTable . " AS ".DATALAYER_ALIAS_TABLE; 
 			
 		$joinString = $datalayerTable;
-		
-		
 		$fieldString = "*";
         $groupBy = '';
 
@@ -458,10 +448,7 @@ class gcFeature{
 						$fieldString = $fieldName;
 					$fieldList[] = $fieldString;
 					*/
-				
 				}
-	
-				
 			}
 			
 			//Elenco delle relazioni
@@ -472,13 +459,13 @@ class gcFeature{
 					
 					//TODO RELAZIONI 1-MOLTI IN GC3
 					if($rel["relation_type"] == 2){
-						//aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore � vuoto
+						//aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore è vuoto
 						
 						//$keyList = array();
 						//foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
 						//$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
                         
-                        $groupBy = ' group by  '.implode(', ', $groupByFieldList).', '.$datalayerGeom;
+                        $groupBy = ' GROUP BY  '.implode(', ', $groupByFieldList).', '.$datalayerGeom;
 						$fieldList[] = ' count('.$relationAliasTable.'.'.$rel['join_field'][0][1].') as num_'.$idrel;
                         
                         if(!isset($this->aFeature['1n_count_fields'])) $this->aFeature['1n_count_fields'] = array();
@@ -486,7 +473,6 @@ class gcFeature{
 
 					}
 
-						
                     $joinList=array();
                     for($i=0;$i<count($rel["join_field"]);$i++){
                         $joinList[]=DATALAYER_ALIAS_TABLE.".".$rel["join_field"][$i][0]."=".$relationAliasTable.".".$rel["join_field"][$i][1];
@@ -496,11 +482,7 @@ class gcFeature{
                     $joinFields=implode(" AND ",$joinList);
                     $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";	
                     //Se non sto visualizzando la secondaria e la relazione � 1 a molti genero il campo che dar� origine al link alla tabella
-
-
-					
 				}
-				
 			}
 			
 			$fieldString = implode(",",$fieldList);
@@ -594,16 +576,6 @@ class gcFeature{
 		//$metaText;
 		return $metaText;
 		
-	}
-	
-	//NON SI USA PIU' SERVIVA A PRENDERE LE STRINGHE PROJ
-	function _getProjString(){
-		$projString = "\t\"".$this->aFeature["proj4text"];
-		if(strpos($projString, '+towgs84=') !== false) {
-			if(!empty($this->aFeature["param"])) $projString.=  "+towgs84=".$this->aFeature["param"];
-		}
-		$projString.="\"";
-		return $projString;
 	}
 	
 	private function _getClassText($aClass){
@@ -734,8 +706,5 @@ class gcFeature{
 		return false;
 	}
 	
-	
-
 }//end class
-
 ?>
