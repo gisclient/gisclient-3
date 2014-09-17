@@ -10,8 +10,8 @@ $db = GCApp::getDB();
 if(empty($_REQUEST['selectedField'])) $ajax->error('field');
 $selectedField = $_REQUEST['selectedField'];
 
-if(!empty($_REQUEST['qtrelation_id'])) {
-	$relationId = $_REQUEST['qtrelation_id'];
+if(!empty($_REQUEST['relation_id'])) {
+	$relationId = $_REQUEST['relation_id'];
 } else if(!empty($_REQUEST['layer'])) {
 	$layerId = $_REQUEST['layer'];
 } else {
@@ -27,7 +27,7 @@ $result = array('steps'=>1, 'data'=>array(), 'data_objects'=>array(), 'step'=>1,
 $n = 0;
 
 if(!empty($relationId)) {
-	$sql="select catalog_path, connection_type, qtrelation.table_name from ".DB_SCHEMA.".qtrelation left join ".DB_SCHEMA.".catalog  USING (catalog_id) where qtrelation_id = ?";
+	$sql="select catalog_path, connection_type, relation.table_name from ".DB_SCHEMA.".relation left join ".DB_SCHEMA.".catalog  USING (catalog_id) where relation_id = ?";
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array($relationId));
 	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
