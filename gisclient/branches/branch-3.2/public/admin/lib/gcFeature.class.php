@@ -418,7 +418,11 @@ class gcFeature{
 		//Elenco dei campi definiti
 		if($aFeature["fields"]){
 			$fieldList = array();
-            $groupByFieldList = array();
+			
+            // collection of all fields which should be listed in the GROUP BY clause
+            // the primary key is certainly part of it
+            // with PostgreSQL 9.1 and later, the primary key would be enough.
+            $groupByFieldList = array(DATALAYER_ALIAS_TABLE.".".$datalayerKey);
 			
 			foreach($aFeature["fields"] as $idField=>$aField){
 
