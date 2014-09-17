@@ -232,6 +232,11 @@ class gcMap{
         if($user->isAuthenticated()) {
             $mapConfig['logged_username'] = $user->getUsername();
         }
+        
+        $sql = 'select mapset_name, mapset_title from '.DB_SCHEMA.'.mapset where project_name = :project';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array('project'=>$this->projectName));
+        $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 		//$this->maxRes = $maxRes;
 		//$this->minRes = $minRes;
