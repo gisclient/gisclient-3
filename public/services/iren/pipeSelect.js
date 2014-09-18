@@ -129,8 +129,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 				
 			});
 		}
-
-		if(typeof($)!='undefined'){
+		else if(typeof($)!='undefined'){
 			$('div.myTool').on('click', function() {
 				self.exclude.push(this.id);
 				self.select(self.point);
@@ -405,7 +404,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 				self.map.removePopup(popup);
 			});
 		}
-		if(typeof($)!='undefined'){
+		else if(typeof($)!='undefined'){
 			$('div.myTool').on('click', function() {
 				self.exclude.push(this.id);
 				self.select(self.point);
