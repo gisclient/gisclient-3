@@ -75,7 +75,7 @@ $db->exec($sql);
 //aggiornamento ms6
 $outputFile = $workingDir.'ms6_output.txt';
 $errorFile = $workingDir.'ms6_errors.txt';
-$cmd = $authCmd . 'psql --quiet -h '.$host.' -f '.ROOT_PATH.'doc/aggiornamento_database_mapserver_6.sql '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
+$cmd = $authCmd . 'psql --quiet -h '.$host.' -p '.$port.' -f '.ROOT_PATH.'doc/aggiornamento_database_mapserver_6.sql '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
 exec($cmd, $output, $return);
 if($return != 0) {
     die('Errore in aggiornamento mapserver 6 '."\n\n".file_get_contents($errorFile));

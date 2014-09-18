@@ -1203,17 +1203,15 @@ insert into style(style_id,class_id,style_name,symbol_name,color,angle,size,mins
 select class_id+(select max(style_id)from style),class_id,symbol_ttf_name,label_font||'_'||symbol_ttf_name,label_color,label_angle,label_size,label_minsize,label_maxsize from class where coalesce(symbol_ttf_name,'')<>'' and coalesce(label_font,'')<>'';
 
 
---DEDICATO AL PROGETTO
-
-UPDATE mapset set template='jquery/mobile.html';
-
+--SISTEMI DI RIFERIMENTO + DIFFUSI
 INSERT INTO project_srs SELECT project_name, 900913, NULL, NULL, 1 FROM project;
 INSERT INTO project_srs SELECT project_name, 3857, NULL, NULL, 1 FROM project;
+INSERT INTO project_srs SELECT project_name, 25832, NULL, NULL, 1 FROM project;
 INSERT INTO project_srs SELECT project_name, 4326, NULL, NULL, 2 FROM project;
 INSERT INTO project_srs SELECT project_name, 3003, '-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68', NULL, 3 FROM project;
+INSERT INTO project_srs SELECT project_name, 3004, '-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68', NULL, 3 FROM project;
 INSERT INTO project_srs SELECT project_name, 23032, '-87,-98,-121', NULL, 5 FROM project;
 INSERT INTO project_srs SELECT project_name, 32632, NULL, NULL, 4 FROM project;
-
 
 
 --2014-9-10 navigazione rapida sul mapset -  
@@ -1230,3 +1228,10 @@ CREATE OR REPLACE VIEW seldb_mapset_tiles AS
 --2014-9-10 cataloghi dopo i temi -  
 UPDATE form_level set order_fld=4 where id=4;
 UPDATE form_level set order_fld=5 where id=45;
+
+
+
+
+
+--nuovo template!!
+UPDATE mapset set template='jquery/mobile.html';
