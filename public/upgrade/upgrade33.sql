@@ -243,12 +243,13 @@ CREATE TABLE e_owstype
 CREATE OR REPLACE VIEW seldb_owstype AS SELECT e_owstype.owstype_id AS id, e_owstype.owstype_name AS opzione FROM e_owstype order by owstype_order;
 
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (1, 'WMS', 1);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (2, 'WMTS (tiles in cache)', 2);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (2, 'WMTS', 2);
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'WMS (tiles in cache)', 3);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (4, 'Mappe Yahoo', 7);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (5, 'OpenStreetMap', 4);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'Mappe Bing', 6);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (7, 'Mappe Google', 5);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (4, 'Yahoo', 3);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (5, 'OSM', 5);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'TMS', 6);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (7, 'Google', 4);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (8, 'Bing', 6);
 
 
 DROP TABLE e_outputformat cascade;
@@ -1212,3 +1213,20 @@ INSERT INTO project_srs SELECT project_name, 4326, NULL, NULL, 2 FROM project;
 INSERT INTO project_srs SELECT project_name, 3003, '-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68', NULL, 3 FROM project;
 INSERT INTO project_srs SELECT project_name, 23032, '-87,-98,-121', NULL, 5 FROM project;
 INSERT INTO project_srs SELECT project_name, 32632, NULL, NULL, 4 FROM project;
+
+
+
+--2014-9-10 navigazione rapida sul mapset -  
+ALTER TABLE mapset ADD COLUMN mapset_tiles integer DEFAULT 0;
+CREATE OR REPLACE VIEW seldb_mapset_tiles AS 
+ SELECT 0 as id, 'NO TILES' AS opzione
+ UNION ALL
+ (SELECT e_owstype.owstype_id AS id, e_owstype.owstype_name AS opzione
+   FROM e_owstype
+   WHERE owstype_id in(2,3));
+
+
+
+--2014-9-10 cataloghi dopo i temi -  
+UPDATE form_level set order_fld=4 where id=4;
+UPDATE form_level set order_fld=5 where id=45;
