@@ -120,6 +120,7 @@ if($flag != 2){
 //ELENCO DEGLI OGGETTI TROVATI INDICIZZATI PER TIPO
 $stmt = $db->prepare($sql);
 $stmt->execute();
+
 $elements = array();	
 foreach($ELEMENTS as $key=>$value) $elements[$key] = array();
 while($row = $stmt->fetch(PDO::FETCH_ASSOC)){

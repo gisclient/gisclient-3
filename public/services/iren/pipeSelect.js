@@ -85,7 +85,12 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 							exclude:this.exclude,
                             request: "tratta"
                         },
-                        callback: this.loadResult,
+                        success: this.loadResult,
+                        failure:function(){
+
+                        	alert('Tempo di esecuzione scaduto, controllare il grafo')
+
+                        },
                         scope: this
                     };
                     OpenLayers.Request.GET(options);
