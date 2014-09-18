@@ -1,10 +1,20 @@
 ﻿<?php
+
+//SE IL DATABASE NON È QUELLO DOVE RISIEDE LO SCHEMA GISCLIENT RIDEFINISCO LE COSTANTI
+define('DB_NAME','geoweb_dati');
+//define('DB_USER','******'); 
+//define('DB_PWD','*******');
+//define('DB_HOST','******');
+//define('DB_PORT','*****');
+
+
 /***** CONFIGURAZIONE ELEMENTI DA INTERCETTARE : condotta, valvola, sollevamento, riduttore, serbatoio, vasca 
 (altri elementi e/o campi delle tabelle possono essere aggiunti a piacere dall'utente) ****/
 $SCHEMA = "acq";
 $FID_FIELD = "gs_id";
 $GEOM_FIELD = "geom";
 $GEOM_SRID = "25832";
+$TIME_OUT = "10000";
 $ELEMENTS = array(
 	"condotta" => array("featureType"=>array(
 		"table" => "ra_traccia_acquedotto_pg_v",

@@ -1,6 +1,6 @@
 <?php
-require_once "../../../config/config.php";
 require_once "findPipes.config.php";
+require_once "../../../config/config.php";
 
 $dbSchema=DB_SCHEMA;
 $transform = defined('POSTGIS_TRANSFORM_GEOMETRY')?POSTGIS_TRANSFORM_GEOMETRY:'Transform_Geometry';
@@ -17,8 +17,10 @@ $x = floatval($_REQUEST["x"]);
 $y = floatval($_REQUEST["y"]);
 $distance = floatval($_REQUEST["distance"]);
 
-//DA PREVEDERE CONNESSIONE A DB DIVERSO DA QUELLO DI GC
 $db = GCApp::getDB();
+$sql = "SET statement_timeout TO $TIME_OUT;";
+$stmt = $db->prepare($sql);
+$stmt->execute();
 
 
 if($_REQUEST["srs"] == "EPSG:".$GEOM_SRID){
@@ -31,7 +33,6 @@ else{
 	$point ="SRID=$srid;POINT($x $y)";
 	$geom = $transform."(the_geom,'".$SRS[$GEOM_SRID]."','".$SRS[$srid]."',".$srid.")";
 }
-
 
 
 //ANALISI DEL GRAFO
@@ -115,7 +116,6 @@ if($flag != 2){
 		)
 		SELECT DISTINCT id_arco, da_nodo, a_nodo, da_tipo, a_tipo FROM search_graph WHERE NOT stop LIMIT 1000";
 }
-
 
 //ELENCO DEGLI OGGETTI TROVATI INDICIZZATI PER TIPO
 $stmt = $db->prepare($sql);
