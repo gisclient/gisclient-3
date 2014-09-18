@@ -9,6 +9,18 @@ if (defined('DEBUG') && DEBUG) {
 	$logfile = DEBUG_DIR . "/mapfile.debug";
 }
 
+function getWmsParameters(array $layerParameters) {
+	$query = '';
+	if(!empty($layerParameters['PROJECT'])) $query .= 'PROJECT='.$layerParameters['PROJECT'];
+	if(!empty($layerParameters['MAP'])) $query .= '&MAP='.$layerParameters['MAP'];
+	if(!empty($layerParameters['TIME'])) $query .= '&TIME='.$layerParameters['TIME'];
+	if(!empty($layerParameters['PREV_TIME'])) $query .= '&PREV_TIME='.$layerParameters['PREV_TIME'];
+	if(!empty($layerParameters['REDLINEID'])) $query .= '&REDLINEID='.$layerParameters['REDLINEID'];
+	if(!empty($layerParameters['LANG'])) $query .= '&LANG='.$layerParameters['LANG'];
+	
+	return $query;
+}
+
 /**
  * MapServer, at least of version 5.6, is not too happy if there are some
  * parameters in the request.
@@ -116,39 +128,57 @@ foreach($mapConfig['layers'] as $key => $layer) {
 			}
 		}
 		
-		if(!empty($layer['PARAMETERS']['PROJECT'])) $url .= 'PROJECT='.$layer['PARAMETERS']['PROJECT'];
-		if(!empty($layer['PARAMETERS']['MAP'])) $url .= '&MAP='.$layer['PARAMETERS']['MAP'];
-		if(!empty($layer['PARAMETERS']['TIME'])) $url .= '&TIME='.$layer['PARAMETERS']['TIME'];
-		if(!empty($layer['PARAMETERS']['PREV_TIME'])) $url .= '&PREV_TIME='.$layer['PARAMETERS']['PREV_TIME'];
-		if(!empty($layer['PARAMETERS']['REDLINEID'])) $url .= '&REDLINEID='.$layer['PARAMETERS']['REDLINEID'];
-        if(!empty($layer['PARAMETERS']['LANG'])) $url .= '&LANG='.$layer['PARAMETERS']['LANG'];
-		if(!empty($sessionId)) $url .= '&GC_SESSION_ID='.$sessionId;
-		if(!empty($mapConfig['resolution'])) $url.= '&RESOLUTION='.$mapConfig['resolution'];
-        $layerNames = '';
-        if(!empty($layer['PARAMETERS']['LAYERS'])) {
-            if(is_array($layer['PARAMETERS']['LAYERS'])) $layerNames = implode(',', $layer['PARAMETERS']['LAYERS']);
-            else $layerNames = $layer['PARAMETERS']['LAYERS'];
-        }
-
 		$oLay = ms_newLayerObj($oMap);
 		$oLay->set('name', 'print_layer_'.$key);
 		$oLay->set('type', MS_LAYER_RASTER);
 		if ($enableDebug) {
 			$oLay->set('debug', 5);
 		}
-		$oLay->setConnectionType(MS_WMS);
-		$oLay->set('connection', cleanWMSRequest($url));
-		if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
-			$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
-            $oLay->setMetaData("wms_force_separate_request", 1);
+		
+		switch($layer['SERVICE']) {
+			case 'WMS':
+			case 'TMS':
+			
+				$query = getWmsParameters($layer['PARAMETERS']);
+				
+				if(!empty($sessionId)) $query .= '&GC_SESSION_ID='.$sessionId;
+				if(!empty($mapConfig['resolution'])) $query.= '&RESOLUTION='.$mapConfig['resolution'];
+				$layerNames = '';
+				if(!empty($layer['PARAMETERS']['LAYERS'])) {
+					if(is_array($layer['PARAMETERS']['LAYERS'])) $layerNames = implode(',', $layer['PARAMETERS']['LAYERS']);
+					else $layerNames = $layer['PARAMETERS']['LAYERS'];
+				}
+				
+				$oLay->setConnectionType(MS_WMS);
+				$oLay->set('connection', cleanWMSRequest($url.$query));
+				if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
+					$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
+					$oLay->setMetaData("wms_force_separate_request", 1);
+				}
+				if(!empty($layer['PARAMETERS']['SLD'])) {
+					$oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);
+				}
+				$oLay->setMetaData("wms_srs", $mapConfig['srs']);
+				$oLay->setMetaData("wms_name", $layerNames);
+				$oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);
+				$oLay->setMetaData("wms_format", $layer['PARAMETERS']['FORMAT']);
+				
+				break;
+			case 'WMTS':
+				$mapfileDir = ROOT_PATH.'map/';
+				$projectDir = $mapfileDir.$layer['PROJECT'].'/';
+				$gdalWms = $projectDir.$layer['LAYER'].'.gdal_wms.xml';
+				
+				if (!file_exists($gdalWms)) {
+					throw new Exception("configuration file for gdal_wms not found: {$gdalWms}");
+				}
+				
+				$oLay->set('data', $gdalWms);
+				break;
+			default:
+				throw new Exception("Unsupported SERVICE '{$layer['SERVICE']}'");
 		}
-		if(!empty($layer['PARAMETERS']['SLD'])) {
-			$oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);
-		}
-		$oLay->setMetaData("wms_srs", $mapConfig['srs']);
-		$oLay->setMetaData("wms_name", $layerNames);
-		$oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);
-		$oLay->setMetaData("wms_format", $layer['PARAMETERS']['FORMAT']);
+		
 		$oLay->set('status',MS_ON);
 	}
 }
@@ -206,7 +236,7 @@ if(!empty($mapConfig['format']) && $mapConfig['format'] == 'gtiff') {
 }
 
 if($mapConfig['format'] == 'gtiff') {
-    $oImage->saveImage($mapConfig['file_name'], $oMap);
+	$oImage->saveImage($mapConfig['file_name'], $oMap);
 } else if(!empty($mapConfig['save_image']) && isset($mapConfig['file_name'])) {
 	$oImage->saveImage($mapConfig['file_name']);
 } else {

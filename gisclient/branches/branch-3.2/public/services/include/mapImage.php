@@ -96,13 +96,20 @@ class mapImage {
 	
 	protected function buildWmsList() {
 		foreach($this->tiles as $key => $tile) {
-            $url = trim($tile['url'], '?');
-            $url = printDocument::addPrefixToRelativeUrl($url);
+			$url = trim($tile['url'], '?');
+			$url = printDocument::addPrefixToRelativeUrl($url);
+			if (!empty($tile['service'])) {
+				$service = $tile['service'];
+			} else {
+				$service = 'WMS';
+			}
             
             $parameters = array();
-            foreach($tile['parameters'] as $key => $val) {
-                $parameters[strtoupper($key)] = $val;
-            }
+			if (isset($tile['parameters'])) {
+				foreach($tile['parameters'] as $key => $val) {
+					$parameters[strtoupper($key)] = $val;
+				}
+			}
             
             // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
             $parsedUrl = parse_url($url);
@@ -119,7 +126,21 @@ class mapImage {
             
             if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
             
-            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
+			$request = array('URL'=>$url, 'SERVICE'=>$service, 'PARAMETERS'=>$parameters);
+			if ($service === 'WMTS') {
+				if (isset($tile['layer'])) {
+					$request['LAYER'] = $tile['layer'];
+				} else {
+					throw new Exception("layer name is required to print WMTS layer");
+				}
+				if (isset($tile['project'])) {
+					$request['PROJECT'] = $tile['project'];
+				} else {
+					throw new Exception("project name is required to print WMTS layer");
+				}
+			}
+			
+			array_push($this->wmsList, $request);
 		}
         
         if(!empty($this->vectorId)) {
