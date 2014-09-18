@@ -1,13 +1,3 @@
-/* Copyright (c) 2006-2010 MetaCarta, Inc., published under the Clear BSD
- * license.  See http://svn.openlayers.org/trunk/openlayers/license.txt for the
- * full text of the license. */
-
-/**
- * @requires OpenLayers/Control.js
- * @requires OpenLayers/Handler/Click.js
- * @requires OpenLayers/Filter/Spatial.js
- */
-
 
 OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 
@@ -77,7 +67,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
         }
 
 		//CHIAMATA AL SERVER PER AVERE DATO IL PUNTO LA TRATTA DEL GRAFO E L'ELENCO DEGLI OGGETTI INTERESSATI 
-		if (this.pipelayer) {
+		if (true) {
 				
 				//Verifico se devo escludere qualche valvola
 				//console.log(thisDv)
@@ -123,19 +113,31 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 		var resultLayer = this.getResultLayer();
 		resultLayer.removeAllFeatures();
 		
-		Ext.iterate(result, function(key, obj) {
-			if(obj.features) resultLayer.addFeatures(formatGeoJson.read(obj.features));
-		});
+		for (key in result) {
+			if(result[key].features) resultLayer.addFeatures(formatGeoJson.read(result[key].features));
+		}
+
 		
 		this.map.zoomToExtent(new OpenLayers.Bounds.fromArray(extent));
 
 		var self = this;
-		Ext.select('div.myTool').on('click', function() {
-			self.exclude.push(this.id);
-			self.select(self.point);
-			
-		});
-		
+
+		if(typeof(Ext)!='undefined'){
+			Ext.select('div.myTool').on('click', function() {
+				self.exclude.push(this.id);
+				self.select(self.point);
+				
+			});
+		}
+
+		if(typeof($)!='undefined'){
+			$('div.myTool').on('click', function() {
+				self.exclude.push(this.id);
+				self.select(self.point);
+				
+			});
+		}
+
 		if(this.active){
 			this.highlightCtrl.activate();
 			this.selectControl.activate();	
@@ -340,9 +342,12 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 		var id = v[1];
 		var featureType = this.scope.resultFeatures[v[0]]["featureType"];
 		var popupInfo = "<div><h3><u>"+ featureType.title +"</u></h3></div><br>";
-		Ext.each(featureType.properties, function(property, index) {
+		var property;
+		for (key in featureType.properties) {
+			property = featureType.properties[key];
 			popupInfo += "<b>" + property.fieldHeader + ":</b>&nbsp;" + attributes[property.name] + "<br>";
-		});
+		}
+
 		if(v[0]!='condotta'){
 			if(attributes["escluso"]==1)
 				popupInfo += '<div style="margin-top:10px;text-align:center;color:white;background-color:grey;border-style:solid;border-color:white;">ESCLUSO</div>';
@@ -351,7 +356,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 
 		}
 
-		var oPopupPos, leftOffset = 45, topOffset = 55, rightOffset=0;
+		var oPopupPos, leftOffset = 45, topOffset = 35, rightOffset=50;
 		var oMapExtent = this.map.getExtent();
 		var nReso = this.map.getResolution();
 		var nMapXCenter = this.map.getExtent().getCenterPixel().x;
@@ -367,10 +372,10 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 		}
 		oPopupPos.lat -= topOffset * nReso;
 
-		var popup = new OpenLayers.Popup.AnchoredBubble(
+		var popup = new OpenLayers.Popup.Anchored(
 			"chicken", 
 			oPopupPos,
-			new OpenLayers.Size(180,200),
+			new OpenLayers.Size(200,400),
 			popupInfo,
 			null, true);
 		popup.setBackgroundColor("#bcd2ee");
@@ -384,7 +389,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 		self.popup = popup;
 
 		popup.addCloseBox(function(e){
-			Event.stop(e)
+			//Event.stop(e)
 			if(self.popup)	this.map.removePopup(self.popup);
 			self.popup.destroy();
 			self.popup = null;
@@ -393,11 +398,21 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 			self.activate();			
 		});
 
-		Ext.select('div.myTool').on('click', function() {
-			self.exclude.push(this.id);
-			self.select(self.point);
-			self.map.removePopup(popup);
-		});
+		if(typeof(Ext)!='undefined'){
+			Ext.select('div.myTool').on('click', function() {
+				self.exclude.push(this.id);
+				self.select(self.point);
+				self.map.removePopup(popup);
+			});
+		}
+		if(typeof($)!='undefined'){
+			$('div.myTool').on('click', function() {
+				self.exclude.push(this.id);
+				self.select(self.point);
+				self.map.removePopup(popup);
+			});		
+		}
+
 		
 	},
 
