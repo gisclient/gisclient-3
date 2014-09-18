@@ -3,12 +3,14 @@ require_once "../../../config/config.php";
 require_once "findPipes.config.php";
 
 $dbSchema=DB_SCHEMA;
-$transform = defined('POSTGIS_TRANSFORM_GEOMETRY')?POSTGIS_TRANSFORM_GEOMETRY:'ST_Transform_Geometry';
+$transform = defined('POSTGIS_TRANSFORM_GEOMETRY')?POSTGIS_TRANSFORM_GEOMETRY:'Transform_Geometry';
 // Setto qui i parametri di trasformazione... troppo casino ricavarli dal progetto corrente
 $SRS = array(
 	'3003'=>'+proj=tmerc +lat_0=0 +lon_0=9 +k=0.999600 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68',
 	'900913'=>'+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +towgs84=0,0,0 +no_defs',
-	'4326','+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+	'3857'=>'+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +units=m +k=1.0 +nadgrids=@null +no_defs',
+	'4326'=>'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs',
+	'25832'=>'+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs'
 );
 
 $x = floatval($_REQUEST["x"]);
@@ -19,17 +21,18 @@ $distance = floatval($_REQUEST["distance"]);
 $db = GCApp::getDB();
 
 
-if($_REQUEST["srs"] == "EPSG:3003"){
-	$point ="SRID=3003;POINT($x $y)";
+if($_REQUEST["srs"] == "EPSG:".$GEOM_SRID){
+	$point ="SRID=".$GEOM_SRID.";POINT($x $y)";
 	$geom = "the_geom";
 }
 else{
 	$v = explode(':',$_REQUEST["srs"]);
 	$srid = $v[1];
 	$point ="SRID=$srid;POINT($x $y)";
-	$geom = $transform."(the_geom,'+proj=tmerc +lat_0=0 +lon_0=9 +k=0.999600 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68',
-	'+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +towgs84=0,0,0 +no_defs',900913)";
+	$geom = $transform."(the_geom,'".$SRS[$GEOM_SRID]."','".$SRS[$srid]."',".$srid.")";
 }
+
+
 
 //ANALISI DEL GRAFO
 $excludeVertex = false;
@@ -57,6 +60,7 @@ else
 	$ff = "da_tipo<>'altro' OR a_tipo<>'altro'";
 
 $sql = "SELECT id_arco, case when ($ff) then 1 else 0 end as flag FROM grafo.archi as sg WHERE ST_DISTANCE('$point',$geom) < $distance ORDER BY ST_DISTANCE('$point',$geom) LIMIT 1;";
+
 $stmt = $db->prepare($sql);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -73,7 +77,7 @@ if($flag == 1){
 		$sql.=" AND ((sg.da_tipo='altro' OR sg.da_nodo IN ($excludeVertex)) AND (sg.a_tipo='altro' OR sg.a_nodo IN ($excludeVertex)));";
 	else
 		$sql.=" AND (sg.da_tipo='altro' AND sg.a_tipo='altro');";
-		
+
 	$stmt = $db->prepare($sql);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -128,15 +132,15 @@ print_debug($sql,null,'condotta');
 print_debug($elements,null,'condotta');
 
 //EXTENT
-if($_REQUEST["srs"] == "EPSG:3003")
+if($_REQUEST["srs"] == "EPSG:".$GEOM_SRID)
 	$geom = $GEOM_FIELD;
-else{
-	$geom = $transform."($GEOM_FIELD,'+proj=tmerc +lat_0=0 +lon_0=9 +k=0.999600 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68',
-	'+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +towgs84=0,0,0 +no_defs',900913)";
-}
+else
+	$geom = $transform."($GEOM_FIELD,'".$SRS[$GEOM_SRID]."','".$SRS[$srid]."',".$srid.")";
+
 $key = "condotta";
 $table = $ELEMENTS[$key]["featureType"]["table"];
 $sql = "SELECT ST_XMin(ST_Extent($geom)),ST_YMin(ST_Extent($geom)),ST_XMax(ST_Extent($geom)),ST_YMax(ST_Extent($geom)) FROM $SCHEMA.$table WHERE $FID_FIELD IN (".implode(",",$elements["condotta"]).");";
+
 $stmt = $db->prepare($sql);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_NUM);
@@ -191,6 +195,7 @@ foreach($elements as $key => $idList){
 		unset ($ELEMENTS[$key]["featureType"]["table"]);
 		foreach($ELEMENTS[$key]["featureType"]["properties"] as $field) $fields[]=$field["name"];
 		$sql = "SELECT $FID_FIELD,ST_AsText($geom) as geom, $exclude,".implode(",",$fields)." FROM $SCHEMA.$table WHERE $FID_FIELD IN (SELECT id_elemento FROM grafo.nodi WHERE id_nodo IN(".implode(",",$idList)."));";
+	
 		print_debug($sql,null,'condotta');
 		$stmt = $db->prepare($sql);
 		$stmt->execute();
