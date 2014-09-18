@@ -38,13 +38,14 @@ if(!empty($_POST['drop_schema'])) {
 $authCmd = 'export PGPASSWORD='.DB_PWD.' && export PGUSER='.DB_USER.' && ';
 $unsetAuthCmd = ' && unset PGPASSWORD && unset PGUSER';
 $host = DB_HOST;
+$port = DB_PORT;
 if($host == 'localhost') $host = '127.0.0.1'; //per come è configurato di solito pg_hba.conf
 
 //DUMP
 $exportFile = $workingDir.'gc21.sql';
 $outputFile = $workingDir.'dump_output.txt';
 $errorFile = $workingDir.'dump_errors.txt';
-$cmd = $authCmd.'pg_dump -h '.$host.' -f '.$exportFile.' -n '.$_POST['old_schema'].' '.DB_NAME.' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
+$cmd = $authCmd.'pg_dump -h '.$host.' -p '.$port.' -f '.$exportFile.' -n '.$_POST['old_schema'].' '.DB_NAME.' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
 exec($cmd, $output, $return); //TODO: aggiungere output degli errori
 if($return != 0) {
     die('Errore nel dump '."\n\n".file_get_contents($errorFile));
@@ -60,7 +61,7 @@ file_put_contents($exportFile, $content);
 //importazione su schema nuovo
 $outputFile = $workingDir.'import_output.txt';
 $errorFile = $workingDir.'import_errors.txt';
-$cmd = $authCmd . 'psql -h '.$host.' -f '.$exportFile.' '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
+$cmd = $authCmd . 'psql -h '.$host.' -p '.$port.' -f '.$exportFile.' '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
 exec($cmd, $output, $return);
 if($return != 0) {
     die('Errore in importazione '."\n\n".file_get_contents($errorFile));

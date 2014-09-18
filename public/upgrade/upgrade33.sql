@@ -2,6 +2,7 @@ SET search_path = gisclient_33, pg_catalog;
 
 -- STRUTTURA DELLE PAGINE
 DELETE FROM e_level;
+ALTER TABLE e_level DROP CONSTRAINT e_level_parent_id_fkey;
 INSERT INTO e_level VALUES (53, 'qtfield', 'qtfield', 1, 18, 5, 1, 4, 18, 'qtfield', 2);
 INSERT INTO e_level VALUES (18, 'qt', 'qt', 12, 11, 4, 0, 3, 11, 'qt', 2);
 INSERT INTO e_level VALUES (1, 'root', NULL, 1, NULL, NULL, 0, 0, NULL, NULL, 2);
@@ -1205,10 +1206,9 @@ select class_id+(select max(style_id)from style),class_id,symbol_ttf_name,label_
 
 UPDATE mapset set template='jquery/mobile.html';
 
-
-INSERT INTO project_srs VALUES ('geoweb_genova', 900913, NULL, NULL, 1);
-INSERT INTO project_srs VALUES ('geoweb_genova', 3003, '-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68', NULL, 3);
-INSERT INTO project_srs VALUES ('geoweb_genova', 4326, NULL, NULL, 2);
-INSERT INTO project_srs VALUES ('geoweb_genova', 23032, '-87,-98,-121', NULL, 5);
-INSERT INTO project_srs VALUES ('geoweb_genova', 32632, NULL, NULL, 4);
-INSERT INTO project_srs VALUES ('geoweb_genova', 3857, NULL, NULL, 1);
+INSERT INTO project_srs SELECT project_name, 900913, NULL, NULL, 1 FROM project;
+INSERT INTO project_srs SELECT project_name, 3857, NULL, NULL, 1 FROM project;
+INSERT INTO project_srs SELECT project_name, 4326, NULL, NULL, 2 FROM project;
+INSERT INTO project_srs SELECT project_name, 3003, '-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68', NULL, 3 FROM project;
+INSERT INTO project_srs SELECT project_name, 23032, '-87,-98,-121', NULL, 5 FROM project;
+INSERT INTO project_srs SELECT project_name, 32632, NULL, NULL, 4 FROM project;
