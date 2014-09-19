@@ -10,7 +10,9 @@ if(!defined('UPLOADED_FILES_PRIVATE_PATH')) $ajax->error('undefined upload path'
 $result = array();
 
 $key = $_REQUEST['key'];
-if(empty($key)) $ajax->error();
+if(empty($key)) {
+	$ajax->error("parameter 'key' is missing");
+}
 $result['key'] = $key;
 
 $result['uploadNum'] = $_REQUEST['uploadNum'];
@@ -27,24 +29,21 @@ $newName = niceName($fileNameWOExt);
 if(empty($newName)) $ajax->error('invalid filename');
 
 $newName = getUniqueFileName(UPLOADED_FILES_PRIVATE_PATH, $newName, $ext);
-
 $newName = $newName . '.' . $ext;
 
-if(!is_uploaded_file($_FILES[$key]['tmp_name'])) $ajax->error('error uploading file');
+if(!is_uploaded_file($_FILES[$key]['tmp_name'])) {
+	$ajax->error('error uploading file');
+}
 
 $filePath = UPLOADED_FILES_PRIVATE_PATH . $newName;
 
-if(!move_uploaded_file($_FILES[$key]['tmp_name'], $filePath));
+if(!move_uploaded_file($_FILES[$key]['tmp_name'], $filePath)) {
+	$ajax->error('could not move file to $filePath');
+}
 
 $result['name'] = $newName;
-
 file_put_contents(DEBUG_DIR.'upload.txt', var_export($_REQUEST, true)."\n".var_export($_FILES, true)."\n".$newName."\n\n");
-
 $ajax->success($result);
-
-
-
-
 
 $numRec = 0;
 function getUniqueFileName($path, $fileName, $ext) {
