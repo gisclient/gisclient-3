@@ -33,7 +33,8 @@ class printDocument {
 	protected $db = null;
 	protected $getLegendGraphicWmsList = array();
 	protected $nullLogo = 'null.png';
-
+	protected $getLegendGraphicRequest;
+	
     public function __construct() {
 	
         $defaultOptions = array(
@@ -194,7 +195,13 @@ class printDocument {
 	
 	protected function buildLegendGraphicWmsList() {
 		foreach($this->wmsList as $wms) {
-            if($wms['PARAMETERS']['MAP'] == 'REDLINE') continue;
+			if (!isset($wms['PARAMETERS']['SERVICE']) ||
+				$wms['PARAMETERS']['SERVICE'] != 'WMS'){
+				continue;
+			}
+			if ($wms['PARAMETERS']['SERVICE'] == 'REDLINE') {
+				continue;
+			}
 			$legendGraphicRequest = array_merge($wms['PARAMETERS'], array(
 				'url'=>(!empty($wms['URL'])?$wms['URL']:$wms['baseURL']),
 				'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
@@ -228,7 +235,13 @@ class printDocument {
 						else $sld = null;
 						$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
 					}
-					if(!$legendImages[$layer['url']]) continue;
+					if(!$legendImages[$layer['url']]) {
+						continue;
+					}
+					if (filesize($legendImages[$layer['url']]) == 0) {
+						// something went wrong
+						continue;
+					}
 					// TODO: add some check if the image is high enough to be sliced
 					$source = imagecreatefrompng($legendImages[$layer['url']]);
 					$dest = imagecreatetruecolor(24, 16);
@@ -256,20 +269,25 @@ class printDocument {
 	
 	protected function getLegendImage($url, $tmpFileId) {
 		$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
-		$url = printDocument::addPrefixToRelativeUrl($url);
-		$ch = curl_init($url);
+		$finalUrl = printDocument::addPrefixToRelativeUrl($url);
+		$ch = curl_init($finalUrl);
 		if (false === ($fp = fopen($dest, "wb"))) {
 			throw new RuntimeException("Unable to open file $dest in write mode");
 		}
-		$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
+		$options = array(
+			CURLOPT_FILE => $fp,
+			CURLOPT_HEADER => 0,
+			CURLOPT_FOLLOWLOCATION => 1,
+			CURLOPT_TIMEOUT => 60
+			);
 		curl_setopt_array($ch, $options);
 
 		if (false === curl_exec($ch)) {
-			$errMsg = "Call to $url returned with error ".curl_error($ch);
+			$errMsg = "Call to $finalUrl returned with error ".curl_error($ch);
 			throw new RuntimeException($errMsg);
 		}
 		if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-			throw new RuntimeException("Call to $url return HTTP code $httpCode");
+			throw new RuntimeException("Call to $finalUrl return HTTP code $httpCode");
 		}
 		curl_close($ch);
 		fclose($fp);
