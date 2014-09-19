@@ -2,11 +2,10 @@
 
 class printDocument {
 
-    protected $options;
+    private $options;
 
-    protected $tiles = array();
-	protected $extent = array();
-	protected $dimensions = array(
+    private $tiles = array();
+	private $dimensions = array(
 		'vertical'=>array(
 			'A4'=>array('w'=>17,'h'=>22.5),
 			'A3'=>array('w'=>25.8,'h'=>35),
@@ -22,18 +21,18 @@ class printDocument {
 			'A0' => array('w'=>115,'h'=>77)
 		)
 	);
-	protected $wmsMergeUrl = 'services/gcWMSMerge.php';
-	protected $wmsList = array();
-	protected $imageSize = array();
-	protected $documentSize = array();
-	protected $documentElements = array();
-	protected $imageFileName = '';
-	protected $legendArray = array();
-	protected $vectors = array();
-	protected $db = null;
-	protected $getLegendGraphicWmsList = array();
-	protected $nullLogo = 'null.png';
-	protected $getLegendGraphicRequest;
+	private $wmsMergeUrl = 'services/gcWMSMerge.php';
+	private $wmsList = array();
+	private $imageSize = array();
+	private $documentSize = array();
+	private $documentElements = array();
+	private $imageFileName = '';
+	private $legendArray = array();
+	private $vectors = array();
+	private $db = null;
+	private $getLegendGraphicWmsList = array();
+	private $nullLogo = 'null.png';
+	private $getLegendGraphicRequest;
 	
     public function __construct() {
 	
@@ -193,7 +192,7 @@ class printDocument {
 		return $mapImage->getExtent();
 	}
 	
-	protected function buildLegendGraphicWmsList() {
+	private function buildLegendGraphicWmsList() {
 		foreach($this->wmsList as $wms) {
 			if (!isset($wms['PARAMETERS']['SERVICE']) ||
 				$wms['PARAMETERS']['SERVICE'] != 'WMS'){
@@ -218,7 +217,7 @@ class printDocument {
 		}
 	}
 	
-	protected function buildLegendArray() {
+	private function buildLegendArray() {
 		if(empty($this->options['legend'])) return null;
 		$this->buildLegendGraphicWmsList();
 		$legendImages = array();
@@ -257,7 +256,7 @@ class printDocument {
 		}
 	}
 	
-	protected function getLegendImageWMS($layer, $group, $tmpFileId, $sld = null) {
+	private function getLegendImageWMS($layer, $group, $tmpFileId, $sld = null) {
 		$request = $this->getLegendGraphicRequest;
 		$request['LAYER'] = $group;
 		$url = $request['url'];
@@ -267,7 +266,7 @@ class printDocument {
 		return $this->getLegendImage($url.'?'.$queryString, $tmpFileId);
 	}
 	
-	protected function getLegendImage($url, $tmpFileId) {
+	private function getLegendImage($url, $tmpFileId) {
 		$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
 		$finalUrl = printDocument::addPrefixToRelativeUrl($url);
 		$ch = curl_init($finalUrl);
@@ -294,7 +293,7 @@ class printDocument {
 		return $dest;
 	}
 	
-	protected function calculateSizes() {
+	private function calculateSizes() {
 		$dimension = array(
 			'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'], 
 			'h'=>$this->dimensions[$this->options['direction']][$this->options['format']]['h']
@@ -307,7 +306,7 @@ class printDocument {
 		$this->documentSize = $dimension;
 	}
 	
-	protected function getMapImage() {
+	private function getMapImage() {
 		$this->calculateSizes();
 
 		if(!empty($this->vectors)) {
@@ -319,7 +318,7 @@ class printDocument {
 		$this->imageFileName = $mapImage->getImageFileName();
 	}
 	
-	protected function buildDOM($absoluteUrls = false) {
+	private function buildDOM($absoluteUrls = false) {
 		$this->getMapImage();
 		$this->buildLegendArray();
 
@@ -402,7 +401,7 @@ class printDocument {
 		return $dom;
 	}
 	
-	protected function deleteOldTmpFiles() {
+	private function deleteOldTmpFiles() {
 		if($this->options['TMP_PATH'] == '/tmp/') return;
 		if ($handle = opendir($this->options['TMP_PATH'])) {
 			while (false !== ($file = readdir($handle))) {
