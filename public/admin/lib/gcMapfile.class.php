@@ -812,7 +812,8 @@ END";
                 ),
                 'mapserver_bin_source'=>array(
                     'type'=>'mapserver',
-                    'req'=>array(
+                    'req'=>array(                        
+                    	'format'=>'image/png',
                     	'transparent'=>true,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'exceptions'=> 'inimage'
@@ -820,6 +821,10 @@ END";
                     'coverage'=>array(
                         'bbox'=>$this->mapsetExtent,
                         'srs'=>'EPSG:'.$this->mapsetSrid
+                    ),
+                    'image'=>array(
+                        'transparent_color'=>'#ffffff',
+                        'transparent_color_tolerance'=>0
                     ),
                     'mapserver'=>array(
                         'binary'=>MAPSERVER_BINARY_PATH,
