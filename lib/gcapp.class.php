@@ -367,7 +367,7 @@ class GCAuthor {
 				
 			}
 			
-			$fieldString = implode(",",$fieldList);
+			//$fieldString = implode(",",$fieldList);
 		}
 		
         $geomField = DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom;

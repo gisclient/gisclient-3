@@ -105,20 +105,20 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 			}
 			if (is_array($rows)) {
 			    foreach ($rows as $row) {
-					$newid = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'qtfield', 'qtfield_id');						
+					$newid = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'field', 'field_id');						
 					$dataType = GCAuthor::GCTypeFromDbType($row['udt_name']);
 					if(!$dataType) continue;
 					$sqlParams = array(
-						':qtfield_id' => $newid,
-						':qtfield_name' => $row['column_name'],
+						':field_id' => $newid,
+						':field_name' => $row['column_name'],
 						':field_header' => $row['column_name'],
 						':searchtype_id' => 1, //FD: soluzione migliore?
 						':resultype_id' => 4, // nascosto di default
 						':datatype_id' => $dataType,
 						':layer_id' => $save->data['layer_id']
 					);
-					$sql = "insert into ".DB_SCHEMA.".qtfield (qtfield_id, qtfield_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
-						values (:qtfield_id, :qtfield_name, :field_header, :searchtype_id, :resultype_id, :datatype_id, :layer_id)";
+					$sql = "insert into ".DB_SCHEMA.".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
+						values (:field_id, :field_name, :field_header, :searchtype_id, :resultype_id, :datatype_id, :layer_id)";
 					try {
 						$stmt = $_db->prepare($sql);
 						$stmt->execute($sqlParams);
