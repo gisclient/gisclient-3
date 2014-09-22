@@ -382,8 +382,12 @@ class gcFeature{
 	}
 	
 	function _getLayerData(){
-        $query = GCAuthor::buildFeatureQuery($this->aFeature);
-        return 'gc_geom FROM ('.$query.') AS foo';
+        if($aFeature["tileindex"] || !$aFeature["fields"]) {
+            return "the_geom from ".$this->aFeature["table_schema"].'.'.$this->aFeature["data"];
+        } else {
+            $query = GCAuthor::buildFeatureQuery($this->aFeature);
+            return 'gc_geom FROM ('.$query.') AS foo';
+        }
         
         //tutta questa parte è stata spostata in lib/gcapp.class.php, perchè condivisa con gcPgQuery per le interrogazioni avanzate
 		$aFeature = $this->aFeature;
