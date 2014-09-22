@@ -24,8 +24,7 @@ class Symbol{
 	
 	function __construct($table){
 		$this->table=$table;
-		$this->db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-		if(!$this->db->db_connect_id) die( "Impossibile connettersi al database ". DB_NAME);
+        $this->db = GCApp::getDB();
 	}
 
 	function createIcon(){
@@ -37,6 +36,8 @@ class Symbol{
 		
 		
 		if($this->table=='class'){
+            $aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
+            
 			$sql="select class.class_id,layertype_ms,style_id,color,outlinecolor,bgcolor,angle,size,width,symbol.*
 			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
 			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name) 
@@ -45,34 +46,32 @@ class Symbol{
 
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" order by style_order;";
-
-			$this->db->sql_query($sql);
-			$res=$this->db->sql_fetchrowset();	
-			$aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
-
-			for($i=0;$i<count($res);$i++){
-				$aClass[$res[$i]["class_id"]]["icontype"]=$res[$i]["layertype_ms"];
-				if($res[$i]["style_id"]){
-					$aStyle["color"]=explode(" ",$res[$i]["color"]);
-					$aStyle["outlinecolor"]=explode(" ",$res[$i]["outlinecolor"]);
-					$aStyle["bgcolor"]=explode(" ",$res[$i]["bgcolor"]);
-					$aStyle["angle"]=$res[$i]["angle"];	
-					$aStyle["width"]=$res[$i]["width"];	
-					$aStyle["size"]=$res[$i]["size"];			
-					$aStyle["symbol"]=$res[$i]["symbol_name"];	
-					$aClass[$res[$i]["class_id"]]["style"][]=$aStyle;				
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+				$aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
+				if($row["style_id"]){
+					$aStyle["color"]=explode(" ",$row["color"]);
+					$aStyle["outlinecolor"]=explode(" ",$row["outlinecolor"]);
+					$aStyle["bgcolor"]=explode(" ",$row["bgcolor"]);
+					$aStyle["angle"]=$row["angle"];	
+					$aStyle["width"]=$row["width"];	
+					$aStyle["size"]=$row["size"];			
+					$aStyle["symbol"]=$row["symbol_name"];	
+					$aClass[$row["class_id"]]["style"][]=$aStyle;				
 				}
-				if($res[$i]["symbol_name"]){
+				if($row["symbol_name"]){
 					$smbText=array();
 					$smbText[]="SYMBOL";
-					$smbText[]="\tNAME \"".$res[$i]["symbol_name"]."\"";
-					if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
-					if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
-					if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".($res[$i]["ascii_code"]==92?chr(92):'').chr($res[$i]["ascii_code"])."\"";
-					if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
-					if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
-					if($res[$i]["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$res[$i]["image"]."\"";
-					if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
+					$smbText[]="\tNAME \"".$row["symbol_name"]."\"";
+					if($row["symbol_type"])$smbText[]="\tTYPE ".$row["symbol_type"];
+					if($row["font_name"]) $smbText[]="\tFONT \"".$row["font_name"]."\"";
+					if($row["ascii_code"]) $smbText[]=($row["ascii_code"]==34)?"\tCHARACTER '".chr($row["ascii_code"])."'":"\tCHARACTER \"".($row["ascii_code"]==92?chr(92):'').chr($row["ascii_code"])."\"";
+					if($row["filled"]) $smbText[]="\tFILLED TRUE";
+					if($row["points"]) $smbText[]="\tPOINTS ".$row["points"]." END";
+					if($row["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$row["image"]."\"";
+					if($row["symbol_def"]) $smbText[]=$row["symbol_def"];
 					$smbText[]="END";
 					if(!in_array($smbText,$aSymbol)) $aSymbol[]=implode("\n",$smbText);				
 				}		
@@ -98,26 +97,25 @@ class Symbol{
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" LIMIT 200;";
             
-			$this->db->sql_query($sql);
-			$res=$this->db->sql_fetchrowset();	
-
-			for($i=0;$i<count($res);$i++){
-			    $aClass[$res[$i]["symbol_name"]]["icontype"]=$res[$i]["icontype"];
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			    $aClass[$row["symbol_name"]]["icontype"]=$row["icontype"];
 				$aStyle=array();
-				$aStyle["symbol"]=$res[$i]["symbol_name"];
+				$aStyle["symbol"]=$row["symbol_name"];
 				$aStyle["color"]=array(0,0,0);
-				$aStyle["size"]=$this->symbolSize[$res[$i]["icontype"]];
-				$aClass[$res[$i]["symbol_name"]]["style"][]=$aStyle;	
+				$aStyle["size"]=$this->symbolSize[$row["icontype"]];
+				$aClass[$row["symbol_name"]]["style"][]=$aStyle;	
 				$smbText=array();
 				$smbText[]="SYMBOL";
-				$smbText[]="\tNAME \"".$res[$i]["symbol_name"]."\"";
-				if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
-				if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
-				if($res[$i]["ascii_code"]) $smbText[]=($res[$i]["ascii_code"]==34)?"\tCHARACTER '".chr($res[$i]["ascii_code"])."'":"\tCHARACTER \"".($res[$i]["ascii_code"]==92?chr(92):'').chr($res[$i]["ascii_code"])."\"";
-				if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
-				if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
-				if($res[$i]["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$res[$i]["image"]."\"";
-				if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
+				$smbText[]="\tNAME \"".$row["symbol_name"]."\"";
+				if($row["symbol_type"])$smbText[]="\tTYPE ".$row["symbol_type"];
+				if($row["font_name"]) $smbText[]="\tFONT \"".$row["font_name"]."\"";
+				if($row["ascii_code"]) $smbText[]=($row["ascii_code"]==34)?"\tCHARACTER '".chr($row["ascii_code"])."'":"\tCHARACTER \"".($row["ascii_code"]==92?chr(92):'').chr($row["ascii_code"])."\"";
+				if($row["filled"]) $smbText[]="\tFILLED TRUE";
+				if($row["points"]) $smbText[]="\tPOINTS ".$row["points"]." END";
+				if($row["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$row["image"]."\"";
+				if($row["symbol_def"]) $smbText[]=$row["symbol_def"];
 				$smbText[]="END";
 				
 				$aSymbol[]=implode("\n",$smbText);		
@@ -225,8 +223,10 @@ class Symbol{
 			$sql.="  order by 1,2,3,4,5";
 			$headers = array("Image","Class","Layer","Layergroup","Theme","Project");	
 			$values=array();
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 				if(!$assoc) {
 					$values[]=array("table=class&id=".$row["class_id"],$row["class"],$row["layer"],$row["layergroup"],$row["theme"],$row["project"]);
 				} else {
@@ -240,8 +240,9 @@ class Symbol{
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.="  order by symbolcategory_name, symbol_name";
 			$headers = array("Image","Symbol","Category");
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 				if(!$assoc) {
 					$values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
 				} else {
@@ -302,7 +303,7 @@ class Symbol{
 		$tableId=$table."_id";
 		foreach($aSymbol as $smbName=>$smbDef){
 			$sql="insert into $dbSchema.symbol(symbol_id,symbol_name,def) values ((select $dbSchema.new_pkey('symbol','symbol_id')),'$smbName','$smbDef');";
-			$this->db->sql_query($sql);
+            $this->db->exec($sql);
 			print($sql."\n");
 		}
 	}
@@ -310,13 +311,15 @@ class Symbol{
 	function updateFontList(){
 		$dbSchema=DB_SCHEMA;
 		$sql="select font_name,file from $dbSchema.font;";
-		$this->db->sql_query($sql);
-		$file = fopen (ROOT_PATH.'fonts/fonts.list',"w");
-		while($row=$this->db->sql_fetchrow())
+        $stmt = $this->db->prepare($sql);
+		$stmt->execute();
+		while($row=$stmt->fetch(PDO::FETCH_ASSOC)) {
 			$text[]=$row["font_name"]."\t".$row["file"];
+        }
+        $file = fopen (ROOT_PATH.'fonts/fonts.list',"w");
 		fwrite($file, implode("\n",$text));
 		fclose($file);
 	}
 
 }//END CLASS
-?>
+
