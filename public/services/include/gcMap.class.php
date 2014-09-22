@@ -47,6 +47,7 @@ class gcMap{
 	var $selgroupList = array();
 	var $mapLayers = array();
 	var $featureTypes = array();
+    var $defaultLayers = array();
 	var $projectName;
 	var $mapsetName;
 	var $mapConfig;
@@ -237,6 +238,8 @@ class gcMap{
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
         $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $mapConfig['default_layers'] = $this->defaultLayers;
 
 		//$this->maxRes = $maxRes;
 		//$this->minRes = $minRes;
@@ -289,6 +292,10 @@ class gcMap{
 				$row = $this->i18n->translateRow($row, 'theme', $row['theme_id'], array('theme_title', 'copyright_string'));
 				$row = $this->i18n->translateRow($row, 'layergroup', $row['layergroup_id'], array('layergroup_title', 'sld'));
 			}
+            
+            if($row['status']) {
+                array_push($this->defaultLayers, $row['layergroup_name']);
+            }
 
 			$themeName = $row['theme_name'];
 			$mapsetName = $row['mapset_name'];
