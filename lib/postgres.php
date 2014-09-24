@@ -159,11 +159,11 @@ class sql_db
 					}
 				}
 
-				$this->last_query_text[$this->query_result] = $query;
-				$this->rownum[$this->query_result] = 0;
+				$this->last_query_text[(int)$this->query_result] = $query;
+				$this->rownum[(int)$this->query_result] = 0;
 
-				unset($this->row[$this->query_result]);
-				unset($this->rowset[$this->query_result]);
+				unset($this->row[(int)$this->query_result]);
+				unset($this->rowset[(int)$this->query_result]);
 
 				return $this->query_result;
 			}
@@ -177,7 +177,7 @@ class sql_db
 				/*pg_send_query($this->db_connect_id, $query);
 				$result = pg_get_result($this->db_connect_id);
 				$code=pg_result_error_field($result, PGSQL_DIAG_SQLSTATE);*/
-				$this->error_message[]=Array("code"=>$error_code,"text"=>pg_result_error($this->query_result),"query"=>$query);
+				$this->error_message[]=Array("code"=>$error_code,"text"=>pg_result_error((int)$this->query_result),"query"=>$query);
 				return false;
 			}
 		}
@@ -254,7 +254,7 @@ class sql_db
 
 			if( $this->row )
 			{
-				$this->rownum[$query_id]++;
+				$this->rownum[(int)$query_id]++;
 				return $this->row;
 			}
 		}
@@ -271,14 +271,14 @@ class sql_db
 
 		if( $query_id )
 		{
-			unset($this->rowset[$query_id]);
-			unset($this->row[$query_id]);
-			$this->rownum[$query_id] = 0;
+			unset($this->rowset[(int)$query_id]);
+			unset($this->row[(int)$query_id]);
+			$this->rownum[(int)$query_id] = 0;
 			$result = array();
 			while( $this->rowset = @pg_fetch_array($query_id, $this->rownum[$query_id], PGSQL_ASSOC) )
 			{
 				$result[] = $this->rowset;
-				$this->rownum[$query_id]++;
+				$this->rownum[(int)$query_id]++;
 			}
 
 			return $result;
@@ -291,7 +291,7 @@ class sql_db
 	{
 		if( !$query_id )
 		{
-			$query_id = $this->query_result;
+			$query_id = (int)$this->query_result;
 		}
 
 		if( $query_id )
@@ -302,17 +302,17 @@ class sql_db
 			}
 			else
 			{
-				if( !empty($this->rownum[$query_id]) )
+				if( !empty($this->rownum[(int)$query_id]) )
 				{
-					$this->row = @pg_fetch_array($query_id, $this->rownum[$query_id]-1, PGSQL_ASSOC);
+					$this->row = @pg_fetch_array($query_id, $this->rownum[(int)$query_id]-1, PGSQL_ASSOC);
 				}
 				else
 				{
-					$this->row = @pg_fetch_array($query_id, $this->rownum[$query_id], PGSQL_ASSOC);
+					$this->row = @pg_fetch_array($query_id, $this->rownum[(int)$query_id], PGSQL_ASSOC);
 
 					if( $this->row )
 					{
-						$this->rownum[$query_id]++;
+						$this->rownum[(int)$query_id]++;
 					}
 				}
 			}
@@ -395,7 +395,7 @@ class sql_db
 	{
 		if( !$query_id )
 		{
-			$query_id = $this->query_result;
+			$query_id = (int)$this->query_result;
 		}
 
 		$result['message'] = @pg_errormessage($this->db_connect_id);
