@@ -383,7 +383,7 @@ class gcFeature{
 	
 	function _getLayerData(){
         if($aFeature["tileindex"] || !$aFeature["fields"]) {
-            return "the_geom from ".$this->aFeature["table_schema"].'.'.$this->aFeature["data"];
+            return $this->aFeature['data_geom']." from ".$this->aFeature["table_schema"].'.'.$this->aFeature["data"];
         } else {
             $query = GCAuthor::buildFeatureQuery($this->aFeature);
             return 'gc_geom FROM ('.$query.') AS foo';
