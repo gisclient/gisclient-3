@@ -28,7 +28,7 @@ class mapImage {
     
 	function __construct($tiles, array $imageSize, $srid, array $options) {
 		$defaultOptions = array(
-			'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale (requires pixels_distance)
+			'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale
 			'extent'=>array(),
 			'center'=>array(),
 			'vectors'=>null,
@@ -50,7 +50,7 @@ class mapImage {
 		
 		if($this->options['scale_mode'] == 'user') {
 			if(empty($this->options['center']) || empty($this->options['scale'])) {
-				throw new Exception('Missing center or pixels_distance');
+				throw new Exception('Missing center or scale');
 			}
 			$this->extent = $this->calculateExtent($this->options['center'], $imageSize, $this->options['dpi'], $this->options['scale']);
 			$this->scale = $this->options['scale'];
@@ -190,7 +190,7 @@ class mapImage {
 		if (false === ($mapImage = curl_exec($ch))) {
 			throw new Exception("Could not curl_exec" . curl_error($ch));
 		}
-		if(!$requestParameters['save_image']) {
+		if(!$saveImage) {
 			$filename = $this->options['TMP_PATH'].$this->imageFileName;
 			if (false === file_put_contents($filename, $mapImage)) {
 				throw new Exception("Could not save map image to $filename");
