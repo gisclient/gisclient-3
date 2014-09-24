@@ -295,12 +295,17 @@ class gcFeature{
 					$layText[]="CONNECTIONTYPE POSTGIS";
 					$layText[]="CONNECTION \"".$this->aFeature["connection_string"]."\"";
 					$sData = $this->_getLayerData();
+                    if(!$this->aFeature["fields"] && !empty($this->aFeature["data_unique"])) {
+                        $sData .= ' USING UNIQUE '.$this->aFeature['data_unique'];
+                    } else if($this->aFeature["fields"]) {
+                        $sData .= " USING UNIQUE gc_objid";
+                    }
 //					if($this->aFeature["fields"])
 //						$sData .= " USING UNIQUE gc_objid";
 //					elseif(!empty($this->aFeature["data_unique"]))
 //						$sData .= " USING UNIQUE ".$this->aFeature["data_unique"];
-                    if (!empty($this->aFeature["data_unique"]))
-                        $sData .= " USING UNIQUE gc_objid";
+                    //if (!empty($this->aFeature["data_unique"]))
+                        //$sData .= " USING UNIQUE gc_objid";
 					if(!empty($this->aFeature["data_srid"])) $sData .= " USING SRID=" . $this->aFeature["data_srid"];
 					$layText[]="DATA \"$sData\"";	
 					if(!empty($this->aFeature["data_filter"])) $layText[]="FILTER \"". $this->aFeature["data_filter"] ."\"";
@@ -382,7 +387,7 @@ class gcFeature{
 	}
 	
 	function _getLayerData(){
-        if($aFeature["tileindex"] || !$aFeature["fields"]) {
+        if($this->aFeature["tileindex"] || !$this->aFeature["fields"]) {
             return $this->aFeature['data_geom']." from ".$this->aFeature["table_schema"].'.'.$this->aFeature["data"];
         } else {
             $query = GCAuthor::buildFeatureQuery($this->aFeature);
