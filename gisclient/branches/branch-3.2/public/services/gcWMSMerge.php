@@ -103,6 +103,15 @@ if(!empty($mapConfig['format']) && $mapConfig['format'] == 'gtiff') {
 	$oMap->outputformat->set('extension','tif');
 	$oMap->outputformat->set('mimetype','image/tiff');
 	$oMap->outputformat->set('imagemode', MS_IMAGEMODE_RGB);
+	$oMap->outputformat->setOption("COMPRESS", "DEFLATE");
+} else if(!empty($mapConfig['format']) && $mapConfig['format'] == 'jpeg') {
+	$oMap->outputformat->set('name','JPG');
+	$oMap->outputformat->set('driver','AGG/JPEG');
+	$oMap->outputformat->set('extension','jpg');
+	$oMap->outputformat->set('mimetype','image/jpeg');
+	$oMap->outputformat->set('imagemode', MS_IMAGEMODE_RGB);
+	//$oMap->outputformat->set('transparent',MS_ON);
+	//$oMap->outputformat->setOption("INTERLACE", "OFF");
 } else {
 	$oMap->outputformat->set('name','PNG');
 	$oMap->outputformat->set('driver','AGG/PNG');
@@ -229,16 +238,24 @@ if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format
 	$oMap->drawLabelCache($oImage);
 }
 
-if(!empty($mapConfig['format']) && $mapConfig['format'] == 'gtiff') {
-	header("Content-type: image/tiff");
-} else {
-	header("Content-type: image/png");
-}
+if(!empty($mapConfig['save_image'])) {
+	if (!isset($mapConfig['file_name'])) {
+		throw new Exception("parameter file_name is missing");
+	}
 
-if($mapConfig['format'] == 'gtiff') {
-	$oImage->saveImage($mapConfig['file_name'], $oMap);
-} else if(!empty($mapConfig['save_image']) && isset($mapConfig['file_name'])) {
-	$oImage->saveImage($mapConfig['file_name']);
+	if ($oImage->saveImage($mapConfig['file_name'], $oMap) !== MS_SUCCESS) {
+		throw new Exception("failed to write {$mapConfig['file_name']}");
+	}
 } else {
-	$oImage->saveImage('');
+	if(!empty($mapConfig['format']) && $mapConfig['format'] == 'gtiff') {
+		header("Content-type: image/tiff");
+	} else if(!empty($mapConfig['format']) && $mapConfig['format'] == 'jpeg') {
+		header("Content-type: image/jpeg");
+	} else {
+		header("Content-type: image/png");
+	}
+
+	if ($oImage->saveImage('') !== MS_SUCCESS) {
+		throw new Exception("failed to write image to stdout");
+	}
 }

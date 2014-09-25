@@ -4,10 +4,15 @@ require_once 'include/mapImage.php';
 
 $options = array('image_format'=>'gtiff', 'output_format'=>'geotiff');
 if($_REQUEST['format'] == 'png') {
-    $options['image_format'] = 'png';
-    $options['output_format'] = 'png';
-    $options['save_image'] = true;
-    $options['file_name'] = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'gc_mapimage', 'png');
+	$options['image_format'] = 'png';
+	$options['output_format'] = 'png';
+	$options['save_image'] = true;
+	$options['file_name'] = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'gc_mapimage', 'png');
+} else if($_REQUEST['format'] == 'jpeg') {
+	$options['image_format'] = 'jpeg';
+	$options['output_format'] = 'jpeg';
+	$options['save_image'] = true;
+	$options['file_name'] = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'gc_mapimage', 'jpeg');
 }
 
 if(!empty($_REQUEST['tiles']) && is_array($_REQUEST['tiles'])) {

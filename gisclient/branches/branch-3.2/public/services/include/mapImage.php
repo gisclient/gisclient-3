@@ -158,11 +158,17 @@ class mapImage {
 	protected function getMapImage() {
 		$extension = 'png';
 		if($this->options['image_format'] == 'gtiff') $extension = 'tif';
+		if($this->options['image_format'] == 'jpeg') $extension = 'jpg';
 
 		$this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
 
-		$saveImage = true;
-		if(empty($this->options['save_image']) && $this->options['image_format'] == 'gtiff') $saveImage = false;
+		if(isset($this->options['save_image'])) {
+			$saveImage = $this->options['save_image'];
+		} else if ($this->options['image_format'] == 'gtiff'){
+			$saveImage = true;
+		} else {
+			$saveImage = true;
+		}
 
 		$requestParameters = json_encode(array(
 			'layers'=>$this->wmsList,
@@ -170,7 +176,7 @@ class mapImage {
 			'extent'=>$this->extent,
 			'srs'=>$this->options['auth_name'].':'.$this->srid,
 			'scalebar' => $this->options['scalebar'],
-			'save_image'=>($this->options['image_format'] != 'gtiff'),
+			'save_image'=> $saveImage,
 			'resolution'=>$this->options['dpi'],
 			'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
 			'format'=>$this->options['image_format'],
