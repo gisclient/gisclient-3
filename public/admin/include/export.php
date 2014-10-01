@@ -19,7 +19,7 @@ error_reporting (E_ERROR | E_PARSE);
 			if($_POST["azione"]="Esporta"){
 				$l=$structure["pkey"][$_POST["livello"]][0];
 				$sql="select e_level.id,e_level.name,coalesce(e_level.struct_parent_id,0) as parent,X.name as parent_name,e_level.leaf from ".DB_SCHEMA.".e_level left join ".DB_SCHEMA.".e_level X on (e_level.struct_parent_id=X.id) order by e_level.depth asc;";
-				if (!$db->sql_query($sql)){
+                                if (!$db->sql_query($sql)){
 					print_debug($sql,null,"page_obj");
 					die("<p>Impossibile eseguire la query : $sql</p>");
 				}
