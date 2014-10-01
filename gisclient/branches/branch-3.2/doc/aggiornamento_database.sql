@@ -1303,3 +1303,27 @@ CREATE OR REPLACE VIEW gisclient_32.vista_version AS
  LIMIT 1;
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.22', 'author', '2014-08-26');
+
+-- 2014-10-01: crea la vista_layer, utile a sapere se un layer è interrogabile e/o editabile
+DROP VIEW gisclient_32.vista_layer;
+create view gisclient_32.vista_layer as 
+
+select *,
+case 
+when layer_id in (select layer_id from gisclient_32.qtfield where resultype_id != 4) then 1
+ELSE 0
+END as is_queryable,
+case 
+when layer_id in (select layer_id from gisclient_32.qtfield where editable = 1) then 1
+ELSE 0
+END as is_editable
+
+ from gisclient_32.layer;
+
+ ALTER TABLE gisclient_32.vista_layer
+  OWNER TO gisclient;
+  
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.23', 'author', '2014-10-01');
+
+
+
