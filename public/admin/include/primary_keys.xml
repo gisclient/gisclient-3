@@ -69,7 +69,7 @@
 		<pkey>field_id</pkey>
 		<parent>layer</parent>
 	</field>
-    <qt>
+        <qt>
 		<table>qt</table>
 		<pkey>qt_id</pkey>
 		<parent>theme</parent>
@@ -80,6 +80,11 @@
 		<pkey>link_id</pkey>
 		<parent>layer</parent>
 	</qtlink>
+        <qtfield>
+		<table>qtfield</table>
+		<pkey>qtfield_id</pkey>
+		<parent>qt</parent>
+	</qtfield>
 	<relation>
 		<table>relation</table>
 		<pkey>relation_id</pkey>
