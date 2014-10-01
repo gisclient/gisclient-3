@@ -1295,9 +1295,9 @@ ALTER TABLE layergroup
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.21', 'author', '2014-08-20');
 
-CREATE OR REPLACE VIEW gisclient_32.vista_version AS 
+CREATE OR REPLACE VIEW vista_version AS 
  SELECT version.version_id, version.version_name, version.version_date
-   FROM gisclient_32.version
+   FROM version
   WHERE version_key='author'
   ORDER BY version.version_id DESC
  LIMIT 1;
@@ -1305,24 +1305,45 @@ CREATE OR REPLACE VIEW gisclient_32.vista_version AS
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.22', 'author', '2014-08-26');
 
 -- 2014-10-01: crea la vista_layer, utile a sapere se un layer è interrogabile e/o editabile
-DROP VIEW gisclient_32.vista_layer;
-create view gisclient_32.vista_layer as 
+CREATE OR REPLACE VIEW vista_layer AS 
+ SELECT *, 
+        CASE
+          WHEN queryable = 1 and hidden = 0 and 
+               layer_id IN (SELECT qtfield.layer_id 
+                              FROM qtfield 
+                              WHERE qtfield.resultype_id != 4)
+          THEN 'SI! Config. OK'
+          WHEN queryable = 1 and hidden = 1 and
+               layer_id IN (SELECT qtfield.layer_id 
+                              FROM qtfield 
+                              WHERE qtfield.resultype_id != 4)
+          THEN 'SI! ma è nascosto'
+          WHEN queryable = 1 and 
+               layer_id IN (SELECT qtfield.layer_id 
+                              FROM qtfield 
+                              WHERE qtfield.resultype_id = 4)
+          THEN 'NO! Nessun campo nei risultati'
+          ELSE 'NO! WFS non abilitato'
+        END AS is_queryable, 
+        CASE
+            WHEN queryable = 1 and layer_id IN ( SELECT qtfield.layer_id
+               FROM qtfield
+              WHERE qtfield.editable = 1)
+            THEN 'SI! Config. OK' 
+            WHEN queryable = 1 and layer_id IN ( SELECT qtfield.layer_id
+               FROM qtfield
+              WHERE qtfield.editable = 0)
+            THEN 'NO! Nessun campo è editabile' 
+            WHEN queryable = 0 and layer_id IN ( SELECT qtfield.layer_id
+               FROM qtfield
+              WHERE qtfield.editable = 1)
+            THEN 'NO! Campo editabile ma WFS non attivo' 
+            ELSE 'NO!'
+        END AS is_editable
+   FROM layer;
 
-select *,
-case 
-when layer_id in (select layer_id from gisclient_32.qtfield where resultype_id != 4) then 1
-ELSE 0
-END as is_queryable,
-case 
-when layer_id in (select layer_id from gisclient_32.qtfield where editable = 1) then 1
-ELSE 0
-END as is_editable
-
- from gisclient_32.layer;
-
- ALTER TABLE gisclient_32.vista_layer
+ALTER TABLE vista_layer
   OWNER TO gisclient;
-  
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.23', 'author', '2014-10-01');
 
 
