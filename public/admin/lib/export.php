@@ -207,6 +207,7 @@ function _getListValue($level,$val,$db){
 	if($level=='project') $result[]="[$level][$val]";
 	else
 	{
+                
 		while(trim($pk["parent"][$level])){
 			$table=$pk["table"][$level];
 			if(count($pk['pkey'][$level])>1){
@@ -217,20 +218,23 @@ function _getListValue($level,$val,$db){
 				else
 					$parentPK="null";
 				$sql="SELECT ".$level."_name as name,$parentPK as parentpk FROM ".DB_SCHEMA.".$table WHERE ".$pk['pkey'][$level][0]."='$val';";
-				
 			}
+                        
 			if(!$db->sql_query($sql)) echo "<p>$sql</p>";
-			$name=$db->sql_fetchfield('name');
+			list($name,$newval)=$db->sql_fetchrow();
+                        //$name=$db->sql_fetchfield('name');
 			if($level=="qtrelation" && !$val){
 				$result[]="[$level][0]";
 				return implode("",$result);
 			}
-			else
+			else{
 				$result[]="[$level][$name]";
+                        }
 			$level=$pk["parent"][$level];
-			$val=$db->sql_fetchfield('parentpk');
+			$val=$newval;
 			
 		}
+                
 	}
 	return implode("",$result);
 }
@@ -267,6 +271,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 
 	$filter=(count($filter))?(implode(' AND ',$filter)):('');
 	$sql="SELECT * FROM ".DB_SCHEMA.".".$structure["table"][$currentLevel]." WHERE $filter;";
+        //echo "<p>$sql</p>";
 	if(!$db->sql_query($sql)) {
 		
 		echo "<p>Errore nell'estrazione dei Dati del Livello $currentLevel<br>$sql</p>";
@@ -395,6 +400,7 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 		for($i=0;$i<count($pkey[$el["name"]]);$i++) $filter[]=$pkey[$el["name"]][$i]."='".$parentValue[$pkey[$el["name"]][$i]]."'";
 	$filter=(count($filter))?(implode(' AND ',$filter)):('');
 	$sql="SELECT * FROM ".DB_SCHEMA.".$struct[name] WHERE $filter;";
+        
 	if(!$db->sql_query($sql)) echo "<p>Errore $sql</p>";
 	$recordSet=$db->sql_fetchrowset();
 	$child=_getChild($lev,1);
