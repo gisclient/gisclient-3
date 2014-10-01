@@ -406,7 +406,7 @@ function edita($param=Array()){
 	print $tabella;
 }
 
-function tabella($curr=0){
+function tab($curr=0){
 //crea la tabella per l'elenco in consultazione
 	$nrighe=$this->num_col;
 	$span=2*$nrighe;
@@ -432,7 +432,7 @@ function elenco($form){
 	for ($i=0;$i<$this->num_record;$i++){
 		$this->curr_record=$i;
 		$this->get_titolo($form);
-		$this->tabella();
+		$this->tab();
 	}
 }
 
