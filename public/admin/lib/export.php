@@ -55,8 +55,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	$rows=file($fName);
 	$type=str_replace("--Type:","",trim($rows[1]));
 	$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=$type;";
-	if ($qt)
-	$name=str_replace("--Name:","",$rows[2]);
+	if ($qt) $name=str_replace("--Name:","",$rows[2]);
 	$newName=($newName)?($newName):($name);
 	$arrSubst=Array("@PARENTID@"=>"'".$parentId."'","@PARENTKEY@"=>$parentkey,"@PROJECTNAME@"=>$parentName,"@DB_SCHEMA@"=>DB_SCHEMA,"@OBJECTNAME@"=>$newName,"\\n"=>"\n");
 
@@ -95,7 +94,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 					$tables[]=DB_SCHEMA.'.project';
 					$sqlVal="SELECT $fld as val FROM ".implode(",",array_unique($tables))." WHERE ".implode(' AND ',array_unique($flt)).";";
 					if($db->sql_query($sqlVal)){
-						$newVal=$db->sql_fetchfield('val');
+						list($newVal)=$db->sql_fetchrow();
 					}
 					else 
 						echo "<p>$sqlVal</p>";
@@ -116,7 +115,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 				$table=str_replace('_id','',$out[1]);
 				$sqlId="select ".DB_SCHEMA.".new_pkey('$table','".$out[1]."_id') as newid;";
 				$db->sql_query($sqlId);
-				$newid[$out[1]][$out[2]]=$db->sql_fetchfield('newid');
+				list($newid[$out[1]][$out[2]])=$db->sql_fetchrow();
 			}
 		}
 		elseif(preg_match("|@NEWKEY_V\[(.+)\]\[(.+)\]@|Ui",$sql,$out)) {
@@ -127,7 +126,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 				$table=str_replace('_name','',$out[1]);
 				$sqlId="select ".DB_SCHEMA.".new_pkey_varchar('$table','".$out[1]."_name','$out[2]') as newid;";
 				$db->sql_query($sqlId);
-				$newid[$out[1]][$out[2]]=$db->sql_fetchfield('newid');
+				list($newid[$out[1]][$out[2]])=$db->sql_fetchrow();
 			}
 		}
 		//if($out){
