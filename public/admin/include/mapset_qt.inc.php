@@ -1,4 +1,8 @@
 <?php
+
+// questo file non viene utilizzato
+// la query contiene tabelle non più esistenti
+
 require_once "../../config/config.php";
 	
 	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
