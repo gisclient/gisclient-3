@@ -4,11 +4,13 @@ define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
-if(!defined('GC_SESSION_NAME')) die('Undefined GC_SESSION_NAME in config');
+if(!defined('GC_SESSION_NAME')) {
+	throw new Exception('Undefined GC_SESSION_NAME in config');
+}
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
-	include ("./include/putrequest.php");
+	include "./include/putrequest.php";
 	exit(0);
 }
 
@@ -96,8 +98,8 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 	curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 	curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
 	$sldContent = curl_exec($ch);
-        if($sldContent === false) {
-                throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
+	if($sldContent === false) {
+		throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
 	}
 	if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
 		throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
@@ -141,8 +143,9 @@ if(!empty($_REQUEST['GCFILTERS'])){
 }
 
 
-// avvio la sessione
-if(!isset($_SESSION)) {
+// for PHP >= 5.4, see http://php.net/manual/en/function.session-status.php
+if(session_id() === '') {
+	// start the sessione
 	if(defined('GC_SESSION_NAME')) {
 		session_name(GC_SESSION_NAME);
 		if(isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
@@ -158,6 +161,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 	if(!empty($layersParameter)) {
 		$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	}
+	
 	foreach($layersArray as $layer) {
 		$privateLayer = $layer->getMetaData('gc_private_layer');
 		if(!empty($privateLayer)) {
@@ -165,15 +169,26 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 			break;
 		}
 	}
-	if($hasPrivateLayers) {
-		if (!isset($_SERVER['PHP_AUTH_USER'])) {
+	
+	if ($hasPrivateLayers) {
+		$user = new GCUser();
+		$isAuthenticated = $user->isAuthenticated();
+
+		// user does not have an open session, try to log in
+		if (!$isAuthenticated &&
+			isset($_SERVER['PHP_AUTH_USER']) &&
+			isset($_SERVER['PHP_AUTH_PW'])) {
+			if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+				$user->setAuthorizedLayers(array('mapset_name' => $objRequest->getValueByName('map')));
+				$isAuthenticated = true;
+			}
+		}
+
+		// user could not even log in, send correct headers and exit
+		if (!$isAuthenticated) {
 			header('WWW-Authenticate: Basic realm="Gisclient"');
 			header('HTTP/1.0 401 Unauthorized');
-		} else {
-            $user = new GCUser();
-            if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-                $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
-            }
+			exit(0);
 		}
 	}
 }
