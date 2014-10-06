@@ -24,10 +24,10 @@
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 *
 ******************************************************************************/
-require_once('../../config/config.php');
-require_once (ADMIN_PATH."lib/functions.php");
-require_once (ROOT_PATH."lib/i18n.php");
-require_once ('include/gcMap.class.php');
+require_once '../../config/config.php';
+require_once ADMIN_PATH."lib/functions.php";
+require_once ROOT_PATH."lib/i18n.php";
+require_once 'include/gcMap.class.php';
 
 $getLegend = false;
 if(isset($_REQUEST['legend']) && $_REQUEST['legend'] == 1) $getLegend = true;
@@ -41,7 +41,6 @@ header ("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header ("Pragma: no-cache"); // HTTP/1.0
 
 //ESCO SEMPRE IN UTF-8
-
 if(!empty($_REQUEST["jsonformat"])){
 	header("Content-Type: application/json; Charset=UTF-8");
 	
@@ -58,5 +57,3 @@ else{
 	header("Content-type: text/javascript; Charset=UTF-8");
 	echo $objMapset->OLMap();
 }
-
-?>

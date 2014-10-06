@@ -59,7 +59,7 @@ class gcMapfile{
 		$this->target = $target;
 	}
 
-	function writeMap($keytype,$keyvalue){
+	public function writeMap($keytype,$keyvalue){
 		
         $sqlParams = array();
 

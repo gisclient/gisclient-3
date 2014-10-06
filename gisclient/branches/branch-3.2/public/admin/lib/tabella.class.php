@@ -36,6 +36,7 @@ class Tabella{
 	
 	var $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
 	var $display_number=-1;
+	
 	function Tabella($config_file,$mode="standard"){
 	// ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
 		//	NUOVA MODALITA

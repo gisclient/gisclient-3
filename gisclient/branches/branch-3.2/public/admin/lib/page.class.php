@@ -1,14 +1,17 @@
 <?php
-	
-	
+
 	include_once ADMIN_PATH."lib/tabella_h.class.php";
 	include_once ADMIN_PATH."lib/tabella_v.class.php";
 	include_once ADMIN_PATH."lib/savedata.class.php";
 	include_once ADMIN_PATH."lib/export.php";
-
 	
 	
 	class page{
+		
+		const MODE_VIEW=0;
+		const MODE_LIST=3;
+		const MODE_EDIT=1;
+		const MODE_NEW=2;
 		
 		var $parametri;	// Elenco dei parametri
 		var $tableList;	// Elenco delle tabelle da disegnare
@@ -23,6 +26,7 @@
 		var $notice;
 		var $pageKeys;
 		var $action;
+		private $primary_keys;
 		
 		// Costruttore della classe
 		function page($param=Array()){
@@ -100,13 +104,13 @@
 		}
 
 		// Metodo che prende le configurazioni della pagina da Database
-		function get_conf(){
+		public function get_conf(){
                         $sqlParam = array();
 			if(!$this->livello) $lev="root";
 			else
 				$lev=$this->livello;
 				
-			if ($this->mode==0 or $this->mode==3)
+			if ($this->mode==self::MODE_VIEW or $this->mode==self::MODE_LIST)
 				$filter_mode="(mode=0 or mode=3)";
                         else {
                                 $sqlParam[':mode'] = $this->mode;
@@ -156,7 +160,6 @@
 				$res[$i]["parent_level"]=isset($livelli[$res[$i]["parent_level"]])?$livelli[$res[$i]["parent_level"]]:null;
 				$this->tableList[]=$res[$i];
 			}
-			
 		}
 		
 		//Metodo che scrive il menu di navigazione
@@ -367,7 +370,7 @@
 		
 		//Metodo che scrive il Form in modalit� List  Elenco dei Child
 		
-		private function writeListForm($tab,$el,&$prm){
+		private function writeListForm(array $tab,$el,&$prm){
             $user = new GCUser();
 			switch ($tab["tab_type"]){
 				case 0:	//elenco con molteplici valori (TABELLA H)
@@ -537,8 +540,17 @@
 			}
 			echo "<hr>\n";
 		}
-		//Metodo che scrive il Form in modalita EDIT
-		private function writeEditForm($tab,$el,&$prm){
+		
+		/**
+		 * Metodo che scrive il formulario in modalita EDIT
+		 * 
+		 * @param array $tab
+		 * @param type $el
+		 * @param type $prm
+		 * 
+		 * @throws RuntimeException
+		 */
+		private function writeEditForm(array $tab,$el,&$prm){
 			switch ($tab["tab_type"]){
 				case 110:
 					$prm["livello"]=$tab["level"];
@@ -565,8 +577,6 @@
 					$tb->elenco();
 					echo "<hr>$button";
 					echo "</form>";
-					
-					
 					break;
 					
 				case 100: //Tabella H per elencare tutti i valori possibili e quelli selezionati
@@ -799,7 +809,19 @@
 					$tb=new Tabella_h($tab["config_file"].".tab","edit");
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
 					$msg="";
-					include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
+					
+					// do some basic checks!
+					if (!isset($tab["save_data"])) {
+						throw new RuntimeException("save_data not set in tab");
+					}
+					
+					$includeFile = ADMIN_PATH."include/".$tab["save_data"].".inc.php";
+					if (!file_exists($includeFile)) {
+						throw new RuntimeException("can not find include file for '{$tab["save_data"]}': $includeFile not found");
+					}
+					
+					include_once $includeFile;
+					
 					for($j=0;$j<count($tb->pkeys);$j++){
 						$prm["pkey[$j]"]=isset($tb->pkeys[$j])?$tb->pkeys[$j]:null;
 						$prm["pkey_value[$j]"]=isset($tb->pkeys[$j])?$this->_get_pkey_value($tb->pkeys[$j]):null;
@@ -821,7 +843,7 @@
 					
 			}	
 		}
-		//Metodo che scrive il Form in modalit� NEW
+		//Metodo che scrive il Form in modalita NEW
 		private function writeNewForm($tab,$el,&$prm){
 			$j=0;
 			foreach($this->pageKeys as $v){
@@ -868,12 +890,12 @@
 					break;
 			}		
 		}
+		
 		// Metodo che costruisce la pagina
-		function writePage($err=Array()){
+		public function writePage(array $err=Array()){
 			
 			//Stampa errori generici e messaggi se ci sono
 			$this->writeMessage($err);
-			//echo "<pre>";print_r($this);echo "</pre>";
 			if(!empty($this->tableList)){
 				/*RECUPERO I DATI DELLA TABELLA PRIMARIA*/
 				$table=new Tabella_v($this->tableList[0]["config_file"].".tab");
@@ -890,14 +912,14 @@
 					
 					$el=@each(@array_reverse($this->parametri,true));
 					$this->_getKey($el["value"]);
-					$filter="";
 					$prm=$this->_get_frm_parameter();
 					//VALORIZZO SE PRESENTI I PARAMETRI DELLE FUNZIONI DI SELECT
 					$tab=$this->tableList[$i];
+					var_dump($tab);
 					switch ($this->mode){		//IDENTIFICO LA MODALITA DI VISUALIZZAZIONE 0:VIEW --- 1:EDIT --- 2:NEW
 						
-						case 0:					//MODALITA VIEW
-						case 3:					// MODALITA LIST
+						case self::MODE_VIEW:					// MODALITA VIEW
+						case self::MODE_LIST:					// MODALITA LIST
 							if($tab["tab_type"]==1 || $tab["tab_type"]==50) {
 								$this->currentMode='view';
 								$this->writeViewForm($tab,$el,$prm);
@@ -907,7 +929,7 @@
 								$this->writeListForm($tab,$el,$prm);
 							}
 							break;
-						case 1:					//MODALITA EDIT
+						case self::MODE_EDIT:					//MODALITA EDIT
 							$this->currentMode='edit';
 							$prm["modo"]="edit";
 							$prm["livello"]=$tab["level"];
@@ -946,16 +968,17 @@
 									echo "</form>";
 									if(isset($resultForm)) echo $resultForm;
 									break;
+
                                 case "importa catalogo":
                                     include ADMIN_PATH."include/catalog_import.php";
                                     break;
+
 								default:
-									
 									$this->writeEditForm($tab,$el,$prm);
 									break;
 							}
 							break;
-						case 2:					////MODALITA NEW
+						case self::MODE_NEW:					////MODALITA NEW
 							$prm["modo"]="new";
 							$this->currentMode='new';
 							foreach($prm as $key=>$val){
@@ -998,15 +1021,14 @@
 							break;
 						
 					}
-					//if ($action_btn) echo "$action_btn \n";
-					$action_btn="";
+					
 					if($tab["javascript"]){
 						echo "<script>\n\t".$tab["javascript"]."('".$tab["form_name"]."');\n</script> \n";
 					}
 				}
 				$arr_keys=(count($this->parametri))?(array_keys($this->parametri)):(Array());
 				
-				if(($this->mode==0 || $this->mode==3) && !empty($arr_keys[0])){
+				if(($this->mode==self::MODE_VIEW || $this->mode==self::MODE_LIST) && !empty($arr_keys[0])){
 					$tmp=$this->parametri;
 					array_pop($tmp);
 					$arrkeys=array_keys($tmp);
@@ -1027,11 +1049,13 @@
 				echo "<p>Nessun configurazione definita per la pagina</p>";
 			//$this->showTime();
 		}
+		
 		function getTime($str){
 			$tmp=explode(" ",microtime());
 			$t=$tmp[0]+$tmp[1];
 			$this->time[$str]=$t;
 		}
+		
 		function showTime(){
 			print_debug($this->time,null,'TIME');
 		}

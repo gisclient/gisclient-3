@@ -11,7 +11,6 @@ if ($_REQUEST['format'] == 'PDF') {
 	require_once GC_FOP_LIB;
 }
 
-
 try {
     $printMap = new printDocument();
 

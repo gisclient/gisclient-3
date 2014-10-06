@@ -3,7 +3,7 @@ require_once '../../config/config.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
 
 /**
- * Replace all null values with an emty string, so that JSON seraialization
+ * Replace all null values with an empty string, so that JSON serialization
  * does not show 'null'
  * 
  * @param array $data array of array

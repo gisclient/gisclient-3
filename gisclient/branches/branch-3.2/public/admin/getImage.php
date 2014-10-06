@@ -1,5 +1,5 @@
 <?php
-require_once ("../../config/config.php");
+require_once "../../config/config.php";
 require_once ADMIN_PATH."lib/gcSymbol.class.php";
 
 $smb=new Symbol($_REQUEST['table']);

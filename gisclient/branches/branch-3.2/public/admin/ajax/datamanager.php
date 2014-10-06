@@ -531,8 +531,10 @@ switch($_REQUEST['action']) {
 		$ajax->success(array('filename'=>$zipFile));
 	break;
 	case 'import-shp':
-		checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name', 'srid', 'file_name'));
-		if(empty($_REQUEST['mode']) || !in_array($_REQUEST['mode'], array('create', 'append', 'replace'))) $ajax->error('mode');
+		checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name', 'srid', 'file_name', 'mode'));
+		if(!in_array($_REQUEST['mode'], array('create', 'append', 'replace'))) {
+            $ajax->error('mode');
+        }
 		$_REQUEST['srid'] = trim($_REQUEST['srid']);
 		$_REQUEST['table_name'] = trim($_REQUEST['table_name']);
 		
@@ -545,21 +547,28 @@ switch($_REQUEST['action']) {
 		$schema = GCApp::getDataDBSchema($catalogPath);
 		
 		$tableExists = GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name']);
-		if($_REQUEST['mode'] == 'create' && $tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
-		if($_REQUEST['mode'] != 'create' && !$tableExists) $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
-		
-		if($_REQUEST['mode'] == 'create' && $_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
+		if ($_REQUEST['mode'] == 'create' && $tableExists) {
+			$ajax->error('Table ' . $_REQUEST['table_name'] . ' already exists');
+		}
+		if ($_REQUEST['mode'] != 'create' && !$tableExists) {
+			$ajax->error('Table ' . $_REQUEST['table_name'] . ' does not exist');
+		}
+		if ($_REQUEST['mode'] == 'create' && $_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
 			$ajax->error('Invalid table name');
 		}
 		$tableName = $_REQUEST['table_name'];
-		
-		if(!file_exists(IMPORT_PATH.$_REQUEST['file_name'])) $ajax->error('File does not exists');
-		
-		$fileName = substr($_REQUEST['file_name'], 0, strrpos($_REQUEST['file_name'], '.'));
-		foreach($extensions['shp'] as $extension) {
-			if(!file_exists(IMPORT_PATH.$fileName.'.'.$extension)) $ajax->error('Missing required '.$extension.' file');
+
+		if (!file_exists(IMPORT_PATH . $_REQUEST['file_name'])) {
+			$ajax->error('File does not exists');
 		}
-		
+
+		$fileName = substr($_REQUEST['file_name'], 0, strrpos($_REQUEST['file_name'], '.'));
+		foreach ($extensions['shp'] as $extension) {
+			if (!file_exists(IMPORT_PATH . $fileName . '.' . $extension)) {
+				$ajax->error('Missing required ' . $extension . ' file');
+			}
+		}
+
 		$charset = null;
 		if(!empty($_REQUEST['charset'])) $charset = $_REQUEST['charset'];
 				

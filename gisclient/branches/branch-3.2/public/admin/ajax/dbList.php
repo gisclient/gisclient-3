@@ -33,7 +33,9 @@ switch($selectedField) {
 		$dbtable = ($selectedField=="symbol_ttf_name"||$selectedField=="class_symbol_ttf")?("symbol_ttf"):("symbol");
 		$selectedField = ($selectedField=="symbol_id")?("symbol_name"):($selectedField);
 		
-		if($selectedField=="symbol_ttf_name" && empty($_REQUEST["label_font"])) $ajax->error('empty font');
+		if($selectedField=="symbol_ttf_name" && empty($_REQUEST["label_font"])) {
+			$ajax->error('empty font');
+		}
 		
 		include_once ADMIN_PATH."lib/gcSymbol.class.php";
 		$smb = new Symbol($dbtable);
