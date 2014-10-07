@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
-
 /* POSSO PASSARE DEI PARAMETRI PERSONALIZZATI :
 	LEGEND : 0/1 PER INDICARE CHE VOGLIO TUTTA L'IMMAGINE LEGENDA COMPLETA
 	TITLES : SE NELL'IMMAGINE METTO ANCHE I TITOLI
@@ -73,7 +72,7 @@ if($objRequest->getvaluebyname('layer')){
     foreach($layers as $oLayer) {
         $private = $oLayer->getMetaData('gc_private_layer');
         if(!empty($private)) {
-			if(!checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $oLayer->name)) {
+			if(!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $oLayer->name)) {
 				continue;
 			}
         }
@@ -172,7 +171,7 @@ if($objRequest->getvaluebyname('layer')){
             }
 
             if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
-                //Elimino le classi non visibili: devo cercarle una ad una perch� il removeclass rinumera le classi ogni volta
+                //Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
                 foreach($classToRemove as $className){
                     for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
                         $oClass = $oLayer->getClass($clno);
@@ -195,9 +194,11 @@ if($objRequest->getvaluebyname('layer')){
                     ms_iogetStdoutBufferBytes();
                     ms_ioresethandlers();
                     $imageContent = ob_get_contents();
+                    ob_end_clean();
+					// FIXME: ha senso aggiungere anche se il centent è vuoto?
+					// oppure non è un'immagine?
                     //die($imageContent);
                     array_push($iconsArray, $imageContent);
-                    ob_end_clean();
                 }
                 
             } else {
@@ -252,8 +253,7 @@ if(!$legend) {
 	}
 	header("Content-type: image/png");
 	imagepng($legendImage);
-	die();
-	
+	exit(0);
 }
 
 $oLayer=$oMap->getLayer($aLayersIndexes[0]);
