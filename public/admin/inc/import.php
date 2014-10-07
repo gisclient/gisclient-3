@@ -3,21 +3,24 @@
 	include_once "filesystem.php";
 
 
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database ".DB_NAME);
+	$db = GCApp::getDB();
+    $projectOpt = array();
 	
 	//Elenco dei progetti a disposizione dell'Utente
 	$projectList=@implode(",",$_SESSION["PROJECT"]);
 	$sql="SELECT project_id,project_name FROM ".DB_SCHEMA.".project WHERE project_id IN ($projectList)";
-	if(!$db->sql_query($sql)) print_debug($sql)
-	$ris=$db->sql_fetchrowset();
-	$projectOpt[]="<option value=\"-1\">Seleziona ====></option>";
-	if (count($ris)>1) $projectOpt[]="<option value=\"0\">Tutti</option>";
-	for($i=0;$i<count($ris);$i++){
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $projectOpt[]="<option value=\"-1\">Seleziona ====></option>";
+    if($stmt->rowCount() > 0) {
+        $projectOpt[]="<option value=\"0\">Tutti</option>";
+    }
+    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		$val=$ris[$i];
 		$projectOpt[]="<option value=\"$val[project_name]\">$val[project_name]</option>";
 		$projectName[]=$val["project_name"];
-	}
+    }
+    
 	$projectOption="\n\t\t\t\t".@implode("\n\t\t\t\t",$projectOpt);
 	
 	//Elenco di tutti i File del Livello visibili per l'utente

@@ -1,8 +1,7 @@
 <?php
 error_reporting (E_ERROR | E_PARSE);
 
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+	$db = GCApp::getDB();
     $fName='';
 	if(isset($_POST["esporta"])){
 		
@@ -19,13 +18,17 @@ error_reporting (E_ERROR | E_PARSE);
 			if($_POST["azione"]="Esporta"){
 				$l=$structure["pkey"][$_POST["livello"]][0];
 				$sql="select e_level.id,e_level.name,coalesce(e_level.struct_parent_id,0) as parent,X.name as parent_name,e_level.leaf from ".DB_SCHEMA.".e_level left join ".DB_SCHEMA.".e_level X on (e_level.struct_parent_id=X.id) order by e_level.depth asc;";
-                                if (!$db->sql_query($sql)){
-					print_debug($sql,null,"page_obj");
-					die("<p>Impossibile eseguire la query : $sql</p>");
-				}
-				$ris=$db->sql_fetchrowset();
-				foreach($ris as $v) $array_levels[$v["id"]]=Array("name"=>$v["name"],"parent"=>$v["parent"],"leaf"=>$v["leaf"]);
-				$r=_export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId));
+                $stmt = $db->prepare($sql);
+                $stmt->execute();
+                $array_levels = array();
+                while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $array_levels[$v["id"]] = Array(
+                        "name"=>$v["name"],
+                        "parent"=>$v["parent"],
+                        "leaf"=>$v["leaf"]
+                    );
+                }
+				$r = _export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId));
 				
 				$message="$overwite_message <br> FILE <a href=\"#\" onclick=\"javascript:openFile('".ADMIN_PATH."export/$fName')\">$fName<a/> ESPORTATO CORRETTAMENTE";
 			}

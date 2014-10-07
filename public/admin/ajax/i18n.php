@@ -4,12 +4,12 @@ include_once ADMIN_PATH."lib/ParseXml.class.php";
 include_once ADMIN_PATH."lib/export.php";
 include_once ROOT_PATH."lib/i18n.php";
 
-$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
+$db = GCApp::getDB();
 
 if(empty($_REQUEST['project'])) {
 	errorJson('Undefined project');
 }
-$project = pg_escape_string($_REQUEST['project']);
+$project = $_REQUEST['project'];
 
 if(empty($_REQUEST['level'])) {
 	errorJson('Undefined level');
@@ -19,7 +19,6 @@ $level = pg_escape_string($_REQUEST['level']);
 if(empty($_REQUEST['p_key'])) {
 	errorJson('Undefined pkey');
 }
-$pKey = pg_escape_string($_REQUEST['p_key']);
 
 $xml = new ParseXml();
 $xml->LoadFile(PK_FILE);
@@ -27,20 +26,31 @@ $struct=$xml->ToArray();
 
 if(!isset($struct[$level])) errorJson('Invalid level');
 
-if(is_numeric($pKey)) $pkeyValue = (int)$pKey; else $pkeyValue = "'".$pKey."'";
-$characterPkeyValue = "'".$pKey."'";
+$sql = 'delete from '.DB_SCHEMA.'.localization where project_name = :project and i18nf_id = :field_id and pkey_id = :pkey_id';
+$emptyTranslations = $db->prepare($sql);
+
+$sql = 'insert into '.DB_SCHEMA.'.localization (project_name, i18nf_id, pkey_id, language_id, "value") 
+    values (:project, :field_id, :pkey_value, :lang_id, :translation)';
+$insertTranslation = $db->prepare($sql);
 
 if(isset($_POST['translations'])) {
 	if(!is_array($_POST['translations'])) errorJson('Invalid data');
 	foreach($_POST['translations'] as $fieldId => $translations) {
 		
-		$sql = "delete from ".DB_SCHEMA.".localization where project_name='$project' and i18nf_id=$fieldId and pkey_id = $characterPkeyValue";
-		$db->sql_query($sql);
+        $emptyTranslations->execute(array(
+            'project'=>$project,
+            'field_id'=>$fieldId,
+            'pkey_id'=>$_REQUEST['p_key']
+        ));
 		
 		foreach($translations as $languageId => $translation) {
-			$sql = "insert into ".DB_SCHEMA.".localization (project_name, i18nf_id, pkey_id, language_id, \"value\") ".
-				" values ('$project', $fieldId, $characterPkeyValue, '$languageId', '".pg_escape_string($translation)."')";
-			$db->sql_query($sql);
+            $insertTranslation->execute(array(
+                'project'=>$project,
+                'field_id'=>$fieldId,
+                'pkey_value'=>$_REQUEST['p_key'],
+                'lang_id'=>$languageId,
+                'translation'=>$translation
+            ));
 		}
 	}
 	successJson();
@@ -65,11 +75,12 @@ if(isset($_POST['translations'])) {
 	$fieldNames = array();
 	foreach($fields as $fieldId => $field) array_push($fieldNames, $field['field_name']);
 
-	$sql = "select ".implode(',',$fieldNames)." from ".DB_SCHEMA.".$level where ".$struct[$level]['pkey']." = $pkeyValue";
-	$db->sql_query($sql);
-	$result = $db->sql_fetchrowset();
-	if(empty($result)) echo $sql;
-	$row = current($db->sql_fetchrowset());
+	$sql = "select ".implode(',',$fieldNames)." from ".DB_SCHEMA.".$level where ".$struct[$level]['pkey']." = :pkey_value";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array(
+        'pkey_value'=>$_REQUEST['p_key']
+    ));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 	foreach($row as $key => $val) {
 		$defaultLanguageData[$key] = $val;
 	}
@@ -78,7 +89,7 @@ if(isset($_POST['translations'])) {
 	
 	foreach($languages as $languageId => $foo) {
 		if($languageId == $defaultLanguageId) continue;
-		$responseData['translations'][$languageId] = $localization->getTranslationsByFieldName($languageId, $level, $pKey);
+		$responseData['translations'][$languageId] = $localization->getTranslationsByFieldName($languageId, $level, $_REQUEST['p_key']);
 	}
 	successJson($responseData);
 }
