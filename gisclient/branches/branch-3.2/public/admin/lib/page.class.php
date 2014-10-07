@@ -915,7 +915,6 @@
 					$prm=$this->_get_frm_parameter();
 					//VALORIZZO SE PRESENTI I PARAMETRI DELLE FUNZIONI DI SELECT
 					$tab=$this->tableList[$i];
-					var_dump($tab);
 					switch ($this->mode){		//IDENTIFICO LA MODALITA DI VISUALIZZAZIONE 0:VIEW --- 1:EDIT --- 2:NEW
 						
 						case self::MODE_VIEW:					// MODALITA VIEW
