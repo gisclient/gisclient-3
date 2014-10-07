@@ -387,13 +387,10 @@ class gcFeature{
 	private function _getLayerData(){
 	
 		$aFeature = $this->aFeature;
-		// $layerId=$aFeature["layer_id"]; // unused
 		$datalayerTable=$aFeature["data"];	
 		$datalayerGeom=$aFeature["data_geom"];			
 		$datalayerKey=$aFeature["data_unique"];	
-		// $datalayerSRID=$aFeature["data_srid"]; // unused
 		$datalayerSchema = $aFeature["table_schema"];
-		// $datalayerFilter = $aFeature["data_filter"]; // unused
 
 		if($aFeature["tileindex"]) { //X TILERASTER
 			$location = "'".trim($aFeature["base_path"])."' || location as location";//value for location
