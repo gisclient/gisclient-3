@@ -310,7 +310,9 @@ class gcMapfile{
 					//VEDO SE CI SONO DEI LIVELLI MAPSERVER DENTRO I LAYERGROUP DEI SERVIZI WEB
 					else{
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("name"=>$aLayer["theme_name"],"title"=>$aLayer["theme_title"],"layers"=>array());
+						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
+						
 						if($aLayer["hidden"]!=1) {
 	                        array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
 	                            "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
