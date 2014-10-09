@@ -1346,5 +1346,50 @@ ALTER TABLE vista_layer
   OWNER TO gisclient;
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.23', 'author', '2014-10-01');
 
+-- 2014-10-09: ricrea la vista_qtfield, utile a sapere se un campo è configurato correttamente
+
+
+CREATE OR REPLACE VIEW vista_qtfield AS 
+ SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.resultype_id, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name, qtfield.editable,
+   CASE 
+  WHEN qtrelation_id = 0 THEN
+  (CASE 
+    WHEN c.connection_type != 6 then 'Controllo non possibile: connessione non PostGIS'
+    WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then 'Controllo non possibile: DB diverso'
+    WHEN qtfield_name NOT IN (select column_name from information_schema.columns where substring(c.catalog_path,position('/' in c.catalog_path)+1,length(c.catalog_path))=i.table_schema and l.data=i.table_name) then 'Il campo non esiste nella tabella'
+    ELSE 'OK'
+  END)
+  ELSE 
+  (CASE
+    WHEN cr.connection_type != 6 then 'Controllo non possibile: connessione non PostGIS'
+    WHEN substring(cr.catalog_path,0,position('/' in cr.catalog_path)) != current_database() then 'Controllo non possibile: DB diverso'
+    WHEN qtfield_name NOT IN (select column_name from information_schema.columns where substring(cr.catalog_path,position('/' in cr.catalog_path)+1,length(cr.catalog_path))=i.table_schema and r.table_name=i.table_name) then 'Il campo non esiste nella tabella di relazione: '||qtrelation_name
+    ELSE 'OK'
+  END)
+END as qtfield_control
+   FROM qtfield
+   JOIN e_fieldtype USING (fieldtype_id)
+   JOIN ( SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name
+      FROM (         SELECT 0 AS qtrelation_id, 'Data Layer'::character varying AS name, 0 AS qtrelationtype_id
+           UNION 
+                    SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id
+                      FROM qtrelation) y
+   JOIN (         SELECT 0 AS qtrelationtype_id, ''::character varying AS qtrelationtype_name
+           UNION 
+                    SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name
+                      FROM e_qtrelationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
+  JOIN layer l using (layer_id)
+join catalog c using (catalog_id)
+lEFT join qtrelation r using (qtrelation_id)
+LEFT JOIN catalog cr ON cr.catalog_id=r.catalog_id
+LEFT JOIN information_schema.columns i on qtfield_name=i.column_name and substring(c.catalog_path,position('/' in c.catalog_path)+1,length(c.catalog_path))=i.table_schema AND (l.data=i.table_name OR r.table_name=i.table_name) 
+  ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
+
+ALTER TABLE vista_qtfield
+  OWNER TO postgres;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.24', 'author', '2014-10-09');
+
+
 
 
