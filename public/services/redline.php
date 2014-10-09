@@ -110,7 +110,7 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 			':redline_id'=>$redlineId,
 			':redline_title'=>$redlineTitle,
 			':note'=>!empty($feature['properties']['note']) ? $feature['properties']['note'] : null,
-			':color'=>!empty($feature['properties']['color']) ? $feature['properties']['color'] : null
+			':color'=>!empty($feature['properties']['color']) ? $feature['properties']['color'] : REDLINE_COLOR
 		);
 		try {
 			$stmt->execute($params);
@@ -211,7 +211,18 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		
         // Label properties
 		$oClass = ms_newClassObj($oLay);
-        $oLabel = new labelObj();
+        $oClass->updateFromString('CLASS
+            NAME "label_layer_class"
+            LABEL
+                TYPE TRUETYPE
+                FONT "'.REDLINE_FONT.'"
+                POSITION ur
+                OFFSET 5 5
+                SIZE 14
+                COLOR [color]
+            END
+        END');
+/*         $oLabel = new labelObj();
         $oLabel->set('position', MS_UR);
         $oLabel->set('offsetx', 5);
         $oLabel->set('offsety', 5);
@@ -219,12 +230,13 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
         $oLabel->type = MS_TRUETYPE;
         $oLabel->size = 14;
         $oLabel->setbinding(MS_LABEL_BINDING_COLOR, "color");
-        $oClass->addLabel($oLabel);
+        $oClass->addLabel($oLabel); */
 		$oLay->set('status', MS_ON);
 	}
 
-	ms_ResetErrorList();	
+	ms_ResetErrorList();
 	$oImage=$oMap->draw();
+    $oMap->save('debug.map');
 			
 	$error = ms_GetErrorObj();
 	if($error->code != MS_NOERR){
