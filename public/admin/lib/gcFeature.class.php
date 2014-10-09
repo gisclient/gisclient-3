@@ -295,17 +295,12 @@ class gcFeature{
 					$layText[]="CONNECTIONTYPE POSTGIS";
 					$layText[]="CONNECTION \"".$this->aFeature["connection_string"]."\"";
 					$sData = $this->_getLayerData();
-                    if(!$this->aFeature["fields"] && !empty($this->aFeature["data_unique"])) {
-                        $sData .= ' USING UNIQUE '.$this->aFeature['data_unique'];
-                    } else if($this->aFeature["fields"]) {
-                        $sData .= " USING UNIQUE gc_objid";
-                    }
 //					if($this->aFeature["fields"])
 //						$sData .= " USING UNIQUE gc_objid";
 //					elseif(!empty($this->aFeature["data_unique"]))
 //						$sData .= " USING UNIQUE ".$this->aFeature["data_unique"];
-                    //if (!empty($this->aFeature["data_unique"]))
-                        //$sData .= " USING UNIQUE gc_objid";
+                    if (!empty($this->aFeature["data_unique"]))
+                        $sData .= " USING UNIQUE gc_objid";
 					if(!empty($this->aFeature["data_srid"])) $sData .= " USING SRID=" . $this->aFeature["data_srid"];
 					$layText[]="DATA \"$sData\"";	
 					if(!empty($this->aFeature["data_filter"])) $layText[]="FILTER \"". $this->aFeature["data_filter"] ."\"";
@@ -387,12 +382,8 @@ class gcFeature{
 	}
 	
 	function _getLayerData(){
-        if($this->aFeature["tileindex"] || !$this->aFeature["fields"]) {
-            return $this->aFeature['data_geom']." from ".$this->aFeature["table_schema"].'.'.$this->aFeature["data"];
-        } else {
-            $query = GCAuthor::buildFeatureQuery($this->aFeature);
-            return 'gc_geom FROM ('.$query.') AS foo';
-        }
+        $query = GCAuthor::buildFeatureQuery($this->aFeature);
+        return 'gc_geom FROM ('.$query.') AS foo';
         
         //tutta questa parte è stata spostata in lib/gcapp.class.php, perchè condivisa con gcPgQuery per le interrogazioni avanzate
 		$aFeature = $this->aFeature;
@@ -701,7 +692,7 @@ class gcFeature{
 		return "\t".implode("\n\t\t\t",$styText);	
 	}
 	
-	// SERVE A MARCO??????
+	// SERVE A MARCO?????? - viene usata in admin/rpc.php!
 	function getFeatureField($layerId=null){
 		$result=Array();
 		if ($layerId) $this->init($layerId);
@@ -712,6 +703,7 @@ class gcFeature{
 			$relationName=($field["relation"])?($aFeature["relation"][$field["relation"]]["table_name"]):($aFeature["data"]);
 			$relationSchema=($field["relation"])?($aFeature["relation"][$field["relation"]]["table_schema"]):($aFeature["table_schema"]);
 			$relationConnStr=($field["relation"])?($aFeature["relation"][$field["relation"]]["connection_string"]):($aFeature["connection_string"]);
+            $catalogPath = ($field['relation']) ? ($aFeature['relation'][$field['relation']]['catalog_path']) : ($this->aFeature['catalog_path']);
 			$result[$fieldId]=Array(
 				"id"=>$fieldId,
 				"name"=>$field["field_name"],
@@ -719,6 +711,7 @@ class gcFeature{
 				"table"=>$relationName,
 				"schema"=>$relationSchema,
 				"connection_string"=>$relationConnStr,
+				"catalog_path"=>$catalogPath,
 				"data_type"=>$field["data_type"]
 			);
 		}

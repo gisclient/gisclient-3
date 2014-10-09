@@ -4,7 +4,7 @@ error_reporting (E_ERROR | E_PARSE);
 	$db = GCApp::getDB();
     $fName='';
 	if(isset($_POST["esporta"])){
-		
+		$array_levels = array();
 		include_once ADMIN_PATH."lib/export.php";
 		$level=$_POST["level"];
 		$project=$_POST["project"];
@@ -18,19 +18,18 @@ error_reporting (E_ERROR | E_PARSE);
 			if($_POST["azione"]="Esporta"){
 				$l=$structure["pkey"][$_POST["livello"]][0];
 				$sql="select e_level.id,e_level.name,coalesce(e_level.struct_parent_id,0) as parent,X.name as parent_name,e_level.leaf from ".DB_SCHEMA.".e_level left join ".DB_SCHEMA.".e_level X on (e_level.struct_parent_id=X.id) order by e_level.depth asc;";
-                $stmt = $db->prepare($sql);
-                $stmt->execute();
-                $array_levels = array();
-                while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    $array_levels[$v["id"]] = Array(
-                        "name"=>$v["name"],
-                        "parent"=>$v["parent"],
-                        "leaf"=>$v["leaf"]
-                    );
+                try {
+                    $stmt = $db->query($sql);
+                    //secondo me questo array_levels non serve a niente...
+                    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $array_levels[$v["id"]]=Array("name"=>$v["name"],"parent"=>$v["parent"],"leaf"=>$v["leaf"]);
+                    }
+                } catch(Exception $e) {
+                    die("<p>Impossibile eseguire la query : $sql</p>");
                 }
-				$r = _export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId));
+				$r=_export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId));
 				
-				$message="$overwite_message <br> FILE <a href=\"#\" onclick=\"javascript:openFile('".ADMIN_PATH."export/$fName')\">$fName<a/> ESPORTATO CORRETTAMENTE";
+				$message="$overwrite_message <br> FILE <a href=\"#\" onclick=\"javascript:openFile('".ADMIN_PATH."export/$fName')\">$fName<a/> ESPORTATO CORRETTAMENTE";
 			}
 		}
 	
