@@ -1386,7 +1386,37 @@ LEFT JOIN information_schema.columns i on qtfield_name=i.column_name and substri
   ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
 
 ALTER TABLE vista_qtfield
-  OWNER TO postgres;
+  OWNER TO gisclient;
+  
+
+create or replace view vista_qtrelation as 
+select r.*,
+CASE
+  WHEN connection_type != 6 then 'Controllo non possibile: connessione non PostGIS'
+  WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then 'Controllo non possibile: DB diverso'
+  WHEN layer_name not in (select table_name from information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path))) then 'La tabella DB del layer non esiste'
+  WHEN table_name not in (select table_name from information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path))) then 'La tabella DB di JOIN non esiste'
+  WHEN data_field_1 is null or table_field_1 is null then 'Uno dei campi della JOIN 1 è vuoto'
+  WHEN data_field_1 not in (select column_name from information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = layer_name) then 'Il campo chiave layer non esiste'
+  WHEN table_field_1 not in (select column_name from information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = r.table_name) then 'Il campo chiave della relazione non esiste'
+  WHEN data_field_2 is null AND table_field_2 is null then 'OK'
+  WHEN data_field_2 is null or table_field_2 is null then 'Uno dei campi della JOIN 2 è vuoto'
+  WHEN data_field_2 not in (select column_name from information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = layer_name) then 'Il campo chiave layer della JOIN 2 non esiste'
+  WHEN table_field_2 not in (select column_name from information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = r.table_name) then 'Il campo chiave relazione della JOIN 2 non esiste'
+  WHEN data_field_3 is null AND table_field_3 is null then 'OK'
+  WHEN data_field_3 is null or table_field_3 is null then 'Uno dei campi della JOIN 3 è vuoto'
+  WHEN data_field_3 not in (select column_name from information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = layer_name) then 'Il campo chiave layer della JOIN 3 non esiste'
+  WHEN table_field_3 not in (select column_name from information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = r.table_name) then 'Il campo chiave relazione della JOIN 3 non esiste'
+  ELSE 'OK'
+  END as qtrelation_control
+from qtrelation r
+JOIN catalog c using (catalog_id)
+join layer l using (layer_id)
+JOIN e_qtrelationtype rt using (qtrelationtype_id);
+
+ALTER TABLE vista_qtfield
+  OWNER TO gisclient;
+
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.24', 'author', '2014-10-09');
 
