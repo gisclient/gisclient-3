@@ -299,7 +299,7 @@ class gcMapfile{
 	                        "sources"=>array("mapserver_bin_source:".$aLayer["layergroup_name"]),
 	                        'cache'=>array(
 	                            'type'=>'mbtiles',
-	                            'filename'=>$aLayer["layergroup_name"].'.mbtiles'
+	                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
 	                        ),
 	                        'grids'=>array_keys($this->grids)
                     	);
