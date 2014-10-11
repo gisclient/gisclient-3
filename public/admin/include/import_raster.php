@@ -1,18 +1,27 @@
 <?php
 require_once "../../config/config.php";
-$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+$db = GCApp::getDB();
+$ris = null;
+$optCatalog = array();
 
-$sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name='$project' order by catalog_name;";
-if(!$db->sql_query($sql)) {
-	print_debug($sql,null,"import_raster");
-	$optCatalog[]="<option value=\"-1\">Nessun Catalogo</option>";
+$sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name=:project order by catalog_name;";
+try {
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array('project'=>$project));
+    if($stmt->rowCount() > 0) {
+        $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $optCatalog[]="<option value=\"-1\">Nessun Catalogo</option>";
+    }
+} catch(Exception $e) {
+    $optCatalog[]="<option value=\"-1\">Nessun Catalogo</option>";
 }
-else{
-	$ris=$db->sql_fetchrowset();
+
+if($ris) {
 	$optCatalog[]="<option value=\"0\">Seleziona ===></option>";
 	foreach($ris as $val) $optCatalog[]="<option value=\"$val[catalog_id]\">$val[name]</option>";
 }
+
 $ext=explode(",",CATALOG_EXT);
 foreach($ext as $e){
 	if($e!="SHP") $extension[]=$e;
