@@ -250,14 +250,14 @@ class gcMapfile{
 				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
             	if(empty($this->mpxCaches[$mapName])) $this->mpxCaches[$mapName] = array();
 				if(empty($defaultLayers[$mapName])) $defaultLayers[$mapName] = array();
-	/*          //CACHE PER I TEMI SINGLE
+	          //CACHE PER I TEMI SINGLE
 	            if($aLayer['theme_single']) {
 	                $cacheName = $aLayer['theme_name'].'_cache';
 	                if(empty($this->mpxCaches[$mapName][$cacheName])) $this->mpxCaches[$mapName][$cacheName] = array(
 	                    'grids'=>array_keys($this->grids),
 	                    'cache'=>array(
 	                        'type'=>'mbtiles',
-	                        'filename'=>$aLayer['theme_name'].'.mbtiles'
+	                        'filename'=>$mapName.".".$aLayer['theme_name'].'.mbtiles'
 	                    ),
 	                    'layergroups'=>array(),
 	                    'theme_name'=>$aLayer['theme_name'],
@@ -265,7 +265,7 @@ class gcMapfile{
 	                );
 	                
 	                array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
-	            }*/
+	            }
 
 	            //LAYER ACCESI DI DEFAULT PER LA CACHE DEL MAPSET INTERO 
 				//$defaulMapsetLayers = array();
@@ -296,7 +296,7 @@ class gcMapfile{
 						//echo $aLayer["layergroup_name"];
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
                     	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
-	                        "sources"=>array("mapserver_bin_source:".$aLayer["layergroup_name"]),
+	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
 	                        'cache'=>array(
 	                            'type'=>'mbtiles',
 	                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
@@ -371,6 +371,7 @@ class gcMapfile{
 	                        unset($cache['layergroups']);
 	                        
 	                        $layersToAdd[$cache['theme_name'].'_tiles'] = array(
+	                            'name'=>$cache['theme_name'].'_tiles',
 	                            'title'=>$cache['theme_title'],
 	                            'sources'=>array($cacheName)
 	                        );
@@ -386,7 +387,7 @@ class gcMapfile{
 
                 //AGGIUNGO IL LAYER PER LA NAVIGAZIONE VELOCE
                 $this->mpxCaches[$mapName][$mapName."_cache"] = array(
-	                'sources'=>array('mapserver_bin_source:'.implode(",",$defaultLayers[$mapName])),
+	                'sources'=>array('mapserver_source:'.implode(",",$defaultLayers[$mapName])),
 	                'cache'=>array(
 	                    'type'=>'mbtiles',
 	                    'filename'=>$mapName.'.mbtiles'
@@ -793,7 +794,8 @@ END";
                 )
             ),
             'sources'=>array(
-                'mapserver_source'=>array(
+            	/*
+                'mapserver_wms_source'=>array(
                     'type'=>'wms',
                     'supported_srs'=>$this->epsgList,
                     'req'=>array(
@@ -811,11 +813,10 @@ END";
                         'transparent_color'=>'#ffffff',
                         'transparent_color_tolerance'=>0
                     )
-                ),
-                'mapserver_bin_source'=>array(
+                ),*/
+                'mapserver_source'=>array(
                     'type'=>'mapserver',
                     'req'=>array(                        
-                    	'format'=>'image/png',
                     	'transparent'=>true,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'exceptions'=> 'inimage'
