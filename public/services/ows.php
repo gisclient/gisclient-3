@@ -303,10 +303,11 @@ ms_ioinstallstdouttobuffer();
 /* Execute request */ 
 $oMap->owsdispatch($objRequest);
 $contenttype = ms_iostripstdoutbuffercontenttype(); 
-$ctt = explode("/",$contenttype); 
 
 /* Send response with appropriate header */ 
-if ($ctt[0] == 'image') {
+if (substr($contenttype, 0, 6) == 'image/') {
+
+	header('Content-Type: '. $contenttype);
 
 	$hasDynamicLayer = false;
 	if (defined('DYNAMIC_LAYERS')) {
@@ -321,8 +322,6 @@ if ($ctt[0] == 'image') {
 		}
     }
 
-	header('Content-type: image/'. $ctt[1]); 
-    
     // Cache part 2
 	if (!$hasDynamicLayer && $cacheExpireTimeout > 0 && $cacheExpireTimeout > time()) {
 		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTLOpen) . " GMT";
@@ -344,12 +343,18 @@ if ($ctt[0] == 'image') {
 		header("Last-Modified: {$serverTime}");
 		header("Expires: {$cacheTime}");
 	}
-    
-	ms_iogetStdoutBufferBytes(); 
+} elseif (strstr($contenttype, 'google-earth')) {
+	header("Content-Type: $contenttype");
+	
+	if (substr($contenttype, -4) == ".kmz") {
+		header('Content-Disposition: attachment; filename="layerdata.kmz"');
+	} elseif (substr($contenttype, -4) == ".kml") {
+		header('Content-Disposition: attachment; filename="layerdata.kml"');
+	}	
 } else { 
 	header("Content-Type: application/xml"); 
-	ms_iogetStdoutBufferBytes(); 
 } 
 
+ms_iogetStdoutBufferBytes(); 
 ms_ioresethandlers();
 
