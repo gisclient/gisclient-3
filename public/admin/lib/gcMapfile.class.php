@@ -116,6 +116,8 @@ class gcMapfile{
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
         
+
+        /* RIVEDERE LA COSTRUZIONE DI GRIDS
         if(!empty($projectName)) {
             $sql = 'select srid, e_tilegrid.* from '.DB_SCHEMA.'.project_srs
                 inner join '.DB_SCHEMA.'.e_tilegrid using(tilegrid_id)
@@ -146,6 +148,17 @@ class gcMapfile{
                 );
             }
         }
+        */
+        $this->grids["epsg3857"] = array(
+            'base'=>'GLOBAL_WEBMERCATOR',
+            'srs'=>'EPSG:3857',
+            'num_levels'=>20
+        );
+        $this->grids["epsg900913"] = array(
+            'base'=>'GLOBAL_WEBMERCATOR',
+            'srs'=>'EPSG:900913',
+            'num_levels'=>20
+        );
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,
 		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
