@@ -33,6 +33,7 @@ define('VMAP_LAYER_TYPE',3);
 define('YMAP_LAYER_TYPE',4);
 define('OSM_LAYER_TYPE',5);
 define('TMS_LAYER_TYPE',6);
+define('XYZ_LAYER_TYPE',9);
 define('BING_LAYER_TYPE',8);
 define('GOOGLESRID',3857);
 define('SERVICE_MAX_RESOLUTION',156543.03390625);
@@ -166,7 +167,7 @@ class gcMap{
 		//$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
 		//Limita estensione:
 		if(($row["mapset_extent"])){
-			$ext = explode($this->coordSep,$row["mapset_extent"]);
+			$ext = preg_split("/[".$this->coordSep."]+/",$row["mapset_extent"]);
 			$mapOptions["restrictedExtent"] = array(floatval($ext[0]),floatval($ext[1]),floatval($ext[2]),floatval($ext[3]));
 		}
 
@@ -361,7 +362,7 @@ class gcMap{
 
 				// Layer impostati sul layergroup
 				elseif (!empty($row['layers'])) { 
-                   $aLayer["parameters"]["layers"] = explode(",",$row['layers']);
+                   $aLayer["parameters"]["layers"] = preg_split("/[,]+/",$row['layers']);
  		        } 
 
 
@@ -530,11 +531,11 @@ class gcMap{
 				array_push($this->mapLayers, $aLayer);
 			}
 
-			elseif($layerType==TMS_LAYER_TYPE){//TMS
+			elseif($layerType==TMS_LAYER_TYPE){
 
 				if(isset($row["url"])){
 					$aLayer["url"] = $row["url"];
-					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"];
+					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"]."/EPSG".$this->mapsetSRID;
 					$layerOptions["zoomOffset"] = $this->resolutionOffset - 1;
 
 				}
@@ -544,7 +545,7 @@ class gcMap{
 					//$aLayer["url"] = MAPPROXY_URL."/"."okgrids"."/tms/";
 					$layerOptions["serviceVersion"] = defined('GISCLIENT_TMS_VERSION')?GISCLIENT_TMS_VERSION:"1.0.0";
 				
-					$layerOptions["layername"] = $aLayer["name"]."/EPSG3857";
+					$layerOptions["layername"] = $aLayer["name"]."/EPSG".$this->mapsetSRID;
 					//$layerOptions["layername"] = "tiff_agea_mask"."/EPSG3004";
 					$layerOptions["owsurl"] = $ows_url."?map=".$mapsetName;
 					$layerOptions["zoomOffset"] = $this->resolutionOffset - 1; 
@@ -564,6 +565,16 @@ class gcMap{
 				$aLayer["options"]= $layerOptions;
 				array_push($this->mapLayers, $aLayer);
 			}		
+
+			elseif($layerType==XYZ_LAYER_TYPE && $row["url"]) {
+
+				$v = preg_split("/[\r\n,]+/",$row["url"]);
+				$aLayer["url"] = implode ("FFF",$v);
+
+				$layerOptions["zoomOffset"] = $this->resolutionOffset - 1;
+				$aLayer["options"]= $layerOptions;
+				array_push($this->mapLayers, $aLayer);
+			}
 
 			unset($aLayer);
 
@@ -870,7 +881,7 @@ class gcMap{
 	}
 
 	function _getTMSExtent($tilesExtent, $tilesExtentSRID){
-		list($x0,$y0,$x1,$y1) = explode ($this->coordSep,$tilesExtent);
+		list($x0,$y0,$x1,$y1) = preg_split("/[".$this->coordSep."]+/",$tilesExtent);
 		//RIPROIETTO SE SRID DIVERSO DAL MAPSET
 		if($tilesExtentSRID!=$this->mapsetSRID){
 			$p1 = "SRID=$tilesExtentSRID;POINT($x0 $y0)";
@@ -964,9 +975,9 @@ class gcMap{
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		print_debug($sql,null,'mapoptions');
         if ($row['mapset_scales'] !='') {
-            $ret = explode(',', $row['mapset_scales']);
+            $ret = preg_split("/[,]+/",$row['mapset_scales']);
         } else if (defined('SCALE')) {
-            $ret = explode(',', SCALE);
+            $ret = preg_split("/[,]+/", SCALE);
         } else {
             $ret = GCAuthor::$defaultScaleList;
         }
@@ -982,12 +993,12 @@ class gcMap{
 
 		$aRes = array();
 		if($gridResolutions){
-			$v = explode($this->coordSep, $gridResolutions); 
+			$v = preg_split("/[".$this->coordSep."]+/",$gridResolutions);
 			foreach ($v as $key => $value) {
 				$aRes[$key] = round((float)$value, $precision);
 			}
 			if($tilesExtent){
-				$v = explode($this->coordSep, $tilesExtent); 
+				$v = preg_split("/[".$this->coordSep."]+/",$tilesExtent); 
 				foreach ($v as $key => $value) {
 					$this->tilesExtent[$key] = round((float)$value, $precision);
 				}
@@ -1035,7 +1046,7 @@ class gcMap{
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':auth_name'=>$authName, ':auth_srid'=>$authSrid));
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		$parts = explode(',',$row['srtext']);
+		$parts = preg_split("/[,]+/",$row['srtext']);
 		return trim(substr($parts[0], strpos($parts[0], '[')+1), '"');
 	}
 	
@@ -1104,7 +1115,7 @@ class gcMap{
                 if($complete && !empty($groupExtents)) {
                     $extent = array(null, null, null, null);
                     foreach($groupExtents as $ext) {
-                        list($x1, $y1, $x2, $y2) = explode(' ', $ext);
+                        list($x1, $y1, $x2, $y2) = preg_split("/[".$this->coordSep."]+/", $ext);
                         if(empty($extent[0]) || $x1 < $extent[0]) $extent[0] = $x1;
                         if(empty($extent[1]) || $y1 < $extent[1]) $extent[1] = $y1;
                         if(empty($extent[2]) || $x2 > $extent[2]) $extent[2] = $x2;
