@@ -1240,4 +1240,7 @@ UPDATE CLASS set label_bgcolor = NULL;
 update class set
 class_text = ''''||class_text||'''' where class_text is not null;
 
+delete from symbol where symbolcategory_id = 2;
+delete from e_symbolcategory where symbolcategory_id = 2;
+
 INSERT INTO version (version_name,version_key, version_date) values ('6', 'mapserver', CURRENT_DATE);
