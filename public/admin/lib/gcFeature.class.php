@@ -145,7 +145,13 @@ class gcFeature{
 		$aConnInfo = connInfofromPath($aFeature["catalog_path"]);
 		$aFeature["connection_string"] = $aConnInfo[0];
 		$aFeature["table_schema"] = $aConnInfo[1];
-		$aFeature["filePath"] = (substr(trim($aFeature["catalog_path"]),0,1)=='/')?trim($aFeature["catalog_path"]):trim($aFeature["base_path"]).trim($aFeature["catalog_path"]);
+		//Se inizia con / o con ../ no concateno con il basepath
+		if(substr(trim($aFeature["catalog_path"]),0,1)=='/' || substr(trim($aFeature["catalog_path"]),0,3)=='../'){
+			$aFeature["filePath"] = trim($aFeature["catalog_path"]);
+		}
+		else{
+			$aFeature["filePath"] = trim($aFeature["base_path"]).trim($aFeature["catalog_path"]);
+		}
 		$aFeature["relation"]= (isset($qRelation))?$qRelation:null;	
 		$aFeature["fields"] = (isset($qField))?$qField:null;
 		$aFeature["link"]=(isset($qLink))?array_values($qLink):array();

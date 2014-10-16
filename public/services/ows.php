@@ -278,7 +278,9 @@ if (substr($sapi_type, 0, 3) != 'cgi') {
 ms_ioinstallstdouttobuffer(); 
 
 /* Eexecute request */ 
-$oMap->owsdispatch($objRequest);
+//TODO VERIFICARE PERCHÈ SENZA @ DA ERRORE
+@$oMap->owsdispatch($objRequest);
+
 
 
 $contenttype = ms_iostripstdoutbuffercontenttype(); 

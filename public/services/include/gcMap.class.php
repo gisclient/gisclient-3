@@ -53,8 +53,9 @@ class gcMap{
 	var $mapConfig;
 	var $mapsetSRID;
 	var $mapsetGRID;
-	var $serverResolutions = array();
+	var $mapResolutions = array();
 	var $mapsetResolutions = array();
+	var $resolutionOffset = 0;
 	var $tilesExtent;
 	var $activeBaseLayer = '';
 	var $isPublicLayerQueryable = true; //FLAG CHE SETTA I LAYER PUBBLICI ANCHE INTERROGABILI 
@@ -152,32 +153,16 @@ class gcMap{
 		$this->mapsetSRID = $row["mapset_srid"];
 		$this->fractionalZoom = 1;
 
-		//GRID & TILES
-		if(!empty($row["mapset_grid"])){
-			$precision = $sizeUnitId == 7?10:6;
-			$this->tilesExtent = explode($this->coordSep,$row["tilegrid_extent"]); 
-            foreach($this->tilesExtent as &$res) $res = round((float)$res,$precision);
-            unset($res);
-			$this->serverResolutions = explode($this->coordSep,$row["tilegrid_resolutions"]); 
-			$this->mapsetGRID = $row["mapset_grid"];
-
-			//ATTENZIONE SU QUALCHE VERSIONE PHP NON ARROTONDAVA CORRETTAMENTE
-			//for($i=0;$i<count($this->serverResolutions);$i++) $this->serverResolutions [$i] = round(floatval($this->serverResolutions [$i]),$precision);
-			//for($i=0;$i<count($this->serverResolutions);$i++) $this->serverResolutions [$i] = floatval($this->serverResolutions [$i]);
-            foreach($this->serverResolutions as &$res) $res = round((float)$res,$precision);
-            unset($res);
-		}
-
-		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$sizeUnitId);
-
-		$mapOptions["serverResolutions"] = $this->serverResolutions;
-		$mapOptions["minZoomLevel"] = $this->minZoomLevel;
-		$mapOptions["maxZoomLevel"] = $this->maxZoomLevel;
-		$mapOptions["numZoomLevels"] = $this->numZoomLevels;
-
-		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->serverResolutions[$this->minZoomLevel]);
-		$mapOptions["tilesExtent"] = $this->tilesExtent;
-		$mapOptions["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
+		$this->_getResolutions($row["tilegrid_resolutions"],$row["tilegrid_extent"],$row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$sizeUnitId);
+		if(!empty($row["mapset_grid"])) $this->mapsetGRID = $row["mapset_grid"];
+		$mapOptions["resolutions"] = $this->mapResolutions;
+		//$mapOptions["minZoomLevel"] = $this->minZoomLevel;
+		//$mapOptions["maxZoomLevel"] = $this->maxZoomLevel;
+		//$mapOptions["numZoomLevels"] = $this->numZoomLevels;
+        $mapOptions["resOffset"] = $this->resolutionOffset;
+		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
+		//$mapOptions["tilesExtent"] = $this->tilesExtent;
+		if($this->mapsetGRID) $mapOptions["matrixSet"] = $this->mapsetGRID;
 		//$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
 		//Limita estensione:
 		if(($row["mapset_extent"])){
@@ -482,7 +467,7 @@ class gcMap{
 					$layerOptions["key"] = BINGKEY;
 				}
 				$layerOptions["sphericalMercator"] = true;
-				$layerOptions["minZoomLevel"] = $this->minZoomLevel;
+				$layerOptions["minZoomLevel"] = $this->resolutionOffset;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
 				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 				unset($layerOptions["minScale"]);
@@ -496,7 +481,9 @@ class gcMap{
 				$this->fractionalZoom = 0;
 				if(!in_array($layerType,$this->listProviders)) $this->listProviders[] = $layerType;
 				$layerOptions["sphericalMercator"] = true;
-				$layerOptions["zoomOffset"] = $this->minZoomLevel; 
+				//???????????????????????????????????????
+				$layerOptions["zoomOffset"] = $this->resolutionOffset; //DA VEDERE
+				//???????????????????????????????????????
 				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 				$aLayer["options"]= $layerOptions;
 				if($row["transition"]==1) $layerParameters["transitionEffect"] = "resize";
@@ -514,16 +501,18 @@ class gcMap{
 					if(!$mapproxy_url) continue;
 					$layerParameters["requestEncoding"] = "REST";
 					$layerParameters["style"] = empty($row["layers"])?$layergroupName:$row["layers"];
-					$layerParameters["matrixSet"] = $this->mapsetGRID."_".$this->mapsetSRID;
+					$layerParameters["matrixSet"] = $this->mapsetGRID;
+					//$mapproxy_url = MAPPROXY_URL."/"."okgrids";
 					$layerParameters["url"] = $mapproxy_url."/wmts/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				}
 
 				if($row["status"] == 0) $layerParameters["visibility"] = false;
 				$layerParameters["layer"] = empty($row["layers"])?$layergroupName:$row["layers"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
+				//$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
 				$layerParameters["owsurl"] = $ows_url."?map=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
-				$layerParameters["zoomOffset"] = $this->minZoomLevel; 
+				$layerParameters["zoomOffset"] = $this->resolutionOffset; 
 
 				//ALLA ROVESCIA RISPETTO A MAPSERVER
 				if($row["layergroup_maxscale"]>0) $layerParameters["minScale"] = floatval($row["layergroup_maxscale"]);
@@ -541,18 +530,35 @@ class gcMap{
 				array_push($this->mapLayers, $aLayer);
 			}
 
-			elseif(!empty($this->mapsetGRID) && $layerType==TMS_LAYER_TYPE){//TMS
-				$aLayer["url"] = isset($row["url"])?$row["url"]:GISCLIENT_TMS_URL;
-				$layerOptions["serviceVersion"] =  isset($row["layers"])?$row["layers"]:$layergroupName."@".$this->mapsetGRID;
+			elseif($layerType==TMS_LAYER_TYPE){//TMS
+
+				if(isset($row["url"])){
+					$aLayer["url"] = $row["url"];
+					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"];
+					$layerOptions["zoomOffset"] = $this->resolutionOffset - 1;
+
+				}
+				else{
+					if(!$mapproxy_url) continue;
+					$aLayer["url"] = $mapproxy_url."/tms/";
+					//$aLayer["url"] = MAPPROXY_URL."/"."okgrids"."/tms/";
+					$layerOptions["serviceVersion"] = defined('GISCLIENT_TMS_VERSION')?GISCLIENT_TMS_VERSION:"1.0.0";
+				
+					$layerOptions["layername"] = $aLayer["name"]."/EPSG3857";
+					//$layerOptions["layername"] = "tiff_agea_mask"."/EPSG3004";
+					$layerOptions["owsurl"] = $ows_url."?map=".$mapsetName;
+					$layerOptions["zoomOffset"] = $this->resolutionOffset - 1; 
+				}
+
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
-				$layerOptions["layername"] = GISCLIENT_TMS_VERSION;
-				$layerOptions["owsurl"] = $ows_url."?map=".$mapsetName;
 				$layerOptions["type"] = $row['outputformat_extension'];
 				$layerOptions["isBaseLayer"] = $row["isbaselayer"]==1;	
-				$layerOptions["zoomOffset"] = $this->minZoomLevel; 
-				$layerOptions["buffer"] = intval($row["buffer"]);
-				//$layerOptions["serverResolutions"] = $this->serverResolutions;
+
+				//$layerOptions["buffer"] = intval($row["buffer"]);
+				//$layerOptions["mapResolutions"] = $this->mapResolutions;
+ 				//$layerOptions["maxResolution"] = 78271.516964;
+
 				$layerOptions["maxExtent"] = $this->tilesExtent;	
 				$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
 				$aLayer["options"]= $layerOptions;
@@ -913,7 +919,7 @@ class gcMap{
 		$this->mapConfig["mapOptions"]["allOverlays"] = false;
 		$mapsetOptions = '"name":"'.addslashes($this->mapConfig["name"]).'","title":"'.addslashes($this->mapConfig["title"]).'","project":"'.addslashes($this->mapConfig["projectName"]).'","projectTitle":"'.addslashes($this->mapConfig["projectTitle"]).'","baseLayerName":"'.$this->activeBaseLayer.'","projectionDescription":"'.addslashes($this->mapConfig["projectionDescription"]).'","minZoomLevel":'.$this->mapConfig['mapOptions']['minZoomLevel'];
 		//if(isset($this->mapConfig['selgroup'])) $mapsetOptions .=',"selgroup":'.json_encode($this->mapConfig['selgroup']);
-		//$this->mapConfig["mapOptions"]["resolutions"] = array_slice($this->mapConfig["mapOptions"]["serverResolutions"],$this->mapConfig["mapOptions"]["minZoomLevel"],$this->mapConfig["mapOptions"]["numZoomLevels"]);
+		//$this->mapConfig["mapOptions"]["resolutions"] = array_slice($this->mapConfig["mapOptions"]["mapResolutions"],$this->mapConfig["mapOptions"]["minZoomLevel"],$this->mapConfig["mapOptions"]["numZoomLevels"]);
 		$jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
 		$jsText .= 'GisClient.mapset.push({'.$mapsetOptions.',"map":'.json_encode($this->mapConfig["mapOptions"]).',"layers":['.implode(',',$aLayerText).'],"featureTypes":'.json_encode($this->mapConfig["featureTypes"]).'});';
 		if($this->mapProviders[GMAP_LAYER_TYPE] && $loader) $jsText .= 'GisClient.loader=true;';
@@ -967,39 +973,57 @@ class gcMap{
         return $ret;
     }
 	
-	function _getResolutions($minScale,$maxScale,$sizeUnitId){
+	function _getResolutions($gridResolutions,$tilesExtent,$minScale,$maxScale,$sizeUnitId){
 
-		//156543.03390625,78271.516953125,39135.7584765625,19567.87923828125,9783.939619140625,4891.9698095703125,2445.9849047851562,1222.9924523925781,611.4962261962891,305.74811309814453,152.87405654907226,76.43702827453613,38.218514137268066,19.109257068634033,9.554628534317017,4.777314267158508,2.388657133579254,1.194328566789627,0.5971642833948135,0.29858214169740677,0.14929107084870338,0.07464553542435169
-				//Fattore di conversione tra dpi e unità della mappa
+		//Fattore di conversione tra dpi e unità della mappa
 		$convFact = GCAuthor::$aInchesPerUnit[$sizeUnitId]*MAP_DPI;
-		if(!$this->serverResolutions){
+		$precision = $sizeUnitId == 7?10:6;
+
+
+		$aRes = array();
+		if($gridResolutions){
+			$v = explode($this->coordSep, $gridResolutions); 
+			foreach ($v as $key => $value) {
+				$aRes[$key] = round((float)$value, $precision);
+			}
+			if($tilesExtent){
+				$v = explode($this->coordSep, $tilesExtent); 
+				foreach ($v as $key => $value) {
+					$this->tilesExtent[$key] = round((float)$value, $precision);
+				}
+			}
+
+		}
+		else{
 			//se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
-			$aRes = array();
 			if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913){
+				$this->tilesExtent = [-20037508.34, -20037508.34, 20037508.34, 20037508.34];
 			    for($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) 
 					$aRes[] = SERVICE_MAX_RESOLUTION / pow(2,$lev);
 			}
 			else{
 	            $scaleList = $this->_getScaleList();
-				foreach($scaleList as $scaleValue)	$aRes[] = $scaleValue/$convFact;
+				foreach($scaleList as $scaleValue)	$aRes[] = round((float)$scaleValue/$convFact, $precision);
 			}
-			$this->serverResolutions = $aRes;
 		}
 
-		$minResIndex = count($this->serverResolutions);
+		$this->mapResolutions = $aRes;
+		$minResIndex = count($aRes);
 		$maxResIndex = 0;
+
 		if($minScale){
 			$res = (string)(floatval($minScale)/$convFact);
-			if(array_index($this->serverResolutions,$res)!==false)
-				$minResIndex = array_index($this->serverResolutions,$res);
+			if(array_index($this->mapResolutions,$res)!==false)
+				$minResIndex = array_index($this->mapResolutions,$res);
 		}
 		
 		if($maxScale){
 			$res = (string)(floatval($maxScale)/$convFact);
-			if(array_index($this->serverResolutions,$res)!==false)
-				$maxResIndex = array_index($this->serverResolutions,$res);
+			if(array_index($this->mapResolutions,$res)!==false)
+				$maxResIndex = array_index($this->mapResolutions,$res);
 		}
 
+		$this->resolutionOffset = round(log(SERVICE_MAX_RESOLUTION/$aRes[0],2));
 		$this->minZoomLevel = $maxResIndex;
 		$this->maxZoomLevel = $minResIndex;
 		$this->numZoomLevels = $minResIndex-$maxResIndex;

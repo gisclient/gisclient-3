@@ -1227,3 +1227,9 @@ UPDATE mapset set template='jquery/mobile.html';
 ALTER TABLE style DROP CONSTRAINT pattern_id_fkey;
 DROP INDEX fki_pattern_id_fkey;
 
+-- da aggiornare in alcune versini
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'WMS (tiles in cache)', 3);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'TMS', 6);
+
+
+-- drop table e_tiletype cascade;

@@ -116,6 +116,8 @@ class gcMapfile{
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
         
+
+        /* RIVEDERE LA COSTRUZIONE DI GRIDS
         if(!empty($projectName)) {
             $sql = 'select srid, e_tilegrid.* from '.DB_SCHEMA.'.project_srs
                 inner join '.DB_SCHEMA.'.e_tilegrid using(tilegrid_id)
@@ -146,6 +148,17 @@ class gcMapfile{
                 );
             }
         }
+        */
+        $this->grids["epsg3857"] = array(
+            'base'=>'GLOBAL_WEBMERCATOR',
+            'srs'=>'EPSG:3857',
+            'num_levels'=>20
+        );
+        $this->grids["epsg900913"] = array(
+            'base'=>'GLOBAL_WEBMERCATOR',
+            'srs'=>'EPSG:900913',
+            'num_levels'=>20
+        );
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,
 		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
@@ -250,14 +263,14 @@ class gcMapfile{
 				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
             	if(empty($this->mpxCaches[$mapName])) $this->mpxCaches[$mapName] = array();
 				if(empty($defaultLayers[$mapName])) $defaultLayers[$mapName] = array();
-	/*          //CACHE PER I TEMI SINGLE
+	          //CACHE PER I TEMI SINGLE
 	            if($aLayer['theme_single']) {
 	                $cacheName = $aLayer['theme_name'].'_cache';
 	                if(empty($this->mpxCaches[$mapName][$cacheName])) $this->mpxCaches[$mapName][$cacheName] = array(
 	                    'grids'=>array_keys($this->grids),
 	                    'cache'=>array(
 	                        'type'=>'mbtiles',
-	                        'filename'=>$aLayer['theme_name'].'.mbtiles'
+	                        'filename'=>$mapName.".".$aLayer['theme_name'].'.mbtiles'
 	                    ),
 	                    'layergroups'=>array(),
 	                    'theme_name'=>$aLayer['theme_name'],
@@ -265,7 +278,7 @@ class gcMapfile{
 	                );
 	                
 	                array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
-	            }*/
+	            }
 
 	            //LAYER ACCESI DI DEFAULT PER LA CACHE DEL MAPSET INTERO 
 				//$defaulMapsetLayers = array();
@@ -296,10 +309,10 @@ class gcMapfile{
 						//echo $aLayer["layergroup_name"];
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
                     	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
-	                        "sources"=>array("mapserver_bin_source:".$aLayer["layergroup_name"]),
+	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
 	                        'cache'=>array(
 	                            'type'=>'mbtiles',
-	                            'filename'=>$aLayer["layergroup_name"].'.mbtiles'
+	                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
 	                        ),
 	                        'grids'=>array_keys($this->grids)
                     	);
@@ -371,6 +384,7 @@ class gcMapfile{
 	                        unset($cache['layergroups']);
 	                        
 	                        $layersToAdd[$cache['theme_name'].'_tiles'] = array(
+	                            'name'=>$cache['theme_name'].'_tiles',
 	                            'title'=>$cache['theme_title'],
 	                            'sources'=>array($cacheName)
 	                        );
@@ -386,7 +400,7 @@ class gcMapfile{
 
                 //AGGIUNGO IL LAYER PER LA NAVIGAZIONE VELOCE
                 $this->mpxCaches[$mapName][$mapName."_cache"] = array(
-	                'sources'=>array('mapserver_bin_source:'.implode(",",$defaultLayers[$mapName])),
+	                'sources'=>array('mapserver_source:'.implode(",",$defaultLayers[$mapName])),
 	                'cache'=>array(
 	                    'type'=>'mbtiles',
 	                    'filename'=>$mapName.'.mbtiles'
@@ -793,7 +807,8 @@ END";
                 )
             ),
             'sources'=>array(
-                'mapserver_source'=>array(
+            	/*
+                'mapserver_wms_source'=>array(
                     'type'=>'wms',
                     'supported_srs'=>$this->epsgList,
                     'req'=>array(
@@ -811,11 +826,10 @@ END";
                         'transparent_color'=>'#ffffff',
                         'transparent_color_tolerance'=>0
                     )
-                ),
-                'mapserver_bin_source'=>array(
+                ),*/
+                'mapserver_source'=>array(
                     'type'=>'mapserver',
                     'req'=>array(                        
-                    	'format'=>'image/png',
                     	'transparent'=>true,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'exceptions'=> 'inimage'
@@ -864,7 +878,7 @@ END";
         //$content = yaml_emit($config,YAML_UTF8_ENCODING);
 
 		print_debug($config,null,'yaml');
-        $content = Spyc::YAMLDump($config,1,250);
+        $content = Spyc::YAMLDump($config,1,0);
 
         file_put_contents(MAPPROXY_CONFIG_PATH.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
