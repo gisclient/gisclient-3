@@ -3,11 +3,11 @@ php:
   - "5.4"
 
 before_script:
-  - psql -U postgres -c "CREATE EXTENSION postgis"
   - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gsiclient' SUPERUSER"
-  - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient TEMPLATE postgis;" 
+  - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient;" 
+  - psql -U postgres -d gisclient -c "CREATE EXTENSION postgis"
   - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.tpl.sql > config/travis/gisclient.sql
-  - psql -U gisclient < config/travis/gisclient.sql
+  - psql -U gisclient -d gisclient < config/travis/gisclient.sql
   - cp config/travis/config.php travis/config.php
   - cp config/travis/config.db.php travis/config.db.php
   - php config/installer.php
