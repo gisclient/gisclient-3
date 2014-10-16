@@ -1193,9 +1193,9 @@ update style set pattern_id = e_pattern.pattern_id
 from e_pattern where symbol_name=pattern_name;
 update style set symbol_name=NULL where pattern_id is not null;
 
-ALTER TABLE gisclient_32.style
+ALTER TABLE style
   ADD CONSTRAINT pattern_id_fkey FOREIGN KEY (pattern_id)
-      REFERENCES gisclient_32.e_pattern (pattern_id) MATCH SIMPLE
+      REFERENCES e_pattern (pattern_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE NO ACTION;
 
 -- SISTEMA GLI STILI IN MODO DA RIALLINEARSI CON LA VESTIZIONE CORRETTA
@@ -1211,19 +1211,19 @@ update style
       (Select class_id from class where layer_id IN
         (SELECT layer_id from layer where layertype_id = 2));
 
-update gisclient_32.style
+update style
 set style_def = 'GAP '||(size::INT*2)::TEXT
 where --style_def is null
 --and 
 symbol_name in (
-select symbol_name from gisclient_32.symbol where symbolcategory_id = 3);
+select symbol_name from symbol where symbolcategory_id = 3);
 
-update gisclient_32.style
+update style
 set style_def = 'GAP -'||(size::INT*4)::TEXT
 where --style_def is null
 --and 
 symbol_name in (
-select symbol_name from gisclient_32.symbol where 
+select symbol_name from symbol where 
 symbol_name like 'ARRO%' or symbol_name like '%_SPACE');
 
 --pulisce le label dal BACKGROUNDCOLOR
