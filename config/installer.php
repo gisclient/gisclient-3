@@ -56,8 +56,14 @@ class GcInstaller {
 		return R3_OK;
 	}
 
-	function setWritable(array $dirs, $base = '') {
-		$httpdGid = $this->getGroupGid($this->options['webserver_group']);
+	/**
+	 * Create directories where the webserver can write to
+	 * 
+	 * @param array $dirs
+	 * @param string $base
+	 * @throws Exception
+	 */
+	function checkOutputDirs(array $dirs, $base = '') {
 
 		foreach ($dirs as $dir) {
 			$currentDir = $base . $dir;
@@ -71,7 +77,12 @@ class GcInstaller {
 					$this->createMissingDir($currentDir);
 				}
 			}
-
+			if (!$this->options['writable_for_webserver']){
+				// we do not need to make this writable for the web service
+				// this could be the case where php is run as a web server
+				continue;
+			}
+			
 			if (is_link($currentDir)) {
 				// if it is a link, then verify target 
 				if (($realDir = readlink($currentDir)) === false) {
@@ -86,6 +97,7 @@ class GcInstaller {
 			}
 			echo "gid: $filegroup\n";
 			
+			$httpdGid = $this->getGroupGid($this->options['webserver_group']);
 			if ($filegroup != $httpdGid) {
 				if ($this->options['simulate']) {
 					echo "set group of {$realDir} to $httpdGid\n";
@@ -152,10 +164,11 @@ if (count(debug_backtrace()) === 0 &&
 			'simulate' => false,
 			'create_dir' => false,
 			'root_as_default' => false,
+			'writable_for_webserver' => true,
 			'webserver_group' => 'apache',
 		);
 
-	$cli_options = getopt('rscg:');
+	$cli_options = getopt('Wrscg:');
 	if (array_key_exists('s', $cli_options)) {
 		$options['simulate'] = true;
 	}
@@ -168,6 +181,9 @@ if (count(debug_backtrace()) === 0 &&
 	if (array_key_exists('g', $cli_options)) {
 		$options['webserver_group'] = $cli_options['g'];
 	}
+	if (array_key_exists('W', $cli_options)) {
+		$options['writable_for_webserver'] = false;
+	}
 
 	$installer = new GcInstaller($options);
 	$installDir = realpath(__DIR__ . '/..') . '/';
@@ -175,5 +191,5 @@ if (count(debug_backtrace()) === 0 &&
 	$installer->setBasePermissions($installDir);
 
 	echo "make some dirs writable to the web server";
-	$installer->setWritable($httpdWritableDirs, $installDir);
+	$installer->checkOutputDirs($httpdWritableDirs, $installDir);
 }

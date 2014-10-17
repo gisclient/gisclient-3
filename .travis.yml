@@ -10,4 +10,4 @@ before_script:
   - psql -U gisclient -d gisclient_ci < config/travis/gisclient.sql
   - cp config/travis/config.php config/config.php
   - cp config/travis/config.db.php config/config.db.php
-  - php config/installer.php
+  - php config/installer.php -W
