@@ -39,6 +39,7 @@ foreach ($_REQUEST as $k => $v) {
 		$skippedParams[strtolower($k)] = $k;
         continue;
     }
+	
     if (is_string($v)) {
         $objRequest->setParameter($k, stripslashes($v));
     }
@@ -49,10 +50,17 @@ foreach ($_REQUEST as $k => $v) {
 // recupero lista layer dal parametro layers
 $layersParameter = null;
 $parameterName = null;
-if($objRequest->getValueByName('service') == 'WMS') {
+$requestedFormat = strtolower($objRequest->getValueByName('format'));
+if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	$parameterName = 'LAYERS';
 	$layersParameter = $objRequest->getValueByName('layers');
-} else if($objRequest->getValueByName('service') == 'WFS') {
+	if ($requestedFormat == 'kmz') {
+		// KMZ is requested as KML and packaged later on
+		// this is dome in this way to allow icons to be bundeled
+		// in the ZIP archove
+        $objRequest->setParameter('format', 'kml');
+	}
+} elseif (strtolower($objRequest->getValueByName('service')) == 'wfs') {
 	$parameterName = 'TYPENAME';
 	$layersParameter = $objRequest->getValueByName('typename');
 	if (isset($skippedParams['filter'])) {
@@ -63,21 +71,45 @@ if($objRequest->getValueByName('service') == 'WMS') {
 }
 
 //OGGETTO MAP MAPSCRIPT
-$directory = "../../map/".$objRequest->getvaluebyname('project')."/";
+// sanitize project as part of the path
+$mapfileDir = ROOT_PATH.'map/';
 
+$project = $objRequest->getvaluebyname('project');
+$projectDirectory = $mapfileDir.$objRequest->getvaluebyname('project')."/";
+if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
+	// if the the project directory is not a subdir of map/, something
+	// bad is happening
+	header('HTTP/1.0 400 Bad Request');
+	echo "invalid PROJECT name";
+	exit(1);
+} 
 // se è definita una lingua, apro il relativo mapfile
-$mapfile = $objRequest->getvaluebyname('map');
-if($objRequest->getvaluebyname('lang') && file_exists($directory.$objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang').'.map')) {
-	$mapfile = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
+$mapfileBasename = $objRequest->getvaluebyname('map');
+if($objRequest->getvaluebyname('lang') && file_exists($projectDirectory.$objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang').'.map')) {
+	$mapfileBasename = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
 }
 //Files temporanei
 $showTmpMapfile = $objRequest->getvaluebyname('tmp');
 if(!empty($showTmpMapfile)) {
-	$mapfile = "tmp.".$mapfile;
+	$mapfileBasename = "tmp.".$mapfileBasename;
 }
 
-$oMap = ms_newMapobj($directory.$mapfile.".map");
+$mapfile = $projectDirectory.$mapfileBasename.".map";
+if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
+	// if the the map is not in the project dir, something
+	// bad is happening
+	header('HTTP/1.0 400 Bad Request');
+	echo "invalid MAP name";
+	exit(1);
+} 
+if (!is_readable($mapfile)) {
+	// map file not found
+	header('HTTP/1.0 400 Bad Request');
+	echo "invalid MAP name";
+	exit(1);
+} 
 
+$oMap = ms_newMapobj($mapfile);
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
@@ -353,7 +385,7 @@ if (substr($contenttype, 0, 6) == 'image/') {
 	}	
 } else { 
 	header("Content-Type: application/xml"); 
-} 
+}
 
 ms_iogetStdoutBufferBytes(); 
 ms_ioresethandlers();
