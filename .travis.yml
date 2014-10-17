@@ -8,6 +8,6 @@ before_script:
   - psql -U postgres -d gisclient_ci -c "CREATE EXTENSION postgis"
   - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.tpl.sql > config/travis/gisclient.sql
   - psql -U gisclient -d gisclient_ci < config/travis/gisclient.sql
-  - cp config/travis/config.php travis/config.php
-  - cp config/travis/config.db.php travis/config.db.php
+  - cp config/travis/config.php config/config.php
+  - cp config/travis/config.db.php config/config.db.php
   - php config/installer.php
