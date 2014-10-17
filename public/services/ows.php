@@ -375,18 +375,26 @@ if (substr($contenttype, 0, 6) == 'image/') {
 		header("Last-Modified: {$serverTime}");
 		header("Expires: {$cacheTime}");
 	}
+	ms_iogetStdoutBufferBytes(); 
 } elseif (strstr($contenttype, 'google-earth')) {
-	header("Content-Type: $contenttype");
 	
-	if (substr($contenttype, -4) == ".kmz") {
+	if ($requestedFormat == 'kmz' &&
+		strtolower($objRequest->getValueByName('format')) == 'kml') {
+		header("Content-Type: application/vnd.google-earth.kmz");
+		$kmlString = ms_iogetstdoutbufferstring();
+		$owsHandler = new OwsHandler();
+		$kmzString = $owsHandler->assembleKmz($kmlString);
 		header('Content-Disposition: attachment; filename="layerdata.kmz"');
-	} elseif (substr($contenttype, -4) == ".kml") {
+		echo $kmzString;
+	} else {
+		header("Content-Type: $contenttype");
 		header('Content-Disposition: attachment; filename="layerdata.kml"');
+		ms_iogetStdoutBufferBytes(); 
 	}	
 } else { 
 	header("Content-Type: application/xml"); 
+	ms_iogetStdoutBufferBytes(); 
 }
 
-ms_iogetStdoutBufferBytes(); 
 ms_ioresethandlers();
 
