@@ -71,18 +71,24 @@ function init() {
     <?php if(!empty($mapConfig['sld'])) { ?>
     layerParameters.sld = '<?php echo $mapConfig['sld']; ?>';
     <?php } ?>
-	var mapOptions = {
-		projection: new OpenLayers.Projection('EPSG:<?php echo $mapConfig['project_srid'] ?>'),
-		units: 'm',
-		maxExtent: new OpenLayers.Bounds.fromArray([<?php echo implode(',', $maxExtent) ?>]),
-		resolutions: [<?php echo implode(',', $resolutions) ?>]
-	};
-
-	var map = new OpenLayers.Map('map', mapOptions);
-	var layer = new OpenLayers.Layer.WMS('<?php echo $layerName ?>', '<?php echo GISCLIENT_OWS_URL ?>', layerParameters, {singleTile:true});
-	map.addLayer(layer);
 	
-	map.setCenter(new OpenLayers.LonLat(<?php echo $mapConfig['xc'] ?>, <?php echo $mapConfig['yc'] ?>));
+	if (typeof OpenLayers === 'undefined') {
+		// OpenLayers could not be loaded
+		// alert user and avoid to work with that variable
+		alert("Could not load OpenLayers from <?php echo OPENLAYERS; ?>")
+	} else {
+		var mapOptions = {
+			projection: new OpenLayers.Projection('EPSG:<?php echo $mapConfig['project_srid'] ?>'),
+			units: 'm',
+			maxExtent: new OpenLayers.Bounds.fromArray([<?php echo implode(',', $maxExtent) ?>]),
+			resolutions: [<?php echo implode(',', $resolutions) ?>]
+		};
+
+		var map = new OpenLayers.Map('map', mapOptions);
+		var layer = new OpenLayers.Layer.WMS('<?php echo $layerName ?>', '<?php echo GISCLIENT_OWS_URL ?>', layerParameters, {singleTile:true});
+		map.addLayer(layer);	
+		map.setCenter(new OpenLayers.LonLat(<?php echo $mapConfig['xc'] ?>, <?php echo $mapConfig['yc'] ?>));
+	}
 }
 </script>
 <style>
