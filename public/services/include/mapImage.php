@@ -77,7 +77,7 @@ class mapImage {
                 case 'external_provider':
                     array_push($this->wmsList, array(
                         //'URL'=>GISCLIENT_OWS_URL.'PROJECT='.$tile['project'].'&MAP='.$tile['map'],
-                        'URL'=>GISCLIENT_OWS_URL.'?MAP='.$tile['map'],
+                        'URL'=>printDocument::addPrefixToRelativeUrl(GISCLIENT_OWS_URL.'?MAP='.$tile['map']),
                         'PARAMETERS'=>array(
                             //'MAP'=>$tile['map'],
                             //'PROJECT'=>$tile['project'],
@@ -130,7 +130,7 @@ class mapImage {
 			
 			$this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
 			
-			$requestParameters = json_encode(array(
+            $params = array(
 				'layers'=>$this->wmsList,
 				'size'=>$this->imageSize,
 				'extent'=>$this->extent,
@@ -141,7 +141,8 @@ class mapImage {
 				'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
 				'format'=>$this->options['image_format'],
 				'GC_SESSION_ID'=>session_id()
-			));
+			);
+			$requestParameters = json_encode($params);
 			session_write_close();
 			
 			$ch = curl_init();
@@ -152,7 +153,7 @@ class mapImage {
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
 			$mapImage = curl_exec($ch);
-			if(!$requestParameters['save_image']) {
+			if(!$params['save_image']) {
 				file_put_contents($this->options['TMP_PATH'].$this->imageFileName, $mapImage);
 			}
 			curl_close($ch);	
