@@ -36,9 +36,9 @@ define('TMS_LAYER_TYPE',6);
 define('XYZ_LAYER_TYPE',9);
 define('BING_LAYER_TYPE',8);
 define('GOOGLESRID',3857);
-define('SERVICE_MAX_RESOLUTION',156543.03390625);
-define('SERVICE_MIN_ZOOM_LEVEL',0);
-define('SERVICE_MAX_ZOOM_LEVEL',21);
+define('GOOGLE_MAX_RESOLUTION',156543.03390625);
+define('GOOGLE_MIN_ZOOM_LEVEL',0);
+define('GOOGLE_MAX_ZOOM_LEVEL',21);
 
 class gcMap{
 
@@ -56,7 +56,7 @@ class gcMap{
 	var $mapsetGRID;
 	var $mapResolutions = array();
 	var $mapsetResolutions = array();
-	var $resolutionOffset = 0;
+	var $levelOffset = 0;
 	var $tilesExtent;
 	var $activeBaseLayer = '';
 	var $isPublicLayerQueryable = true; //FLAG CHE SETTA I LAYER PUBBLICI ANCHE INTERROGABILI 
@@ -64,7 +64,7 @@ class gcMap{
 	var $allOverlays = 0;
 	var $coordSep = ' ';
 	var $listProviders = array(); //Elenco dei provider settati per il mapset
-	var $aUnitDef = array(1=>"m",2=>"ft",3=>"inches",4=>"km",5=>"m",6=>"mi",7=>"dd");//units tables (force pixel ->m)
+	var $projDefs = array();
 	var $getLegend = false;
 
 	var $mapProviders = array(
@@ -105,13 +105,12 @@ class gcMap{
 		//if (defined('GMAPSENSOR')) $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=true"; else $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=false";
 	
 		$sql = "SELECT mapset.*, ".
-			" st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
-			" st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
-			" max_extent_scale, project_title, mapset_grid, tilegrid_extent,tilegrid_resolutions FROM ".DB_SCHEMA.".mapset ".
-			" INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
-			" LEFT JOIN (SELECT project_name,srid as mapset_srid,tilegrid_name as mapset_grid,tilegrid_extent,tilegrid_resolutions FROM ".DB_SCHEMA.".project_srs INNER JOIN ".DB_SCHEMA.".e_tilegrid USING (tilegrid_id)) AS tilegrid USING (project_name,mapset_srid) ".
-			" WHERE mapset_name=?";
-		
+			"project.project_name,project.project_title,project.max_extent_scale, ".
+			"st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
+			"st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc ".
+			"FROM ".DB_SCHEMA.".mapset INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
+			"WHERE mapset_name=?;";
+ 
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($mapsetName));
 
@@ -133,37 +132,34 @@ class gcMap{
 		
 		$this->projectName = $row["project_name"];
 		$this->mapsetName = $row["mapset_name"];
-		$sizeUnitId = empty($row["sizeunits_id"]) ? 5 : intval($row["sizeunits_id"]);
-		if($row["mapset_srid"]==4326) $sizeUnitId = 7; //Forzo dd se in 4326
-		
+		$this->mapsetSRID = $row["mapset_srid"];
+		$this->mapsetGRID = "epsg".$row["mapset_srid"];
+		$this->_getProjInfo();
+
 		$mapConfig=array();
-		$mapConfig["name"] = $row["mapset_name"];
-		$mapConfig["title"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
+		$mapConfig["mapsetName"] = $row["mapset_name"];
+		$mapConfig["mapsetTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
 		$mapConfig["projectName"] = $row["project_name"];	
 		if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
 		$mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
 		$mapConfig["dpi"] = MAP_DPI;
-		$mapConfig['projectionDescription'] = $this->_getProjectionDescription('EPSG', $row['mapset_srid']);
-		$mapConfig['projdefs'] = $this->_getProj4jsDefs();
+		$mapConfig['projdefs'] = $this->projDefs;
 
 		$mapOptions=array();
 		$mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
-		$mapOptions["units"] = $this->aUnitDef[$sizeUnitId];
+		$mapOptions["units"] = $this->mapsetUM;
 		$mapOptions["projection"] = "EPSG:".$row["mapset_srid"];
 		if(!empty($row["displayprojection"])) $mapOptions["displayProjection"] = "EPSG:".$row["displayprojection"];
-		$this->mapsetSRID = $row["mapset_srid"];
+		$mapOptions["matrixSet"] = $this->mapsetGRID;
 		$this->fractionalZoom = 1;
 
-		$this->_getResolutions($row["tilegrid_resolutions"],$row["tilegrid_extent"],$row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$sizeUnitId);
-		if(!empty($row["mapset_grid"])) $this->mapsetGRID = $row["mapset_grid"];
+		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"]);
 		$mapOptions["resolutions"] = $this->mapResolutions;
-		//$mapOptions["minZoomLevel"] = $this->minZoomLevel;
-		//$mapOptions["maxZoomLevel"] = $this->maxZoomLevel;
-		//$mapOptions["numZoomLevels"] = $this->numZoomLevels;
-        $mapOptions["resOffset"] = $this->resolutionOffset;
+        $mapOptions["levelOffset"] = $this->levelOffset;
+
 		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
 		//$mapOptions["tilesExtent"] = $this->tilesExtent;
-		if($this->mapsetGRID) $mapOptions["matrixSet"] = $this->mapsetGRID;
+
 		//$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
 		//Limita estensione:
 		if(($row["mapset_extent"])){
@@ -468,7 +464,7 @@ class gcMap{
 					$layerOptions["key"] = BINGKEY;
 				}
 				$layerOptions["sphericalMercator"] = true;
-				$layerOptions["minZoomLevel"] = $this->resolutionOffset;
+				$layerOptions["minZoomLevel"] = $this->levelOffset;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
 				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 				unset($layerOptions["minScale"]);
@@ -483,7 +479,7 @@ class gcMap{
 				if(!in_array($layerType,$this->listProviders)) $this->listProviders[] = $layerType;
 				$layerOptions["sphericalMercator"] = true;
 				//???????????????????????????????????????
-				$layerOptions["zoomOffset"] = $this->resolutionOffset; //DA VEDERE
+				$layerOptions["zoomOffset"] = $this->levelOffset; //DA VEDERE
 				//???????????????????????????????????????
 				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 				$aLayer["options"]= $layerOptions;
@@ -491,7 +487,7 @@ class gcMap{
 				array_push($this->mapLayers, $aLayer);
 			}
 				
-			elseif(!empty($this->mapsetGRID) && $layerType == WMTS_LAYER_TYPE){// WMTS
+			elseif($layerType == WMTS_LAYER_TYPE){// WMTS
 				$layerParameters=array();
 				$layerParameters["name"] = $aLayer["name"];
 				if(isset($row["url"])){
@@ -513,7 +509,7 @@ class gcMap{
 				//$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
 				$layerParameters["owsurl"] = $ows_url."?map=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
-				$layerParameters["zoomOffset"] = $this->resolutionOffset; 
+				$layerParameters["zoomOffset"] = $this->levelOffset; 
 
 				//ALLA ROVESCIA RISPETTO A MAPSERVER
 				if($row["layergroup_maxscale"]>0) $layerParameters["minScale"] = floatval($row["layergroup_maxscale"]);
@@ -536,7 +532,7 @@ class gcMap{
 				if(isset($row["url"])){
 					$aLayer["url"] = $row["url"];
 					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"]."/EPSG".$this->mapsetSRID;
-					$layerOptions["zoomOffset"] = $this->resolutionOffset - 1;
+					$layerOptions["zoomOffset"] = $this->levelOffset - 1;
 
 				}
 				else{
@@ -548,7 +544,7 @@ class gcMap{
 					$layerOptions["layername"] = $aLayer["name"]."/EPSG".$this->mapsetSRID;
 					//$layerOptions["layername"] = "tiff_agea_mask"."/EPSG3004";
 					$layerOptions["owsurl"] = $ows_url."?map=".$mapsetName;
-					$layerOptions["zoomOffset"] = $this->resolutionOffset - 1; 
+					$layerOptions["zoomOffset"] = $this->levelOffset - 1; 
 				}
 
 				$this->allOverlays = 0;
@@ -569,9 +565,9 @@ class gcMap{
 			elseif($layerType==XYZ_LAYER_TYPE && $row["url"]) {
 
 				$v = preg_split("/[\r\n,]+/",$row["url"]);
-				$aLayer["url"] = implode ("FFF",$v);
-
-				$layerOptions["zoomOffset"] = $this->resolutionOffset - 1;
+				//$aLayer["url"] = implode ("FFF",$v);
+        		$aLayer["url"] = $v;
+				$layerOptions["zoomOffset"] = $this->levelOffset - 1;
 				$aLayer["options"]= $layerOptions;
 				array_push($this->mapLayers, $aLayer);
 			}
@@ -984,18 +980,18 @@ class gcMap{
         return $ret;
     }
 	
-	function _getResolutions($gridResolutions,$tilesExtent,$minScale,$maxScale,$sizeUnitId){
+	function _getResolutions($minScale,$maxScale){
 
 		//Fattore di conversione tra dpi e unità della mappa
-		$convFact = GCAuthor::$aInchesPerUnit[$sizeUnitId]*MAP_DPI;
-		$precision = $sizeUnitId == 7?10:6;
-
-
+		$aInchesPerUnit = array("m"=>39.3701, "ft"=>12, "inches"=>1,"km"=>39370.1, "mi"=>63360, "dd"=>4374754);
+		$convFact = $aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
+		$precision = $this->mapsetUM == "dd"?10:8;
 		$aRes = array();
-		if($gridResolutions){
+
+		if($gridResolutionsXXXXX){
 			$v = preg_split("/[".$this->coordSep."]+/",$gridResolutions);
 			foreach ($v as $key => $value) {
-				$aRes[$key] = round((float)$value, $precision);
+				$aRes[$key] = round((real)$value, $precision);
 			}
 			if($tilesExtent){
 				$v = preg_split("/[".$this->coordSep."]+/",$tilesExtent); 
@@ -1009,8 +1005,8 @@ class gcMap{
 			//se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
 			if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913){
 				$this->tilesExtent = [-20037508.34, -20037508.34, 20037508.34, 20037508.34];
-			    for($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) 
-					$aRes[] = SERVICE_MAX_RESOLUTION / pow(2,$lev);
+			    for($lev=GOOGLE_MIN_ZOOM_LEVEL; $lev<=GOOGLE_MAX_ZOOM_LEVEL; ++$lev) 
+					$aRes[] = GOOGLE_MAX_RESOLUTION / pow(2,$lev);
 			}
 			else{
 	            $scaleList = $this->_getScaleList();
@@ -1018,48 +1014,43 @@ class gcMap{
 			}
 		}
 
-		$this->mapResolutions = $aRes;
-		$minResIndex = count($aRes);
-		$maxResIndex = 0;
-
+		$maxIndex = count($aRes);
+		$minIndex = 0;
 		if($minScale){
 			$res = (string)(floatval($minScale)/$convFact);
-			if(array_index($this->mapResolutions,$res)!==false)
-				$minResIndex = array_index($this->mapResolutions,$res);
+			if(array_index($aRes,$res)!==false)
+				$maxIndex = array_index($aRes,$res);
 		}
-		
 		if($maxScale){
 			$res = (string)(floatval($maxScale)/$convFact);
-			if(array_index($this->mapResolutions,$res)!==false)
-				$maxResIndex = array_index($this->mapResolutions,$res);
+			if(array_index($aRes,$res)!==false)
+				$minIndex = array_index($aRes,$res);
 		}
-
-		$this->resolutionOffset = round(log(SERVICE_MAX_RESOLUTION/$aRes[0],2));
-		$this->minZoomLevel = $maxResIndex;
-		$this->maxZoomLevel = $minResIndex;
-		$this->numZoomLevels = $minResIndex-$maxResIndex;
+		$this->levelOffset = $minIndex;
+		$this->mapResolutions = array_slice($aRes,$minIndex,$maxIndex);
 
 	}
 	
-	function _getProjectionDescription($authName, $authSrid) {
-		$sql = "SELECT srtext FROM spatial_ref_sys WHERE auth_name=:auth_name AND auth_srid=:auth_srid";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array(':auth_name'=>$authName, ':auth_srid'=>$authSrid));
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		$parts = preg_split("/[,]+/",$row['srtext']);
-		return trim(substr($parts[0], strpos($parts[0], '[')+1), '"');
-	}
-	
-	function _getProj4jsDefs() {
-		$sql = "SELECT 'EPSG:'||auth_srid as epsg, proj4text||coalesce('+towgs84='||projparam,'') as srstext FROM ".DB_SCHEMA.".project_srs INNER JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name and srid not in (4326,900913)";
+
+	function _getProjInfo() {
+		$exclude = array(3857,900913,3587,4326);
+		$sql = "SELECT srtext, auth_srid as srid, proj4text||coalesce('+towgs84='||projparam,'') AS proj4text, ".
+		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
+   		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
+   		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' END AS um ".
+   		"FROM ".DB_SCHEMA.".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE srid IN (3857,900913) OR project_name=:project_name";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':project_name'=>$this->projectName));
-		$list = array();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			$list[$row["epsg"]]=$row["srstext"];
+			//me ne faccio qualcosa del nome????
+			//$parts = preg_split("/[,]+/",$row['srtext']);
+			//$name = trim(substr($parts[0], strpos($parts[0], '[')+1), '"');//VEDERE CON MARCO
+			if(!in_array($row["srid"],$exclude)) $this->projDefs["EPSG:".$row["srid"]] = $row["proj4text"];
+			if($row["srid"] == $this->mapsetSRID) $this->mapsetUM = $row["um"];
 		}
-		return $list;
 	}
+
 
 	function _getExtent($xCenter,$yCenter,$Resolution){
 		$aExtent=array();

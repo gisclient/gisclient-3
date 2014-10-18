@@ -23,6 +23,7 @@ define('WMS_LAYER_TYPE',1);
 define('WMTS_LAYER_TYPE',2);
 define('WMS_CACHE_LAYER_TYPE',3);
 define('TMS_LAYER_TYPE',6);
+define('GOOGLE_MAX_ZOOM_LEVEL',21);
 
 class gcMapfile{
 	var $db;
@@ -149,16 +150,19 @@ class gcMapfile{
             }
         }
         */
+
+        //AGGIUNTE A MANO PER ORA
         $this->grids["epsg3857"] = array(
             'base'=>'GLOBAL_WEBMERCATOR',
             'srs'=>'EPSG:3857',
-            'num_levels'=>20
+            'num_levels'=>GOOGLE_MAX_ZOOM_LEVEL+1
         );
         $this->grids["epsg900913"] = array(
             'base'=>'GLOBAL_WEBMERCATOR',
             'srs'=>'EPSG:900913',
-            'num_levels'=>20
+            'num_levels'=>GOOGLE_MAX_ZOOM_LEVEL+1
         );
+
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,
 		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
@@ -310,7 +314,8 @@ class gcMapfile{
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
                     	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
 	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
-	                        'cache'=>array(
+	                        "format"=>($aLayer["isbaselayer"])?"image/jpeg":"image/png",
+	                        "cache"=>array(
 	                            'type'=>'mbtiles',
 	                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
 	                        ),
@@ -673,6 +678,7 @@ END";
 		
 		return $formatText;
 	}
+	
 	
 	function _getSymbolText($aSymbols){
                 $_in = GCApp::prepareInStatement($aSymbols);

@@ -1229,7 +1229,28 @@ DROP INDEX fki_pattern_id_fkey;
 
 -- da aggiornare in alcune versini
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'WMS (tiles in cache)', 3);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'TMS', 6);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'TMS', 4);
+INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (9, 'XYZ', 9);
+
+--DROP TABLE e_tiletype cascade;
+--DROP TABLE authfilter cascade;
+--DROP TABLE authfilter symbol_ttf cascade;
 
 
--- drop table e_tiletype cascade;
+--2014-10-18
+--Rimozione delle griglie custom, uso di griglie standard definite da mapproxy
+--epsg3857 e epsg900913 definite per default 
+
+CREATE OR REPLACE VIEW seldb_mapset_srid AS 
+         SELECT 3857 AS id, 3857 AS opzione, project.project_name
+           FROM project
+UNION ALL 
+        (         SELECT project.project_srid AS id, project.project_srid AS opzione, project.project_name
+                   FROM project
+                  WHERE project.project_srid <> 3857
+        UNION ALL 
+                 SELECT project_srs.srid AS id, project_srs.srid AS opzione, project_srs.project_name
+                   FROM project_srs
+                  WHERE NOT (project_srs.project_name::text || project_srs.srid IN ( SELECT project.project_name::text || project.project_srid
+                           FROM project))
+  ORDER BY 1);
