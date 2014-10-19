@@ -876,6 +876,7 @@ class gcMap{
 		$this->selgroupList = $selgroupArray;
 	}
 
+/*
 	function _getTMSExtent($tilesExtent, $tilesExtentSRID){
 		list($x0,$y0,$x1,$y1) = preg_split("/[".$this->coordSep."]+/",$tilesExtent);
 		//RIPROIETTO SE SRID DIVERSO DAL MAPSET
@@ -895,7 +896,7 @@ class gcMap{
 		return $extent;
 	}	
 
-	
+*/	
 	//Elenco delle librerie per i providers usati
 	function _setMapProviders(){
 		$jsText = "";
@@ -1076,7 +1077,7 @@ class gcMap{
 		if(!empty($row)) return json_decode($row["context"], true);
 		else return array();
 	}
-    
+/*    
     function _getMaxExtents() {
         $extents = array();
 		$userGroupFilter = '';
@@ -1146,6 +1147,6 @@ class gcMap{
 		return $retval;
 	}
 
-
+*/
 	
 }

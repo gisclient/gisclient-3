@@ -1254,3 +1254,10 @@ UNION ALL
                   WHERE NOT (project_srs.project_name::text || project_srs.srid IN ( SELECT project.project_name::text || project.project_srid
                            FROM project))
   ORDER BY 1);
+--DROP TABLE e_tilegrid cascade;
+
+ALTER TABLE project_srs DROP COLUMN custom_srid;
+ALTER TABLE project_srs DROP COLUMN tilegrid_id;
+ALTER TABLE project_srs ADD COLUMN max_extent character varying;
+ALTER TABLE project_srs ADD COLUMN resolutions character varying;
+
