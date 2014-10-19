@@ -316,7 +316,7 @@ class gcMapfile{
 	                            'type'=>'mbtiles',
 	                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
 	                        ),
-	                        'grids'=>array_keys($this->grids)
+	                        'grids'=>array("epsg3857")
                     	);
 						if(!in_array($aLayer["layergroup_name"],$defaultLayers[$mapName]) && ($aLayer["isbaselayer"]  == 0) && ($aLayer["layergroup_status"] == 1))
 							array_push($defaultLayers[$mapName],$aLayer["layergroup_name"]);
@@ -407,7 +407,7 @@ class gcMapfile{
 	                    'type'=>'mbtiles',
 	                    'filename'=>$mapName.'.mbtiles'
 	                ),
-	                'grids'=>array_keys($this->grids)
+	                'grids'=>array("epsg3857")
                 );
 				$this->mpxLayers[$mapName][$mapName."_tiles"] = array(
 					'name'=>$mapName."_tiles",
@@ -421,7 +421,7 @@ class gcMapfile{
 	                $this->mpxCaches[$mapName][$cacheName."_output"] = array(
 			            'sources'=>array($cacheName),
 			            'disable_storage'=>true,
-			            'grids'=>$this->gridList
+			            'grids'=>array_keys($this->grids)
 	                );
 	            }
 
@@ -768,15 +768,26 @@ END";
 		//qui ci aggiungo i paranetri per ottenere tutte le griglie di base ... todo
 		$epsgList = array();
 		$gridList = array();
-		$sql="SELECT id FROM ".DB_SCHEMA.".seldb_mapset_srid WHERE project_name = ?;";
+		$sql="SELECT id as srid,max_extent as bbox,resolutions FROM ".DB_SCHEMA.".seldb_mapset_srid WHERE project_name = ?;";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->projectName));
 		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
-			$epsgList[] = "EPSG:".$row["id"];
-			$gridList[] = "epsg".$row["id"];
+			$epsgList[] = "EPSG:".$row["srid"];
+			$gridList["epsg".$row["srid"]] = array("srs"=>"EPSG:".$row["srid"]);
+			if(isset($row["bbox"])){
+				$gridList["epsg".$row["srid"]]["bbox"] = preg_split('/[\s]+/', $row["bbox"]);
+				$gridList["epsg".$row["srid"]]["bbox_srs"] = "EPSG:4326";
+			}	
+			if(isset($row["resolutions"])){
+				$res = preg_split('/[\s]+/', $row["bbox"]);
+				if(count($res)==1)
+					$gridList["epsg".$row["srid"]]["max_res"] = $res[0];
+				else
+					$gridList["epsg".$row["srid"]]["resolutions"] = $res;
+			}
 		}
 		$this->epsgList = $epsgList;
-		$this->gridList = $gridList;
+		$this->grids = $gridList;
 	}
 
 	function _writeMapProxyConfig($mapName){

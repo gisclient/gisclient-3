@@ -1215,6 +1215,7 @@ UPDATE form_level set order_fld=5 where id=45;
 
 
 
+SET search_path = gisclient_33, pg_catalog;
 
 
 --nuovo template!!
@@ -1242,14 +1243,14 @@ INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (9, 'XYZ'
 --epsg3857 e epsg900913 definite per default 
 
 CREATE OR REPLACE VIEW seldb_mapset_srid AS 
-         SELECT 3857 AS id, 3857 AS opzione, project.project_name
+         SELECT 3857 AS id, 3857 AS opzione, project.project_name, null as max_extent, null as resolutions
            FROM project
 UNION ALL 
-        (         SELECT project.project_srid AS id, project.project_srid AS opzione, project.project_name
+        (         SELECT project.project_srid AS id, project.project_srid AS opzione, project.project_name, null as max_extent, null as resolutions
                    FROM project
                   WHERE project.project_srid <> 3857
         UNION ALL 
-                 SELECT project_srs.srid AS id, project_srs.srid AS opzione, project_srs.project_name
+                 SELECT project_srs.srid AS id, project_srs.srid AS opzione, project_srs.project_name, max_extent, resolutions
                    FROM project_srs
                   WHERE NOT (project_srs.project_name::text || project_srs.srid IN ( SELECT project.project_name::text || project.project_srid
                            FROM project))
