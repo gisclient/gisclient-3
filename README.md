@@ -1,4 +1,4 @@
-= GisClient, branch 3.2
+# GisClient, branch 3.2
 
 GisClient is a platform for publishing spatial data.
 
