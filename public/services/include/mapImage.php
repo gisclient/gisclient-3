@@ -151,7 +151,7 @@ class mapImage {
                 'VERSION'=>'1.1.1',
                 'FORMAT'=>'image/png'
             );
-            array_push($this->wmsList, array('URL'=>$url, 'PARAMETERS'=>$parameters));
+            array_push($this->wmsList, array('URL'=>$url, 'SERVICE'=>'WMS', 'PARAMETERS'=>$parameters));
         }
 	}
 	
