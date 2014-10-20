@@ -78,12 +78,5 @@ constant = "'Gruppi del Progetto'"
 constant = "'Utenti del Progetto'"
 [project_languages]
 constant = "'Lingue del Progetto'"
-[authfilter]
-standard = "filter_name"
-constant = "'Nuovo Filtro autenticazione'"
-[layer_authfilter]
-constant = "'Filtri autenticazione del Layer'"
-[group_authfilter]
-constant = "'Filtri autenticazione Gruppo'"
 [field_groups]
 constant = "'Autorizzazioni sui campi del modello di ricerca'"

@@ -248,32 +248,6 @@ if(!empty($layersParameter)) {
 				continue;
 			}
 		}
-		$n = 0;
-		// se ci sono filtri definiti per il layer, li ciclo
-		while($authFilter = $layer->getMetaData('gc_authfilter_'.$n)) {
-			if(empty($authFilter)) break; // se l'ennesimo filtro +1 non è definito, interrompo il ciclo
-			$required = $layer->getMetaData('gc_authfilter_'.$n.'_required');
-			$n++;
-			// se il filtro è obbligatorio
-			if(!empty($required)) {
-				if(!isset($_SESSION['AUTHFILTERS'][$authFilter])) { // e se l'utente non ha quel filtro definito
-					array_push($layersToRemove, $layer->name); // rimuovo il layer
-					break;
-				}
-			}
-			// se ci sono filtri definiti
-			if(isset($_SESSION['AUTHFILTERS'][$authFilter])) {
-				$filter = $layer->getFilterString();
-				$filter = trim($filter, '"');
-				if(!empty($filter)) { // se esiste già un filtro lo aggiungo
-					$filter = $filter.' AND '.$_SESSION['AUTHFILTERS'][$authFilter];
-				} else {
-					$filter = $_SESSION['AUTHFILTERS'][$authFilter];
-				}
-				// aggiorno il FILTER del layer
-				$layer->setFilter($filter);
-			}
-		}
 		
 		if(!empty($_SESSION['GC_LAYER_FILTERS'])) {
             if(!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {

@@ -572,18 +572,6 @@ class gcFeature{
 		if(!empty($this->aFeature['hidden']) && $this->aFeature["hidden"]==1) $aMeta["gc_hide_layer"] = '1';
 		if(!empty($this->aFeature['private']) && $this->aFeature["private"]==1) $aMeta["gc_private_layer"] = '1';
 		
-		$sql = "select af.filter_name, laf.required ".
-			" from ".DB_SCHEMA.".authfilter af inner join ".DB_SCHEMA.".layer_authfilter laf using(filter_id) ".
-			" where layer_id = ? ";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($this->aFeature['layer_id']));
-		$n = 0;
-		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			$aMeta['gc_authfilter_'.$n] = $row['filter_name'];
-			if(!empty($row['required'])) $aMeta['gc_authfilter_'.$n.'_required'] = 1;
-			$n++;
-		}
-		
 		foreach ($aMeta as $key=>$value){
 			$metaText .= "\t\"$key\"\t\"$value\"\n\t";
 		}

@@ -1262,3 +1262,12 @@ ALTER TABLE project_srs DROP COLUMN tilegrid_id;
 ALTER TABLE project_srs ADD COLUMN max_extent character varying;
 ALTER TABLE project_srs ADD COLUMN resolutions character varying;
 
+--2014-10-20
+--Rimozione di authfilter
+DROP TABLE authfilter;
+DROP TABLE layer_authfilter;
+DROP TABLE group_authfilter;
+DELETE FROM e_form where name = 'authfilter' or name = 'layer_authfilter';
+DELETE FROM e_level where name = 'authfilter' or name = 'layer_authfilter';
+
+
