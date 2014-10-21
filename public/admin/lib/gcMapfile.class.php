@@ -311,6 +311,7 @@ class gcMapfile{
                     	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
 	                        "sources"=>array("mapserver_source:".$aLayer["layergroup_name"]),
 	                        "format"=>($aLayer["isbaselayer"])?"image/jpeg":"image/png",
+	                        "minimize_meta_requests"=>true,
 	                        "request_format"=>$aLayer["outputformat_mimetype"],
 	                        "cache"=>array(
 	                            'type'=>'mbtiles',
@@ -403,6 +404,7 @@ class gcMapfile{
                 //AGGIUNGO IL LAYER PER LA NAVIGAZIONE VELOCE
                 $this->mpxCaches[$mapName][$mapName."_cache"] = array(
 	                'sources'=>array('mapserver_source:'.implode(",",$defaultLayers[$mapName])),
+	                'minimize_meta_requests'=>true,
 	                'cache'=>array(
 	                    'type'=>'mbtiles',
 	                    'filename'=>$mapName.'.mbtiles'
@@ -429,7 +431,6 @@ class gcMapfile{
                 $this->_writeMapProxyConfig($mapName);
             }
 		}
-        
 
 		return $mapName;
 	}

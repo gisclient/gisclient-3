@@ -1242,6 +1242,12 @@ INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (9, 'XYZ'
 --Rimozione delle griglie custom, uso di griglie standard definite da mapproxy
 --epsg3857 e epsg900913 definite per default 
 
+
+ALTER TABLE project_srs DROP COLUMN custom_srid;
+ALTER TABLE project_srs DROP COLUMN tilegrid_id;
+ALTER TABLE project_srs ADD COLUMN max_extent character varying;
+ALTER TABLE project_srs ADD COLUMN resolutions character varying;
+
 CREATE OR REPLACE VIEW seldb_mapset_srid AS 
          SELECT 3857 AS id, 3857 AS opzione, project.project_name, null as max_extent, null as resolutions
            FROM project
@@ -1257,8 +1263,4 @@ UNION ALL
   ORDER BY 1);
 --DROP TABLE e_tilegrid cascade;
 
-ALTER TABLE project_srs DROP COLUMN custom_srid;
-ALTER TABLE project_srs DROP COLUMN tilegrid_id;
-ALTER TABLE project_srs ADD COLUMN max_extent character varying;
-ALTER TABLE project_srs ADD COLUMN resolutions character varying;
 
