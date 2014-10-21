@@ -175,8 +175,9 @@ class printDocument {
 	
 	public function printMapPDF() {
 		$xslFile = GC_PRINT_TPL_DIR.'print_map.xsl';
-		if(!file_exists($xslFile)) throw new RuntimeException('XSL file not found');
-		
+		if(!file_exists($xslFile)) {
+			throw new RuntimeException("XSL file '$xslFile'not found");
+		}
 		$dom = $this->buildDOM(true);
 		$xml = $dom->saveXML();
 
