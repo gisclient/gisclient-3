@@ -325,7 +325,9 @@ if(strtoupper($objRequest->getvaluebyname('request')) == 'GETLEGENDGRAPHIC') {
 //SE NON SONO IN CGI CARICO I PARAMETRI
 $sapi_type = php_sapi_name();
 if (substr($sapi_type, 0, 3) != 'cgi') {
-	if ($objRequest->getvaluebyname('service') != "WFS" && $objRequest->type == -1) $oMap->loadowsparameters($objRequest);
+	if (strtolower($objRequest->getvaluebyname('service')) != "wfs" && $objRequest->type == -1) {
+		$oMap->loadowsparameters($objRequest);
+	}
 }
 
 
