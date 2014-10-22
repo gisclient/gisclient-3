@@ -1514,7 +1514,7 @@ select c.*,
 CASE
   WHEN connection_type != 6 then '(i) Controllo non possibile: connessione non PostGIS'
   WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then '(i) Controllo non possibile: DB diverso'
-  WHEN substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) not in (select table_schema from information_schema.tables) THEN '(!) Lo schema configurato non esiste'
+  WHEN substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) not in (select schema_name from information_schema.schemata) THEN '(!) Lo schema configurato non esiste'
   ELSE 'OK'
 END as catalog_control
   from catalog c;
