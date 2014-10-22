@@ -1461,7 +1461,6 @@ CREATE OR REPLACE VIEW vista_style AS
  SELECT s.*,
  CASE 
 WHEN symbol_name not in (select symbol_name from symbol) then '(!) Il simbolo non esiste'
-WHEN style_order = (select style_order from style where style_id != s.style_id and class_id=s.class_id) then '(!) Due stili con lo stesso ordine'
 WHEN color is null and outlinecolor is null and bgcolor is null then '(!) Stile senza colore'
 WHEN symbol_name is not null and size is null then '(!) Stile senza dimensione'
 ELSE 'OK'
