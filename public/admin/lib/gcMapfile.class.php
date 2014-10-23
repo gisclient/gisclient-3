@@ -766,7 +766,7 @@ END";
 
 		//ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:
 
-		//qui ci aggiungo i paranetri per ottenere tutte le griglie di base ... todo
+		//qui ci aggiungo i parametri per ottenere tutte le griglie di base ... todo
 		$epsgList = array();
 		$gridList = array();
 		$sql="SELECT id as srid,max_extent as bbox,resolutions FROM ".DB_SCHEMA.".seldb_mapset_srid WHERE project_name = ?;";
@@ -783,7 +783,7 @@ END";
 				$res = preg_split('/[\s]+/', $row["bbox"]);
 				if(count($res)==1)
 					$gridList["epsg".$row["srid"]]["max_res"] = $res[0];
-				else
+				elseif(count($res)>1)
 					$gridList["epsg".$row["srid"]]["resolutions"] = $res;
 			}
 		}

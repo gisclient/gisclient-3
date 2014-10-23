@@ -1247,6 +1247,9 @@ ALTER TABLE project_srs DROP COLUMN custom_srid;
 ALTER TABLE project_srs DROP COLUMN tilegrid_id;
 ALTER TABLE project_srs ADD COLUMN max_extent character varying;
 ALTER TABLE project_srs ADD COLUMN resolutions character varying;
+UPDATE project_srs SET max_extent = "6 0 18 48" WHERE max_extent is NULL;
+ALTER TABLE project_srs ALTER COLUMN max_extent SET NOT NULL;
+
 
 CREATE OR REPLACE VIEW seldb_mapset_srid AS 
          SELECT 3857 AS id, 3857 AS opzione, project.project_name, null as max_extent, null as resolutions

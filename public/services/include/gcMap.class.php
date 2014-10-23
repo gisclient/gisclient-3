@@ -54,6 +54,7 @@ class gcMap{
 	var $mapConfig;
 	var $mapsetSRID;
 	var $mapsetGRID;
+	var $mapsetUM = "m";
 	var $mapResolutions = array();
 	var $mapsetResolutions = array();
 	var $levelOffset = 0;
