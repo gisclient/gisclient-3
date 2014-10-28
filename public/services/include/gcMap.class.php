@@ -532,7 +532,7 @@ class gcMap{
 
 				if(isset($row["url"])){
 					$aLayer["url"] = $row["url"];
-					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"]."/EPSG".$this->mapsetSRID;
+					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"];
 					$layerOptions["zoomOffset"] = $this->levelOffset - 1;
 
 				}

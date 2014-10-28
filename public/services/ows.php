@@ -174,7 +174,7 @@ if(!empty($layersParameter)) {
 		// layer nascosto
 		$hideLayer = $layer->getMetaData("gc_hide_layer");
 		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($hideLayer)) {
-			array_push($layersToRemove, $layer->name);
+			if(empty($_REQUEST['PRINTSERVICE'])) array_push($layersToRemove, $layer->name);
 			continue;
 		}
 		// layer privato
