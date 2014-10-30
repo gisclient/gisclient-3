@@ -270,20 +270,28 @@ class gcMapfile{
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 						//echo $aLayer["layergroup_name"];
 						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache_output");
-                    	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
-                    		"sources"=>array(),
-	                        "format"=>($aLayer["isbaselayer"])?"image/jpeg":"image/png",
-	                        "minimize_meta_requests"=>true,
-	                        "request_format"=>$aLayer["outputformat_mimetype"],
-	                        "cache"=>array(
-	                            'type'=>'mbtiles',
-	                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
-	                        ),
-	                        'grids'=>array("epsg3857")
-                    	);
-                     	//SE NEL LAYERGROUP C'È UN LAYER DA USARE COME SOURCE LO METTO
+                    	if(empty($this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"])){
+	                    	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
+	                    		"sources"=>array(),
+		                        "format"=>($aLayer["isbaselayer"])?"image/jpeg":"image/png",
+		                        "minimize_meta_requests"=>true,
+		                        "request_format"=>$aLayer["outputformat_mimetype"],
+		                        "cache"=>array(
+		                            'type'=>'mbtiles',
+		                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
+		                        ),
+		                        'grids'=>array("epsg3857")
+	                    	);
+	                    }
+                     	//SE NEL LAYERGROUP C'È UN LAYER DA USARE COME SOURCE NON NASCOSTO LO METTO
+                     
                     	if($aLayer["hidden"]!=1) {
-                    		$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"]["sources"] = array("mapserver_source:".$aLayer["layergroup_name"]);
+                    		$sourceLayers = $this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"]["sources"];
+                    		if(count($sourceLayers) == 0) 
+                    			$sourceLayers = array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"]);
+                    		else
+                    			$sourceLayers[0] = $sourceLayers[0].",".$aLayer["layergroup_name"].".".$aLayer["layer_name"];
+                    		$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"]["sources"] = $sourceLayers;
                     	}
 
                     	if(!in_array($aLayer["layergroup_name"],$defaultLayers[$mapName]) && ($aLayer["isbaselayer"]  == 0) && ($aLayer["layergroup_status"] == 1))
@@ -709,7 +717,7 @@ END";
 		$factor = $aInchesPerUnit[$row["um"]];
 		$precision = $row["um"] == "dd"?6:2;
 		$maxResolution = $maxScale/( MAP_DPI * $factor );
-		$extent = $maxResolution * TILE_SIZE / 2;
+		$extent = $maxResolution * TILE_SIZE ; //4 tiles??
 		
 		return array(
 			0 => round($x - $extent, $precision),
