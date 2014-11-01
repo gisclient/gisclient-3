@@ -144,7 +144,7 @@ class gcMap{
 		if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
 		$mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
 		$mapConfig["dpi"] = MAP_DPI;
-		if($this->projDefs) $mapConfig['projdefs'] = $this->projDefs;
+		if(count($this->projDefs)>0) $mapConfig['projdefs'] = $this->projDefs;
 
 		$mapOptions=array();
 		$mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
@@ -1043,7 +1043,6 @@ class gcMap{
    		"FROM ".DB_SCHEMA.".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':project_name'=>$this->projectName));
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			//me ne faccio qualcosa del nome????
 			//$parts = preg_split("/[,]+/",$row['srtext']);
