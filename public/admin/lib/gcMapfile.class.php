@@ -285,7 +285,7 @@ class gcMapfile{
 	                    }
                      	//SE NEL LAYERGROUP C'È UN LAYER DA USARE COME SOURCE NON NASCOSTO LO METTO
                      
-                    	if($aLayer["hidden"]!=1) {
+                    	if(strrpos($aLayer["layer_name"],"self-wms")===false && $aLayer["hidden"]!=1) {
                     		$sourceLayers = $this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"]["sources"];
                     		if(count($sourceLayers) == 0) 
                     			$sourceLayers = array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"]);
