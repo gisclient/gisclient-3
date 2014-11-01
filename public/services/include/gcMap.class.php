@@ -144,7 +144,7 @@ class gcMap{
 		if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
 		$mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
 		$mapConfig["dpi"] = MAP_DPI;
-		$mapConfig['projdefs'] = $this->projDefs;
+		if($this->projDefs) $mapConfig['projdefs'] = $this->projDefs;
 
 		$mapOptions=array();
 		$mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
@@ -1040,7 +1040,7 @@ class gcMap{
 		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
    		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
    		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' END AS um ".
-   		"FROM ".DB_SCHEMA.".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE srid IN (3857,900913) OR project_name=:project_name";
+   		"FROM ".DB_SCHEMA.".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':project_name'=>$this->projectName));
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
