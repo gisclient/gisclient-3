@@ -1305,7 +1305,6 @@ CREATE OR REPLACE VIEW vista_version AS
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.22', 'author', '2014-08-26');
 
 -- 2014-10-01: crea la vista_layer, utile a sapere se un layer è interrogabile e/o editabile
-DROP VIEW vista_layer ;
  CREATE OR REPLACE VIEW vista_layer AS 
  SELECT l.*, 
         CASE
