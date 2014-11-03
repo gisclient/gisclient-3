@@ -151,7 +151,7 @@ else{
 		</form>
 	</div>
 	<div class="ui-layout-south">
-		GisClient<span class="color">Author</span> - Configurazione progetti GisClient - &copy; 2011
+		GisClient<span class="color">Author</span> - Configurazione progetti GisClient - &copy; 2009 - 2014
 	</div>
 </div>
 </body>

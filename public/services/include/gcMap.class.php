@@ -54,6 +54,7 @@ class gcMap{
 	var $mapConfig;
 	var $mapsetSRID;
 	var $mapsetGRID;
+	var $mapsetUM = "m";
 	var $mapResolutions = array();
 	var $mapsetResolutions = array();
 	var $levelOffset = 0;
@@ -143,7 +144,7 @@ class gcMap{
 		if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
 		$mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
 		$mapConfig["dpi"] = MAP_DPI;
-		$mapConfig['projdefs'] = $this->projDefs;
+		if(count($this->projDefs)>0) $mapConfig['projdefs'] = $this->projDefs;
 
 		$mapOptions=array();
 		$mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
@@ -531,7 +532,7 @@ class gcMap{
 
 				if(isset($row["url"])){
 					$aLayer["url"] = $row["url"];
-					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"]."/EPSG".$this->mapsetSRID;
+					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"];
 					$layerOptions["zoomOffset"] = $this->levelOffset - 1;
 
 				}
@@ -1039,10 +1040,9 @@ class gcMap{
 		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
    		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
    		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' END AS um ".
-   		"FROM ".DB_SCHEMA.".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE srid IN (3857,900913) OR project_name=:project_name";
+   		"FROM ".DB_SCHEMA.".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':project_name'=>$this->projectName));
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			//me ne faccio qualcosa del nome????
 			//$parts = preg_split("/[,]+/",$row['srtext']);
@@ -1055,7 +1055,7 @@ class gcMap{
 
 	function _getExtent($xCenter,$yCenter,$Resolution){
 		$aExtent=array();
-		$extent = $Resolution * TILE_SIZE / 2;
+		$extent = $Resolution * TILE_SIZE ; //4 tiles?
 		//echo $extent;return;
 		$aExtent[0] = $xCenter - $extent;
 		$aExtent[1] = $yCenter - $extent;

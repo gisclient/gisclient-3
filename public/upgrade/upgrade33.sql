@@ -1225,13 +1225,13 @@ UPDATE mapset set template='jquery/mobile.html';
 
 
 --da sistemare in alcuni database
-ALTER TABLE style DROP CONSTRAINT pattern_id_fkey;
-DROP INDEX fki_pattern_id_fkey;
+--ALTER TABLE style DROP CONSTRAINT pattern_id_fkey;
+--DROP INDEX fki_pattern_id_fkey;
 
 -- da aggiornare in alcune versini
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'WMS (tiles in cache)', 3);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'TMS', 4);
-INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (9, 'XYZ', 9);
+--INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (3, 'WMS (tiles in cache)', 3);
+--INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (6, 'TMS', 4);
+--INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (9, 'XYZ', 9);
 
 --DROP TABLE e_tiletype cascade;
 --DROP TABLE authfilter cascade;
@@ -1242,32 +1242,29 @@ INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) VALUES (9, 'XYZ'
 --Rimozione delle griglie custom, uso di griglie standard definite da mapproxy
 --epsg3857 e epsg900913 definite per default 
 
-CREATE OR REPLACE VIEW seldb_mapset_srid AS 
-         SELECT 3857 AS id, 3857 AS opzione, project.project_name, null as max_extent, null as resolutions
-           FROM project
-UNION ALL 
-        (         SELECT project.project_srid AS id, project.project_srid AS opzione, project.project_name, null as max_extent, null as resolutions
-                   FROM project
-                  WHERE project.project_srid <> 3857
-        UNION ALL 
-                 SELECT project_srs.srid AS id, project_srs.srid AS opzione, project_srs.project_name, max_extent, resolutions
-                   FROM project_srs
-                  WHERE NOT (project_srs.project_name::text || project_srs.srid IN ( SELECT project.project_name::text || project.project_srid
-                           FROM project))
-  ORDER BY 1);
---DROP TABLE e_tilegrid cascade;
 
 ALTER TABLE project_srs DROP COLUMN custom_srid;
 ALTER TABLE project_srs DROP COLUMN tilegrid_id;
 ALTER TABLE project_srs ADD COLUMN max_extent character varying;
 ALTER TABLE project_srs ADD COLUMN resolutions character varying;
 
---2014-10-20
---Rimozione di authfilter
+
 DROP TABLE authfilter;
 DROP TABLE layer_authfilter;
 DROP TABLE group_authfilter;
 DELETE FROM e_form where name = 'authfilter' or name = 'layer_authfilter';
 DELETE FROM e_level where name = 'authfilter' or name = 'layer_authfilter';
+
+
+
+CREATE OR REPLACE VIEW seldb_mapset_srid AS 
+         SELECT 3857 AS id, 3857 AS opzione, project.project_name, NULL::character varying AS max_extent, NULL::character varying AS resolutions
+           FROM project
+UNION ALL 
+        ( SELECT project_srs.srid AS id, project_srs.srid AS opzione, project_srs.project_name, project_srs.max_extent, project_srs.resolutions
+           FROM project_srs
+          ORDER BY project_srs.srid);
+--DROP TABLE e_tilegrid cascade;
+
 
 

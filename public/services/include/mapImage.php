@@ -121,6 +121,9 @@ class mapImage {
                 break;
             }
 		}
+
+//var_export($this->wmsList);
+
 	}
 	
 	protected function getMapImage() {
@@ -130,7 +133,7 @@ class mapImage {
 			
 			$this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
 			
-            $params = array(
+			$requestParameters = json_encode(array(
 				'layers'=>$this->wmsList,
 				'size'=>$this->imageSize,
 				'extent'=>$this->extent,
@@ -141,8 +144,7 @@ class mapImage {
 				'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
 				'format'=>$this->options['image_format'],
 				'GC_SESSION_ID'=>session_id()
-			);
-			$requestParameters = json_encode($params);
+			));
 			session_write_close();
 			
 			$ch = curl_init();
@@ -153,7 +155,7 @@ class mapImage {
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
 			$mapImage = curl_exec($ch);
-			if(!$params['save_image']) {
+			if(false && !$requestParameters['save_image']) {
 				file_put_contents($this->options['TMP_PATH'].$this->imageFileName, $mapImage);
 			}
 			curl_close($ch);	
