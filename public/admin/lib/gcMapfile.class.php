@@ -703,7 +703,6 @@ END";
 	}
 
 	function _calculateExtentFromCenter($x, $y, $maxScale, $srid) {
-		$aInchesPerUnit = array("m"=>39.3701, "ft"=>12, "inches"=>1,"km"=>39370.1, "mi"=>63360, "dd"=>4374754);
 		$sql = "SELECT ".
 		"st_x(st_transform(st_geometryfromtext('POINT('||$x||' '||$y||')',".$this->projectSrid."),$srid)) as xc, ".
 		"st_y(st_transform(st_geometryfromtext('POINT('||$x||' '||$y||')',".$this->projectSrid."),$srid)) as yc, ".
@@ -714,7 +713,8 @@ END";
         $stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':srid' => $srid));
 		$row=$stmt->fetch(PDO::FETCH_ASSOC);
-		$factor = $aInchesPerUnit[$row["um"]];
+
+		$factor = GCAuthor::$aInchesPerUnit[$row["um"]];
 		$precision = $row["um"] == "dd"?6:2;
 		$maxResolution = $maxScale/( MAP_DPI * $factor );
 		$extent = $maxResolution * TILE_SIZE ; //4 tiles??

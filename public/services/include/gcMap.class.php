@@ -458,6 +458,23 @@ class gcMap{
 			elseif($layerType == GMAP_LAYER_TYPE || $layerType == BING_LAYER_TYPE || $layerType == VMAP_LAYER_TYPE || $layerType == YMAP_LAYER_TYPE){//Google VE Yahoo	
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
+				$convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
+				$layerOptions["minZoomLevel"] = $this->levelOffset;
+				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
+
+				//Risetto i valori se impostati in author
+				if(isset($layerOptions["maxScale"])){
+					$minRes = (floatval($layerOptions["maxScale"])/$convFact);
+					$layerOptions["maxZoomLevel"] = $this->levelOffset + array_index($this->mapResolutions,$minRes);
+					//$layerOptions["minRes"] = $minRes;
+				}
+/*
+				if(isset($layerOptions["minScale"])){
+					$maxRes = (floatval($layerOptions["minScale"])/$convFact);
+					$layerOptions["minZoomLevel"] = $this->levelOffset + array_index($this->mapResolutions,$maxRes);
+					//$layerOptions["maxRes"] = $maxRes;
+				}
+*/
 				if(!in_array($layerType,$this->listProviders) && $layerType!=BING_LAYER_TYPE) $this->listProviders[] = $layerType;
 				$layerOptions["type"] = empty($row["layers"])?"null":$row["layers"];
 				if($layerType == BING_LAYER_TYPE) {
@@ -465,8 +482,6 @@ class gcMap{
 					$layerOptions["key"] = BINGKEY;
 				}
 				$layerOptions["sphericalMercator"] = true;
-				$layerOptions["minZoomLevel"] = $this->levelOffset;
-				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
 				if($row["status"] == 1) $this->activeBaseLayer = $layergroupName;
 				unset($layerOptions["minScale"]);
 				unset($layerOptions["maxScale"]);
@@ -985,8 +1000,7 @@ class gcMap{
 	function _getResolutions($minScale,$maxScale){
 
 		//Fattore di conversione tra dpi e unità della mappa
-		$aInchesPerUnit = array("m"=>39.3701, "ft"=>12, "inches"=>1,"km"=>39370.1, "mi"=>63360, "dd"=>4374754);
-		$convFact = $aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
+		$convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
 		$precision = $this->mapsetUM == "dd"?10:8;
 		$aRes = array();
 
