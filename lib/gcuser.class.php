@@ -144,11 +144,6 @@ abstract class AbstractUser {
 			$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
 
 			if(!empty($row['layer_id'])) {
-				// se il filtro è richiesto e non è settato in sessione, escludi il layer
-				if(isset($requiredAuthFilters[$row['layer_id']])) {
-					$filterName = $requiredAuthFilters[$row['layer_id']];
-					if(!isset($_SESSION['GISCLIENT']['AUTHFILTERS'][$filterName])) continue;
-				}
 				$this->authorizedLayers[] = $row['layer_id'];
 			}
 			// create arrays if not exists
@@ -237,55 +232,4 @@ abstract class AbstractUser {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 	
-	/*public function getAuthrFilters() {
-		if($this->authFilters === false) return array();
-		return $this->authFilters;
-	}
-	
-	public function setAuthFilters($filter) {
-		$db = GCApp::getDB();
-		
-		if(isset($filter['mapset_name'])) {
-			$sqlFilter = 'mapset_name = :mapset_name';
-			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
-		} else if(isset($filter['theme_name'])) {
-			$sqlFilter = 'theme_name = :theme_name';
-			$sqlValues = array(':theme_name'=>$filter['theme_name']);
-		} else return false;
-		
-		$this->authFilters = array();
-		if(isset($_SESSION['GROUPS'])) {
-			$groups = array();
-			foreach ($_SESSION["GROUPS"] as $grp) array_push($groups, $db->quote($grp));  // gruppi dell'utente
-			$userGroups = implode(',', $groups);
-		} else return;
-		
-		$sql = "select af.filter_id, af.filter_name, af.filter_priority, gaf.groupname, gaf.filter_expression, laf.layer_id, laf.required ".
-			" from ".DB_SCHEMA.".authfilter af ".
-			" inner join ".DB_SCHEMA.".layer_authfilter laf using(filter_id) ".
-			" inner join ".DB_SCHEMA.".group_authfilter gaf using(filter_id) ".
-			" inner join ".DB_SCHEMA.".layer using(layer_id) ".
-			" inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
-			" inner join ".DB_SCHEMA.".mapset_layergroup using(layergroup_id) ".
-			" where $sqlFilter and groupname in ($userGroup) ";
-		$stmt = $db->prepare($sql);
-		$stmt->execute($sqlValues);
-		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			// salva i filtri in sessione
-			$_SESSION['AUTHFILTERS'][$row['filter_name']] = $row['filter_expression'];
-			// traccia i filtri required, che possono provocare l'esclusione del layer
-			if(!isset($this->authFilters[$row['layer_id']])) $this->authFilters[$row['layer_id']] = array();
-			array_push($this->authFilters[$row['layer_id']], $row);
-		}
-	}
-	
-	private function _getRequiredAuthFilters($filter) {
-		if($this->authFilters === false) $this->setAuthFilters($filter);
-		
-		$requiredAuthFilters = array();
-		foreach($this->authFilters as $layerId => $filter) {
-			if(!empty($filter['required'])) $requiredAuthFilters[$layerId] = $filter;
-		}
-		return $requiredAuthFilters;
-	}*/
 }

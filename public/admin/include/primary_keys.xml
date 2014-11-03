@@ -127,23 +127,6 @@
 		<pkey>language_id</pkey>
 		<parent>project</parent>
     </project_languages>
-	<authfilter>
-		<table>authfilter</table>
-		<pkey>filter_id</pkey>
-		<parent></parent>
-	</authfilter>
-	<layer_authfilter>
-		<table>layer_authfilter</table>
-		<pkey>layer_id</pkey>
-		<pkey>filter_id</pkey>
-		<parent>layer</parent>
-	</layer_authfilter>
-	<group_authfilter>
-		<table>group_authfilter</table>
-		<pkey>groupname</pkey>
-		<pkey>filter_id</pkey>
-		<parent>groups</parent>
-	</group_authfilter>
 	<field_groups>
 		<table>field_groups</table>
 		<pkey>field_id</pkey>

@@ -1248,6 +1248,15 @@ ALTER TABLE project_srs DROP COLUMN tilegrid_id;
 ALTER TABLE project_srs ADD COLUMN max_extent character varying;
 ALTER TABLE project_srs ADD COLUMN resolutions character varying;
 
+
+DROP TABLE authfilter;
+DROP TABLE layer_authfilter;
+DROP TABLE group_authfilter;
+DELETE FROM e_form where name = 'authfilter' or name = 'layer_authfilter';
+DELETE FROM e_level where name = 'authfilter' or name = 'layer_authfilter';
+
+
+
 CREATE OR REPLACE VIEW seldb_mapset_srid AS 
          SELECT 3857 AS id, 3857 AS opzione, project.project_name, NULL::character varying AS max_extent, NULL::character varying AS resolutions
            FROM project
@@ -1256,5 +1265,6 @@ UNION ALL
            FROM project_srs
           ORDER BY project_srs.srid);
 --DROP TABLE e_tilegrid cascade;
+
 
 

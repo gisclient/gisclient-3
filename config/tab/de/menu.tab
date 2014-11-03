@@ -78,10 +78,3 @@ constant = "'Benutzergruppen hinzufügen'"
 constant = "'Benutzer hinzufügen'"
 [project_languages]
 constant = "'Sprache hinzufügen'"
-[authfilter]
-standard = "filter_name"
-constant = "'Authentifizierungsfilter hinzufügen'"
-[layer_authfilter]
-constant = "'Filtri autenticazione del Layer'"
-[group_authfilter]
-constant = "'Filtri autenticazione Gruppo'"
