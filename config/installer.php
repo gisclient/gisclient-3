@@ -190,6 +190,6 @@ if (count(debug_backtrace()) === 0 &&
 	echo "setting base permissions\n";
 	$installer->setBasePermissions($installDir);
 
-	echo "make some dirs writable to the web server";
+	echo "make output dirs writable for the web server";
 	$installer->checkOutputDirs($httpdWritableDirs, $installDir);
 }
