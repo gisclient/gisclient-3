@@ -15,4 +15,4 @@ before_script:
   - cp fonts/fonts_sample.list fonts/fonts.list 
   - php config/installer.php -W
 
-script:
+script: phpunit --configuration tests/tests.xml
