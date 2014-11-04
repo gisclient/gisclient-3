@@ -14,3 +14,5 @@ before_script:
   - cp config/travis/config.db.php config/config.db.php
   - cp fonts/fonts_sample.list fonts/fonts.list 
   - php config/installer.php -W
+
+script:
