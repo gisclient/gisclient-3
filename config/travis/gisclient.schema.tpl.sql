@@ -1,6 +1,8 @@
 -- apply
 -- sed -i 's/DB_SCHEMA/my_gisclient_schema/g' gisclient.sql
 -- to adapt the schema name in this file
+
+
 --
 -- PostgreSQL database dump
 --
@@ -19,36 +21,6 @@ CREATE SCHEMA DB_SCHEMA;
 
 
 SET search_path = DB_SCHEMA, pg_catalog;
-
---
--- Name: qt_selgroup_type; Type: TYPE; Schema: DB_SCHEMA; Owner: -
---
-
-CREATE TYPE qt_selgroup_type AS (
-	qt_selgroup_id integer,
-	qt_id integer,
-	selgroup_id integer,
-	presente integer,
-	project_id integer
-);
-
-
---
--- Name: slgrp_qt; Type: TYPE; Schema: DB_SCHEMA; Owner: -
---
-
-CREATE TYPE slgrp_qt AS (
-	qt_selgroup_id integer,
-	presente integer,
-	qt_id integer,
-	selgroup_id integer,
-	project_name character varying,
-	qt_name character varying,
-	selgroup_name character varying,
-	qt_order smallint,
-	theme_id integer,
-	theme_title character varying
-);
 
 
 --
@@ -101,6 +73,38 @@ BEGIN
 			raise exception 'label_size @ Il valore deve essere un numero intero oppure un campo di binding (es. [nome_campo])';
 		end if;
 	end if;
+	return new;
+END
+$_$;
+
+
+--
+-- Name: check_layer(); Type: FUNCTION; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE FUNCTION check_layer() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+	pr_name varchar;
+	presente integer;
+	newindex integer;
+	ok boolean;
+BEGIN
+	--CONTROLLO CHE IL NOME SIA COMPOSTO DA CARATTERI ALFA-NUMERICI
+	if(new.layer_name ~* '([ ]+)')	then 	
+		raise exception 'layer_name @ Il nome del layer deve essere alfanumerico senza spazi bianchi';
+	end if;
+
+	--CONTROLLO IL VALORE DELLA TRASPARENCY
+	if(coalesce(new.transparency,'')<>'') then 	
+		new.transparency:=upper(new.transparency);
+		select into ok (new.transparency='ALPHA' or new.transparency ='100' or new.transparency ~* '^([0-9]{1,2})$');
+		if not ok then
+			raise exception 'transparency @ Il valore deve essere un intero compreso tra 1-100 oppure ALPHA.';
+		end if;
+	end if;
+
 	return new;
 END
 $_$;
@@ -192,7 +196,7 @@ DECLARE
 	newid integer;
 BEGIN
 	ok:=false;
-	sk:='gc_author_sanvigilio';	
+	sk:='DB_SCHEMA';	
 	-- AGGIUNGO AL BASE URL LO SLASH FINALE (UTILE PER I LINK)
 	if(coalesce(new.base_url,'')<>'') then
 		if (not new.base_url ~ '^(.+)/$') then
@@ -253,11 +257,11 @@ CREATE FUNCTION enc_pwd() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-if (coalesce(new.pwd,'')<>'') then
-new.enc_pwd:=md5(new.pwd);
-new.pwd = null;
-end if;
-return new;
+	if (coalesce(new.pwd,'')<>'') then
+		new.enc_pwd:=md5(new.pwd);
+		new.pwd = null;
+	end if;
+	return new;
 END
 $$;
 
@@ -271,11 +275,11 @@ CREATE FUNCTION gw_findtree(id integer, lvl character varying) RETURNS SETOF tre
     AS $$
 DECLARE
 	rec record;
-	t gc_author_sanvigilio.tree;
+	t DB_SCHEMA.tree;
 	i integer;
 	d integer;
 BEGIN
-	select into d coalesce(depth,-1) from gc_author_sanvigilio.e_level where name=lvl;
+	select into d coalesce(depth,-1) from DB_SCHEMA.e_level where name=lvl;
 	if (d=-1) then
 		raise exception 'Livello % non esistente',lvl;
 	end if;
@@ -418,7 +422,7 @@ DECLARE
 	presente integer;
 	newval varchar;
 BEGIN
-query:='select count(*) from gc_author_sanvigilio.'||tb||' where '||fld||'='''||val||''';';
+query:='select count(*) from DB_SCHEMA.'||tb||' where '||fld||'='''||val||''';';
 execute query into presente;
 if(presente>0) then
 	query:='select map||(max(newindex)+1)::varchar from (select regexp_replace('||fld||',''([0-9]+)$'','''') as map,case when(regexp_replace('||fld||',''^([A-z_]+)'','''')='''') then 0 else regexp_replace('||fld||',''^([A-z_]+)'','''')::integer end as newindex from DB_SCHEMA.'||tb||' where '''||val||''' ~* regexp_replace('||fld||',''([0-9]+)$'','''')) X group by map;';
@@ -473,8 +477,8 @@ CREATE FUNCTION set_layer_name() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-SELECT INTO NEW.layer_name layer_name FROM DB_SCHEMA.layer WHERE layer_id=NEW.layer_id;
-RETURN NEW;
+	SELECT INTO NEW.layer_name layer_name FROM DB_SCHEMA.layer WHERE layer_id=NEW.layer_id;
+	RETURN NEW;
 END
 $$;
 
@@ -553,7 +557,7 @@ DECLARE
 	check_hatch smallint;
 BEGIN
 	if ((coalesce(new.symbol_name,'')<>'') and (coalesce(new.size,0)=0)) then
-		select into rec * from gc_author_sanvigilio.symbol where symbol_name=new.symbol_name;
+		select into rec * from DB_SCHEMA.symbol where symbol_name=new.symbol_name;
 		if rec.style_def='TYPE HATCH' then
 			raise exception 'size @ Per questo tipo di Simbolo ?ecessario definire il campo size';
 		end if;
@@ -600,6 +604,39 @@ $$;
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: access_log; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE TABLE access_log (
+    al_id integer NOT NULL,
+    al_ip character(15),
+    al_date timestamp without time zone,
+    al_referer character varying,
+    al_page character varying,
+    al_useragent character varying
+);
+
+
+--
+-- Name: access_log_al_id_seq; Type: SEQUENCE; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE SEQUENCE access_log_al_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: access_log_al_id_seq; Type: SEQUENCE OWNED BY; Schema: DB_SCHEMA; Owner: -
+--
+
+ALTER SEQUENCE access_log_al_id_seq OWNED BY access_log.al_id;
+
 
 --
 -- Name: authfilter; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
@@ -731,6 +768,13 @@ CREATE TABLE e_conntype (
     conntype_name character varying NOT NULL,
     conntype_order smallint
 );
+
+
+--
+-- Name: TABLE e_conntype; Type: COMMENT; Schema: DB_SCHEMA; Owner: -
+--
+
+COMMENT ON TABLE e_conntype IS 'Il tipo File Shape deve essere sempre uguale a 1!';
 
 
 --
@@ -1296,6 +1340,7 @@ CREATE TABLE mapset (
     mapset_srid integer DEFAULT (-1),
     mapset_def character varying,
     mapset_group character varying,
+    private integer DEFAULT 0,
     sizeunits_id smallint DEFAULT 5,
     static_reference integer DEFAULT 0,
     metadata text,
@@ -1304,8 +1349,7 @@ CREATE TABLE mapset (
     maxscale integer,
     minscale integer,
     mapset_scales character varying,
-    displayprojection integer,
-    private integer DEFAULT 0
+    displayprojection integer
 );
 
 
@@ -1399,6 +1443,38 @@ CREATE TABLE project_srs (
 
 
 --
+-- Name: qt; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE TABLE qt (
+    qt_id integer NOT NULL,
+    theme_id integer NOT NULL,
+    layer_id integer NOT NULL,
+    qt_name character varying NOT NULL,
+    max_rows smallint DEFAULT 25,
+    papersize_id integer,
+    edit_url character varying,
+    groupobject integer DEFAULT 0,
+    selection_color character varying,
+    qt_order smallint DEFAULT 0,
+    qtresultype_id integer,
+    qt_filter character varying,
+    zoom_buffer integer,
+    catalog_id integer,
+    data character varying,
+    data_geom character varying,
+    data_unique character varying,
+    data_srid integer,
+    data_filter character varying,
+    template character varying,
+    tolerance character varying,
+    default_qt numeric(1,0) DEFAULT 0,
+    qt_title character varying,
+    layergroup_id integer
+);
+
+
+--
 -- Name: qtfield; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
@@ -1444,9 +1520,9 @@ CREATE TABLE qtfield_groups (
 --
 
 CREATE TABLE qtlink (
-    layer_id integer NOT NULL,
     link_id integer NOT NULL,
-    resultype_id numeric(1,0)
+    resultype_id smallint,
+    layer_id integer NOT NULL
 );
 
 
@@ -1511,6 +1587,14 @@ CREATE VIEW seldb_conntype AS
 
 CREATE VIEW seldb_datatype AS
     SELECT e_datatype.datatype_id AS id, e_datatype.datatype_name AS opzione FROM e_datatype;
+
+
+--
+-- Name: seldb_field_filter; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW seldb_field_filter AS
+    SELECT (-1) AS id, 'Nessuno'::character varying AS opzione, 0 AS qtfield_id, 0 AS qt_id UNION (SELECT x.qtfield_id AS id, x.field_header AS opzione, y.qtfield_id, x.layer_id AS qt_id FROM (qtfield x JOIN qtfield y USING (layer_id)) WHERE (x.qtfield_id <> y.qtfield_id) ORDER BY x.qtfield_id, x.qtfield_order);
 
 
 --
@@ -1650,6 +1734,32 @@ CREATE VIEW seldb_project AS
 
 
 --
+-- Name: theme; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE TABLE theme (
+    theme_id integer NOT NULL,
+    project_name character varying,
+    theme_name character varying NOT NULL,
+    theme_title character varying,
+    theme_order integer,
+    locked smallint DEFAULT 0,
+    theme_single numeric(1,0) DEFAULT 0,
+    radio numeric(1,0) DEFAULT 0,
+    copyright_string character varying,
+    CONSTRAINT theme_name_lower_case CHECK (((theme_name)::text = lower((theme_name)::text)))
+);
+
+
+--
+-- Name: seldb_qt_theme; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW seldb_qt_theme AS
+    SELECT (-1) AS id, '___Seleziona ====>'::text AS opzione UNION SELECT qt.qt_id AS id, (qt.qt_name)::text AS opzione FROM (qt JOIN theme USING (theme_id)) WHERE (qt.theme_id = 55) ORDER BY 2;
+
+
+--
 -- Name: seldb_qtrelation; Type: VIEW; Schema: DB_SCHEMA; Owner: -
 --
 
@@ -1687,24 +1797,6 @@ CREATE VIEW seldb_searchtype AS
 
 CREATE VIEW seldb_sizeunits AS
     SELECT foo.id, foo.opzione FROM (SELECT ((-1))::smallint AS id, 'Seleziona ====>'::character varying AS opzione UNION SELECT e_sizeunits.sizeunits_id AS id, e_sizeunits.sizeunits_name AS opzione FROM e_sizeunits) foo ORDER BY foo.id;
-
-
---
--- Name: theme; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
---
-
-CREATE TABLE theme (
-    theme_id integer NOT NULL,
-    project_name character varying,
-    theme_name character varying NOT NULL,
-    theme_title character varying,
-    theme_order integer,
-    locked smallint DEFAULT 0,
-    theme_single numeric(1,0) DEFAULT 0,
-    radio numeric(1,0) DEFAULT 0,
-    copyright_string character varying,
-    CONSTRAINT theme_name_lower_case CHECK (((theme_name)::text = lower((theme_name)::text)))
-);
 
 
 --
@@ -1802,6 +1894,43 @@ CREATE TABLE symbol_ttf (
     ascii_code smallint NOT NULL,
     "position" character(2),
     symbol_ttf_image bytea
+);
+
+
+--
+-- Name: tb_import; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE TABLE tb_import (
+    tb_import_id integer NOT NULL,
+    catalog_id integer NOT NULL,
+    conn_filter character varying,
+    conn_model character varying,
+    file_path character varying
+);
+
+
+--
+-- Name: tb_import_table; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE TABLE tb_import_table (
+    tb_import_table_id integer NOT NULL,
+    tb_import_id integer NOT NULL,
+    table_name character varying
+);
+
+
+--
+-- Name: tb_logs; Type: TABLE; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE TABLE tb_logs (
+    tb_logs_id integer NOT NULL,
+    tb_import_id integer,
+    data date,
+    ora time without time zone,
+    log_info character varying
 );
 
 
@@ -1956,6 +2085,22 @@ ALTER SEQUENCE version_version_id_seq OWNED BY version.version_id;
 
 
 --
+-- Name: vista_catalog; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW vista_catalog AS
+    SELECT c.catalog_id, c.catalog_name, c.project_name, c.connection_type, c.catalog_path, c.catalog_url, c.catalog_description, c.files_path, CASE WHEN (c.connection_type <> 6) THEN '(i) Controllo non possibile: connessione non PostGIS'::text WHEN ("substring"((c.catalog_path)::text, 0, "position"((c.catalog_path)::text, '/'::text)) <> (current_database())::text) THEN '(i) Controllo non possibile: DB diverso'::text WHEN (NOT ("substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text)) IN (SELECT tables.table_schema FROM information_schema.tables))) THEN '(!) Lo schema configurato non esiste'::text ELSE 'OK'::text END AS catalog_control FROM catalog c;
+
+
+--
+-- Name: vista_class; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW vista_class AS
+    SELECT c.class_id, c.layer_id, c.class_name, c.class_title, c.class_text, c.expression, c.maxscale, c.minscale, c.class_template, c.class_order, c.legendtype_id, c.symbol_ttf_name, c.label_font, c.label_angle, c.label_color, c.label_outlinecolor, c.label_bgcolor, c.label_size, c.label_minsize, c.label_maxsize, c.label_position, c.label_antialias, c.label_free, c.label_priority, c.label_wrap, c.label_buffer, c.label_force, c.label_def, c.locked, c.class_image, c.keyimage, CASE WHEN ((c.expression IS NULL) AND (c.class_order <= (SELECT max(class.class_order) AS max FROM class WHERE (((class.layer_id = c.layer_id) AND (class.class_id <> c.class_id)) AND (class.expression IS NOT NULL))))) THEN '(!) Classe con espressione vuota, spostare in fondo'::text WHEN ((c.legendtype_id = 1) AND (NOT (c.class_id IN (SELECT style.class_id FROM style)))) THEN '(!) Mostra in legenda ma nessuno stile presente'::text WHEN (((((c.label_font IS NOT NULL) AND (c.label_color IS NOT NULL)) AND (c.label_size IS NOT NULL)) AND (c.label_position IS NOT NULL)) AND (l.labelitem IS NULL)) THEN '(!) Etichetta configurata correttamente, ma nessun campo etichetta configurato sul layer'::text WHEN (((((c.label_font IS NOT NULL) AND (c.label_color IS NOT NULL)) AND (c.label_size IS NOT NULL)) AND (c.label_position IS NOT NULL)) AND (l.labelitem IS NOT NULL)) THEN 'OK. (i) Con etichetta'::text ELSE 'OK'::text END AS class_control FROM (class c JOIN layer l USING (layer_id));
+
+
+--
 -- Name: vista_group_authfilter; Type: VIEW; Schema: DB_SCHEMA; Owner: -
 --
 
@@ -1968,7 +2113,23 @@ CREATE VIEW vista_group_authfilter AS
 --
 
 CREATE VIEW vista_layer AS
-    SELECT layer.layer_id, layer.layergroup_id, layer.layer_name, layer.layertype_id, layer.catalog_id, layer.data, layer.data_geom, layer.data_unique, layer.data_srid, layer.data_filter, layer.classitem, layer.labelitem, layer.labelsizeitem, layer.labelminscale, layer.labelmaxscale, layer.maxscale, layer.minscale, layer.symbolscale, layer.opacity, layer.maxfeatures, layer.sizeunits_id, layer.layer_def, layer.metadata, layer.template, layer.header, layer.footer, layer.tolerance, layer.layer_order, layer.queryable, layer.layer_title, layer.zoom_buffer, layer.group_object, layer.selection_color, layer.papersize_id, layer.toleranceunits_id, layer.selection_width, layer.selection_info, layer.hidden, layer.private, layer.postlabelcache, layer.maxvectfeatures, layer.data_type, layer.last_update, layer.data_extent, layer.searchable, layer.hide_vector_geom, CASE WHEN (((layer.queryable = (1)::numeric) AND (layer.hidden = (0)::numeric)) AND (layer.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.resultype_id <> 4)))) THEN 'SI! Config. OK'::text WHEN (((layer.queryable = (1)::numeric) AND (layer.hidden = (1)::numeric)) AND (layer.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.resultype_id <> 4)))) THEN 'SI! ma è nascosto'::text WHEN ((layer.queryable = (1)::numeric) AND (layer.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.resultype_id = 4)))) THEN 'NO! Nessun campo nei risultati'::text ELSE 'NO! WFS non abilitato'::text END AS is_queryable, CASE WHEN ((layer.queryable = (1)::numeric) AND (layer.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.editable = (1)::numeric)))) THEN 'SI! Config. OK'::text WHEN ((layer.queryable = (1)::numeric) AND (layer.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.editable = (0)::numeric)))) THEN 'NO! Nessun campo è editabile'::text WHEN ((layer.queryable = (0)::numeric) AND (layer.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.editable = (1)::numeric)))) THEN 'NO! Campo editabile ma WFS non attivo'::text ELSE 'NO!'::text END AS is_editable FROM layer;
+    SELECT l.layer_id, l.layergroup_id, l.layer_name, l.layertype_id, l.catalog_id, l.data, l.data_geom, l.data_unique, l.data_srid, l.data_filter, l.classitem, l.labelitem, l.labelsizeitem, l.labelminscale, l.labelmaxscale, l.maxscale, l.minscale, l.symbolscale, l.opacity, l.maxfeatures, l.sizeunits_id, l.layer_def, l.metadata, l.template, l.header, l.footer, l.tolerance, l.layer_order, l.queryable, l.layer_title, l.zoom_buffer, l.group_object, l.selection_color, l.papersize_id, l.toleranceunits_id, l.selection_width, l.selection_info, l.hidden, l.private, l.postlabelcache, l.maxvectfeatures, l.data_type, l.last_update, l.data_extent, l.searchable, l.hide_vector_geom, CASE WHEN (((l.queryable = (1)::numeric) AND (l.hidden = (0)::numeric)) AND (l.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.resultype_id <> 4)))) THEN 'SI. Config. OK'::text WHEN (((l.queryable = (1)::numeric) AND (l.hidden = (1)::numeric)) AND (l.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.resultype_id <> 4)))) THEN 'SI. Ma è nascosto'::text WHEN ((l.queryable = (1)::numeric) AND (l.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.resultype_id = 4)))) THEN 'NO. Nessun campo nei risultati'::text ELSE 'NO. WFS non abilitato'::text END AS is_queryable, CASE WHEN ((l.queryable = (1)::numeric) AND (l.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.editable = (1)::numeric)))) THEN 'SI. Config. OK'::text WHEN ((l.queryable = (1)::numeric) AND (l.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.editable = (0)::numeric)))) THEN 'NO. Nessun campo è editabile'::text WHEN ((l.queryable = (0)::numeric) AND (l.layer_id IN (SELECT qtfield.layer_id FROM qtfield WHERE (qtfield.editable = (1)::numeric)))) THEN 'NO. Esiste un campo editabile ma il WFS non è attivo'::text ELSE 'NO.'::text END AS is_editable, CASE WHEN (c.connection_type <> 6) THEN '(i) Controllo non possibile: connessione non PostGIS'::text WHEN ("substring"((c.catalog_path)::text, 0, "position"((c.catalog_path)::text, '/'::text)) <> (current_database())::text) THEN '(i) Controllo non possibile: DB diverso'::text WHEN (NOT ((l.data)::text IN (SELECT tables.table_name FROM information_schema.tables WHERE ((tables.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text)))))) THEN '(!) La tabella non esiste nel DB'::text WHEN (NOT ((l.data_geom)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE ((((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.data)::text)) AND ((columns.data_type)::text = 'USER-DEFINED'::text))))) THEN '(!) Il campo geometrico del layer non esiste'::text WHEN (NOT ((l.data_unique)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.data)::text))))) THEN '(!) Il campo chiave del layer non esiste'::text WHEN (NOT (l.data_srid IN (SELECT geometry_columns.srid FROM public.geometry_columns WHERE (((geometry_columns.f_table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((geometry_columns.f_table_name)::text = (l.data)::text))))) THEN '(!) Lo SRID configurato non è quello corretto'::text WHEN (NOT (upper((l.data_type)::text) IN (SELECT geometry_columns.type FROM public.geometry_columns WHERE (((geometry_columns.f_table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((geometry_columns.f_table_name)::text = (l.data)::text))))) THEN '(!) Geometrytype non corretto'::text WHEN (NOT ((l.labelitem)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.data)::text))))) THEN '(!) Il campo etichetta del layer non esiste'::text WHEN (NOT ((l.labelitem)::text IN (SELECT qtfield.qtfield_name FROM qtfield WHERE (qtfield.layer_id = l.layer_id)))) THEN '(!) Campo etichetta non presente nei campi del layer'::text WHEN (NOT ((l.labelsizeitem)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.data)::text))))) THEN '(!) Il campo altezza etichetta del layer non esiste'::text WHEN (NOT ((l.labelsizeitem)::text IN (SELECT qtfield.qtfield_name FROM qtfield WHERE (qtfield.layer_id = l.layer_id)))) THEN '(!) Campo altezza etichetta non presente nei campi del layer'::text WHEN ((l.layer_name)::text IN (SELECT DISTINCT layer.layer_name FROM layer WHERE ((layer.layergroup_id <> lg.layergroup_id) AND (layer.catalog_id IN (SELECT catalog.catalog_id FROM catalog WHERE ((catalog.project_name)::text = (c.project_name)::text)))))) THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'::text WHEN (NOT (l.layer_id IN (SELECT class.layer_id FROM class))) THEN 'OK (i) Non ci sono classi configurate in questo layer'::text ELSE 'OK'::text END AS layer_control FROM ((((layer l JOIN catalog c USING (catalog_id)) JOIN e_layertype USING (layertype_id)) JOIN layergroup lg USING (layergroup_id)) JOIN theme t USING (theme_id));
+
+
+--
+-- Name: vista_layergroup; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW vista_layergroup AS
+    SELECT lg.layergroup_id, lg.theme_id, lg.layergroup_name, lg.layergroup_title, lg.layergroup_maxscale, lg.layergroup_minscale, lg.layergroup_smbscale, lg.layergroup_order, lg.locked, lg.multi, lg.hidden, lg.isbaselayer, lg.tiletype_id, lg.sld, lg.style, lg.url, lg.owstype_id, lg.outputformat_id, lg.layers, lg.parameters, lg.gutter, lg.transition, lg.tree_group, lg.layergroup_description, lg.buffer, lg.tiles_extent, lg.tiles_extent_srid, lg.layergroup_single, lg.metadata_url, lg.opacity, lg.tile_origin, lg.tile_resolutions, lg.tile_matrix_set, CASE WHEN ((lg.tiles_extent_srid IS NOT NULL) AND (NOT (lg.tiles_extent_srid IN (SELECT project_srs.srid FROM project_srs WHERE ((project_srs.project_name)::text = (t.project_name)::text))))) THEN '(!) SRID estensione tiles non presente nei sistemi di riferimento del progetto'::text WHEN ((lg.owstype_id = 6) AND (lg.url IS NULL)) THEN '(!) Nessuna URL configurata per la chiamata TMS'::text WHEN ((lg.owstype_id = 6) AND (lg.layers IS NULL)) THEN '(!) Nessun layer configurato per la chiamata TMS'::text WHEN ((lg.owstype_id = 9) AND (lg.url IS NULL)) THEN '(!) Nessuna URL configurata per la chiamata WMTS'::text WHEN ((lg.owstype_id = 9) AND (lg.layers IS NULL)) THEN '(!) Nessun layer configurato per la chiamata WMTS'::text WHEN ((lg.owstype_id = 9) AND (lg.tile_matrix_set IS NULL)) THEN '(!) Nessun Tile Matrix configurato per la chiamata WMTS'::text WHEN ((lg.owstype_id = 9) AND (lg.style IS NULL)) THEN '(!) Nessuno stile configurato per la chiamata WMTS'::text WHEN ((lg.owstype_id = 9) AND (lg.tile_origin IS NULL)) THEN '(!) Nessuna origine configurata per la chiamata WMTS'::text WHEN ((lg.opacity IS NULL) OR ((lg.opacity)::text = '0'::text)) THEN '(i) Attenzione: trasparenza totale'::text ELSE 'OK'::text END AS layergroup_control FROM (layergroup lg JOIN theme t USING (theme_id));
+
+
+--
+-- Name: vista_mapset; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW vista_mapset AS
+    SELECT m.mapset_name, m.project_name, m.mapset_title, m.mapset_description, m.template, m.mapset_extent, m.page_size, m.filter_data, m.dl_image_res, m.imagelabel, m.bg_color, m.refmap_extent, m.test_extent, m.mapset_srid, m.mapset_def, m.mapset_group, m.private, m.sizeunits_id, m.static_reference, m.metadata, m.mapset_note, m.mask, m.maxscale, m.minscale, m.mapset_scales, m.displayprojection, CASE WHEN (NOT ((m.mapset_name)::text IN (SELECT mapset_layergroup.mapset_name FROM mapset_layergroup))) THEN '(!) Nessun layergroup presente'::text WHEN (75 <= (SELECT count(mapset_layergroup.layergroup_id) AS count FROM mapset_layergroup WHERE ((mapset_layergroup.mapset_name)::text = (m.mapset_name)::text) GROUP BY mapset_layergroup.mapset_name)) THEN '(!) Openlayers non consente di rappresentare più di 75 layergroup alla volta'::text WHEN (m.mapset_scales IS NULL) THEN '(!) Nessun elenco di scale configurato'::text WHEN (m.mapset_srid <> m.displayprojection) THEN '(i) Coordinate visualizzate diverse da quelle di mappa'::text WHEN (0 = (SELECT max(mapset_layergroup.refmap) AS max FROM mapset_layergroup WHERE ((mapset_layergroup.mapset_name)::text = (m.mapset_name)::text) GROUP BY mapset_layergroup.mapset_name)) THEN '(i) Nessuna reference map'::text ELSE 'OK'::text END AS mapset_control FROM mapset m;
 
 
 --
@@ -1984,7 +2145,15 @@ CREATE VIEW vista_project_languages AS
 --
 
 CREATE VIEW vista_qtfield AS
-    SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.resultype_id, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name, qtfield.editable FROM ((qtfield JOIN e_fieldtype USING (fieldtype_id)) JOIN (SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name FROM ((SELECT 0 AS qtrelation_id, 'Data Layer'::character varying AS name, 0 AS qtrelationtype_id UNION SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id FROM qtrelation) y JOIN (SELECT 0 AS qtrelationtype_id, ''::character varying AS qtrelationtype_name UNION SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name FROM e_qtrelationtype) z USING (qtrelationtype_id))) x USING (qtrelation_id)) ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
+    SELECT qtfield.qtfield_id, qtfield.layer_id, qtfield.fieldtype_id, x.qtrelation_id, qtfield.qtfield_name, qtfield.resultype_id, qtfield.field_header, qtfield.qtfield_order, COALESCE(qtfield.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name, qtfield.editable, CASE WHEN (qtfield.qtrelation_id = 0) THEN CASE WHEN (c.connection_type <> 6) THEN '(i) Controllo non possibile: connessione non PostGIS'::text WHEN ("substring"((c.catalog_path)::text, 0, "position"((c.catalog_path)::text, '/'::text)) <> (current_database())::text) THEN '(i) Controllo non possibile: DB diverso'::text WHEN (NOT ((qtfield.qtfield_name)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (("substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text)) = (i.table_schema)::text) AND ((l.data)::text = (i.table_name)::text))))) THEN '(!) Il campo non esiste nella tabella'::text ELSE 'OK'::text END ELSE CASE WHEN (cr.connection_type <> 6) THEN '(i) Controllo non possibile: connessione non PostGIS'::text WHEN ("substring"((cr.catalog_path)::text, 0, "position"((cr.catalog_path)::text, '/'::text)) <> (current_database())::text) THEN '(i) Controllo non possibile: DB diverso'::text WHEN (NOT ((qtfield.qtfield_name)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (("substring"((cr.catalog_path)::text, ("position"((cr.catalog_path)::text, '/'::text) + 1), length((cr.catalog_path)::text)) = (i.table_schema)::text) AND ((r.table_name)::text = (i.table_name)::text))))) THEN ('(!) Il campo non esiste nella tabella di relazione: '::text || (r.qtrelation_name)::text) ELSE 'OK'::text END END AS qtfield_control FROM (((((((qtfield JOIN e_fieldtype USING (fieldtype_id)) JOIN (SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name FROM ((SELECT 0 AS qtrelation_id, 'Data Layer'::character varying AS name, 0 AS qtrelationtype_id UNION SELECT qtrelation.qtrelation_id, COALESCE(qtrelation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qtrelation.qtrelationtype_id FROM qtrelation) y JOIN (SELECT 0 AS qtrelationtype_id, ''::character varying AS qtrelationtype_name UNION SELECT e_qtrelationtype.qtrelationtype_id, e_qtrelationtype.qtrelationtype_name FROM e_qtrelationtype) z USING (qtrelationtype_id))) x USING (qtrelation_id)) JOIN layer l USING (layer_id)) JOIN catalog c USING (catalog_id)) LEFT JOIN qtrelation r USING (qtrelation_id)) LEFT JOIN catalog cr ON ((cr.catalog_id = r.catalog_id))) LEFT JOIN information_schema.columns i ON (((((qtfield.qtfield_name)::text = (i.column_name)::text) AND ("substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text)) = (i.table_schema)::text)) AND (((l.data)::text = (i.table_name)::text) OR ((r.table_name)::text = (i.table_name)::text))))) ORDER BY qtfield.qtfield_id, x.qtrelation_id, x.qtrelationtype_id;
+
+
+--
+-- Name: vista_qtrelation; Type: VIEW; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE VIEW vista_qtrelation AS
+    SELECT r.qtrelation_id, r.catalog_id, r.qtrelation_name, r.qtrelationtype_id, r.data_field_1, r.data_field_2, r.data_field_3, r.table_name, r.table_field_1, r.table_field_2, r.table_field_3, r.language_id, r.layer_id, CASE WHEN (c.connection_type <> 6) THEN '(i) Controllo non possibile: connessione non PostGIS'::text WHEN ("substring"((c.catalog_path)::text, 0, "position"((c.catalog_path)::text, '/'::text)) <> (current_database())::text) THEN '(i) Controllo non possibile: DB diverso'::text WHEN (NOT ((l.layer_name)::text IN (SELECT tables.table_name FROM information_schema.tables WHERE ((tables.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text)))))) THEN '(!) La tabella DB del layer non esiste'::text WHEN (NOT ((r.table_name)::text IN (SELECT tables.table_name FROM information_schema.tables WHERE ((tables.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text)))))) THEN '(!) tabella DB di JOIN non esiste'::text WHEN ((r.data_field_1 IS NULL) OR (r.table_field_1 IS NULL)) THEN '(!) Uno dei campi della JOIN 1 è vuoto'::text WHEN (NOT ((r.data_field_1)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.layer_name)::text))))) THEN '(!) Il campo chiave layer non esiste'::text WHEN (NOT ((r.table_field_1)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (r.table_name)::text))))) THEN '(!) Il campo chiave della relazione non esiste'::text WHEN ((r.data_field_2 IS NULL) AND (r.table_field_2 IS NULL)) THEN 'OK'::text WHEN ((r.data_field_2 IS NULL) OR (r.table_field_2 IS NULL)) THEN '(!) Uno dei campi della JOIN 2 è vuoto'::text WHEN (NOT ((r.data_field_2)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.layer_name)::text))))) THEN '(!) Il campo chiave layer della JOIN 2 non esiste'::text WHEN (NOT ((r.table_field_2)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (r.table_name)::text))))) THEN '(!) Il campo chiave relazione della JOIN 2 non esiste'::text WHEN ((r.data_field_3 IS NULL) AND (r.table_field_3 IS NULL)) THEN 'OK'::text WHEN ((r.data_field_3 IS NULL) OR (r.table_field_3 IS NULL)) THEN '(!) Uno dei campi della JOIN 3 è vuoto'::text WHEN (NOT ((r.data_field_3)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (l.layer_name)::text))))) THEN '(!) Il campo chiave layer della JOIN 3 non esiste'::text WHEN (NOT ((r.table_field_3)::text IN (SELECT columns.column_name FROM information_schema.columns WHERE (((columns.table_schema)::text = "substring"((c.catalog_path)::text, ("position"((c.catalog_path)::text, '/'::text) + 1), length((c.catalog_path)::text))) AND ((columns.table_name)::text = (r.table_name)::text))))) THEN '(!) Il campo chiave relazione della JOIN 3 non esiste'::text ELSE 'OK'::text END AS qtrelation_control FROM (((qtrelation r JOIN catalog c USING (catalog_id)) JOIN layer l USING (layer_id)) JOIN e_qtrelationtype rt USING (qtrelationtype_id));
 
 
 --
@@ -1992,7 +2161,7 @@ CREATE VIEW vista_qtfield AS
 --
 
 CREATE VIEW vista_style AS
-    SELECT style.style_id, style.class_id, style.style_name, style.angle, style.color, style.outlinecolor, style.bgcolor, style.size, style.minsize, style.maxsize, style.minwidth, style.width, style.maxwidth, style.style_def, style.locked, style.symbol_name, symbol.symbol_image, style.style_order FROM (style LEFT JOIN symbol USING (symbol_name)) ORDER BY style.style_order;
+    SELECT s.style_id, s.class_id, s.style_name, s.symbol_name, s.color, s.outlinecolor, s.bgcolor, s.angle, s.size, s.minsize, s.maxsize, s.width, s.maxwidth, s.minwidth, s.locked, s.style_def, s.style_order, s.pattern_id, CASE WHEN (NOT ((s.symbol_name)::text IN (SELECT symbol.symbol_name FROM symbol))) THEN '(!) Il simbolo non esiste'::text WHEN (s.style_order = (SELECT style.style_order FROM style WHERE ((style.style_id <> s.style_id) AND (style.class_id = s.class_id)))) THEN '(!) Due stili con lo stesso ordine'::text WHEN (((s.color IS NULL) AND (s.outlinecolor IS NULL)) AND (s.bgcolor IS NULL)) THEN '(!) Stile senza colore'::text WHEN ((s.symbol_name IS NOT NULL) AND (s.size IS NULL)) THEN '(!) Stile senza dimensione'::text ELSE 'OK'::text END AS style_control FROM (style s LEFT JOIN symbol USING (symbol_name)) ORDER BY s.style_order;
 
 
 --
@@ -2001,6 +2170,13 @@ CREATE VIEW vista_style AS
 
 CREATE VIEW vista_version AS
     SELECT version.version_id, version.version_name, version.version_date FROM version WHERE ((version.version_key)::text = 'author'::text) ORDER BY version.version_id DESC LIMIT 1;
+
+
+--
+-- Name: al_id; Type: DEFAULT; Schema: DB_SCHEMA; Owner: -
+--
+
+ALTER TABLE ONLY access_log ALTER COLUMN al_id SET DEFAULT nextval('access_log_al_id_seq'::regclass);
 
 
 --
@@ -2051,6 +2227,14 @@ ALTER TABLE ONLY version ALTER COLUMN version_id SET DEFAULT nextval('version_ve
 
 ALTER TABLE ONLY i18n_field
     ADD CONSTRAINT "18n_field_pkey" PRIMARY KEY (i18nf_id);
+
+
+--
+-- Name: access_log_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY access_log
+    ADD CONSTRAINT access_log_pkey PRIMARY KEY (al_id);
 
 
 --
@@ -2470,11 +2654,19 @@ ALTER TABLE ONLY theme
 
 
 --
--- Name: qt_link_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+-- Name: qt_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY qtlink
-    ADD CONSTRAINT qt_link_pkey PRIMARY KEY (layer_id, link_id);
+ALTER TABLE ONLY qt
+    ADD CONSTRAINT qt_pkey PRIMARY KEY (qt_id);
+
+
+--
+-- Name: qt_theme_key; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY qt
+    ADD CONSTRAINT qt_theme_key UNIQUE (theme_id, qt_name);
 
 
 --
@@ -2510,6 +2702,14 @@ ALTER TABLE ONLY qtfield
 
 
 --
+-- Name: qtlink_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY qtlink
+    ADD CONSTRAINT qtlink_pkey PRIMARY KEY (layer_id, link_id);
+
+
+--
 -- Name: qtrelation_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
@@ -2542,6 +2742,14 @@ ALTER TABLE ONLY selgroup
 
 
 --
+-- Name: service_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_logs
+    ADD CONSTRAINT service_pkey PRIMARY KEY (tb_logs_id);
+
+
+--
 -- Name: style_class_id_key; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
@@ -2571,6 +2779,22 @@ ALTER TABLE ONLY symbol
 
 ALTER TABLE ONLY symbol_ttf
     ADD CONSTRAINT symbol_ttf_pkey PRIMARY KEY (symbol_ttf_name, font_name);
+
+
+--
+-- Name: tb_import_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_import
+    ADD CONSTRAINT tb_import_pkey PRIMARY KEY (tb_import_id);
+
+
+--
+-- Name: tb_import_table_id_pkey; Type: CONSTRAINT; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_import_table
+    ADD CONSTRAINT tb_import_table_id_pkey PRIMARY KEY (tb_import_table_id);
 
 
 --
@@ -2707,10 +2931,59 @@ CREATE INDEX fki_link_project_name_fkey ON link USING btree (project_name);
 
 
 --
+-- Name: fki_mapset_layergroup_layergroup_id_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_mapset_layergroup_layergroup_id_fkey ON mapset_layergroup USING btree (layergroup_id);
+
+
+--
+-- Name: fki_mapset_layergroup_mapset_name_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_mapset_layergroup_mapset_name_fkey ON mapset_layergroup USING btree (mapset_name);
+
+
+--
+-- Name: fki_mapset_project_name_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_mapset_project_name_fkey ON mapset USING btree (project_name);
+
+
+--
 -- Name: fki_pattern_id_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
 CREATE INDEX fki_pattern_id_fkey ON style USING btree (pattern_id);
+
+
+--
+-- Name: fki_project_theme_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_project_theme_fkey ON theme USING btree (project_name);
+
+
+--
+-- Name: fki_qt_layer_id_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_qt_layer_id_fkey ON qt USING btree (layer_id);
+
+
+--
+-- Name: fki_qt_link_link_id_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_qt_link_link_id_fkey ON qtlink USING btree (link_id);
+
+
+--
+-- Name: fki_qt_theme_id_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_qt_theme_id_fkey ON qt USING btree (theme_id);
 
 
 --
@@ -2732,6 +3005,13 @@ CREATE INDEX fki_qtfields_layer ON qtfield USING btree (layer_id);
 --
 
 CREATE INDEX fki_qtrelation_catalog_id_fkey ON qtrelation USING btree (catalog_id);
+
+
+--
+-- Name: fki_selgroup_project_name_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_selgroup_project_name_fkey ON selgroup USING btree (project_name);
 
 
 --
@@ -2763,6 +3043,13 @@ CREATE INDEX fki_symbol_ttf_fkey ON class USING btree (symbol_ttf_name, label_fo
 
 
 --
+-- Name: fki_symbol_ttf_font_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
+--
+
+CREATE INDEX fki_symbol_ttf_font_fkey ON symbol_ttf USING btree (font_name);
+
+
+--
 -- Name: fki_symbol_ttf_symbolcategory_id_fkey; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
@@ -2770,24 +3057,10 @@ CREATE INDEX fki_symbol_ttf_symbolcategory_id_fkey ON symbol_ttf USING btree (sy
 
 
 --
--- Name: qtfield_id_index; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
---
-
-CREATE INDEX qtfield_id_index ON qtfield USING btree (qtfield_id);
-
-
---
 -- Name: qtfield_name_unique; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX qtfield_name_unique ON qtfield USING btree (layer_id, qtfield_name);
-
-
---
--- Name: qtrelation_id_index; Type: INDEX; Schema: DB_SCHEMA; Owner: -; Tablespace: 
---
-
-CREATE INDEX qtrelation_id_index ON qtrelation USING btree (qtrelation_id);
 
 
 --
@@ -2805,10 +3078,38 @@ CREATE TRIGGER chk_class BEFORE INSERT OR UPDATE ON class FOR EACH ROW EXECUTE P
 
 
 --
+-- Name: delete_qtfields_qt; Type: TRIGGER; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE TRIGGER delete_qtfields_qt AFTER DELETE ON qt FOR EACH ROW EXECUTE PROCEDURE delete_qt();
+
+
+--
 -- Name: delete_qtrelation; Type: TRIGGER; Schema: DB_SCHEMA; Owner: -
 --
 
 CREATE TRIGGER delete_qtrelation AFTER DELETE ON qtrelation FOR EACH ROW EXECUTE PROCEDURE delete_qtrelation();
+
+
+--
+-- Name: depth; Type: TRIGGER; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE TRIGGER depth AFTER INSERT OR UPDATE ON e_level FOR EACH ROW EXECUTE PROCEDURE set_depth();
+
+
+--
+-- Name: layername; Type: TRIGGER; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE TRIGGER layername BEFORE INSERT OR UPDATE ON layer_groups FOR EACH ROW EXECUTE PROCEDURE set_layer_name();
+
+
+--
+-- Name: leaf; Type: TRIGGER; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE TRIGGER leaf AFTER INSERT OR UPDATE ON e_level FOR EACH ROW EXECUTE PROCEDURE set_leaf();
 
 
 --
@@ -2823,6 +3124,13 @@ CREATE TRIGGER move_layergroup AFTER UPDATE ON layergroup FOR EACH ROW EXECUTE P
 --
 
 CREATE TRIGGER set_encpwd BEFORE INSERT OR UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE enc_pwd();
+
+
+--
+-- Name: theme_tr; Type: TRIGGER; Schema: DB_SCHEMA; Owner: -
+--
+
+CREATE TRIGGER theme_tr AFTER INSERT OR UPDATE ON theme FOR EACH ROW EXECUTE PROCEDURE theme_version_tr();
 
 
 --
@@ -3026,6 +3334,30 @@ ALTER TABLE ONLY project_srs
 
 
 --
+-- Name: qt_layer_id_fkey; Type: FK CONSTRAINT; Schema: DB_SCHEMA; Owner: -
+--
+
+ALTER TABLE ONLY qt
+    ADD CONSTRAINT qt_layer_id_fkey FOREIGN KEY (layer_id) REFERENCES layer(layer_id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: qt_link_link_id_fkey; Type: FK CONSTRAINT; Schema: DB_SCHEMA; Owner: -
+--
+
+ALTER TABLE ONLY qtlink
+    ADD CONSTRAINT qt_link_link_id_fkey FOREIGN KEY (link_id) REFERENCES link(link_id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: qt_theme_id_fkey; Type: FK CONSTRAINT; Schema: DB_SCHEMA; Owner: -
+--
+
+ALTER TABLE ONLY qt
+    ADD CONSTRAINT qt_theme_id_fkey FOREIGN KEY (theme_id) REFERENCES theme(theme_id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: qtfield_fieldtype_id_fkey; Type: FK CONSTRAINT; Schema: DB_SCHEMA; Owner: -
 --
 
@@ -3167,14 +3499,6 @@ ALTER TABLE ONLY user_group
 
 ALTER TABLE ONLY user_group
     ADD CONSTRAINT user_group_username_fkey FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: usercontext_mapset_name_fkey; Type: FK CONSTRAINT; Schema: DB_SCHEMA; Owner: -
---
-
-ALTER TABLE ONLY usercontext
-    ADD CONSTRAINT usercontext_mapset_name_fkey FOREIGN KEY (mapset_name) REFERENCES mapset(mapset_name) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
