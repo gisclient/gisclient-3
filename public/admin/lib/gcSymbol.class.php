@@ -365,6 +365,7 @@ EOT;
 	
 	//METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
 		
+	// unused
 	function updateFileSmb(){
 		$smbfile = fopen ("smb.map","w");
 		if ($smbfile === false) {
@@ -381,6 +382,7 @@ EOT;
 	
 	}
 	
+	// unused!!
 	function importFilesmb($filename){
 		$handle=fopen($filename,'r');
 		$content=trim(fread($handle,filesize($filename)));
@@ -420,6 +422,7 @@ EOT;
 		}
 	}
 	
+	// unused!!!
 	function updateFontList(){
 		
 		$fontlistFile = ROOT_PATH.'fonts/fonts.list';
