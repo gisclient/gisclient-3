@@ -38,19 +38,37 @@ function GCList(field) {
 			dataType: 'json',
 			data: params,
 			success: function(response) {
-				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok' || typeof(response.fields) != 'object' || typeof(response.data) != 'object' || typeof(response.step) == 'undefined' || typeof(response.steps) == 'undefined') {
-					if(response != null && typeof(response.error) != 'undefined' && $.inArray(response.error, ['catalog_id','layertype_id','data']) > -1) {
-						$('#list_dialog').dialog('close');
-						return;
-					}
-					alert('Error');
-					$('#list_dialog').dialog('close');
-					return;
-				}
+                var errorMsg = null;
+                if(typeof response !== 'object') {
+                    errorMsg = 'response is not in JSON format';
+                } else if (response === null) {
+                    errorMsg = 'response is null';                    
+                } else if (typeof response.result === 'undefined' ||
+                        response.result !== 'ok') {
+                    errorMsg = 'invalid result field';                    
+                } else if (
+                        typeof response.fields !== 'object' ||
+                        typeof response.data !== 'object' ||
+                        typeof response.step === 'undefined' ||
+                        typeof response.steps === 'undefined') {
+                    errorMsg = 'invalid server response format';
+                } else if (typeof response.error !== 'undefined') {
+                    if ($.inArray(response.error, ['catalog_id','layertype_id','data']) > -1) {
+                        errorMsg = 'invalid ' . response.error;
+                    } else {
+                        errorMsg = response.error;
+                    }
+                }
+                if (errorMsg !== null) {
+                    alert('Error');
+                    $('#list_dialog').dialog('close');
+                    return;
+                }
 				
 				self.currentStep = response.step;
 				self.totSteps = response.steps;
 				
+                // create table header
 				var html = '<tr>';
 				$.each(response.fields, function(fieldName, fieldTitle) {
 					html += '<th>'+fieldTitle+'</th>';
@@ -58,10 +76,11 @@ function GCList(field) {
 				html += '</tr>';
 				$('#list_dialog table').append(html);
 				
+                // add rows with symbols to table
 				$.each(response.data, function(rowId, rowData) {
 					html = '<tr data-row_id='+rowId+'>';
 					$.each(response.fields, function(fieldName, foo) {
-						if(typeof(rowData[fieldName]) == 'undefined' || rowData[fieldName] == null) {
+						if(typeof rowData[fieldName] === 'undefined' || rowData[fieldName] === null) {
 							html += '<td></td>';
 							return;
 						}
@@ -80,6 +99,7 @@ function GCList(field) {
 				},function() {
 					$(this).css('cursor', 'default');
 				});
+                
 				$('#list_dialog table td').click(function(event) {
 					var rowId = $(this).parent().attr('data-row_id');
 					$.extend(self.selectedData, self.listData[rowId]);
@@ -98,18 +118,19 @@ function GCList(field) {
 				});
 			},
 			error: function() {
-				alert('Error');
+				alert('AJAX request returned with error');
 			}
 		});
 	};
 };
 
 function openList(txt_field, data) {
+    var selectedField;
 	if (txt_field.indexOf('.') > 0){
 		var tmp = txt_field.split('.');
-		var selectedField = tmp[0];
+		selectedField = tmp[0];
 	} else {
-		var selectedField = txt_field;
+		selectedField = txt_field;
 	}
 	
 	if(!$.isArray(data)) {
