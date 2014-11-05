@@ -5,8 +5,11 @@
 // TODO: config file should be readable only by the web server!!
 // require_once __DIR__ . '/config.db.php';
 
-$httpdWritableDirs = array('/import/',
+$httpdWritableDirs = array(
+    '/import/',
 	'/files/',
+	'/symbols/usersymbols/',
+	'/symbols/usersymbols/pixmaps/',
 	'/map/',
 	'/public/services/tmp/',
 	'/public/admin/export/',
