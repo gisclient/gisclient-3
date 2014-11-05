@@ -736,16 +736,6 @@ WATER	3	0	\N	Type VECTOR\n  Filled FALSE  \n   Points\n\t\t0 .6\n\t\t.1 .4\n\t\t
 CIRCLE_EMPTY	3	0	\N	TYPE Vector\n  POINTS\n    0 .5\n\t\t.1 .7\n\t\t.3 .9\n\t\t.5 1\n\t\t.7 .9\n\t\t.9 .7\n\t\t1 .5\n\t\t.9 .3\n\t\t.7 .1\n\t\t.5 0\n\t\t.3 .1\n\t\t.1 .3\n\t\t0 .5\n  END\n\t	\N	\N	\N	0	\N	\N
 CIRCLE_HALF	3	0	\N	TYPE Vector\n  POINTS\n    0 .5\n\t\t.1 .7\n\t\t.3 .9\n\t\t.5 1\n\t\t.7 .9\n\t\t.9 .7\n\t\t1 .5\n\t\t0 .5\n  END\n\n\t	\N	\N	\N	0	\N	\N
 HATCH	3	0	\N	TYPE HATCH	\N	\N	\N	0	\N	\N
-10-3	2	0	\N	 Type ELLIPSE\n\tPoints\n\t  1 1\n\tEND\n\tSTYLE\n\t\t10 3\n\tEND	\N	\N	\N	0	\N	\N
-1-3	2	0	\N	Type ELLIPSE\n\tPoints\n\t  1 1\n\tEND\n\tSTYLE\n\t\t1 3\n\tEND	\N	\N	\N	0	\N	\N
-2-3	2	0	\N	Type ELLIPSE\n\tPoints\n\t  1 1\n\tEND\n\tSTYLE\n\t\t2 3\n\tEND	\N	\N	\N	0	\N	\N
-3-10	2	0	\N	  Type ELLIPSE\n\tPoints\n\t  1 1\n\tEND\n\tSTYLE\n\t\t3 10\n\tEND	\N	\N	\N	0	\N	\N
-3-3	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    3 3\n  END 	\N	\N	\N	0	\N	\N
-5-5	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    5 5\n  END 	\N	\N	\N	0	\N	\N
-10-10	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    10 10\n  END 	\N	\N	\N	0	\N	\N
-5-3-1-3	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    5 3 1 3\n  END 	\N	\N	\N	0	\N	\N
-5-3-1-3-1-3	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    5 3 1 3 1 3\n  END 	\N	\N	\N	0	\N	\N
-5-3-5-3-1-3	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    5 3 5 3 1 3\n  END 	\N	\N	\N	0	\N	\N
 BOSCO	3	0	\N	TYPE Vector\n  POINTS\n    .5 1\n    .5 0\n\t\t-99 -99\n\t\t.5 0\n\t\t.3 .1 \n\t\t-99 -99\n\t\t.5 .0\n\t\t.7 .1\n\t\t-99 -99\n\t\t.5 .3\n\t\t.2 .4\n\t\t-99 -99\n\t\t.5 .3\n\t\t.8 .4\n\t\t-99 -99\n\t\t.5 .6\n\t\t.1 .8\n\t\t-99 -99\n\t\t.5 .6\n\t\t.9 .8\n  END\n\t	\N	\N	\N	0	\N	\N
 CIMITERO	3	0	\N	TYPE VECTOR\nPOINTS\n.5 0\n.5 1\n-99 -99\n.2 .3\n.8 .3\nEND\n	\N	\N	\N	0	\N	\N
 FAUNA	3	0	\N	TYPE TRUETYPE\nFONT "MSYMB"\nFILLED TRUE\nANTIALIAS FALSE\nCHARACTER "&#035;"	\N	\N	\N	0	\N	\N
@@ -761,9 +751,8 @@ RUPESTRE	3	0	\N	  Type VECTOR\n  Filled TRUE\n  Points\n    .2 .8\n    .35 .6\n 
 ARROW	2	0	\N	TYPE Vector\n\tFILLED True\n\tPOINTS\n\t  0 0\n\t\t.5 .5\n\t\t0 1\n\t\t0 0\n\tEND	\N	\N	\N	0	\N	\N
 ARROWBACK	2	0	\N	\tTYPE Vector\n\tFILLED True\n\tPOINTS\n\t  1 1\n\t\t.5 .5\n\t\t1 0\n\t\t1 1\n\tEND	\N	\N	\N	0	\N	\N
 CIRCLE_FILL	3	0	\N	TYPE ELLIPSE\nFILLED TRUE\nPOINTS\n1 1\nEND\n\t	\N	\N	\N	0	\N	\N
-WARNING	1	4	\N	TYPE TRUETYPE\nFONT "dejavu-sans-bold"\nFILLED TRUE\nANTIALIAS FALSE\nCHARACTER "&#033;"	\N	\N	\N	0	\N	\N
+WARNING	1	0	\N	TYPE TRUETYPE\nFONT "dejavu-sans-bold"\nFILLED TRUE\nANTIALIAS FALSE\nCHARACTER "&#033;"	\N	\N	\N	0	\N	\N
 SQUARE_EMPTY	3	0	\N	Type VECTOR\n  Points\n\t.1 .1\n\t.1 .9\n\t.9 .9\n\t.9 .1\n\t.1 .1\n  END	\N	\N	\N	0	\N	\N
-1-2-1-6	2	0	\N	Type ELLIPSE\n  Points\n    1 1\n  END\n  STYLE\n    1 2 1 6\n  END 	\N	\N	\N	0	\N	\N
 TRIANGLE_EMPTY	3	0	\N	Type VECTOR\n  Points\n\t.1 .1\n\t.9 .1\n\t.9 .1\n\t.5 .9\n\t.1 .1\n  END	\N	\N	\N	0	\N	\N
 PLUS_FILL	3	0	\N	TYPE VECTOR\nPOINTS\n    .1 .3\n    .5 .3\n    -99 -99\n    .3 .1\n    .3 .5\n    -99 -99\n    .5 .7\n    .9 .7\n    -99 -99\n    .7 .5\n    .7 .9\nEND	\N	\N	\N	0	\N	\N
 SNOW	3	0	\N	Type VECTOR\n  Points\n\t0 .5\n\t1 .5\n\t-99 -99\n\t.2 0\n\t.8 1\n\t-99 -99\n\t.8 0\n\t.2 1\n  END\n\t\t	\N	\N	\N	0	\N	\N
