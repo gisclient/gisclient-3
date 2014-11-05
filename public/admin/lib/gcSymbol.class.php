@@ -28,10 +28,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 class Symbol{
 	public $filter;
 	private $mapfile;
+	private	$symbolSize;
 	
 	function __construct($table){
 		$this->table=$table;
-		$this->db = $db = GCApp::getDB();
+		$this->db = GCApp::getDB();
 	}
 
 	
@@ -103,6 +104,7 @@ class Symbol{
 	}
 	
 	private function createSymbolIcon($dbSchema) {
+		
 		$image_data = null;
 		$aClass = array();
 		
@@ -113,11 +115,14 @@ class Symbol{
 
 		$stmt = $this->db->query($sql);
 		while ($row = $stmt->fetch()){
-			$class=array();$style=array();
-			$class["icontype"]=$row["icontype"];
+			$style=array();
 			$style["symbol"]=$row["symbol_name"];
 			$style["color"]=array(0,0,0);
+			
+			$class=array();
+			$class["icontype"]=$row["icontype"];
 			$class["style"][]=$style;
+			
 			$aClass[]=$class;
 			$aSymbol[]="SYMBOL\nNAME \"".$row["symbol_name"]."\"\n".$row["symbol_def"]."\nEND";
 
@@ -172,8 +177,9 @@ class Symbol{
 			throw new RuntimeException("Directory $mapDir is not writable");
 		}
         GCUtils::deleteOldFiles($mapDir);
-		$this->mapfile = tempnam(ROOT_PATH.'map/tmp/', 'tmp');
-		$this->simbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
+		
+		$this->mapfile = ROOT_PATH.'map/tmp/' . uniqid() . '.map';
+		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 
 		if($this->table=='class'){
 			$image_data = $this->createClassIcon($dbSchema);
@@ -191,7 +197,7 @@ class Symbol{
 	}
 	
 
-	private function _iconFromClass($class){
+	private function _iconFromClass(array $class){
 
 		//creo la mappa 
 		ms_ResetErrorList();	
@@ -215,7 +221,10 @@ class Symbol{
 		$oLay=ms_newLayerObj($oMap);
 		$oLay->set('type', $class["icontype"]);	
 		$oClass=ms_newClassObj($oLay);
-		$smbSize=$this->simbolSize[$class["icontype"]];
+		if (!isset($this->symbolSize[$class["icontype"]])) {
+			throw new Exception("invalid icontype '{$class["icontype"]}'");
+		}
+		$smbSize=$this->symbolSize[$class["icontype"]];
 		$style=isset($class["style"])?$class["style"]:array();
 		
 		//Aggiungo gli stili
