@@ -31,8 +31,7 @@ class Symbol{
 	
 	function __construct($table){
 		$this->table=$table;
-		$this->db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-		if(!$this->db->db_connect_id) die( "Impossibile connettersi al database ". DB_NAME);
+		$this->db = $db = GCApp::getDB();
 	}
 
 	
@@ -47,43 +46,43 @@ class Symbol{
 		on (symbol_ttf.symbol_ttf_name=class.symbol_ttf_name and symbol_ttf.font_name=class.label_font)
 		left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name) where layertype_ms < 3";
 
-
-		if($this->filter) $sql.=" and ".$this->filter;
-		$sql.=" order by style_order;";
-		$rv = $this->db->sql_query($sql);
-		if ($rv === false) {
-			throw new RuntimeException("Failed to execute:\n$sql");
+		if($this->filter) {
+			$sql.=" and ".$this->filter;
 		}
-
-		$res=$this->db->sql_fetchrowset();
+		$sql.=" order by style_order;";
+		$stmt = $this->db->query($sql);
 		$aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
-		for($i=0;$i<count($res);$i++){
-			$aClass[$res[$i]["class_id"]]["icontype"]=$res[$i]["layertype_ms"];
-			$aClass[$res[$i]["class_id"]]["symbol_ttf"]=$res[$i]["symbol_ttf_name"];
-			$aClass[$res[$i]["class_id"]]["label_color"]=explode(" ",$res[$i]["label_color"]);
-			$aClass[$res[$i]["class_id"]]["label_bgcolor"]=explode(" ",$res[$i]["label_bgcolor"]);
-			if($res[$i]["style_id"]){
-				$aStyle["color"]=explode(" ",$res[$i]["color"]);
-				$aStyle["outlinecolor"]=explode(" ",$res[$i]["outlinecolor"]);
-				$aStyle["bgcolor"]=explode(" ",$res[$i]["bgcolor"]);
-				$aStyle["angle"]=$res[$i]["angle"];	
-				$aStyle["width"]=$res[$i]["width"];	
-				$aStyle["size"]=$res[$i]["size"];			
-				$aStyle["symbol"]=$res[$i]["symbol_name"];	
-				$aClass[$res[$i]["class_id"]]["style"][]=$aStyle;				
+		while($row = $stmt->fetch()){
+			$aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
+			$aClass[$row["class_id"]]["symbol_ttf"]=$row["symbol_ttf_name"];
+			$aClass[$row["class_id"]]["label_color"]=explode(" ",$row["label_color"]);
+			$aClass[$row["class_id"]]["label_bgcolor"]=explode(" ",$row["label_bgcolor"]);
+			if($row["style_id"]){
+				$aStyle["color"]=explode(" ",$row["color"]);
+				$aStyle["outlinecolor"]=explode(" ",$row["outlinecolor"]);
+				$aStyle["bgcolor"]=explode(" ",$row["bgcolor"]);
+				$aStyle["angle"]=$row["angle"];	
+				$aStyle["width"]=$row["width"];	
+				$aStyle["size"]=$row["size"];			
+				$aStyle["symbol"]=$row["symbol_name"];	
+				$aClass[$row["class_id"]]["style"][]=$aStyle;				
 			}
-			if($res[$i]["symbol_ttf_name"]){
-				$ch=($res[$i]["ascii_code"]==34)?"'".chr(34)."'":"\"".chr($res[$i]["ascii_code"])."\"";
-				$sSy="SYMBOL\nNAME \"".$res[$i]["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$res[$i]["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
-				if(!in_array($sSy,$aSymbol)) $aSymbol[]=$sSy;	
+			if($row["symbol_ttf_name"]){
+				$ch=($row["ascii_code"]==34)?"'".chr(34)."'":"\"".chr($row["ascii_code"])."\"";
+				$sSy="SYMBOL\nNAME \"".$row["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$row["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
+				if(!in_array($sSy,$aSymbol)){
+					$aSymbol[]=$sSy;
+				}
 			}
-			if($res[$i]["symbol_def"]){
-				$sSy="SYMBOL\nNAME \"".$res[$i]["symbol_name"]."\"\n".$res[$i]["symbol_def"]."\nEND";
-				if(!in_array($sSy,$aSymbol)) $aSymbol[]=$sSy;
+			if($row["symbol_def"]){
+				$sSy="SYMBOL\nNAME \"".$row["symbol_name"]."\"\n".$row["symbol_def"]."\nEND";
+				if(!in_array($sSy,$aSymbol)) {
+					$aSymbol[]=$sSy;
+				}
 			}
 		}
 		$this->createMapfile($aSymbol);
-		foreach($aClass as $classId=>$class){
+		foreach($aClass as $class){
 			$oIcon = $this->_iconFromClass($class);
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
@@ -108,21 +107,19 @@ class Symbol{
 		$aClass = array();
 		
 		$sql="select symbol_name,icontype,symbol_def from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-		if($this->filter) $sql.=" where ".$this->filter;
-
-		$rv = $this->db->sql_query($sql);
-		if ($rv === false) {
-			throw new RuntimeException("Failed to execute:\n$sql");
+		if($this->filter) {
+			$sql.=" where ".$this->filter;
 		}
-		$res=$this->db->sql_fetchrowset();	
-		for($i=0;$i<count($res);$i++){
+
+		$stmt = $this->db->query($sql);
+		while ($row = $stmt->fetch()){
 			$class=array();$style=array();
-			$class["icontype"]=$res[$i]["icontype"];
-			$style["symbol"]=$res[$i]["symbol_name"];
+			$class["icontype"]=$row["icontype"];
+			$style["symbol"]=$row["symbol_name"];
 			$style["color"]=array(0,0,0);
 			$class["style"][]=$style;
 			$aClass[]=$class;
-			$aSymbol[]="SYMBOL\nNAME \"".$res[$i]["symbol_name"]."\"\n".$res[$i]["symbol_def"]."\nEND";
+			$aSymbol[]="SYMBOL\nNAME \"".$row["symbol_name"]."\"\n".$row["symbol_def"]."\nEND";
 
 			$this->createMapfile($aSymbol);
 			$oIcon = $this->_iconFromClass($class);
@@ -139,30 +136,25 @@ class Symbol{
 		$aClass = array();
 		
 		$sql="select symbol_ttf_name,font_name,ascii_code from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-		if($this->filter) $sql.=" where ".$this->filter;
-		$rv = $this->db->sql_query($sql);
-		if ($rv === false) {
-			throw new RuntimeException("Failed to execute:\n$sql");
+		if($this->filter) {
+			$sql.=" where ".$this->filter;
 		}
-		$res=$this->db->sql_fetchrowset();	
-		for($i=0;$i<count($res);$i++){
+		$stmt = $this->db->query($sql);
+		while($row = $stmt->fetch()){
 			$class=array();
 			$class["icontype"]=MS_LAYER_POINT;		
-			$class["symbol_ttf"]=$res[$i]["symbol_ttf_name"];
-			$class["font_name"]=$res[$i]["font_name"];
+			$class["symbol_ttf"]=$row["symbol_ttf_name"];
+			$class["font_name"]=$row["font_name"];
 			$class["label_color"]=array(0,0,0);
-			//$class["label_bgcolor"]=array(-1,-1,-1);
 			$aClass[]=$class;
-			$ch=(chr($res[$i]["ascii_code"])=='"')?"'".chr(34)."'":"\"".chr($res[$i]["ascii_code"])."\"";
-			$aSymbol[]="SYMBOL\nNAME \"".$res[$i]["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$res[$i]["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
+			$ch=(chr($row["ascii_code"])=='"')?"'".chr(34)."'":"\"".chr($row["ascii_code"])."\"";
+			$aSymbol[]="SYMBOL\nNAME \"".$row["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$row["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
 
 			$this->createMapfile($aSymbol);
 			$oIcon = $this->_iconFromClass($class);
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 				$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
-				//echo ($sql."<br>");
-				//$this->db->sql_query($sql);
 			}
 		}
 		return $image_data;
@@ -290,23 +282,29 @@ EOT;
 			$sql="select project_name as project,theme_name as theme,layergroup_name as layergroup,layer_name as layer,class_name as class,class_id
 			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
 			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name)";	
-			if($this->filter) $sql.=" where ".$this->filter;
+			if($this->filter) {
+				$sql.=" where ".$this->filter;
+			}
 			$sql.="  order by 1,2,3,4,5";
 			$headers = array("Image","Class","Layer","Layergroup","Theme","Project");	
 			$values=array();
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
-				$values[]=array("table=class&id=".$row["class_id"],$row["class"],$row["layer"],$row["layergroup"],$row["theme"],$row["project"]);
+			$stmt = $this->db->query($sql);
+			while($row=$stmt->fetchrow()){
+				$values[]=array("table=class&id=".$row["class_id"],
+					$row["class"], $row["layer"], $row["layergroup"],
+					$row["theme"], $row["project"]);
 			}
 		}
 		elseif($table=='symbol'){
 			$sql="select symbol_name as symbol,symbolcategory_name as category from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			
-			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.="  order by symbolcategory_name, symbol_name";
+			if($this->filter) {
+				$sql.=" where ".$this->filter;
+			}
+			$sql.=" order by symbolcategory_name, symbol_name";
 			$headers = array("Image","Symbol","Category");
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
+			$stmt = $this->db->query($sql);
+			while($row=$stmt->fetch()){
 				if(!$assoc) {
 					$values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
 				} else {
@@ -316,11 +314,13 @@ EOT;
 		}
 		elseif($this->table=='symbol_ttf'){
 			$sql="select symbol_ttf_name as symbol,font_name as font,position,symbolcategory_name as category  from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.="  order by 2,1";
+			if($this->filter) {
+				$sql.=" where ".$this->filter;
+			}
+			$sql.=" order by 2,1";
 			$headers = array("Image","Symbol","Font","Category","Position");
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
+			$stmt = $this->db->query($sql);
+			while($row=$stmt->fetch()){
 				if(!$assoc) {
 					$values[]=array("table=symbol_ttf&font=".$row["font"]."&id=".$row["symbol"],$row["symbol"],$row["font"],$row["category"],$row["position"]);
 				} else {
@@ -384,15 +384,12 @@ EOT;
 		$tableId=$table."_id";
 		foreach($aSymbol as $smbName=>$smbDef){
 			$sql="insert into $dbSchema.symbol(symbol_id,symbol_name,def) values ((select $dbSchema.new_pkey('symbol','symbol_id')),'$smbName','$smbDef');";
-			$this->db->sql_query($sql);
+			$this->db->exec($sql);
 			print($sql."\n");
 		}
 	}
 	
 	function updateFontList(){
-		$dbSchema=DB_SCHEMA;
-		$sql="select font_name,file from $dbSchema.font;";
-		$this->db->sql_query($sql);
 		
 		$fontlistFile = ROOT_PATH.'fonts/fonts.list';
 		$file = fopen ($fontlistFile,"w");
@@ -400,7 +397,10 @@ EOT;
 			throw new RuntimeException("Could not open $fontlistFile");
 		}
 
-		while($row=$this->db->sql_fetchrow())
+		$dbSchema=DB_SCHEMA;
+		$sql="select font_name,file from $dbSchema.font;";
+		$stmt = $this->db->query($sql);
+		while($row=$stmt->fetch())
 			$text[]=$row["font_name"]."\t".$row["file"];
 		fwrite($file, implode("\n",$text));
 		fclose($file);
