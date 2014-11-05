@@ -172,7 +172,7 @@ class Symbol{
 			throw new RuntimeException("Directory $mapDir is not writable");
 		}
         GCUtils::deleteOldFiles($mapDir);
-		$this->mapfile=ROOT_PATH.'map/tmp/tmp'.rand(0,99999999).'.map';
+		$this->mapfile = tempnam(ROOT_PATH.'map/tmp/', 'tmp');
 		$this->simbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 
 		if($this->table=='class'){
@@ -182,9 +182,11 @@ class Symbol{
 		} elseif($this->table=='symbol_ttf'){
 			$image_data = $this->createSymbolTtfIcon($dbSchema);
 		} else {
-			throw new Exception("Unknonwn icon class {$this->table}");
+			throw new Exception("Unknown icon class {$this->table}");
 		}
-		// if(!DEBUG) unlink($this->mapfile);	
+		if (false === unlink($this->mapfile)) {
+			throw new Exception("Cound not unlink(".$this->mapfile.")");
+		}
         return $image_data;
 	}
 	
@@ -215,7 +217,7 @@ class Symbol{
 		$oClass=ms_newClassObj($oLay);
 		$smbSize=$this->simbolSize[$class["icontype"]];
 		$style=isset($class["style"])?$class["style"]:array();
-		//print_array($class);
+		
 		//Aggiungo gli stili
 		for($i=0;$i<count($style);$i++){
 			$oStyle=ms_newStyleObj($oClass);
