@@ -21,8 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 /**
- * TODO: swicth to PDO
- * change signature: pass da connection in directly
+ * change signature: pass dd connection in directly
  * 
  */
 class Symbol{
@@ -34,7 +33,6 @@ class Symbol{
 		$this->table=$table;
 		$this->db = GCApp::getDB();
 	}
-
 	
 	private function createClassIcon ($dbSchema) {
 		$aClass=array();
@@ -85,6 +83,13 @@ class Symbol{
 		$this->createMapfile($aSymbol);
 		foreach($aClass as $class){
 			$oIcon = $this->_iconFromClass($class);
+			$error = ms_GetErrorObj();
+			if($error->code != MS_NOERR){
+				$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+				ms_ResetErrorList();
+				throw new Exception($msg);
+			}
+			
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 			}
@@ -128,6 +133,13 @@ class Symbol{
 
 			$this->createMapfile($aSymbol);
 			$oIcon = $this->_iconFromClass($class);
+			$error = ms_GetErrorObj();
+			if($error->code != MS_NOERR){
+				$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+				ms_ResetErrorList();	
+				throw new Exception($msg);
+			}
+			
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 				$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='".$style["symbol"]."';";
@@ -157,11 +169,19 @@ class Symbol{
 
 			$this->createMapfile($aSymbol);
 			$oIcon = $this->_iconFromClass($class);
+			$error = ms_GetErrorObj();
+			if($error->code != MS_NOERR){
+				$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+				ms_ResetErrorList();	
+				throw new Exception($msg);
+			}
+			
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 				$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
 			}
 		}
+		
 		return $image_data;
 	}
 	
@@ -190,7 +210,7 @@ class Symbol{
 		} else {
 			throw new Exception("Unknown icon class {$this->table}");
 		}
-		if (false === unlink($this->mapfile)) {
+		if (!is_null($image_data) && false === unlink($this->mapfile)) {
 			throw new Exception("Cound not unlink(".$this->mapfile.")");
 		}
         return $image_data;
