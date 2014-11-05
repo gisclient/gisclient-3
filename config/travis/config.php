@@ -29,15 +29,14 @@ if(!isset($_SESSION)) {
 
 ini_set('max_execution_time',90);
 ini_set('memory_limit','512M');
-//error_reporting (E_ERROR | E_PARSE);
-error_reporting  (E_ALL & ~E_STRICT);
+error_reporting  (E_ALL);
 
 define('LONG_EXECUTIONE_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
 
 /*******************Installation path *************************/
-define('ROOT_PATH','/ms4w/apps/gisclient-3.0/');
+define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 define('PUBLIC_URL', 'http://localhost/gisclient-3.0/');
 define('MAP_URL', 'http://localhost/gisclient-3.0/template/');
 define('IMAGE_PATH','/ms4w/apps/tmp/ms_tmp/');
