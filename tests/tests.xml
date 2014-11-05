@@ -3,5 +3,8 @@
     <testsuite>
       <directory>App</directory>
     </testsuite>
+    <testsuite>
+      <directory>Symbol</directory>
+    </testsuite>
   </testsuites>
 </phpunit>
