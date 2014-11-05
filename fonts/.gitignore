@@ -1,1 +1,9 @@
-fonts.list
+# Ignore everything in this directory
+*
+# Except thess files
+!fonts_sample.list
+!verdana.ttf
+!verdanab.ttf
+!verdanai.ttf
+!verdanaz.ttf
+
