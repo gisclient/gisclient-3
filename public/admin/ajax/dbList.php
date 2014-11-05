@@ -39,7 +39,7 @@ switch($selectedField) {
 		
 		include_once ADMIN_PATH."lib/gcSymbol.class.php";
 		$smb = new Symbol($dbtable);
-		$smb->table = $dbtable;
+		
 		if(!empty($filter)) $smb->filter = $filter;
 		$smbList = $smb->getList(true);
 		
