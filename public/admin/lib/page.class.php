@@ -27,6 +27,7 @@
 		var $pageKeys;
 		var $action;
 		private $primary_keys;
+		private $navTreeValues;
 		
 		// Costruttore della classe
 		function page($param=Array()){
@@ -150,8 +151,10 @@
 
 			$arr_livelli=$stmt->fetchAll();
 			foreach($arr_livelli as $value){
-				list($lvl_id,$lvl_name,$lvl_header)=array_values($value);
-				$this->navTreeValues[$lvl_name]=$lvl_header;
+				list($lvl_id,$lvl_name)=array_values($value);
+				$this->navTreeValues[$lvl_name] = 'XXX';
+				// list($lvl_id,$lvl_name,$lvl_header)=array_values($value);
+				// see obive FIXME: $this->navTreeValues[$lvl_name]=$lvl_header;
 				$livelli[$lvl_id]=Array("val"=>$lvl_id,"key"=>$lvl_name);
 			}
 			unset($this->tableList);			
@@ -1068,5 +1071,3 @@
 			return false;
 		}
 	}
-	
-?>
