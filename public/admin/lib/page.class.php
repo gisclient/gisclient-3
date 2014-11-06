@@ -250,7 +250,9 @@
 				}
 			}
 
-			$this->last_livello=(!empty($p["parametri"]))?(array_pop(array_keys(array_pop($p["parametri"])))):("project");
+			$lastParams = array_keys(array_pop($p["parametri"]));
+			$this->last_livello=(!empty($p["parametri"]))?(array_pop($lastParams)):("project");
+			
 			$this->livello=(!empty($p["livello"]))?($p["livello"]):("");
 			if (!empty($p["azione"])){
 				$this->action=strtolower($p["azione"]);
