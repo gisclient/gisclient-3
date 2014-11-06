@@ -514,7 +514,7 @@
 						$b="modifica";
 						$tb->set_titolo($tb->FileTitle,$b,$prm);
 						$tb->get_titolo($frm);
-						$tb->tabella();
+						$tb->get_tabella();
 					}
 					else{
 						$b="nuovo";
@@ -537,7 +537,7 @@
 					}
 					$tb->set_titolo($tb->FileTitle,$button,$prm);
 					$tb->get_titolo($frm);
-					$tb->tabella();
+					$tb->get_tabella();
 					break;
 			}
 			echo "<hr>\n";
