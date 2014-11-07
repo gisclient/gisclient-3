@@ -183,6 +183,9 @@ class printDocument {
 		return $pdfFile;
 	}
 	
+	public function getDimensions() {
+		return $this->dimensions;
+	}
 	public function getBox() {
 		$this->calculateSizes();
 		
@@ -374,7 +377,7 @@ file_put_contents(DEBUG_DIR.'getlegendgraphic.txt', $url."\n", FILE_APPEND);
 			throw $e;
 		}
 	}
-	
+
 	protected function buildDOM($absoluteUrls = false) {
 		try {
 			$this->getMapImage();
