@@ -28,6 +28,7 @@ class Symbol{
 	public $filter;
 	private $mapfile;
 	private	$symbolSize;
+	private $db;
 	
 	function __construct($table){
 		$this->table=$table;
@@ -333,6 +334,7 @@ EOT;
 				$sql.=" where ".$this->filter;
 			}
 			$sql.=" order by symbolcategory_name, symbol_name";
+			
 			$headers = array("Image","Symbol","Category");
 			$stmt = $this->db->query($sql);
 			while($row=$stmt->fetch()){
@@ -362,6 +364,13 @@ EOT;
 		return array("headers"=>$headers,"values"=>$values);
 	}
 	
+	function removeByName($name) {
+		$dbSchema=DB_SCHEMA;
+		
+		$sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		return $rv; 
+	}
 	
 	//METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
 		

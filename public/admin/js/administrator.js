@@ -1,21 +1,21 @@
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-	function accedi(){
-		var usr=$('#username');
-		var pwd=$('#password');
-		var enc_pwd=hex_md5(pwd.val());
-		if (!usr.value){
-			alert('Inserire il Nome Utente');
-			return;
-		}
-		if (!pwd.value){
-			alert('Inserire la PassWord');
-			return;
-		}
-		pwd.val('');
-		xRequest('./xserver/xClient.php','azione=entra&username='+usr.value+'&pwd='+enc_pwd,'setIndex','POST');
-		return false;
-	}
+function accedi(){
+    var usr=$('#username');
+    var pwd=$('#password');
+    var enc_pwd=hex_md5(pwd.val());
+    if (!usr.value){
+        alert('Inserire il Nome Utente');
+        return;
+    }
+    if (!pwd.value){
+        alert('Inserire la PassWord');
+        return;
+    }
+    pwd.val('');
+    xRequest('./xserver/xClient.php','azione=entra&username='+usr.value+'&pwd='+enc_pwd,'setIndex','POST');
+    return false;
+}
 	
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/	
 function is_array(obj){
@@ -380,20 +380,66 @@ function setUsergroup(arr){
 	}
 	
 }
+
 function unsetFK(obj){
 	$('#'+obj).val('');
 	$('#fk_'+obj).val('');
 }
+
 function logout(){
-
-window.location="index.php?logout=1";
-
+    window.location="index.php?logout=1";
 }
 
+function symbolsListLoaded() {
+    $('#dialog_symbology table button').click(function(e){
+        var row = $(this).parent().parent(); // .attr('data-row_id')
+        var td = row.find('.data-symbol');
+        var symbolName = td[0].innerText;
+		$.ajax({
+			url: 'ajax/symbols.php',
+			type: 'POST',
+			dataType: 'json',
+			data: {
+                action:'delete',
+                symbol_name:symbolName
+            },
+			success: function(response) {
+                symbolsLoadList();
+            }
+        });
+    });
+}
 
+function symbolsLoadList() {
+            var params = {type:'PIXMAP'};
+			var list = new GCList('symbol_user_pixmap');
+            list.dialogId = 'dialog_symbology';
+            list.options = {
+                handle_click:false,
+                events: {
+                    list_loaded: symbolsListLoaded
+                }
+            };
+			list.loadList(params);
+}
 
-$(document).ready(function() {	
-	if(typeof(initOgcServices) == 'undefined' || !initOgcServices) return;
+$(document).ready(function() {
+	$('div#dialog_symbology').dialog({
+		autoOpen: false,
+		title: $('div#dialog_symbology').attr('data-title'),
+		width: 800,
+		height: 600,
+		open: symbolsLoadList
+	});
+	    
+	$('a[data-action="symbology"]').show().click(function(event) {
+		event.preventDefault();
+		$('div#dialog_symbology').dialog('open');
+	});
+    
+	if(typeof initOgcServices === 'undefined' || !initOgcServices) {
+        return;
+    }
 	
 	$('div#ogc_services_getcapabilities').dialog({
 		autoOpen: false,
@@ -401,13 +447,12 @@ $(document).ready(function() {
 		width: 800,
 		height: 600
 	});
-	
+    
 	$('a[data-action="ogc_services"]').show().click(function(event) {
 		event.preventDefault();
 		$('div#ogc_services_getcapabilities').dialog('open');
 	});
-	
+
 	$('div#ogc_services_getcapabilities a[data-action="getcapabilities"]').button({icons:{primary:'ui-icon-extlink'}, text:false});
-	
 
 });

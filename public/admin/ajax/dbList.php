@@ -65,15 +65,13 @@ switch($selectedField) {
 	case "symbol_name":
 	case "symbol_id":
 		$smb = new Symbol("symbol");
-		if ($selectedField == "symbol_name" && !empty($_REQUEST["label_font"])) {
-		}
 		if ($selectedField == "symbol_name") {
 			$filters = array();
 			if (!empty($_REQUEST["label_font"])) {
 				$filters[] = "font_name='".$_REQUEST["label_font"]."'";
 			}
 			if (!empty($_REQUEST["type"]) && strtoupper($_REQUEST["type"]) == 'PIXMAP') {
-				$filters[] = "symbol_def ~* symbol_def ~ E'TYPE\\s+PIXMAP";
+				$filters[] = 'symbol_def ~* E\'.*TYPE\\\\s+PIXMAP.*\'';
 			}
 			if (count($filters) > 0) {
 				$smb->filter = '('.implode(') AND (', $filters).')';
@@ -88,6 +86,25 @@ switch($selectedField) {
 				);
 		foreach($smbList['values'] as $symbol) {
 			$result['data'][] = array_merge($symbol, array('image'=>'<img src="getImage.php?table=symbol&id='.urlencode($symbol['symbol']).'">'));
+			$result['data_objects'][] = array('symbol_name'=>$symbol['symbol']);
+		}
+	break;
+	
+	case "symbol_user_pixmap":
+		$smb = new Symbol("symbol");
+		$smb->filter = 'symbol_def ~* E\'.*TYPE\\\\s+PIXMAP.*\'';
+		$smbList = $smb->getList(true);
+		
+		$result['fields'] = array(
+			'image'=>GCAuthor::t('image'),
+			'symbol'=>GCAuthor::t('symbol'),
+			'category'=>GCAuthor::t('category'),
+			'actions'=>'Cancella'
+				);
+		foreach($smbList['values'] as $symbol) {
+			$result['data'][] = array_merge($symbol,
+					array('image'=>'<img src="getImage.php?table=symbol&id='.urlencode($symbol['symbol']).'">',
+					'actions' => '<button class="delete_symbol">Cancella</button>'));
 			$result['data_objects'][] = array('symbol_name'=>$symbol['symbol']);
 		}
 	break;
