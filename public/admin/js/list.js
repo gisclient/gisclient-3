@@ -1,10 +1,12 @@
 function GCList(field) {
 	this.field = field;
+    this.dialogId = 'list_dialog';
+    this.options = {};
 	this.urls = {
 		'ajax/dataList.php': ['data'],
 		'ajax/lookupList.php': ['lookup_table'],
 		'ajax/fieldList.php': ['class_text','label_angle','label_color','label_outlinecolor','label_size','label_font','label_priority','angle','color','outlinecolor','size','labelitem','labelsizeitem','classitem','classtitle','qtfield_name','data_field_1','data_field_2','data_field_3','table_field_1','table_field_2','table_field_3','filter_field_name'],
-		'ajax/dbList.php': ['field_format','table_name','symbol_ttf_name','symbol_name']
+		'ajax/dbList.php': ['field_format','table_name','symbol_ttf_name','symbol_name','symbol_user_pixmap']
 	};
 	this.requireSquareBrackets = ['class_text','label_angle','label_color','label_outlinecolor','label_size','label_font','label_priority','angle','color','outlinecolor','size','classtitle'];
 	this.listData = {};
@@ -13,8 +15,12 @@ function GCList(field) {
 	this.totSteps = null;
 	this.loadList = function(params) {
 		var self = this;
-		
-		$('#list_dialog table').empty();
+        var dialogId = this.dialogId;
+        var options = this.options;
+		var dialogElement = $('#'+dialogId);
+        var resultTable = dialogElement.find('table');
+
+		resultTable.empty();
 		self.listData = {};
 		
 		$.extend(self.selectedData, params);
@@ -27,7 +33,7 @@ function GCList(field) {
 				return false;
 			}
 		});
-		if(requestUrl == null) {
+		if(requestUrl === null) {
 			alert('Not implemented');
 			return;
 		}
@@ -61,7 +67,7 @@ function GCList(field) {
                 }
                 if (errorMsg !== null) {
                     alert('Error');
-                    $('#list_dialog').dialog('close');
+                    dialogElement.dialog('close');
                     return;
                 }
 				
@@ -74,48 +80,54 @@ function GCList(field) {
 					html += '<th>'+fieldTitle+'</th>';
 				});
 				html += '</tr>';
-				$('#list_dialog table').append(html);
+				resultTable.append(html);
 				
                 // add rows with symbols to table
 				$.each(response.data, function(rowId, rowData) {
 					html = '<tr data-row_id='+rowId+'>';
 					$.each(response.fields, function(fieldName, foo) {
 						if(typeof rowData[fieldName] === 'undefined' || rowData[fieldName] === null) {
-							html += '<td></td>';
+							html += '<td class="data-'+fieldName+'"></td>';
 							return;
 						}
-						html += '<td>'+rowData[fieldName]+'</td>';
+						html += '<td class="data-'+fieldName+'">'+rowData[fieldName]+'</td>';
 					});
 					html += '</tr>';
-					$('#list_dialog table').append(html);
+					resultTable.append(html);
 				});
 				
 				$.each(response.data_objects, function(rowId, rowData) {
 					self.listData[rowId] = rowData;
 				});
 				
-				$('#list_dialog table td').hover(function() {
+				resultTable.find('td').hover(function() {
 					$(this).css('cursor', 'pointer');
 				},function() {
 					$(this).css('cursor', 'default');
 				});
                 
-				$('#list_dialog table td').click(function(event) {
-					var rowId = $(this).parent().attr('data-row_id');
-					$.extend(self.selectedData, self.listData[rowId]);
-					
-					if(self.currentStep == self.totSteps || typeof(self.listData[rowId].is_final_step) != 'undefined' && self.listData[rowId].is_final_step == 1) {
-						$.each(self.selectedData, function(key, val) {
-							if($.inArray(key, self.requireSquareBrackets) > -1) val = '['+val+']';
-							$('#'+key).val(val);
-						});
-						$('#list_dialog').dialog('close');
-					} else {
-						self.currentStep += 1;
-						self.selectedData.step = self.currentStep;
-						self.loadList(self.selectedData);
-					}
-				});
+                if (typeof options.handle_click === 'undefined' || options.handle_click) {
+                    resultTable.find('td').click(function(event) {
+                        var rowId = $(this).parent().attr('data-row_id');
+                        $.extend(self.selectedData, self.listData[rowId]);
+
+                        if(self.currentStep == self.totSteps || typeof(self.listData[rowId].is_final_step) != 'undefined' && self.listData[rowId].is_final_step == 1) {
+                            $.each(self.selectedData, function(key, val) {
+                                if($.inArray(key, self.requireSquareBrackets) > -1) val = '['+val+']';
+                                $('#'+key).val(val);
+                            });
+                            dialogElement.dialog('close');
+                        } else {
+                            self.currentStep += 1;
+                            self.selectedData.step = self.currentStep;
+                            self.loadList(self.selectedData);
+                        }
+                    });
+                };
+                if (typeof options.events !== 'undefined' && typeof options.events.list_loaded !== 'undefined') {
+                    options.events.list_loaded();
+                }
+                        
 			},
 			error: function() {
 				alert('AJAX request returned with error');
