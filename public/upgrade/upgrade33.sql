@@ -1249,7 +1249,7 @@ ALTER TABLE project_srs ADD COLUMN max_extent character varying;
 ALTER TABLE project_srs ADD COLUMN resolutions character varying;
 
 
-DROP TABLE authfilter;
+DROP TABLE authfilter CASCADE;
 DROP TABLE layer_authfilter;
 DROP TABLE group_authfilter;
 DELETE FROM e_form where name = 'authfilter' or name = 'layer_authfilter';

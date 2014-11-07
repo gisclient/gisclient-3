@@ -16,7 +16,13 @@ try {
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();
-		$ajax->success(array('box'=>$box));
+		for($i=0;$i<count($box);$i++) $box[$i] = floatval($box[$i]);
+		$dim = $printMap->getDimensions();
+		$size = $dim[$_REQUEST['direction']];
+		$size = $size[$_REQUEST['printFormat']];
+		$size["w"] = floatval($size["w"])/100;
+		$size["h"] = floatval($size["h"])/100;
+		$ajax->success(array('printBox'=>$box,'pageSize'=>$size));
 	}
 
 	if(!empty($_REQUEST['lang'])) {
