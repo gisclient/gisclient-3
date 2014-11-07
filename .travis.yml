@@ -16,6 +16,8 @@ before_script:
   - psql -U gisclient -d gisclient_ci < config/travis/gisclient.schema.sql
   - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.masterdata.tpl.sql > config/travis/gisclient.masterdata.sql
   - psql -U gisclient -d gisclient_ci < config/travis/gisclient.masterdata.sql
+  - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.users.tpl.sql > config/travis/gisclient.users.sql
+  - psql -U gisclient -d gisclient_ci < config/travis/gisclient.users.sql
   - cp config/travis/config.php config/config.php
   - cp config/travis/config.db.php config/config.db.php
   - cp fonts/fonts_sample.list fonts/fonts.list 
