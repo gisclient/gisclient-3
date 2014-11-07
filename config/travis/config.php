@@ -37,7 +37,7 @@ define('LONG_EXECUTION_MEMORY','512M');
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
-define('PUBLIC_URL', 'http://localhost/gisclient-3.0/');
+define('PUBLIC_URL', 'http://localhost/');
 define('MAP_URL', 'http://localhost/gisclient-3.0/template/');
 define('IMAGE_PATH','/ms4w/apps/tmp/ms_tmp/');
 define('IMAGE_URL','/tmp/');
