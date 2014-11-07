@@ -19,4 +19,4 @@ before_script:
   - cp fonts/fonts_sample.list fonts/fonts.list 
   - php config/installer.php -W
 
-script: phpunit --configuration tests/tests.xml
+script: phpunit --configuration tests/travis.xml
