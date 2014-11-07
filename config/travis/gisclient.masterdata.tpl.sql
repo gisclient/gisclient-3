@@ -779,7 +779,7 @@ VERTICAL	4	0	\N	TYPE VECTOR\nPOINTS\n.5 0\n.5 1\nEND	\N	\N	\N	0	\N	\N
 HORIZONTAL	4	0	\N	TYPE VECTOR\nPOINTS\n0 .5\n1 .5\nEND	\N	\N	\N	0	\N	\N
 SQUARE_HALF	1	0	\N	TYPE VECTOR\nFILLED TRUE\nPOINTS\n0 0\n0 1\n1 0\n0 0\nEND	\N	\N	\N	0	\N	\N
 IDRANTE	1	0	\N	TYPE VECTOR\nFILLED TRUE\nPOINTS\n0 1\n1 1\n-99 -99\n.2 1\n.2 .4\n.8 .4\n.8 1\n.2 1\n-99 -99\n.2 .8\n0 .8\n0 .6\n.2 .6\n-99 -99\n.8 .8\n1 .8\n1 .6\n.8 .6\n-99 -99\n0 .4\n1 .4\n.9 .2\n.7 0\n.3 0\n.1 .2\n0 .4\nEND	\N	\N	\N	0	\N	\N
-PHOTO	4	0	\N	TYPE PIXMAP\n  IMAGE "/data/gis_data/default/symbols/photo.png"	\N	\N	\N	0	\N	\N
+PHOTO	4	0	\N	TYPE PIXMAP\n  IMAGE "../../symbols/photo.png"	\N	\N	\N	0	\N	\N
 \.
 
 
