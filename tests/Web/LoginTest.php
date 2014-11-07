@@ -1,6 +1,6 @@
 <?php
 
-include_once __DIR__."/../../config/config.db.php";
+include_once __DIR__."/../../config/config.php";
 include_once __DIR__."/../lib/HttpUtils.php";
 
 class LoginTest extends PHPUnit_Framework_TestCase {
