@@ -38,7 +38,7 @@ if(!is_uploaded_file($_FILES[$key]['tmp_name'])) {
 $filePath = UPLOADED_FILES_PRIVATE_PATH . $newName;
 
 if(!move_uploaded_file($_FILES[$key]['tmp_name'], $filePath)) {
-	$ajax->error('could not move file to $filePath');
+	$ajax->error("could not move file to {$filePath}");
 }
 
 $result['name'] = $newName;
