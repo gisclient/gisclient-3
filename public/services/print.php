@@ -4,6 +4,8 @@ require_once ROOT_PATH.'lib/ajax.class.php';
 require_once 'include/printDocument.php';
 require_once 'include/mapImage.php';
 
+
+
 $ajax = new GCAjax();
 
 if ($_REQUEST['format'] == 'PDF') {
@@ -17,12 +19,7 @@ try {
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();
 		for($i=0;$i<count($box);$i++) $box[$i] = floatval($box[$i]);
-		$dim = $printMap->getDimensions();
-		$size = $dim[$_REQUEST['direction']];
-		$size = $size[$_REQUEST['printFormat']];
-		$size["w"] = floatval($size["w"])/100;
-		$size["h"] = floatval($size["h"])/100;
-		$ajax->success(array('printBox'=>$box,'pageSize'=>$size));
+		$ajax->success(array('box'=>$box,'pages'=>$printMap->getDimensions()));
 	}
 
 	if(!empty($_REQUEST['lang'])) {
