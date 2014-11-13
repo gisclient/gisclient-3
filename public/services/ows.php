@@ -35,7 +35,7 @@ $invertedAxisOrderSrids = array(31467);
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
     // skipping this parameter does avoid a second request made by mapserver
-    if (in_array(strtolower($k), array('sld', 'filter'))) {
+    if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
 		$skippedParams[strtolower($k)] = $k;
         continue;
     }
@@ -57,7 +57,7 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	if ($requestedFormat == 'kmz') {
 		// KMZ is requested as KML and packaged later on
 		// this is dome in this way to allow icons to be bundeled
-		// in the ZIP archove
+		// in the ZIP archive
         $objRequest->setParameter('format', 'kml');
 	}
 } elseif (strtolower($objRequest->getValueByName('service')) == 'wfs') {
@@ -110,6 +110,27 @@ if (!is_readable($mapfile)) {
 } 
 
 $oMap = ms_newMapobj($mapfile);
+
+// avoid that transparent is requested, when the format does not support
+//transparency
+if (!empty($skippedParams['transparent'])) {
+	if (strtolower($skippedParams['transparent']) == 'true') {
+		// try to set the format from the request as map output format
+		if (MS_SUCCESS === $oMap->selectOutputFormat($requestedFormat)) {
+			// if this does not allow transparency, but this was required,
+			// then drop this parameter
+			if ($oMap->outputformat->transparent === 0) {
+				unset($skippedParams['transparent']);
+			}
+		}
+	}
+}
+if (!empty($skippedParams['transparent'])) {
+    if (is_string($skippedParams['transparent'])) {
+        $objRequest->setParameter($k, stripslashes($skippedParams['transparent']));
+		unset($skippedParams['transparent']);
+    }
+}
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
@@ -144,8 +165,12 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
-if($objRequest->getvaluebyname('srsname')) $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
-if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
+if($objRequest->getvaluebyname('srsname')) {
+	$objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
+}
+if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) {
+	$objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
+}
 if($objRequest->getvaluebyname('srs')) {
 	$srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
 	if (count($srsParts) == 7) {
