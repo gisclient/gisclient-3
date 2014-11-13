@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 if (!file_exists("../../config/config.php")) die ("Manca setup");
 include_once "../../config/config.php";
 include_once ROOT_PATH."lib/i18n.php";
+include_once ADMIN_PATH."lib/gcSymbol.class.php";
+
 header("Content-Type: text/html; Charset=".CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
 header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");

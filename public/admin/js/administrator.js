@@ -411,16 +411,16 @@ function symbolsListLoaded() {
 }
 
 function symbolsLoadList() {
-            var params = {type:'PIXMAP'};
-			var list = new GCList('symbol_user_pixmap');
-            list.dialogId = 'dialog_symbology';
-            list.options = {
-                handle_click:false,
-                events: {
-                    list_loaded: symbolsListLoaded
-                }
-            };
-			list.loadList(params);
+    var params = {type:'PIXMAP'};
+    var list = new GCList('symbol_user_pixmap');
+    list.dialogId = 'dialog_symbology';
+    list.options = {
+        handle_click:false,
+        events: {
+            list_loaded: symbolsListLoaded
+        }
+    };
+    list.loadList(params);
 }
 
 $(document).ready(function() {
