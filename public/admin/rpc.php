@@ -122,57 +122,7 @@
 				}
 			}
 			
-			
-			/*if ($field["data_type"]==1){	//SE NON E' UN DATO NUMERICO
-				
-				
-				if(!$_REQUEST["nbins"]) 
-				
-				
-				$ris=Array("val"=>"");
-				for($i=0;$i<$totClass;$i++){
-					$ris=(!$_REQUEST["nbins"])?(pg_fetch_array($result,$i)):(Array("val"=>""));
-					else
-						
-					$colors = sprintf('%02X', $startC[0]) . sprintf('%02X', $startC[1]) . sprintf('%02X', $startC[2]);
-					$res[]=Array("val"=>$ris["val"],"color"=>$colors,"condition"=>$field["name"]."='".$ris["val"]."'");
-					$startC[0] += $delta_r;
-					$startC[1] += $delta_g;
-					$startC[2] += $delta_b;
-				}
-			}
-			else{
-				$sql="SELECT max($field[name]) as maxVal,min($field[name]) as minVal,(max($field[name])-min($field[name]))/$totClass as delta FROM $field[schema].$field[table];";
-				$result = pg_query($newConn, $sql);
-				$ris=pg_fetch_row($result);
-			
-				$delta=$ris[2];
-				$minV=$ris[1];
-				$maxV=$ris[0];
-				$startV=$minV;
-				$delta_r = ($endC[0] - $startC[0]) / ($totClass - 1);
-				$delta_g = ($endC[1] - $startC[1]) / ($totClass - 1);
-				$delta_b = ($endC[2] - $startC[2]) / ($totClass - 1);
-				
-				for ($i = 0; $i < $totClass; $i++) {
-					$colors = sprintf('%02X', $startC[0]) . sprintf('%02X', $startC[1]) . sprintf('%02X', $startC[2]);
-					$startC[0] += $delta_r;
-					$startC[1] += $delta_g;
-					$startC[2] += $delta_b;
-					if ($field["data_type"]==2) 
-						$sql="SELECT $startV +($delta*($i+1)) as val";
-					else
-						$sql="SELECT '\''||($startV::date +(($delta::varchar||' day')::interval*($i+1))::date)::varchar||'\'' as val";
-					$db->sql_query($sql);
-					$endV=$db->sql_fetchfield('val');
-					
-					$res[]=Array("val"=>$startV.' - '.$endV,"color"=>$colors,"condition"=>"($field[name] > $startV) AND ($field[name] < $endV)");
-					$startV=$endV;
-				}
-			}*/
-			
 			header('Cache-Control: no-cache, must-revalidate');
-			//header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 			header('Content-type: application/json');
 			echo json_encode($res);
 			return;
