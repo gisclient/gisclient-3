@@ -18,20 +18,17 @@ if(!empty($_POST['username']) && !empty($_POST['password'])) {
     $user->login($_POST['username'], $_POST['password']);
 }
 
-$db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
-
+$db = GCApp::getDB();
 $dbSchema=DB_SCHEMA;
 $sql="SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title,private FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";
-$db->sql_query ($sql);
-$ris=$db->sql_fetchrowset();
+$res = $db->query ($sql);
 
 $mapset=array();
-for($i=0;$i<count($ris);$i++){
-	$mapset[$ris[$i]["project_name"]][]=Array("name"=>$ris[$i]["mapset_name"],
-		"title"=>$ris[$i]["mapset_title"],"template"=>$ris[$i]["template"],
-		"extent"=>$ris[$i]["mapset_extent"],'private'=>$ris[$i]['private'],
-		'project_title'=>$ris[$i]["project_title"]);
+while($row = $res->fetch()){
+	$mapset[$row["project_name"]][]=Array("name"=>$row["mapset_name"],
+		"title"=>$row["mapset_title"],"template"=>$row["template"],
+		"extent"=>$row["mapset_extent"],'private'=>$row['private'],
+		'project_title'=>$row["project_title"]);
 }
 
 $newTable = '';
@@ -172,9 +169,8 @@ else{
 		GisClient<span class="color">Author </span>
         <?php 
         $sql="SELECT version_name FROM {$dbSchema}.vista_version ORDER BY version_id DESC LIMIT 1"; 
-        $db->sql_query ($sql);
-        $ris=$db->sql_fetchrowset();
-        echo $ris[0]['version_name'];
+        $res = $db->query($sql);
+        echo $res->fetchColumn('version_name');
         ?>
 	</div>
 </div>
