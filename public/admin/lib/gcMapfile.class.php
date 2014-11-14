@@ -249,7 +249,21 @@ class gcMapfile{
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
 		}
         
-        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . 'project='.$this->projectName.'&map='.$mapFile : null;
+		$owsUrl = null;
+		if (defined('GISCLIENT_OWS_URL')) {
+			
+			$owsUrl = rtrim(GISCLIENT_OWS_URL, '?&');
+			
+			if (false === ($owsUrlQueryPart = parse_url($owsUrl, PHP_URL_QUERY))) {
+				throw new Exception("Could not parse '". GISCLIENT_OWS_URL . "' as string");
+			}
+			if(!empty($owsUrlQueryPart)) {
+				$sep = '&';
+			} else {
+				$sep = '?';
+			}
+			$owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
+		}
         $wms_onlineresource = '';
         $wfs_onlineresource = '';
         if(!empty($owsUrl)) {
@@ -591,4 +605,3 @@ END";
 	}
 
 }
-?>
