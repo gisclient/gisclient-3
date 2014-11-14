@@ -1,5 +1,8 @@
 <?php
 require_once "../../config/config.php";
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
 
 // eventually handle debug at the mapserver level, including some timing information
 $enableDebug = false;
@@ -243,6 +246,14 @@ if(!empty($mapConfig['save_image'])) {
 		throw new Exception("parameter file_name is missing");
 	}
 
+    $dirName = dirname($mapConfig['file_name']);
+    if (!is_dir($dirName)) {
+        throw new Exception("directory \"{$dirName}\" doesn't exist");
+    }
+    if (!is_writable($dirName)) {
+		throw new Exception("directory \"{$dirName}\" is not writable");
+    }
+    
 	if ($oImage->saveImage($mapConfig['file_name'], $oMap) !== MS_SUCCESS) {
 		throw new Exception("failed to write {$mapConfig['file_name']}");
 	}
