@@ -3,7 +3,7 @@
 class GCApp {
 	static private $db;
 	static private $dataDBs = array();
-	
+
 	public static function getDB() {
 		if(empty(self::$db)) {
 			$dsn = 'pgsql:dbname='.DB_NAME.';host='.DB_HOST;
@@ -353,7 +353,11 @@ class GCAuthor {
 		'lookup_id'=>array('it'=>'Campo chiave lookup', 'de'=>'Schlüsselfeld in der Nachschlagetabelle'),
 		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle'),
 		'confirm_delete'=>array('it'=>'Sei sicuro di voler eliminare il record?', 'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'),
-		'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen')
+		'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen'),
+		'List of available Maps'=>array('it'=>'Elenco delle mappe disponibili', 'de'=>'Verfügbare Karten'),
+		'Username'=>array('it'=>'Nome Utente', 'de'=>'Benutzername'),
+		'Password'=>array('it'=>'Password', 'de'=>'Kennwort'),
+		'project'=>array('it'=>'Progetto', 'de'=>'Projekt')
 	);
 }
 
