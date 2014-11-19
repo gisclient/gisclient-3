@@ -2,7 +2,10 @@
 
 define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 require_once __DIR__.'/include/OwsHandler.php';
+
+$gcService = GCService::instance();
 
 if(!defined('GC_SESSION_NAME')) {
 	throw new Exception('Undefined GC_SESSION_NAME in config');
@@ -35,6 +38,11 @@ $invertedAxisOrderSrids = array(31467);
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
     // skipping this parameter does avoid a second request made by mapserver
+	// 
+	// filter handling is delayed, for issues with axis ordering
+	// 
+	// transparent handling is delayed in order to check, if the target format
+	// really supports tranparent pixels
     if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
 		$skippedParams[strtolower($k)] = $k;
         continue;
@@ -45,12 +53,26 @@ foreach ($_REQUEST as $k => $v) {
     }
 }
 
-/* ------ stabilisco i layer da usare ------ */
+$parameterName = null;
+$requestedFormat = strtolower($objRequest->getValueByName('format'));
+// avoid that transparent is requested, when the format does not support
+// transparency
+if (!empty($skippedParams['transparent'])) {
+	if (strtolower($skippedParams['transparent']) == 'true') {
+		if ($requestedFormat == 'image/jpeg') {
+			unset($skippedParams['transparent']);
+		}
+	}
+}
+if (!empty($skippedParams['transparent'])) {
+	if (is_string($skippedParams['transparent'])) {
+		$objRequest->setParameter($k, stripslashes($skippedParams['transparent']));
+		unset($skippedParams['transparent']);
+	}
+}
 
 // recupero lista layer dal parametro layers
 $layersParameter = null;
-$parameterName = null;
-$requestedFormat = strtolower($objRequest->getValueByName('format'));
 if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	$parameterName = 'LAYERS';
 	$layersParameter = $objRequest->getValueByName('layers');
@@ -70,7 +92,6 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	}
 }
 
-//OGGETTO MAP MAPSCRIPT
 // sanitize project as part of the path
 $mapfileDir = ROOT_PATH.'map/';
 
@@ -83,10 +104,16 @@ if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
 	echo "invalid PROJECT name";
 	exit(1);
 } 
+
 // se è definita una lingua, apro il relativo mapfile
 $mapfileBasename = $objRequest->getvaluebyname('map');
-if($objRequest->getvaluebyname('lang') && file_exists($projectDirectory.$objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang').'.map')) {
-	$mapfileBasename = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
+if($objRequest->getvaluebyname('lang')) {
+	$maplang = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
+	if (file_exists($projectDirectory.$maplang).'.map') {
+		$mapfileBasename = $maplang;
+	} else {
+		print_debug('mapfile not found for lang '.$objRequest->getvaluebyname('lang'), null, 'system');
+	}
 }
 //Files temporanei
 $showTmpMapfile = $objRequest->getvaluebyname('tmp');
@@ -111,26 +138,6 @@ if (!is_readable($mapfile)) {
 
 $oMap = ms_newMapobj($mapfile);
 
-// avoid that transparent is requested, when the format does not support
-//transparency
-if (!empty($skippedParams['transparent'])) {
-	if (strtolower($skippedParams['transparent']) == 'true') {
-		// try to set the format from the request as map output format
-		if (MS_SUCCESS === $oMap->selectOutputFormat($requestedFormat)) {
-			// if this does not allow transparency, but this was required,
-			// then drop this parameter
-			if ($oMap->outputformat->transparent === 0) {
-				unset($skippedParams['transparent']);
-			}
-		}
-	}
-}
-if (!empty($skippedParams['transparent'])) {
-    if (is_string($skippedParams['transparent'])) {
-        $objRequest->setParameter($k, stripslashes($skippedParams['transparent']));
-		unset($skippedParams['transparent']);
-    }
-}
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
@@ -194,7 +201,9 @@ if(!empty($_REQUEST['GCFILTERS'])){
 		list($layerName,$gcFilter)=explode('@',$v[$i]);
 
 		$oLayer = $oMap->getLayerByName($layerName);
-		if($oLayer)	OwsHandler::applyGCFilter($oLayer,$gcFilter);
+		if($oLayer)	{
+			OwsHandler::applyGCFilter($oLayer,$gcFilter);
+		}
 		//print_debug($oLayer->getFilterString());
 	}
 }
@@ -215,6 +224,7 @@ if(session_id() === '') {
 $cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;
 if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
 	$hasPrivateLayers = false;
+	$layersArray = array();
 	if(!empty($layersParameter)) {
 		$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	}
@@ -316,7 +326,9 @@ if(!empty($layersParameter)) {
             }
         }
 		
-		if(!in_array($layer->name, $layersToRemove)) array_push($layersToInclude, $layer->name);
+		if(!in_array($layer->name, $layersToRemove)) {
+			array_push($layersToInclude, $layer->name);
+		}
 	}
 	
 	// rimuovo i layer che l'utente non può visualizzare
@@ -354,7 +366,6 @@ if (substr($sapi_type, 0, 3) != 'cgi') {
 		$oMap->loadowsparameters($objRequest);
 	}
 }
-
 
 /* Enable output buffer */ 
 ms_ioinstallstdouttobuffer(); 
