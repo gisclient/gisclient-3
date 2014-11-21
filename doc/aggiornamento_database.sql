@@ -1525,7 +1525,13 @@ ALTER TABLE vista_catalog
   INSERT INTO version (version_name,version_key, version_date) values ('3.2.25', 'author', '2014-10-13');
 
 
+-- scale type, choose between user defined scales or power of 2 scales
+ALTER TABLE gisclient_32.mapset
+  ADD COLUMN mapset_scale_type integer NOT NULL DEFAULT 0;
+--historicaly srid=3857 implide automatic scales
+UPDATE gisclient_32.mapset SET mapset_scale_type = 1 WHERE mapset_srid=3857;
 
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.26', 'author', '2014-11-21');
 
 
 

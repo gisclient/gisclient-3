@@ -46,7 +46,8 @@ if (!defined('SERVICE_MAX_ZOOM_LEVEL')) {
 
 
 class gcMap{
-
+	const SCALE_TYPE_USER = 0;
+	const SCALE_TYPE_POWEROF2 = 1;
 	var $db;
 	var $authorizedLayers = array();
 	var $authorizedGroups = array();
@@ -155,7 +156,7 @@ class gcMap{
 		}		
 		
 		//Normalizzo rispetto all'array delle risoluzioni
-		$mapOptions["resolutions"] = $this->_getResolutions();
+		$mapOptions["resolutions"] = $this->_getResolutions($row['mapset_scale_type']);
 		$mapOptions["minZoomLevel"] = $this->_array_index($mapOptions["resolutions"],$maxRes);
 		$mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
 		$this->maxResolution = $mapOptions["maxResolution"];
@@ -880,16 +881,18 @@ class gcMap{
         return $ret;
     }
 	
-	function _getResolutions(){
-		//se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
+	function _getResolutions($scaleType){
 		$aRes=array();
-		if($this->mapsetSRID == GOOGLESRID){
-		    for($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) 
+		if (self::SCALE_TYPE_POWEROF2 == $scaleType) {
+			//calculate scale from scale level and base resolution 
+		    for($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) { 
 				$aRes[] = SERVICE_MAX_RESOLUTION / pow(2,$lev);
-		}
-		else{
+			}
+		} elseif (self::SCALE_TYPE_USER == $scaleType) {
             $scaleList = $this->_getScaleList();
 			foreach($scaleList as $scaleValue)	$aRes[]=$scaleValue/$this->conversionFactor;
+		} else {
+			throw new Exception("Unknown scale type");
 		}
 		return $aRes;
 	}
