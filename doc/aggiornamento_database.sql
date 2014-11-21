@@ -1305,8 +1305,8 @@ CREATE OR REPLACE VIEW vista_version AS
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.22', 'author', '2014-08-26');
 
 -- 2014-10-01: crea la vista_layer, utile a sapere se un layer è interrogabile e/o editabile
-DROP VIEW vista_layer ;
- CREATE OR REPLACE VIEW vista_layer AS 
+DROP VIEW IF EXISTS vista_layer;
+CREATE OR REPLACE VIEW vista_layer AS 
  SELECT l.*, 
         CASE
           WHEN queryable = 1 and l.hidden = 0 and 
@@ -1461,7 +1461,6 @@ CREATE OR REPLACE VIEW vista_style AS
  SELECT s.*,
  CASE 
 WHEN symbol_name not in (select symbol_name from symbol) then '(!) Il simbolo non esiste'
-WHEN style_order = (select style_order from style where style_id != s.style_id and class_id=s.class_id) then '(!) Due stili con lo stesso ordine'
 WHEN color is null and outlinecolor is null and bgcolor is null then '(!) Stile senza colore'
 WHEN symbol_name is not null and size is null then '(!) Stile senza dimensione'
 ELSE 'OK'
@@ -1515,7 +1514,7 @@ select c.*,
 CASE
   WHEN connection_type != 6 then '(i) Controllo non possibile: connessione non PostGIS'
   WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then '(i) Controllo non possibile: DB diverso'
-  WHEN substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) not in (select table_schema from information_schema.tables) THEN '(!) Lo schema configurato non esiste'
+  WHEN substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) not in (select schema_name from information_schema.schemata) THEN '(!) Lo schema configurato non esiste'
   ELSE 'OK'
 END as catalog_control
   from catalog c;

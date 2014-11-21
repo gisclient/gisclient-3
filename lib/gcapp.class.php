@@ -11,6 +11,7 @@ class GCApp {
 			try {
 				self::$db = new PDO($dsn, DB_USER, DB_PWD);
 				self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+				self::$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 			} catch(Exception $e) {
 				die('GCApp:Impossibile connettersi al database');
 			}

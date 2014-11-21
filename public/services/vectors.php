@@ -1,6 +1,13 @@
 <?php
 require_once "../../config/config.php";
 require_once 'include/mapImage.php';
+
+function outputError($msg) {
+	header("Status: 500 Internal Server Error");
+	die(json_encode(array('error'=>$msg)));
+}
+
+
 if(!isset($_REQUEST['REQUEST']) || $_REQUEST['REQUEST'] != 'GetMap') die('Invalid request');
 
 if(!defined('PRINT_VECTORS_TABLE') || !defined('PRINT_VECTORS_SRID')) outputError('Missing config print vectors values');
@@ -10,10 +17,16 @@ $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
 if(!file_exists(ROOT_PATH.'config/printVectorsSLD.xml')) outputError('Missing SLD');
 $sld = file_get_contents(ROOT_PATH.'config/printVectorsSLD.xml');
 
+$enableDebug = false;
+$logfile = "/tmp/mapfile.vector.debug";
+if (defined('DEBUG') && DEBUG) {
+	$enableDebug = true;
+	$logfile = DEBUG_DIR . "/mapfile.vector.debug";
+}
+
 $db = GCApp::getDB();
 
 $geomTypes = mapImage::$vectorTypes;
-
 
 if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
 $parts = explode(':', $_REQUEST["SRS"]);
@@ -21,8 +34,9 @@ $mapSRID = $parts[1];
 $SRS_params = array();
 
 
-if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST["SERVICE"]=="WMS") {
-
+if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST["SERVICE"] == "WMS") {
+	
+	ms_ResetErrorList();
     $objRequest = ms_newOwsrequestObj();
     foreach ($_REQUEST as $k => $v) {
         if (is_string($v)) {
@@ -47,10 +61,8 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
         }        
     }
 
-    //file_put_contents('debug.txt', var_export($types, true));
 	if(empty($types)) { // empty geom, che facciamo?
 	}
-
 
 	$oMap=ms_newMapObj('');
 	if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
@@ -59,32 +71,31 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 	$oMap->extent->setextent($aExtent[0], $aExtent[1], $aExtent[2], $aExtent[3]);
 	$oMap->setSize(intval($_REQUEST['WIDTH']), intval($_REQUEST['HEIGHT']));	
 	$oMap->setProjection("init=".strtolower($_REQUEST['SRS']));
-    //$oMap->set('debug', 5);
-    //$oMap->setconfigoption('MS_ERRORFILE', '/data/sites/gc/author-32/public/services/msdebug.txt');
-    
-    $oMap->web->updateFromString('
+	if ($enableDebug) { 
+		$oMap->set('debug', 5);
+		$oMap->setconfigoption('MS_ERRORFILE', $logfile);
+	}
+	$onlineUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
+	$mapfileBase = <<<EOMAP
 WEB
 	METADATA
         # for mapserver 6.0
         "ows_enable_request" "*"
 		"ows_title"	"r3-signs"
-	
 		"wfs_encoding"	"UTF-8"
 		"wms_encoding"	"UTF-8"
-
-    	"wms_onlineresource" "http://192.168.0.13/gc/author-32/public/services/vectors.php"
-    	"wfs_onlineresource" "http://192.168.0.13/gc/author-32/public/services/vectors.php"
+    	"wms_onlineresource" "$onlineUrl"
+    	"wfs_onlineresource" "$onlineUrl"
 		"wms_feature_info_mime_type"	"text/html"
 		"wfs_namespace_prefix"	"feature"
 		"wms_srs"	"EPSG:32632"
-	
-
 	END
 	IMAGEPATH "/tmp/"
 	IMAGEURL "/tmp/"	
-END	
-    ');
-	
+END
+
+EOMAP;
+    $oMap->web->updateFromString($mapfileBase);
  	$oMap->outputformat->set('name','png');
 	$oMap->outputformat->set('mimetype','image/png');
 	$oMap->outputformat->set('driver','AGG/PNG');
@@ -124,62 +135,13 @@ END
 		$oLay->setProjection("init=epsg:".PRINT_VECTORS_SRID);
         $oLay->set('opacity', 50);
         $oLay->set('sizeunits', MS_PIXELS);
-        //$oLay->set('sizeunits', MS_MILES);
-        //$oLay->set('units', MS_PIXELS);
-        /* switch($type['ms_type']) {
-            case MS_LAYER_POLYGON: 
-                $oClass = ms_newClassObj($oLay);
-                $oClass->updateFromString("
-                    CLASS
-                        STYLE
-                            COLOR 0 180 180
-                            OPACITY 30
-                        END
-                        STYLE
-                            OUTLINECOLOR 0 0 180
-                            OPACITY 60
-                            WIDTH 2
-                        END
-                    END
-                ");
-            break;
-            case MS_LAYER_LINE:
-                $oClass = ms_newClassObj($oLay);
-                $oClass->updateFromString("
-                    CLASS
-                        STYLE
-                            SYMBOL \"CIRCLE\"
-                            OUTLINECOLOR 0 180 180
-                            SIZE 2
-                            OPACITY 60
-                            WIDTH 2
-                        END
-                    END
-                ");
-            break;
-            case MS_LAYER_POINT:
-                $oClass->updateFromString("
-                    CLASS
-                        NAME \"printvectors_POINT\"
-                        STYLE
-                            SYMBOL \"CIRCLE\"
-                            COLOR 0 180 180
-                            OUTLINECOLOR 0 180 180
-                            SIZE 12
-                            OPACITY 50
-                            WIDTH 1
-                        END
-                    END
-                ");
-            break;
-        } */
 		$oLay->set('status', MS_ON);
         $oLay->applySLD($sld);
 	}
     
     $objRequest->setParameter('LAYERS', implode(",",$layersToInclude));
     
-    if(defined('DEBUG') && DEBUG == 1) {
+    if($enableDebug) {
         $oMap->save(DEBUG_DIR."printvectors.map");
     }
     
@@ -187,39 +149,18 @@ END
     
     $oMap->owsdispatch($objRequest);
     $contenttype = ms_iostripstdoutbuffercontenttype(); 
-    //$ctt = explode("/",$contenttype); 
     header('Content-type: image/png'); 
     ms_iogetStdoutBufferBytes(); 
     ms_ioresethandlers();
-    die();
-    
-
-	ms_ResetErrorList();	
-	$oImage=$oMap->draw();
-
-    $oMap->save('debug.map');
-    
+	
+	// check if something bad happenend
 	$error = ms_GetErrorObj();
-	if($error->code != MS_NOERR){
-		while($error->code != MS_NOERR){
-			print("CREATE MAP ERROR <br>");
-			printf("Error in %s: %s<br>\n", $error->routine, $error->message);
-			$error = $error->next();
-		}
-		die();
+	$errMsg = '';
+	while($error && $error->code != MS_NOERR) {
+		$errMsg .= sprintf("Error in %s: %s<br>\n", $error->routine, $error->message);
+		$error = $error->next();
 	}
-
-	header("Content-type:image/png");
-	$oImage->saveImage("");
-	die();
+	if ($errMsg != '') {
+		outputError($errMsg);
+	}
 }
-
-
-
-
-function outputError($msg) {
-	header("Status: 500 Internal Server Error");
-	die(json_encode(array('error'=>$msg)));
-	//die("error\n".$msg);
-}
-

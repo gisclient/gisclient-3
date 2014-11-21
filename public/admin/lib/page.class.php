@@ -246,8 +246,7 @@
 						$this->parametri[$val["key"]]=$val["value"];
 				}
 			}
-			
-				
+
 			$this->last_livello=(!empty($p["parametri"]))?(array_pop(array_keys(array_pop($p["parametri"])))):("project");
 			$this->livello=(!empty($p["livello"]))?($p["livello"]):("");
 			if (!empty($p["azione"])){

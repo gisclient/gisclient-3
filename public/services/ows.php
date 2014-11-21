@@ -35,10 +35,11 @@ $invertedAxisOrderSrids = array(31467);
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
     // skipping this parameter does avoid a second request made by mapserver
-    if (in_array(strtolower($k), array('sld', 'filter'))) {
+    if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
 		$skippedParams[strtolower($k)] = $k;
         continue;
     }
+	
     if (is_string($v)) {
         $objRequest->setParameter($k, stripslashes($v));
     }
@@ -49,10 +50,17 @@ foreach ($_REQUEST as $k => $v) {
 // recupero lista layer dal parametro layers
 $layersParameter = null;
 $parameterName = null;
-if($objRequest->getValueByName('service') == 'WMS') {
+$requestedFormat = strtolower($objRequest->getValueByName('format'));
+if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	$parameterName = 'LAYERS';
 	$layersParameter = $objRequest->getValueByName('layers');
-} else if($objRequest->getValueByName('service') == 'WFS') {
+	if ($requestedFormat == 'kmz') {
+		// KMZ is requested as KML and packaged later on
+		// this is dome in this way to allow icons to be bundeled
+		// in the ZIP archive
+        $objRequest->setParameter('format', 'kml');
+	}
+} elseif (strtolower($objRequest->getValueByName('service')) == 'wfs') {
 	$parameterName = 'TYPENAME';
 	$layersParameter = $objRequest->getValueByName('typename');
 	if (isset($skippedParams['filter'])) {
@@ -63,21 +71,66 @@ if($objRequest->getValueByName('service') == 'WMS') {
 }
 
 //OGGETTO MAP MAPSCRIPT
-$directory = "../../map/".$objRequest->getvaluebyname('project')."/";
+// sanitize project as part of the path
+$mapfileDir = ROOT_PATH.'map/';
 
+$project = $objRequest->getvaluebyname('project');
+$projectDirectory = $mapfileDir.$objRequest->getvaluebyname('project')."/";
+if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
+	// if the the project directory is not a subdir of map/, something
+	// bad is happening
+	header('HTTP/1.0 400 Bad Request');
+	echo "invalid PROJECT name";
+	exit(1);
+} 
 // se è definita una lingua, apro il relativo mapfile
-$mapfile = $objRequest->getvaluebyname('map');
-if($objRequest->getvaluebyname('lang') && file_exists($directory.$objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang').'.map')) {
-	$mapfile = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
+$mapfileBasename = $objRequest->getvaluebyname('map');
+if($objRequest->getvaluebyname('lang') && file_exists($projectDirectory.$objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang').'.map')) {
+	$mapfileBasename = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
 }
 //Files temporanei
 $showTmpMapfile = $objRequest->getvaluebyname('tmp');
 if(!empty($showTmpMapfile)) {
-	$mapfile = "tmp.".$mapfile;
+	$mapfileBasename = "tmp.".$mapfileBasename;
 }
 
-$oMap = ms_newMapobj($directory.$mapfile.".map");
+$mapfile = $projectDirectory.$mapfileBasename.".map";
+if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
+	// if the the map is not in the project dir, something
+	// bad is happening
+	header('HTTP/1.0 400 Bad Request');
+	echo "invalid MAP name";
+	exit(1);
+} 
+if (!is_readable($mapfile)) {
+	// map file not found
+	header('HTTP/1.0 400 Bad Request');
+	echo "invalid MAP name";
+	exit(1);
+} 
 
+$oMap = ms_newMapobj($mapfile);
+
+// avoid that transparent is requested, when the format does not support
+//transparency
+if (!empty($skippedParams['transparent'])) {
+	if (strtolower($skippedParams['transparent']) == 'true') {
+		// try to set the format from the request as map output format
+		if (MS_SUCCESS === $oMap->selectOutputFormat($requestedFormat)) {
+			// if this does not allow transparency, but this was required,
+			// then drop this parameter
+			if ($oMap->outputformat->transparent === 0) {
+				unset($skippedParams['transparent']);
+			}
+		}
+	}
+}
+if (!empty($skippedParams['transparent'])) {
+    if (is_string($skippedParams['transparent'])) {
+        $objRequest->setParameter($k, stripslashes($skippedParams['transparent']));
+		unset($skippedParams['transparent']);
+    }
+}
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
@@ -112,8 +165,12 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
-if($objRequest->getvaluebyname('srsname')) $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
-if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
+if($objRequest->getvaluebyname('srsname')) {
+	$objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
+}
+if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) {
+	$objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
+}
 if($objRequest->getvaluebyname('srs')) {
 	$srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
 	if (count($srsParts) == 7) {
@@ -293,7 +350,9 @@ if(strtoupper($objRequest->getvaluebyname('request')) == 'GETLEGENDGRAPHIC') {
 //SE NON SONO IN CGI CARICO I PARAMETRI
 $sapi_type = php_sapi_name();
 if (substr($sapi_type, 0, 3) != 'cgi') {
-	if ($objRequest->getvaluebyname('service') != "WFS" && $objRequest->type == -1) $oMap->loadowsparameters($objRequest);
+	if (strtolower($objRequest->getvaluebyname('service')) != "wfs" && $objRequest->type == -1) {
+		$oMap->loadowsparameters($objRequest);
+	}
 }
 
 
@@ -343,18 +402,26 @@ if (substr($contenttype, 0, 6) == 'image/') {
 		header("Last-Modified: {$serverTime}");
 		header("Expires: {$cacheTime}");
 	}
+	ms_iogetStdoutBufferBytes(); 
 } elseif (strstr($contenttype, 'google-earth')) {
-	header("Content-Type: $contenttype");
 	
-	if (substr($contenttype, -4) == ".kmz") {
+	if ($requestedFormat == 'kmz' &&
+		strtolower($objRequest->getValueByName('format')) == 'kml') {
+		header("Content-Type: application/vnd.google-earth.kmz");
+		$kmlString = ms_iogetstdoutbufferstring();
+		$owsHandler = new OwsHandler();
+		$kmzString = $owsHandler->assembleKmz($kmlString);
 		header('Content-Disposition: attachment; filename="layerdata.kmz"');
-	} elseif (substr($contenttype, -4) == ".kml") {
+		echo $kmzString;
+	} else {
+		header("Content-Type: $contenttype");
 		header('Content-Disposition: attachment; filename="layerdata.kml"');
+		ms_iogetStdoutBufferBytes(); 
 	}	
 } else { 
 	header("Content-Type: application/xml"); 
-} 
+	ms_iogetStdoutBufferBytes(); 
+}
 
-ms_iogetStdoutBufferBytes(); 
 ms_ioresethandlers();
 
