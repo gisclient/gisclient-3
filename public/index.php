@@ -170,7 +170,7 @@ else{
         <?php 
         $sql="SELECT version_name FROM {$dbSchema}.vista_version ORDER BY version_id DESC LIMIT 1"; 
         $res = $db->query($sql);
-        echo $res->fetchColumn('version_name');
+        echo $res->fetchColumn(0);
         ?>
 	</div>
 </div>
