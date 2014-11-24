@@ -1,5 +1,10 @@
 <?php
 include '../../../config/config.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $debugTinyOWS = defined('DEBUG') && DEBUG == 1;
 
 $parts = explode('/', $_SERVER['REQUEST_URI']);
@@ -116,8 +121,8 @@ if($autoUpdateUser) {
 		throw new Exception("constant CURRENT_EDITING_USER_TABLE is not defined");
 	}
     if(!GCApp::tableExists($dataDb, 'public', CURRENT_EDITING_USER_TABLE)) {
-        $sql = 'create table '.CURRENT_EDITING_USER_TABLE.' (id integer primary key, username text, editingdate timestamp without time zone default NOW());';
-		print_debug('creo la tabella '.CURRENT_EDITING_USER_TABLE."\n$sql", null, 'tinyows');
+        $sql = 'create table public.'.CURRENT_EDITING_USER_TABLE.' (id integer primary key, username text, editingdate timestamp without time zone default NOW());';
+		print_debug('creo la tabella public.'.CURRENT_EDITING_USER_TABLE."\n$sql", null, 'tinyows');
         $dataDb->exec($sql);
     }
 
