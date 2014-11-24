@@ -20,6 +20,7 @@ class GCService {
 			self::$instance = new GCService();
 			self::$instance->setExceptionHandler();
 		}
+		return self::$instance;
 	}
 	
 	private function setExceptionHandler() {
@@ -32,4 +33,24 @@ class GCService {
 		};
 		set_exception_handler($handler);
 	}
+	
+	public function startSession($allowTokenFromRequest = false) {
+// for PHP >= 5.4, see http://php.net/manual/en/function.session-status.php
+		if (session_id() === '') {
+			// start the sessione
+			if (defined('GC_SESSION_NAME')) {
+				print_debug('set session name to ' . GC_SESSION_NAME, null, 'system');
+				session_name(GC_SESSION_NAME);
+			}
+			if ($allowTokenFromRequest && isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
+				print_debug('set session id to ' . $_REQUEST['GC_SESSION_ID'], null, 'system');
+				session_id($_REQUEST['GC_SESSION_ID']);
+			}
+			print_debug('start new session', null, 'system');
+			session_start();
+		} else {
+			print_debug('session already started', null, 'system');
+		}
+	}
+
 }
