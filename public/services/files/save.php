@@ -2,6 +2,11 @@
 include_once "../../../config/config.php";
 include_once ROOT_PATH.'lib/ajax.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
 
 $ajax = new GCAjax();
 

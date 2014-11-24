@@ -1,5 +1,9 @@
 <?php
 include_once "../../../config/config.php";
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 if(!defined('UPLOADED_FILES_PRIVATE_PATH')) die('undefined upload path');
 
