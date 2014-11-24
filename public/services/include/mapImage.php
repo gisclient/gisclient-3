@@ -197,7 +197,7 @@ class mapImage {
 			throw new Exception("Could not curl_exec" . curl_error($ch));
 		}
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$mapImage);
+            throw new RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
         }
 		if(!$saveImage) {
 			$filename = $this->options['TMP_PATH'].$this->imageFileName;
