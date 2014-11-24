@@ -1,7 +1,8 @@
 <?php
-require_once('../../config/config.php');
-require_once(ROOT_PATH.'lib/ajax.class.php');
-require_once(ROOT_PATH.'lib/export.php');
+require_once '../../config/config.php';
+require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH.'lib/export.php';
+
 $ajax = new GCAjax();
 $auth = new GCUser();
 $db = GCApp::getDb();

@@ -1,7 +1,12 @@
 <?php
-require_once('../../config/config.php');
-require_once(ROOT_PATH.'lib/ajax.class.php');
-require_once(ROOT_PATH.'lib/export.php');
+require_once '../../config/config.php';
+require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH.'lib/export.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $ajax = new GCAjax();
 $db = GCApp::getDB();
 

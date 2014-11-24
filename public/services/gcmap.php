@@ -28,6 +28,10 @@ require_once '../../config/config.php';
 require_once ADMIN_PATH."lib/functions.php";
 require_once ROOT_PATH."lib/i18n.php";
 require_once 'include/gcMap.class.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 $getLegend = false;
 if(isset($_REQUEST['legend']) && $_REQUEST['legend'] == 1) $getLegend = true;

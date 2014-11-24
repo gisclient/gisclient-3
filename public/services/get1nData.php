@@ -1,6 +1,10 @@
 <?php
 require_once '../../config/config.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 /**
  * Replace all null values with an empty string, so that JSON serialization

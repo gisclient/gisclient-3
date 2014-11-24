@@ -1,6 +1,10 @@
 <?php
 require_once '../../config/config.php';
 require_once 'include/mapImage.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 // TODO: handle request parameteers in a more systematic way, suing a single
 // procedure checking required/optional, type and value range

@@ -3,6 +3,7 @@ require_once "../../config/config.php";
 require_once ROOT_PATH . 'lib/GCService.php';
 
 $gcService = GCService::instance();
+$gcService->startSession();
 
 // eventually handle debug at the mapserver level, including some timing information
 $enableDebug = false;
