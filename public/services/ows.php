@@ -6,6 +6,7 @@ require_once ROOT_PATH . 'lib/GCService.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
 $gcService = GCService::instance();
+$gcService->startSession(true);
 
 if(!defined('GC_SESSION_NAME')) {
 	throw new Exception('Undefined GC_SESSION_NAME in config');
@@ -33,7 +34,7 @@ if(defined('DEBUG') && DEBUG == true) {
 
 $objRequest = ms_newOwsrequestObj();
 $skippedParams = array();
-$invertedAxisOrderSrids = array(31467);
+$invertedAxisOrderSrids = array(31466,31467,31257,31258,31259);
 
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
@@ -44,7 +45,7 @@ foreach ($_REQUEST as $k => $v) {
 	// transparent handling is delayed in order to check, if the target format
 	// really supports tranparent pixels
     if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
-		$skippedParams[strtolower($k)] = $k;
+		$skippedParams[strtolower($k)] = $v;
         continue;
     }
 	
@@ -64,9 +65,10 @@ if (!empty($skippedParams['transparent'])) {
 		}
 	}
 }
-if (!empty($skippedParams['transparent'])) {
+if (isset($skippedParams['transparent'])) {
 	if (is_string($skippedParams['transparent'])) {
-		$objRequest->setParameter($k, stripslashes($skippedParams['transparent']));
+		print_debug('apply transparent="' .stripslashes($skippedParams['transparent']). '"', null, 'system');
+		$objRequest->setParameter('transparent', stripslashes($skippedParams['transparent']));
 		unset($skippedParams['transparent']);
 	}
 }
@@ -100,6 +102,7 @@ $projectDirectory = $mapfileDir.$objRequest->getvaluebyname('project')."/";
 if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
 	// if the the project directory is not a subdir of map/, something
 	// bad is happening
+	print_debug('project map files dir "'.$projectDirectory.'" is not in '.$mapfileDir, null, 'system');
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid PROJECT name";
 	exit(1);
@@ -109,12 +112,13 @@ if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
 $mapfileBasename = $objRequest->getvaluebyname('map');
 if($objRequest->getvaluebyname('lang')) {
 	$maplang = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
-	if (file_exists($projectDirectory.$maplang).'.map') {
+	if (file_exists($projectDirectory.$maplang.'.map')) {
 		$mapfileBasename = $maplang;
 	} else {
 		print_debug('mapfile not found for lang '.$objRequest->getvaluebyname('lang'), null, 'system');
 	}
 }
+
 //Files temporanei
 $showTmpMapfile = $objRequest->getvaluebyname('tmp');
 if(!empty($showTmpMapfile)) {
@@ -125,18 +129,21 @@ $mapfile = $projectDirectory.$mapfileBasename.".map";
 if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
 	// if the the map is not in the project dir, something
 	// bad is happening
+	print_debug('mapfile "' .realpath($mapfile). '" is not in project dir "'. realpath($projectDirectory).'"', null, 'system');
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid MAP name";
 	exit(1);
 } 
 if (!is_readable($mapfile)) {
 	// map file not found
+	print_debug('mapfile ' .$mapfile. ' not readable', null, 'system');
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid MAP name";
 	exit(1);
 } 
 
 $oMap = ms_newMapobj($mapfile);
+print_debug('opened mapfile "' .realpath($mapfile). '": '.get_class($oMap), null, 'system');
 
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
@@ -193,7 +200,6 @@ if($objRequest->getvaluebyname('srs')) {
 $url = OwsHandler::currentPageURL();
 $oMap->setMetaData("ows_onlineresource",$url.'?project='.$objRequest->getvaluebyname('project')."&map=".$objRequest->getvaluebyname('map'));
 
-
 if(!empty($_REQUEST['GCFILTERS'])){
 
 	$v = explode(',',stripslashes($_REQUEST['GCFILTERS']));
@@ -206,19 +212,6 @@ if(!empty($_REQUEST['GCFILTERS'])){
 		}
 		//print_debug($oLayer->getFilterString());
 	}
-}
-
-
-// for PHP >= 5.4, see http://php.net/manual/en/function.session-status.php
-if(session_id() === '') {
-	// start the sessione
-	if(defined('GC_SESSION_NAME')) {
-		session_name(GC_SESSION_NAME);
-		if(isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
-			session_id($_REQUEST['GC_SESSION_ID']);
- 		}
-	}
-	session_start();
 }
 
 $cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;
@@ -253,6 +246,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 
 		// user could not even log in, send correct headers and exit
 		if (!$isAuthenticated) {
+			print_debug('unauthorized access', null, 'system');
 			header('WWW-Authenticate: Basic realm="Gisclient"');
 			header('HTTP/1.0 401 Unauthorized');
 			exit(0);
