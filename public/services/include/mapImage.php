@@ -81,12 +81,16 @@ class mapImage {
 	}
 	
 	public function getImageUrl() {
-		if(empty($this->imageFileName)) $this->getMapImage();
+		if(empty($this->imageFileName)) {
+			$this->getMapImage();
+		}
 		return $this->options['TMP_URL'].$this->imageFileName;
 	}
 	
 	public function getImageFileName() {
-		if(empty($this->imageFileName)) $this->getMapImage();
+		if(empty($this->imageFileName)) {
+			$this->getMapImage();
+		}
 		return $this->imageFileName;
 	}
 	
