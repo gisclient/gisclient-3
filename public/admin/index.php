@@ -169,7 +169,7 @@ if(isset($p->parametri['project'])) {
 		GisClient<span class="color">Author</span>
 		<?php
         $sql="SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
-        $version = $db->query($sql)->fetchColumn();
+        $version = $db->query($sql)->fetchColumn(0);
         echo $version;
         ?>
 		- &copy; 2014

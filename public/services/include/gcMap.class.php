@@ -170,6 +170,8 @@ class gcMap{
 		
         $user = new GCUser();
 		if ($this->onlyPublicLayers) {
+			// force a recolulation of the visible layers
+			$user->setAuthorizedLayers(array('mapset_name'=>$mapsetName, 'show_as_public' => 1));
 			$this->authorizedLayers = array();
 		} else {
 			$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));

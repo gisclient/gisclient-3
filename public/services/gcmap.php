@@ -43,7 +43,7 @@ if(!empty($_REQUEST['lang'])) {
 }
 
 $onlyPublicLayers = false;
-if (!empty($_REQUEST['only_public_layers'])) {
+if (!empty($_REQUEST['show_as_public'])) {
 	$onlyPublicLayers = true;
 }
 $objMapset = new gcMap($_REQUEST["mapset"], $getLegend, $languageId, $onlyPublicLayers);

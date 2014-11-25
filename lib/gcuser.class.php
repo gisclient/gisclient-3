@@ -78,7 +78,6 @@ abstract class AbstractUser {
     
 	public function setAuthorizedLayers(array $filter) {
 		$db = GCApp::getDB();
-		
 		if(isset($filter['mapset_name'])) {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
@@ -91,14 +90,20 @@ abstract class AbstractUser {
 			$sqlFilter = 'project_name = :project_name';
 			$sqlValues = array(':project_name'=>$filter['project_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
-		} else return false;
+		} else {
+			return false;
+		}
 		
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
         $projectName = $stmt->fetchColumn(0);
         
         $groupFilter = '';
-        $isAdmin = ($this->isAdmin() || $this->isAdmin($projectName));
+		if (empty($filter['show_as_public'])) {
+			$isAdmin = ($this->isAdmin() || $this->isAdmin($projectName));
+		} else {
+			$isAdmin = false;
+		}
         if(!$isAdmin) {
             if(!empty($this->groups)) {
                 $in = array();
@@ -112,8 +117,12 @@ abstract class AbstractUser {
             }
         }
         
-        $authClause = '(layer.private=1 '.$groupFilter.' ) OR (layer.private=0)';
-        
+		if (empty($filter['show_as_public'])) {
+			$authClause = '(layer.private=1 '.$groupFilter.' ) OR (layer.private=0)';
+		} else {
+			$authClause = '(layer.private=0)';
+		}
+		
         $sql = ' SELECT project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name,
             case when layer.private = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
             case when layer.private = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
@@ -151,12 +160,12 @@ abstract class AbstractUser {
 		};
 	}
 	
-	public function getAuthorizedLayers($filter) { //TODO: controllare chi la usa
+	public function getAuthorizedLayers(array $filter) { //TODO: controllare chi la usa
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->authorizedLayers;
 	}
 	
-	public function getMapLayers($filter) { //TODO: controllare chi la usa
+	public function getMapLayers(array $filter) { //TODO: controllare chi la usa
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->mapLayers;
 	}
