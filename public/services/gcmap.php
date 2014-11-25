@@ -1,7 +1,7 @@
 <?php
 /******************************************************************************
 *
-* Purpose: Inizializzazione dei parametri per la creazione della mappa ò
+* Purpose: Inizializzazione dei parametri per la creazione della mappa
      
 * Author:  Roberto Starnini, Gis & Web Srl, roberto.starnini@gisweb.it
 *
@@ -34,11 +34,19 @@ $gcService = GCService::instance();
 $gcService->startSession();
 
 $getLegend = false;
-if(isset($_REQUEST['legend']) && $_REQUEST['legend'] == 1) $getLegend = true;
+if(isset($_REQUEST['legend']) && $_REQUEST['legend'] == 1) {
+	$getLegend = true;
+}
 $languageId = null;
-if(!empty($_REQUEST['lang'])) $languageId = $_REQUEST['lang'];
+if(!empty($_REQUEST['lang'])) {
+	$languageId = $_REQUEST['lang'];
+}
 
-$objMapset = new gcMap($_REQUEST["mapset"], $getLegend, $languageId);
+$onlyPublicLayers = false;
+if (!empty($_REQUEST['only_public_layers'])) {
+	$onlyPublicLayers = true;
+}
+$objMapset = new gcMap($_REQUEST["mapset"], $getLegend, $languageId, $onlyPublicLayers);
 header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 header ("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); // always modified
 header ("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
