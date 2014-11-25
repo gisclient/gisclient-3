@@ -49,7 +49,7 @@ class gcMap{
 	const SCALE_TYPE_USER = 0;
 	const SCALE_TYPE_POWEROF2 = 1;
 	var $db;
-	var $authorizedLayers = array();
+	var $authorizedLayers;
 	var $authorizedGroups = array();
 	var $selgroupList = array();
 	var $mapLayers =  array();
@@ -67,7 +67,8 @@ class gcMap{
 	var $coordSep = ' ';
 	var $listProviders = array(); //Elenco dei provider settati per il mapset
 	var $aUnitDef = array(1=>"m",2=>"ft",3=>"inches",4=>"km",5=>"m",6=>"mi",7=>"dd");//units tables (force pixel ->m)
-	var $getLegend = false;
+	var $getLegend;
+	private $onlyPublicLayers;
 
 	var $mapProviders = array(
 			VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
@@ -79,16 +80,14 @@ class gcMap{
 	protected $oMap;
 	protected $sldContents = array();
 	
+	
+	function __construct ($mapsetName, $getLegend = false, $languageId = null, $onlyPublicLayers = false){
 
-	
-	
-	function __construct ($mapsetName, $getLegend = false, $languageId = null){
+		$this->getLegend = $getLegend;
+		$this->onlyPublicLayers = $onlyPublicLayers;
 
 		$this->db = GCApp::getDB();
 		
-		//if (defined('GMAPKEY')) $this->mapProviders[GMAP_LAYER_TYPE] .= "&key='".GMAPKEY."'";
-		//if (defined('GMAPSENSOR')) $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=true"; else $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=false";
-	
 		$sql = "SELECT mapset.*, ".
 			" x(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
 			" y(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
@@ -98,10 +97,9 @@ class gcMap{
 		$stmt->execute(array($mapsetName));
 		
 		if($stmt->rowCount() == 0){
-		    echo "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
-			echo "{$stmt->queryString}<br />\n";
-			// echo "{$sql}<br />\n";
-			die();
+		    $msg = "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
+			print_debug($msg.': '.$stmt->queryString, null, 'service');
+			throw new Exception($msg);
 		}
 		
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -169,16 +167,14 @@ class gcMap{
 			$ext = explode($this->coordSep,$row["mapset_extent"]);
 			$mapOptions["restrictedExtent"] = array(floatval($ext[0]),floatval($ext[1]),floatval($ext[2]),floatval($ext[3]));
 		}
-
-		// TODO AGGIUNGERE IL TESTO MAPPA, DIRECTORY PROGETTO .... ?????
 		
-		$this->getLegend = $getLegend;
-		
-		//$this->_setAutorizedLayers();
-		
-		//$user = new userApps(array("user"=>"username","pwd"=>"enc_password"));
         $user = new GCUser();
-		$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));
+		if ($this->onlyPublicLayers) {
+			$this->authorizedLayers = array();
+		} else {
+			$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));
+		}
+		
 		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName));
 		
 		$mapOptions["theme"] = $this->_getLayers();
@@ -200,17 +196,10 @@ class gcMap{
             $mapOptions['bg_color'] = $row['bg_color'];
         }
 		
-		//$this->maxRes = $maxRes;
-		//$this->minRes = $minRes;
 		$this->mapOptions = $mapOptions;
 		
 	}
 	
-	function __destruct (){
-		unset($this->db);
-	}
-
-
 	function _getLayers(){
 	
 		$aLayers = array();
@@ -220,7 +209,9 @@ class gcMap{
 
 		$sqlParams = array();
 		$sqlPrivateLayers = "";
-		if ($this->authorizedLayers) $sqlPrivateLayers = " OR layer_id IN (".implode(',', $this->authorizedLayers).")";
+		if ($this->authorizedLayers) {
+			$sqlPrivateLayers = " OR layer_id IN (".implode(',', $this->authorizedLayers).")";
+		}
 		$sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) 
 			WHERE layergroup_id IN (
 				SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlPrivateLayers;
@@ -269,8 +260,6 @@ class gcMap{
 			if(!empty($row['metadata_url'])) $layerOptions['metadataUrl'] = $row['metadata_url'];
             if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
 			
-			//$maxRes = ($row["layergroup_maxscale"]>0)?min($row["layergroup_maxscale"]/$convFact,$this->maxResolution):$this->maxResolution;
-			//$minRes = ($row["layergroup_minscale"]>0)?max($row["layergroup_minscale"]/$convFact,$this->minResolution):$this->minResolution;
 			//ALLA ROVESCIA RISPETTO A MAPSERVER
 			if($row["layergroup_maxscale"]>0) $layerOptions["minScale"] = floatval($row["layergroup_maxscale"]);
 			if($row["layergroup_minscale"]>0) $layerOptions["maxScale"] = floatval($row["layergroup_minscale"]);
@@ -328,10 +317,7 @@ class gcMap{
 						$aLayers[$themeName]["url"] = $layerUrl;
 						
 						if(empty($aLayers[$themeName]["options"])) $aLayers[$themeName]["options"] = array("minScale"=>false,"maxScale"=>false);
-//print_r($aLayers[$themeName]);						
-						//if(!$aLayers[$themeName]["options"]["minScale"]) $aLayers[$themeName]["options"]["minScale"] = $layerOptions["minScale"];
-						//if(!$aLayers[$themeName]["options"]["maxScale"]) $aLayers[$themeName]["options"]["maxScale"] = $layerOptions["maxScale"];
-						//Conservo i range di scala pi� estesi
+						//Conservo i range di scala più estesi
 						if($row["layergroup_maxscale"] >0 || $row["layergroup_maxscale"] < $aLayers[$themeName]["options"]["minScale"]) $layerOptions["minScale"] = intval($row["layergroup_maxscale"]);
 						if($row["layergroup_minscale"] >0 || $row["layergroup_minscale"] > $aLayers[$themeName]["options"]["maxScale"]) $layerOptions["maxScale"] = intval($row["layergroup_minscale"]);
 						$aLayers[$themeName]["options"] = $layerOptions;
