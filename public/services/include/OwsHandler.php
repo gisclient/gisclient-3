@@ -93,21 +93,23 @@ class OwsHandler {
 	 * @return string
 	 */
 	function pruneSrsFromFilter($filter, array $invertedAxisOrderSrids) {
-		$filterDoc = new DOMDocument();
-		$filterDoc->loadXML($filter);
-		$xpath = new DOMXPath($filterDoc);
-		// find all elements with an attribute srsName
-		$bboxes = $xpath->query("//*[@srsName]");
 		$filterHasChanged = false;
-		foreach ($bboxes as $bbox) {
-			$bbox->nodeName;
-			$srsNameAttrib = $bbox->getAttributeNode('srsName');
-			$sridParts = explode(':', $srsNameAttrib->value);
-			$srid = (int) $sridParts[count($sridParts) - 1];
-			// if srs has inverted axis order
-			if (in_array($srid, $invertedAxisOrderSrids)) {
-				$srsNameAttrib->value = '';
-				$filterHasChanged = true;
+		if (!empty($filter)) {
+			$filterDoc = new DOMDocument();
+			$filterDoc->loadXML($filter);
+			$xpath = new DOMXPath($filterDoc);
+			// find all elements with an attribute srsName
+			$bboxes = $xpath->query("//*[@srsName]");
+			foreach ($bboxes as $bbox) {
+				$bbox->nodeName;
+				$srsNameAttrib = $bbox->getAttributeNode('srsName');
+				$sridParts = explode(':', $srsNameAttrib->value);
+				$srid = (int) $sridParts[count($sridParts) - 1];
+				// if srs has inverted axis order
+				if (in_array($srid, $invertedAxisOrderSrids)) {
+					$srsNameAttrib->value = '';
+					$filterHasChanged = true;
+				}
 			}
 		}
 		if ($filterHasChanged) {
