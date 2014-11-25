@@ -41,11 +41,23 @@ foreach($mapset as $key=>$map){
 					if(!isset($_SESSION["USERNAME"]) && $map[$j]['private'] == 1) {
 						continue;
 					}
-					$publicLink = MAP_URL . (empty($map[$j]['template']) ? '' : $map[$j]['template']) . '?mapset='.$map[$j]['name'];
-					$privateLink = PRIVATE_MAP_URL . (empty($map[$j]['template']) ? '' : $map[$j]['template']) . '?mapset='.$map[$j]['name'];
-					// $separator = '?';
-					// if(strpos($map[$j]['template'], '?') !== false) $separator = '&';
-					// $link = MAP_URL . (empty($map[$j]['template']) ? '' : $map[$j]['template']) . $separator . 'mapset='.$map[$j]['name'];
+					
+					$publicLink = MAP_URL;
+					if(!empty($map[$j]['template'])){
+						$publicLink .= $map[$j]['template'];
+					}
+					$separator = strpos($publicLink, '?')?'&':'?';
+					$publicLink .= $separator.'mapset='.$map[$j]['name'];
+					
+					if (defined('PRIVATE_MAP_URL')) {
+						$privateLink = PRIVATE_MAP_URL;
+						if(!empty($map[$j]['template'])){
+							$privateLink .= $map[$j]['template'];
+						}
+						$separator = strpos($privateLink, '?')?'&':'?';
+						$privateLink .= $separator.'mapset='.$map[$j]['name'];
+					}
+					
 					$newTable.='
 						<tr>';
 					if(empty($map[$j]['private'])) {
@@ -53,7 +65,7 @@ foreach($mapset as $key=>$map){
 					} else {
 						$newTable .= '<td width="1"></td>';
 					}
-					if(!empty($_SESSION['USERNAME'])) $newTable .= '
+					if(!empty($_SESSION['USERNAME']) && defined('PRIVATE_MAP_URL')) $newTable .= '
 						<td width="1"><a href="'.$privateLink.'" class="private" target="_blank">Private map</a></td>';
 					$newTable .= '					
 							<td class="data">'.$map[$j]["title"].'</td>
