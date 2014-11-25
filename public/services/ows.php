@@ -89,8 +89,8 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	$layersParameter = $objRequest->getValueByName('typename');
 	if (isset($skippedParams['filter'])) {
 		$owsHandler = new OwsHandler();
-		$prunedFilter = $owsHandler->pruneSrsFromFilter($_REQUEST[$skippedParams['filter']], $invertedAxisOrderSrids);
-		$objRequest->setParameter($skippedParams['filter'], $prunedFilter);
+		$prunedFilter = $owsHandler->pruneSrsFromFilter($skippedParams['filter'], $invertedAxisOrderSrids);
+		$objRequest->setParameter('filter', $prunedFilter);
 	}
 }
 
