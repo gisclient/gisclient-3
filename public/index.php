@@ -81,7 +81,7 @@ if(!$user->isAuthenticated()){
 	$logTitle="Login";
 	$logJs="javascript:return encript_pwd('password','frm_enter');";
 	$logout=0;
-	$btn="Entra";
+	$btn="Login";
 	$usrEnabled="";
 	$pwdEnabled="";
 }
