@@ -55,6 +55,7 @@ class gcMap{
 	var $mapLayers =  array();
 	var $projectName;
 	var $mapsetName;
+	var $mapsetScaleType;
 	var $mapOptions;
 	var $maxResolution;
 	var $minResolution;
@@ -112,6 +113,7 @@ class gcMap{
 		
 		$this->projectName = $row["project_name"];
 		$this->mapsetName = $row["mapset_name"];
+		$this->mapsetScaleType = $row["mapset_scale_type"];
 		$sizeUnitId = empty($row["sizeunits_id"]) ? 5 : intval($row["sizeunits_id"]);
 		if($row["mapset_srid"]==4326) $sizeUnitId = 7; //Forzo dd se in 4326
 		
@@ -154,7 +156,7 @@ class gcMap{
 		}		
 		
 		//Normalizzo rispetto all'array delle risoluzioni
-		$mapOptions["resolutions"] = $this->_getResolutions($row['mapset_scale_type']);
+		$mapOptions["resolutions"] = $this->_getResolutions($this->mapsetScaleType);
 		$mapOptions["minZoomLevel"] = $this->_array_index($mapOptions["resolutions"],$maxRes);
 		$mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
 		$this->maxResolution = $mapOptions["maxResolution"];
@@ -394,7 +396,7 @@ class gcMap{
 				$layerOptions["type"] = $row['outputformat_extension'];
 				if($row["isbaselayer"]==1) $layerOptions["isBaseLayer"] = true;
 				//$layerOptions["getURL"] = "OpenLayers.Util.GisClient.TMSurl"; 
-				$layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions(),$this->maxResolution);
+				$layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions($this->mapsetScaleType),$this->maxResolution);
 				$layerOptions["buffer"] = intval($row["buffer"]);
                 if(!empty($row["tile_origin"])) $layerOptions["tileOrigin"] = $row["tile_origin"];
                 if(!empty($row['tile_resolutions'])) {
