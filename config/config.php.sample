@@ -134,6 +134,7 @@ define('LEGEND_POLYGON_WIDTH',2);
 define('PRINT_PDF_FONT','times');
 
 //custom tab files
+//define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
 //define('TAB_DIR','geoweb');
 
 define('USE_DATA_IMPORT', false);
