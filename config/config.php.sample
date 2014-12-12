@@ -61,6 +61,7 @@ define('GC_WEB_TMP_DIR', ROOT_PATH.'public/services/tmp/');
 define('GC_WEB_TMP_URL', PUBLIC_URL.'services/tmp/');
 define('GC_PRINT_LOGO_SX', 'http://localhost/images/logo_sx.gif');
 define('GC_PRINT_LOGO_DX', 'http://localhost/images/logo_dx.gif');
+define('R3_FOP_CMD', '/usr/local/fop/fop');
 define('GC_FOP_LIB', '/lib/fop.php');
 define('GC_PRINT_SAVE_IMAGE', true); // baco mapscript: il saveImage a volte funziona solo specificando il nome del file, altre volte funziona solo se NON si specifica il nome del file
 define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL è relativo, questo prefisso viene aggiunto in fase di stampa
