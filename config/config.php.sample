@@ -30,11 +30,10 @@ error_reporting  (E_ALL & ~E_STRICT);
 define('LONG_EXECUTIONE_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
-//define('TAB_DIR', 'de')
-//define('FORCE_LANGUAGE', 'de');
+//custom tab files
+//define('TAB_DIR','geoweb');
+//define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
 //define('PRIVATE_MAP_URL', 'http://localhost/map/index.php');
-
-
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
@@ -139,10 +138,6 @@ define('LEGEND_POINT_SIZE',15);
 define('LEGEND_LINE_WIDTH',1);
 define('LEGEND_POLYGON_WIDTH',2);
 define('PRINT_PDF_FONT','times');
-
-//custom tab files
-//define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
-//define('TAB_DIR','geoweb');
 
 //DATAMANAGER
 define('USE_DATA_IMPORT', false);
