@@ -30,11 +30,16 @@ error_reporting  (E_ALL & ~E_STRICT);
 define('LONG_EXECUTIONE_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
+//custom tab files
+//define('TAB_DIR','geoweb');
+//define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
+//define('PRIVATE_MAP_URL', 'http://localhost/map/index.php');
+
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 define('PUBLIC_URL', 'http://localhost/gisclient-3.0/');
 define('MAP_URL', 'http://localhost/gisclient-3.0/template/');
-define('IMAGE_PATH','/ms4w/apps/tmp/ms_tmp/');
+define('IMAGE_PATH','/tmp/');
 define('IMAGE_URL','/tmp/');
 define('TILES_CACHE','/ms4w/apps/gisclient-3.0/public/services/tms/');
 define('OPENLAYERS','http://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js');
@@ -55,6 +60,7 @@ define('GC_WEB_TMP_DIR', ROOT_PATH.'public/services/tmp/');
 define('GC_WEB_TMP_URL', PUBLIC_URL.'services/tmp/');
 define('GC_PRINT_LOGO_SX', 'http://localhost/images/logo_sx.gif');
 define('GC_PRINT_LOGO_DX', 'http://localhost/images/logo_dx.gif');
+define('R3_FOP_CMD', '/usr/local/fop/fop');
 define('GC_FOP_LIB', '/lib/fop.php');
 define('GC_PRINT_SAVE_IMAGE', true); // baco mapscript: il saveImage a volte funziona solo specificando il nome del file, altre volte funziona solo se NON si specifica il nome del file
 define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL è relativo, questo prefisso viene aggiunto in fase di stampa
@@ -133,17 +139,20 @@ define('LEGEND_LINE_WIDTH',1);
 define('LEGEND_POLYGON_WIDTH',2);
 define('PRINT_PDF_FONT','times');
 
-//custom tab files
-//define('TAB_DIR','geoweb');
-
+//DATAMANAGER
 define('USE_DATA_IMPORT', false);
-// 
-//define('LAST_EDIT_USER_COL_NAME', 'gc_last_edit_user'); //funzione per aggiungere una colonna che in wfs-t viene popolata automaticamente con il nome utente di chi ha fatto l'ultima modifica
-//define('LAST_EDIT_DATE_COL_NAME', 'gc_last_edit_date'); //come sopra, ma con la data
-//define('MEASURE_AREA_COL_NAME', 'gc_area'); //funzione per aggiungere una colonna che viene popolata automaticamente con l'area del poligono editato
-//define('MEASURE_LENGTH_COL_NAME', 'gc_length'); //come sopra, ma con la lunghezza
-
-//define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user'); // tabella che contiene il nome dell'utente attuale
+define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
+//define('USE_PHP_EXCEL', true);
+//define('MEASURE_AREA_COL_NAME', 'gc_area'); 
+//define('MEASURE_LENGTH_COL_NAME', 'gc_length'); 
+//define('COORDINATE_X_COL_NAME', 'gc_coordinate_x');
+//define('COORDINATE_Y_COL_NAME', 'gc_coordinate_y'); 
+//define('LAST_EDIT_USER_COL_NAME', 'gc_last_edit_user'); 
+//define('LAST_EDIT_DATE_COL_NAME', 'gc_last_edit_date');
+define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
+//define('UPLOADED_FILES_PRIVATE_PATH', ROOT_PATH.'files/'); 
+//define('UPLOADED_FILES_PUBLIC_PATH', ROOT_PATH.'public/services/files/'); 
+//define('UPLOADED_FILES_PUBLIC_URL', PUBLIC_URL.'services/files/');
 
 define('CLIENT_LOGO', null);
 
