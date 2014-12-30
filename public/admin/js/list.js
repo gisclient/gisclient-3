@@ -20,7 +20,6 @@ function GCList(field) {
 		var dialogElement = $('#'+dialogId);
         var resultTable = dialogElement.find('table');
 
-		resultTable.empty();
 		self.listData = {};
 		
 		$.extend(self.selectedData, params);
@@ -70,6 +69,7 @@ function GCList(field) {
                     dialogElement.dialog('close');
                     return;
                 }
+                resultTable.empty();
 				
 				self.currentStep = response.step;
 				self.totSteps = response.steps;
@@ -80,11 +80,10 @@ function GCList(field) {
 					html += '<th>'+fieldTitle+'</th>';
 				});
 				html += '</tr>';
-				resultTable.append(html);
 				
                 // add rows with symbols to table
 				$.each(response.data, function(rowId, rowData) {
-					html = '<tr data-row_id='+rowId+'>';
+					html += '<tr data-row_id='+rowId+'>';
 					$.each(response.fields, function(fieldName, foo) {
 						if(typeof rowData[fieldName] === 'undefined' || rowData[fieldName] === null) {
 							html += '<td class="data-'+fieldName+'"></td>';
@@ -93,8 +92,8 @@ function GCList(field) {
 						html += '<td class="data-'+fieldName+'">'+rowData[fieldName]+'</td>';
 					});
 					html += '</tr>';
-					resultTable.append(html);
 				});
+				resultTable.append(html);
 				
 				$.each(response.data_objects, function(rowId, rowData) {
 					self.listData[rowId] = rowData;
