@@ -216,6 +216,39 @@ class Symbol{
 		}
         return $image_data;
 	}
+
+	function createFontIcon($font, $ascii_code) {
+		$image_data = null;
+		$aClass = array();
+		$class=array();
+
+		$this->mapfile = ROOT_PATH.'map/tmp/' . uniqid() . '.map';
+		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
+
+		$ch = "&#{$ascii_code};";
+		$class["icontype"] = MS_LAYER_POINT;
+		$class["symbol_ttf"] = 'test';
+		$class["font_name"] = $font;
+		$class["label_color"] = array(0,0,0);
+		$aClass[] = $class;
+		$aSymbol[] = "SYMBOL\nNAME \"".$class["symbol_ttf"]."\"\nTYPE TRUETYPE\nFONT \"".$class["font_name"]."\"\nCHARACTER \"$ch\"\nANTIALIAS TRUE\nEND";
+
+		$this->createMapfile($aSymbol);
+		$oIcon = $this->_iconFromClass($class);
+		$error = ms_GetErrorObj();
+		if($error->code != MS_NOERR){
+			$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+			ms_ResetErrorList();	
+			throw new Exception($msg);
+		}
+		
+		if($oIcon){
+			$image_data = $this->getIconImage($oIcon);
+			//$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
+		}
+		
+		return $image_data;
+	}
 	
 
 	private function _iconFromClass(array $class){
@@ -346,7 +379,7 @@ EOT;
 			}
 		}
 		elseif($this->table=='symbol_ttf'){
-			$sql="select symbol_ttf_name as symbol,font_name as font,position,symbolcategory_name as category  from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
+			$sql="select symbol_ttf_name as symbol,font_name as font,position, ascii_code,symbolcategory_name as category  from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			if($this->filter) {
 				$sql.=" where ".$this->filter;
 			}
@@ -355,7 +388,7 @@ EOT;
 			$stmt = $this->db->query($sql);
 			while($row=$stmt->fetch()){
 				if(!$assoc) {
-					$values[]=array("table=symbol_ttf&font=".$row["font"]."&id=".$row["symbol"],$row["symbol"],$row["font"],$row["category"],$row["position"]);
+					$values[]=array("table=symbol_ttf&font=".$row["font"]."&id=".$row["symbol"],$row["symbol"],$row["font"],$row["category"],$row["position"],$row["ascii_code"]);
 				} else {
 					array_push($values, $row);
 				}

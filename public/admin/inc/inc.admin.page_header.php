@@ -81,8 +81,22 @@
 			</div>
 			
 			<div id="dialog_symbology" style="display:none;" data-title="<?php echo GCAuthor::t('symbology'); ?>">
-				<h2>Simboli pixmap (PNG/GIF)</h2>
-				<table border="1" cellpadding="3" class="stiletabella"></table>
+				<ul>
+					<li><a href="#raster">Raster</a></li>
+					<li><a href="#font">Font</a></li>
+				</ul>
+				<div id="raster">
+					<input id="importSymbols" type="file" multiple><button onclick="importSymbols()">Importa</button>
+					<h2>Simboli pixmap (PNG/GIF)</h2>
+					<table border="1" cellpadding="3" class="stiletabella"></table>
+				</div>
+				<div id="font">
+					<input id="importFont" type="file"><button onclick="importFont()">Carica</button>
+					<a target="_blank" href="getFont.php?font=r3-map-symbols.ttf" class="button">ScaricaFont</a>
+					<h2>Simboli font (TTF)</h2>
+					<table border="1" cellpadding="3" class="stiletabella"></table>
+					<button onclick="saveFontSymbols()">Salva</button>
+				</div>
 			</div>
 			
 			<div id="mapfiles_manager" style="display:none;" data-title="<?php echo GCAuthor::t('online_maps') ?>">

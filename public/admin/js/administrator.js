@@ -391,7 +391,7 @@ function logout(){
 }
 
 function symbolsListLoaded() {
-    $('#dialog_symbology table button').click(function(e){
+    $('#dialog_symbology #raster table button').click(function(e){
         var row = $(this).parent().parent(); // .attr('data-row_id')
         var td = row.find('.data-symbol');
         var symbolName = td[0].innerText;
@@ -418,11 +418,24 @@ function symbolsListLoaded() {
 function symbolsLoadList() {
     var params = {type:'PIXMAP'};
     var list = new GCList('symbol_user_pixmap');
-    list.dialogId = 'dialog_symbology';
+    list.dialogId = 'raster';
     list.options = {
         handle_click:false,
         events: {
             list_loaded: symbolsListLoaded
+        }
+    };
+    list.loadList(params);
+}
+
+function fontLoadList() {
+    var params = {type:'TRUETYPE'};
+    var list = new GCList('symbol_user_font');
+    list.dialogId = 'font';
+    list.options = {
+        handle_click:false,
+        events: {
+            /*list_loaded: symbolsListLoaded*/
         }
     };
     list.loadList(params);
@@ -453,7 +466,7 @@ function importSymbols() {
         };
         FR.readAsDataURL(file);
     }
-    
+
     var input = document.getElementById('importSymbols');
     if (input.files && input.files.length > 0) {
         for (var i = 0; i < input.files.length; i++) {
@@ -461,6 +474,90 @@ function importSymbols() {
             readFile(file);
         }
     }
+}
+
+function downloadFont() {
+    $.ajax({
+        url: 'ajax/font.php',
+        type: 'POST',
+        data: {
+            action: 'download',
+            font_name: 'r3-map-symbols.ttf'
+        },
+        success: function(response){
+                console.log(response);
+            /*if (response.result === 'ok') {
+                fontLoadList();
+            } else {
+                alert('ERROR! \n' + response.error);
+            }*/
+        }
+    });
+}
+
+function importFont() {
+    function readFile(file) {
+        var FR = new FileReader();
+        FR.onload = function(e) {
+            $.ajax({
+                url: 'ajax/font.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'import',
+                    font_file: e.target.result,
+                    file_name: 'r3-map-symbols.ttf'
+                },
+                success: function(response){
+                    if (response.result === 'ok') {
+                        fontLoadList();
+                    } else {
+                        alert('ERROR! \n' + response.error);
+                        console.log(response);
+                    }
+                }
+            });
+        };
+        FR.readAsDataURL(file);
+    }
+
+    var input = document.getElementById('importFont');
+    if (input.files && input.files.length > 0) {
+        for (var i = 0; i < input.files.length; i++) {
+            var file = input.files[i];
+            readFile(file);
+        }
+    }
+}
+
+function saveFontSymbols() {
+    var names = $('#font .data-name input').filter(function(){
+        return !!this.value;
+    });
+    for (var i = 0; i < names.length; i++) {
+        var newName = names[i];
+        var code = newName.name.substring(4);
+        $.ajax({
+            url: 'ajax/font.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'newSymbol',
+                symbol_name: newName.value,
+                symbol_code: code,
+                font_name: 'r3-map-symbols.ttf'
+            },
+            success: function(response){
+                if (response.result === 'ok') {
+                    fontLoadList();
+                } else {
+                    alert('ERROR! \n' + response.error);
+                    console.log(response);
+                }
+            }
+        });
+    }
+
 }
 
 $(document).ready(function() {
@@ -471,13 +568,13 @@ $(document).ready(function() {
         height: 600,
         open: symbolsLoadList
     });
-
-    $('div#dialog_symbology').prepend('<input id="importSymbols" type="file" multiple><button onclick="importSymbols()">Import</button>');
         
     $('a[data-action="symbology"]').show().click(function(event) {
         event.preventDefault();
         $('div#dialog_symbology').dialog('open');
     });
+
+    $('div#dialog_symbology').tabs();
     
     if(typeof initOgcServices === 'undefined' || !initOgcServices) {
         return;

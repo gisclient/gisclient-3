@@ -89,7 +89,7 @@ switch($selectedField) {
 			$result['data_objects'][] = array('symbol_name'=>$symbol['symbol']);
 		}
 	break;
-	
+
 	case "symbol_user_pixmap":
 		$smb = new Symbol("symbol");
 		$smb->filter = 'symbol_def ~* E\'.*TYPE\\\\s+PIXMAP.*\'';
