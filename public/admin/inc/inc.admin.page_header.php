@@ -92,7 +92,8 @@
 				</div>
 				<div id="font">
 					<input id="importFont" type="file"><button onclick="importFont()">Carica</button>
-					<a target="_blank" href="getFont.php?font=r3-map-symbols.ttf" class="button">ScaricaFont</a>
+					<a target="_blank" href="getFont.php?font=r3-map-symbols.ttf" class="button">Scarica Attuale</a>
+					<a target="_blank" href="getFont.php?font=r3-map-symbols_tpl.ttf" class="button">Scarica Template</a>
 					<h2>Simboli font (TTF)</h2>
 					<table border="1" cellpadding="3" class="stiletabella"></table>
 					<button onclick="saveFontSymbols()">Salva</button>
