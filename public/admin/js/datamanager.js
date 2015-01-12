@@ -130,6 +130,7 @@ $(document).ready(function() {
 	$('div#import_dialog button[name="tileindex"]').button().hide().click(function(event) {
 		event.preventDefault();
 		dataManager.createTileindex();
+		dataManager.createPyramidRaster();
 	});
 	
     var fieldTypeOptions = '';
@@ -685,6 +686,12 @@ function GCDataManager(catalogId) {
 		var self = this;
 		
 		self.ajaxImport('raster', 'create-tileindex');
+	};
+
+	this.createPyramidRaster = function() {
+		var self = this;
+		
+		self.ajaxImport('raster', 'create-pyramid-raster');
 	};
 	
 	this.ajaxImport = function(prefix, action, customParams) {
