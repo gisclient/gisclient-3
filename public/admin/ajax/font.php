@@ -10,25 +10,51 @@ if(empty($_REQUEST['action'])) {
 }
 
 switch($_REQUEST['action']) {
-	case 'newSymbol':
+	case 'saveFontSymbols': 
 		if(empty($_REQUEST['font_name'])) {
 			$ajax->error('missing parameter font_name');
-		} elseif (empty($_REQUEST['symbol_name'])) {
-			$ajax->error('missing parameter symbol_name');
-		} elseif (empty($_REQUEST['symbol_code'])) {
-			$ajax->error('missing parameter symbol_code');
+		} elseif(empty($_REQUEST['symbols'])) {
+			$ajax->error('missing symbols');
 		} else {
-			$font = new Font();
-			try {
-				$newSymbol = $font->newSymbol($_REQUEST['font_name'], $_REQUEST['symbol_code'], $_REQUEST['symbol_name']);
-				if (false === $newSymbol) {
-					$ajax->error('error insert symbol');
+			$font_name = $_REQUEST['font_name'];
+			$symbols = $_REQUEST['symbols'];
+			for ($i=0; $i < count($symbols); $i++) {
+				if (empty($symbols[$i]['action'])) {
+					$ajax->error('missing parameter action');
+				} elseif (empty($symbols[$i]['symbol_code'])) {
+					$ajax->error('missing parameter symbol_code');
+				} else {
+					if ($symbols[$i]['action'] == 'new') {
+						if (empty($symbols[$i]['symbol_name'])) {
+							$ajax->error('missing parameter symbol_name');
+						} else {
+							$font = new Font();
+							try {
+								$newSymbol = $font->newSymbol($font_name, $symbols[$i]['symbol_code'], $symbols[$i]['symbol_name']);
+								if (false === $newSymbol) {
+									$ajax->error('error insert symbol');
+								}
+							} catch (Exception $e) {
+								$ajax->error($e->getMessage());
+							}
+						}
+					} elseif ($symbols[$i]['action'] == 'del') {
+						$font = new Font();
+						try {
+							$removeSymbol = $font->removeSymbol($font_name, $symbols[$i]['symbol_code']);
+							if (false === $removeSymbol) {
+								$ajax->error('error remove symbol');
+							}
+						} catch (Exception $e) {
+							$ajax->error($e->getMessage());
+						}
+					} else {
+						$ajax->error('invalid action');
+					}
 				}
-			} catch (Exception $e) {
-				$ajax->error($e->getMessage());
 			}
+			$ajax->success();
 		}
-		$ajax->success();
 	break;
 
 	case 'import':

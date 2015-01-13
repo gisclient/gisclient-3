@@ -31,7 +31,7 @@ for ($i=33; $i <= 126 ; $i++) {
 	$name = $stmt->fetchColumn();
 
 	$result['data'][] = array(
-		'image'=>'<img src="getIconFont.php?font='. $fontName . '&code=' . $i . '">',
+		'image'=>'',
 		'symbol' => chr($i),
 		'code' => $i,
 		'name' => '<input type="text" value="' . $name . '" name="char' . $i . '" style="text-transform:uppercase;">'

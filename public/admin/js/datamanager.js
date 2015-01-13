@@ -114,7 +114,7 @@ $(document).ready(function() {
 			$('#raster_file_upload').uploadifySettings('scriptData', {directory:directory});
 			dataManager.checkUploadFolderName(directory);
 		},
-		fileExt: '*.tif;*.tiff;*.tfw;*.ecw;*.jpg;*.jpeg;*.jgw;',
+		fileExt: '*.tif;*.tiff;*.tfw;*.ecw;*.jpg;*.jpeg;*.jgw;*.png;*.pgw;*.gif;*.gfw;',
 		fileDesc: 'Raster',
 		scriptData: {action:'upload-raster', catalog_id:$('#catalog').val()}
 	});

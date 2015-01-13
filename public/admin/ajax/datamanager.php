@@ -817,7 +817,7 @@ switch($_REQUEST['action']) {
 		}
 		$filesDir = $baseDir.addFinalSlash($_REQUEST['file_name']);
 		
-		$cmd = 'gdaladdo -r average '.escapeshellarg($filesDir).'*.{png,jpeg,jpg,tif,gif} 3 9 27 81';
+		$cmd = 'gdaladdo -r average '.escapeshellarg($filesDir).'*.{png,jpeg,jpg,tif,gif,tiff} 3 9 27 81';
 		$gdalOutput = array();
 		$retVal = -1;
 		

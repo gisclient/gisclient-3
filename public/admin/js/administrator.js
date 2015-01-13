@@ -173,17 +173,18 @@ function xHideImg(imgName){
 }
 
 function selectAll(btn,name){
+    var v, reg,typeobj;
     var reg1=new RegExp("Seleziona");
     var flag=0;
     if(reg1.test(btn.value)){
         flag=1;
-        var v=0;
-        btn.value=btn.value.replace('Seleziona','Deseleziona')
+        v=0;
+        btn.value=btn.value.replace('Seleziona','Deseleziona');
     }
     else{
         flag=0;
-        var v=1;
-        btn.value=btn.value.replace('Deseleziona','Seleziona')
+        v=1;
+        btn.value=btn.value.replace('Deseleziona','Seleziona');
     }
     var frm=$('#frm_data');
     
@@ -201,16 +202,16 @@ function selectAll(btn,name){
             var typeobj='check';
             break;*/
         case "project":
-            var reg=new RegExp("project");
-            var typeobj='check';
+            reg=new RegExp("project");
+            typeobj='check';
             break;
         /*case "link":
             var reg=new RegExp('link_id');
             var typeobj='check';
             break;*/
         default:
-            var reg=new RegExp(name+'_id');
-            var typeobj='check';
+            reg=new RegExp(name+'_id');
+            typeobj='check';
             break;
             
     }
@@ -254,18 +255,19 @@ function enter(){
     return false;
 }
 function setIndex(obj){
+    var code;
     if (typeof(obj.code)=='undefined'){
-        var code='<ul>';
+        code='<ul>';
         for(i=0;i<obj.mapset.length;i++){
             var map=obj.mapset[i];
             var tit=obj.title[i];
             var templ=obj.template[i];
-            code+='<li><a href="javascript:openMap('+map+',\''+templ+'\')">'+tit+'</a></li>'
+            code+='<li><a href="javascript:openMap('+map+',\''+templ+'\')">'+tit+'</a></li>';
         }
         code+="</ul>";
     }
     else{
-        var code=obj.code;
+        code=obj.code;
     }
     
     $("main").innerHtml=code;
@@ -338,7 +340,7 @@ function setControls(arrObj){
                 var ctr=($("#"+obj.id).attr('id'))?($("#"+obj.id)):(parent.$("#"+obj.id));
                 switch(ctr.attr('type')){
                         case "select-one":
-                            $("#"+obj.id+" option[value='"+obj.value+"']").attr("selected",true)
+                            $("#"+obj.id+" option[value='"+obj.value+"']").attr("selected",true);
                             break;
                         case "checkbox":
                             ctr.checked=true;
@@ -364,7 +366,7 @@ function setUsergroup(arr){
         sel.remove(j);  //Rimuovo tutte le opzioni dal select
     }
     if (is_array(arr)){
-        if (arr.length==0){
+        if (arr.length === 0){
             sel.options[0]=new Option('Nessun Ruolo Definito','');
         }
         else if (arr.length==1){
@@ -435,7 +437,7 @@ function fontLoadList() {
     list.options = {
         handle_click:false,
         events: {
-            /*list_loaded: symbolsListLoaded*/
+            list_loaded: loadFont
         }
     };
     list.loadList(params);
@@ -485,12 +487,7 @@ function downloadFont() {
             font_name: 'r3-map-symbols.ttf'
         },
         success: function(response){
-                console.log(response);
-            /*if (response.result === 'ok') {
-                fontLoadList();
-            } else {
-                alert('ERROR! \n' + response.error);
-            }*/
+            console.log(response);
         }
     });
 }
@@ -510,7 +507,8 @@ function importFont() {
                 },
                 success: function(response){
                     if (response.result === 'ok') {
-                        fontLoadList();
+                        alert('Font importato correttamente');
+                        $('div#dialog_symbology').dialog('close');
                     } else {
                         alert('ERROR! \n' + response.error);
                         console.log(response);
@@ -521,7 +519,47 @@ function importFont() {
         FR.readAsDataURL(file);
     }
 
-    var input = document.getElementById('importFont');
+    var input = document.getElementById('loadFont');
+    if (input.files && input.files.length > 0) {
+        for (var i = 0; i < input.files.length; i++) {
+            var file = input.files[i];
+            readFile(file);
+        }
+    }
+}
+
+function loadFont() {
+    function readFile(file) {
+        var FR = new FileReader();
+        FR.onload = function(e) {
+            var font = opentype.parse(e.target.result);
+
+            for (var i = 33; i <= 126; i++) {
+                var glyph = font.charToGlyph(String.fromCharCode(i));
+
+                if(glyph.index > 0) {
+                    var canvas = document.createElement('canvas');
+                    canvas.height = 50;
+                    canvas.width = 100;
+                    var ctx = canvas.getContext('2d');
+                    glyph.draw(ctx, 20, 30, 30);
+                    $('tr[data-row_id='+ (i-33) +']').addClass('font-new');
+                    $('tr[data-row_id='+ (i-33) +'] .data-image').append(canvas);
+                } else {
+                    if(!!$('tr[data-row_id='+ (i-33) +'] .data-name input').val()){
+                        $('tr[data-row_id='+ (i-33) +']').addClass('font-missing');
+                        $('tr[data-row_id='+ (i-33) +'] .data-image').html('NO');
+                    } else {
+                        $('tr[data-row_id='+ (i-33) +']').hide();
+                    }
+                }
+            }
+
+        };
+        FR.readAsArrayBuffer(file);
+    }
+
+    var input = document.getElementById('loadFont');
     if (input.files && input.files.length > 0) {
         for (var i = 0; i < input.files.length; i++) {
             var file = input.files[i];
@@ -531,33 +569,58 @@ function importFont() {
 }
 
 function saveFontSymbols() {
-    var names = $('#font .data-name input').filter(function(){
+    var i, code;
+    var namesNew = $('#font .font-new input').filter(function(){
         return !!this.value;
     });
-    for (var i = 0; i < names.length; i++) {
-        var newName = names[i];
-        var code = newName.name.substring(4);
-        $.ajax({
-            url: 'ajax/font.php',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'newSymbol',
-                symbol_name: newName.value,
-                symbol_code: code,
-                font_name: 'r3-map-symbols.ttf'
-            },
-            success: function(response){
-                if (response.result === 'ok') {
-                    fontLoadList();
-                } else {
-                    alert('ERROR! \n' + response.error);
-                    console.log(response);
-                }
-            }
+
+    var missing = $('#font .font-missing input');
+    var namesMissing = missing.filter(function() {
+        return !!this.value;
+    });
+    if(namesMissing.length > 0) {
+         alert('ERROR! \n' + 'manca il simbolo');
+         return false;
+    }
+
+    var data = {
+        action: 'saveFontSymbols',
+        font_name: 'r3-map-symbols.ttf',
+        symbols: [],
+    };
+    for (i=0; i < namesNew.length; i++) {
+        var newName = namesNew[i];
+        code = newName.name.substring(4);
+        data.symbols.push({
+            symbol_name: newName.value,
+            symbol_code: code,
+            action: 'new'
         });
     }
 
+    for (i=0; i < missing.length; i++) {
+        var m = missing[i];
+        code = m.name.substring(4);
+        data.symbols.push({
+            symbol_code: code,
+            action: 'del'
+        });
+    }
+
+    $.ajax({
+        url: 'ajax/font.php',
+        type: 'POST',
+        dataType: 'json',
+        data: data,
+        success: function(response){
+            if (response.result === 'ok') {
+                importFont();
+            } else {
+                alert('ERROR! \n' + response.error);
+                console.log(response);
+            }
+        }
+    });
 }
 
 $(document).ready(function() {

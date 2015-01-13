@@ -149,8 +149,7 @@ if(isset($p->parametri['project'])) {
 		?>var errors = ["<?php echo implode('","', $errors); ?>"];<?php
 	}?>
 	</script>
-	<script type="text/javascript" src="js/jdataview/jdataview.js"></script>
-	<script type="text/javascript" src="js/ttf/ttf.js"></script>
+	<script type="text/javascript" src="js/opentype/opentype.min.js"></script>
 </head>
 <body>
 <div id="container">

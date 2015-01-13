@@ -399,6 +399,9 @@ EOT;
 	
 	function removeByName($name) {
 		$dbSchema=DB_SCHEMA;
+
+		$sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
 		
 		$sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
 		$rv = $this->db->exec($sql);

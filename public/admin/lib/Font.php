@@ -91,4 +91,32 @@ class Font {
 
 		return $stmt->execute();
 	}
+
+	public function removeSymbol($fontName, $symbolCode){
+		$fontName = basename($fontName, '.ttf');
+
+		// check if symbol already exist
+		$selectSymbolName = "SELECT symbol_name FROM {$this->dbSchema}.symbol WHERE symbol_def LIKE :like";
+		$like = '%FONT "' . $fontName . '"%CHARACTER "&#'. $symbolCode .';"';
+		$stmt = $this->db->prepare($selectSymbolName);
+		$stmt->execute(array(':like'=>$like));
+		$name = $stmt->fetchColumn();
+
+		if (false !== $name) {
+			$deleteSymbol = "DELETE FROM {$this->dbSchema}.symbol WHERE symbol_name = '$name'";
+			$count = $this->db->exec($deleteSymbol);
+			if(1 !== $count) {
+				throw new Exception("Error in query: $deleteSymbol", 1);
+			}
+
+			$updateSymbol = "UPDATE {$this->dbSchema}.style SET symbol_name = NULL WHERE symbol_name = '$name'";
+			$stmt = $this->db->prepare($updateSymbol);
+			$result = $stmt->execute();
+
+			if (false === $result) {
+				throw new Exception("Error in query: $updateSymbol", 1);
+			}
+		}
+		return true;
+	}
 }
