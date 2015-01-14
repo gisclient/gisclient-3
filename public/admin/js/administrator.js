@@ -396,7 +396,7 @@ function symbolsListLoaded() {
     $('#dialog_symbology #raster table button').click(function(e){
         var row = $(this).parent().parent(); // .attr('data-row_id')
         var td = row.find('.data-symbol');
-        var symbolName = td[0].innerText;
+        var symbolName = td.html();
         $.ajax({
             url: 'ajax/symbols.php',
             type: 'POST',
