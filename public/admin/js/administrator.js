@@ -548,7 +548,7 @@ function loadFont() {
                 } else {
                     if(!!$('tr[data-row_id='+ (i-33) +'] .data-name input').val()){
                         $('tr[data-row_id='+ (i-33) +']').addClass('font-missing');
-                        $('tr[data-row_id='+ (i-33) +'] .data-image').html('NO');
+                        $('tr[data-row_id='+ (i-33) +'] .data-image').html('CARATTERE VUOTO: SVUOTARE IL NOME');
                     } else {
                         $('tr[data-row_id='+ (i-33) +']').hide();
                     }
