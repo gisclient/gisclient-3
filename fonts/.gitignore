@@ -1,6 +1,7 @@
 # Ignore everything in this directory
 *
 # Except thess files
+!r3-map-symbols_tpl.ttf
 !fonts_sample.list
 !verdana.ttf
 !verdanab.ttf

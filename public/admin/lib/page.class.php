@@ -27,6 +27,7 @@
 		var $pageKeys;
 		var $action;
 		private $primary_keys;
+		private $navTreeValues;
 		
 		// Costruttore della classe
 		function page($param=Array()){
@@ -150,8 +151,10 @@
 
 			$arr_livelli=$stmt->fetchAll();
 			foreach($arr_livelli as $value){
-				list($lvl_id,$lvl_name,$lvl_header)=array_values($value);
-				$this->navTreeValues[$lvl_name]=$lvl_header;
+				list($lvl_id,$lvl_name)=array_values($value);
+				$this->navTreeValues[$lvl_name] = 'XXX';
+				// list($lvl_id,$lvl_name,$lvl_header)=array_values($value);
+				// see obive FIXME: $this->navTreeValues[$lvl_name]=$lvl_header;
 				$livelli[$lvl_id]=Array("val"=>$lvl_id,"key"=>$lvl_name);
 			}
 			unset($this->tableList);			
@@ -168,7 +171,6 @@
 		}
 		
 		function writeMenuNav(){
-			$mylang = GCAuthor::getLang();
 			$rel_dir = GCAuthor::getTabDir();
 			
 			$tmp=parse_ini_file(ROOT_PATH.$rel_dir.'menu.tab',true);
@@ -213,8 +215,7 @@
 						$stmt = $this->db->prepare($sql);
 						$success = $stmt->execute($sqlParam);
 						if(!$success){
-							print_debug($sql,null,"navtree");	
-
+							print_debug($sql,null,"navtree");
 						}
 						$_row=$stmt->fetch(PDO::FETCH_ASSOC);
 						$navTreeTitle = $_row['val'];
@@ -233,7 +234,7 @@
 		}
 		
 		// Metodo privato che setta i parametri della classe
-		function _get_parameter($p){
+		function _get_parameter(array $p){
 			$m=(!empty($p["mode"]))?($p["mode"]):('view');
 			$this->mode=$this->arr_mode[$m];
 			if (!empty($p["parametri"])){
@@ -247,17 +248,20 @@
 				}
 			}
 
-			$this->last_livello=(!empty($p["parametri"]))?(array_pop(array_keys(array_pop($p["parametri"])))):("project");
+			if (!empty($p["parametri"]) > 0) {
+				$lastParams = array_keys(array_pop($p["parametri"]));
+				$this->last_livello=array_pop($lastParams);
+			} else {
+				$this->last_livello="project";
+			}
 			$this->livello=(!empty($p["livello"]))?($p["livello"]):("");
 			if (!empty($p["azione"])){
 				$this->action=strtolower($p["azione"]);
-				if($this->action=="esporta") $this->mode=$this->arr_mode["edit"];
-				if($this->action=="esporta test") $this->mode=$this->arr_mode["edit"];
-				if($this->action=="importa") $this->mode=$this->arr_mode["new"];
-				if($this->action=="importa raster") $this->mode=$this->arr_mode["edit"];
-                if($this->action=="importa catalogo") $this->mode=$this->arr_mode["edit"];
-				if($this->action=="wizard wms") $this->mode=$this->arr_mode["new"];
-				if($this->action=="classifica") $this->mode=$this->arr_mode["new"];
+				if (in_array($this->action, array("esporta", "esporta test", "importa raster", "importa catalogo"))) {
+					$this->mode=$this->arr_mode["edit"];
+				} elseif (in_array($this->action, array("importa", "wizard wms", "classifica"))) {
+					$this->mode=$this->arr_mode["new"];
+				}
 			}
 		}
 		
@@ -511,7 +515,7 @@
 						$b="modifica";
 						$tb->set_titolo($tb->FileTitle,$b,$prm);
 						$tb->get_titolo($frm);
-						$tb->tabella();
+						$tb->get_tabella();
 					}
 					else{
 						$b="nuovo";
@@ -534,7 +538,7 @@
 					}
 					$tb->set_titolo($tb->FileTitle,$button,$prm);
 					$tb->get_titolo($frm);
-					$tb->tabella();
+					$tb->get_tabella();
 					break;
 			}
 			echo "<hr>\n";
@@ -1068,5 +1072,3 @@
 			return false;
 		}
 	}
-	
-?>

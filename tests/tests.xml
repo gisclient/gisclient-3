@@ -6,5 +6,8 @@
     <testsuite>
       <directory>Symbol</directory>
     </testsuite>
+    <testsuite>
+      <directory>Web</directory>
+    </testsuite>
   </testsuites>
 </phpunit>
