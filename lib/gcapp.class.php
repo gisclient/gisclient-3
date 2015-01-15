@@ -370,7 +370,7 @@ class GCAuthor {
 		'List of available Maps'=>array('it'=>'Elenco delle mappe disponibili', 'de'=>'Verfügbare Karten'),
 		'Username'=>array('it'=>'Nome Utente', 'de'=>'Benutzername'),
 		'Password'=>array('it'=>'Password', 'de'=>'Kennwort'),
-		'project'=>array('it'=>'Progetto', 'de'=>'Projekt')
+		'project'=>array('it'=>'Progetto', 'de'=>'Projekt'),
 		'symbology'=>array('it'=>'Simbologia', 'de'=>'Symbole'),
 	);
 }
