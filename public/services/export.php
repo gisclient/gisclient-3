@@ -7,13 +7,18 @@ $ajax = new GCAjax();
 $auth = new GCUser();
 $db = GCApp::getDb();
 
-switch($_REQUEST['export_format']) {
+$inputJSONText = file_get_contents('php://input');
+if (($data = json_decode($inputJSONText, true)) === null) {
+    $data = $_REQUEST;
+}
+
+switch($data['export_format']) {
     case 'dxf':
     case 'shp':
-        if(empty($_REQUEST['tables']) || !is_array($_REQUEST['tables'])) $ajax->error('Empty tables');
+        if(empty($data['tables']) || !is_array($data['tables'])) $ajax->error('Empty tables');
         
         $tables = array();
-        foreach($_REQUEST['tables'] as $table) {
+        foreach($data['tables'] as $table) {
             $dataDb = null;
             if(isset($table['table'])) {
                 if(isset($table['catalog'])) {
@@ -31,7 +36,7 @@ switch($_REQUEST['export_format']) {
                     'db'=>$dataDb
                 ));
             } else if(isset($table['layer'])) {
-                $authorizedLayers = $auth->getAuthorizedLayers(array('mapset_name'=>$_REQUEST['mapset']));
+                $authorizedLayers = $auth->getAuthorizedLayers(array('mapset_name'=>$data['mapset']));
                 
                 $sql = 'select catalog_path, layer.data as tablename, layer_id from '.DB_SCHEMA.'.catalog 
                     inner join '.DB_SCHEMA.'.layer using(catalog_id)
@@ -59,20 +64,20 @@ switch($_REQUEST['export_format']) {
         }
         
         $exportTables = array();
-        if(!empty($_REQUEST['extent'])) {
+        if(!empty($data['extent'])) {
             if(!defined('GC_EXPORT_TMP_SCHEMA')) $ajax->error('Undefined export tmp schema');
-            if(!is_array($_REQUEST['extent']) || count($_REQUEST['extent']) != 4) $ajax->error('Wrong extent type');
-            if(empty($_REQUEST['srid'])) $ajax->error('Empty srid');
-            if(strpos($_REQUEST['srid'], ':') !== false) list($auth, $srid) = explode(':', $_REQUEST['srid']);
-            else $srid = $_REQUEST['srid'];
+            if(!is_array($data['extent']) || count($data['extent']) != 4) $ajax->error('Wrong extent type');
+            if(empty($data['srid'])) $ajax->error('Empty srid');
+            if(strpos($data['srid'], ':') !== false) list($auth, $srid) = explode(':', $data['srid']);
+            else $srid = $data['srid'];
             
             $sql = 'select st_setsrid(st_makebox2d(st_point(:p0, :p1), st_point(:p2, :p3)), :srid)';
             $stmt = $db->prepare($sql);
             $stmt->execute(array(
-                'p0'=>$_REQUEST['extent'][0],
-                'p1'=>$_REQUEST['extent'][1],
-                'p2'=>$_REQUEST['extent'][2],
-                'p3'=>$_REQUEST['extent'][3],
+                'p0'=>$data['extent'][0],
+                'p1'=>$data['extent'][1],
+                'p2'=>$data['extent'][2],
+                'p3'=>$data['extent'][3],
                 'srid'=>$srid
             ));
             $extent = $stmt->fetchColumn(0);
@@ -129,7 +134,7 @@ switch($_REQUEST['export_format']) {
             }
         }
         
-        if($_REQUEST['export_format'] == 'shp') {
+        if($data['export_format'] == 'shp') {
             $zipFile = null;
             foreach($exportTables as $table) {
                 $export = new GCExport($table['db_instance'], 'shp');
@@ -140,7 +145,7 @@ switch($_REQUEST['export_format']) {
                 ));
             }
             $zipFile = $export->getExportUrl() . $zipFile;
-        } else if($_REQUEST['export_format'] == 'dxf') {
+        } else if($data['export_format'] == 'dxf') {
             $zipFile = null;
             foreach($exportTables as $table) {
                 $export = new GCExport($table['db_instance'], 'dxf');
@@ -148,13 +153,13 @@ switch($_REQUEST['export_format']) {
                     'name'=>$table['name'],
                     'add_to_zip'=>$zipFile,
                     'return_url'=>false,
-                    'extent'=>$_REQUEST['extent'],
+                    'extent'=>$data['extent'],
                     'srid'=>$srid
                 ));
             }
         }
         $zipFile = $export->getExportUrl() . $zipFile;
-        if(!empty($_REQUEST['extent'])) {
+        if(!empty($data['extent'])) {
             foreach($exportTables as $table) {
                 $dataDb->exec('drop table '.GC_EXPORT_TMP_SCHEMA.'.'.$table['table']);
                 $sql = 'delete from geometry_columns where f_table_schema=:tmp_schema and f_table_name=:tmp_table';
@@ -185,26 +190,26 @@ switch($_REQUEST['export_format']) {
         )
         */
 
-        if(empty($_REQUEST['data']) || !is_array($_REQUEST['data'])) {
+        if(empty($data['data']) || !is_array($data['data'])) {
             die(json_encode(array('result' => 'error', 'error' => 'Empty data')));
         }
 
-        if(empty($_REQUEST['fields']) || !is_array($_REQUEST['fields'])) {
+        if(empty($data['fields']) || !is_array($data['fields'])) {
             die(json_encode(array('result' => 'error', 'error' => 'Empty fields')));
         }
 
-        if(empty($_REQUEST['export_format']) || !in_array($_REQUEST['export_format'], array('xls', 'pdf'))) {
+        if(empty($data['export_format']) || !in_array($data['export_format'], array('xls', 'pdf'))) {
             die(json_encode(array('result' => 'error', 'error' => 'Invalid export format')));
         }
 
         $excel = new Excel_XML();
         $fields = array();
-        foreach($_REQUEST['fields'] as $field) array_push($fields, $field['title']);
+        foreach($data['fields'] as $field) array_push($fields, $field['title']);
         $excel->addRow($fields);
 
-        foreach($_REQUEST['data'] as $row) {
+        foreach($data['data'] as $row) {
             $dataRow = array();
-            foreach($_REQUEST['fields'] as $field) {
+            foreach($data['fields'] as $field) {
                 if(!isset($row[$field['field_name']]) || empty($row[$field['field_name']]) || $row[$field['field_name']] == 'null') {
                     $dataRow[$field['field_name']] = null;
                     continue;
@@ -214,10 +219,10 @@ switch($_REQUEST['export_format']) {
             $excel->addRow($dataRow);
         }
 
-        if(empty($_REQUEST['feature_type'])) {
+        if(empty($data['feature_type'])) {
             $filename = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'export', 'xls');
         } else {
-            $parts = explode('.', $_REQUEST['feature_type']);
+            $parts = explode('.', $data['feature_type']);
             if(count($parts) > 1) $filename = $parts[1];
             else $filename = $parts[0];
             
