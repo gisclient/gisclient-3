@@ -543,8 +543,13 @@ function loadFont() {
                     canvas.width = 100;
                     var ctx = canvas.getContext('2d');
                     glyph.draw(ctx, 20, 30, 30);
-                    $('tr[data-row_id='+ (i-33) +']').addClass('font-new');
+                    
                     $('tr[data-row_id='+ (i-33) +'] .data-image').append(canvas);
+                    if(!!$('tr[data-row_id='+ (i-33) +'] .data-name input').val()){
+                        $('tr[data-row_id='+ (i-33) +']').addClass('font-old');
+                    } else {
+                        $('tr[data-row_id='+ (i-33) +']').addClass('font-new');
+                    }
                 } else {
                     if(!!$('tr[data-row_id='+ (i-33) +'] .data-name input').val()){
                         $('tr[data-row_id='+ (i-33) +']').addClass('font-missing');
@@ -572,6 +577,10 @@ function saveFontSymbols() {
     var i, code;
     var namesNew = $('#font .font-new input').filter(function(){
         return !!this.value;
+    });
+    
+    var namesOld = $('#font .font-old input').filter(function(){
+        return !this.value;
     });
 
     var missing = $('#font .font-missing input');
@@ -601,6 +610,15 @@ function saveFontSymbols() {
     for (i=0; i < missing.length; i++) {
         var m = missing[i];
         code = m.name.substring(4);
+        data.symbols.push({
+            symbol_code: code,
+            action: 'del'
+        });
+    }
+    
+    for (i=0; i < namesOld.length; i++) {
+        var old = namesOld[i];
+        code = old.name.substring(4);
         data.symbols.push({
             symbol_code: code,
             action: 'del'
