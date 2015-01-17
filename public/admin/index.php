@@ -175,7 +175,7 @@ if(isset($p->parametri['project'])) {
         $version = $db->query($sql)->fetchColumn(0);
         echo $version;
         ?>
-		- &copy; 2014
+		- 2009 - 2015
 	</div>
 </div>
 </div>
