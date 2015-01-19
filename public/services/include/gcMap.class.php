@@ -459,6 +459,7 @@ class gcMap{
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
 				$convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
+				$layerOptions["type"] = empty($row["layers"])?"null":$row["layers"];
 				$layerOptions["minZoomLevel"] = $this->levelOffset;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
 
