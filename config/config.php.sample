@@ -79,7 +79,7 @@ define('TINYOWS_ONLINE_RESOURCE', PUBLIC_URL.'services/tinyows/');
 define('REDLINE_SCHEMA', 'public'); //non obbligatorio, default public
 define('REDLINE_TABLE', 'annotazioni');
 define('REDLINE_SRID', '4326');
-define('REDLINE_FONT', 'arial'); // non obbligatorio, default arial
+define('REDLINE_FONT', 'dejavu-sans-bold'); // non obbligatorio, default arial
 
 require_once (ROOT_PATH."lib/postgres.php");
 require_once (ROOT_PATH."lib/debug.php");
@@ -149,7 +149,6 @@ define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
 //define('COORDINATE_Y_COL_NAME', 'gc_coordinate_y'); 
 //define('LAST_EDIT_USER_COL_NAME', 'gc_last_edit_user'); 
 //define('LAST_EDIT_DATE_COL_NAME', 'gc_last_edit_date');
-define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
 //define('UPLOADED_FILES_PRIVATE_PATH', ROOT_PATH.'files/'); 
 //define('UPLOADED_FILES_PUBLIC_PATH', ROOT_PATH.'public/services/files/'); 
 //define('UPLOADED_FILES_PUBLIC_URL', PUBLIC_URL.'services/files/');
@@ -164,7 +163,7 @@ define('OWS_CACHE_TTL_OPEN', 4*60*60); // Map cache for the 1st open of the map
 //define('DYNAMIC_LAYERS', ''); // comma separated list of dynamic layers (same url different result)
 
 $GEOLOCATOR_CONFIG = array(
-    'pei' => array(
+    'mapset' => array(
         'namefield'=>'search_name',
         'idfield'=>'id',
         'geomfield'=>'the_geom',
