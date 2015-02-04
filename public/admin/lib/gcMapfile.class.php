@@ -713,7 +713,8 @@ END";
         $stmt = $this->db->prepare($sql);
 		$stmt->execute(array(':srid' => $srid));
 		$row=$stmt->fetch(PDO::FETCH_ASSOC);
-
+		$x = $row["xc"];
+		$y = $row["yc"];
 		$factor = GCAuthor::$aInchesPerUnit[$row["um"]];
 		$precision = $row["um"] == "dd"?6:2;
 		$maxResolution = $maxScale/( MAP_DPI * $factor );
