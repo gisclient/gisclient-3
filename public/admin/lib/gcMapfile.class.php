@@ -718,7 +718,9 @@ END";
 		$factor = GCAuthor::$aInchesPerUnit[$row["um"]];
 		$precision = $row["um"] == "dd"?6:2;
 		$maxResolution = $maxScale/( MAP_DPI * $factor );
-		$extent = $maxResolution * TILE_SIZE ; //4 tiles??
+		$extent = $maxResolution * TILE_SIZE * 4; //4 tiles??
+
+
 		
 		return array(
 			0 => round($x - $extent, $precision),

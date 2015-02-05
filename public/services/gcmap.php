@@ -46,8 +46,8 @@ header("Content-Type: application/json; Charset=UTF-8");
 if(empty($_REQUEST['mapset'])) die(json_encode(array('error' => 200, 'message' => 'No mapset name')));
 $objMapset = new gcMap($_REQUEST["mapset"], $getLegend, $languageId);
 
-if(empty($_GET["jsoncallback"]))
-	echo json_encode($objMapset->mapConfig);
+if(isset($_REQUEST["callback"]))
+	die($_REQUEST["callback"]."(".json_encode($objMapset->mapConfig).")");
 else
-	echo $_GET["jsoncallback"]."(".json_encode($objMapset->mapConfig).")";
+	die(json_encode($objMapset->mapConfig));
 ?>
