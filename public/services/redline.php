@@ -1,6 +1,13 @@
 <?php
 require_once "../../config/config.php";
-if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayers', 'PrintMap'))) die();
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
+if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayers', 'PrintMap'))) {
+	die("REQUEST unknown");
+}
 
 if(!defined('REDLINE_TABLE') || !defined('REDLINE_SRID')) outputError('Missing config redline values');
 if(!defined('REDLINE_SCHEMA')) define('REDLINE_SCHEMA', 'public');

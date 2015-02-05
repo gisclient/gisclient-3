@@ -1,6 +1,11 @@
 <?php
-require_once('../../config/config.php');
+require_once '../../config/config.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $ajax = new GCAjax();
 
 if(empty($GEOLOCATOR_CONFIG)) {
@@ -28,7 +33,6 @@ if(empty($GEOLOCATOR_CONFIG[$mapset])) {
 }	
 $config = $GEOLOCATOR_CONFIG[$mapset];
 
-$ajax = new GCAjax();
 $db = GCApp::getDB();
 
 $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:name';

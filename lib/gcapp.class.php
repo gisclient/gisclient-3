@@ -3,7 +3,7 @@
 class GCApp {
 	static private $db;
 	static private $dataDBs = array();
-	
+
 	public static function getDB() {
 		if(empty(self::$db)) {
 			$dsn = 'pgsql:dbname='.DB_NAME.';host='.DB_HOST;
@@ -11,6 +11,7 @@ class GCApp {
 			try {
 				self::$db = new PDO($dsn, DB_USER, DB_PWD);
 				self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+				self::$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 			} catch(Exception $e) {
 				die('GCApp:Impossibile connettersi al database');
 			}
@@ -307,7 +308,20 @@ class GCAuthor {
 	
 	public static function translate($key) {
 		$lang = self::getLang();
-		return self::$translations[$key][$lang];
+		if (isset(self::$translations[$key])) {
+			if (isset(self::$translations[$key][$lang])) {
+				// found localization
+				return self::$translations[$key][$lang];
+			} else {
+				// requested localization not found,
+				// take first localized string
+				$availableLangs = array_keys(self::$translations[$key]);
+				return self::$translations[$key][$availableLangs[0]];
+			}
+		} else {
+			// worst case, return key itself
+			return $key;
+		}
 	}
 	
 	static private $translations = array(
@@ -319,8 +333,8 @@ class GCAuthor {
 		'button_save' => array('it'=>'Salva', 'de'=>'Speichern'),
 		'button_cancel' => array('it'=>'Annulla', 'de'=>'Abbrechen'),
 		'button_publish' => array('it'=>'Pubblica', 'de'=>'Herausgeben'),
-		'button_delete' => array('it'=>'Elimina', 'de'=>'Loschen'),
-		'button_export' => array('it'=>'Esporta', 'de'=>'Export'),
+		'button_delete' => array('it'=>'Elimina', 'de'=>'Löschen'),
+		'button_export' => array('it'=>'Esporta', 'de'=>'Exportieren'),
 		'close' => array('it'=>'Chiudi', 'de'=>'Schließen'),
 		'title'=>array('it'=>'Titolo', 'de'=>'Titel'),
 		'name'=>array('it'=>'Nome', 'de'=>'Name'),
@@ -328,31 +342,36 @@ class GCAuthor {
 		'nodata' => array('it'=>'Nessun Dato Presente', 'de'=>'Keine Daten'),
 		'undefined'=>array('it'=>'Non definito', 'de'=>'Nicht definiert'),
 		'table'=>array('it'=>'Tabella', 'de'=>'Tabelle'),
-		'column'=>array('it'=>'Colonna', 'de'=>'Kolonne'),
+		'column'=>array('it'=>'Colonna', 'de'=>'Spalte'),
 		'field'=>array('it'=>'Campo', 'de'=>'Feld'),
 		'group'=>array('it'=>'Gruppo', 'de'=>'Gruppe'),
-		'pkey'=>array('it'=>'Campo chiave', 'de'=>'Primary Key'),
+		'pkey'=>array('it'=>'Campo chiave', 'de'=>'Primärschlüssel'),
 		'format'=>array('it'=>'Formato', 'de'=>'Format'),
 		'image'=>array('it'=>'Immagine', 'de'=>'Bild'),
 		'symbol'=>array('it'=>'Simbolo', 'de'=>'Symbol'),
 		'category'=>array('it'=>'Categoria', 'de'=>'Art'),
 		'position'=>array('it'=>'Posizione', 'de'=>'Position'),
 		'save_to_temp'=>array('it'=>'Salva in un mapfile temporaneo', 'de'=>'In einem temporären Mapfile abspeichern'),
-		'auto_refresh_mapfiles'=>array('it'=>'Rigenera automaticamente i mapfiles', 'de'=>'Aktualisiere automatisch Mapset'),
+		'auto_refresh_mapfiles'=>array('it'=>'Rigenera automaticamente i mapfiles', 'de'=>'Mapset automatisch aktualisieren'),
 		'save'=>array('it'=>'Salva', 'de'=>'Speichern'),
 		'all'=>array('it'=>'Tutti', 'de'=>'Alles'),
-		'online_maps'=>array('it'=>'Mappe online', 'de'=>'Mapset aktualisieren'),
+		'online_maps'=>array('it'=>'Mappe online', 'de'=>'Online-Karten'),
 		'ogc_services'=>array('it'=>'Servizi OGC', 'de'=>'OGC Dienste'),
 		'update'=>array('it'=>'Aggiorna', 'de'=>'Aktualisieren'),
-		'temporary'=>array('it'=>'temp.', 'de'=>'Temporär'),
-		'public'=>array('it'=>'pubblici', 'de'=>'Öffentlich'),
+		'temporary'=>array('it'=>'temp.', 'de'=>'temporär'),
+		'public'=>array('it'=>'pubblici', 'de'=>'öffentlich'),
 		'theme'=>array('it'=>'Tema', 'de'=>'Thema'),
 		'layergroup'=>array('it'=>'Layergroup', 'de'=>'Layergruppe'),
 		'layer'=>array('it'=>'Layer', 'de'=>'Layer'),
 		'lookup_id'=>array('it'=>'Campo chiave lookup', 'de'=>'Schlüsselfeld in der Nachschlagetabelle'),
 		'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle'),
 		'confirm_delete'=>array('it'=>'Sei sicuro di voler eliminare il record?', 'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'),
-		'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen')
+		'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen'),
+		'List of available Maps'=>array('it'=>'Elenco delle mappe disponibili', 'de'=>'Verfügbare Karten'),
+		'Username'=>array('it'=>'Nome Utente', 'de'=>'Benutzername'),
+		'Password'=>array('it'=>'Password', 'de'=>'Kennwort'),
+		'project'=>array('it'=>'Progetto', 'de'=>'Projekt'),
+		'symbology'=>array('it'=>'Simbologia', 'de'=>'Symbole'),
 	);
 }
 

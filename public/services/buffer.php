@@ -1,4 +1,9 @@
 <?php
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
 if(empty($_REQUEST['features'])) die(json_encode(array('result'=>'error', 'error'=>'missing features')));
 if(empty($_REQUEST['projection'])) die(json_encode(array('result'=>'error', 'error'=>'missing projection')));
 if(empty($_REQUEST['buffer'])) die(json_encode(array('result'=>'error', 'error'=>'missing buffer')));

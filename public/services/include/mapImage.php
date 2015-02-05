@@ -81,12 +81,16 @@ class mapImage {
 	}
 	
 	public function getImageUrl() {
-		if(empty($this->imageFileName)) $this->getMapImage();
+		if(empty($this->imageFileName)) {
+			$this->getMapImage();
+		}
 		return $this->options['TMP_URL'].$this->imageFileName;
 	}
 	
 	public function getImageFileName() {
-		if(empty($this->imageFileName)) $this->getMapImage();
+		if(empty($this->imageFileName)) {
+			$this->getMapImage();
+		}
 		return $this->imageFileName;
 	}
 	
@@ -196,6 +200,9 @@ class mapImage {
 		if (false === ($mapImage = curl_exec($ch))) {
 			throw new Exception("Could not curl_exec" . curl_error($ch));
 		}
+        if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+            throw new RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
+        }
 		if(!$saveImage) {
 			$filename = $this->options['TMP_PATH'].$this->imageFileName;
 			if (false === file_put_contents($filename, $mapImage)) {

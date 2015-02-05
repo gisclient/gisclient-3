@@ -1,39 +1,9 @@
 <?php
-require_once('../../config/config.php');
-/*
-input array
-array(
-	'action'=>string, // delete o update
-	'project'=>string,
-	'map'=>string,
-	'feature_type'=>string.string,
-	'primary_key'=>string,
-	'primary_key_value'=>mixed,
-	'data'=>array( // opzionale, se vuoto non aggiorna i dati
-		'key1'=>'value1',
-		'key2'=>'value2'
-		...
-	),
-	'geometry'=>array( // opzionale, se vuoto non aggiorna la geometria
-		'srid'=>int,
-		'wkt'=>wktGeom
-	)
-);
+require_once '../../config/config.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 
-output
-jsonArray(
-	'result'=>string // ok o error
-	'error'=>string //exception message, se result==error
-)
-*/
-
-
-
-/*
-mettere tutto in transazione
-recuperare il geometry type
-nel caso dell'insert, vedere se è necessario modificare il geometrytype
-*/
+$gcService = GCService::instance();
+$gcService->startSession();
 
 if(empty($_REQUEST['project']) || empty($_REQUEST['map']) || empty($_REQUEST['feature_type']) || empty($_REQUEST['primary_key'])) {
 	die(json_encode(array('result' => 'error', 'error' => 'Missing mandatory fields')));

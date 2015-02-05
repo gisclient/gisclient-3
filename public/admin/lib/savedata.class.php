@@ -1,13 +1,13 @@
 <?php
 
 include_once ADMIN_PATH."lib/export.php";
-require_once (ADMIN_PATH."lib/functions.php");
+require_once ADMIN_PATH."lib/functions.php";
 
 Class saveData{
 	private $db=null;
 	var $data=Array();			//Array dei dati da salvare
 	var $fields=Array();		//Array dei campi e definizione dei loro tipi
-	var $parent_flds=Array();
+	public $parent_flds=Array();
 	var $oldId;
 	var $newId;
 	var $table;					//Nome della tabella
@@ -24,7 +24,6 @@ Class saveData{
 
 	function __construct($arr_dati){
 
-		$mylang = GCAuthor::getLang();
 		$rel_dir = GCAuthor::getTabDir();
 		$this->db = GCApp::getDB();
 		$this->hasErrors = false;
@@ -722,87 +721,7 @@ Class saveData{
 		}
 		return $array_data;
 	}
-	
-/*
-	private function _getDbError($code,$mess,$query){
-		$regexp=Array(
-			"23502"=> "/null value in column \"(.+)\" violates not-null constraint/i",
-			"23505"=>"/duplicate key violates unique constraint \"(.+)\"/i",
-			"23514"=>"/new row for relation \"(.+)\" violates check constraint \"(.+)\"/i",
-		    
-		    
-			"23503"=>"/on table \"(.+)\" violates foreign key constraint \"(.+)\"/i",
-//			"23503"=>"/\w+ or \w+ on \"(.+)\" violates foreign key constraint \"(.+)\" on \"(.+)\"/i",
-			"42601"=>"",
-			"42703"=>"/ column \"(.+)\" of relation \"(.+)\" does not exist/i",
-			"P0001"=>"/ERROR: (.+) @ (.+)/i"
-		);
-		
-		$fld = '_unknown_';
-		if (array_key_exists($code, $regexp)){
-			$rv = preg_match($regexp[$code],$mess,$ris);
-			if ($rv) {
-				$fld=trim($ris[1]);
-			}
-		}
-		
-		switch ($code){
-			case "23502":
-				$res[]=Array($fld,"Campo Obbligatorio");
-				break;
-			case "23503":
-				$fld=trim($ris[2]);
-				$sql="SELECT column_name FROM information_schema.constraint_column_usage WHERE constraint_name='$fld' and constraint_schema='$this->schema'";
-				$this->db->sql_query($sql);
-				print_debug($sql,null,"save");
-				$ris=$this->db->sql_fetchlist("column_name");
-				for($i=0;$i<count($ris);$i++) $res[]=Array($ris[$i],"Chiave Esterna");
-				break;
-			case "23505":
-				$sql="SELECT column_name FROM information_schema.constraint_column_usage WHERE constraint_name='$fld' and table_name='$this->table' and constraint_schema='$this->schema'";
-				$this->db->sql_query($sql);
-				print_debug($sql,null,"save");
-				$ris=$this->db->sql_fetchlist("column_name");
-				for($i=0;$i<count($ris);$i++){
-					switch($ris[$i]){
-						case "user_id":
-							if($table=="user_project") $ris[$i]="usergroup_id";
-							break;
-						default:
-							break;
-					}
-					$res[]=Array($ris[$i],"Campo Duplicato");
-					
-				}
-				break;
-			case "23514":
-				$fld=trim($ris[2]);
-				$sql="SELECT column_name FROM information_schema.constraint_column_usage WHERE constraint_name='$fld' and table_name='$this->table' and constraint_schema='$this->schema'";
-				$this->db->sql_query($sql);
-				print_debug($sql,null,"save");
-				$ris=$this->db->sql_fetchlist("column_name");
-				for($i=0;$i<count($ris);$i++) $res[]=Array($ris[$i],"Valore non Ammesso");
-				break;
-			case "42601":
-				$res[]=Array("generic","Errore di Sintassi nella Query<br>$query");
-				break;
-			case "P0001":
-				$res[]=Array($fld,$ris[2]);
-				break;
-			case "42703":
-				if (!$fld) {
-					preg_match("|record (.+) has no field (.+)|i",$mess,$ris);
-					$fld=trim($ris[2]);
-				}
-				$res[]=Array("generic","Errore di Sintassi nella Query.Il campo $fld non esiste.");
-			default:
-				$res[]=Array("generic","Errore generico");
-				break;
-		}
-		
-		return $res;
-	}
-*/
+
 	private function _getConfig($file,$pk,$pk_val){
 		
 		$tmp=parse_ini_file($file,true);
@@ -838,4 +757,3 @@ Class saveData{
 		}
 	}
 }
-?>

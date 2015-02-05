@@ -22,23 +22,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 /************ Session Name ********/
 define('GC_SESSION_NAME', 'gisclient3'); // se definito, viene chiamato session_name() prima di session_start();
 
-if(!isset($_SESSION)) {
-    if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
-    session_start();
-}
-
 ini_set('max_execution_time',90);
 ini_set('memory_limit','512M');
-//error_reporting (E_ERROR | E_PARSE);
-error_reporting  (E_ALL & ~E_STRICT);
+error_reporting  (E_ALL);
 
 define('LONG_EXECUTIONE_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
-
 /*******************Installation path *************************/
-define('ROOT_PATH','/ms4w/apps/gisclient-3.0/');
-define('PUBLIC_URL', 'http://localhost/gisclient-3.0/');
+define('ROOT_PATH', realpath(__DIR__.'/..').'/');
+define('PUBLIC_URL', 'http://localhost/');
 define('MAP_URL', 'http://localhost/gisclient-3.0/template/');
 define('IMAGE_PATH','/ms4w/apps/tmp/ms_tmp/');
 define('IMAGE_URL','/tmp/');
@@ -57,8 +50,8 @@ define('MAPSERVER_URL', 'http://192.168.0.13/cgi-bin/mapserv?'); //NON E' OBBLIG
 define('GC_PRINT_TPL_DIR', ROOT_PATH.'public/services/print/');
 define('GC_PRINT_TPL_URL', PUBLIC_URL.'services/print/');
 define('GC_PRINT_IMAGE_SIZE_INI', ROOT_PATH.'config/print_image_size.ini');
-define('GC_WEB_TMP_DIR', ROOT_PATH.'public/services/print/tmp/');
-define('GC_WEB_TMP_URL', PUBLIC_URL.'services/print/tmp/');
+define('GC_WEB_TMP_DIR', ROOT_PATH.'public/services/tmp/');
+define('GC_WEB_TMP_URL', PUBLIC_URL.'services/tmp/');
 define('GC_PRINT_LOGO_SX', 'http://localhost/images/logo_sx.gif');
 define('GC_PRINT_LOGO_DX', 'http://localhost/images/logo_dx.gif');
 define('GC_FOP_LIB', '/lib/fop.php');

@@ -249,7 +249,21 @@ class gcMapfile{
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
 		}
         
-        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . 'project='.$this->projectName.'&map='.$mapFile : null;
+		$owsUrl = null;
+		if (defined('GISCLIENT_OWS_URL')) {
+			
+			$owsUrl = rtrim(GISCLIENT_OWS_URL, '?&');
+			
+			if (false === ($owsUrlQueryPart = parse_url($owsUrl, PHP_URL_QUERY))) {
+				throw new Exception("Could not parse '". GISCLIENT_OWS_URL . "' as string");
+			}
+			if(!empty($owsUrlQueryPart)) {
+				$sep = '&';
+			} else {
+				$sep = '?';
+			}
+			$owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
+		}
         $wms_onlineresource = '';
         $wfs_onlineresource = '';
         if(!empty($owsUrl)) {
@@ -382,7 +396,7 @@ END #MAP";
 			if($error->code != MS_NOERR){
 				$this->mapError=150;
 				while(is_object($error) && $error->code != MS_NOERR) {
-					$errorMsg = "MAPFILE ERROR $mapFile<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
+					$errorMsg = "MAPFILE ERROR $mapFilePath<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
 					GCError::register($errorMsg);
 					$error = $error->next();
 				}
@@ -556,7 +570,10 @@ END";
 	
 	function _transformExtent($toSrid){
 
-		$sql = "SELECT X(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[0].",".$this->projectExtent[1]."),".$this->projectSrid."),".$toSrid.")) as x0, Y(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[0].",".$this->projectExtent[1]."),".$this->projectSrid."),".$toSrid.")) as y0, X(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[2].",".$this->projectExtent[3]."),".$this->projectSrid."),".$toSrid.")) as x1, Y(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[2].",".$this->projectExtent[3]."),".$this->projectSrid."),".$toSrid.")) as y1;";
+		$sql = "SELECT ST_X(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[0].",".$this->projectExtent[1]."),".$this->projectSrid."),".$toSrid.")) as x0, ".
+				"ST_Y(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[0].",".$this->projectExtent[1]."),".$this->projectSrid."),".$toSrid.")) as y0, ".
+				"ST_X(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[2].",".$this->projectExtent[3]."),".$this->projectSrid."),".$toSrid.")) as x1, ".
+				"ST_Y(ST_Transform(ST_SetSRID(ST_POINT(".$this->projectExtent[2].",".$this->projectExtent[3]."),".$this->projectSrid."),".$toSrid.")) as y1;";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute();
 		$res=$stmt->fetch(PDO::FETCH_ASSOC);
@@ -588,4 +605,3 @@ END";
 	}
 
 }
-?>

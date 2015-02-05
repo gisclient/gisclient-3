@@ -808,6 +808,25 @@ switch($_REQUEST['action']) {
 		$ajax->success();
 		
 	break;
+	case 'create-pyramid-raster':
+		checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'file_name'));
+		
+		$baseDir = filesPathFromCatalog($_REQUEST['catalog_id']);
+		if(!is_dir($baseDir.$_REQUEST['file_name'])) {
+			$ajax->error("'".$baseDir.$_REQUEST['file_name']." is not a directory");
+		}
+		$filesDir = $baseDir.addFinalSlash($_REQUEST['file_name']);
+		
+		$cmd = 'for i in `find '.escapeshellarg($filesDir).'*.{png,jpeg,jpg,tif,gif,tiff} 2> /dev/null`;do gdaladdo -r average $i 3 9 27 81; done';
+		$gdalOutput = array();
+		$retVal = -1;
+		
+        exec($cmd, $gdalOutput, $retVal);
+		if($retVal != 0) $ajax->error('gdaladdo error');
+		
+		$ajax->success();
+		
+	break;
 	case 'check-upload-folder':
 		checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
 		$targetDir = addFinalSlash($_REQUEST['directory']);

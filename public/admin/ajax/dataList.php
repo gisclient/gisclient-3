@@ -7,7 +7,9 @@ $ajax = new GCAjax();
 
 $db = GCApp::getDB();
 
-if(empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_REQUEST['catalog_id'] < 1) $ajax->error('catalog_id');
+if(empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_REQUEST['catalog_id'] < 1) {
+	$ajax->error('catalog_id');
+}
 $catalogId = $_REQUEST['catalog_id'];
 
 $layerTypeId = null;

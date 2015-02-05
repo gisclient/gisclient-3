@@ -1125,6 +1125,21 @@ FONT "r3-map-symbols"
 FILLED TRUE
 ANTIALIAS FALSE
 CHARACTER "&#068;"');
+INSERT INTO symbol VALUES ('CAMERA', 4, 0, NULL, 'TYPE TRUETYPE
+FONT "r3-map-symbols"
+FILLED TRUE
+ANTIALIAS FALSE
+CHARACTER "&#069;"');
+INSERT INTO symbol VALUES ('ORIENTED-PIN', 4, 0, NULL, 'TYPE TRUETYPE
+FONT "r3-map-symbols"
+FILLED TRUE
+ANTIALIAS FALSE
+CHARACTER "&#070;"');
+INSERT INTO symbol VALUES ('LIKE', 4, 0, NULL, 'TYPE TRUETYPE
+FONT "r3-map-symbols"
+FILLED TRUE
+ANTIALIAS FALSE
+CHARACTER "&#071;"');
 
 ----- R3-Ambiebte
 INSERT INTO symbol VALUES ('ARIA', 12, 0, NULL, 'TYPE TRUETYPE
@@ -1242,5 +1257,11 @@ class_text = ''''||class_text||'''' where class_text is not null;
 
 delete from symbol where symbolcategory_id = 2;
 delete from e_symbolcategory where symbolcategory_id = 2;
+
+update style set symbol_name = NULL where symbol_name='CIRCLE'
+and pattern_id = 0 and class_id in
+(select class_id from class where layer_id in
+(select layer_id from layer where layertype_id = 2));
+
 
 INSERT INTO version (version_name,version_key, version_date) values ('6', 'mapserver', CURRENT_DATE);

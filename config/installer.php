@@ -5,8 +5,11 @@
 // TODO: config file should be readable only by the web server!!
 // require_once __DIR__ . '/config.db.php';
 
-$httpdWritableDirs = array('/import/',
+$httpdWritableDirs = array(
+    '/import/',
 	'/files/',
+	'/symbols/usersymbols/',
+	'/symbols/usersymbols/pixmaps/',
 	'/map/',
 	'/public/services/tmp/',
 	'/public/admin/export/',
@@ -190,6 +193,6 @@ if (count(debug_backtrace()) === 0 &&
 	echo "setting base permissions\n";
 	$installer->setBasePermissions($installDir);
 
-	echo "make some dirs writable to the web server";
+	echo "make output dirs writable for the web server";
 	$installer->checkOutputDirs($httpdWritableDirs, $installDir);
 }

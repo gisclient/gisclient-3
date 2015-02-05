@@ -40,7 +40,7 @@
 <div id="container_login">
 	<div class="ui-layout-north">
 		<?php
-		include (ADMIN_PATH."inc/inc.admin.page_header.php");
+		include ADMIN_PATH."inc/inc.admin.page_header.php";
 		?>
 	</div>
 	<div class="ui-layout-center">

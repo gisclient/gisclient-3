@@ -1,6 +1,10 @@
 <?php
 require_once "../../config/config.php";
 require_once 'include/mapImage.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 function outputError($msg) {
 	header("Status: 500 Internal Server Error");

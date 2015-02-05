@@ -2,12 +2,34 @@ language: php
 php:
   - "5.4"
 
+before_install:
+  - sudo apt-get update -qq
+#  - sudo apt-get install -y libgdal1h libmapserver1 php5-mapscript 
+#  install apache
+  - sudo apt-get install apache2 libapache2-mod-fastcgi
+
 before_script:
-  - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gsiclient' SUPERUSER"
+  - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gisclient' SUPERUSER"
   - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient;" 
   - psql -U postgres -d gisclient_ci -c "CREATE EXTENSION postgis"
-  - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.tpl.sql > config/travis/gisclient.sql
-  - psql -U gisclient -d gisclient_ci < config/travis/gisclient.sql
+  - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.schema.tpl.sql > config/travis/gisclient.schema.sql
+  - psql -U gisclient -d gisclient_ci < config/travis/gisclient.schema.sql
+  - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.masterdata.tpl.sql > config/travis/gisclient.masterdata.sql
+  - psql -U gisclient -d gisclient_ci < config/travis/gisclient.masterdata.sql
+  - sed 's/DB_SCHEMA/gisclient/g' config/travis/gisclient.users.tpl.sql > config/travis/gisclient.users.sql
+  - psql -U gisclient -d gisclient_ci < config/travis/gisclient.users.sql
   - cp config/travis/config.php config/config.php
   - cp config/travis/config.db.php config/config.db.php
+  - cp fonts/fonts_sample.list fonts/fonts.list 
   - php config/installer.php -W
+# enable php-fpm
+  - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
+  - sudo a2enmod rewrite actions fastcgi alias
+  - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
+# configure apache virtual hosts
+  - sudo cp -f config/travis/travis-ci-apache /etc/apache2/sites-available/default
+  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+  - sudo service apache2 restart
+
+script: phpunit --configuration tests/travis.xml

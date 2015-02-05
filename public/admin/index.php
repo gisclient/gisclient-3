@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 if (!file_exists("../../config/config.php")) die ("Manca setup");
 include_once "../../config/config.php";
 include_once ROOT_PATH."lib/i18n.php";
+include_once ADMIN_PATH."lib/gcSymbol.class.php";
+
 header("Content-Type: text/html; Charset=".CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
 header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
@@ -147,6 +149,7 @@ if(isset($p->parametri['project'])) {
 		?>var errors = ["<?php echo implode('","', $errors); ?>"];<?php
 	}?>
 	</script>
+	<script type="text/javascript" src="js/opentype/opentype.min.js"></script>
 </head>
 <body>
 <div id="container">
@@ -169,10 +172,10 @@ if(isset($p->parametri['project'])) {
 		GisClient<span class="color">Author</span>
 		<?php
         $sql="SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
-        $version = $db->query($sql)->fetchColumn();
+        $version = $db->query($sql)->fetchColumn(0);
         echo $version;
         ?>
-		- &copy; 2014
+		- 2009 - 2015
 	</div>
 </div>
 </div>

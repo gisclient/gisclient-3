@@ -21,20 +21,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 /**
- * TODO: swicth to PDO
- * change signature: pass da connection in directly
+ * change signature: pass dd connection in directly
  * 
  */
 class Symbol{
 	public $filter;
 	private $mapfile;
+	private	$symbolSize;
+	private $db;
 	
 	function __construct($table){
 		$this->table=$table;
-		$this->db = new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-		if(!$this->db->db_connect_id) die( "Impossibile connettersi al database ". DB_NAME);
+		$this->db = GCApp::getDB();
 	}
-
 	
 	private function createClassIcon ($dbSchema) {
 		$aClass=array();
@@ -47,44 +46,51 @@ class Symbol{
 		on (symbol_ttf.symbol_ttf_name=class.symbol_ttf_name and symbol_ttf.font_name=class.label_font)
 		left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name) where layertype_ms < 3";
 
-
-		if($this->filter) $sql.=" and ".$this->filter;
-		$sql.=" order by style_order;";
-		$rv = $this->db->sql_query($sql);
-		if ($rv === false) {
-			throw new RuntimeException("Failed to execute:\n$sql");
+		if($this->filter) {
+			$sql.=" and ".$this->filter;
 		}
-
-		$res=$this->db->sql_fetchrowset();
+		$sql.=" order by style_order;";
+		$stmt = $this->db->query($sql);
 		$aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
-		for($i=0;$i<count($res);$i++){
-			$aClass[$res[$i]["class_id"]]["icontype"]=$res[$i]["layertype_ms"];
-			$aClass[$res[$i]["class_id"]]["symbol_ttf"]=$res[$i]["symbol_ttf_name"];
-			$aClass[$res[$i]["class_id"]]["label_color"]=explode(" ",$res[$i]["label_color"]);
-			$aClass[$res[$i]["class_id"]]["label_bgcolor"]=explode(" ",$res[$i]["label_bgcolor"]);
-			if($res[$i]["style_id"]){
-				$aStyle["color"]=explode(" ",$res[$i]["color"]);
-				$aStyle["outlinecolor"]=explode(" ",$res[$i]["outlinecolor"]);
-				$aStyle["bgcolor"]=explode(" ",$res[$i]["bgcolor"]);
-				$aStyle["angle"]=$res[$i]["angle"];	
-				$aStyle["width"]=$res[$i]["width"];	
-				$aStyle["size"]=$res[$i]["size"];			
-				$aStyle["symbol"]=$res[$i]["symbol_name"];	
-				$aClass[$res[$i]["class_id"]]["style"][]=$aStyle;				
+		while($row = $stmt->fetch()){
+			$aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
+			$aClass[$row["class_id"]]["symbol_ttf"]=$row["symbol_ttf_name"];
+			$aClass[$row["class_id"]]["label_color"]=explode(" ",$row["label_color"]);
+			$aClass[$row["class_id"]]["label_bgcolor"]=explode(" ",$row["label_bgcolor"]);
+			if($row["style_id"]){
+				$aStyle["color"]=explode(" ",$row["color"]);
+				$aStyle["outlinecolor"]=explode(" ",$row["outlinecolor"]);
+				$aStyle["bgcolor"]=explode(" ",$row["bgcolor"]);
+				$aStyle["angle"]=$row["angle"];	
+				$aStyle["width"]=$row["width"];	
+				$aStyle["size"]=$row["size"];			
+				$aStyle["symbol"]=$row["symbol_name"];	
+				$aClass[$row["class_id"]]["style"][]=$aStyle;				
 			}
-			if($res[$i]["symbol_ttf_name"]){
-				$ch=($res[$i]["ascii_code"]==34)?"'".chr(34)."'":"\"".chr($res[$i]["ascii_code"])."\"";
-				$sSy="SYMBOL\nNAME \"".$res[$i]["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$res[$i]["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
-				if(!in_array($sSy,$aSymbol)) $aSymbol[]=$sSy;	
+			if($row["symbol_ttf_name"]){
+				$ch=($row["ascii_code"]==34)?"'".chr(34)."'":"\"".chr($row["ascii_code"])."\"";
+				$sSy="SYMBOL\nNAME \"".$row["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$row["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
+				if(!in_array($sSy,$aSymbol)){
+					$aSymbol[]=$sSy;
+				}
 			}
-			if($res[$i]["symbol_def"]){
-				$sSy="SYMBOL\nNAME \"".$res[$i]["symbol_name"]."\"\n".$res[$i]["symbol_def"]."\nEND";
-				if(!in_array($sSy,$aSymbol)) $aSymbol[]=$sSy;
+			if($row["symbol_def"]){
+				$sSy="SYMBOL\nNAME \"".$row["symbol_name"]."\"\n".$row["symbol_def"]."\nEND";
+				if(!in_array($sSy,$aSymbol)) {
+					$aSymbol[]=$sSy;
+				}
 			}
 		}
 		$this->createMapfile($aSymbol);
-		foreach($aClass as $classId=>$class){
+		foreach($aClass as $class){
 			$oIcon = $this->_iconFromClass($class);
+			$error = ms_GetErrorObj();
+			if($error->code != MS_NOERR){
+				$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+				ms_ResetErrorList();
+				throw new Exception($msg);
+			}
+			
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 			}
@@ -104,28 +110,37 @@ class Symbol{
 	}
 	
 	private function createSymbolIcon($dbSchema) {
+		
 		$image_data = null;
 		$aClass = array();
 		
 		$sql="select symbol_name,icontype,symbol_def from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-		if($this->filter) $sql.=" where ".$this->filter;
-
-		$rv = $this->db->sql_query($sql);
-		if ($rv === false) {
-			throw new RuntimeException("Failed to execute:\n$sql");
+		if($this->filter) {
+			$sql.=" where ".$this->filter;
 		}
-		$res=$this->db->sql_fetchrowset();	
-		for($i=0;$i<count($res);$i++){
-			$class=array();$style=array();
-			$class["icontype"]=$res[$i]["icontype"];
-			$style["symbol"]=$res[$i]["symbol_name"];
+
+		$stmt = $this->db->query($sql);
+		while ($row = $stmt->fetch()){
+			$style=array();
+			$style["symbol"]=$row["symbol_name"];
 			$style["color"]=array(0,0,0);
+			
+			$class=array();
+			$class["icontype"]=$row["icontype"];
 			$class["style"][]=$style;
+			
 			$aClass[]=$class;
-			$aSymbol[]="SYMBOL\nNAME \"".$res[$i]["symbol_name"]."\"\n".$res[$i]["symbol_def"]."\nEND";
+			$aSymbol[]="SYMBOL\nNAME \"".$row["symbol_name"]."\"\n".$row["symbol_def"]."\nEND";
 
 			$this->createMapfile($aSymbol);
 			$oIcon = $this->_iconFromClass($class);
+			$error = ms_GetErrorObj();
+			if($error->code != MS_NOERR){
+				$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+				ms_ResetErrorList();	
+				throw new Exception($msg);
+			}
+			
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 				$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='".$style["symbol"]."';";
@@ -139,32 +154,35 @@ class Symbol{
 		$aClass = array();
 		
 		$sql="select symbol_ttf_name,font_name,ascii_code from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-		if($this->filter) $sql.=" where ".$this->filter;
-		$rv = $this->db->sql_query($sql);
-		if ($rv === false) {
-			throw new RuntimeException("Failed to execute:\n$sql");
+		if($this->filter) {
+			$sql.=" where ".$this->filter;
 		}
-		$res=$this->db->sql_fetchrowset();	
-		for($i=0;$i<count($res);$i++){
+		$stmt = $this->db->query($sql);
+		while($row = $stmt->fetch()){
 			$class=array();
 			$class["icontype"]=MS_LAYER_POINT;		
-			$class["symbol_ttf"]=$res[$i]["symbol_ttf_name"];
-			$class["font_name"]=$res[$i]["font_name"];
+			$class["symbol_ttf"]=$row["symbol_ttf_name"];
+			$class["font_name"]=$row["font_name"];
 			$class["label_color"]=array(0,0,0);
-			//$class["label_bgcolor"]=array(-1,-1,-1);
 			$aClass[]=$class;
-			$ch=(chr($res[$i]["ascii_code"])=='"')?"'".chr(34)."'":"\"".chr($res[$i]["ascii_code"])."\"";
-			$aSymbol[]="SYMBOL\nNAME \"".$res[$i]["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$res[$i]["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
+			$ch=(chr($row["ascii_code"])=='"')?"'".chr(34)."'":"\"".chr($row["ascii_code"])."\"";
+			$aSymbol[]="SYMBOL\nNAME \"".$row["symbol_ttf_name"]."\"\nTYPE TRUETYPE\nFONT \"".$row["font_name"]."\"\nCHARACTER $ch\nANTIALIAS TRUE\nEND";
 
 			$this->createMapfile($aSymbol);
 			$oIcon = $this->_iconFromClass($class);
+			$error = ms_GetErrorObj();
+			if($error->code != MS_NOERR){
+				$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+				ms_ResetErrorList();	
+				throw new Exception($msg);
+			}
+			
 			if($oIcon){
 				$image_data = $this->getIconImage($oIcon);
 				$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
-				//echo ($sql."<br>");
-				//$this->db->sql_query($sql);
 			}
 		}
+		
 		return $image_data;
 	}
 	
@@ -180,8 +198,9 @@ class Symbol{
 			throw new RuntimeException("Directory $mapDir is not writable");
 		}
         GCUtils::deleteOldFiles($mapDir);
-		$this->mapfile=ROOT_PATH.'map/tmp/tmp'.rand(0,99999999).'.map';
-		$this->simbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
+		
+		$this->mapfile = ROOT_PATH.'map/tmp/' . uniqid() . '.map';
+		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 
 		if($this->table=='class'){
 			$image_data = $this->createClassIcon($dbSchema);
@@ -190,14 +209,49 @@ class Symbol{
 		} elseif($this->table=='symbol_ttf'){
 			$image_data = $this->createSymbolTtfIcon($dbSchema);
 		} else {
-			throw new Exception("Unknonwn icon class {$this->table}");
+			throw new Exception("Unknown icon class {$this->table}");
 		}
-		// if(!DEBUG) unlink($this->mapfile);	
+		if (!is_null($image_data) && false === unlink($this->mapfile)) {
+			throw new Exception("Cound not unlink(".$this->mapfile.")");
+		}
         return $image_data;
+	}
+
+	function createFontIcon($font, $ascii_code) {
+		$image_data = null;
+		$aClass = array();
+		$class=array();
+
+		$this->mapfile = ROOT_PATH.'map/tmp/' . uniqid() . '.map';
+		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
+
+		$ch = "&#{$ascii_code};";
+		$class["icontype"] = MS_LAYER_POINT;
+		$class["symbol_ttf"] = 'test';
+		$class["font_name"] = $font;
+		$class["label_color"] = array(0,0,0);
+		$aClass[] = $class;
+		$aSymbol[] = "SYMBOL\nNAME \"".$class["symbol_ttf"]."\"\nTYPE TRUETYPE\nFONT \"".$class["font_name"]."\"\nCHARACTER \"$ch\"\nANTIALIAS TRUE\nEND";
+
+		$this->createMapfile($aSymbol);
+		$oIcon = $this->_iconFromClass($class);
+		$error = ms_GetErrorObj();
+		if($error->code != MS_NOERR){
+			$msg = "Error in mapfile {$this->mapfile}, {$error->routine}: {$error->message}";
+			ms_ResetErrorList();	
+			throw new Exception($msg);
+		}
+		
+		if($oIcon){
+			$image_data = $this->getIconImage($oIcon);
+			//$sql="update $dbSchema.symbol_ttf set symbol_ttf_image='{$image_data}' where symbol_ttf_name='".$class["symbol_ttf"]."' and font_name='".$class["font_name"]."';";
+		}
+		
+		return $image_data;
 	}
 	
 
-	private function _iconFromClass($class){
+	private function _iconFromClass(array $class){
 
 		//creo la mappa 
 		ms_ResetErrorList();	
@@ -221,9 +275,12 @@ class Symbol{
 		$oLay=ms_newLayerObj($oMap);
 		$oLay->set('type', $class["icontype"]);	
 		$oClass=ms_newClassObj($oLay);
-		$smbSize=$this->simbolSize[$class["icontype"]];
+		if (!isset($this->symbolSize[$class["icontype"]])) {
+			throw new Exception("invalid icontype '{$class["icontype"]}'");
+		}
+		$smbSize=$this->symbolSize[$class["icontype"]];
 		$style=isset($class["style"])?$class["style"]:array();
-		//print_array($class);
+		
 		//Aggiungo gli stili
 		for($i=0;$i<count($style);$i++){
 			$oStyle=ms_newStyleObj($oClass);
@@ -290,23 +347,30 @@ EOT;
 			$sql="select project_name as project,theme_name as theme,layergroup_name as layergroup,layer_name as layer,class_name as class,class_id
 			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
 			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name)";	
-			if($this->filter) $sql.=" where ".$this->filter;
+			if($this->filter) {
+				$sql.=" where ".$this->filter;
+			}
 			$sql.="  order by 1,2,3,4,5";
 			$headers = array("Image","Class","Layer","Layergroup","Theme","Project");	
 			$values=array();
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
-				$values[]=array("table=class&id=".$row["class_id"],$row["class"],$row["layer"],$row["layergroup"],$row["theme"],$row["project"]);
+			$stmt = $this->db->query($sql);
+			while($row=$stmt->fetchrow()){
+				$values[]=array("table=class&id=".$row["class_id"],
+					$row["class"], $row["layer"], $row["layergroup"],
+					$row["theme"], $row["project"]);
 			}
 		}
 		elseif($table=='symbol'){
 			$sql="select symbol_name as symbol,symbolcategory_name as category from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			
-			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.="  order by symbolcategory_name, symbol_name";
+			if($this->filter) {
+				$sql.=" where ".$this->filter;
+			}
+			$sql.=" order by symbolcategory_name, symbol_name";
+			
 			$headers = array("Image","Symbol","Category");
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
+			$stmt = $this->db->query($sql);
+			while($row=$stmt->fetch()){
 				if(!$assoc) {
 					$values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
 				} else {
@@ -315,14 +379,16 @@ EOT;
 			}
 		}
 		elseif($this->table=='symbol_ttf'){
-			$sql="select symbol_ttf_name as symbol,font_name as font,position,symbolcategory_name as category  from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.="  order by 2,1";
+			$sql="select symbol_ttf_name as symbol,font_name as font,position, ascii_code,symbolcategory_name as category  from $dbSchema.symbol_ttf inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
+			if($this->filter) {
+				$sql.=" where ".$this->filter;
+			}
+			$sql.=" order by 2,1";
 			$headers = array("Image","Symbol","Font","Category","Position");
-			$this->db->sql_query($sql);
-			while($row=$this->db->sql_fetchrow()){
+			$stmt = $this->db->query($sql);
+			while($row=$stmt->fetch()){
 				if(!$assoc) {
-					$values[]=array("table=symbol_ttf&font=".$row["font"]."&id=".$row["symbol"],$row["symbol"],$row["font"],$row["category"],$row["position"]);
+					$values[]=array("table=symbol_ttf&font=".$row["font"]."&id=".$row["symbol"],$row["symbol"],$row["font"],$row["category"],$row["position"],$row["ascii_code"]);
 				} else {
 					array_push($values, $row);
 				}
@@ -331,9 +397,20 @@ EOT;
 		return array("headers"=>$headers,"values"=>$values);
 	}
 	
+	function removeByName($name) {
+		$dbSchema=DB_SCHEMA;
+
+		$sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		
+		$sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		return $rv; 
+	}
 	
 	//METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
 		
+	// unused
 	function updateFileSmb(){
 		$smbfile = fopen ("smb.map","w");
 		if ($smbfile === false) {
@@ -350,6 +427,7 @@ EOT;
 	
 	}
 	
+	// unused!!
 	function importFilesmb($filename){
 		$handle=fopen($filename,'r');
 		$content=trim(fread($handle,filesize($filename)));
@@ -384,15 +462,13 @@ EOT;
 		$tableId=$table."_id";
 		foreach($aSymbol as $smbName=>$smbDef){
 			$sql="insert into $dbSchema.symbol(symbol_id,symbol_name,def) values ((select $dbSchema.new_pkey('symbol','symbol_id')),'$smbName','$smbDef');";
-			$this->db->sql_query($sql);
+			$this->db->exec($sql);
 			print($sql."\n");
 		}
 	}
 	
+	// unused!!!
 	function updateFontList(){
-		$dbSchema=DB_SCHEMA;
-		$sql="select font_name,file from $dbSchema.font;";
-		$this->db->sql_query($sql);
 		
 		$fontlistFile = ROOT_PATH.'fonts/fonts.list';
 		$file = fopen ($fontlistFile,"w");
@@ -400,7 +476,10 @@ EOT;
 			throw new RuntimeException("Could not open $fontlistFile");
 		}
 
-		while($row=$this->db->sql_fetchrow())
+		$dbSchema=DB_SCHEMA;
+		$sql="select font_name,file from $dbSchema.font;";
+		$stmt = $this->db->query($sql);
+		while($row=$stmt->fetch())
 			$text[]=$row["font_name"]."\t".$row["file"];
 		fwrite($file, implode("\n",$text));
 		fclose($file);

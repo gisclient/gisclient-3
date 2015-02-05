@@ -41,7 +41,6 @@ class Tabella{
 	// ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
 		//	NUOVA MODALITA
 		
-		$mylang = GCAuthor::getLang();
 		$rel_dir = GCAuthor::getTabDir();
 		
 		$tmp=parse_ini_file(ROOT_PATH.$rel_dir.$config_file,true);

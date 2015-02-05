@@ -1,5 +1,10 @@
 <?php
 include '../../../config/config.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $debugTinyOWS = defined('DEBUG') && DEBUG == 1;
 
 $parts = explode('/', $_SERVER['REQUEST_URI']);
@@ -68,16 +73,16 @@ if(empty($projectName)) {
 		throw new Exception("Missing project name for layergroup $layergroupName and layer $layerName");
 }
 
-if(!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
+if (!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
-		file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "PHP_AUTH_USER not set, request authentication\n", FILE_APPEND);
+		file_put_contents(DEBUG_DIR . 'tinyows-logs.txt', "PHP_AUTH_USER not set, request authentication\n", FILE_APPEND);
 		header('WWW-Authenticate: Basic realm="Gisclient"');
 		header('HTTP/1.0 401 Unauthorized');
 	} else {
-        $user = new GCUser();
-        if($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-            $user->setAuthorizedLayers(array('project_name'=>$projectName));
-        }
+		$user = new GCUser();
+		if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+			$user->setAuthorizedLayers(array('project_name' => $projectName));
+		}
 	}
 }
 
@@ -86,7 +91,7 @@ $authorized = false;
 if(!empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$typeName]['WFST'])) {
 	$authorized = true;
 } else {
-	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', var_export($_SESSION['GISCLIENT_USER_LAYER'], true)."\n", FILE_APPEND);
+	print_debug(var_export($_SESSION['GISCLIENT_USER_LAYER'], true), null, 'tinyows');
 }
 
 if(!$authorized) {
@@ -103,12 +108,12 @@ if($requestMethod == 'GET') {
 	
 	$envVars['CONTENT_LENGTH'] = strlen($fileContent);
 	$envVars['CONTENT_TYPE'] = 'text/xml';
-	if($debugTinyOWS) file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "input content:\n".$fileContent."\n", FILE_APPEND);
+	print_debug("input content:\n".$fileContent, null, 'tinyows');
 } else {
 	throw new Exception("HTTP method $requestMethod not handled");	
 }
 
-if($debugTinyOWS) file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "envVars:\n".var_export($envVars, true)."\n", FILE_APPEND);
+print_debug("envVars:\n".var_export($envVars, true), null, 'tinyows');
 $pipes = array();
 
 if($autoUpdateUser) {
@@ -116,14 +121,14 @@ if($autoUpdateUser) {
 		throw new Exception("constant CURRENT_EDITING_USER_TABLE is not defined");
 	}
     if(!GCApp::tableExists($dataDb, 'public', CURRENT_EDITING_USER_TABLE)) {
-        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'creo la tabella '.CURRENT_EDITING_USER_TABLE."\n\n", FILE_APPEND);
-        $sql = 'create table '.CURRENT_EDITING_USER_TABLE.' (id integer, username text, editingdate timestamp without time zone default NOW(), CONSTRAINT current_editing_user_pkey PRIMARY KEY (id));';
+        $sql = 'create table public.'.CURRENT_EDITING_USER_TABLE.' (id integer primary key, username text, editingdate timestamp without time zone default NOW());';
+		print_debug('creo la tabella public.'.CURRENT_EDITING_USER_TABLE."\n$sql", null, 'tinyows');
         $dataDb->exec($sql);
     }
 
     $n = 0;
     while(anotherUserIsEditing($dataDb, CURRENT_EDITING_USER_TABLE)) {
-        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'another user is editing .. '.$n."\n\n", FILE_APPEND);
+		print_debug('another user is editing .. '.$n, null, 'tinyows');
         if($n > 4) {
             file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'current_editing_table is not empty after 2 minutes... give up!', FILE_APPEND);
             die('Another user is currently editing, please try again');
@@ -136,9 +141,9 @@ if($autoUpdateUser) {
         $sql = 'insert into '.CURRENT_EDITING_USER_TABLE.' (id, username) values (1, :username)';
         $stmt = $dataDb->prepare($sql);
         $stmt->execute(array('username'=>$_SESSION['USERNAME']));
-        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'inserted user '.$_SESSION['USERNAME']."\n\n", FILE_APPEND);
+		print_debug('inserted user '.$_SESSION['USERNAME'], null, 'tinyows');
     } catch(Exception $e) {
-        file_put_contents(DEBUG_DIR.'tinyows-logs.txt', 'cannot insert into '.CURRENT_EDITING_USER_TABLE.', maybe there is still an user there!');
+		print_debug('cannot insert into '.CURRENT_EDITING_USER_TABLE.', maybe there is still an user there!', null, 'tinyows');
         die('Another user is currently editing, please try again');
     }
 }
@@ -152,9 +157,8 @@ if(is_resource($process)) {
 	$response = stream_get_contents($pipes[1]);
 	fclose($pipes[1]);
 	$return = proc_close($process);
-	if($debugTinyOWS) file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "process returned with $return\n", FILE_APPEND);
-	
-	if($debugTinyOWS) file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "response:\n" .$response."\n\n", FILE_APPEND);
+	print_debug("process returned with $return", null, 'tinyows');
+	print_debug("response:\n" .$response, null, 'tinyows');
 	$pos = strpos($response, '<?xml');
 	if($pos !== false) {
 		$response = substr($response, $pos);
@@ -162,7 +166,7 @@ if(is_resource($process)) {
     header('Content-Type: text/xml; charset=utf-8');
 	echo $response;
 } else {
-	if($debugTinyOWS) file_put_contents(DEBUG_DIR.'tinyows-logs.txt', var_export($envVars, true)."\n\n".$fileContent, FILE_APPEND);
+	print_debug("\$envVars:\n" .var_export($envVars, true), null, 'tinyows');
 	header("HTTP/1.1 500 Internal Server Error");
 	echo "failed to run tinyows";
 	exit(0);
