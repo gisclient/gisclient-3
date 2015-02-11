@@ -3,7 +3,6 @@
 class printDocument {
 
     protected $options;
-
     protected $tiles = array();
 	protected $extent = array();
 	protected $dimensions = array(
@@ -334,7 +333,7 @@ class printDocument {
 			$url = printDocument::addPrefixToRelativeUrl($url);
 			$ch = curl_init($url);
 			$fp = fopen($dest, "wb");
-file_put_contents(DEBUG_DIR.'getlegendgraphic.txt', $url."\n", FILE_APPEND);
+			file_put_contents(DEBUG_DIR.'getlegendgraphic.txt', $url."\n", FILE_APPEND);
 			$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
 			curl_setopt_array($ch, $options);
 
