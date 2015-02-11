@@ -118,22 +118,24 @@ switch($catalogData["connection_type"]){
 			$stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data'], ':column'=>$_REQUEST['data_geom']));
 			$dbColumnName = $stmt->fetchColumn(0);
 			if($dbColumnName != $_REQUEST['data_geom']) $ajax->error('Cannot find column '.$_REQUEST['data_geom'].' for table '.$schema.'.'.$_REQUEST['data']);
-			
+	
+	//INUTILE CALCOLARE EXTENT PER OGNI LAYER, USO QUELLA DEL MAPSET - VEDI PROBLEMA DI TABELLE DI GEOMETRIE NON COMPLETE IN FASE DI COSTRUZIONE DEL PROGETTO	
+	/*
 			$sql = 'select st_extent('.$dbColumnName.') from '.$schema.'.'.$dbTableName;
 			$box = $dataDb->query($sql)->fetchColumn(0);
 			$extent = array();
 			if(!empty($box)) {
 				$extent = GCUtils::parseBox($box);
 			}
-			
+	*/		
 			$sql = "SELECT column_name FROM information_schema.columns WHERE table_schema=:schema AND table_name=:table ORDER BY column_name;";
 			$stmt = $dataDb->prepare($sql);
 			$stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data']));
 			while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 				$result['data'][$n] = array('pkey'=>$row['column_name']);
 				$result['data_objects'][$n] = array(
-					'data_unique' => $row['column_name'],
-					'data_extent' => implode(' ', $extent)
+					'data_unique' => $row['column_name']
+					//,'data_extent' => implode(' ', $extent)
 				);
 				$n++;
 			}

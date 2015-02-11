@@ -145,7 +145,13 @@ class gcFeature{
 		$aConnInfo = connInfofromPath($aFeature["catalog_path"]);
 		$aFeature["connection_string"] = $aConnInfo[0];
 		$aFeature["table_schema"] = $aConnInfo[1];
-		$aFeature["filePath"] = (substr(trim($aFeature["catalog_path"]),0,1)=='/')?trim($aFeature["catalog_path"]):trim($aFeature["base_path"]).trim($aFeature["catalog_path"]);
+		//Se inizia con / o con ../ no concateno con il basepath
+		if(substr(trim($aFeature["catalog_path"]),0,1)=='/' || substr(trim($aFeature["catalog_path"]),0,3)=='../'){
+			$aFeature["filePath"] = trim($aFeature["catalog_path"]);
+		}
+		else{
+			$aFeature["filePath"] = trim($aFeature["base_path"]).trim($aFeature["catalog_path"]);
+		}
 		$aFeature["relation"]= (isset($qRelation))?$qRelation:null;	
 		$aFeature["fields"] = (isset($qField))?$qField:null;
 		$aFeature["link"]=(isset($qLink))?array_values($qLink):array();
@@ -295,17 +301,12 @@ class gcFeature{
 					$layText[]="CONNECTIONTYPE POSTGIS";
 					$layText[]="CONNECTION \"".$this->aFeature["connection_string"]."\"";
 					$sData = $this->_getLayerData();
-                    if(!$this->aFeature["fields"] && !empty($this->aFeature["data_unique"])) {
-                        $sData .= ' USING UNIQUE '.$this->aFeature['data_unique'];
-                    } else if($this->aFeature["fields"]) {
-                        $sData .= " USING UNIQUE gc_objid";
-                    }
 //					if($this->aFeature["fields"])
 //						$sData .= " USING UNIQUE gc_objid";
 //					elseif(!empty($this->aFeature["data_unique"]))
 //						$sData .= " USING UNIQUE ".$this->aFeature["data_unique"];
-                    //if (!empty($this->aFeature["data_unique"]))
-                        //$sData .= " USING UNIQUE gc_objid";
+                    if (!empty($this->aFeature["data_unique"]))
+                        $sData .= " USING UNIQUE gc_objid";
 					if(!empty($this->aFeature["data_srid"])) $sData .= " USING SRID=" . $this->aFeature["data_srid"];
 					$layText[]="DATA \"$sData\"";	
 					if(!empty($this->aFeature["data_filter"])) $layText[]="FILTER \"". $this->aFeature["data_filter"] ."\"";
@@ -387,12 +388,8 @@ class gcFeature{
 	}
 	
 	function _getLayerData(){
-        if($this->aFeature["tileindex"] || !$this->aFeature["fields"]) {
-            return $this->aFeature['data_geom']." from ".$this->aFeature["table_schema"].'.'.$this->aFeature["data"];
-        } else {
-            $query = GCAuthor::buildFeatureQuery($this->aFeature);
-            return 'gc_geom FROM ('.$query.') AS foo';
-        }
+        $query = GCAuthor::buildFeatureQuery($this->aFeature);
+        return 'gc_geom FROM ('.$query.') AS foo';
         
         //tutta questa parte è stata spostata in lib/gcapp.class.php, perchè condivisa con gcPgQuery per le interrogazioni avanzate
 		$aFeature = $this->aFeature;
@@ -575,18 +572,6 @@ class gcFeature{
 		if(!empty($this->aFeature['hidden']) && $this->aFeature["hidden"]==1) $aMeta["gc_hide_layer"] = '1';
 		if(!empty($this->aFeature['private']) && $this->aFeature["private"]==1) $aMeta["gc_private_layer"] = '1';
 		
-		$sql = "select af.filter_name, laf.required ".
-			" from ".DB_SCHEMA.".authfilter af inner join ".DB_SCHEMA.".layer_authfilter laf using(filter_id) ".
-			" where layer_id = ? ";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($this->aFeature['layer_id']));
-		$n = 0;
-		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			$aMeta['gc_authfilter_'.$n] = $row['filter_name'];
-			if(!empty($row['required'])) $aMeta['gc_authfilter_'.$n.'_required'] = 1;
-			$n++;
-		}
-		
 		foreach ($aMeta as $key=>$value){
 			$metaText .= "\t\"$key\"\t\"$value\"\n\t";
 		}
@@ -701,7 +686,7 @@ class gcFeature{
 		return "\t".implode("\n\t\t\t",$styText);	
 	}
 	
-	// SERVE A MARCO??????
+	// SERVE A MARCO?????? - viene usata in admin/rpc.php!
 	function getFeatureField($layerId=null){
 		$result=Array();
 		if ($layerId) $this->init($layerId);
@@ -712,6 +697,7 @@ class gcFeature{
 			$relationName=($field["relation"])?($aFeature["relation"][$field["relation"]]["table_name"]):($aFeature["data"]);
 			$relationSchema=($field["relation"])?($aFeature["relation"][$field["relation"]]["table_schema"]):($aFeature["table_schema"]);
 			$relationConnStr=($field["relation"])?($aFeature["relation"][$field["relation"]]["connection_string"]):($aFeature["connection_string"]);
+            $catalogPath = ($field['relation']) ? ($aFeature['relation'][$field['relation']]['catalog_path']) : ($this->aFeature['catalog_path']);
 			$result[$fieldId]=Array(
 				"id"=>$fieldId,
 				"name"=>$field["field_name"],
@@ -719,6 +705,7 @@ class gcFeature{
 				"table"=>$relationName,
 				"schema"=>$relationSchema,
 				"connection_string"=>$relationConnStr,
+				"catalog_path"=>$catalogPath,
 				"data_type"=>$field["data_type"]
 			);
 		}

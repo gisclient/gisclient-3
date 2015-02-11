@@ -4,20 +4,22 @@ require_once ROOT_PATH.'lib/ajax.class.php';
 require_once 'include/printDocument.php';
 require_once 'include/mapImage.php';
 
+
+
 $ajax = new GCAjax();
 
-if ($_REQUEST['format'] == 'PDF') {
+if (!empty($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
 	if(!file_exists(GC_FOP_LIB)) $ajax->error('fop lib does not exist');
 	require_once GC_FOP_LIB;
 }
-
 
 try {
     $printMap = new printDocument();
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();
-		$ajax->success(array('box'=>$box));
+		for($i=0;$i<count($box);$i++) $box[$i] = floatval($box[$i]);
+		$ajax->success(array('box'=>$box,'pages'=>$printMap->getDimensions()));
 	}
 
 	if(!empty($_REQUEST['lang'])) {

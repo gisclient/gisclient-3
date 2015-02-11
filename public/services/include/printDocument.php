@@ -108,11 +108,11 @@ class printDocument {
 		if(!isset($this->dimensions[$this->options['direction']])) throw new Exception('Invalid direction');
 		if(!isset($this->dimensions[$this->options['direction']][$this->options['format']])) throw new Exception('Invalid print format');
 		
-		if($options['scale_mode'] == 'user') {
-			if(empty($options['extent']) || count($options['extent']) != 4)
+		if($this->options['scale_mode'] == 'user') {
+			if(empty($this->options['extent']) || count($this->options['extent']) != 4)
 				throw new Exception('For user-defined scale mode, an array of bottom, left, top, right coordinates must be provided');
 		} else {
-			if(empty($options['pixels_distance']) || empty($options['viewport_size']) || empty($options['center']))
+			if(empty($this->options['pixels_distance']) || empty($this->options['viewport_size']) || empty($this->options['center']))
 				throw new Exception('For auto scale mode, pixels_distance, viewport_size and center must be provided');
 		}
 		$this->WMSMergeUrl = PUBLIC_URL.$this->WMSMergeUrl;
@@ -183,6 +183,9 @@ class printDocument {
 		return $pdfFile;
 	}
 	
+	public function getDimensions() {
+		return $this->dimensions;
+	}
 	public function getBox() {
 		$this->calculateSizes();
 		
@@ -374,7 +377,7 @@ file_put_contents(DEBUG_DIR.'getlegendgraphic.txt', $url."\n", FILE_APPEND);
 			throw $e;
 		}
 	}
-	
+
 	protected function buildDOM($absoluteUrls = false) {
 		try {
 			$this->getMapImage();

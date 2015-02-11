@@ -77,7 +77,7 @@ class mapImage {
                 case 'external_provider':
                     array_push($this->wmsList, array(
                         //'URL'=>GISCLIENT_OWS_URL.'PROJECT='.$tile['project'].'&MAP='.$tile['map'],
-                        'URL'=>GISCLIENT_OWS_URL.'?MAP='.$tile['map'],
+                        'URL'=>printDocument::addPrefixToRelativeUrl(GISCLIENT_OWS_URL.'?MAP='.$tile['map']),
                         'PARAMETERS'=>array(
                             //'MAP'=>$tile['map'],
                             //'PROJECT'=>$tile['project'],
@@ -121,6 +121,9 @@ class mapImage {
                 break;
             }
 		}
+
+//var_export($this->wmsList);
+
 	}
 	
 	protected function getMapImage() {
@@ -152,7 +155,7 @@ class mapImage {
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
 			$mapImage = curl_exec($ch);
-			if(!$requestParameters['save_image']) {
+			if(false && !$requestParameters['save_image']) {
 				file_put_contents($this->options['TMP_PATH'].$this->imageFileName, $mapImage);
 			}
 			curl_close($ch);	
