@@ -1,0 +1,12 @@
+[standard]
+table = "layergroup"
+pkey = "layergroup_id"
+dato[] = "Nome;layergroup_name;30;text"
+dato[] = "Titolo;layergroup_title;55;text"
+dato[] = "Collegamento;layergroup_link;55;text"
+dato[] = "Scala di visibilità:<br>Massima;layergroup_maxscale;8;intero|Minima;layergroup_minscale;8;intero|Ottimale;layergroup_smbscale;8;intero"
+dato[] = "Raggruppato;multi;3;noyes"
+dato[] = "Ordine;layergroup_order;3;intero"
+dato[] = "Catalogo WMS;catalog_id;250#seldb_catalog_wms;selectdb"
+dato[] = "Gruppo di Layer;wms;;text|Elenco;wms;100#get_elenco#catalog_id;button"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all"

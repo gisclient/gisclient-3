@@ -1,0 +1,71 @@
+[standard]
+table = "layer"
+pkey = "layer_id"
+dato[] = "Name *;layer_name;55;text"
+dato[] = "Titel *;layer_title;55;text"
+dato[] = "Sortierung *;layer_order;5;intero"
+dato[] = "Mattheit:<br><font size=1 >0 = transparent 100 = matt</font>;opacity;5;text"
+dato[] = "Maßeinheit des Layer;sizeunits_id;160#seldb_sizeunits;selectdb"
+dato[] = "Abfragbar;queryable;;noyes|In Suche sichtbar;searchable;;noyes|Privat;private;;noyes"
+//dato[] = "Nascosto;hidden;;noyes"
+dato[] = "Einstellung Parameter"</font>
+dato[] = "Typ *;layertype_id;200#seldb_layertype;selectdb|Geometry type *;data_type;20;text"
+dato[] = "Verbindungskataloge *;catalog_id;200#seldb_catalog#project_name;selectdb"
+dato[] = "Tabelle *;data;39;text|Tabelle auswählen;data;120#openList#catalog_id#layertype_id#layergroup#project;button"
+dato[] = "Felder: *<br>Geometrie;data_geom;15;text|Primary Key;data_unique;15;text|EPSG Kode;data_srid;8;intero"
+dato[] = "Layer Sichbarkeit:<br><font size=1>Max. Maßstab</font>;maxscale;8;intero|<font size=1>Min. Maßstab</font>;minscale;8;intero"
+dato[] = "Filter und Definitionen"
+dato[] = "Ausdenung einschränken<br><font size=1>(minX minY MAXX MAXY)</font>;data_extent;64;text"
+dato[] = "Daten Filter<br><font size=1>Benutze SQL (<a href="http://www.postgresql.org/docs/9.0/static/sql-select.html" target=blank>WHERE</a>)</font>;data_filter;48x2;textarea"
+dato[] = "Definition<br><font size=1>Benutze MAPSERVER (<a href= "http://mapserver.org/mapfile/layer.html" target=blank>LAYER</a>)</font>;layer_def;48x6;textarea"
+dato[] = "Metadata;metadata;48x6;textarea"
+//dato[] = "Numero massimo di oggetti visualizzati;maxfeatures;5;intero"
+//dato[] = "Max vect;maxvectfeatures;5;intero|Buffer di zoom;zoom_buffer;5;intero"
+//dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
+dato[] = "Label Parameter<br><font size = 1>Siehe auch "Klassen" für die Konfiguration vom Label</font>"
+dato[] = "Feld für Label;labelitem;20;text|Feld auswählen;labelitem;100#openList#catalog_id#layertype_id#data;button"
+dato[] = "Feld für die Größe der Label;labelsizeitem;20;text|Feld auswählen;labelsizeitem;100#openList#catalog_id#layertype_id#data;button"
+//dato[] = "POSTLABELCACHE;postlabelcache;3;noyes"
+
+//dato[] = "Visibilità ottimale layer:;Scala ottimale;symbolscale;8;intero"
+dato[] = "Label Sichbarkeit:<br><font size=1>Max. Maßstab</font>;labelmaxscale;8;intero|<font size=1>Min. Maßstab</font>;labelminscale;8;intero"
+//dato[] = "Campo per la classificazione;classitem;30;text|Elenco;classitem;100#openList#catalog_id#layertype_id#data;button"
+//dato[] = "Template;template;44;text"
+//dato[] = "Template header;header;44;text"
+//dato[] = "Template footer;footer;44;text"
+
+
+//dato[] = "Dimesione selezione;selection_width;3;text|Colore selezione;selection_color;11;color"
+//dato[] = "Ultimo aggiornamento;last_update;44;text"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina|Kopieren von;layergroup;#openCopy;button|Verschieben;theme;#openMove;button"
+//dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "layer"
+pkey = "layer_id"
+order_fld="layer_order#layer_name"
+dato[] = "Name;layer_name;20%#layer_id;goto"
+dato[] = "Titel;layer_title;20%;text"
+dato[] = "Tabelle;data;15%;text"
+dato[] = "Typ;layertype_id;7%#e_layertype#layertype_name;chiave_esterna"
+dato[] = "Max. Maßstab;maxscale;10%;text"
+dato[] = "Min. Maßstab;minscale;10%;text"
+dato[] = "Abfragbar;queryable;7%;yesno"
+dato[] = "Sortierung;layer_order;7%;text"
+dato[] = ";layer_id;1%;info"
+dato[] = ";layer_id;1%;edit"
+dato[] = ";layer_id;1%;delete"
+
+[title]
+edit = "Layer ändern"
+view = "Layer anzeigen"
+new = "Layer hinzufügen"
+list = "Layer"
+
+
+[menu]
+new = "Neue Layer"
+standard = "layer_name"
+
+
+[message]
+nodata = ""

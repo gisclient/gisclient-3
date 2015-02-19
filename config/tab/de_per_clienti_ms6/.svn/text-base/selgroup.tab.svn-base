@@ -1,0 +1,28 @@
+[standard]
+table = "selgroup"
+pkey = "selgroup_id"
+dato[] = "Nome;selgroup_name;30;text"
+dato[] = "Titolo;selgroup_title;30;text"
+dato[] = "Ordine;selgroup_order;4;text"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "selgroup"
+pkey = "selgroup_id"
+order_fld = "selgroup_name#selgroup_order"
+dato[] = ";selgroup_id;3%;info"
+dato[] = "Nome;selgroup_name;30%#selgroup_id;goto"
+dato[] = "Titolo;selgroup_title;60%;text"
+dato[] = "Ordine;selgroup_order;10%;text"
+
+[title]
+edit = "Gruppo di Interrogazione"
+view = "Gruppo di Interrogazione"
+new = "Nuovo Gruppo di Interrogazione"
+list = "Gruppi di Interrogazione"
+
+[menu]
+new = "Nuovo Gruppo di Interrogazione"
+standard = "selgroup_name"
+
+[message]
+nodata = "Nessun Gruppo di Interrogazione"

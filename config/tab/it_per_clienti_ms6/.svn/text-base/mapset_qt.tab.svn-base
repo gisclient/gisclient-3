@@ -1,0 +1,27 @@
+[standard]
+table = "mapset_qt"
+pkey = "mapset_name;qt_id"
+order_fld = "theme_title#presente DESC#qt_name"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;qt_id;7%#qt_id#presente;check1"
+dato[] = "Modello di Ricerca;qt_name;46%;text"
+dato[] = "Tema;theme_title;46%;text"
+
+[list]
+table = "mapset_qt"
+pkey = "mapset_name;qt_id"
+order_fld = "theme_title#qt_name"
+dato[] = "Modelli di Ricerca;qt_name;47%;text"
+dato[] = "Tema;theme_title;50%;text"
+
+[title]
+edit = "Modelli di Ricerca del Mapset"
+view = "Modelli di Ricerca del Mapset"
+new = "Modelli di Ricerca del Mapset"
+list = "Modelli di Ricerca del Mapset"
+
+[menu]
+standard = "Mapset Query Template"
+
+[message]
+nodata = ""

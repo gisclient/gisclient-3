@@ -1,0 +1,24 @@
+[standard]
+table = "mapset_link"
+pkey = "mapset_name;link_id"
+order_fld = "presente DESC#link_name"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;link_id;9%#link_id#presente;check1"
+dato[] = "Link;link_name;95%;text"
+[list]
+table = "mapset_link()"
+pkey = "mapset_name;link_id"
+order_fld = "link_name"
+dato[] = "Link;link_name;97%;text"
+
+[title]
+edit = "Link del Mapset"
+view = "Link del Mapset"
+new = "Link del Mapset"
+list = "Link del Mapset"
+
+[menu]
+standard = "Mapset Link"
+
+[message]
+nodata = ""

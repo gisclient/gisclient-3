@@ -1,0 +1,52 @@
+[standard]
+table = "qtfield"
+pkey = "qtfield_id"
+dato[] = "Daten Layer oder Relation *;qtrelation_id;200#seldb_qtrelation#layer_id;selectdb"
+dato[] = "Feld *;qtfield_name;60;text|Feld auswählen;qtfield_name;100#openList#layer#qtrelation_id;button"
+dato[] = "Titel *;field_header;40;text"
+dato[] = "Sortierung *;qtfield_order;3;intero"
+dato[] = "Feldtyp;fieldtype_id;200#seldb_fieldtype;selectdb"
+dato[] = "Datentyp;datatype_id;200#seldb_datatype;selectdb"
+dato[] = "Formel;formula;48x2;textarea"
+//dato[] = "Formato;field_format;48x2;textarea|Elenco Formati;field_format;100#openList;button"
+dato [] = "Aktion auf Feld"
+dato[] = "Im Suchergebnis;resultype_id;200#seldb_resultype;selectdb"
+dato[] = "Suchen Typ<br><font size=1>Nichts=nicht durchsuchbar</font>;searchtype_id;200#seldb_searchtype;selectdb"
+dato[] = "Filtern wegen..;filter_field_name;30;text|Feld auswählen;filter_field_name;100#openList#layer#qtrelation_id;button"
+dato [] = "Edit mit WFS-T<br><font size=1>E' necessario agire anche sui permessi del layer</font>"
+dato[] = "Editierbare Feld;editable;;noyes"
+dato[] = "Lookup für editierbare Feld<br><font size=1>Wertetabelle</font>;lookup_table;15;text|<font size=1>Schlüssel-Feld</font>;lookup_id;10;text|<font size=1>Sichtbar Feld</font>;lookup_name;10;text|Konfigurieren;lookup_table;100#openList#layer#qtrelation_id;button"
+//dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
+//dato[] = "Op predefinito;default_op;5;text"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "vista_qtfield"
+pkey = "qtfield_id"
+order_fld = "qtfield_order#field_header"
+dato[] = "Titel;field_header;15%#qtfield_id;goto"
+dato[] = "Feld;qtfield_name;15%;text"
+dato[] = "Feld Typ;fieldtype_id;15%#e_fieldtype#fieldtype_name;chiave_esterna"
+dato[] = "Relation;qtrelation_name;15%;text"
+dato[] = "Feld anzeigen;resultype_id;15%#e_resultype#resultype_name;chiave_esterna"
+dato[] = "Editierbar;editable;15%;noyes"
+//dato[] = "Larghezza %;column_width;10%;text"
+//dato[] = "Feld anzeigen;resultype_id;;7%;yesno"
+dato[] = "Sortierung;qtfield_order;10%;text"
+dato[] = "<font color="#404040">Kontrolle</font>;qtfield_control;15%;text"
+
+dato[] = ";qtfield_id;1%;info"
+dato[] = ";qtfield_id;1%;edit"
+dato[] = ";qtfield_id;1%;delete"
+
+[title]
+edit = "Feld ändern"
+view = "Feld anzeigen"
+new = "Feld hinzufügen"
+list = "Felder"
+
+[menu]
+new = "Feld hinzufügen"
+standard = "qtfield_name"
+
+[message]
+nodata = ""

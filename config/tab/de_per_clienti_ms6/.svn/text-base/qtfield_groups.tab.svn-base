@@ -1,0 +1,28 @@
+[standard]
+table = "qtfield_groups"
+pkey = "qtfield_id;groupname"
+order_fld = "groupname"
+dato[] = "Benutzergruppe;groupname;50%;text"
+dato[] = "Aktiv;groupname;7%#presente;check"
+dato[] = "Editierbar;editable;7%#editable#editable;check1"
+
+
+[list]
+table = "qtfield_groups"
+pkey = "qtfield_id;groupname"
+order_fld = "groupname"
+
+dato[] = "Benutzergruppe;groupname;50%;text"
+dato[] = "Aktiv;presente;50%;yesno"
+dato[] = "Editierbar;editable;7%;yesno"
+
+[title]
+edit = "Erlaubnis ändern"
+view = "Erlaubnis anzeigen"
+list = "Erlaubnis auf Feld"
+
+[menu]
+standard = "Erlaubnis hinzufügen"
+
+[message]
+nodata = ""

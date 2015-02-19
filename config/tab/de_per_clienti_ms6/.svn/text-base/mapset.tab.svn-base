@@ -1,0 +1,42 @@
+[standard]
+table = "mapset"
+pkey = "mapset_name"
+dato[] = "Name *;mapset_name;20;text"
+dato[] = "Titel *;mapset_title;50;text"
+dato[] = "SRID (EPSG Kode) *;mapset_srid;10;text"
+dato[] = "Maßstab max. *;maxscale;10;text"
+//dato[] = "Maßstab min.;minscale;10;text"
+dato[] = "Maßstab Liste auf Karte:<br><font size=1> (z.B: 5000,2500,1000)<font>;mapset_scales;48x6;textarea"
+dato[] = "Ausdenung einschränken<br><font size=1>(minX minY MAXX MAXY)</font>;mapset_extent;42;text"
+//dato[] = "Template;template;42;text"
+//dato[] = "Formati di stampa;page_size;20;text"
+//dato[] = "Scarica immagine;dl_image_res;20;text"
+dato[] = "Maßeinheit;sizeunits_id;160#seldb_sizeunits;selectdb"
+dato[] = "Koordinaten mit SRID anzeigen;displayprojection;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Privat;private;;noyes"
+//dato[] = "Colore sfondo;bg_color;11;color"
+//dato[] = "Reference fissa;static_reference;;noyes"
+//dato[] = "Estensione Reference;refmap_extent;42;text"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "mapset"
+pkey = "mapset_name"
+order_fld = "mapset_title#mapset_name"
+dato[] = "Titel;mapset_title;50%#mapset_name;goto"
+dato[] = "Name;mapset_name;;text"
+dato[] = ";mapset_name;1%;info"
+dato[] = ";mapset_name;1%;edit"
+dato[] = ";mapset_name;1%;delete"
+
+[title]
+edit = "Mapset ändern"
+view = "Mapset daten"
+new = "Mapset hinzufügen"
+list = "Mapset"
+
+[menu]
+new = "Neues Mapset"
+standard = "mapset_name"
+
+[message]
+nodata = ""

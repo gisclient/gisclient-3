@@ -1,0 +1,28 @@
+[standard]
+table = "project_srs"
+pkey = "project_name;srid"
+dato[] = "SRID (Codice EPSG)<br><font size=1>Consultare <a href="http://spatialreference.org/">spatialreference.org</a></font>;srid;6;intero"
+dato[] = "Parametri;projparam;50;text"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "project_srs"
+pkey = "project_name;srid"
+order_fld = "srid"
+dato[] = "SRID;srid;12%#srid#project_name;goto"
+dato[] = "Parametri di correzione;projparam;75%;text"
+dato[] = ";srid;1%#project_name;info"
+dato[] = ";srid;1%#project_name;edit"
+dato[] = ";srid;1%#project_name;delete"
+
+[title]
+edit = "Modifica sistema di riferimento"
+view = "Visualizza sistema di riferimento"
+new = "Inserisci sistema di riferimento"
+list = "Sistemi di riferimento"
+
+[menu]
+new = "Nuovo SRS"
+standard = "srid"
+
+[message]
+nodata = ""

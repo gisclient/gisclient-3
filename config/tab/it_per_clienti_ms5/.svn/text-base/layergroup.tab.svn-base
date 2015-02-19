@@ -1,0 +1,66 @@
+[standard]
+table = "layergroup"
+pkey = "layergroup_id"
+
+dato[] = "Nome: *;layergroup_name;55;text"
+dato[] = "Titolo: *;layergroup_title;55;text"
+dato[] = "Ordine *;layergroup_order;5;intero"
+dato[] = "Tipo di chiamata*;owstype_id;180#seldb_owstype;selectdb"
+
+dato[] = "Visibilità:<br><font size=1>Scala max.</font>;layergroup_maxscale;12;intero|<font size=1>Scala min.</font>;layergroup_minscale;12;intero"
+dato[] = "Opacità di default:<br><font size=1 >0 = Trasparente 100 = Opaco</font>;opacity;3;text"
+dato[] = "Formato Immagine di output<br><font size=1>N.B.: JPEG non è trasparente</font>;outputformat_id;150#seldb_outputformat#;selectdb"
+dato[] = "File di stile SLD;sld;49x2;textarea"
+dato[] = "URL Metadati;metadata_url;49x2;textarea"
+
+
+dato[] = "Parametri WMS"
+
+dato[] = "Layers: *<br><font size=1>Obbligatori e separati da virgola per WMS/TMS/WMTS</font>;layers;55;text"
+
+dato[] = "Usa tiles;tiletype_id;150#seldb_tiletype#;selectdb"
+
+dato[] = "URL;url;49x2;textarea"
+
+dato[] = "Stile;style;55;text"
+dato[] = "Parametri per TMS/WMTS<br><font size=1>Compilare anche i parametri WMS</font>"
+dato[] = "Origine del servizio TMS/WMTS:<br><font size=1>minX(lon) e minY(lat) separati da virgola</font>;tile_origin;55;text"
+dato[] = "Elenco scale servizio TMS:<br><font size=1>Valori decrescenti separati da virgola</font>;tile_resolutions;49x2;textarea"
+dato[] = "Tile Matrix WMTS;tile_matrix_set;55;text"
+
+
+//dato[] = "Parametri;parameters;49x2;textarea"
+//dato[] = "Gutter;gutter;3;intero|Buffer;buffer;3;intero"
+//dato[] = "Estensione tiles;tiles_extent;55;text"
+//dato[] = "SRID estensione tiles;tiles_extent_srid;10;text"
+//dato[] = "Gruppo in livelli;tree_group;55;text"
+//dato[] = "Base;isbaselayer;3;noyes|Sing.Img;layergroup_single;3;noyes|Fade;transition;3;noyes"
+
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;theme;#openCopy;button|Sposta;theme;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Importa Raster;azione;120;submit;edit;importa raster"
+[list]
+table = "layergroup"
+pkey = "layergroup_id"
+order_fld = "layergroup_order#layergroup_title"
+dato[] = "Titolo;layergroup_title;25%#layergroup_id;goto"
+dato[] = "Nome;layergroup_name;25%;text"
+dato[] = "Scala max.;layergroup_maxscale;10%;text"
+dato[] = "Scala min.;layergroup_minscale;10%;text"
+dato[] = "Opacità;opacity;10%;text"
+dato[] = "Tipo di chiamata;owstype_id;10%#e_owstype#owstype_name;chiave_esterna"
+dato[] = "Ordine;layergroup_order;7%;text"
+dato[] = ";layergroup_id;1%;info"
+dato[] = ";layergroup_id;1%;edit"
+dato[] = ";layergroup_id;1%;delete"
+
+[title]
+edit = "Modifica layergroup"
+view = "Visualizza layergroup"
+new = "Inserisci layergroup"
+list = "Layergroups"
+
+[menu]
+new = "Nuovo layergroup"
+standard = "layergroup_name"
+
+[message]
+nodata = ""

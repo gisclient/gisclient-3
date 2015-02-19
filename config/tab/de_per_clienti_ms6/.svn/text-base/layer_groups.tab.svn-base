@@ -1,0 +1,32 @@
+[standard]
+table = "layer_groups"
+save_table = "layer_groups"
+pkey = "layer_id;groupname"
+order_fld = "groupname"
+dato[] = ";presente;1%;idriga"
+dato[] = "Benutzergruppe;groupname;75%;text"
+dato[] = "Aktiv;groupname;#groupname#presente;check1"
+dato[] = "Sichtbar;wms;#groupname#wms;check1"
+dato[] = "Abfragbar;wfs;#groupname#wfs;check1"
+dato[] = "Editierbar;wfst;#groupname#wfst;check1"
+
+[list]
+table = "layer_groups"
+pkey = "layer_id;groupname"
+order_fld = "groupname"
+dato[] = "Benutzergruppe di Utenti;groupname;85%;text"
+dato[] = "Sichtbar;wms;;yesno"
+dato[] = "Abfragbar;wfs;;yesno"
+dato[] = "Editierbar;wfst;;yesno"
+
+[title]
+edit = "Berechtigung für Layer"
+view = "Berechtigung für Layer"
+new = "Berechtigung für Layer"
+list = "Berechtigung für Layer"
+
+[menu]
+standard = "layer grouppi di utenti"
+
+[message]
+nodata = ""

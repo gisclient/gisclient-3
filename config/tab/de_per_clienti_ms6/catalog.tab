@@ -1,0 +1,38 @@
+[standard]
+table = "catalog"
+pkey = "catalog_id"
+dato[] = "Name *;catalog_name;33;text"
+dato[] = "Verbindungtyp *;connection_type;250#seldb_conntype#n;selectdb"
+dato[] = "Pfad *;catalog_path;50x2;textarea"
+//dato[] = "Url documenti;catalog_url;55;text"
+dato[] = "Pfad (für Raster);files_path;50x2;textarea"
+dato[] = "Beschreibung;catalog_description;50x2;textarea"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|LÃ¶schen;azione;;submit;edit;elimina"
+
+[list]
+table = "vista_catalog"
+pkey = "catalog_id"
+order_fld = "catalog_name"
+dato[] = "Name;catalog_name;15%#catalog_id;goto"
+dato[] = "Pfad;catalog_path;15%;text"
+dato[] = "Verbindungtyp;connection_type;10%#seldb_conntype#n;selectdb"
+dato[] = "Pfad (raster);files_path;30%;text"
+dato[] = "Beschreibung;catalog_description;30%;text"
+dato[] = "<font color="#404040">Kontrolle</font>;catalog_control;20%;text"
+//dato[] = "Url documenti;catalog_url;30%;text"
+dato[] = ";catalog_id;1%;info"
+dato[] = ";catalog_id;1%;edit"
+dato[] = ";catalog_id;1%;delete"
+
+[title]
+edit = "Katalog Ändern"
+view = "Katalog anzeigen"
+new = "Katalog hinzufügen"
+list = "Verbindungskataloge"
+
+[menu]
+new = "Neue Katalog"
+standard = "catalog_name"
+
+[message]
+nodata = ""

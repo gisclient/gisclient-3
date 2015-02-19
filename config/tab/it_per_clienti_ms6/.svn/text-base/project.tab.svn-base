@@ -1,0 +1,43 @@
+[standard]
+table = "project"
+pkey = "project_name"
+dato[] = "Nome Progetto *;project_name;40;text"
+dato[] = "Titolo *;project_title;80;text"
+dato[] = "Centro della mappa: *<br><font size=1>X(lon)</font>;xc;18;text|<font size=1>Y(lat)</font>;yc;18;text"
+dato[] = "SRID (Codice EPSG) *;project_srid;6;text"
+dato[] = "Scala max estensione *;max_extent_scale;18;text"
+dato[] = "Codifica caretteri *;charset_encodings_id;100#seldb_charset_encodings;selectdb"
+dato[] = "Lingua default *;default_language_id;100#seldb_language;selectdb"
+
+//dato[] = "In testing"
+//dato[] = "Directory;base_path;40;text"
+//dato[] = "Directory web;base_url;50;text"
+//dato[] = "Testo sulle mappe;imagelabel_text;50;text"
+//dato[] = "Attributi del testo:<br>All.;imagelabel_position;70#seldb_lblposition;selectdb|Offset X;imagelabel_offset_x;4;intero|OffSet Y;imagelabel_offset_y;4;intero|Font;imagelabel_font;200#seldb_font;selectdb"
+//dato[] = "Dimensione;imagelabel_size;4;intero|Colore;imagelabel_color;11;color"
+//dato[] = "Note;project_note;48x2;textarea"
+
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
+
+[list]
+table = "project"
+pkey = "project_name"
+order_fld = "project_title#project_name"
+dato[] = "Titolo;project_title;60%#project_name;goto"
+dato[] = "Nome del Progetto;project_name;31%;text"
+dato[] = ";project_name;1%;info"
+dato[] = ";project_name;1%;edit"
+dato[] = ";project_name;1%;delete"
+
+[title]
+edit = "Modifica progetto"
+view = "Visualizza progetto"
+new = "Inserisci progetto"
+list = "Elenco progetti"
+
+[menu]
+new = "Nuovo Progetto"
+standard = "project_name"
+
+[message]
+nodata = ""

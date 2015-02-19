@@ -1,0 +1,87 @@
+[root]
+standard = "'Hauptseite'"
+[project]
+standard = "project_name"
+constant = "'Projekt hinzufügen'"
+[groups]
+standard = "groupname"
+constant = "'Gruppe hinzufügen'"
+[users]
+standard = "username"
+constant = "'Benutzer hinzufügen'"
+[theme]
+standard = "theme_name"
+constant = "'Thema hinzufügen'"
+[project_srs]
+standard = "srid"
+constant = "'Koordinatesystem hinzufügen'"
+[catalog]
+standard = "catalog_name"
+constant = "'Katalog hinzufügen'"
+[mapset]
+standard = "mapset_name"
+constant = "'Mapset hinzufügen'"
+[link]
+standard = "link_name"
+constant = "'Link hinzufügen'"
+[layergroup]
+standard = "layergroup_name"
+constant = "'Layergruppe hinzufügen'"
+[layer]
+standard = "layer_name"
+constant = "'Neue Layer'"
+[layer_groups]
+standard = "'Benutzergruppe des Layers '||coalesce(layer_name,'')"
+constant = "'Benutzergruppe des Layers '"
+[classgroup]
+standard = "classgroup_name"
+constant = "'Nuova Vestizione'"
+[class]
+standard = "class_name"
+constant = "'Klasse hinzufügen'"
+[qt]
+standard = "qt_name"
+constant = "'Nuovo Query Template'"
+[style]
+standard = "style_name"
+constant = "'Stylus hinzufügen'"
+[qtrelation]
+standard = "qtrelation_name"
+constant = "'Relation hinzufügen'"
+[qtfield]
+standard = "qtfield_name"
+constant = "'Felder hinzufügen'"
+[qt_link]
+constant = "''"
+[mapset_groups]
+standard = "'Gruppi del Mapset '||mapset_name"
+[mapset_layergroup]
+standard = "'Auswahl der Layergruppen des Mapset: '||mapset_name"
+[mapset_qt]
+standard = "'QT del mapset '||mapset_name"
+[mapset_link]
+standard = "'Link del Mapset '||mapset_name"
+[selgroup]
+standard = "selgroup_name"
+constant = "'Nuovo Gruppo di Selezione'"
+[qt_selgroup]
+constant = "'QT del Gruppo di Selezione'"
+[project_admin]
+standard = "'Amministratori del Progetto '||project_name"
+[group_users]
+constant = "'Benutzer der Gruppe'"
+[user_groups]
+constant = "'Benutzergruppen'"
+[project_groups]
+constant = "'Benutzergruppen hinzufügen'"
+[user_project]
+constant = "'Benutzer hinzufügen'"
+[project_languages]
+constant = "'Sprache hinzufügen'"
+[authfilter]
+standard = "filter_name"
+constant = "'Authentifizierungsfilter hinzufügen'"
+[layer_authfilter]
+constant = "'Filtri autenticazione del Layer'"
+[group_authfilter]
+constant = "'Filtri autenticazione Gruppo'"
