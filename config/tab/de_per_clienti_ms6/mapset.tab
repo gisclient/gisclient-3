@@ -10,6 +10,7 @@ dato[] = "Koordinaten mit SRID anzeigen;displayprojection;100#seldb_mapset_srid#
 dato[] = "Maßstab Liste auf Karte:<br><font size=1>Valori decrescenti separati da virgola</font>;mapset_scales;48x4;textarea"
 dato[] = "Ausdenung einschränken<br><font size=1>Indicare: minX minY MAXX MAXY separati da spazio</font>;mapset_extent;60;text;"
 dato[] = "Maßstabtyp (Leistung 2);mapset_scale_type;;noyes"
+dato[] = "Mapset Sortierung;mapset_order;10;text"
 dato[] = "Template;template;42;text"
 //dato[] = "Formati di stampa;page_size;20;text"
 //dato[] = "Scarica immagine;dl_image_res;20;text"
