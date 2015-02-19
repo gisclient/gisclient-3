@@ -16,6 +16,7 @@ dato[] = "Colore sfondo;bg_color;11;color"
 dato[] = "Reference fissa;static_reference;;noyes"
 dato[] = "Estensione Reference;refmap_extent;42;text"
 dato[] = "Tipo di scala automatico (potenza di 2);mapset_scale_type;;noyes"
+dato[] = "Ordine dei mapset;mapset_order;10;text"
 dato[] = "Mappa privata;private;;noyes"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 [list]
