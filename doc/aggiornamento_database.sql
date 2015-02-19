@@ -1534,4 +1534,9 @@ UPDATE mapset SET mapset_scale_type = 1 WHERE mapset_srid=3857;
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.26', 'author', '2014-11-21');
 
 
+-- permette di ordinare i mapset su una pagina secondo l'ordine deciso dal cliente
+ALTER TABLE mapset
+  ADD COLUMN mapset_order integer NOT NULL DEFAULT 0;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.27', 'author', '2014-11-21');
 
