@@ -1542,7 +1542,7 @@ INSERT INTO version (version_name,version_key, version_date) values ('3.2.27', '
 
 --correzione delle view di controllo se layergroup.layer esiste nello stesso progetto
 
-DROP VIEW IF EXISTS gisclient_32.vista_mapset;
+DROP VIEW IF EXISTS vista_mapset;
 CREATE OR REPLACE VIEW vista_mapset AS 
 select m.*,
   CASE 
@@ -1624,7 +1624,7 @@ JOIN e_layertype using (layertype_id)
 JOIN layergroup lg using (layergroup_id)
 JOIN theme t using (theme_id);
 
-ALTER TABLE gisclient_32.vista_layer
+ALTER TABLE vista_layer
   OWNER TO gisclient;
 
 DROP VIEW IF EXISTS vista_layergroup;  
