@@ -1540,14 +1540,14 @@ ALTER TABLE mapset
   
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.27', 'author', '2014-11-21');
 
---correzione delle view di controllo se layergroup.layer esiste nello stesso progetto
+--correzione delle view di controllo se layergroup.layer esiste nello stesso progetto + view link e sizeunits_id not null
 
 DROP VIEW IF EXISTS vista_mapset;
 CREATE OR REPLACE VIEW vista_mapset AS 
 select m.*,
   CASE 
     when mapset_name not in (select mapset_name from mapset_layergroup) then '(!) Nessun layergroup presente'
-    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) Openlayers non consente di rappresentare più di 75 layergroup alla volta'
+    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) '||(select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name)||' layergroup presenti nel mapset. OpenLayers 2 non consente di rappresentare più di 74 layergroup alla volta'
     WHEN mapset_scales is null THEN '(!) Nessun elenco di scale configurato'
     WHEN mapset_srid != displayprojection then '(i) Coordinate visualizzate diverse da quelle di mappa'
     WHEN 0 = (select max(refmap) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) THEN '(i) Nessuna reference map'
@@ -1657,6 +1657,21 @@ JOIN layer l using (layergroup_id);
 
 ALTER TABLE vista_layergroup
   OWNER TO gisclient;  
+  
+  set search_path=gisclient_32;
 
-  INSERT INTO version (version_name,version_key, version_date) values ('3.2.28', 'author', '2015-02-26');
+DROP VIEW IF EXISTS vista_link;
+CREATE OR REPLACE VIEW vista_link AS 
+select l.*,
+  CASE 
+    when link_def not like 'http%://%@%@' THEN '(!) Definizione del link non corretta. La sintassi deve essere: http://url@campo@'
+    WHEN link_id not in (select link_id from qtlink) then 'OK. Non utilizzato'
+    WHEN replace(substring(link_def from '%#"@%@#"%' for '#'),'@','') not in (select qtfield_name from qtfield where layer_id in (select layer_id from qtlink where link_id=l.link_id))   THEN   '(!) Campo non presente nel layer'
+    ELSE 'OK. In uso'
+  END as link_control
+from link l
+
+ALTER TABLE gisclient_32.layer ALTER COLUMN sizeunits_id SET NOT NULL;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.28', 'author', '2015-02-26');
 
