@@ -23,7 +23,7 @@ class PixmapSymbol {
 		if (false === $file) {
 			throw new Exception("The argument is not a valid base64", 1);
 		}
-		$fileInfo = getimagesizefromstring($file);
+		$fileInfo = getimagesize($base64);
 
 		// verify extension
 		$validMimeType = array('image/png','image/gif');
@@ -64,7 +64,8 @@ class PixmapSymbol {
 			}
 		}
 
-		$symbolName = strtoupper(pathinfo($filePath)['filename']);
+		$pathInfo = pathinfo($filePath);
+		$symbolName = strtoupper($pathInfo['filename']);
 		$symbolDef = "TYPE PIXMAP IMAGE \"../../pixmap/$filename\"";
 		$insertSymbol = "INSERT INTO {$this->dbSchema}.symbol (symbol_name, symbolcategory_id, symbol_def) VALUES (:symbol_name, :symbolcategory_id, :symbol_def)";
 		$stmt = $this->db->prepare($insertSymbol);
