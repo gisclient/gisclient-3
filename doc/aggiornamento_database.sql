@@ -1640,20 +1640,12 @@ CASE
   WHEN owstype_id=9 and style is null then '(!) Nessuno stile configurato per la chiamata WMTS'
   WHEN owstype_id=9 and tile_origin is null then '(!) Nessuna origine configurata per la chiamata WMTS'
   WHEN lg.opacity is null or lg.opacity = '0' then '(i) Attenzione: trasparenza totale'
-  WHEN t.project_name||'.'||lg.layergroup_name||'.'||l.layer_name IN (select t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name 
-										  from layer l2
-										  JOIN layergroup lg2 using (layergroup_id)
-										  JOIN theme t2 using (theme_id)
-										  group by t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name
-										  having count(t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name) > 1) 
-										THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'
-            WHEN (layergroup_id not in (select layergroup_id FROM layer)) AND layers is null then 'OK (i) Non ci sono layer configurati in questo layergroup'
+  WHEN (layergroup_id not in (select layergroup_id FROM layer)) AND layers is null then 'OK (i) Non ci sono layer configurati in questo layergroup'
   ELSE 'OK'
 END as layergroup_control
 
 from layergroup lg
-JOIN theme t USING (theme_id)
-JOIN layer l using (layergroup_id);
+JOIN theme t USING (theme_id);
 
 ALTER TABLE vista_layergroup
   OWNER TO gisclient;  
