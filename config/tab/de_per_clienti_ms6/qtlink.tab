@@ -1,0 +1,27 @@
+[standard]
+table = "qtlink"
+pkey = "layer_id;link_id"
+dato[] = "Name;link_id;200#seldb_link#project;selectdb"
+dato[] = "Link anzeigen;resultype_id;200#seldb_resultype;selectdb"
+dato[] = "Close;azione;;submit;all;chiudi|Add;azione;;submit;all;aggiungi"
+[list]
+table = "qtlink"
+pkey = "layer_id;link_id"
+order_fld = "resultype_id"
+dato[] = "Name;link_id;#link#link_name;chiave_esterna"
+dato[] = "Link anzeigen;resultype_id;#e_resultype#resultype_name;chiave_esterna"
+//dato[] = ";layer_id;1%#link_id;info"
+//dato[] = ";layer_id;1%#link_id;edit"
+dato[] = ";layer_id;1%#link_id;delete"
+
+[title]
+edit = "Link"
+view = "Link"
+new = "Link"
+list = "Link"
+
+[menu]
+standard = "Link"
+
+[message]
+nodata = ""

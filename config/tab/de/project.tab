@@ -1,0 +1,29 @@
+[standard]
+table = "project"
+pkey = "project_name"
+dato[] = "Projektname;project_name;40;text"
+dato[] = "Beschreibung;project_description;50;text"
+dato[] = "Directory;base_path;40;text"
+dato[] = "Directory web;base_url;50;text"
+dato[] = "Login-Seite;login_page;50;text"
+dato[] = "Ausdehnung;project_extent;42;text|Projektion(EPSG oder SRID);project_srid;6;intero"
+dato[] = "Farbe für Auswahl;sel_user_color;11;color"
+dato[] = "Kartentext;imagelabel_text;50;text"
+dato[] = "Textattribute:<br>All.;imagelabel_position;70#seldb_lblposition;selectdb|OffSet X;imagelabel_offset_x;4;intero|OffSet Y;imagelabel_offset_y;4;intero|Schriftart;imagelabel_font;200#seldb_font;selectdb"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit|Exportieren;azione;;submit;edit|Importieren;azione;;submit;new"
+[list]
+table = "project"
+pkey = "project_name"
+order_fld = "project_description#project_name"
+dato[] = ";project_name;3%;info"
+dato[] = "Projektname;project_name;15%#project_name;goto"
+dato[] = "Beschreibung;project_description;;text"
+
+[title]
+edit = "Daten des Projekts"
+view = "Daten des Projekts"
+new = "Neues Projekt"
+list = "Projekte"
+
+[message]
+nodata = ""

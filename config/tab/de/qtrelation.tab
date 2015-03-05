@@ -1,0 +1,37 @@
+[standard]
+table = "qtrelation"
+pkey = "qtrelation_id"
+dato[] = "Name;qtrelation_name;40;text"
+dato[] = "Katalog;catalog_id;200#seldb_catalog#project_name;selectdb"
+dato[] = "Beziehung;table_name;55;text|Datenliste;table_name;100#get_elenco#catalog_id;button"
+dato[] = "1° Feld Join Datenlayer;data_field_1;40;text|Elenco Data;data_field_1;100#get_elenco#qt;button"
+dato[] = "1° Feld Join Beziehung;table_field_1;40;text|Elenco Data;table_field_1;100#get_elenco#catalog_id#table_name;button"
+dato[] = "2° Feld Join Datenlayer;data_field_2;40;text|Elenco Data;data_field_2;100#get_elenco#qt;button"
+dato[] = "2° Feld Join Beziehung;table_field_2;40;text|Elenco Data;table_field_2;100#get_elenco#catalog_id#table_name;button"
+dato[] = "3° Feld Join Datenlayer;data_field_3;40;text|Elenco Data;data_field_3;100#get_elenco#qt;button"
+dato[] = "3° Feld Join Beziehung;table_field_3;40;text|Elenco Data;table_field_3;100#get_elenco#catalog_id#table_name;button"
+dato[] = "Sprachen verwenden;language_id;200#seldb_language;selectdb"
+dato[] = "Beziehungstyp;qtrelationtype_id;200#seldb_qtrelationtype;selectdb"
+dato[] = "Speichern;azione;;submit;all|Löschen;azione;;submit;edit|Abbrechen;azione;;submit;all"
+[list]
+table = "qtrelation"
+pkey = "qtrelation_id"
+order_fld = "table_name#qtrelation_name"
+dato[] = ";qtrelation_id;3%;info"
+dato[] = "Name;qtrelation_name;15%#qtrelation_id;goto"
+dato[] = "Typ;qtrelationtype_id;15%#e_qtrelationtype#qtrelationtype_name;chiave_esterna"
+dato[] = "1° Feld Daten;data_field_1;10%;text"
+dato[] = "1° Feld Join;table_field_1;10%;text"
+dato[] = "2° Feld Daten;data_field_2;10%;text"
+dato[] = "2° Feld Join;table_field_2;10%;text"
+dato[] = "3° Feld Daten;data_field_3;10%;text"
+dato[] = "3° Feld Join;table_field_3;10%;text"
+
+[title]
+edit = "Daten des Felds des Suchmodells"
+view = "Daten des Felds des Suchmodells"
+new = "Neue Beziehung des Suchmodells"
+list = "Beziehungen des Suchmodells"
+
+[message]
+nodata = "Keine Beziehung"

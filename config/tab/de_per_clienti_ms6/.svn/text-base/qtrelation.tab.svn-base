@@ -1,0 +1,42 @@
+[standard]
+table = "qtrelation"
+pkey = "qtrelation_id"
+dato[] = "Name *;qtrelation_name;40;text"
+dato[] = "Layer Primary Key *;data_field_1;40;text|Tabelle auswahlen;data_field_1;120#openList#layer;button"
+dato[] = "JOIN Parameter"
+dato[] = "Verbindungskataloge *;catalog_id;200#seldb_catalog#project_name;selectdb"
+dato[] = "JOIN Tabelle*;table_name;55;text|Feld auswahlen;table_name;100#openList#catalog_id;button"
+dato[] = "JOIN Primary Key *;table_field_1;40;text|Feld auswahlen;table_field_1;100#openList#catalog_id#table_name;button"
+//dato[] = "1° Join<br><font size=1>Campo chiave layer</font>;data_field_1;40;text|Elenco Data;data_field_1;100#openList#layer;button|<font size=1>Campo chiave tabella di Join</font>;table_field_1;40;text|Elenco Data;table_field_1;100#openList#catalog_id#table_name;button"
+//dato[] = "2° Join<br><font size=1>Campo chiave layer</font>;data_field_2;40;text|Elenco Data;data_field_2;100#openList#layer;button|<font size=1>Campo chiave tabella di Join</font>;table_field_2;40;text|Elenco Data;table_field_2;100#openList#catalog_id#table_name;button"
+//dato[] = "3° Join<br><font size=1>Campo chiave layer</font>;data_field_3;40;text|Elenco Data;data_field_3;100#openList#layer;button|<font size=1>Campo chiave tabella di Join</font>;table_field_3;40;text|Elenco Data;table_field_3;100#openList#catalog_id#table_name;button"
+dato[] = "Relationstyp;qtrelationtype_id;200#seldb_qtrelationtype;selectdb"
+dato[] = "Salva;azione;;submit;all;salva|Elimina;azione;;submit;edit;elimina|Annulla;azione;;submit;all;annulla"
+[list]
+table = "qtrelation"
+pkey = "qtrelation_id"
+order_fld = "table_name#qtrelation_name"
+dato[] = "Name;qtrelation_name;15%#qtrelation_id;goto"
+dato[] = "Layer Primary Key;data_field_1;10%;text"
+dato[] = "JOIN Primary Key;table_field_1;10%;text"
+//dato[] = "2° Campo Data;data_field_2;10%;text"
+//dato[] = "2° Campo Join;table_field_2;10%;text"
+//dato[] = "3° Campo Data;data_field_3;10%;text"
+//dato[] = "3° Campo Join;table_field_3;10%;text"
+dato[] = "Relationstyp;qtrelationtype_id;15%#e_qtrelationtype#qtrelationtype_name;chiave_esterna"
+dato[] = ";qtrelation_id;1%;info"
+dato[] = ";qtrelation_id;1%;edit"
+dato[] = ";qtrelation_id;1%;delete"
+
+[title]
+edit = "Relation ändern"
+view = "Relation anzeigen"
+new = "Relation hinzufügen"
+list = "Relationen"
+
+[menu]
+new = "Relation hinzufügen"
+standard = "qtrelation_name"
+
+[message]
+nodata = ""

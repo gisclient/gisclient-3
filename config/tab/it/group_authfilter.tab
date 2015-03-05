@@ -1,0 +1,25 @@
+[standard]
+table = "group_authfilter"
+pkey = "groupname;filter_id"
+dato[] = "Filtro;filter_id;200#seldb_group_authfilter;selectdb"
+dato[] = "Espressione;filter_expression;100;text"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit"
+[list]
+table = "vista_group_authfilter"
+pkey = "groupname;filter_id"
+order_fld = "filter_id"
+dato[] = ";filter_id;3%#groupname;info"
+dato[] = "Filtro;filter_name;30%#filter_id#groupname;goto"
+dato[] = "Espressione;filter_expression;67%;text"
+
+[title]
+edit = "Filtri autenticazione gruppo"
+view = "Filtri autenticazione gruppo"
+new = "Nuovo filtro autenticazione gruppo"
+list = "Filtri autenticazione gruppo"
+
+[menu]
+new = "Nuovo filtro autenticazione gruppo"
+
+[message]
+nodata = "Nessun Filtro definito"

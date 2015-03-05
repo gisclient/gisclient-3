@@ -1,0 +1,36 @@
+[standard]
+table = "theme"
+pkey = "theme_id"
+dato[] = "Nome *;theme_name;100;text"
+dato[] = "Titolo *;theme_title;100;text"
+dato[] = "Ordine *;theme_order;3;intero"
+dato[] = "Copyright su mappa;copyright_string;50x2;textarea"
+dato[] = "Radio su mappa;radio;3;noyes"
+//dato[] = "Singolo tile;theme_single;3;noyes"
+
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;project;#openCopy;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
+[list]
+table = "theme"
+pkey = "theme_id"
+order_fld = "theme_order#theme_title"
+dato[] = "Titolo;theme_title;30%#theme_id;goto"
+dato[] = "Nome;theme_name;25%;text"
+dato[] = "Copyright su mappa;copyright_string;30%;text"
+dato[] = "Radio;radio;8%;yesno"
+dato[] = "Ordine;theme_order;7%;text"
+dato[] = ";theme_id;1%;info"
+dato[] = ";theme_id;1%;edit"
+dato[] = ";theme_id;1%;delete"
+
+[title]
+edit = "Modifica tema"
+view = "Visualizza tema"
+new = "Inserisci tema"
+list = "Temi"
+
+[menu]
+new = "Nuovo tema"
+standard = "theme_name"
+
+[message]
+nodata = ""

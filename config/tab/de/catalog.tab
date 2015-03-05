@@ -1,0 +1,27 @@
+[standard]
+table = "catalog"
+pkey = "catalog_id"
+dato[] = "Name;catalog_name;33;text"
+dato[] = "Verbindungstyp;connection_type;250#seldb_conntype#n;selectdb"
+dato[] = "Pfad;catalog_path;50x2;textarea"
+dato[] = "Url Dokumente;catalog_url;55;text"
+dato[] = "Beschreibung;catalog_description;50x2;textarea"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+[list]
+table = "catalog"
+pkey = "catalog_id"
+order_fld = "catalog_name"
+dato[] = ";catalog_id;3%;info"
+dato[] = "Name;catalog_name;17%#catalog_id;goto"
+dato[] = "Pfad;catalog_path;20%;text"
+dato[] = "Beschreibung;catalog_description;30%;text"
+dato[] = "Url Dokumente;catalog_url;30%;text"
+
+[title]
+edit = "Daten des Katalogs"
+view = "Daten des Katalogs"
+new = "Neuer Katalog"
+list = "Kataloge"
+
+[message]
+nodata = ""

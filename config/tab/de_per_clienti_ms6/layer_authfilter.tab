@@ -1,0 +1,28 @@
+[standard]
+table = "layer_authfilter"
+pkey = "layer_id;filter_id"
+order_fld = "filter_id"
+dato[] = ";anwesend;1%;idriga"
+dato[] = "Anwesend;filter_id;7%#filter_id#presente;check1"
+dato[] = "Filtername;filter_name;35%;text"
+dato[] = "Beschreibung Filter;filter_description;35%;text"
+dato[] = "Obbligatorisch;required;7%#filter_id#required;check1"
+
+[list]
+table = "layer_authfilter"
+pkey = "layer_id;filter_id"
+order_fld = "filter_id"
+dato[] = "Filtername;filter_name;50%;text"
+dato[] = "Beschreibung Filter;filter_description;47%;text"
+
+[title]
+edit = "Filterberechtigungen für den Layer ändern"
+view = "Filterberechtigungen für den Layer anzeigen"
+new = "Filterberechtigungen für den Layer hinzufügen"
+list = "Filterberechtigungen für den Layer"
+
+[menu]
+standard = "Filterberechtigungen Layer"
+
+[message]
+nodata = ""

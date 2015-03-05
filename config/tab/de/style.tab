@@ -1,0 +1,33 @@
+[standard]
+table = "style"
+pkey = "style_id"
+dato[] = "Name;style_name;55;text"
+dato[] = "Symbol;symbol_name;28;text|Symbolliste;symbol_name;100#get_elenco#project#prm_livello;button"
+dato[] = "Grundfarbe;color;25;color|Liste;color;80#get_elenco#layer;button"
+dato[] = "Rahmenfarbe;outlinecolor;25;color|Liste;outlinecolor;80#get_elenco#layer;button"
+dato[] = "Hintergrundfarbe;bgcolor;11;color"
+dato[] = "Symbolgröße:<br>Höchstens;maxsize;3;intero|Mindestens;minsize;3;intero|Am besten;size;19;text|Liste;size;80#get_elenco#layer;button"
+dato[] = "Linienbreite:<br>Höchstens;maxwidth;3;intero|Mindestens;minwidth;3;intero|Am besten;width;3;text"
+dato[] = "Drehung;angle;25;text|Liste;angle;80#get_elenco#layer;button"
+dato[] = "Definition;style_def;40x3;textarea"
+dato[] = "Reihenfolge;style_order;3;intero"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit|Kopieren/Verscheiben;azione;120#get_azioni#style#class#layer;button;edit"
+[list]
+table = "style"
+pkey = "style_id"
+order_fld = "style_name#style_order"
+dato[] = ";style_id;3%;info"
+dato[] = "Name;style_name;17%#style_id;goto"
+dato[] = "Farbe;color;20%;color"
+dato[] = "Rahmenfarbe;outlinecolor;20%;color"
+dato[] = "Hintergrundfarbe;bgcolor;20%;color"
+dato[] = "Reihenfolge;style_order;;text"
+
+[title]
+edit = "Daten des Stils"
+view = "Daten des Stils"
+new = "Neuer Stil"
+list = "Stile"
+
+[message]
+nodata = "Kein Stil vorhanden"

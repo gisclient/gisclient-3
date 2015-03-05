@@ -1,0 +1,22 @@
+[standard]
+table = "selgroup"
+pkey = "selgroup_id"
+dato[] = "Name;selgroup_name;;text"
+dato[] = "Reihenfolge;selgroup_order;;text"
+dato[] = "Speichern;azione;;submit;all|Löschen;azione;;submit;edit|Abbrechen;azione;;submit;all"
+[list]
+table = "selgroup"
+pkey = "selgroup_id"
+order_fld = "selgroup_name#selgroup_order"
+dato[] = ";selgroup_id;3%;info"
+dato[] = "Name;selgroup_name;50%#selgroup_id;goto"
+dato[] = "Reihenfolge;selgroup_order;;text"
+
+[title]
+edit = "Auswahlgruppe"
+view = "Auswahlgruppe"
+new = "Neue Auswahlgruppe"
+list = "Auswahlgruppen"
+
+[message]
+nodata = "Keine Auswahlgruppe"

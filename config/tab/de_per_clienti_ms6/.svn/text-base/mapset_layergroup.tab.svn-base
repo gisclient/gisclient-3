@@ -1,0 +1,35 @@
+[standard]
+table = "mapset_layergroup"
+pkey = "mapset_name;layergroup_id"
+order_fld = "theme_title#presente DESC#layergroup_title"
+dato[] = ";presente;1%;idriga"
+
+dato[] = "Thema;theme_title;35%;text"
+dato[] = "Layergruppe;layergroup_title;35%;text"
+dato[] = "Im Mapset vorhanden;layergroup_id;7%#layergroup_id#presente;check1"
+dato[] = "Standardmäßig eingeschalten;status;7%#layergroup_id#status;check1"
+dato[] = "Sichtbar in Referenzkarte;refmap;7%#layergroup_id#refmap;check1"
+dato[] = "Nicht sichtbar in der Liste;hide;7%#layergroup_id#hide;check1"
+
+
+[list]
+table = "mapset_layergroup"
+pkey = "mapset_name;layergroup_id"
+order_fld = "theme_title,layergroup_title"
+dato[] = "Thema;theme_title;35%;text"
+dato[] = "Layergruppe;layergroup_title;35%;text"
+dato[] = "Standardmäßig eingeschalten;status;7%;yesno"
+dato[] = "Sichtbar in Referenzkarte;refmap;7%;yesno"
+dato[] = "Nicht sichtbar in der Liste;hide;7%;yesno"
+
+[title]
+edit = "Layergruppe des Mapset ändern"
+view = "Layergruppe des Mapset anzeigen"
+new = "Layergruppe des Mapset hinzufügen"
+list = "Layergruppen im Mapset"
+
+[menu]
+standard = "Layergruppen im Mapset vorhanden"
+
+[message]
+nodata = ""

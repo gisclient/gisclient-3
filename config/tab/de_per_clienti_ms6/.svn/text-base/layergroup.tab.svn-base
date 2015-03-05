@@ -1,0 +1,52 @@
+[standard]
+table = "layergroup"
+pkey = "layergroup_id"
+dato[] = "Name *;layergroup_name;55;text"
+dato[] = "Titel *;layergroup_title;55;text"
+dato[] = "Sortierung *;layergroup_order;5;intero"
+dato[] = "Typ;owstype_id;180#seldb_owstype;selectdb"
+
+dato[] = "Sichbarkeit:<br><font size=1>Max. Maßstab</font>;layergroup_maxscale;12;intero|<font size=1>Min. Maßstab</font>;layergroup_minscale;12;intero"
+dato[] = "Mattheit:<br><font size=1 >0 = transparent 100 = matt</font>;opacity;3;intero"
+dato[] = "Format des Bild;outputformat_id;150#seldb_outputformat#;selectdb"
+//dato[] = "File di stile (SLD);sld;50x2;textarea"
+dato[] = "Metadata URL;metadata_url;50x2;textarea"
+dato[] = "WMS/WFS Parameter"
+dato[] = "Layers: *<br><font size=1>Pflicht und getrennt durch Beistricht für WMS/WFS</font>;layers;50x2;textarea"
+dato[] = "Tiles;tiletype_id;;noyes"
+dato[] = "URL;url;50x2;textarea"
+//dato[] = "Base;isbaselayer;3;noyes|Sing.Img;layergroup_single;3;noyes|Fade;transition;3;noyes|Tiles;tiletype_id;150#seldb_tiletype#;selectdb"
+//dato[] = "Estensione tiles;tiles_extent;55;text"
+//dato[] = "SRID estensione tiles;tiles_extent_srid;10;text"
+//dato[] = "Gruppo in livelli;tree_group;55;text"
+//dato[] = "URL (CHECK WMS esterni);url;50x2;textarea"
+//dato[] = "Parametri (CHECK WMS esterni);parameters;50x2;textarea"
+//dato[] = "Stile;style;55;text"
+//dato[] = "Gutter;gutter;3;intero|Ordine;layergroup_order;5;intero|Buffer;buffer;3;intero"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina|Kopieren von;theme;#openCopy;button|Verschieben;theme;#openMove;button"
+//dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "layergroup"
+pkey = "layergroup_id"
+order_fld = "layergroup_order#layergroup_title"
+dato[] = "Titel;layergroup_title;38%#layergroup_id;goto"
+dato[] = "Name;layergroup_name;35%;text"
+dato[] = "Max. Maßstab;layergroup_maxscale;10%;text"
+dato[] = "Min. Maßstab;layergroup_minscale;10%;text"
+dato[] = "Sortierung;layergroup_order;7%;text"
+dato[] = ";layergroup_id;1%;info"
+dato[] = ";layergroup_id;1%;edit"
+dato[] = ";layergroup_id;1%;delete"
+
+[title]
+edit = "layergruppe ändern"
+view = "Layergruppe anzeigen"
+new = "Layergruppe hinzufügen"
+list = "Layergruppen"
+
+[menu]
+new = "Layergruppe hinzufügen"
+standard = "layergroup_name"
+
+[message]
+nodata = ""

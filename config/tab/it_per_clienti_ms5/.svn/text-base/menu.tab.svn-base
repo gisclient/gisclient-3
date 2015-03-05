@@ -1,0 +1,89 @@
+[root]
+standard = "'Admin'"
+[project]
+standard = "project_name"
+constant = "'Nuovo Progetto'"
+[groups]
+standard = "groupname"
+constant = "'Nuovo Gruppo'"
+[users]
+standard = "username"
+constant = "'Nuovo Utente'"
+[theme]
+standard = "theme_name"
+constant = "'Nuovo Tema'"
+[project_srs]
+standard = "srid"
+constant = "'Nuovo Sistema di Riferimento'"
+[catalog]
+standard = "catalog_name"
+constant = "'Nuovo Catalogo'"
+[mapset]
+standard = "mapset_name"
+constant = "'Nuovo Mapset'"
+[link]
+standard = "link_name"
+constant = "'Nuovo Link'"
+[layergroup]
+standard = "layergroup_name"
+constant = "'Nuovo Layergroup'"
+[layer]
+standard = "layer_name"
+constant = "'Nuovo Layer'"
+[layer_groups]
+standard = "'Gruppi di Utenti del Livello '||coalesce(layer_name,'')"
+constant = "'Gruppi di Utenti del Livello '"
+[classgroup]
+standard = "classgroup_name"
+constant = "'Nuova Vestizione'"
+[class]
+standard = "class_name"
+constant = "'Nuova Classe'"
+[qt]
+standard = "qt_name"
+constant = "'Nuovo Query Template'"
+[style]
+standard = "style_name"
+constant = "'Nuovo Stile'"
+[qtrelation]
+standard = "qtrelation_name"
+constant = "'Nuova Relazione'"
+[qtfield]
+standard = "qtfield_name"
+constant = "'Nuovo Campo'"
+[qtlink]
+constant = "'Link'"
+[mapset_groups]
+standard = "'Gruppi del Mapset '||mapset_name"
+[mapset_layergroup]
+standard = "'LayerGroup del Mapset '||mapset_name"
+[mapset_qt]
+standard = "'QT del mapset '||mapset_name"
+[mapset_link]
+standard = "'Link del Mapset '||mapset_name"
+[selgroup]
+standard = "selgroup_name"
+constant = "'Nuovo Gruppo di Selezione'"
+[qt_selgroup]
+constant = "'QT del Gruppo di Selezione'"
+[project_admin]
+standard = "'Amministratori del Progetto '||project_name"
+[group_users]
+constant = "'Utenti del Gruppo'"
+[user_groups]
+constant = "'Gruppi Utente'"
+[project_groups]
+constant = "'Gruppi del Progetto'"
+[user_project]
+constant = "'Utenti del Progetto'"
+[project_languages]
+constant = "'Lingue del Progetto'"
+[authfilter]
+standard = "filter_name"
+constant = "'Nuovo Filtro autenticazione'"
+[layer_authfilter]
+constant = "'Filtri autenticazione del Layer'"
+[group_authfilter]
+constant = "'Filtri autenticazione Gruppo'"
+[qtfield_groups]
+constant = "'Autorizzazioni sui campi del modello di ricerca'"

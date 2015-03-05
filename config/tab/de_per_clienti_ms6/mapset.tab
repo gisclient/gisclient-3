@@ -1,0 +1,49 @@
+[standard]
+table = "mapset"
+pkey = "mapset_name"
+dato[] = "Name *;mapset_name;20;text"
+dato[] = "Titel *;mapset_title;50;text"
+dato[] = "Maßstab max.*;maxscale;10;text|Maßstab min.;minscale;10;text"
+dato[] = "SRID (EPSG Kode) *<br><font size=1>Sistema di riferimento della mappa</font>;mapset_srid;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Maßeinheit;sizeunits_id;160#seldb_sizeunits;selectdb"
+dato[] = "Koordinaten mit SRID anzeigen;displayprojection;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Maßstab Liste auf Karte:<br><font size=1>Valori decrescenti separati da virgola</font>;mapset_scales;48x4;textarea"
+dato[] = "Ausdenung einschränken<br><font size=1>Indicare: minX minY MAXX MAXY separati da spazio</font>;mapset_extent;60;text;"
+dato[] = "Maßstabtyp (Leistung 2);mapset_scale_type;;noyes"
+dato[] = "Mapset Sortierung;mapset_order;10;text"
+dato[] = "Template;template;42;text"
+//dato[] = "Formati di stampa;page_size;20;text"
+//dato[] = "Scarica immagine;dl_image_res;20;text"
+
+dato[] = "Privat;private;;noyes"
+//dato[] = "Colore sfondo;bg_color;11;color"
+//dato[] = "Reference fissa;static_reference;;noyes"
+//dato[] = "Estensione Reference;refmap_extent;42;text"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "vista_mapset"
+pkey = "mapset_name"
+order_fld = "mapset_title#mapset_name"
+dato[] = "Titel;mapset_title;50%#mapset_name;goto"
+dato[] = "Name;mapset_name;;text"
+dato[] = "SRID;mapset_srid;6%;text"
+dato[] = "Maßstab max.;maxscale;10%;text"
+dato[] = "Maßstab Liste;mapset_scales;25%;text"
+dato[] = "Ausdenung;mapset_extent;15%;text"
+dato[] = "<font color="#404040">Kontrolle</font>;mapset_control;20%;text"
+dato[] = ";mapset_name;1%;info"
+dato[] = ";mapset_name;1%;edit"
+dato[] = ";mapset_name;1%;delete"
+
+[title]
+edit = "Mapset ändern"
+view = "Mapset daten"
+new = "Mapset hinzufügen"
+list = "Mapset"
+
+[menu]
+new = "Neues Mapset"
+standard = "mapset_name"
+
+[message]
+nodata = ""

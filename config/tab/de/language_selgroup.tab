@@ -1,0 +1,23 @@
+[standard]
+table = "language_selgroup"
+pkey = "language_id;selgroup_id"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb"
+dato[] = "Name;name;60;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+
+[list]
+table = "language_selgroup"
+pkey = "language_id;selgroup_id"
+order_fld = "title"
+dato[] = ";language_id;3%#selgroup_id;info"
+dato[] = "Name;name;60#language_id#selgroup_id;goto"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Alternative Titel der Auswahlgruppe"
+view = "Alternative Titel der Auswahlgruppe"
+new = "Neuer Titel der Auswahlgruppe"
+list = "Alternative Titel der Auswahlgruppe"
+
+[message]
+nodata = ""

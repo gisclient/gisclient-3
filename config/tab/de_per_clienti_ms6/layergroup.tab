@@ -1,0 +1,55 @@
+[standard]
+table = "layergroup"
+pkey = "layergroup_id"
+dato[] = "Name *<br><font size=1>eindeutig im Thema!<br>Vervielfältigung von<br> Name layergroup + Name layer vermeiden</font>;layergroup_name;55;text"
+dato[] = "Titel *;layergroup_title;55;text"
+dato[] = "Sortierung *;layergroup_order;5;intero"
+dato[] = "Typ;owstype_id;180#seldb_owstype;selectdb"
+dato[] = "Sichbarkeit:<br><font size=1>Max. Maßstab</font>;layergroup_maxscale;12;intero|<font size=1>Min. Maßstab</font>;layergroup_minscale;12;intero"
+dato[] = "Mattheit:<br><font size=1 >0 = transparent 100 = matt</font>;opacity;3;intero"
+dato[] = "Format des Bild;outputformat_id;150#seldb_outputformat#;selectdb"
+dato[] = "SLD Url;sld;50x2;textarea"
+dato[] = "Metadata URL;metadata_url;50x2;textarea"
+dato[] = "WMS/WFS Parameter"
+dato[] = "Layers: *<br><font size=1>Pflicht und getrennt durch Beistricht für WMS/TMS/WMTS</font>;layers;50x2;textarea"
+dato[] = "Tiles;tiletype_id;;noyes"
+dato[] = "Tiles-SRID;tiles_extent_srid;10;text"
+dato[] = "URL;url;50x2;textarea"
+
+
+dato[] = "TMS/WMTS Parameter<br><font size=1>Auch WMS Parameter ausfüllen</font>"
+dato[] = "Koordinatenursprung des TMS/WMTS Dienst:<br><font size=1>minX(lon) und minY(lat) durch Leerstelle getrennt</font>;tile_origin;55;text"
+dato[] = "Maßstab Liste des TMS Dienst:<br><font size=1>Abnehmende Werte durch Komma getrennt</font>;tile_resolutions;49x2;textarea"
+dato[] = "Stil<br><font size=1>für WMTS</font>;style;55;text"
+dato[] = "Tile Matrix WMTS;tile_matrix_set;55;text"
+
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina|Kopieren von;theme;#openCopy;button|Verschieben;theme;#openMove;button"
+//dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "vista_layergroup"
+pkey = "layergroup_id"
+order_fld = "layergroup_order#layergroup_title"
+dato[] = "Titel;layergroup_title;25%#layergroup_id;goto"
+dato[] = "Name;layergroup_name;25%;text"
+dato[] = "Max. Maßstab;layergroup_maxscale;10%;text"
+dato[] = "Min. Maßstab;layergroup_minscale;10%;text"
+dato[] = "Mattheit;opacity;10%;text"
+dato[] = "Typ;owstype_id;10%#e_owstype#owstype_name;chiave_esterna"
+dato[] = "Sortierung;layergroup_order;7%;text"
+dato[] = "<font color="#404040">Kontrolle</font>;layergroup_control;20%;text"
+dato[] = ";layergroup_id;1%;info"
+dato[] = ";layergroup_id;1%;edit"
+dato[] = ";layergroup_id;1%;delete"
+
+[title]
+edit = "layergruppe ändern"
+view = "Layergruppe anzeigen"
+new = "Layergruppe hinzufügen"
+list = "Layergruppen"
+
+[menu]
+new = "Layergruppe hinzufügen"
+standard = "layergroup_name"
+
+[message]
+nodata = ""

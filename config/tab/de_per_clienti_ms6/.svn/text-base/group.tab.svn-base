@@ -1,0 +1,28 @@
+[standard]
+table = "groups"
+pkey = "groupname"
+dato[] = "Name *;groupname;40;text"
+dato[] = "Beschreibung;description;60;text"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "groups"
+pkey = "groupname"
+order_fld = "description"
+dato[] = "Name;groupname;30%#groupname;goto"
+dato[] = "Beschreibung;description;67%;text"
+dato[] = ";groupname;1%;info"
+dato[] = ";groupname;1%;edit"
+dato[] = ";groupname;1%;delete"
+
+[title]
+edit = "Benutzergruppe ändern"
+view = "Benutzergruoppe anzeigen"
+new = "Benutzergruppe hinzufügen"
+list = "Benutzergruppen"
+
+[menu]
+new = "Benutzergruppe hinzufügen"
+standard = "groupname"
+
+[message]
+nodata = ""

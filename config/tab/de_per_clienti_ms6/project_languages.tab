@@ -1,0 +1,26 @@
+[standard]
+table = "project_languages"
+pkey = "project_name;language_id"
+dato[] = "Sprache;language_id;100#seldb_language;selectdb"
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "project_languages"
+pkey = "project_name;language_id"
+order_fld = "language_id"
+dato[] = "Sprache;language_id;100%#language_id#project_name;goto"
+dato[] = ";language_id;1%#project_name;info"
+dato[] = ";language_id;1%#project_name;edit"
+dato[] = ";language_id;1%#project_name;delete"
+
+[title]
+edit = "Sprache ändern"
+view = "Sprache anzeigen"
+new = "Sprache hinzufügen"
+list = "Liste der zusätzlichen Sprachen"
+
+[menu]
+new = "Zusätzliche Sprache"
+standard = "language_id"
+
+[message]
+nodata = ""

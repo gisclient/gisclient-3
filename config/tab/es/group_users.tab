@@ -1,0 +1,22 @@
+[standard]
+table = "user_group"
+pkey = "username;groupname"
+order_fld = "username"
+
+dato[] = "Presente;username;7%#username#presente;check1"
+dato[] = "Nome Utente;username;46%;text"
+
+[list]
+table = "user_group"
+pkey = "username;groupname"
+order_fld = "username"
+dato[] = "Nome Utente;username;47%;text"
+
+[title]
+edit = "Seleziona Utenti del Gruppo"
+view = "Utenti del Gruppo"
+new = "Utenti del Gruppo"
+list = "Elenco degli Utenti del Gruppo"
+
+[message]
+nodata = ""

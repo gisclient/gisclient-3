@@ -1,0 +1,33 @@
+[standard]
+table = "style"
+pkey = "style_id"
+dato[] = "Nome;style_name;55;text"
+dato[] = "Simbolo;symbol_name;28;text|Elenco Simboli;symbol_name;100#get_elenco#project#prm_livello;button"
+dato[] = "Colore base;color;25;color|Elenco;color;80#get_elenco#layer;button"
+dato[] = "Colore bordo;outlinecolor;25;color|Elenco;outlinecolor;80#get_elenco#layer;button"
+dato[] = "Colore sfondo;bgcolor;11;color"
+dato[] = "Dimensione simbolo:<br>Massima;maxsize;3;intero|Minima;minsize;3;intero|Ottimale;size;19;text|Elenco;size;80#get_elenco#layer;button"
+dato[] = "Larghezza linee:<br>Massima;maxwidth;3;intero|Minima;minwidth;3;intero|Ottimale;width;3;text"
+dato[] = "Rotazione;angle;25;text|Elenco;angle;80#get_elenco#layer;button"
+dato[] = "Definizione;style_def;40x3;textarea"
+dato[] = "Ordine;style_order;3;intero"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit|Copia/Sposta;azione;120#get_azioni#style#class#layer;button;edit"
+[list]
+table = "style"
+pkey = "style_id"
+order_fld = "style_name#style_order"
+dato[] = ";style_id;3%;info"
+dato[] = "Nome;style_name;17%#style_id;goto"
+dato[] = "Colore;color;20%;color"
+dato[] = "Colore Bordo;outlinecolor;20%;color"
+dato[] = "colore Sfondo;bgcolor;20%;color"
+dato[] = "Ordine;style_order;;text"
+
+[title]
+edit = "Dati dello Stile"
+view = "Dati dello Stile"
+new = "Nuovo Stile"
+list = "Stili"
+
+[message]
+nodata = "Nessuno Stile presente"

@@ -1,0 +1,29 @@
+[standard]
+table = "authfilter"
+pkey = "filter_id"
+dato[] = "Nome;filter_name;100;text"
+dato[] = "Descrizione;filter_description;48x2;textarea"
+dato[] = "Priorità;filter_priority;5;intero"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "authfilter"
+pkey = "filter_id"
+order_fld = "filter_id"
+dato[] = "Nome;filter_name;30%#filter_id;goto"
+dato[] = "Descrizione;filter_description;67%;text"
+dato[] = ";filter_id;1%;info"
+dato[] = ";filter_id;1%;edit"
+dato[] = ";filter_id;1%;delete"
+
+[title]
+edit = "Modifica filtro di autenticazione"
+view = "Visualizza filtro di autenticazione"
+new = "Inserisci filtro di autenticazione"
+list = "Filtri di autenticazione"
+
+[menu]
+new = "Inserisci filtro di autenticazione"
+standard = "filter_id"
+
+[message]
+nodata = ""

@@ -1,0 +1,24 @@
+[standard]
+table = "project_admin"
+pkey = "project_name;username"
+order_fld = "username"
+dato[] = "Vorhanden;username;10%#username#presente;check1"
+dato[] = "Username;username;;text"
+
+[list]
+table = "project_admin"
+pkey = "project_name;username"
+order_fld = "username"
+dato[] = "Username;username;;text"
+
+[title]
+edit = "Verwalter des Projekt ändern"
+view = "Verwalter des Projekt anzeigen"
+new = "Verwalter des Projekt hinzufügen"
+list = "Verwalter des Projekt"
+
+[menu]
+standard = "Amministratori"
+
+[message]
+nodata = ""

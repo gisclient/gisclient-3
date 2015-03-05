@@ -1,0 +1,22 @@
+[standard]
+table = "qt_link"
+pkey = "qt_id;link_id"
+dato[] = "Name *;link_id;200#seldb_link#project;selectdb"
+dato[] = "Ergebnistyp;resultype_id;200#seldb_resultype;selectdb"
+dato[] = "Schließen;azione;;submit|Hinzufügen;azione;;submit"
+[list]
+table = "qt_link"
+pkey = "qt_id;link_id"
+order_fld = "resultype_id"
+dato[] = ";qt_id;3%#link_id;delete"
+dato[] = "Name;link_id;#link#link_name;chiave_esterna"
+dato[] = "Ergebnistyp;resultype_id;#e_resultype#resultype_name;chiave_esterna"
+
+[title]
+edit = "Link des Suchmodells"
+view = "Link des Suchmodells"
+new = "Link des Suchmodells"
+list = "Link des Suchmodells"
+
+[message]
+nodata = ""

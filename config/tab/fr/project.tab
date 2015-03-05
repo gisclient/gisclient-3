@@ -1,0 +1,37 @@
+[standard]
+table = "project"
+pkey = "project_name"
+dato[] = "Titolo;project_title;80;text"
+dato[] = "Nome Progetto;project_name;40;text"
+dato[] = "Directory;base_path;40;text"
+dato[] = "Directory web;base_url;50;text"
+dato[] = "Pagina di login;login_page;50;text"
+dato[] = "Estensione;project_extent;42;text|Proiezione(EPSG o SRID);project_srid;6;intero"
+dato[] = "Colore per la selezione;sel_user_color;11;color"
+dato[] = "Testo sulle mappe;imagelabel_text;50;text"
+dato[] = "Attributi del testo:<br>All.;imagelabel_position;70#seldb_lblposition;selectdb|Offset X;imagelabel_offset_x;4;intero|OffSet Y;imagelabel_offset_y;4;intero|Font;imagelabel_font;200#seldb_font;selectdb"
+dato[] = "Dimensione;imagelabel_size;4;intero|Colore;imagelabel_color;11;color"
+dato[] = "Note;project_note;48x2;textarea"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit|Esporta;azione;;submit;edit|Importa;azione;;submit;new"
+
+[list]
+table = "project"
+pkey = "project_name"
+order_fld = "project_title#project_name"
+dato[] = ";project_name;3%;info"
+dato[] = "Titolo;project_title;60%#project_name;goto"
+dato[] = "Nome del Progetto;project_name;37%;text"
+
+
+[title]
+edit = "Dati del Progetto"
+view = "Dati del Progetto"
+new = "Nuovo Progetto"
+list = "Progetti"
+
+[menu]
+new = "Nuovo Progetto"
+standard = "project_name"
+
+[message]
+nodata = ""

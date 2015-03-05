@@ -1,0 +1,53 @@
+[standard]
+table = "mapset"
+pkey = "mapset_name"
+dato[] = "Nome *<br><font size=1>univoco anche tra progetti diversi!</font>;mapset_name;20;text"
+dato[] = "Titolo *;mapset_title;60;text"
+dato[] = "Scala massima *;maxscale;10;text|Scala minima;minscale;10;text"
+dato[] = "SRID (Codice EPSG) *<br><font size=1>Sistema di riferimento della mappa</font>;mapset_srid;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Visualizza coordinate in SRID<br><font size=1>Visualizza le coordinate in altro sistema</font>;displayprojection;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Unità Misura;sizeunits_id;160#seldb_sizeunits;selectdb"
+
+dato[] = "Elenco scale su mappa:<br><font size=1>Valori decrescenti separati da virgola</font>;mapset_scales;48x4;textarea"
+dato[] = "Estensione massima del Mapset *<br><font size=1>Indicare: minX minY MAXX MAXY separati da spazio</font>;mapset_extent;60;text;"
+dato[] = "Template di apertura mappa;template;60;text"
+dato[] = "Tipo di scala automatico (potenza di 2);mapset_scale_type;;noyes"
+dato[] = "Ordine dei mapset;mapset_order;10;text"
+//dato[] = "Formati di stampa;page_size;20;text"
+//dato[] = "Scarica immagine;dl_image_res;20;text"
+
+
+//dato[] = "Colore sfondo;bg_color;11;color"
+//dato[] = "Reference fissa;static_reference;;noyes"
+//dato[] = "Estensione Reference;refmap_extent;42;text"
+dato[] = "Mappa privata<br><font size=1>Protegge con login il contenuto della mappa</font>;private;;noyes"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+
+[list]
+table = "vista_mapset"
+pkey = "mapset_name"
+order_fld = "mapset_order#mapset_title#mapset_name"
+dato[] = "Titolo;mapset_title;25%#mapset_name;goto"
+dato[] = "Nome;mapset_name;10%;text"
+dato[] = "SRID;mapset_srid;6%;text"
+dato[] = "Scala max.;maxscale;10%;text"
+dato[] = "Elenco scale;mapset_scales;25%;text"
+dato[] = "Estensione;mapset_extent;15%;text"
+dato[] = "Ordine;mapset_order;10%;text"
+dato[] = "<font color="#404040">Controllo</font>;mapset_control;20%;text"
+dato[] = ";mapset_name;1%;info"
+dato[] = ";mapset_name;1%;edit"
+dato[] = ";mapset_name;1%;delete"
+
+[title]
+edit = "Modifica mapset"
+view = "Visualizza mapset"
+new = "Inserisci mapset"
+list = "Elenco dei Mapset"
+
+[menu]
+new = "Inserisci Mapset"
+standard = "mapset_name"
+
+[message]
+nodata = ""

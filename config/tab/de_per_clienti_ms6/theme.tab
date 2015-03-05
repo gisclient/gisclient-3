@@ -1,0 +1,36 @@
+[standard]
+table = "theme"
+pkey = "theme_id"
+dato[] = "Name *;theme_name;100;text"
+dato[] = "Titel *<br><font size=1>eindeutig im Thema!</font>;theme_title;100;text"
+dato[] = "Sortierung *;theme_order;3;intero"
+dato[] = "Copyright auf Karte;copyright_string;49x2;textarea"
+dato[] = "Radio auf Karte;radio;3;noyes"
+//dato[] = "Singolo tile;theme_single;3;noyes"
+
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina|Kopieren von;project;#openCopy;button"
+[list]
+table = "theme"
+pkey = "theme_id"
+order_fld = "theme_order#theme_title"
+dato[] = "Titel;theme_title;30%#theme_id;goto"
+dato[] = "Name;theme_name;25%;text"
+dato[] = "Copyright auf Karte;copyright_string;30%;text"
+dato[] = "Radio;radio;8%;yesno"
+dato[] = "Sortierung;theme_order;7%;text"
+dato[] = ";theme_id;1%;info"
+dato[] = ";theme_id;1%;edit"
+dato[] = ";theme_id;1%;delete"
+
+[title]
+edit = "Thema ändern"
+view = "Thema anzeigen"
+new = "Thema hinzufügen"
+list = "Themen"
+
+[menu]
+new = "Thema hinzufügen"
+standard = "theme_name"
+
+[message]
+nodata = ""

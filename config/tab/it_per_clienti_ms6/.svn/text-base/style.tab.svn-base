@@ -1,0 +1,47 @@
+[standard]
+table = "style"
+pkey = "style_id"
+dato[] = "Nome *;style_name;55;text"
+dato[] = "Ordine *;style_order;3;intero"
+dato[] = "Configurazione simbolo"
+dato[] = "Simbolo *;symbol_name;28;text|Elenco Simboli;symbol_name;100#openList#project#prm_livello;button"
+dato[] = "Pattern<br><font size=1>Serve per tratteggiare una linea.<br>Simbolo deve essere vuoto</font>;pattern_id;300#seldb_pattern#;selectdb"
+dato[] = "Colore del simbolo<font size=1>(RGB)</font>;color;25;color|Elenco;color;80#openList#layer;button"
+dato[] = "Colore bordo <font size=1>(RGB)</font>;outlinecolor;25;color|Elenco;outlinecolor;80#openList#layer;button"
+dato[] = "Colore sfondo <font size=1>(RGB)</font>;bgcolor;25;color"
+dato[] = "Dimensione simbolo:<br><font size=1>Massima</font>;maxsize;3;intero|<font size=1>Minima</font>;minsize;3;intero|<font size=1>Ottimale</font>;size;19;text|Elenco;size;80#openList#layer;button"
+dato[] = "Spessore simbolo:<br><font size=1>Massimo</font>;maxwidth;3;intero|<font size=1>Minimo</font>;minwidth;3;intero|<font size=1>Ottimale</font>;width;3;text"
+dato[] = "Rotazione;angle;25;text|Elenco;angle;80#openList#layer;button"
+dato[] = "Definizione simbolo<br><font size=1>Usare linguaggio MAPSERVER (<a href= "http://mapserver.org/mapfile/style.html" target=blank>TAG STYLE</a>);style_def;40x3;textarea"
+
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;class;#openCopy;button|Sposta;class;#openMove;button"
+[list]
+table = "style"
+pkey = "style_id"
+order_fld = "style_order#style_name"
+dato[] = "Nome;style_name;20%#style_id;goto"
+dato[] = "Simbolo;symbol_name;15%;text"
+dato[] = "Pattern;pattern_id;15%#e_pattern#pattern_name;chiave_esterna"
+dato[] = "Colore;color;10%;color"
+dato[] = "Colore bordo;outlinecolor;10%;color"
+dato[] = "Colore sfondo;bgcolor;10%;color"
+dato[] = "Dim.;size;6%;text"
+dato[] = "Spess.;width;6%;text"
+dato[] = "Rotaz.;angle;8%;text"
+dato[] = "Ordine;style_order;15%;text"
+dato[] = ";style_id;1%;info"
+dato[] = ";style_id;1%;edit"
+dato[] = ";style_id;1%;delete"
+
+[title]
+edit = "Modifica stile"
+view = "Visualizza stile"
+new = "Inserisci stile"
+list = "Stili"
+
+[menu]
+new = "Nuovo stile"
+standard = "style_name"
+
+[message]
+nodata = ""

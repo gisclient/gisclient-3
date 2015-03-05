@@ -1,0 +1,28 @@
+[standard]
+table = "layer_authfilter"
+pkey = "layer_id;filter_id"
+order_fld = "filter_id"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;filter_id;7%#filter_id#presente;check1"
+dato[] = "Nome filtro;filter_name;35%;text"
+dato[] = "Descrizione filtro;filter_description;35%;text"
+dato[] = "Obbligatorio;required;7%#filter_id#required;check1"
+
+[list]
+table = "layer_authfilter"
+pkey = "layer_id;filter_id"
+order_fld = "filter_id"
+dato[] = "Nome filtro;filter_name;50%;text"
+dato[] = "Descrizione filtro;filter_description;47%;text"
+
+[title]
+edit = "Filtri autenticazione del layer"
+view = "Filtri autenticazione del layer"
+new = "Filtri autenticazione del layer"
+list = "Filtri autenticazione del layer"
+
+[menu]
+standard = "Filtri autenticazione Layer"
+
+[message]
+nodata = ""

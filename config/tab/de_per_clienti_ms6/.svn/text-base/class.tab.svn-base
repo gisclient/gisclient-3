@@ -1,0 +1,53 @@
+[standard]
+table = "class"
+pkey = "class_id"
+dato[] = "Name *;class_name;55;text"
+dato[] = "Titel *;class_title;48x2;textarea"
+dato[] = "Sortierung *;class_order;3;intero"
+dato[] = "Aussageform für Klassifizierung<br><font size=1>Benutze MAPSERVER (<a href= "http://mapserver.org/mapfile/class.html" target=blank>TAG EXPRESSION</a>)</font>;expression;48x2;textarea"
+//dato[] = "Immagine legenda;keyimage;55;text"
+dato[] = "Anwesend in der Legende;legendtype_id;;yesno"
+dato[] = "Sichtbarkeit der Klasse:<br><font size=1>Max. Maßstab</font>;maxscale;8;intero|<font size=1>Min. Maßstab</font>;minscale;8;intero"
+//dato[] = "Template;class_template;55;text"
+dato[] = "Konfiguration der Label:"
+dato[] = "Font;label_font;200#seldb_font##unsetFK('symbol_ttf_name');selectdb"
+dato[] = "Font Größe:<br><font size=1>Max.</font>;label_maxsize;3;intero|<font size=1>Min.</font>;label_minsize;3;intero|<font size=1>Optimal</font>;label_size;20;text|Feld auswählen;label_size;100#openList#layer;button"
+dato[] = "Text für gleiche Labelierung;class_text;65;text"
+//dato[] = "Simbolo true type;symbol_ttf_name;30#symbol_ttf#symbol_ttf_name;chiave_esterna|Elenco simboli;symbol_ttf_name;120#openList#label_font;button"
+dato[] = "Farbe der Font <font size=1>(RGB)</font>;label_color;25;color|Feld auswählen;label_color;100#openList#layer;button"
+dato[] = "Rahmenfarbe <font size=1>(RGB)</font>;label_outlinecolor;25;color|Feld auswählen;label_outlinecolor;100#openList#layer;button"
+dato[] = "Hintergrundfarbe <font size=1>(RGB)</font>;label_bgcolor;25;color"
+dato[] = "Position;label_position;150#seldb_lblposition;selectdb|Rotation;label_angle;25;text|Feld auswählen;label_angle;100#openList#layer;button"
+dato[] = "Visualisierung zwingen;label_force;;yesno|Zeichnung Vorrang;label_priority;5;intero|Buffer;label_buffer;2;intero"
+//dato[] = "Antialias;label_antialias;;yesno|Carattere a capo;label_wrap;2;text"
+dato[] = "Label Definition<br><font size=1>Benutze MAPSERVER (<a href= "http://mapserver.org/mapfile/label.html" target=blank>TAG LABEL</a>)</font>;label_def;40x2;textarea"
+
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina|Kopieren von;layer;#openCopy;button|Verschieben;theme;#openMove;button"
+[list]
+table = "class"
+pkey = "class_id"
+order_fld = "class_order#class_name"
+dato[] = "Titel;class_title;20%#class_id;goto"
+dato[] = "Name;class_name;17;text"
+dato[] = ";class_image;24x16#class_id#class;image"
+dato[] = "Aussageform;expression;40%;text"
+dato[] = "Max. Maßstab;maxscale;8%;text"
+dato[] = "Min. Maßstab;minscale;8%;text"
+dato[] = "Sortierung;class_order;7%;text"
+dato[] = ";class_id;1%;info"
+dato[] = ";class_id;1%;edit"
+dato[] = ";class_id;1%;delete"
+
+[title]
+edit = "Klasse ändern"
+view = "Klasse anzeigen"
+new = "Klasse hinzufügen"
+list = "Klassen"
+
+[menu]
+new = "Klasse hinzufügen"
+standard = "class_name"
+
+[message]
+nodata = ""
+
