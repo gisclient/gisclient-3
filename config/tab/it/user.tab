@@ -1,0 +1,32 @@
+[standard]
+table = "users"
+pkey = "username"
+dato[] = "Username;username;15;text"
+dato[] = "Password;pwd;20;pword"
+dato[] = "Password;enc_pwd;10;hidden"
+dato[] = "Nome;nome;30;text"
+dato[] = "Cognome;cognome;30;text"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "users"
+pkey = "username"
+order_fld = "username"
+dato[] = "Username;username;20%#username;goto"
+dato[] = "Nome;nome;37%;text"
+dato[] = "Cognome;cognome;40%;text"
+dato[] = ";username;1%;info"
+dato[] = ";username;1%;edit"
+dato[] = ";username;1%;delete"
+
+[title]
+edit = "Modifica utente"
+view = "Visualizza utente"
+new = "Inserisci utente"
+list = "Elenco utenti"
+
+[menu]
+new = "Inserisci utente"
+standard = "username"
+
+[message]
+nodata = "Nessun Utente Presente"

@@ -1,0 +1,24 @@
+[standard]
+table = "language_layergroup"
+pkey = "language_id;layergroup_id"
+dato[] = "Lingua;language_id;250#seldb_language#;selectdb"
+dato[] = "Titolo;title;60;text"
+dato[] = "Link;link;100;text"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit"
+
+[list]
+table = "language_layergroup"
+pkey = "language_id;layergroup_id"
+order_fld = "title"
+dato[] = ";language_id;3%#layergroup_id;info"
+dato[] = "Titolo;title;60#language_id#layergroup_id;goto"
+dato[] = "Lingua;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Titoli alternativi del LayerGroup"
+view = "Titoli alternativi del LayerGroup"
+new = "Nuovo Titolo del LayerGroup"
+list = "Titoli alternativi del LayerGroup"
+
+[message]
+nodata = ""

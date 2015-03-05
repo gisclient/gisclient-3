@@ -1,0 +1,31 @@
+[standard]
+table = "mapset_groups"
+fun_prm = "project#mapset"
+save_table = "mapset_groups"
+pkey = "mapset_name;group_name"
+order_fld = "group_name"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;group_name;9%#group_name#presente;check1"
+dato[] = "Gruppo di Utenti;group_name;75%;text"
+dato[] = "Editor della Mappa;edit;#group_name#edit;check1"
+dato[] = "RedLine;redline;#group_name#redline;check1"
+[list]
+table = "mapset_groups"
+fun_prm = "project#mapset"
+pkey = "mapset_name;group_name"
+order_fld = "group_name"
+dato[] = "Gruppo di Utenti;group_name;85%;text"
+dato[] = "Editor della Mappa;edit;;yesno"
+dato[] = "RedLine;redline;;yesno"
+
+[title]
+edit = "Gruppi di Utenti del Mapset"
+view = "Gruppi di Utenti del Mapset"
+new = "Gruppi di Utenti del Mapset"
+list = "Gruppi di Utenti del Mapset"
+
+[menu]
+standard = "mapset grouppi di utenti"
+
+[message]
+nodata = ""

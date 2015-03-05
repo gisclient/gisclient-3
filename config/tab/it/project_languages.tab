@@ -1,0 +1,27 @@
+[standard]
+table = "project_languages"
+pkey = "project_name;language_id"
+dato[] = "Lingua;language_id;150#seldb_language;selectdb"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "vista_project_languages"
+pkey = "project_name;language_id"
+order_fld = "language_id"
+dato[] = "Cod. Lingua;language_id;10%#language_id#project_name;goto"
+dato[] = "Lingua;language_name;90%;text"
+dato[] = ";language_id;1%#project_name;info"
+dato[] = ";language_id;1%#project_name;edit"
+dato[] = ";language_id;1%#project_name;delete"
+
+[title]
+edit = "Modifica lingua alternativa"
+view = "Visualizza lingua alternativa"
+new = "Inserisci lingua alternativa"
+list = "Elenco lingue alternative"
+
+[menu]
+new = "Inserisci lingua alternativa"
+standard = "language_id"
+
+[message]
+nodata = ""

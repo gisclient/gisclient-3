@@ -1,0 +1,36 @@
+[standard]
+table = "qtfield"
+pkey = "qtfield_id"
+dato[] = "Relazione;qtrelation_id;200#seldb_qtrelation#qt_id;selectdb"
+dato[] = "Campo;qtfield_name;60;text|Elenco campi;qtfield_name;100#get_elenco#qt#qtrelation_id;button"
+dato[] = "Titolo;field_header;40;text"
+dato[] = "Tipo di Campo;fieldtype_id;200#seldb_fieldtype;selectdb"
+dato[] = "Tipo di Dato;datatype_id;200#seldb_datatype;selectdb"
+dato[] = "Formato;field_format;48x2;textarea|Elenco Formati;field_format;100#get_elenco;button"
+dato[] = "Modo di Ricerca;searchtype_id;200#seldb_searchtype;selectdb"
+dato[] = "Mostra campo in;resultype_id;200#seldb_resultype;selectdb"
+dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
+dato[] = "Campo filtro;field_filter;200#seldb_field_filter#qt_id#qtfield_id;selectdb"
+dato[] = "Ordine;qtfield_order;3;intero|Op predefinito;default_op;5;text"
+dato[] = "Larghezza %;column_width;3;intero"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit"
+[list]
+table = "vista_qtfield"
+pkey = "qtfield_id"
+order_fld = "qtfield_order#field_header"
+dato[] = ";qtfield_id;3%;info"
+dato[] = "Intestazione;field_header;20%#qtfield_id;goto"
+dato[] = "Campo;qtfield_name;20%;text"
+dato[] = "Tipo Campo;fieldtype_id;20%#e_fieldtype#fieldtype_name;chiave_esterna"
+dato[] = "Relazione;qtrelation_name;15%;text"
+dato[] = "Larghezza %;column_width;10%;text"
+dato[] = "Ordine;qtfield_order;5%;text"
+
+[title]
+edit = "Dati del Campo del Modello di Ricerca"
+view = "Dati del Campo del Modello di Ricerca"
+new = "Nuovo Campo del Modello di Ricerca"
+list = "Campi del modello di Ricerca"
+
+[message]
+nodata = "Nessun Campo nel Modello di Ricerca"

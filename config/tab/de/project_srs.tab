@@ -1,0 +1,35 @@
+[standard]
+table = "project_srs"
+pkey = "project_name;srid"
+dato[] = "Koordinatesystem (EPSG Kode);srid;6;intero"
+dato[] = "Parameter;projparam;50;text"
+dato[] = "Grid für Tiles;tilegrid_id;300#seldb_tilegrid#;selectdb"
+//dato[] = "Custom SRID;custom_srid;6;intero"
+
+dato[] = "Speichern;azione;;submit;all;salva|Abbrechen;azione;;submit;all;annulla|Löschen;azione;;submit;edit;elimina"
+[list]
+table = "project_srs"
+pkey = "project_name;srid"
+order_fld = "srid"
+dato[] = "EPSG Kode;srid;12%#srid#project_name;goto"
+dato[] = "Verbesserung Parameter;projparam;75%;text"
+dato[] = "Grid für Tiles;tilegrid_id;300#seldb_tilegrid#;selectdb"
+//dato[] = "Custom SRID;custom_srid;12%;text"
+
+
+dato[] = ";srid;1%#project_name;info"
+dato[] = ";srid;1%#project_name;edit"
+dato[] = ";srid;1%#project_name;delete"
+
+[title]
+edit = "Koordinatesystem ändern"
+view = "Koordinatesystem anzeigen"
+new = "Koordinatesystem hinzufügen"
+list = "Koordinatesystem"
+
+[menu]
+new = "Neuer Koordinatesystem"
+standard = "srid"
+
+[message]
+nodata = ""

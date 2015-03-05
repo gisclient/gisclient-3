@@ -1,0 +1,80 @@
+/* CSS print map */
+body {
+  margin:0px;
+  padding:0px;
+}
+
+.print_map {
+	border:1px solid;
+	font-family:sans-serif;
+	font-size:12px;
+}
+.print_map .clearer {
+	clear:both;
+}
+
+.print_map .logo .dx,
+.print_map .logo .sx {
+	padding:5px;
+}
+.print_map .logo .dx {
+	float:right;
+}
+
+.print_map .map {
+	border-top:1px solid;
+	clear:both;
+	position:relative;
+}
+
+.print_map .north_arrow {
+	position:absolute;
+	top:10px;
+	right:10px;
+	z-index:999;
+}
+
+.print_map .info {
+	border-top:1px solid;
+	border-bottom:1px solid;
+}
+.print_map .info .sx,
+.print_map .info .dx{
+	width:48%;
+	float:left;
+	padding:3px;
+}
+
+.print_map .maptext {
+	padding:3px;
+}
+
+.print_map .legend {
+	border-top:1px solid;
+}
+.print_map .legend .title {
+	padding:3px;
+	text-decoration:underline;
+}
+.print_map .legend .group {
+	clear:both;
+	border-bottom:1px dotted;
+}
+.print_map .legend .block {
+	
+}
+.print_map .legend .item {
+	width:205px;
+    height: 35px;
+	float:left;
+	padding-left:3px;
+	overflow:hidden;
+}
+.print_map .legend .item img {
+	vertical-align:text-bottom;
+	margin-right:3px;
+}
+
+.sx span{
+	font-size:22px;
+}

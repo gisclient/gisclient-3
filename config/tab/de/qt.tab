@@ -1,0 +1,29 @@
+[standard]
+table = "qt"
+pkey = "qt_id"
+dato[] = "Name;qt_name;50;text"
+dato[] = "Bezugsebene;layer_id;35#layer#layer_name;chiave_esterna|Datum Layer;layer_id;120#get_elenco#theme;button"
+dato[] = "Ergebnisse x Seite;max_rows;5;intero"
+dato[] = "Objekte gruppieren;groupobject;;noyes"
+dato[] = "Zoom-Puffer;zoom_buffer;5;intero|Auswahlfarbe ;selection_color;11;color"
+dato[] = "Druckformat;papersize_id;250#seldb_papersize;selectdb"
+dato[] = "URL bearbeiten;edit_url;70;text"
+dato[] = "Reihenfolge;qt_order;3;intero"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit|Exportieren;azione;;submit;edit|Importieren;azione;;submit;new"
+[list]
+table = "qt"
+pkey = "qt_id"
+order_fld = "qt_order#qt_name"
+dato[] = ";qt_id;3%;info"
+dato[] = "Name;qt_name;30%#qt_id;goto"
+dato[] = "Bezugsebene;layer_id;30%#layer#layer_name;chiave_esterna"
+dato[] = "Reihenfolge;qt_order;7%;text"
+
+[title]
+edit = "Daten des Suchmodells"
+view = "Daten des Suchmodells"
+new = "Neues Suchmodell"
+list = "Suchmodelle"
+
+[message]
+nodata = ""

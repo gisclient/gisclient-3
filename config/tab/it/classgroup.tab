@@ -1,0 +1,40 @@
+[standard]
+table = "classgroup"
+pkey = "classgroup_id"
+dato[] = "Nome;classgroup_name;55;text"
+dato[] = "Titolo;classgroup_title;55;text"
+dato[] = "Campo per la classificazione;classitem;20;text|Elenco;classitem;100#get_elenco#catalog_id#layertype_id#data;button"
+dato[] = "Campo per l'etichetta;labelitem;20;text|Elenco;labelitem;100#get_elenco#catalog_id#layertype_id#data;button"
+dato[] = "Campo altezza etichetta;labelsizeitem;20;text|Elenco;labelsizeitem;100#get_elenco#catalog_id#layertype_id#data;button"
+dato[] = "Scala di visibilità oggetti:<br>Massima;maxscale;8;intero|Minima;minscale;8;intero|Ottimale;symbolscale;8;intero"
+dato[] = "Scala di visibilità etichette:<br>Massima;labelmaxscale;8;intero|Minima;labelminscale;8;intero"
+dato[] = "Unità Misura;sizeunits_id;160#seldb_sizeunits;selectdb"
+dato[] = "Template;template;44;text"
+dato[] = "Template header;header;44;text"
+dato[] = "Template footer;footer;44;text"
+dato[] = "Default;default_group;;yesno"
+dato[] = "Trasparenza;opacity;5;text|Ordine;layer_order;3;text|Ordine;layer_order;80#get_elenco#project#theme#layergroup#layer;button"
+dato[] = "Salva;azione;;submit;all|Annulla;azione;;submit;all|Elimina;azione;;submit;edit|Copia da;copia;#get_azioni#layergroup;button;new|Sposta;sposta;#get_azioni#layer;button;edit|Esporta;azione;;submit;edit|Importa;azione;;submit;new|Classifica;azione;120;submit;new"
+[list]
+table = "classgroup"
+pkey = "classgroup_id"
+order_fld="classgroup_name"
+dato[] = ";classgroup_id;3%;info"
+dato[] = "Nome;classgroup_name;40%#classgroup_id;goto"
+dato[] = "Titolo;classgroup_title;55;text"
+dato[] = "Default;default_group;20;yesno"
+
+[title]
+edit = "Vestizione Features"
+view = "Vestizione Features"
+new = "Nuova vestizione della Features"
+list = "Vestizione Features"
+
+
+[menu]
+new = "Nuovo Layer"
+standard = "layer_name"
+
+
+[message]
+nodata = ""

@@ -1,0 +1,23 @@
+[standard]
+table = "project_admin"
+pkey = "project_name;username"
+order_fld = "username"
+dato[] = "Presente;username;10%#username#presente;check1"
+dato[] = "Nome Utente;username;;text"
+[list]
+table = "project_admin"
+pkey = "project_name;username"
+order_fld = "username"
+dato[] = "Nome Utente;username;;text"
+
+[title]
+edit = "Elenco degli amministratori del progetto"
+view = "Elenco degli amministratori del progetto"
+new = "Elenco degli amministratori del progetto"
+list = "Amministratori del Progetto"
+
+[menu]
+standard = "Amministratori"
+
+[message]
+nodata = ""

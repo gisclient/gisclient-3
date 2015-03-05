@@ -1,0 +1,47 @@
+﻿[standard]
+table = "layergroup"
+pkey = "layergroup_id"
+dato[] = "Nome;layergroup_name;55;text"
+dato[] = "Titolo;layergroup_title;55;text"
+dato[] = "Tipo di servizio;owstype_id;180#seldb_owstype;selectdb"
+dato[] = "Visibilità:<br>Scala max.;layergroup_maxscale;12;intero|Scala min.;layergroup_minscale;12;intero"
+dato[] = "Livello di base;isbaselayer;3;noyes|Effetto fade;transition;3;noyes"
+dato[] = "Livello unico;layergroup_single;3;noyes|Multi tiles;tiletype_id;3;noyes"
+//dato[] = "Crea tiles;tiletype_id;150#seldb_tiletype#;selectdb|Estensione tiles;tiles_extent;55;text"
+//dato[] = "SRID estensione tiles;tiles_extent_srid;10;text"
+dato[] = "Formato Immagine;outputformat_id;150#seldb_outputformat#;selectdb"
+//dato[] = "Gruppo in livelli;tree_group;55;text"
+dato[] = "URL del servizio;url;70x2;textarea"
+dato[] = "Layers;layers;65;text"
+//dato[] = "Parametri;parameters;49x2;textarea"
+//dato[] = "Stile;style;55;text"
+dato[] = "File di stile (SLD);sld;49x2;textarea"
+dato[] = "URL Metadati;metadata_url;49x2;textarea"
+dato[] = "Gutter;gutter;3;intero|Buffer;buffer;3;intero|Opacità;opacity;3;text"
+dato[] = "Ordine;layergroup_order;5;intero"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;theme;#openCopy;button|Sposta;theme;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Importa Raster;azione;120;submit;edit;importa raster"
+[list]
+table = "layergroup"
+pkey = "layergroup_id"
+order_fld = "layergroup_order#layergroup_title"
+dato[] = "Titolo;layergroup_title;38%#layergroup_id;goto"
+dato[] = "Nome;layergroup_name;35%;text"
+dato[] = "Scala max.;layergroup_maxscale;10%;text"
+dato[] = "Scala min.;layergroup_minscale;10%;text"
+dato[] = "Ordine;layergroup_order;7%;text"
+dato[] = ";layergroup_id;1%;info"
+dato[] = ";layergroup_id;1%;edit"
+dato[] = ";layergroup_id;1%;delete"
+
+[title]
+edit = "Modifica gruppo di layer"
+view = "Visualizza gruppo di layer"
+new = "Inserisci gruppo di layer"
+list = "Gruppi di layers"
+
+[menu]
+new = "Nuovo gruppo di layer"
+standard = "layergroup_name"
+
+[message]
+nodata = ""

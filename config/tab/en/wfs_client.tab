@@ -1,0 +1,9 @@
+[standard]
+table = ""
+pkey = "wfs_name"
+dato[] = "Nome;wfs_typename;40;text"
+dato[] = "Versione;wfs_version;10;text"
+dato[] = "Metodo Richiesta;wfs_request_method;15;text"
+dato[] = "Max Features;wfs_maxfeatures;3;text"
+dato[] = "Metadata;metadata;60x12;textarea"
+dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"

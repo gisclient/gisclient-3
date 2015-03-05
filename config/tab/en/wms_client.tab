@@ -1,0 +1,8 @@
+[standard]
+table = ""
+pkey = "wms_name"
+dato[] = "Nome;wms_name;40;text"
+dato[] = "Versione;wms_server_version;10;text"
+dato[] = "Formato;wms_format;15;text"
+dato[] = "SRS;wms_srs;40x4;textarea"
+dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"

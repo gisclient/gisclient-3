@@ -1,0 +1,23 @@
+[standard]
+table = "language_project"
+pkey = "language_id;project_name"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb"
+dato[] = "Beschreibung;title;60;text"
+dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
+
+[list]
+table = "language_project"
+pkey = "language_id;project_name"
+order_fld = "description"
+dato[] = ";language_id;3%#project_name;info"
+dato[] = "Beschreibung;title;60#language_id#project_name;goto"
+dato[] = "Sprache;language_id;250#seldb_language#;selectdb;"
+
+[title]
+edit = "Alternative Titel des Projekts"
+view = "Alternative Titel des Projekts"
+new = "Neuer Titel des Projekts"
+list = "Alternative Titel des Projekts"
+
+[message]
+nodata = ""
