@@ -1,6 +1,0 @@
-[standard]
-table = ""
-pkey = "wms_title"
-dato[] = "Titolo;wms_title;40;text"
-dato[] = "SRS;wms_srs;40;text"
-dato[] = "Salva;;#wmsSave;button;all|Annulla;;#closeWin;button;all"
