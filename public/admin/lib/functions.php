@@ -58,6 +58,26 @@ $gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP
 	
 	}
 	
+	function jsonString($myArray,$callback=false){
+		require_once "json.php";
+		$json = new Services_JSON();
+		$jsonstr = $json->encode($myArray);	
+		$jsonstr = str_replace(chr(13),"<br>",$jsonstr);
+		$jsonstr = str_replace(chr(10),"<br>",$jsonstr);
+		//print_debug($jsonstr,null,'json');
+		
+		header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+		header ("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); // always modified
+		header ("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+		header ("Pragma: no-cache"); // HTTP/1.0
+		header("Content-Type: application/json; Charset=". CHAR_SET);
+		//header("Content-Type: text/html; Charset=". CHAR_SET);
+		if($callback)
+			echo $callback."(".$jsonstr.")";
+		else
+			echo $jsonstr;
+	}	
+	
 	function array_limit($aList,$maxVal=false,$minVal=false){
 		$ar=array();
 		foreach($aList as $val){
@@ -760,10 +780,10 @@ function getTable($data,$level,$header){
 	}
 	
 	function niceName($name) {
-        $name = preg_replace('/\s+/', '_', $name);
-        $name = preg_replace('/_{2,}/', '_', $name);
-        $name = preg_replace('/^_+/', '', $name);
-        $name = preg_replace('/_+$/', '', $name);
+	        $name = preg_replace('/\s+/', '_', $name);
+	        $name = preg_replace('/_{2,}/', '_', $name);
+	        $name = preg_replace('/^_+/', '', $name);
+	        $name = preg_replace('/_+$/', '', $name);
 		$name = NameReplace($name);
 		$name = preg_replace('/[^a-z0-9_]+/i', '', $name);
 		return $name;

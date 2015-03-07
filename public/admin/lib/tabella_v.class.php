@@ -406,7 +406,7 @@ function edita($param=Array()){
 	print $tabella;
 }
 
-public function get_tabella($curr=0){
+function tab($curr=0){
 //crea la tabella per l'elenco in consultazione
 	$nrighe=$this->num_col;
 	$span=2*$nrighe;
@@ -432,7 +432,7 @@ function elenco($form){
 	for ($i=0;$i<$this->num_record;$i++){
 		$this->curr_record=$i;
 		$this->get_titolo($form);
-		$this->get_tabella();
+		$this->tab();
 	}
 }
 
@@ -576,8 +576,7 @@ function get_chiave_esterna($val,$fld,$tab,$campo){
 
 	if ($val==-1)
 		return GCAuthor::t('undefined');
-	elseif(!$val){
-		
+	elseif(strlen($val)==0){
 		switch($tab){
 			case "e_searchtype":
 				$fkey="Nessuna Ricerca";

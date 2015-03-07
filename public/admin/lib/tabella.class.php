@@ -36,11 +36,11 @@ class Tabella{
 	
 	var $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
 	var $display_number=-1;
-	
 	function Tabella($config_file,$mode="standard"){
 	// ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
 		//	NUOVA MODALITA
 		
+		$mylang = GCAuthor::getLang();
 		$rel_dir = GCAuthor::getTabDir();
 		
 		$tmp=parse_ini_file(ROOT_PATH.$rel_dir.$config_file,true);
@@ -187,9 +187,9 @@ class Tabella{
                             ' FROM '.$this->schemadb.'.'.$this->tabelladb.
                             ' '.$data.' '.$order.';';
                         print_debug($this->config_file."\n".$sql,null,"tabella");
-                        $stmt = $this->db->prepare($sql);
-						$success = $stmt->execute();
-                        if ($success){
+                        try {
+                            $stmt = $this->db->prepare($sql);
+                            $success = $stmt->execute();
                             $this->array_dati=$stmt->fetchAll();
                             if (count($this->array_dati)==1){
                                 foreach($this->pkeys as $key=>$val)
@@ -202,6 +202,8 @@ class Tabella{
                                 }
                             }
                             $this->num_record=$stmt->rowCount();
+                        } catch(Exception $e) {
+                            print_debug($sql,null,"errors");
                         }
 			$this->curr_record=0;	
 			return  $this->num_record;	

@@ -35,8 +35,13 @@ switch($catalogData["connection_type"]){
 			$sql="select base_path from ".DB_SCHEMA.".project where project_name=?";
 			$stmt = $db->prepare($sql);
 			$stmt->execute(array($_REQUEST['project']));
-			$projectPath = addFinalSlash($stmt->fetchColumn(0));
-			$baseDir = $projectPath.$baseDir;	
+            $projectPath = $stmt->fetchColumn(0);
+            if(!empty($projectPath)) {
+                $projectPath = addFinalSlash($projectPath);
+            } else {
+                $projectPath = addFinalSlash(ROOT_PATH);
+            }
+			$baseDir = $projectPath.$baseDir;
 		}
 		$navDir = '';
 		if(!empty($_REQUEST['directory'])) { // siamo in una sottocartella, includi anche il back

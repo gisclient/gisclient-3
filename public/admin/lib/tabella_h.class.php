@@ -13,16 +13,13 @@ var $img_punto; //nome del gif da usare come punto elenco della tabella
 
 
 function set_target($target){
-	// TODO: remove, unused
 	$this->info_target=$target;
 }
 function set_punto($image){
-	// TODO: remove, unused
 	$this->img_punto=$image;
 }
 
 function set_color($intestazione,$font_intestazione,$titolo,$font_titolo){
-	// TODO: remove, unused
 // ************ da fare********************usare class?????	
 	//aggiungere stile
 	$this->colore_colonne=$intestazione;
@@ -154,7 +151,6 @@ function get_cella($row,$col){
 			$retval.="<a class=\"button edit\" href=\"javascript:$jslink\">Edit</a>";
 			$retval.="</td>\n";
 			break;
-			
 		case "delete":
 			#echo '<pre>'; var_export($this); die();
 			$pkeys = array();
@@ -171,11 +167,12 @@ function get_cella($row,$col){
 			$retval.="</td>\n";
 			break;
 			
+		
+			break;		
 		case "zoom":
 			$jslink=$this->zoomto(trim($this->tabelladb),$valore);
 			$retval="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\"><a href=\"javascript:$jslink\"><img src=\"images/zoom.gif\" border=\"0\"></a></td>\n";
 			break;
-		
 		case "noyes":
 		case "yesno":
 			($valore==0)?($yn=GCAuthor::t('no')):($yn=GCAuthor::t('yes'));
@@ -195,8 +192,8 @@ function get_cella($row,$col){
 		case "semaforo":
 			($valore)?($img="frossa"):($img="fblu");
 			$retval="<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img.gif\" border=\"0\"></td>\n";
+			
 			break;
-		
 		case "image":
 			$size=explode("#",$w);
 			$dim=explode("x",$w);
@@ -206,13 +203,12 @@ function get_cella($row,$col){
 				$retval="<td><a href=\"#\" onclick=\"javascript:window.open('getImage.php?id=$v&table=$table')\"><img src=\"getImage.php?id=$v&table=$table\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\"></a></td>";
 			else
 				$retval="<td>Nessuna immagine salvata $v</td>";
-			break;
-
+			break;	
 		case "image2":
 			$img=(!$valore)?("frossa"):($valore);
 			$retval="<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img\" border=\"0\"></td>\n";
+			
 			break;
-		
 		//Genera un array di text indicizzati su id
 		case "text_box":
 			$data=$this->date_format(stripslashes($valore));
@@ -225,7 +221,8 @@ function get_cella($row,$col){
 			$id=$this->array_dati[$row][$size[1]];
 			(($valore=="t") or ($valore==1))?($selezionato="checked"):($selezionato="");
 			$retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input width=\"7\" type=\"radio\" name=\"$nome\" value=\"$id\" $selezionato></td>\n";
-			break;
+			break;	
+			
 	
 		case "punto":
 			$p_image=$this->img_punto;
@@ -339,8 +336,8 @@ function elenco ($message = null){
 }
 
 function elenco_h($t){
-	$ncols=$this->num_record;
-	$all="center";
+$ncols=$this->num_record;
+$all="center";
 
 	//Intestazione delle colonne
 	$tabella="
