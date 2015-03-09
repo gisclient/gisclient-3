@@ -515,7 +515,7 @@
 						$b="modifica";
 						$tb->set_titolo($tb->FileTitle,$b,$prm);
 						$tb->get_titolo($frm);
-						$tb->get_tabella();
+						$tb->tab();
 					}
 					else{
 						$b="nuovo";
@@ -538,7 +538,7 @@
 					}
 					$tb->set_titolo($tb->FileTitle,$button,$prm);
 					$tb->get_titolo($frm);
-					$tb->get_tabella();
+					$tb->tab();
 					break;
 			}
 			echo "<hr>\n";
@@ -777,6 +777,7 @@
 							$btn[]="<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona RefMap\" onclick=\"javascript:selectAll(this,'refmap');\">";
 							break;
 						case "vista_qt_selgroup":
+						case "vista_selgroup":
 							$filtro="project_id=".$this->parametri["project"];
 							$btn[]="<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Annulla\">";
 							$btn[]="<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Salva\">";
