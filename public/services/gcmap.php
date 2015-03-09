@@ -27,8 +27,12 @@
 require_once '../../config/config.php';
 require_once ADMIN_PATH."lib/functions.php";
 require_once ROOT_PATH."lib/i18n.php";
-require_once 'include/gcMap.class.php';
 require_once ROOT_PATH . 'lib/GCService.php';
+
+if(empty($_REQUEST["jsonformat"]))
+	require_once 'include/gcMap.class.php';
+else
+	require_once 'include/gcMap.class.r3gis.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -55,7 +59,13 @@ header("Content-Type: application/json; Charset=UTF-8");
 
 if(empty($_REQUEST['mapset'])) die(json_encode(array('error' => 200, 'message' => 'No mapset name')));
 
-if(empty($_REQUEST["jsoncallback"]))
-	die(json_encode($objMapset->mapOptions));
+if(empty($_REQUEST["jsonformat"]))
+	$output = $objMapset->mapConfig;
 else
-	die($_REQUEST["jsoncallback"]."(".json_encode($objMapset->mapOptions).")");
+	$output = $objMapset->mapOptions;
+
+
+if(empty($_REQUEST["jsoncallback"]))
+	die(json_encode($output));
+else
+	die($_REQUEST["jsoncallback"]."(".json_encode($output).")");

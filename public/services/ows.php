@@ -97,7 +97,7 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 // sanitize project as part of the path
 $mapfileDir = ROOT_PATH.'map/';
 
-$project = $objRequest->getvaluebyname('project');
+/*$project = $objRequest->getvaluebyname('project');
 $projectDirectory = $mapfileDir.$objRequest->getvaluebyname('project')."/";
 if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
 	// if the the project directory is not a subdir of map/, something
@@ -106,13 +106,13 @@ if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid PROJECT name";
 	exit(1);
-} 
+} */
 
 // se è definita una lingua, apro il relativo mapfile
 $mapfileBasename = $objRequest->getvaluebyname('map');
 if($objRequest->getvaluebyname('lang')) {
 	$maplang = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
-	if (file_exists($projectDirectory.$maplang.'.map')) {
+	if (file_exists($mapfileDir.$maplang.'.map')) {
 		$mapfileBasename = $maplang;
 	} else {
 		print_debug('mapfile not found for lang '.$objRequest->getvaluebyname('lang'), null, 'system');
@@ -125,15 +125,17 @@ if(!empty($showTmpMapfile)) {
 	$mapfileBasename = "tmp.".$mapfileBasename;
 }
 
-$mapfile = $projectDirectory.$mapfileBasename.".map";
-if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
+$mapfile = $mapfileDir.$mapfileBasename.".map";
+
+/*if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
 	// if the the map is not in the project dir, something
 	// bad is happening
 	print_debug('mapfile "' .realpath($mapfile). '" is not in project dir "'. realpath($projectDirectory).'"', null, 'system');
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid MAP name";
 	exit(1);
-} 
+} */
+
 if (!is_readable($mapfile)) {
 	// map file not found
 	print_debug('mapfile ' .$mapfile. ' not readable', null, 'system');
