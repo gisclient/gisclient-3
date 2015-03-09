@@ -1,0 +1,42 @@
+[standard]
+table = "style"
+pkey = "style_id"
+dato[] = "Nome;style_name;55;text"
+dato[] = "Simbolo;symbol_name;28;text|Elenco Simboli;symbol_name;100#openList#project#prm_livello;button"
+dato[] = "Colore;color;25;color|Elenco;color;80#openList#layer;button"
+dato[] = "Colore bordo;outlinecolor;25;color|Elenco;outlinecolor;80#openList#layer;button"
+dato[] = "Colore sfondo;bgcolor;11;color"
+dato[] = "Dimensione simbolo:<br>Massima;maxsize;3;intero|Minima;minsize;3;intero|Ottimale;size;19;text|Elenco;size;80#openList#layer;button"
+dato[] = "Spessore simbolo:<br>Massima;maxwidth;3;intero|Minima;minwidth;3;intero|Ottimale;width;3;text"
+dato[] = "Rotazione;angle;25;text|Elenco;angle;80#openList#layer;button"
+dato[] = "Definizione MapServer;style_def;40x3;textarea"
+dato[] = "Ordine;style_order;3;intero"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;class;#openCopy;button|Sposta;class;#openMove;button"
+[list]
+table = "style"
+pkey = "style_id"
+order_fld = "style_order#style_name"
+dato[] = "Nome;style_name;20%#style_id;goto"
+dato[] = "Simbolo;symbol_name;15%;text"
+dato[] = "Colore;color;15%;color"
+dato[] = "Colore bordo;outlinecolor;15%;color"
+dato[] = "Colore sfondo;bgcolor;15%;color"
+dato[] = "Dimensione;size;10%;text"
+dato[] = "Spessore;width;10%;text"
+dato[] = "Ordine;style_order;;text"
+dato[] = ";style_id;1%;info"
+dato[] = ";style_id;1%;edit"
+dato[] = ";style_id;1%;delete"
+
+[title]
+edit = "Modifica stile"
+view = "Visualizza stile"
+new = "Inserisci stile"
+list = "Stili"
+
+[menu]
+new = "Nuovo stile"
+standard = "style_name"
+
+[message]
+nodata = ""

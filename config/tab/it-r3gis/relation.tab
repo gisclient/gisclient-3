@@ -1,0 +1,43 @@
+[standard]
+table = "relation"
+pkey = "relation_id"
+dato[] = "Nome;relation_name;40;text"
+dato[] = "Titolo;relation_title;40;text"
+dato[] = "Catalogo;catalog_id;200#seldb_catalog#project_name;selectdb"
+dato[] = "Relazione;table_name;55;text|Elenco Data;table_name;100#openList#catalog_id;button"
+dato[] = "1° Campo Join Data Layer;data_field_1;40;text|Elenco Data;data_field_1;100#openList#layer;button"
+dato[] = "1° Campo Join Relazione;table_field_1;40;text|Elenco Data;table_field_1;100#openList#catalog_id#table_name;button"
+dato[] = "2° Campo Join Data Layer;data_field_2;40;text|Elenco Data;data_field_2;100#openList#layer;button"
+dato[] = "2° Campo Join Relazione;table_field_2;40;text|Elenco Data;table_field_2;100#openList#catalog_id#table_name;button"
+dato[] = "3° Campo Join Data Layer;data_field_3;40;text|Elenco Data;data_field_3;100#openList#layer;button"
+dato[] = "3° Campo Join Relazione;table_field_3;40;text|Elenco Data;table_field_3;100#openList#catalog_id#table_name;button"
+dato[] = "Tipo di relazione;relationtype_id;200#seldb_relationtype;selectdb"
+dato[] = "Salva;azione;;submit;all;salva|Elimina;azione;;submit;edit;elimina|Annulla;azione;;submit;all;annulla"
+[list]
+table = "relation"
+pkey = "relation_id"
+order_fld = "table_name#relation_name"
+dato[] = "Nome;relation_name;15%#relation_id;goto"
+dato[] = "Tipo;relationtype_id;15%#e_relationtype#relationtype_name;chiave_esterna"
+dato[] = "1° Campo Data;data_field_1;10%;text"
+dato[] = "1° Campo Join;table_field_1;10%;text"
+dato[] = "2° Campo Data;data_field_2;10%;text"
+dato[] = "2° Campo Join;table_field_2;10%;text"
+dato[] = "3° Campo Data;data_field_3;10%;text"
+dato[] = "3° Campo Join;table_field_3;10%;text"
+dato[] = ";relation_id;1%;info"
+dato[] = ";relation_id;1%;edit"
+dato[] = ";relation_id;1%;delete"
+
+[title]
+edit = "Dati del Campo del Modello di Ricerca"
+view = "Dati del Campo del Modello di Ricerca"
+new = "Nuova Relazione del Modello di Ricerca"
+list = "Relazioni del Modello di Ricerca"
+
+[menu]
+new = "Nuovo Relazione"
+standard = "relation_name"
+
+[message]
+nodata = "Nessuna Relazione"

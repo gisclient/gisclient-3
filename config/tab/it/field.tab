@@ -1,0 +1,45 @@
+[standard]
+table = "field"
+pkey = "field_id"
+dato[] = "Layer o Relazione;relation_id;200#seldb_relation#layer_id;selectdb"
+dato[] = "Campo;field_name;40;text|Elenco campi;field_name;100#openList#layer#relation_id;button"
+dato[] = "Titolo;field_header;40;text"
+dato[] = "Tipo di Campo;fieldtype_id;200#seldb_fieldtype;selectdb"
+dato[] = "Tipo di Dato;datatype_id;200#seldb_datatype;selectdb"
+dato[] = "Formula;formula;48x2;textarea"
+dato[] = "Formato;field_format;48x2;textarea|Elenco Formati;field_format;100#openList;button"
+dato[] = "Modo di ricerca;searchtype_id;200#seldb_searchtype;selectdb"
+dato[] = "Mostra campo;resultype_id;200#seldb_resultype;selectdb"
+dato[] = "Filtrato per;filter_field_name;30;text|Elenco;filter_field_name;100#openList#layer#relation_id;button"
+dato[] = "Editabile;editable;;noyes"
+dato[] = "Lookup;lookup_table;15;text|Chiave;lookup_id;10;text|Descrizione;lookup_name;10;text|Configura;lookup_table;100#openList#layer#relation_id;button"
+dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
+dato[] = "Ordine;field_order;3;intero|Op predefinito;default_op;5;text"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "vista_field"
+pkey = "field_id"
+order_fld = "field_order#field_header"
+dato[] = "Titolo;field_header;20%#field_id;goto"
+dato[] = "Campo;field_name;20%;text"
+dato[] = "Tipo Campo;fieldtype_id;20%#e_fieldtype#fieldtype_name;chiave_esterna"
+dato[] = "Relazione;relation_name;15%;text"
+dato[] = "Mostra campo;resultype_id;15%#e_resultype#resultype_name;chiave_esterna"
+dato[] = "Editabile;editable;15%;noyes"
+dato[] = "Ordine;field_order;5%;text"
+dato[] = ";field_id;1%;info"
+dato[] = ";field_id;1%;edit"
+dato[] = ";field_id;1%;delete"
+
+[title]
+edit = "Modifica campo"
+view = "Visualizza campo"
+new = "Inserisci campo"
+list = "Campi del layer"
+
+[menu]
+new = "Nuovo campo"
+standard = "field_name"
+
+[message]
+nodata = ""

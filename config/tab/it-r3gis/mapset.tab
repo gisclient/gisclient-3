@@ -1,0 +1,43 @@
+[standard]
+table = "mapset"
+pkey = "mapset_name"
+dato[] = "Nome;mapset_name;20;text"
+dato[] = "Titolo;mapset_title;60;text"
+dato[] = "SRID;mapset_srid;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Scala max;maxscale;10;text|Scala min;minscale;10;text"
+dato[] = "Elenco scale (valori decrescenti separati da virgola);mapset_scales;48x4;textarea"
+dato[] = "Limita estensione;mapset_extent;60;text"
+dato[] = "Template;template;60;text"
+dato[] = "Formati di stampa;page_size;20;text"
+dato[] = "Scarica immagine;dl_image_res;20;text"
+dato[] = "Unità Misura;sizeunits_id;160#seldb_sizeunits;selectdb"
+dato[] = "Visualizza coordinate in;displayprojection;100#seldb_mapset_srid#project_name;selectdb"
+dato[] = "Colore sfondo;bg_color;11;color"
+dato[] = "Reference fissa;static_reference;;noyes"
+dato[] = "Estensione Reference;refmap_extent;42;text"
+dato[] = "Tipo di scala automatico (potenza di 2);mapset_scale_type;;noyes"
+dato[] = "Ordine dei mapset;mapset_order;10;text"
+dato[] = "Mappa privata;private;;noyes"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "mapset"
+pkey = "mapset_name"
+order_fld = "mapset_title#mapset_name"
+dato[] = "Titolo;mapset_title;50%#mapset_name;goto"
+dato[] = "Nome;mapset_name;;text"
+dato[] = ";mapset_name;1%;info"
+dato[] = ";mapset_name;1%;edit"
+dato[] = ";mapset_name;1%;delete"
+
+[title]
+edit = "Modifica mapset"
+view = "Visualizza mapset"
+new = "Inserisci mapset"
+list = "Elenco dei Mapset"
+
+[menu]
+new = "Inserisci Mapset"
+standard = "mapset_name"
+
+[message]
+nodata = ""

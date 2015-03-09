@@ -4,7 +4,7 @@ pkey = "theme_id"
 dato[] = "Nome;theme_name;55;text"
 dato[] = "Titolo;theme_title;55;text"
 dato[] = "Copyright;copyright_string;49x2;textarea"
-dato[] = "Radio;radio;3;noyes|Singolo tile;theme_single;3;noyes"
+dato[] = "Livello unico;theme_single;3;noyes"
 dato[] = "Ordine;theme_order;3;intero"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;project;#openCopy;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
 [list]
