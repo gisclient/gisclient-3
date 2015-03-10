@@ -302,12 +302,17 @@ class gcMap{
 
 				else {
 					$layerParameters["layers"] = $this->mapLayers[$themeName][$layergroupName];
+					$list=array();
+					foreach($this->mapLayers[$themeName][$layergroupName] as $layer)
+						if(isset($layer["name"])) array_push($list,$layer["name"]);
+					$layerParameters["layers"] = $list;
+
 				}
                 
                 if (!empty($row['sld']))
                     $layerParameters["sld"] = $row["sld"];
                     
-                                // TODO: check for layergroup.layername
+                // TODO: check for layergroup.layername
 				$layerOptions["buffer"] = intval($row["buffer"]);
 				if($row["isbaselayer"]==1) $layerOptions["isBaseLayer"] = true;
 				if($row["transition"]==1) $layerOptions["transitionEffect"] = "resize";
