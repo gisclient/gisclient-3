@@ -1,0 +1,24 @@
+Uso di mapproxy e gisclient
+
+mapproxy fa da proxy per qualsiasi chiamata a server gisclient. gisclinet crea simultaneamente il file di configurazione x mapserevr .map e quello per mapproxy .yaml relativo al progetto gisclient che si sta elaborando
+
+tema unico: 
+l'opzione  tema unico permette di creare un livello openlayers unico, cioè i layergroups e layers inclusi nel tema vengono trattati come parametri della chiamata openlayers. Questo permette di fare un unica chiamata al  server gisclient per tutto il tema. gisclient crea un layer con cache per tutto il tema. quando il client richiede tutto il tema (tutti i layers del tema) gisclient (via mapproxy) fornisce un  layer wmts con i tiles cache.
+
+tema unico e diritti: l'opzione tema unico con wmts in cache funziona solo se tutti i livelli del tema sono disponibili all'utente
+
+
+layergroups:
+l'opzione livello unico in questo caso permette di considerare il layergroup come layer che però usa geometrie diverse. mapserver non permette agevolmente di creare un layer con geometrie diverse, usando il layergroup unico il server gisclient risponde alle chiamate wms con il layergroup completo di tutti i layer che lo compongono.
+viene creato una definizione di livello nel file di configurazione yaml di mapproxy con il nome del layergroup
+
+se il tipo di servizio in layergoup viene impostato a wmts gisclient via mapproxy fornisce un livello aggiuntivo di tiles in cache
+
+layergroup unico e diritti: se viene attivata l'opzione layergroup unico il layergoup è disponibile all'utente solo se tutti i layer che lo compongono sono disponibili all'utente
+
+
+layers:
+per ogni layer (che non appartiene ad un layergroup unico) viene creato una definizione di livello nel file di configurazione yaml di mapproxy con il nome del layer (layergroup.layer)
+
+autorizzazione per estensione:
+todo: definendo una estensione di mappa o un poligono per gruppo di utenti è possibile settare i diritti di visualizzazione delle mappe per quel gruppo 
