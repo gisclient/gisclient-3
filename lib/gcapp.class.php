@@ -168,10 +168,11 @@ class GCDataDB {
 
 class GCAuthor {
 	// Da OL 2.13 static public $aInchesPerUnit = array(1=>39.3701,2=>12,3=>1,4=>39370.1,5=>39.370,6=>63360,7=>4374754);
-	static public $aInchesPerUnit = array(1=>39.3701,2=>12,3=>1,4=>39370.1,5=>39.3701,6=>63360,7=>4374754);
+	static public $aInchesPerUnit_old = array(1=>39.3701,2=>12,3=>1,4=>39370.1,5=>39.3701,6=>63360,7=>4374754);
 	static public $gMapResolutions = array(156543.0339,78271.51695,39135.758475,19567.8792375,9783.93961875,4891.969809375,2445.9849046875,1222.99245234375,611.496226171875,305.7481130859375,152.87405654296876,76.43702827148438,38.21851413574219,19.109257067871095,9.554628533935547,4.777314266967774,2.388657133483887,1.1943285667419434,0.5971642833709717,0.29858214168548586,0.14929107084274293,0.07464553542137146,0.03527776,0.01763888);
 	static public $defaultScaleList = array(500000000,5000000,1000000,500000,250000,100000,50000,25000,10000,5000,2000,1000,900,800,700,600,500,400,300,200,100,50);
-	
+	static public $aInchesPerUnit = array("m"=>39.3701, "ft"=>12, "inches"=>1,"km"=>39370.1, "mi"=>63360, "dd"=>4374754);
+
 	static private $lang;
 	static private $errors = array();
 	
@@ -293,8 +294,8 @@ class GCAuthor {
 		$sql = "select project_name, theme_title, layergroup_title, layer_title, layergroup_name || '.' || layer_name as feature_type from ".DB_SCHEMA.".layer ".
 			" inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
 			" inner join ".DB_SCHEMA.".theme using(theme_id) ".
-			" inner join ".DB_SCHEMA.".qtfield using(layer_id) ".
-			" where layer.queryable=1 and qtfield.editable=1 and theme.project_name=? ".
+			" inner join ".DB_SCHEMA.".field using(layer_id) ".
+			" where layer.queryable=1 and field.editable=1 and theme.project_name=? ".
 			" group by project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type ".
 			" order by theme_title, layergroup_title, layer_title ";
 		$stmt = $db->prepare($sql);

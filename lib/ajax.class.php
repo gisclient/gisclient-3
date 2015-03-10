@@ -5,10 +5,18 @@ class GCAjax {
 	}
 	
 	public function success($data = array()) {
-		die(json_encode(array_merge(array('result'=>'ok'), $data)));
+		if(isset($_REQUEST["callback"]))
+			die($_REQUEST["callback"]."(".json_encode(array_merge(array('result'=>'ok'), $data)).")");
+		else
+			die(json_encode(array_merge(array('result'=>'ok'), $data)));
 	}
 	
 	public function error($error = 'System Error') {
-		die(json_encode(array('result'=>'error', 'error'=>$error)));
+
+		if(isset($_REQUEST["callback"]))
+			die($_REQUEST["callback"]."(".json_encode(array('result'=>'error', 'error'=>$error)).")");
+		else
+			die(json_encode(array('result'=>'error', 'error'=>$error)));
 	}
+
 }

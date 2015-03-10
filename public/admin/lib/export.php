@@ -9,14 +9,18 @@ function _writeHeader($pr,$lev,$name,$file){
 	fclose($f);
 }
 function _getChild($lev,$export){		//FUNZIONE CHE RECUPERA I FIGLI DEL LIVELLO
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
-	$sql=($export)?("SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE export>0 AND struct_parent_id=(select id from ".DB_SCHEMA.".e_level WHERE name='$lev') order by export;"):("SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE struct_parent_id=$lev;");
-	
-	$ris=Array();
-	if(!$db->sql_query($sql)) print_debug($sql,null,"export");
-	else
-		$ris=$db->sql_fetchrowset();
+    $db = GCApp::getDB();
+    
+    if($export) {
+        $sql = "SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE export>0 AND struct_parent_id=(select id from ".DB_SCHEMA.".e_level WHERE name=:lev) order by export";
+    } else {
+        $sql = "SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE struct_parent_id=:lev";
+    }
+    
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array('lev'=>$lev));
+    $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
 	return $ris;
 }
 
@@ -29,15 +33,20 @@ function _getFieldName($level){
 	return $fieldName;
 }
 function _getFieldValue($table,$fld,$pk,$pkVal){		// SI PUO' ANCHE MODIFICARE PER FAR RESTITUIRE UNA LISTA DI CAMPI
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+    $db = GCApp::getDB();
+    
+    $params = array();
+    $filters = array();
+    
 	for($i=0;$i<count($pk);$i++){
-		$flt[]=$pk[$i]."='".$pkVal[$i]."'";
+        array_push($filters, $pk[$i].' = :'.$pk[i]);
+        $params[$pk[$i]] = $pkVal[$i];
 	}
-	$filter.=implode(' AND ',$flt);
-	$sql="SELECT $fld FROM ".DB_SCHEMA.".$table WHERE $filter;";
-	if(!$db->sql_query($sql)) echo "<p>$sql</p>";
-	return $db->sql_fetchfield($fld);
+	$sql="SELECT $fld FROM ".DB_SCHEMA.".$table WHERE ".implode(' AND ', $filters);
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    
+    return $stmt->fetchColumn(0);
 }
 
 
@@ -49,14 +58,17 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	$standardMem=ini_get('memory_limit');
 	ini_set('max_execution_time',LONG_EXECUTION_TIME);
 	ini_set('memory_limit',LONG_EXECUTION_MEMORY);
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+    
+	$db = GCApp::getDB();
+    $err = array();
+    
 	$fName=$f;
 	$rows=file($fName);
 	$type=str_replace("--Type:","",trim($rows[1]));
-	$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=$type;";
-	if ($qt)
-	$name=str_replace("--Name:","",$rows[2]);
+    
+	$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=:type"; //????? - questa non sembra essere eseguita, $sql viene sovrascritto verso la riga 81
+    
+	if ($qt) $name=str_replace("--Name:","",$rows[2]);
 	$newName=($newName)?($newName):($name);
 	$arrSubst=Array("@PARENTID@"=>"'".$parentId."'","@PARENTKEY@"=>$parentkey,"@PROJECTNAME@"=>$parentName,"@DB_SCHEMA@"=>DB_SCHEMA,"@OBJECTNAME@"=>$newName,"\\n"=>"\n");
 
@@ -93,15 +105,13 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 
 					$flt[]="project.project_name='$parentName'";
 					$tables[]=DB_SCHEMA.'.project';
-					if (in_array(DB_SCHEMA.'.qtrelation', $tables) && in_array(DB_SCHEMA.'.layer', $tables)) {
-						$flt[] = "qtrelation.layer_id=layer.layer_id";
-					}
 					$sqlVal="SELECT $fld as val FROM ".implode(",",array_unique($tables))." WHERE ".implode(' AND ',array_unique($flt)).";";
-					if($db->sql_query($sqlVal)){
-						$newVal=$db->sql_fetchfield('val');
-					}
-					else 
-						echo "<p>$sqlVal</p>";
+                    
+                    try {
+                        $newVal = $db->query($sqlVal)->fetchColumn(0);
+                    } catch(Exception $e) {
+                        echo "<p>$sqlVal</p>";
+                    }
 				}	
 				$sql=str_replace($out[$k][0],$newVal,$sql);	
 			}
@@ -118,8 +128,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 			else{
 				$table=str_replace('_id','',$out[1]);
 				$sqlId="select ".DB_SCHEMA.".new_pkey('$table','".$out[1]."_id') as newid;";
-				$db->sql_query($sqlId);
-				$newid[$out[1]][$out[2]]=$db->sql_fetchfield('newid');
+                $newid[$out[1]][$out[2]] = $db->query($sqlId)->fetchColumn(0);
 			}
 		}
 		elseif(preg_match("|@NEWKEY_V\[(.+)\]\[(.+)\]@|Ui",$sql,$out)) {
@@ -129,8 +138,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 			else{
 				$table=str_replace('_name','',$out[1]);
 				$sqlId="select ".DB_SCHEMA.".new_pkey_varchar('$table','".$out[1]."_name','$out[2]') as newid;";
-				$db->sql_query($sqlId);
-				$newid[$out[1]][$out[2]]=$db->sql_fetchfield('newid');
+                $newid[$out[1]][$out[2]] = $db->query($sqlId)->fetchColumn(0);
 			}
 		}
 		//if($out){
@@ -140,10 +148,11 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		fwrite($handle,$sql."\n");
 		$out=Array();
 	
-		if(!$db->sql_query($sql)){
-			for($j=0;$j<count($db->error_message);$j++) $err[]="ROW $i : ".$db->error_message[$j]["text"]."\n<p>$sql</>";
-			$db->error_message=Array();
-		}
+        try {
+            $db->exec($sql);
+        } catch(Exception $e) {
+            array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
+        }
 	
 	}
 	fclose($handle);
@@ -153,11 +162,17 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 }
 function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1,$filtro="",$delete=0){
 	//$shapeDir="/shape/";
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+	$db = GCApp::getDB();
+    $err = array();
+    
 	$sql="select coalesce(base_path,'')||'/".$shapeDir."'||coalesce(shape_dir,'')||'/".$d."' as dir from ".DB_SCHEMA.".catalog inner join ".DB_SCHEMA.".project using (project_name) where catalog_id=$catalog_id";
-	if(!$db->sql_query($sql)) return -1;
-	$dir=str_replace("//","/",$db->sql_fetchfield("dir"));
+    try {
+        $result = $db->query($sql)->fetchColumn(0);
+    } catch(Exception $e) {
+        return -1;
+    }
+    
+	$dir=str_replace("//","/",$result);
 	require_once "filesystem.php";
 	$fileList=Array();
 	foreach($ext as $e){
@@ -165,23 +180,28 @@ function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1,$filtro="",$d
 		for($i=0;$i<count($tmpF);$i++) $fileList[]=$tmpF[$i];
 	}
 	if($delete) {
-		$sql="DELETE FROM ".DB_SCHEMA.".layer WHERE layergroup_id=$layergroup_id;";
-		if(!$db->sql_query($sql)){
-			for($j=0;$j<count($db->error_message);$j++) $err[]="ROW $i : ".$db->error_message[$j]["text"]."\n<p>$sql</>";
-			$db->error_message=Array();
-		}
+		$sql="DELETE FROM ".DB_SCHEMA.".layer WHERE layergroup_id=:layergroup_id";
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array('layergroup_id'=>$layergroup_id));
+        } catch(Exception $e) {
+            array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
+        }
 	}
 	foreach($fileList as $f){
 		$tmp=explode(".",$f);
 		array_pop($tmp);
 		$fname=@implode("",$tmp);
 		$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name,catalog_id,layertype_id,data,data_srid,layer_order) VALUES(".DB_SCHEMA.".new_pkey('layer','layer_id'),$layergroup_id,'".$fname."',$catalog_id,4,'".str_replace("//","/",$d."/".$f)."',$srid,-1)";
-		if(!$db->sql_query($sql)){
-			for($j=0;$j<count($db->error_message);$j++) $err[]="ROW $i : ".$db->error_message[$j]["text"]."\n<p>$sql</>";
-			$db->error_message=Array();
-		}
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        } catch(Exception $e) {
+            array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
+        }
+
 	}
-	return (count($err))?($err):(Array());
+	return $err;
 	
 }
 function _getPKeys_orig(){
@@ -204,12 +224,12 @@ function _getPKeys(){
 	return $struct;
 }
 function _getListValue($level,$val,$db){
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);			//CONNESSIONE AL DB
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+	$db = GCApp::getDB();
 	$pk=_getPKeys();
 	if($level=='project') $result[]="[$level][$val]";
 	else
 	{
+                
 		while(trim($pk["parent"][$level])){
 			$table=$pk["table"][$level];
 			if(count($pk['pkey'][$level])>1){
@@ -219,21 +239,28 @@ function _getListValue($level,$val,$db){
 				if($pk["parent"][$level]) $parentPK=$pk["pkey"][$pk["parent"][$level]][0];
 				else
 					$parentPK="null";
-				$sql="SELECT ".$level."_name as name,$parentPK as parentpk FROM ".DB_SCHEMA.".$table WHERE ".$pk['pkey'][$level][0]."='$val';";
-				
+				$sql="SELECT ".$level."_name as name,$parentPK as parentpk FROM ".DB_SCHEMA.".$table WHERE ".$pk['pkey'][$level][0]."=:val;";
 			}
-			if(!$db->sql_query($sql)) echo "<p>$sql</p>";
-			$name=$db->sql_fetchfield('name');
+            try {
+                $stmt = $db->prepare($sql);
+                $stmt->execute(array('val'=>$val));
+                list($name,$newval) = $stmt->fetch(PDO::FETCH_ASSOC);
+            } catch(Exception $e) {
+                echo "<p>$sql</p>";
+            }
+            
 			if($level=="qtrelation" && !$val){
 				$result[]="[$level][0]";
 				return implode("",$result);
 			}
-			else
+			else{
 				$result[]="[$level][$name]";
+                        }
 			$level=$pk["parent"][$level];
-			$val=$db->sql_fetchfield('parentpk');
+			$val=$newval;
 			
 		}
+                
 	}
 	return implode("",$result);
 }
@@ -252,8 +279,9 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 	ini_set('max_execution_time',LONG_EXECUTION_TIME);
 	ini_set('memory_limit',LONG_EXECUTION_MEMORY);
 	
-	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);			//CONNESSIONE AL DB
-	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
+	$db = GCApp::getDB();
+    $filter = array();
+    $params = array();
 	
 	$pkey=$structure["pkey"];		//RECUPERO LE CHIAVI PRIMARIE DELLA STRUTTURA
 	$parent=$structure["parent"][$currentLevel];
@@ -263,29 +291,55 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 	}
 	$child=_getChild($currentLevel,1);
 	$parentKey=$pkey[$parent];		//CHIAVI PRIMARIE DEL LIVELLO PADRE
-	if($parentKey && !$start)											//FILTRO PER RECUPERARE I DATI DEL LIVELLO CORRENTE
-		for($i=0;$i<count($parentKey);$i++) $filter[]="$parentKey[$i]='".$parentValue[$parentKey[$i]]."'";
-	else
-		for($i=0;$i<count($pkey[$currentLevel]);$i++) $filter[]=$pkey[$currentLevel][$i]."='".$parentValue[$pkey[$currentLevel][$i]]."'";
+	if($parentKey && !$start) {										//FILTRO PER RECUPERARE I DATI DEL LIVELLO CORRENTE
+		for($i=0;$i<count($parentKey);$i++) {
+            $filter[] = $parentKey[$i].' = :'.$parentKey[$i];
+            $params[$parentKey[$i]] = $parentValue[$parentKey[$i]];
+        }
+	} else {
+		for($i=0;$i<count($pkey[$currentLevel]);$i++) {
+            $filter[] = $pkey[$currentLevel][$i] . ' = :'.$pkey[$currentLevel][$i];
+            $params[$pkey[$currentLevel][$i]] = $parentValue[$pkey[$currentLevel][$i]];
+        }
+    }
+    
+    //query per ottenere il tipo di dato
+    $sql = 'select udt_name from information_schema.columns where table_schema = :schema
+        and table_name = :table and column_name = :column';
+    $getColType = $db->prepare($sql);
 
-	$filter=(count($filter))?(implode(' AND ',$filter)):('');
-	$sql="SELECT * FROM ".DB_SCHEMA.".".$structure["table"][$currentLevel]." WHERE $filter;";
-	if(!$db->sql_query($sql)) {
-		
+	$sql="SELECT * FROM ".DB_SCHEMA.".".$structure["table"][$currentLevel];
+    if(!empty($filter)) {
+        $sql .= ' WHERE '.implode(' AND ', $filter);
+    }
+    
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+    } catch(Exception $e) {
 		echo "<p>Errore nell'estrazione dei Dati del Livello $currentLevel<br>$sql</p>";
 		$Errors[]="<p>Errore nell'estrazione dei Dati del Livello $currentLevel</p>";
-	}
-	$recordSet=$db->sql_fetchrowset();
+    }
+
+    $recordSet = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	for($i=0;$i<count($recordSet);$i++){	//RISULTATI DA INSERIRE NEL FILE
 		$rec=$recordSet[$i];
-		$j=0;
 		$fldIns=Array();
 		$valIns=Array();
+		$fldType=Array();
 		$j=0;
 		
 		foreach($rec as $key=>$val){		//Ciclo su tutti i campi
 			//SFRUTTO IL PRIMO GIRO PER ESTRARRE I TIPI DI DATO
-			if($i==0) $fldType[$key]=$db->sql_fieldtype($j);
+			if($i==0) {
+                $getColType->execute(array(
+                    'schema'=>DB_SCHEMA,
+                    'table'=>$structure["table"][$currentLevel],
+                    'column'=>$key
+                ));
+                $fldType[$key] = $getColType->fetchColumn(0);
+                $getColType->fetchAll(); //pdo si innervosisce se gli stmt rimangono mezzi aperti
+            }
 			
 			/*MODIFICHE*/
 			if($valutatedKey[$key][$val]){	//CHIAVE GIA' VALUTATA (SONO TUTTE LE PARENT KEY)
@@ -367,7 +421,10 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 	return $struct;
 	
 }
+
+//questa non sembra utilizzata
 function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startName='',$parentValue=Array(),&$valutatedKey){
+    die('invece sono usata! public/admin/lib/export.php _exportNew()');
 	//MODIFICO I PARAMETRI DEL PHP PER PERMETTERE LE ESPORTAZIONI
 	
 	$standardTime=ini_get('max_execution_time');
@@ -398,6 +455,7 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 		for($i=0;$i<count($pkey[$el["name"]]);$i++) $filter[]=$pkey[$el["name"]][$i]."='".$parentValue[$pkey[$el["name"]][$i]]."'";
 	$filter=(count($filter))?(implode(' AND ',$filter)):('');
 	$sql="SELECT * FROM ".DB_SCHEMA.".$struct[name] WHERE $filter;";
+        
 	if(!$db->sql_query($sql)) echo "<p>Errore $sql</p>";
 	$recordSet=$db->sql_fetchrowset();
 	$child=_getChild($lev,1);
@@ -501,4 +559,3 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 	ini_set('memory_limit',$standardMem);
 	return $struct;
 }
-?>

@@ -64,28 +64,32 @@
 		<pkey>project_name</pkey>
 		<parent>project</parent>
 	</project_srs>
-	<qtfield>
-		<table>qtfield</table>
-		<pkey>qtfield_id</pkey>
+	<field>
+		<table>field</table>
+		<pkey>field_id</pkey>
 		<parent>layer</parent>
-	</qtfield>
+	</field>
+        <qt>
+		<table>qt</table>
+		<pkey>qt_id</pkey>
+		<parent>theme</parent>
+	</qt>
 	<qtlink>
 		<table>qtlink</table>
 		<pkey>layer_id</pkey>
 		<pkey>link_id</pkey>
 		<parent>layer</parent>
 	</qtlink>
-	<qtrelation>
-		<table>qtrelation</table>
-		<pkey>qtrelation_id</pkey>
+        <qtfield>
+		<table>qtfield</table>
+		<pkey>qtfield_id</pkey>
+		<parent>qt</parent>
+	</qtfield>
+	<relation>
+		<table>relation</table>
+		<pkey>relation_id</pkey>
 		<parent>layer</parent>
-	</qtrelation>
-	<qt_selgroup>
-		<table>qt_selgroup</table>
-		<pkey>layer_id</pkey>
-		<pkey>selgroup_id</pkey>
-		<parent>selgroup</parent>
-	</qt_selgroup>
+	</relation>
 	<selgroup>
 		<table>selgroup</table>
 		<pkey>selgroup_id</pkey>
@@ -123,27 +127,10 @@
 		<pkey>language_id</pkey>
 		<parent>project</parent>
     </project_languages>
-	<authfilter>
-		<table>authfilter</table>
-		<pkey>filter_id</pkey>
-		<parent></parent>
-	</authfilter>
-	<layer_authfilter>
-		<table>layer_authfilter</table>
-		<pkey>layer_id</pkey>
-		<pkey>filter_id</pkey>
-		<parent>layer</parent>
-	</layer_authfilter>
-	<group_authfilter>
-		<table>group_authfilter</table>
+	<field_groups>
+		<table>field_groups</table>
+		<pkey>field_id</pkey>
 		<pkey>groupname</pkey>
-		<pkey>filter_id</pkey>
-		<parent>groups</parent>
-	</group_authfilter>
-	<qtfield_groups>
-		<table>qtfield_groups</table>
-		<pkey>qtfield_id</pkey>
-		<pkey>groupname</pkey>
-		<parent>qtfield</parent>
-	</qtfield_groups>
+		<parent>field</parent>
+	</field_groups>
 </root>

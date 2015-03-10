@@ -43,6 +43,7 @@ class gcFeature{
 	var $srsList;
 	var $srsParams;
 	var $dataTypes;
+	var $msVersion;
     var $forcePrivate = false;
 	
 	private $i18n;
@@ -55,19 +56,20 @@ class gcFeature{
 	function __construct($i18n = null){
 		$this->db = GCApp::getDB();
 		$this->i18n = $i18n;
+		$this->msVersion = substr(ms_GetVersionInt(),0,1);
 	}
 
 
 	public function initFeature($layerId){
         $this->forcePrivate = false;
 
-		$sqlField = "select qtfield.*,
-			qtrelation.qtrelation_name, qtrelation_id, qtrelationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
-			catalog_path, catalog_url from ".DB_SCHEMA.".qtfield 
-			left join ".DB_SCHEMA.".qtrelation using (layer_id,qtrelation_id) 
+		$sqlField = "select field.*,
+			relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
+			catalog_path, catalog_url from ".DB_SCHEMA.".field 
+			left join ".DB_SCHEMA.".relation using (layer_id,relation_id) 
 			left join ".DB_SCHEMA.".catalog using (catalog_id) 
-			where qtfield.layer_id = ? 
-			order by qtfield_order;";
+			where field.layer_id = ? 
+			order by field_order;";
 		print_debug($sqlField,null,'template');
 
 		$stmt = $this->db->prepare($sqlField);
@@ -80,37 +82,37 @@ class gcFeature{
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		
 			if(!empty($this->i18n)) {
-				$row = $this->i18n->translateRow($row, 'qtfield', $row['qtfield_id'], array('qtfield_name', 'field_header'));
+				$row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name', 'field_header'));
 			}
 		
-			$qtfieldId=$row["qtfield_id"];
-			$qField[$qtfieldId]["field_name"]=trim($row["qtfield_name"]);
-			$qField[$qtfieldId]["formula"]=trim($row["formula"]);
-			$qField[$qtfieldId]["field_title"]=trim($row["field_header"]);
-			$qField[$qtfieldId]["field_type"]=$row["fieldtype_id"];
-			$qField[$qtfieldId]["data_type"]=$row["datatype_id"];			
-			$qField[$qtfieldId]["order_by"]=$row["orderby_id"];
-			$qField[$qtfieldId]["field_format"]=$row["field_format"];
-			$qField[$qtfieldId]["editable"]=$row["editable"];
-			$qField[$qtfieldId]["search_type"]=trim($row["searchtype_id"]);
-			$qField[$qtfieldId]["result_type"]=trim($row["resultype_id"]);
-			$qField[$qtfieldId]["field_filter"]=trim($row["field_filter"]);
-			$qField[$qtfieldId]["search_function"]=(!empty($row["search_function"]))?trim($row["search_function"]):'';
-			$qField[$qtfieldId]["relation"]=$row["qtrelation_id"];
-			$qField[$qtfieldId]["column_width"]=$row["column_width"];
+			$fieldId=$row["field_id"];
+			$qField[$fieldId]["field_name"]=trim($row["field_name"]);
+			$qField[$fieldId]["formula"]=trim($row["formula"]);
+			$qField[$fieldId]["field_title"]=trim($row["field_header"]);
+			$qField[$fieldId]["field_type"]=$row["fieldtype_id"];
+			$qField[$fieldId]["data_type"]=$row["datatype_id"];			
+			$qField[$fieldId]["order_by"]=$row["orderby_id"];
+			$qField[$fieldId]["field_format"]=$row["field_format"];
+			$qField[$fieldId]["editable"]=$row["editable"];
+			$qField[$fieldId]["search_type"]=trim($row["searchtype_id"]);
+			$qField[$fieldId]["result_type"]=trim($row["resultype_id"]);
+			$qField[$fieldId]["field_filter"]=trim($row["field_filter"]);
+			$qField[$fieldId]["search_function"]=(!empty($row["search_function"]))?trim($row["search_function"]):'';
+			$qField[$fieldId]["relation"]=$row["relation_id"];
+			$qField[$fieldId]["column_width"]=$row["column_width"];
 			$f=array();
-			if($qtrelationId=$row["qtrelation_id"]){
+			if($relationId=$row["relation_id"]){
 				if(($row["data_field_1"])&&($row["table_field_1"])) $f[]=array(trim($row["data_field_1"]),trim($row["table_field_1"]));
 				if(($row["data_field_2"])&&($row["table_field_2"])) $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
 				if(($row["data_field_3"])&&($row["table_field_3"])) $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
-				$qRelation[$qtrelationId]["join_field"]=$f;
-				$qRelation[$qtrelationId]["name"]=NameReplace($row["qtrelation_name"]);
-				$qRelation[$qtrelationId]["table_name"]=trim($row["table_name"]);
-				$qRelation[$qtrelationId]["catalog_path"]=trim($row["catalog_path"]);
-				$qRelation[$qtrelationId]["catalog_url"]=trim($row["catalog_url"]);
-				$qRelation[$qtrelationId]["relation_type"]=$row["qtrelationtype_id"];				
+				$qRelation[$relationId]["join_field"]=$f;
+				$qRelation[$relationId]["name"]=NameReplace($row["relation_name"]);
+				$qRelation[$relationId]["table_name"]=trim($row["table_name"]);
+				$qRelation[$relationId]["catalog_path"]=trim($row["catalog_path"]);
+				$qRelation[$relationId]["catalog_url"]=trim($row["catalog_url"]);
+				$qRelation[$relationId]["relation_type"]=$row["relationtype_id"];				
 			}
-		}	
+		}
 		
 		//Assegno alle relazioni i valori  di schema e connessione
 		foreach($qRelation as $key=>$value){
@@ -142,7 +144,13 @@ class gcFeature{
 		$aConnInfo = connInfofromPath($aFeature["catalog_path"]);
 		$aFeature["connection_string"] = $aConnInfo[0];
 		$aFeature["table_schema"] = $aConnInfo[1];
-		$aFeature["filePath"] = (substr(trim($aFeature["catalog_path"]),0,1)=='/')?trim($aFeature["catalog_path"]):trim($aFeature["base_path"]).trim($aFeature["catalog_path"]);
+		//Se inizia con / o con ../ no concateno con il basepath
+		if(substr(trim($aFeature["catalog_path"]),0,1)=='/' || substr(trim($aFeature["catalog_path"]),0,3)=='../'){
+			$aFeature["filePath"] = trim($aFeature["catalog_path"]);
+		}
+		else{
+			$aFeature["filePath"] = trim($aFeature["base_path"]).trim($aFeature["catalog_path"]);
+		}
 		$aFeature["relation"]= (isset($qRelation))?$qRelation:null;	
 		$aFeature["fields"] = (isset($qField))?$qField:null;
 		$aFeature["link"]=(isset($qLink))?array_values($qLink):array();
@@ -234,9 +242,8 @@ class gcFeature{
 		
 		//classi:
 
-		$sql="select class_id,class_name,class_title,class_text,class_image,legendtype_id,keyimage,expression,class.maxscale,class.minscale,label_font,label_angle,label_color,label_outlinecolor,label_bgcolor,label_size,label_minsize,label_maxsize,label_position,label_priority,label_buffer,label_force,label_wrap,label_def,chr(symbol_ttf.ascii_code) as smbchar,symbol_ttf.font_name,symbol_ttf.position
-        from ".DB_SCHEMA.".class left join ".DB_SCHEMA.".symbol_ttf on (symbol_ttf.symbol_ttf_name=class.symbol_ttf_name and symbol_ttf.font_name=class.label_font) 
-		where layer_id=? order by class_order;";
+		$sql="select class_id,class_name,class_title,class_text,class_image,legendtype_id,keyimage,expression,class.maxscale,class.minscale,label_font,label_angle,label_color,label_outlinecolor,label_bgcolor,label_size,label_minsize,label_maxsize,label_position,label_priority,label_buffer,label_force,label_wrap,label_def
+        from ".DB_SCHEMA.".class where layer_id=? order by class_order;";
 		
 		print_debug($sql,null,'classi');
 
@@ -610,8 +617,8 @@ class gcFeature{
 			$clsText[]="\tPARTIALS TRUE";			
 			$clsText[]="\tFONT \"".$aClass["label_font"]."\"";		
 			if($aClass["label_angle"]) $clsText[]="\tANGLE ".$aClass["label_angle"];				
-			if($aClass["label_color"]) $clsText[]="\tCOLOR ".$aClass["label_color"];			
-			if($aClass["label_bgcolor"] && ms_GetVersionInt() < 60000) $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
+			if($aClass["label_color"]) $clsText[]="\tCOLOR ".$aClass["label_color"];	
+			if($aClass["label_bgcolor"] && $this->msVersion=='5') $clsText[]="\tBACKGROUNDCOLOR " .$aClass["label_bgcolor"];	
 			if($aClass["label_outlinecolor"]) $clsText[]="\tOUTLINECOLOR " .$aClass["label_outlinecolor"];	
 			if($aClass["label_size"]) $clsText[]="\tSIZE ".$aClass["label_size"];	
 			if($aClass["label_minsize"]) $clsText[]="\tMINSIZE ".$aClass["label_minsize"];	
@@ -664,7 +671,7 @@ class gcFeature{
 			$styText[]="WIDTH ".$aStyle["width"];
 		else
 			$styText[]="WIDTH 1";//pach mapserver 5.6 non disegna un width di default
-		if(!empty($aStyle["pattern_def"]) && ms_GetVersionInt() >= 60000) $styText[]=$aStyle["pattern_def"];
+		if(!empty($aStyle["pattern_def"]) && $this->msVersion=='6') $styText[]=$aStyle["pattern_def"];
 		if(!empty($aStyle["minwidth"])) $styText[]="MINWIDTH ".$aStyle["minwidth"];
 		if(!empty($aStyle["maxwidth"])) $styText[]="MAXWIDTH ".$aStyle["maxwidth"];
 		if((!empty($aStyle["symbol_name"]))) $this->aSymbols[$aStyle["symbol_name"]]=$aStyle["symbol_name"];

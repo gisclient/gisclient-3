@@ -4,7 +4,7 @@ abstract class AbstractUser {
     protected $options;
     protected $username;
     protected $groups;
-    protected $adminUsername = 'admin';
+    protected $adminUsername = SUPER_USER;
     protected $authorizedLayers = array();
     protected $mapLayers = array();
     
@@ -31,8 +31,21 @@ abstract class AbstractUser {
     }
     
     public function isAdmin($project = null) {
-        //$project serve a vedere se � admin del progetto
-        return ($this->username == $this->adminUsername);
+        //$project serve a vedere se è admin del progetto
+        if(!$project) {
+            return ($this->username == $this->adminUsername);
+        } else {
+            $db = GCApp::getDB();
+            $sql = 'select username from '.DB_SCHEMA.'.project_admin 
+                where project_name = :project and username = :username';
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array(
+                'username'=>$this->username,
+                'project'=>$project
+            ));
+            $result = $stmt->fetchColumn(0);
+            return !empty($result);
+        }
     }
     
     public function login($username, $password) {
@@ -118,29 +131,28 @@ abstract class AbstractUser {
         }
         
 		if (empty($filter['show_as_public'])) {
-			$authClause = '(layer.private=1 '.$groupFilter.' ) OR (layer.private=0)';
+			$authClause = '(layer.private=1 '.$groupFilter.' ) OR (coalesce(layer.private,0)=0)';
 		} else {
-			$authClause = '(layer.private=0)';
+			$authClause = '(coalesce(layer.private,0)=0)';
 		}
 		
-        $sql = ' SELECT project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name,
-            case when layer.private = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
-            case when layer.private = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
-            case when layer.private = 1 then '.($isAdmin ? '1' : 'wfst').' else 1 end as wfst,
+        $sql = ' SELECT project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
+            case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
+            case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
+            case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfst').' else 1 end as wfst,
             layer_order
             FROM '.DB_SCHEMA.'.theme 
             INNER JOIN '.DB_SCHEMA.'.layergroup USING (theme_id) 
             INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
-            left JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
-            WHERE ('.$sqlFilter.') AND ('.$authClause.')
-            group by project_name, theme_name, layergroup_name, layer.layer_id, layer.private, layer.layer_name, layer.private, wms, wfs, wfst, layer_order 
-            order by layer_order ';
-		
+            LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
+            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order;';
+
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
-        
+
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
 			$featureType = $row['layergroup_name'].".".$row['layer_name'];
 			$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
 
@@ -155,8 +167,11 @@ abstract class AbstractUser {
 			// create arrays if not exists
 			if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
 			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array();
-			
-			array_push($this->mapLayers[$row['theme_name']][$row['layergroup_name']], $featureType);
+			if($row['layergroup_single']==1)
+                $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("name" => $row['layergroup_name'], "title" => $row['layergroup_title'], "grouptitle" => $row['layergroup_title']);
+            else
+                array_push($this->mapLayers[$row['theme_name']][$row['layergroup_name']], array("name" => $featureType, "title" => $row['layer_title']?$row['layer_title']:$row['layer_name'], "grouptitle" => $row['layergroup_title'], "minScale" => $row['minscale'], "maxScale" => $row['maxscale'], "hidden" => $row['hidden']));
+
 		};
 	}
 	
