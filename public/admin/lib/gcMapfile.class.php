@@ -810,7 +810,7 @@ END";
                     'type'=>'wms',
                     'supported_srs'=>$this->epsgList,
                     'req'=>array(
-                    	'url'=>MAPSERVER_WMS_SOURCE,
+                    	'url'=>MAPSERVER_URL,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'format'=>'image/png',
                         'transparent'=> true,
@@ -866,7 +866,7 @@ END";
     	if(count($this->grids)==0) unset($config["grids"]);
 
         
-        if(!is_dir(MAPPROXY_CONFIG_PATH)) mkdir(MAPPROXY_CONFIG_PATH);
+        if(!is_dir(MAPPROXY_FILES)) mkdir(MAPPROXY_FILES);
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
 
         //Verifica esistenza cartella dei tiles
@@ -878,7 +878,7 @@ END";
 		print_debug($config,null,'yaml');
         $content = Spyc::YAMLDump($config,1,0);
 
-        file_put_contents(MAPPROXY_CONFIG_PATH.$mapName.'.yaml', $content);
+        file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
 
 	}
