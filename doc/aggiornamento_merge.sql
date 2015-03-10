@@ -1,3 +1,10 @@
+--###############################################
+--pg_dump -f gc32.sql -n gisclient_32 mydb
+--cat gc32.sql | sed 's/gisclient_32/gisclient_33/' > gc33.sql
+--psql -f gc33.sql mydb
+--psql -f aggiornamento_merge.sql mydb
+--###############################################
+
 SET search_path = gisclient_33, pg_catalog;
 
 -- RENAME DI qt* 
@@ -352,3 +359,21 @@ INSERT INTO e_searchable values (2,'Solo ricerca veloce',2);
 CREATE OR REPLACE VIEW seldb_searchable AS 
 SELECT searchable_id AS id, searchable_name AS opzione
 FROM e_searchable;
+
+
+
+
+
+
+
+
+
+
+--pulizia
+DROP TABLE classgroup CASCADE;
+ALTER TABLE project_srs ADD CONSTRAINT project_srs_pkey PRIMARY KEY(project_name, srid);
+ALTER TABLE project_srs DROP COLUMN custom_srid;
+DROP TABLE symbol_ttf CASCADE;
+DROP TABLE tb_import CASCADE;
+DROP TABLE tb_import_table CASCADE;
+DROP TABLE tb_logs CASCADE;
