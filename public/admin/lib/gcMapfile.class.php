@@ -519,12 +519,13 @@ END #MAP";
 		fclose($f);
 		
 		if(!$this->printMap && empty($this->i18n) && !empty($this->tinyOWSLayers)) {
+			if(!is_dir(TINYOWS_FILES)) mkdir(TINYOWS_FILES);
 			foreach($this->tinyOWSLayers as $layer) {
 				$towsOnlineResource = TINYOWS_ONLINE_RESOURCE.$projectName.'/'.$layer['feature'].'/?';
 				$fileContent = '<tinyows online_resource="'.$towsOnlineResource.'" schema_dir="'.TINYOWS_SCHEMA_DIR.'" check_schema="0" check_valid_geom="1" meter_precision="7" expose_pk="1" log_level="7"><pg host="'.DB_HOST.'" user="'.DB_USER.'" password="'.DB_PWD.'" dbname="'.$layer['database'].'" port="'.DB_PORT.'"/><metadata name="TinyOWS Server" title="TinyOWS Server" /><contact name="Admin" site="http://gisclient.net" email="admin@gisclient.net" />';
 				$fileContent .= '<layer retrievable="1" writable="1" ns_prefix="feature" ns_uri="http://www.tinyows.org/" schema="'.$layer['schema'].'" name="'.$layer['name'].'" title="'.$layer['title'].'" />';
 				$fileContent .= '</tinyows>';
-				file_put_contents(ROOT_PATH.$mapfileDir.'/'.$layer['feature'].'.xml', $fileContent);
+				file_put_contents(TINYOWS_FILES.'/'.$layer['feature'].'.xml', $fileContent);
 			}
 		}
 	

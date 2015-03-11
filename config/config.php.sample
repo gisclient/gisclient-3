@@ -80,6 +80,7 @@ define('PRINT_VECTORS_SRID', 32632);
 /******************* TINYOWS **************/
 define('TINYOWS_PATH', '/var/www/cgi-bin');
 define('TINYOWS_EXEC', 'tinyows');
+define('TINYOWS_FILES', ROOT_PATH.'tinyows/');
 define('TINYOWS_SCHEMA_DIR', '/usr/share/tinyows/schema/');
 define('TINYOWS_ONLINE_RESOURCE', PUBLIC_URL.'services/tinyows/');
 
