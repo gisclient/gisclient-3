@@ -91,10 +91,11 @@ class gcMap{
 		$this->db = GCApp::getDB();
 		
 		$sql = "SELECT mapset.*, ".
-			" x(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
-			" y(st_transform(geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
+			" st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
+			" st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc, ".
 			" max_extent_scale, project_title FROM ".DB_SCHEMA.".mapset ".
 			" INNER JOIN ".DB_SCHEMA.".project USING (project_name) WHERE mapset_name=?";
+
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($mapsetName));
 		
@@ -751,10 +752,11 @@ class gcMap{
 		if($tilesExtentSRID!=$this->mapsetSRID){
 			$p1 = "SRID=$tilesExtentSRID;POINT($x0 $y0)";
 			$p2 = "SRID=$tilesExtentSRID;POINT($x1 $y1)";
-			$sqlExt = "SELECT X(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as x0, ".
-				" Y(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as y0, ".
-				" X(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as x1, ".
-				" Y(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as y1;";
+			$sqlExt = "SELECT st_X(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as x0, ".
+				" st_Y(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as y0, ".
+				" st_X(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as x1, ".
+				" st_Y(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as y1;";
+
 			$ext = $this->db->query($sqlExt)->fetch(PDO::FETCH_ASSOC);
 			$extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));		
 		}
