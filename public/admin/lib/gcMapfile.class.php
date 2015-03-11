@@ -524,7 +524,7 @@ END #MAP";
 				$fileContent = '<tinyows online_resource="'.$towsOnlineResource.'" schema_dir="'.TINYOWS_SCHEMA_DIR.'" check_schema="0" check_valid_geom="1" meter_precision="7" expose_pk="1" log_level="7"><pg host="'.DB_HOST.'" user="'.DB_USER.'" password="'.DB_PWD.'" dbname="'.$layer['database'].'" port="'.DB_PORT.'"/><metadata name="TinyOWS Server" title="TinyOWS Server" /><contact name="Admin" site="http://gisclient.net" email="admin@gisclient.net" />';
 				$fileContent .= '<layer retrievable="1" writable="1" ns_prefix="feature" ns_uri="http://www.tinyows.org/" schema="'.$layer['schema'].'" name="'.$layer['name'].'" title="'.$layer['title'].'" />';
 				$fileContent .= '</tinyows>';
-				file_put_contents(ROOT_PATH.$mapfileDir.$projectName.'/'.$layer['feature'].'.xml', $fileContent);
+				file_put_contents(ROOT_PATH.$mapfileDir.'/'.$layer['feature'].'.xml', $fileContent);
 			}
 		}
 	
@@ -810,7 +810,7 @@ END";
                     'type'=>'wms',
                     'supported_srs'=>$this->epsgList,
                     'req'=>array(
-                    	'url'=>MAPSERVER_WMS_SOURCE,
+                    	'url'=>MAPSERVER_URL,
                         'map'=>ROOT_PATH.'map/'.$mapName.".map",
                         'format'=>'image/png',
                         'transparent'=> true,
@@ -866,7 +866,7 @@ END";
     	if(count($this->grids)==0) unset($config["grids"]);
 
         
-        if(!is_dir(MAPPROXY_CONFIG_PATH)) mkdir(MAPPROXY_CONFIG_PATH);
+        if(!is_dir(MAPPROXY_FILES)) mkdir(MAPPROXY_FILES);
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
 
         //Verifica esistenza cartella dei tiles
@@ -878,7 +878,7 @@ END";
 		print_debug($config,null,'yaml');
         $content = Spyc::YAMLDump($config,1,0);
 
-        file_put_contents(MAPPROXY_CONFIG_PATH.$mapName.'.yaml', $content);
+        file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
 
 	}
