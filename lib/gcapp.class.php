@@ -183,9 +183,35 @@ class GCAuthor {
 	public static function getErrors() {
 		return self::$errors;
 	}	
+
+	public static function refreshProjectMapfile($project, $publish = false) {
+		require_once ADMIN_PATH."lib/functions.php";
+		require_once ADMIN_PATH.'lib/spyc.php';
+		require_once ADMIN_PATH.'lib/gcFeature.class.php';
+		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
+		require_once ROOT_PATH."lib/i18n.php";
+		
+		$target = $publish ? 'public' : 'tmp';
+
+		$mapfile = new gcMapfile();
+		$mapfile->setTarget($target);
+        $mapfile->writeProjectMapfile = true;
+		$mapfile->writeMap("project",$project);
+		
+		$localization = new GCLocalization($project);
+		$alternativeLanguages = $localization->getAlternativeLanguages();
+		if($alternativeLanguages){
+			foreach($alternativeLanguages as $languageId => $foo) {
+				$mapfile = new gcMapfile($languageId);
+				$mapfile->setTarget($target);
+				$mapfile->writeMap('project', $project);
+			}
+		}
+	}
 	
 	public static function refreshMapfiles($project, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
+		require_once ADMIN_PATH.'lib/spyc.php';		
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
@@ -209,6 +235,7 @@ class GCAuthor {
 	
 	public static function refreshMapfile($project, $mapset, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
+		require_once ADMIN_PATH.'lib/spyc.php';		
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
