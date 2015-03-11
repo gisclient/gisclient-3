@@ -31,19 +31,17 @@ define('LONG_EXECUTIONE_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
 //custom tab files
-//define('TAB_DIR','it-custom');
+//define('TAB_DIR','geoweb');
 //define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
 //define('PRIVATE_MAP_URL', 'http://localhost/map/index.php');
-//define('EXTERNAL_LOGIN_KEY', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
-define('PUBLIC_URL', 'http://localhost/gisclient-3/');
-define('MAP_URL', 'http://localhost/gisclient-3/template/');
+define('PUBLIC_URL', 'http://localhost/gisclient-3.0/');
+define('MAP_URL', 'http://localhost/gisclient-3.0/template/');
 define('IMAGE_PATH','/tmp/');
 define('IMAGE_URL','/tmp/');
-define('PROJ_LIB',"/ms4w/proj");
-define('TILES_CACHE','/ms4w/apps/gisclient-3/public/services/tms/');
+define('TILES_CACHE','/ms4w/apps/gisclient-3.0/public/services/tms/');
 define('OPENLAYERS','http://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js');
 //define('PROJ_LIB',"/msiis/proj/nad/");
 /*******************                  *************************/
@@ -51,14 +49,8 @@ define('OPENLAYERS','http://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/Ope
 /*******************OWS service url *************************/
 define('GISCLIENT_OWS_URL', PUBLIC_URL.'services/ows.php');//NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL', PUBLIC_URL.'services/tms/');//NON E' OBBLIGATORIO
-define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
-
-/********************* MAPPROXY ***************/
-define('MAPPROXY_URL', '/ows');
-define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv');
-define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
-define('MAPPROXY_FILES', ROOT_PATH.'mapproxy/');
-define('MAPPROXY_GRIDS_NUMLEVELS', 20);
+define('MAPSERVER_URL', 'http://192.168.0.13/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
+/*******************                  *************************/
 
 /**************** PRINT - EXPORT ***************/
 define('GC_PRINT_TPL_DIR', ROOT_PATH.'public/services/print/');
@@ -103,7 +95,7 @@ if(!defined('DEBUG')) define('DEBUG', 1); // Debugging 0 off 1 on
 
 require_once (ROOT_PATH."config/login.php");
 
-/****************** QUERY REPORTS ***************+*/
+//COSTANTI DEI REPORT
 define('MAX_REPORT_ROWS',5000);
 define('REPORT_PROJECT_NAME','REPORT');
 define('REPORT_MAPSET_NAME','report');
@@ -135,9 +127,11 @@ define('TILE_SIZE',256);//Mapserver map resolution
 // define('SERVICE_MAX_ZOOM_LEVEL',19); // WMTS: max zoom level (default: 21 for google maps)
 define('PDF_K',2);//Mapserver map resolution
 
-define('SCALE','8000000,7000000,6000000,5000000,4000000,3000000,2000000,1000000,900000,800000,700000,600000,500000,400000,300000,200000,100000,50000,25000,10000,7500,5000,2000,1000,500,200,100,50');
+define('SCALE','1000000,500000,250000,100000,50000,25000,10000,7500,5000,4000,3000,2000,1000,900,800,700,600,500,400,300,200,100,50');
+define('GMAP_MIN_ZOOM_LEVEL',6);
 
-/****************** LEGEND ***************+*/
+
+//Icone della legenda
 define('LEGEND_ICON_W',24);
 define('LEGEND_ICON_H',16);
 define('LEGEND_POINT_SIZE',15);
@@ -145,7 +139,7 @@ define('LEGEND_LINE_WIDTH',1);
 define('LEGEND_POLYGON_WIDTH',2);
 define('PRINT_PDF_FONT','times');
 
-/****************** DATA MANAGER ***************+*/
+//DATAMANAGER
 define('USE_DATA_IMPORT', false);
 define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
 //define('USE_PHP_EXCEL', true);
@@ -162,11 +156,6 @@ define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
 define('CLIENT_LOGO', null);
 
 define('MAPFILE_MAX_SIZE', '4096');
-
-// Cache in ows.php
-define('OWS_CACHE_TTL', 60); // Map cache (Prevent OL bug for multiple request)
-define('OWS_CACHE_TTL_OPEN', 4*60*60); // Map cache for the 1st open of the map
-//define('DYNAMIC_LAYERS', ''); // comma separated list of dynamic layers (same url different result)
 
 // Cache in ows.php
 define('OWS_CACHE_TTL', 60); // Map cache (Prevent OL bug for multiple request)
