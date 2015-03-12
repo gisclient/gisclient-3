@@ -1,0 +1,20 @@
+<GDAL_WMS>
+<Service name="TMS">
+<ServerUrl>http://localhost/xserver/mbtiles.php?db=savonadbtopo&z=${z}&x=${x}&y=${y}</ServerUrl>
+</Service>
+<DataWindow>
+<UpperLeftX>924909</UpperLeftX>
+<UpperLeftY>5505688</UpperLeftY>
+<LowerRightX>950715</LowerRightX>
+<LowerRightY>5529166</LowerRightY>
+<TileLevel>14</TileLevel>	
+<TileCountX>1</TileCountX>
+<TileCountY>1</TileCountY>
+<YOrigin>top</YOrigin>
+</DataWindow>
+<Projection>EPSG:3857</Projection>
+<BlockSizeX>256</BlockSizeX>
+<BlockSizeY>256</BlockSizeY>
+<BandsCount>3</BandsCount>
+<Cache/>
+</GDAL_WMS>
