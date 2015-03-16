@@ -40,7 +40,7 @@ class gcMapfile{
 	var $epsgList;
 	var $mapInfo=array();
 	var $srsCustom=array();
-	var $msVersion;
+	private $msVersion;
 	private $grids = array();
 	private $target = 'public';
 	private $iconSize = array(16,10);
@@ -193,8 +193,11 @@ class gcMapfile{
 
 			$oFeature->initFeature($aLayer["layer_id"]);
 
-			//if(!$this->printMap) $mapName = $projectName;//$themeName;
-			
+			// Force layer to be private if the mapset is private
+            if (!empty($aLayer["mapset_private"]) && $aLayer["mapset_private"]) {
+                $oFeature->setPrivate(true);
+            }
+		
 			$layerText = $oFeature->getLayerText($layergroupName,$layerTreeGroup,$aLayer["layergroup_maxscale"],$aLayer["layergroup_minscale"]);
 			if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
 
@@ -419,7 +422,14 @@ class gcMapfile{
 		$projectName = $this->projectName;
 		$fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts';	
 		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
+		$configDebugfile = '';
+		$debugLevel = '';
+		if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
+			$configDebugfile = "CONFIG 'MS_ERRORFILE' '".DEBUG_DIR.basename($mapFile).".debug'";
+			$debugLevel = "DEBUG 5";
+		}
 		$outputFormat = $this->_getOutputFormat($mapFile);
+
 		//$outputFormat = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
 		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
 		$metadata_inc = '';
@@ -444,7 +454,22 @@ class gcMapfile{
 			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
 		}
         
-        $owsUrl = defined('GISCLIENT_OWS_URL') ? GISCLIENT_OWS_URL . '?map='.$mapFile : null;
+		$owsUrl = null;
+		if (defined('GISCLIENT_OWS_URL')) {
+			
+			$owsUrl = rtrim(GISCLIENT_OWS_URL, '?&');
+			
+			if (false === ($owsUrlQueryPart = parse_url($owsUrl, PHP_URL_QUERY))) {
+				throw new Exception("Could not parse '". GISCLIENT_OWS_URL . "' as string");
+			}
+			if(!empty($owsUrlQueryPart)) {
+				$sep = '&';
+			} else {
+				$sep = '?';
+			}
+			$owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
+		}        
+
         $wms_onlineresource = '';
         $wfs_onlineresource = '';
         if(!empty($owsUrl)) {
@@ -459,7 +484,7 @@ class gcMapfile{
 
         if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
         else $maxSize = '4096';
-        $fontList = '../fonts/'.$fontList.'.list';
+        $fontList = '../../fonts/'.$fontList.'.list';
 
 		$fileContent=
 "MAP
@@ -472,6 +497,7 @@ $projLib
 WEB
 	METADATA
         # for mapserver 6.0
+        \"wms_enable_request\" \"*\"
         \"ows_enable_request\" \"*\"
 	$project_name
 	$ows_title
@@ -497,35 +523,68 @@ $legend_inc
 $outputFormat
 END #MAP";
 
+		if (!is_dir(ROOT_PATH)) {
+			$errorMsg = ROOT_PATH . " is not a directory";
+			GCError::register($errorMsg);
+			return;
+		}
+		
 		if($this->printMap) {
-			$mapFile=ROOT_PATH."map/tmp/".$mapFile.".map";
+			$mapfileDir = ROOT_PATH."map/tmp/";
+			if(!is_dir($mapfileDir)) {
+				$rv = mkdir($mapfileDir, 0777, true);
+				if ($rv === false) {
+					$errorMsg = "Could not create directory $mapfileDir";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
+			$mapFilePath=$mapfileDir.$mapFile.".map";
 		} else {
-			$mapfileDir = 'map/';
+			$mapfileDir = ROOT_PATH.'map/';
 			if($this->target == 'tmp') {
 				$mapFile = 'tmp.'.$mapFile;
 			}
-
+			$projectDir = $mapfileDir.$projectName.'/';
+			if(!is_dir($projectDir)) {
+				$rv = mkdir($projectDir, 0777, true);
+				if ($rv === false) {
+					$errorMsg = "Could not create directory $projectDir";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
 			if(!empty($this->i18n)) {
 				$languageId = $this->i18n->getLanguageId();
 				$mapFile.= "_".$languageId;
 			}
-
-			if(!is_dir(ROOT_PATH.$mapfileDir)) mkdir(ROOT_PATH.$mapfileDir);
-			$mapFilePath = ROOT_PATH.$mapfileDir.$mapFile.".map";
-
+			$mapFilePath = $projectDir.$mapFile.".map";
 		}
-		$f = fopen ($mapFilePath,"w");
-		$ret=fwrite($f, $fileContent);
-		fclose($f);
-		
+		if (false === ($f = fopen ($mapFilePath,"w"))) {
+			$errorMsg = "Could not open $mapFilePath for writing";
+			GCError::register($errorMsg);
+			return;
+		}
+		if (false === (fwrite($f, $fileContent))) {
+			$errorMsg = "Could not write to $mapFilePath";
+			GCError::register($errorMsg);
+			return;
+		}
+		fclose($f);	
+
 		if(!$this->printMap && empty($this->i18n) && !empty($this->tinyOWSLayers)) {
-			if(!is_dir(TINYOWS_FILES)) mkdir(TINYOWS_FILES);
 			foreach($this->tinyOWSLayers as $layer) {
 				$towsOnlineResource = TINYOWS_ONLINE_RESOURCE.$projectName.'/'.$layer['feature'].'/?';
 				$fileContent = '<tinyows online_resource="'.$towsOnlineResource.'" schema_dir="'.TINYOWS_SCHEMA_DIR.'" check_schema="0" check_valid_geom="1" meter_precision="7" expose_pk="1" log_level="7"><pg host="'.DB_HOST.'" user="'.DB_USER.'" password="'.DB_PWD.'" dbname="'.$layer['database'].'" port="'.DB_PORT.'"/><metadata name="TinyOWS Server" title="TinyOWS Server" /><contact name="Admin" site="http://gisclient.net" email="admin@gisclient.net" />';
 				$fileContent .= '<layer retrievable="1" writable="1" ns_prefix="feature" ns_uri="http://www.tinyows.org/" schema="'.$layer['schema'].'" name="'.$layer['name'].'" title="'.$layer['title'].'" />';
 				$fileContent .= '</tinyows>';
-				file_put_contents(TINYOWS_FILES.'/'.$layer['feature'].'.xml', $fileContent);
+				
+				$tinyOwsConfigFile = $projectDir.'/'.$layer['feature'].'.xml';
+				if (false === file_put_contents($tinyOwsConfigFile, $fileContent)) {
+					$errorMsg = "Could not write to $tinyOwsConfigFile";
+					GCError::register($errorMsg);
+					return;
+				}
 			}
 		}
 	
@@ -722,8 +781,6 @@ END";
 		$maxResolution = $maxScale/( MAP_DPI * $factor );
 		$extent = $maxResolution * TILE_SIZE * 4; //4 tiles??
 
-
-		
 		return array(
 			0 => round($x - $extent, $precision),
 			1 => round($y - $extent, $precision),
@@ -795,7 +852,7 @@ END";
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
-                        'online_resource'=>GISCLIENT_OWS_URL."?map=".$mapName,
+                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&map=".$mapName,
                         'contact'=>array(
                             //ma serve sta roba?!?!
                             'person'=>'Roberto'
@@ -830,7 +887,7 @@ END";
                     'type'=>'mapserver',
                     'req'=>array(                        
                     	'transparent'=>true,
-                        'map'=>ROOT_PATH.'map/'.$mapName.".map",
+                        'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
                         'exceptions'=> 'inimage'
                     ),
                     'coverage'=>array(
@@ -867,7 +924,7 @@ END";
     	if(count($this->grids)==0) unset($config["grids"]);
 
         
-        if(!is_dir(MAPPROXY_FILES)) mkdir(MAPPROXY_FILES);
+        //if(!is_dir(MAPPROXY_FILES)) mkdir(MAPPROXY_FILES);
         //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
 
         //Verifica esistenza cartella dei tiles
@@ -879,8 +936,14 @@ END";
 		print_debug($config,null,'yaml');
         $content = Spyc::YAMLDump($config,1,0);
 
-        file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
+        //file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
 		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
+
+
+		$mapfileDir = ROOT_PATH.'map/';
+		$projectDir = $mapfileDir.$this->projectName.'/';
+		file_put_contents($projectDir.$mapName.'.yaml', $content);
+
 
 	}
 	

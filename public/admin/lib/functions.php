@@ -57,7 +57,7 @@ $gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP
 		return (isset($value) && !empty($value))?$value:false;
 	
 	}
-	
+
 	
 	function array_limit($aList,$maxVal=false,$minVal=false){
 		$ar=array();
