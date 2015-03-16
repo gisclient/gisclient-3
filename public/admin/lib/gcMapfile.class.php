@@ -942,6 +942,18 @@ END";
 
 		$mapfileDir = ROOT_PATH.'map/';
 		$projectDir = $mapfileDir.$this->projectName.'/';
+
+		//CREO IL FILE DI CONFIGURAZIONE SE NON ESISTE
+		$wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
+		if(!file_exists ($wsgiConfigFile)){
+			$content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
+			$content.= "execfile(activate_this, dict(__file__=activate_this))\n";
+			$content.= "from mapproxy.multiapp import make_wsgi_app\n";
+			$content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
+			file_put_contents($wsgiConfigFile, $content);
+		}
+
+
 		file_put_contents($projectDir.$mapName.'.yaml', $content);
 
 

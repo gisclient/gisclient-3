@@ -57,7 +57,7 @@ define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATO
 define('MAPPROXY_URL', '/ows');
 define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv');
 define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
-define('MAPPROXY_FILES', ROOT_PATH.'mapproxy/');
+define('MAPPROXY_PATH', '/opt/mapproxy/');
 define('MAPPROXY_GRIDS_NUMLEVELS', 20);
 
 /**************** PRINT - EXPORT ***************/
