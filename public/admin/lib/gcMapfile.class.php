@@ -23,7 +23,6 @@ define('WMS_LAYER_TYPE',1);
 define('WMTS_LAYER_TYPE',2);
 define('WMS_CACHE_LAYER_TYPE',3);
 define('TMS_LAYER_TYPE',6);
-define('GOOGLE_MAX_ZOOM_LEVEL',21);
 
 class gcMapfile{
 	var $db;
@@ -168,7 +167,7 @@ class gcMapfile{
         $this->grids["epsg3857"] = array(
             'base'=>'GLOBAL_WEBMERCATOR',
             'srs'=>'EPSG:3857',
-            'num_levels'=>GOOGLE_MAX_ZOOM_LEVEL+1
+            'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
         );
         /*
         $this->grids["epsg900913"] = array(
@@ -222,7 +221,7 @@ class gcMapfile{
 				array_push($this->tinyOWSLayers, $oFeature->getTinyOWSLayerParams());
 			}
 
-			if(defined('MAPPROXY_URL')){
+			if(defined('MAPPROXY_PATH')){
 				//DEFINIZIONE DEI LAYER PER MAPPROXY (COSTRUISCO UN LAYER WMS ANCHE PER I WMTS/TMS PER I TEST)
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
 				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
@@ -234,15 +233,12 @@ class gcMapfile{
 	                $cacheName = $aLayer['theme_name'].'_cache';
 	                if(empty($this->mpxCaches[$mapName][$cacheName])) $this->mpxCaches[$mapName][$cacheName] = array(
 	                    'grids'=>array_keys($this->grids),
-	                    'cache'=>array(
-	                        'type'=>'mbtiles',
-	                        'filename'=>$mapName.".".$aLayer['theme_name'].'.mbtiles'
-	                    ),
+	                    'cache'=>$this->_getCacheType($aLayer['theme_name']),
 	                    'layergroups'=>array(),
 	                    'theme_name'=>$aLayer['theme_name'],
 	                    'theme_title'=>$aLayer['theme_title']
 	                );
-	                
+
 	                array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
 	            }
 
@@ -273,18 +269,19 @@ class gcMapfile{
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("name"=>$aLayer["theme_name"],"title"=>$aLayer["theme_title"],"layers"=>array());
 						if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = array("name"=>$aLayer["layergroup_name"],"title"=>$aLayer["layergroup_title"]);
 						//echo $aLayer["layergroup_name"];
-						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache_output");
+						//$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache_output"); //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
+
+						$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array($aLayer["layergroup_name"]."_cache");
                     	if(empty($this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"])){
 	                    	$this->mpxCaches[$mapName][$aLayer["layergroup_name"]."_cache"] = array(
 	                    		"sources"=>array(),
 		                        "format"=>($aLayer["isbaselayer"])?"image/jpeg":"image/png",
 		                        "minimize_meta_requests"=>true,
 		                        "request_format"=>$aLayer["outputformat_mimetype"],
-		                        "cache"=>array(
-		                            'type'=>'mbtiles',
-		                            'filename'=>$aLayer["theme_name"].'.'.$aLayer["layergroup_name"].'.mbtiles'
-		                        ),
-		                        'grids'=>array("epsg3857")
+		                        "cache"=>$this->_getCacheType($aLayer["theme_name"].'.'.$aLayer["layergroup_name"]),
+		                      	"grids"=>array_keys($this->grids)
+		                        //'grids'=>array("epsg3857")				//PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
+
 	                    	);
 	                    }
                      	//SE NEL LAYERGROUP C'È UN LAYER DA USARE COME SOURCE NON NASCOSTO LO METTO
@@ -348,18 +345,16 @@ class gcMapfile{
 			if($symbolsList[$mapName]) $this->layerText .= $this->_getSymbolText($symbolsList[$mapName]);
 			$this->_writeFile($mapName);
             
-            if(defined('MAPPROXY_URL')){
-            
-            
+            //NON GENERO I FILE YAML TEMPORANEI PER MAPPROXY
+            if(defined('MAPPROXY_PATH') && ($this->target == 'public')){
+          
                 //NORMALIZZO L'ARRAY DEI LIVELLI
                 foreach ($this->mpxLayers[$mapName] as $th => $grp) {
                     ksort($this->mpxLayers[$mapName][$th]["layers"]);
                     $this->mpxLayers[$mapName][$th]["layers"] = array_values($this->mpxLayers[$mapName][$th]["layers"]); 
                 }
                 ksort($this->mpxLayers[$mapName]);
-                
-                
-                
+                              
                 $layersToAdd = array();
                 
                 //popolo il source con i nomi dei layergroups e aggiungo le caches di output
@@ -388,11 +383,9 @@ class gcMapfile{
                 $this->mpxCaches[$mapName][$mapName."_cache"] = array(
 	                'sources'=>array('mapserver_source:'.implode(",",$defaultLayers[$mapName])),
 	                'minimize_meta_requests'=>true,
-	                'cache'=>array(
-	                    'type'=>'mbtiles',
-	                    'filename'=>$mapName.'.mbtiles'
-	                ),
-	                'grids'=>array("epsg3857")
+	                'cache'=>$this->_getCacheType($mapName),
+	                'grids'=>array_keys($this->grids)
+	                //'grids'=>array("epsg3857")//PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                 );
 				$this->mpxLayers[$mapName][$mapName."_tiles"] = array(
 					'name'=>$mapName."_tiles",
@@ -402,14 +395,15 @@ class gcMapfile{
 
 				);
 
-	            foreach($this->mpxCaches[$mapName] as $cacheName => $cache) {
+				//PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
+/*	            foreach($this->mpxCaches[$mapName] as $cacheName => $cache) {
 	                $this->mpxCaches[$mapName][$cacheName."_output"] = array(
 			            'sources'=>array($cacheName),
 			            'disable_storage'=>true,
 			            'grids'=>array_keys($this->grids)
 	                );
 	            }
-
+*/
                 //$this->_writeMapProxyConfig($mpxLayers,$this->mpxCaches);
                 $this->_writeMapProxyConfig($mapName);
             }
@@ -608,7 +602,12 @@ END #MAP";
 		}
 	}
 	
-	
+	function _getCacheType($fileName){
+		$ret = array('type'=>MAPPROXY_CACHE_TYPE);
+		if(MAPPROXY_CACHE_TYPE == 'mbtiles') $ret["filename"] = $fileName.'.mbtiles';
+		return $ret;
+	}
+
 	function _getPrintFormat(){
 	
 		$formatText ="
@@ -833,9 +832,6 @@ END";
 	function _writeMapProxyConfig($mapName){
         $config = array(
             'services'=>array(
-            	'demo'=>array(
-            		'name'=>$mapName
-            	),
                 'tms'=>array(
                     'srs'=>$this->epsgList,
                     'use_grid_names'=>false,
@@ -863,13 +859,12 @@ END";
                 )
             ),
             'sources'=>array(
-            	/*
                 'mapserver_wms_source'=>array(
                     'type'=>'wms',
                     'supported_srs'=>$this->epsgList,
                     'req'=>array(
                     	'url'=>MAPSERVER_URL,
-                        'map'=>ROOT_PATH.'map/'.$mapName.".map",
+                        'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
                         'format'=>'image/png',
                         'transparent'=> true,
                         'exceptions'=> 'inimage'
@@ -882,7 +877,7 @@ END";
                         'transparent_color'=>'#ffffff',
                         'transparent_color_tolerance'=>0
                     )
-                ),*/
+                ),
                 'mapserver_source'=>array(
                     'type'=>'mapserver',
                     'req'=>array(                        
@@ -900,7 +895,7 @@ END";
                     ),
                     'mapserver'=>array(
                         'binary'=>MAPSERVER_BINARY_PATH,
-                        'working_dir'=>ROOT_PATH.'map'
+                        'working_dir'=>ROOT_PATH.'map/'.$this->projectName
                     )
 
                 )
@@ -910,13 +905,15 @@ END";
                     'proj_data_dir'=>PROJ_LIB
                 ),
                 'cache'=>array(
-                    'base_dir'=>TILES_CACHE.$this->projectName.'/',
-                    'lock_dir'=>TILES_CACHE.'locks/',
-                    'tile_lock_dir'=>TILES_CACHE.'tile_locks/'
+                	'type'=>MAPPROXY_CACHE_TYPE,
+                    'base_dir'=>MAPPROXY_CACHE_PATH.$this->projectName.'/',
+                    'lock_dir'=>MAPPROXY_CACHE_PATH.'locks/',
+                    'tile_lock_dir'=>MAPPROXY_CACHE_PATH.'tile_locks/'
                 )
             )
         );
 
+		if(defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) $config["services"]["demo"]=array('name'=>$mapName);
         if($this->grids) $config["grids"] = $this->grids;
 		if($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) $config["caches"] = $this->mpxCaches[$mapName];
     	if($this->mpxLayers) $config["layers"] = array_values($this->mpxLayers[$mapName]);

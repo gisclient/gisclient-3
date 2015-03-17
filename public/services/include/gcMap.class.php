@@ -262,8 +262,9 @@ class gcMap{
 		$stmt->execute();
 
 		$ows_url = (defined('GISCLIENT_OWS_URL'))?GISCLIENT_OWS_URL:'../../services/ows.php';
-		if(defined('MAPPROXY_URL')){
-			$mapproxy_url = (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE)?MAPPROXY_URL."/".$this->projectName:MAPPROXY_URL."/".$this->mapsetName;
+		if(defined('MAPPROXY_PATH')){
+			$mapproxy_url = PUBLIC_URL.$this->projectName;
+			if(!(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE)) $mapproxy_url = $mapproxy_url."/".$this->mapsetName;
 		}
 	
 		$rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -518,7 +519,6 @@ class gcMap{
 					$layerParameters["requestEncoding"] = "REST";
 					$layerParameters["style"] = empty($row["layers"])?$layergroupName:$row["layers"];
 					$layerParameters["matrixSet"] = $this->mapsetGRID;
-					//$mapproxy_url = MAPPROXY_URL."/"."okgrids";
 					$layerParameters["url"] = $mapproxy_url."/wmts/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
 				}
 
@@ -526,7 +526,7 @@ class gcMap{
 				$layerParameters["layer"] = empty($row["layers"])?$layergroupName:$row["layers"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
 				//$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
-				$layerParameters["owsurl"] = $ows_url."?map=".$mapsetName;
+				$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
 				$layerParameters["zoomOffset"] = $this->levelOffset; 
 
@@ -557,12 +557,11 @@ class gcMap{
 				else{
 					if(!$mapproxy_url) continue;
 					$aLayer["url"] = $mapproxy_url."/tms/";
-					//$aLayer["url"] = MAPPROXY_URL."/"."okgrids"."/tms/";
 					$layerOptions["serviceVersion"] = defined('GISCLIENT_TMS_VERSION')?GISCLIENT_TMS_VERSION:"1.0.0";
 				
 					$layerOptions["layername"] = $aLayer["name"]."/EPSG".$this->mapsetSRID;
 					//$layerOptions["layername"] = "tiff_agea_mask"."/EPSG3004";
-					$layerOptions["owsurl"] = $ows_url."?map=".$mapsetName;
+					$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$mapsetName;
 					$layerOptions["zoomOffset"] = $this->levelOffset - 1; 
 				}
 
