@@ -7,7 +7,6 @@ $p=$save->performAction($p);
 
 if($save->action=="salva" && !$save->hasErrors && ($_POST["dati"]["catalog_path"])){
 	
-	//$save->db=new sql_db($hostname.":".$dbport,$user,$pwd,$dbname);
 	if($_POST["dati"]["connection_type"]==6 && defined('MAP_USER')){
 		list($connStr,$schema)=connAdminInfofromPath($_POST["dati"]["catalog_path"]);
 		$db2=pg_connect($connStr);

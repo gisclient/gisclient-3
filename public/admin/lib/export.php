@@ -432,6 +432,10 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 	ini_set('max_execution_time',LONG_EXECUTION_TIME);
 	ini_set('memory_limit',LONG_EXECUTION_MEMORY);
 	$pkey=parse_ini_file(ADMIN_PATH."include/primary_keys.ini");		//Recupero le Chiavi Primarie della Struttura
+	
+
+	//DA CANCELLARE O AGGIORNARE A PDO
+
 	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);			//CONNESSIONE AL DB
 	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
 	
