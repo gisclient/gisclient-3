@@ -100,7 +100,7 @@ class gcMapfile{
 		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
 				$filter="layergroup.layergroup_id=:keyvalue";
 				$joinMapset="";
-				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
+				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
 				$sqlParams['keyvalue'] = $keyvalue;
 	
 		
@@ -169,7 +169,13 @@ class gcMapfile{
             'srs'=>'EPSG:3857',
             'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
         );
-        /*
+        /*        
+        $this->grids["gmap"] = array(
+            'base'=>'GLOBAL_WEBMERCATOR',
+            'srs'=>'EPSG:3857',
+            'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
+        );
+
         $this->grids["epsg900913"] = array(
             'base'=>'GLOBAL_WEBMERCATOR',
             'srs'=>'EPSG:900913',
@@ -817,7 +823,7 @@ END";
 				$gridList["epsg".$row["srid"]]["bbox"] = preg_split('/[\s]+/', $row["bbox"]);
 				$gridList["epsg".$row["srid"]]["bbox_srs"] = "EPSG:4326";
 				if(isset($row["resolutions"])){
-					$res = preg_split('/[\s]+/', $row["bbox"]);
+					$res = preg_split('/[\s]+/', $row["resolutions"]);
 					if(count($res)==1)
 						$gridList["epsg".$row["srid"]]["max_res"] = $res[0];
 					elseif(count($res)>1)
@@ -848,7 +854,7 @@ END";
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
-                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&map=".$mapName,
+                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&amp;map=".$mapName,
                         'contact'=>array(
                             //ma serve sta roba?!?!
                             'person'=>'Roberto'

@@ -106,12 +106,13 @@ class gcMap{
 		//if (defined('GMAPSENSOR')) $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=true"; else $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=false";
 	
 		$sql = "SELECT mapset.*, ".
-			"project.project_name,project.project_title,project.max_extent_scale, ".
+			"project.project_name,project.project_title,project.max_extent_scale,resolutions, ".
 			"st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
 			"st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc ".
 			"FROM ".DB_SCHEMA.".mapset INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
+			"LEFT JOIN ".DB_SCHEMA.".project_srs ON (mapset.mapset_srid = project_srs.srid and mapset.project_name = project_srs.project_name) ".
 			"WHERE mapset_name=?;";
- 
+
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($mapsetName));
 
@@ -154,7 +155,7 @@ class gcMap{
 		$mapOptions["matrixSet"] = $this->mapsetGRID;
 		$this->fractionalZoom = 1;
 
-		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"]);
+		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$row["resolutions"]);
 		$mapOptions["resolutions"] = $this->mapResolutions;
         $mapOptions["levelOffset"] = $this->levelOffset;
 
@@ -331,6 +332,7 @@ class gcMap{
 				}
 				else{
 					$aLayer["url"] = empty($row["url"])?$ows_url:$row["url"];
+					$layerParameters["project"] = $this->projectName;
 					$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
 				}
 
@@ -990,28 +992,28 @@ class gcMap{
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		print_debug($sql,null,'mapoptions');
         if ($row['mapset_scales'] !='') {
-            $ret = preg_split("/[,]+/",$row['mapset_scales']);
+            $ret = preg_split("/[".$this->coordSep."]+/",$row['mapset_scales']);
         } else if (defined('SCALE')) {
-            $ret = preg_split("/[,]+/", SCALE);
+            $ret = preg_split("/[".$this->coordSep."]+/", SCALE);
         } else {
             $ret = GCAuthor::$defaultScaleList;
         }
         return $ret;
     }
 	
-	function _getResolutions($minScale,$maxScale){
+	function _getResolutions($minScale,$maxScale,$gridResolutions){
 
 		//Fattore di conversione tra dpi e unità della mappa
 		$convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
-		$precision = $this->mapsetUM == "dd"?10:8;
+		$precision = $this->mapsetUM == "dd"?6:2;
 		$aRes = array();
 
-		if(isset($gridResolutionsXXXXX)){
+		if(isset($gridResolutionsss)){
 			$v = preg_split("/[".$this->coordSep."]+/",$gridResolutions);
 			foreach ($v as $key => $value) {
 				$aRes[$key] = round((real)$value, $precision);
 			}
-			if($tilesExtent){
+			if(isset($tilesExtent)){
 				$v = preg_split("/[".$this->coordSep."]+/",$tilesExtent); 
 				foreach ($v as $key => $value) {
 					$this->tilesExtent[$key] = round((float)$value, $precision);
@@ -1071,7 +1073,7 @@ class gcMap{
 
 	function _getExtent($xCenter,$yCenter,$Resolution){
 		$aExtent=array();
-		$extent = $Resolution * TILE_SIZE ; //4 tiles?
+		$extent = $Resolution * TILE_SIZE; //4 tiles?
 		//echo $extent;return;
 		$aExtent[0] = $xCenter - $extent;
 		$aExtent[1] = $yCenter - $extent;
