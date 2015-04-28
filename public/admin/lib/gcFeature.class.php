@@ -516,7 +516,10 @@ class gcFeature{
 			$aMeta["ows_onlineresource"] = $this->owsUrl;
 
 			if($this->aFeature["fields"]) {
-				$aMeta["gml_featureid"] = "gc_objid";
+				if($this->aFeature["connection_type"] == MS_POSTGIS)
+					$aMeta["gml_featureid"] = "gc_objid";
+				else
+					$aMeta["gml_featureid"] = $this->aFeature["data_unique"];
 				$includeItems = array();
 				foreach($this->aFeature['fields'] as $field) {
 					if($field['result_type'] != 5) array_push($includeItems, $field['field_name']);
