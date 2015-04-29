@@ -157,7 +157,7 @@ class gcMap{
 
 		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$row["resolutions"]);
 		$mapOptions["resolutions"] = $this->mapResolutions;
-        $mapOptions["levelOffset"] = $this->levelOffset;
+                $mapOptions["levelOffset"] = $this->levelOffset;
 
 		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
 		//$mapOptions["tilesExtent"] = $this->tilesExtent;
@@ -263,8 +263,8 @@ class gcMap{
 		$stmt->execute();
 
 		$ows_url = (defined('GISCLIENT_OWS_URL'))?GISCLIENT_OWS_URL:'../../services/ows.php';
-		if(defined('MAPPROXY_PATH')){
-			$mapproxy_url = PUBLIC_URL.$this->projectName;
+		if(defined('MAPPROXY_PATH') && defined('MAPPROXY_URL') ){
+			$mapproxy_url = MAPPROXY_URL.$this->projectName;
 			if(!(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE)) $mapproxy_url = $mapproxy_url."/".$this->mapsetName;
 		}
 	
