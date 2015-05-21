@@ -329,13 +329,13 @@ class gcMap{
 				if($layerType == WMS_CACHE_LAYER_TYPE){
 					if(!$mapproxy_url) continue;
 					$aLayer["url"] = $mapproxy_url."/service";
+					$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$mapsetName;
 				}
 				else{
 					$aLayer["url"] = empty($row["url"])?$ows_url:$row["url"];
-					$layerParameters["project"] = $this->projectName;
-					$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
 				}
-
+				$layerParameters["project"] = $this->projectName;
+				$layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
 				$layerParameters["exceptions"] = (defined('DEBUG') && DEBUG==1)?'xml':'blank';				
 				$layerParameters["format"] = $row["outputformat_mimetype"];
 				$layerParameters["transparent"] = true;
