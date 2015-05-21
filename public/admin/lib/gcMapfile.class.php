@@ -259,13 +259,13 @@ class gcMapfile{
 							$this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = array("mapserver_source:".$aLayer["layergroup_name"]);
 						}else{
 							if(empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"] = array();
-							if($aLayer["hidden"]!=1) {
+							//if($aLayer["hidden"]!=1) {
 	                            array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], array(
 	                                "name"=>$aLayer["layergroup_name"].".".$aLayer["layer_name"],
 	                                "title"=>empty($aLayer["layer_title"])?$aLayer["layer_name"]:$aLayer["layer_title"],
 	                                "sources"=>array("mapserver_source:".$aLayer["layergroup_name"].".".$aLayer["layer_name"])
 	                            ));
-	                        }
+	                        //}
 						}
 						if(!in_array($aLayer["layergroup_name"],$defaultLayers[$mapName]) && ($aLayer["isbaselayer"]  == 0) && ($aLayer["layergroup_status"] == 1))
 							array_push($defaultLayers[$mapName],$aLayer["layergroup_name"]);
