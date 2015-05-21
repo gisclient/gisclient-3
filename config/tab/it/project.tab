@@ -12,6 +12,7 @@ dato[] = "Codifica caretteri;charset_encodings_id;100#seldb_charset_encodings;se
 dato[] = "Testo sulle mappe;imagelabel_text;50;text"
 dato[] = "Attributi del testo:<br>All.;imagelabel_position;70#seldb_lblposition;selectdb|Offset X;imagelabel_offset_x;4;intero|OffSet Y;imagelabel_offset_y;4;intero|Font;imagelabel_font;200#seldb_font;selectdb"
 dato[] = "Dimensione;imagelabel_size;4;intero|Colore;imagelabel_color;11;color"
+dato[] = "Icone legenda H;icon_h;4;intero|W;icon_w;4;intero"
 dato[] = "Note;project_note;48x2;textarea"
 dato[] = "Lingua default;default_language_id;100#seldb_language;selectdb"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
