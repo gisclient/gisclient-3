@@ -57,6 +57,7 @@ define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATO
 define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv');
 define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
 define('MAPPROXY_PATH', '/opt/mapproxy/');
+define('MAPPROXY_URL', '/');
 define('MAPPROXY_CACHE_PATH', '/data/tiles/');
 define('MAPPROXY_CACHE_TYPE', 'mbtiles'); //SUPPORTED:file/mbtiles/sqlite
 define('MAPPROXY_DEMO', true);
