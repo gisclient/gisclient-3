@@ -329,7 +329,7 @@ class gcMap{
 				if($layerType == WMS_CACHE_LAYER_TYPE){
 					if(!$mapproxy_url) continue;
 					$aLayer["url"] = $mapproxy_url."/service";
-					$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$mapsetName;
+					$layerOptions["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 				}
 				else{
 					$aLayer["url"] = empty($row["url"])?$ows_url:$row["url"];
@@ -528,7 +528,7 @@ class gcMap{
 				$layerParameters["layer"] = empty($row["layers"])?$layergroupName:$row["layers"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
 				//$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
-				$layerParameters["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$mapsetName;
+				$layerParameters["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
 				$layerParameters["zoomOffset"] = $this->levelOffset; 
 
@@ -563,7 +563,7 @@ class gcMap{
 				
 					$layerOptions["layername"] = $aLayer["name"]."/EPSG".$this->mapsetSRID;
 					//$layerOptions["layername"] = "tiff_agea_mask"."/EPSG3004";
-					$layerOptions["owsurl"] = $ows_url."?project=".$this->projectName."&map=".$mapsetName;
+					$layerOptions["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 					$layerOptions["zoomOffset"] = $this->levelOffset - 1; 
 				}
 
