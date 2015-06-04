@@ -65,7 +65,7 @@ else
 	$output = $objMapset->mapOptions;
 
 
-if(empty($_REQUEST["jsoncallback"]))
+if(empty($_REQUEST["callback"]))
 	die(json_encode($output));
 else
-	die($_REQUEST["jsoncallback"]."(".json_encode($output).")");
+	die($_REQUEST["callback"]."(".json_encode($output).")");

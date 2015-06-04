@@ -348,8 +348,8 @@ class printDocument {
 	
 	protected function calculateSizes() {
 		$dimension = array(
-			'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'], 
-			'h'=>$this->dimensions[$this->options['direction']][$this->options['format']]['h']
+			'w'=>(int)$this->dimensions[$this->options['direction']][$this->options['format']]['w'], 
+			'h'=>(int)$this->dimensions[$this->options['direction']][$this->options['format']]['h']
 		);
 
 		$this->imageSize = array(

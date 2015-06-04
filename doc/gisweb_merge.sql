@@ -1,4 +1,4 @@
-SET search_path = gisclient_33, pg_catalog;
+SET search_path = gisclient_3, pg_catalog;
 
 
 CREATE TABLE access_log
@@ -340,3 +340,9 @@ CREATE OR REPLACE VIEW vista_version AS
   WHERE version.version_key::text = 'author'::text
   ORDER BY version.version_id DESC
  LIMIT 1;
+
+
+ --CAMBIO 900913
+ update layer set data_srid=3857 where data_srid=900913;
+ update mapset set mapset_srid=3857 where mapset_srid=900913;
+delete from project_srs where srid=900913;

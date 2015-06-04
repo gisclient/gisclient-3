@@ -189,11 +189,10 @@ class mapImage {
 		$sql = "select box2d(st_buffer((".$extentPolygon."), $buffer))";
 		$box = $this->db->query($sql)->fetchColumn(0);
 		$box = GCUtils::parseBox($box);
-		
 		if($longEdge == 'w') {
-			return array($extent[0], $box[1], $extent[2], $box[3]);
+			return array((float)$extent[0], (float)$box[1], (float)$extent[2], (float)$box[3]);
 		} else {
-			return array($box[0], $extent[1], $box[2], $extent[3]);
+			return array((float)$box[0], (float)$extent[1], (float)$box[2], (float)$extent[3]);
 		}
 	}
 	
@@ -214,7 +213,7 @@ class mapImage {
 		$sql = "select box2d(st_buffer($center, $shortBuffer)) as short, box2d(st_buffer($center, $longBuffer)) as long";
 		$boxes = $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
 		$boxes = $this->parseBoxes($boxes);
-		
+
 		if($longEdge == 'w') {
 			return array($boxes['long'][0], $boxes['short'][1], $boxes['long'][2], $boxes['short'][3]);
 		} else {
