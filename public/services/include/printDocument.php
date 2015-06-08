@@ -357,8 +357,8 @@ class printDocument {
 			(int)round(($dimension['h']/(2.54))*$this->options['dpi'])
 		);
 		$this->options['fixed_size'] = array(
-			(int)round(($dimension['w']/(2.54))*72), 
-			(int)round(($dimension['h']/(2.54))*72)
+			(int)round(($dimension['w']/(2.54))*MAP_DPI), 
+			(int)round(($dimension['h']/(2.54))*MAP_DPI)
 		);
 		
 		$this->documentSize = $dimension;
