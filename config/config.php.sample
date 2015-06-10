@@ -49,7 +49,7 @@ define('OPENLAYERS','http://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/Ope
 /*******************OWS service url *************************/
 define('GISCLIENT_OWS_URL', PUBLIC_URL.'services/ows.php');//NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL', PUBLIC_URL.'services/tms/');//NON E' OBBLIGATORIO
-define('MAPSERVER_URL', 'http://192.168.0.13/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
+define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
 /*******************                  *************************/
 
 /**************** PRINT - EXPORT ***************/

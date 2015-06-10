@@ -1649,8 +1649,7 @@ JOIN theme t USING (theme_id);
 
 ALTER TABLE vista_layergroup
   OWNER TO gisclient;  
-  
-  set search_path=gisclient_32;
+ 
 
 DROP VIEW IF EXISTS vista_link;
 CREATE OR REPLACE VIEW vista_link AS 
@@ -1661,9 +1660,65 @@ select l.*,
     WHEN replace(substring(link_def from '%#"@%@#"%' for '#'),'@','') not in (select qtfield_name from qtfield where layer_id in (select layer_id from qtlink where link_id=l.link_id))   THEN   '(!) Campo non presente nel layer'
     ELSE 'OK. In uso'
   END as link_control
-from link l
+from link l;
 
 ALTER TABLE gisclient_32.layer ALTER COLUMN sizeunits_id SET NOT NULL;
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.28', 'author', '2015-02-26');
+
+
+-- add lookup for wms version
+CREATE TABLE gisclient_32.e_wmsversion
+(
+  wmsversion_id smallint NOT NULL,
+  wmsversion_name character varying NOT NULL,
+  wmsversion_order smallint,
+  CONSTRAINT e_wmsversion_pkey PRIMARY KEY (wmsversion_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE gisclient_32.e_wmsversion
+  OWNER TO gisclient;
+ALTER TABLE gisclient_32.layergroup
+  ADD COLUMN wmsversion_id integer;
+ALTER TABLE gisclient_32.layergroup
+  ADD FOREIGN KEY (wmsversion_id) REFERENCES gisclient_32.e_wmsversion (wmsversion_id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+
+
+INSERT INTO gisclient_32.e_wmsversion (wmsversion_id, wmsversion_name, wmsversion_order ) 
+VALUES (1, '1.0.0', 100), (2, '1.1.0', 110), (3, '1.1.1', 111), (4, '1.3.0', 130);
+
+
+DROP VIEW IF EXISTS vista_layergroup;  
+CREATE OR REPLACE VIEW vista_layergroup AS 
+select lg.*,
+CASE 
+  WHEN tiles_extent_srid is not null and tiles_extent_srid not in (select srid from project_srs where project_name=t.project_name) THEN '(!) SRID estensione tiles non presente nei sistemi di riferimento del progetto'
+  WHEN owstype_id=6 and url is null then '(!) Nessuna URL configurata per la chiamata TMS'
+  WHEN owstype_id=6 and layers is null then '(!) Nessun layer configurato per la chiamata TMS'
+  WHEN owstype_id=9 and url is null then '(!) Nessuna URL configurata per la chiamata WMTS'
+  WHEN owstype_id=9 and layers is null then '(!) Nessun layer configurato per la chiamata WMTS'
+  WHEN owstype_id=9 and tile_matrix_set is null then '(!) Nessun Tile Matrix configurato per la chiamata WMTS'
+  WHEN owstype_id=9 and style is null then '(!) Nessuno stile configurato per la chiamata WMTS'
+  WHEN owstype_id=9 and tile_origin is null then '(!) Nessuna origine configurata per la chiamata WMTS'
+  WHEN lg.opacity is null or lg.opacity = '0' then '(i) Attenzione: trasparenza totale'
+  WHEN (layergroup_id not in (select layergroup_id FROM layer)) AND layers is null then 'OK (i) Non ci sono layer configurati in questo layergroup'
+  ELSE 'OK'
+END as layergroup_control
+from layergroup lg
+JOIN theme t USING (theme_id);
+
+ALTER TABLE vista_layergroup
+  OWNER TO gisclient;  
+
+CREATE OR REPLACE VIEW seldb_wmsversion AS 
+ SELECT NULL AS id, 'Seleziona ====>' AS opzione, -1 as wmsversion_order
+ UNION 
+( SELECT wmsversion_id AS id, wmsversion_name AS opzione, wmsversion_order
+   FROM e_wmsversion
+  )
+  ORDER BY wmsversion_order;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.29', 'author', '2015-04-20');
 

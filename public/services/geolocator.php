@@ -29,7 +29,7 @@ if(!empty($_REQUEST['lang'])) {
 }
 
 if(empty($GEOLOCATOR_CONFIG[$mapset])) {
-	$ajax->error("Missing geolocator configuration \"{mapset}\"");
+	$ajax->error("Missing geolocator configuration \"{$mapset}\"");
 }	
 $config = $GEOLOCATOR_CONFIG[$mapset];
 

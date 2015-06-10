@@ -5,6 +5,7 @@ dato[] = "Benutzername;username;15;text"
 dato[] = "Nachname;cognome;30;text"
 dato[] = "Vorname;nome;30;text"
 dato[] = "Passwort;pwd;10;pword"
+dato[] = "Password;enc_pwd;10;hidden"
 dato[] = "Speichern;azione;;submit;all|Abbrechen;azione;;submit;all|Löschen;azione;;submit;edit"
 [list]
 table = "users"
