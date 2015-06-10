@@ -57,6 +57,7 @@ class gcMap{
 	var $mapsetUM = "m";
 	var $mapResolutions = array();
 	var $mapsetResolutions = array();
+	var $scaleListResolutions = array();
 	var $levelOffset = 0;
 	var $tilesExtent;
 	var $activeBaseLayer = '';
@@ -106,7 +107,7 @@ class gcMap{
 		//if (defined('GMAPSENSOR')) $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=true"; else $this->mapProviders[GMAP_LAYER_TYPE] .= "&sensor=false";
 	
 		$sql = "SELECT mapset.*, ".
-			"project.project_name,project.project_title,project.max_extent_scale,resolutions, ".
+			"project.project_name,project.project_title,project.max_extent_scale, ".
 			"st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
 			"st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc ".
 			"FROM ".DB_SCHEMA.".mapset INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
@@ -119,7 +120,7 @@ class gcMap{
 		if($stmt->rowCount() == 0){
 		    echo "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
 			echo "{$stmt->queryString}<br />\n";
-			// echo "{$sql}<br />\n";
+			//echo "{$sql}<br />\n";
 			die();
 		}
 
@@ -155,12 +156,13 @@ class gcMap{
 		$mapOptions["matrixSet"] = $this->mapsetGRID;
 		$this->fractionalZoom = 1;
 
-		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$row["resolutions"]);
+		$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$row["mapset_scales"]);
 		$mapOptions["resolutions"] = $this->mapResolutions;
-                $mapOptions["levelOffset"] = $this->levelOffset;
+        $mapOptions["levelOffset"] = $this->levelOffset;
 
 		$mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
 		//$mapOptions["tilesExtent"] = $this->tilesExtent;
+		if(!isset($this->tilesExtent))  $this->tilesExtent = $this->_getExtent($row["xc"],$row["yc"],$this->scaleListResolutions[0]);
 
 		//$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
 		//Limita estensione:
@@ -514,19 +516,20 @@ class gcMap{
 				$layerParameters["name"] = $aLayer["name"];
 				if(isset($row["url"])){
 					//?????????????????? TODO ???????????????????????
-					$layerParameters["url"] = $row["url"]."/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+					$layerParameters["url"] = $row["url"]."/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.".$row['outputformat_extension'];
 				}
 				else{
 					if(!$mapproxy_url) continue;
 					$layerParameters["requestEncoding"] = "REST";
 					$layerParameters["style"] = empty($row["layers"])?$layergroupName:$row["layers"];
 					$layerParameters["matrixSet"] = $this->mapsetGRID;
-					$layerParameters["url"] = $mapproxy_url."/wmts/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png";
+					$layerParameters["url"] = $mapproxy_url."/wmts/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.".$row['outputformat_extension'];
 				}
 
 				if($row["status"] == 0) $layerParameters["visibility"] = false;
 				$layerParameters["layer"] = empty($row["layers"])?$layergroupName:$row["layers"];
 				$layerParameters["maxExtent"] = $this->tilesExtent;	
+				//$layerParameters["maxExtent"] = array(1434920,4850320,1578280,4993680);
 				//$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
 				$layerParameters["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 				$layerParameters["isBaseLayer"] = $row["isbaselayer"]==1;
@@ -553,7 +556,6 @@ class gcMap{
 				if(isset($row["url"])){
 					$aLayer["url"] = $row["url"];
 					$layerOptions["layername"] = empty($row["layers"])?'':$row["layers"];
-					$layerOptions["zoomOffset"] = $this->levelOffset - 1;
 
 				}
 				else{
@@ -564,8 +566,15 @@ class gcMap{
 					$layerOptions["layername"] = $aLayer["name"]."/EPSG".$this->mapsetSRID;
 					//$layerOptions["layername"] = "tiff_agea_mask"."/EPSG3004";
 					$layerOptions["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
-					$layerOptions["zoomOffset"] = $this->levelOffset - 1; 
+					
 				}
+
+				//BOH TODO VERIFICARE PERCHÉ
+				if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
+					$layerOptions["zoomOffset"] = $this->levelOffset - 1; 
+				else
+					$layerOptions["zoomOffset"] = $this->levelOffset;
+
 
 				$this->allOverlays = 0;
 				$this->fractionalZoom = 0;
@@ -576,7 +585,7 @@ class gcMap{
 				//$layerOptions["mapResolutions"] = $this->mapResolutions;
  				//$layerOptions["maxResolution"] = 78271.516964;
 
-				$layerOptions["maxExtent"] = $this->tilesExtent;	
+				//$layerOptions["maxExtent"] = $this->tilesExtent;	
 				$layerOptions["tileOrigin"] = array_slice($this->tilesExtent,0,2);
 				$aLayer["options"]= $layerOptions;
 				array_push($this->mapLayers, $aLayer);
@@ -1001,15 +1010,16 @@ class gcMap{
         return $ret;
     }
 	
-	function _getResolutions($minScale,$maxScale,$gridResolutions){
+	function _getResolutions($minScale,$maxScale,$mapsetScales){
 
 		//Fattore di conversione tra dpi e unità della mappa
+
 		$convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM]*MAP_DPI;
-		$precision = $this->mapsetUM == "dd"?6:2;
+		$precision = $this->mapsetUM == "dd"?10:2;
 		$aRes = array();
 
-		if(isset($gridResolutionsss)){
-			$v = preg_split("/[".$this->coordSep."]+/",$gridResolutions);
+		if(isset($mapsetScalesxxxx)){ //TODO 
+			$v = preg_split("/[".$this->coordSep."]+/",$mapsetScales);
 			foreach ($v as $key => $value) {
 				$aRes[$key] = round((real)$value, $precision);
 			}
@@ -1029,8 +1039,16 @@ class gcMap{
 					$aRes[] = GOOGLE_MAX_RESOLUTION / pow(2,$lev);
 			}
 			else{
-	            $scaleList = $this->_getScaleList();
+				if (isset($mapsetScales)) {
+		            $scaleList = preg_split("/[".$this->coordSep."]+/",$mapsetScales);
+		        } elseif (defined('DEFAULT_SCALE_LIST')) {
+		            $scaleList = preg_split("/[".$this->coordSep."]+/", DEFAULT_SCALE_LIST);
+		        } else {
+		            $scaleList = GCAuthor::$defaultScaleList;
+				}
 				foreach($scaleList as $scaleValue)	$aRes[] = round((float)$scaleValue/$convFact, $precision);
+			//print($convFact);
+			//print_array(GCAuthor::$aInchesPerUnit);
 			}
 		}
 
@@ -1047,13 +1065,14 @@ class gcMap{
 				$minIndex = array_index($aRes,$res);
 		}
 		$this->levelOffset = $minIndex;
+		$this->scaleListResolutions = $aRes;
 		$this->mapResolutions = array_slice($aRes,$minIndex,$maxIndex);
 
 	}
 	
 
 	function _getProjInfo() {
-		$exclude = array(3857,900913,3587,4326);
+		$exclude = array(3857,900913,3587);
 		$sql = "SELECT srtext, auth_srid as srid, proj4text||coalesce('+towgs84='||projparam,'') AS proj4text, ".
 		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
    		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".

@@ -3,8 +3,6 @@ table = "project_srs"
 pkey = "project_name;srid"
 dato[] = "SRID;srid;6;intero"
 dato[] = "Parametri;projparam;50;text"
-dato[] = "Max extent (wgs84);max_extent;50;text"
-dato[] = "Risoluzioni;resolutions;60x4;textarea"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 
 [list]

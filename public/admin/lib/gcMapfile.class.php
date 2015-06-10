@@ -39,11 +39,16 @@ class gcMapfile{
 	var $epsgList;
 	var $mapInfo=array();
 	var $srsCustom=array();
+	private $projectMaxScale;
+	private $projectSrid;
+	private $xCenter;
+	private $yCenter;
 	private $msVersion;
 	private $grids = array();
 	private $target = 'public';
 	private $iconSize = array(16,10);
 	private $tinyOWSLayers = array();
+
 	
 	private $i18n;
 	private $languageId;
@@ -144,11 +149,13 @@ class gcMapfile{
 		$aLayer=$res[0];
 		$this->projectName = $aLayer["project_name"];
 		$this->projectSrid = $aLayer["project_srid"];
+		$this->xCenter = $aLayer['xc'];
+		$this->yCenter = $aLayer['yc'];
 
 		//SCALA MASSIMA DEL PROGETTO
 		$projectMaxScale = floatval($aLayer["max_extent_scale"])?floatval($aLayer["max_extent_scale"]):100000000;
-		$projectExtent = $this->_calculateExtentFromCenter($aLayer['xc'], $aLayer['yc'], $projectMaxScale, $this->projectSrid);	
-
+		$projectExtent = $this->_calculateExtentFromCenter($projectMaxScale, $this->projectSrid);	
+		$this->projectMaxScale = $projectMaxScale;
 
 		$mapText=array();
 		$mapSrid=array();
@@ -162,26 +169,6 @@ class gcMapfile{
 
 		$this->_setMapProjections();
 		$oFeature->srsParams = $this->srsParams;
-
-        //AGGIUNTE A MANO PER ORA
-        $this->grids["epsg3857"] = array(
-            'base'=>'GLOBAL_WEBMERCATOR',
-            'srs'=>'EPSG:3857',
-            'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
-        );
-        /*        
-        $this->grids["gmap"] = array(
-            'base'=>'GLOBAL_WEBMERCATOR',
-            'srs'=>'EPSG:3857',
-            'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
-        );
-
-        $this->grids["epsg900913"] = array(
-            'base'=>'GLOBAL_WEBMERCATOR',
-            'srs'=>'EPSG:900913',
-            'num_levels'=>GOOGLE_MAX_ZOOM_LEVEL+1
-        );
-	*/
 
 		if($this->printMap) $mapName = time().'_print';
 		
@@ -338,7 +325,7 @@ class gcMapfile{
 			if(empty($mapExtent[$mapName])){	
 				//EXTENT DEL MAPSET LO RICALCOLO SE NON POSSO USARE QUELLO DEL PROGETTO
 				if(($mapSrid[$mapName] != $this->projectSrid) || ($mapMaxScale[$mapName] != $projectMaxScale)){
-					$this->mapsetExtent = $this->_calculateExtentFromCenter($aLayer['xc'], $aLayer['yc'], $this->mapsetMaxScale, $this->mapsetSrid);	
+					$this->mapsetExtent = $this->_calculateExtentFromCenter($this->mapsetMaxScale, $this->mapsetSrid);	
 				}
 			}else{
 				$v = preg_split('/[\s]+/', $mapExtent[$mapName]);
@@ -768,10 +755,10 @@ END";
 		return $txt;
 	}
 
-	function _calculateExtentFromCenter($x, $y, $maxScale, $srid) {
+	function _calculateExtentFromCenter($maxScale, $srid) {
 		$sql = "SELECT ".
-		"st_x(st_transform(st_geometryfromtext('POINT('||$x||' '||$y||')',".$this->projectSrid."),$srid)) as xc, ".
-		"st_y(st_transform(st_geometryfromtext('POINT('||$x||' '||$y||')',".$this->projectSrid."),$srid)) as yc, ".
+		"st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),$srid)) as xc, ".
+		"st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),$srid)) as yc, ".
 		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
    		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
    		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
@@ -808,15 +795,54 @@ END";
 			$this->srsParams[$row["srid"]] = $row["projparam"];
 		}
 
-		//ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:
+		//ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:(GRIDS)
+		//DEFAULT WEB MERCATOR   
+		$epsgList = array("EPSG:3857");
+		$gridList = array(			
+			"epsg3857" => array(
+	            'base'=>'GLOBAL_WEBMERCATOR',
+	            'srs'=>'EPSG:3857',
+	            'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
+        	)
+		);
 
-		//qui ci aggiungo i parametri per ottenere tutte le griglie di base ... todo
-		$epsgList = array();
-		$gridList = array();
-		$sql="SELECT id as srid,max_extent as bbox,resolutions FROM ".DB_SCHEMA.".seldb_mapset_srid WHERE project_name = ?;";
+		$sql = "SELECT srid,".
+		"st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as xc, ".
+		"st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as yc, ".
+		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
+   		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
+   		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
+   		"FROM ".DB_SCHEMA.".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
 		$stmt = $this->db->prepare($sql);
+
 		$stmt->execute(array($this->projectName));
-		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		foreach ($rows as $row) {
+			$srs = "epsg".$row["srid"];
+			$epsgList[] = "EPSG:".$row["srid"];
+			$gridList[$srs] = array("srs"=>"EPSG:".$row["srid"]);
+			$gridList[$srs]["res"] = array();
+			$convFact = GCAuthor::$aInchesPerUnit[$row["um"]]*MAP_DPI;
+			$precision = $row["um"] == "dd"?10:2;
+        	if (defined('DEFAULT_SCALE_LIST')) {
+            	$scaleList = preg_split('/[\s]+/', DEFAULT_SCALE_LIST);
+        	} else {
+           	 $scaleList = GCAuthor::$defaultScaleList;
+			}
+			foreach($scaleList as $scaleValue)	$gridList[$srs]["res"][] = round((float)$scaleValue/$convFact, $precision);
+					
+			$aExtent=array();
+			$extent = round($gridList[$srs]["res"][0] * TILE_SIZE);
+			//echo $extent;return;
+			$aExtent[0] = round((float)($row["xc"] - $extent), $precision);
+			$aExtent[1] = round((float)($row["yc"] - $extent), $precision);
+			$aExtent[2] = round((float)($row["xc"] + $extent), $precision);
+			$aExtent[3] = round((float)($row["yc"] + $extent), $precision);
+			$gridList[$srs]["bbox"] = $aExtent;
+			$gridList[$srs]["bbox_srs"] = "EPSG:".$row["srid"];
+		};
+			
+/*		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
 			$epsgList[] = "EPSG:".$row["srid"];
 			if(isset($row["bbox"])){
 				$gridList["epsg".$row["srid"]] = array("srs"=>"EPSG:".$row["srid"]);
@@ -830,7 +856,7 @@ END";
 						$gridList["epsg".$row["srid"]]["resolutions"] = $res;
 				}
 			}
-		}
+		}*/
 		$this->epsgList = $epsgList;
 		$this->grids = $gridList;
 	}
