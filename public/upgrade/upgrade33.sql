@@ -1,4 +1,4 @@
-SET search_path = gisclient_33, pg_catalog;
+SET search_path = gisclient_3, pg_catalog;
 
 -- STRUTTURA DELLE PAGINE
 DELETE FROM e_level;
