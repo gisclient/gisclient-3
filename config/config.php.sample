@@ -93,7 +93,6 @@ define('REDLINE_TABLE', 'annotazioni');
 define('REDLINE_SRID', '4326');
 define('REDLINE_FONT', 'dejavu-sans-bold'); // non obbligatorio, default arial
 
-require_once (ROOT_PATH."lib/postgres.php");
 require_once (ROOT_PATH."lib/debug.php");
 require_once (ROOT_PATH."config/config.db.php");
 require_once (ROOT_PATH.'lib/gcapp.class.php');
