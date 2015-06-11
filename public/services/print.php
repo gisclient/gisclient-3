@@ -10,7 +10,7 @@ $gcService->startSession();
 
 $ajax = new GCAjax();
 
-if (!empty($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
+if ($_REQUEST['format'] == 'PDF') {
 	if(!file_exists(GC_FOP_LIB)) $ajax->error('fop lib does not exist');
 	require_once GC_FOP_LIB;
 }
@@ -20,9 +20,7 @@ try {
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();
-		//$ajax->success(array('box'=>$box));
-		$ajax->success(array('box'=>$box,'pages'=>$printMap->getDimensions()));
-
+		$ajax->success(array('box'=>$box));
 	}
 
 	if(!empty($_REQUEST['lang'])) {
