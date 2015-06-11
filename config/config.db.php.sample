@@ -13,3 +13,6 @@ define('DB_PWD', '<MY_DB_ADMIN_PASSWORD>');
 //Utente scritto sul file .map
 define('MAP_USER','<MY_DB_MAPSERVER_USER>');
 define('MAP_PWD','<MY_DB_MAPSERVER_PASSWORD>');
+
+// user with manager permission (can create new users and groups)
+define('SUPER_USER', 'admin');
