@@ -43,7 +43,7 @@ define('OPENLAYERS','http://openlayers.org/dev/OpenLayers.js');
 /*******************OWS service url *************************/
 define('GISCLIENT_OWS_URL','http://localhost/gisclient/services/ows.php');//NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL','http://localhost/gisclient/services/tms/');//NON E' OBBLIGATORIO
-define('MAPSERVER_URL', 'http://192.168.0.13/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
+define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
 /*******************                  *************************/
 
 /**************** PRINT - EXPORT ***************/
@@ -74,7 +74,6 @@ define('REDLINE_TABLE', 'annotazioni');
 define('REDLINE_SRID', '4326');
 define('REDLINE_FONT', 'arial'); // non obbligatorio, default arial
 
-require_once (ROOT_PATH."lib/postgres.php");
 require_once (ROOT_PATH."lib/debug.php");
 require_once (ROOT_PATH."config/config.db.php");
 require_once (ROOT_PATH.'lib/gcapp.class.php');
