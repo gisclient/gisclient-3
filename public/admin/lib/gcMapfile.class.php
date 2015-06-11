@@ -133,6 +133,7 @@ class gcMapfile{
 		INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
 		LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
 		where ".$filter." order by layer_order,layergroup_order;";	
+		//where ".$filter." order by theme_order desc, layergroup_order desc, layer_order desc;";	SERVE PER SCRIVERE I LAYER NEL MAPFILE UTILIZZANDO L'ORDINE RELATIVO TEMA-LAYERGROUP-LAYER. Sarebbe da sviluppare la funzione che permette all'utente di sceglierlo a livello di progetto
 
 		print_debug($sql,null,'writemap');
 

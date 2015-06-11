@@ -2,10 +2,10 @@
 
 class printDocument {
 
-    protected $options;
-    protected $tiles = array();
-	protected $extent = array();
-	protected $dimensions = array(
+    private $options;
+
+    private $tiles = array();
+	private $dimensions = array(
 		'vertical'=>array(
 			'A4'=>array('w'=>17,'h'=>22.5),
 			'A3'=>array('w'=>25.8,'h'=>35),
@@ -21,18 +21,19 @@ class printDocument {
 			'A0' => array('w'=>115,'h'=>77)
 		)
 	);
-	protected $WMSMergeUrl = 'services/gcWMSMerge.php';
-	protected $wmsList = array();
-	protected $imageSize = array();
-	protected $documentSize = array();
-	protected $documentElements = array();
-	protected $imageFileName = '';
-	protected $legendArray = array();
-	protected $vectors = array();
-	protected $db = null;
-	protected $getLegendGraphicWmsList = array();
-	protected $nullLogo = 'null.png';
-
+	private $wmsMergeUrl = 'services/gcWMSMerge.php';
+	private $wmsList = array();
+	private $imageSize = array();
+	private $documentSize = array();
+	private $documentElements = array();
+	private $imageFileName = '';
+	private $legendArray = array();
+	private $vectors = array();
+	private $db = null;
+	private $getLegendGraphicWmsList = array();
+	private $nullLogo = 'null.png';
+	private $getLegendGraphicRequest;
+	
     public function __construct() {
 	
         $defaultOptions = array(
@@ -44,12 +45,8 @@ class printDocument {
 			'legend' => null,
 			'scale_mode' => 'auto',
 			'image_format'=>'png',
-			'extent' => null,
-			'viewport_size' => array(),
-			'center' => array(),
 			'srid' => null,
 			'auth_name'=>'EPSG',
-			'pixels_distance' => null
         );
 		
 		$options = array();
@@ -68,8 +65,8 @@ class printDocument {
 			$options['scale_mode'] = $_REQUEST['scale_mode'];
 		if (!empty($_REQUEST['legend']))
 			$options['legend'] = $_REQUEST['legend'];
-		if (!empty($_REQUEST['current_scale'])) // non serve
-			$options['current_scale'] = $_REQUEST['current_scale'];
+		if (!empty($_REQUEST['scale'])) // non serve
+			$options['scale'] = $_REQUEST['scale'];
 		if (!empty($_REQUEST['printFormat']))
 			$options['format'] = $_REQUEST['printFormat'];
 		if (!empty($_REQUEST['direction']) && in_array($_REQUEST['direction'], array('horizontal', 'vertical')))
@@ -79,24 +76,32 @@ class printDocument {
 		if (!empty($_REQUEST['srid'])) {
 			$options['srid'] = $_REQUEST['srid'];
 			if (strpos($_REQUEST['srid'], ':') !== false) {
-				list($options['auth_name'], $options['srid']) = explode(':', $_REQUEST['srid']);
+				$sridParts = explode(':', $_REQUEST['srid']);
+				if (count($sridParts) == 2) {
+					// e.g.: EPSG:4306
+					$options['auth_name'] = $sridParts[0];
+					$options['srid'] = $sridParts[1];
+				} elseif (count($sridParts) == 7) {
+					// e.g.: urn:ogc:def:crs:EPSG::4306
+					$options['auth_name'] = $sridParts[4];
+					$options['srid'] = $sridParts[6];
+				} else {
+					throw new Exception("Could not parse ".$_REQUEST['srid']." as srid");
+				}
 			}
 		}
-		if (!empty($_REQUEST['pixels_distance']))
-			$options['pixels_distance'] = $_REQUEST['pixels_distance'];
-		if (!empty($_REQUEST['viewport_size'])) // non serve
-			$options['viewport_size'] = $_REQUEST['viewport_size'];
+		
 		if (!empty($_REQUEST['center']))
 			$options['center'] = $_REQUEST['center'];
-		if(!empty($_REQUEST['vectors'])) { // non serve
+		if(!empty($_REQUEST['vectors'])) {
 			$this->vectors = $_REQUEST['vectors'];
 		}
 
-        $this->options = array_merge($defaultOptions, $options);
+		$this->options = array_merge($defaultOptions, $options);
 		
 		if(substr($this->options['TMP_PATH'], -1) != '/') $this->options['TMP_PATH'] .= '/';
 		if(!is_dir($this->options['TMP_PATH']) || !is_writeable($this->options['TMP_PATH'])) {
-			throw new Exception('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
+			throw new RuntimeException('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
 		}
 		if(substr($this->options['TMP_URL'], -1) != '/') $this->options['TMP_URL'] .= '/';
 		
@@ -107,14 +112,16 @@ class printDocument {
 		if(!isset($this->dimensions[$this->options['direction']])) throw new Exception('Invalid direction');
 		if(!isset($this->dimensions[$this->options['direction']][$this->options['format']])) throw new Exception('Invalid print format');
 		
-		if($this->options['scale_mode'] == 'user') {
-			if(empty($this->options['extent']) || count($this->options['extent']) != 4)
-				throw new Exception('For user-defined scale mode, an array of bottom, left, top, right coordinates must be provided');
+		if($options['scale_mode'] == 'user') {
+			if(empty($options['scale']))
+				throw new Exception('For user-defined scale mode, the scale must be provided');
+			if(empty($options['center']) || count($options['center']) != 2)
+				throw new Exception('For user-defined scale mode, an array of center coordinates must be provided');
 		} else {
-			if(empty($this->options['pixels_distance']) || empty($this->options['viewport_size']) || empty($this->options['center']))
-				throw new Exception('For auto scale mode, pixels_distance, viewport_size and center must be provided');
+			if(empty($options['extent']))
+				throw new Exception('For auto scale mode, the extend must be provided');
 		}
-		$this->WMSMergeUrl = PUBLIC_URL.$this->WMSMergeUrl;
+		$this->wmsMergeUrl = PUBLIC_URL.$this->wmsMergeUrl;
 		
 		$this->db = GCApp::getDB();
 		
@@ -146,178 +153,111 @@ class printDocument {
 	
 	public function printMapHTML() {
 		$xslFile = GC_PRINT_TPL_DIR.'print_map_html.xsl';
-		if(!file_exists($xslFile)) throw new Exception('XSL file ('.$xslFile.') not found');
+		if(!file_exists($xslFile)) throw new RuntimeException('XSL file ('.$xslFile.') not found');
 		
-		try {
-			$dom = $this->buildDOM();
-			$tmpdoc = new DOMDocument();
-			$xsl = new XSLTProcessor();
 
-			$tmpdoc->load($xslFile);
-			$xsl->importStyleSheet($tmpdoc);
+		$dom = $this->buildDOM();
+		$tmpdoc = new DOMDocument();
+		$xsl = new XSLTProcessor();
 
-			$content = $xsl->transformToXML($dom);
-			$filename = 'printmap_'.rand(0,99999999).'.html';
-			file_put_contents($this->options['TMP_PATH'].$filename, $content);
-			$this->deleteOldTmpFiles();
-		} catch(Exception $e) {
-			throw $e;
+		$tmpdoc->load($xslFile);
+		$xsl->importStyleSheet($tmpdoc);
+
+		$content = $xsl->transformToXML($dom);
+		$filename = 'printmap_'.rand(0,99999999).'.html';
+		$mapHtmlFile = $this->options['TMP_PATH'].$filename;
+		if (false === file_put_contents($mapHtmlFile, $content)) {
+			throw new RuntimeException("Could not write to $mapHtmlFile");
 		}
+		$this->deleteOldTmpFiles();
 		return $this->options['TMP_URL'].$filename;
 	}
 	
 	public function printMapPDF() {
 		$xslFile = GC_PRINT_TPL_DIR.'print_map.xsl';
-		if(!file_exists($xslFile)) throw new Exception('XSL file not found');
-		
-		try {
-			$dom = $this->buildDOM(true);
-			$xml = $dom->saveXML();
-
-			$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
-			$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
-		} catch (Exception $e) {
-			throw $e;
+		if(!file_exists($xslFile)) {
+			throw new RuntimeException("XSL file '$xslFile'not found");
 		}
+		$dom = $this->buildDOM(true);
+		$xml = $dom->saveXML();
+
+		$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
+		$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
 		return $pdfFile;
 	}
 	
-	public function getDimensions() {
-		return $this->dimensions;
-	}
 	public function getBox() {
 		$this->calculateSizes();
-		
-		$options = array_merge($this->options, array('request_type'=>'get-box'));
 		
 		$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
 		return $mapImage->getExtent();
 	}
 	
-	protected function buildLegendGraphicWmsList() {
+	private function buildLegendGraphicWmsList() {
 		foreach($this->wmsList as $wms) {
-            if(empty($wms['PARAMETERS']['MAP']) ||
-                $wms['PARAMETERS']['MAP'] == 'REDLINE' || 
-                //empty($wms['PARAMETERS']['PROJECT'])) continue;
-                empty($wms['PARAMETERS'])) continue;
+			if (!isset($wms['PARAMETERS']['SERVICE']) ||
+				$wms['PARAMETERS']['SERVICE'] != 'WMS'){
+				continue;
+			}
+			if ($wms['PARAMETERS']['SERVICE'] == 'REDLINE') {
+				continue;
+			}
 			$legendGraphicRequest = array_merge($wms['PARAMETERS'], array(
 				'url'=>(!empty($wms['URL'])?$wms['URL']:$wms['baseURL']),
-				//'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
+				'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
 				'REQUEST' => 'GetLegendGraphic',
 				'ICONW' => 24,
 				'ICONH' => 16,
 				'GCLEGENDTEXT' => 0
 			));
+			if(defined("GC_SESSION_NAME")){
+				$legendGraphicRequest['GC_SESSION_ID'] = session_id();
+            }
 			$this->getLegendGraphicWmsList[$wms['PARAMETERS']['MAP']] = $legendGraphicRequest;
 			$this->getLegendGraphicRequest = $legendGraphicRequest;
-			/*
-			$layers = explode(',',$wms['PARAMETERS']['LAYERS']);
-			foreach($layers as $layer) {
-				$this->getLegendGraphicWmsList[$wms] = $legendGraphicRequest;
-			}*/
 		}
 	}
-    
-    protected function getLegendsFromMapfile() {
-        $layers = array();
-        $project = $mapset = null;
-        $themes = array();
-        
-        foreach($this->wmsList as $wms) {
-            if(!empty($wms['PARAMETERS']['PROJECT']) && empty($project)) $project = $wms['PARAMETERS']['PROJECT'];
-            if(!empty($wms['PARAMETERS']['MAP']) && empty($mapset)) $mapset = $wms['PARAMETERS']['MAP'];
-            
-            foreach($wms['PARAMETERS']['LAYERS'] as $layerName) {
-                if(isset($wms['options']['theme_id'])) {
-                    if(!isset($themes[$wms['options']['theme_id']])) {
-                        $themes[$wms['options']['theme_id']] = array(
-                            'id'=>$wms['options']['theme_id'],
-                            'title'=>$wms['options']['theme_title'],
-                            'layers'=>array()
-                        );
-                    }
-                    $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
-                }
-            }
-        }
-
-        if(!empty($project) && !empty($mapset)) {
-        //if(!empty($mapset)) {
-            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
-            foreach($themes as &$theme) {
-                $theme['groups'] = array();
-                foreach($theme['layers'] as $layergroupName) {
-                    $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
-                    foreach($layerIndexes as $index) {
-                        $oLayer = $oMap->getLayer($index);
-                        $layerName = $oLayer->name;
-                        $group = array(
-                            'id'=>$layerName,
-                            'title'=>$oLayer->getMetaData('ows_title'),
-                            'layers'=>array()
-                        );
-                        for($n = 0; $n < $oLayer->numclasses; $n++) {
-                            $oClass = $oLayer->getClass($n);
-                            $exclude = $oClass->getMetaData('gc_no_image');
-                            if(!empty($exclude)) continue;
-                            array_push($group['layers'], array(
-                                'url'=>$layerName.'-'.$n,
-                                'title'=>$oClass->title
-                            ));
-                        }
-                        array_push($theme['groups'], $group);
-                    }
-                }
-            }
-            unset($theme);
-        }
-        return array('themes'=>$themes);
-    }
 	
-	protected function buildLegendArray() {
+	private function buildLegendArray() {
 		if(empty($this->options['legend'])) return null;
 		$this->buildLegendGraphicWmsList();
-		try {
-			$legendImages = array();
-            if(!is_array($this->options['legend'])) {
-                $this->options['legend'] = $this->getLegendsFromMapfile();
-            }
-            //var_export($this->options['legend']);
-			foreach($this->options['legend']['themes'] as $theme) {
-				if(empty($theme['groups'])) continue;
-				$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
-				foreach($theme['groups'] as $group) {
-					$groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
-					if(empty($group['layers'])) continue;
-					foreach($group['layers'] as $key => $layer) {
-						$tmpFileId = $theme['id'].'-'.$group['id'];
-						if(!isset($legendImages[$layer['url']])) {
-							if(isset($group['sld'])) $sld = $group['sld'];
-							else $sld = null;
-							$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
-						}
-						if(!$legendImages[$layer['url']]) continue;
-						$source = @imagecreatefrompng($legendImages[$layer['url']]);
-                        if(!$source) continue;
-						$dest = imagecreatetruecolor(35, 28);
-                        imagecolortransparent($dest, imagecolorallocate($dest, 0, 0, 0));
-						$offset = $key*28;
-						imagecopy($dest, $source, 0, 0, 5, $offset, 35, 28);
-						$filename = $tmpFileId.'-'.$key.'.png';
-						imagepng($dest, $this->options['TMP_PATH'].$filename);
-						array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
+		$legendImages = array();
+		foreach($this->options['legend']['themes'] as $theme) {
+			if(empty($theme['groups'])) continue;
+			$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
+			foreach($theme['groups'] as $group) {
+				$groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
+				if(empty($group['layers'])) continue;
+				foreach($group['layers'] as $key => $layer) {
+					$tmpFileId = $theme['id'].'-'.$group['id'];
+					if(!isset($legendImages[$layer['url']])) {
+						if(isset($group['sld'])) $sld = $group['sld'];
+						else $sld = null;
+						$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
 					}
-					array_push($themeArray['groups'], $groupArray);
+					if(!$legendImages[$layer['url']]) {
+						continue;
+					}
+					if (filesize($legendImages[$layer['url']]) == 0) {
+						// something went wrong
+						continue;
+					}
+					// TODO: add some check if the image is high enough to be sliced
+					$source = imagecreatefrompng($legendImages[$layer['url']]);
+					$dest = imagecreatetruecolor(24, 16);
+					$offset = $key*16;
+					imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
+					$filename = $tmpFileId.'-'.$key.'.png';
+					imagepng($dest, $this->options['TMP_PATH'].$filename);
+					array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
 				}
-				array_push($this->legendArray, $themeArray);
+				array_push($themeArray['groups'], $groupArray);
 			}
-            //var_export($this->legendArray);
-		} catch(Exception $e) {
-			throw $e;
+			array_push($this->legendArray, $themeArray);
 		}
 	}
 	
-	protected function getLegendImageWMS($layer, $group, $tmpFileId, $sld = null) {
+	private function getLegendImageWMS($layer, $group, $tmpFileId, $sld = null) {
 		$request = $this->getLegendGraphicRequest;
 		$request['LAYER'] = $group;
 		$url = $request['url'];
@@ -327,63 +267,61 @@ class printDocument {
 		return $this->getLegendImage($url.'?'.$queryString, $tmpFileId);
 	}
 	
-	protected function getLegendImage($url, $tmpFileId) {
-		try {
-			$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
-			$url = printDocument::addPrefixToRelativeUrl($url);
-			$ch = curl_init($url);
-			$fp = fopen($dest, "wb");
-			file_put_contents(DEBUG_DIR.'getlegendgraphic.txt', $url."\n", FILE_APPEND);
-			$options = array(CURLOPT_FILE => $fp, CURLOPT_HEADER => 0, CURLOPT_FOLLOWLOCATION => 1, CURLOPT_TIMEOUT => 60);
-			curl_setopt_array($ch, $options);
-
-			curl_exec($ch);
-			curl_close($ch);
-			fclose($fp);
-		} catch(Exception $e) {
-			throw $e;
+	private function getLegendImage($url, $tmpFileId) {
+		$dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
+		$finalUrl = printDocument::addPrefixToRelativeUrl($url);
+		$ch = curl_init($finalUrl);
+		if (false === ($fp = fopen($dest, "wb"))) {
+			throw new RuntimeException("Unable to open file $dest in write mode");
 		}
+		$options = array(
+			CURLOPT_FILE => $fp,
+			CURLOPT_HEADER => 0,
+			CURLOPT_FOLLOWLOCATION => 1,
+			CURLOPT_TIMEOUT => 60
+			);
+		curl_setopt_array($ch, $options);
+
+		if (false === curl_exec($ch)) {
+			$errMsg = "Call to $finalUrl returned with error ".curl_error($ch);
+			throw new RuntimeException($errMsg);
+		}
+		if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+			throw new RuntimeException("Call to $finalUrl return HTTP code $httpCode");
+		}
+		curl_close($ch);
+		fclose($fp);
 		return $dest;
 	}
 	
-	protected function calculateSizes() {
+	private function calculateSizes() {
 		$dimension = array(
-			'w'=>(int)$this->dimensions[$this->options['direction']][$this->options['format']]['w'], 
-			'h'=>(int)$this->dimensions[$this->options['direction']][$this->options['format']]['h']
+			'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'], 
+			'h'=>$this->dimensions[$this->options['direction']][$this->options['format']]['h']
 		);
 
 		$this->imageSize = array(
-			(int)round(($dimension['w']/(2.54))*$this->options['dpi']), 
-			(int)round(($dimension['h']/(2.54))*$this->options['dpi'])
+			(int)round($dimension['w'] * ($this->options['dpi'] / 2.54)), 
+			(int)round($dimension['h'] * ($this->options['dpi'] / 2.54)),
 		);
-		$this->options['fixed_size'] = array(
-			(int)round(($dimension['w']/(2.54))*MAP_DPI), 
-			(int)round(($dimension['h']/(2.54))*MAP_DPI)
-		);
-		
 		$this->documentSize = $dimension;
 	}
 	
-	protected function getMapImage() {
-		try {
-			$this->calculateSizes();
-			
-			$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
-			$this->wmsList = $mapImage->getWmsList();
-			$this->imageFileName = $mapImage->getImageFileName();
-			
-		} catch(Exception $e) {
-			throw $e;
-		}
-	}
+	private function getMapImage() {
+		$this->calculateSizes();
 
-	protected function buildDOM($absoluteUrls = false) {
-		try {
-			$this->getMapImage();
-			$this->buildLegendArray();
-		} catch(Exception $e) {
-			throw $e;
+		if(!empty($this->vectors)) {
+			$this->options['vectors'] = $this->vectors;
 		}
+		
+		$mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
+		$this->wmsList = $mapImage->getWmsList();
+		$this->imageFileName = $mapImage->getImageFileName();
+	}
+	
+	private function buildDOM($absoluteUrls = false) {
+		$this->getMapImage();
+		$this->buildLegendArray();
 
 		$dom = new DOMDocument('1.0', 'utf-8');
 		$dom->formatOutput = true;
@@ -456,12 +394,15 @@ class printDocument {
 		}
 		
 		$xmlContent = $dom->saveXML();
-		file_put_contents($this->options['TMP_PATH'].'print.xml', $xmlContent);
+		$xmlFile = $this->options['TMP_PATH'].'print.xml';
+		if (false === file_put_contents($xmlFile, $xmlContent)) {
+			throw new RuntimeException("Could not write to $xmlFile");
+		}
 		
 		return $dom;
 	}
 	
-	protected function deleteOldTmpFiles() {
+	private function deleteOldTmpFiles() {
 		if($this->options['TMP_PATH'] == '/tmp/') return;
 		if ($handle = opendir($this->options['TMP_PATH'])) {
 			while (false !== ($file = readdir($handle))) {
@@ -470,9 +411,10 @@ class printDocument {
 
 				$name = $this->options['TMP_PATH'] . '/' . $file;
 				$isold = (time() - filectime($name)) > 5 * 60 * 60;
-				$ext = strtolower(strrchr($name, '.'));
 				if (is_file($name) && $isold) {
-					unlink($name);
+					if (false === unlink($name)) {
+						throw new RuntimeException("Could not remove $name");
+					}
 				}
 			}
 			closedir($handle);
