@@ -66,7 +66,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	$rows=file($fName);
 	$type=str_replace("--Type:","",trim($rows[1]));
     
-	$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=:type"; //????? - questa non sembra essere eseguita, $sql viene sovrascritto verso la riga 81
+	//$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=:type"; //????? - questa non sembra essere eseguita, $sql viene sovrascritto verso la riga 81
     
 	if ($qt) $name=str_replace("--Name:","",$rows[2]);
 	$newName=($newName)?($newName):($name);
@@ -78,7 +78,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	}
 	
 	$handle=fopen(ROOT_PATH.'config/debug/test_import.sql','w+');
-	for($i=2;$i<count($rows);$i++){
+	for($i=3;$i<count($rows);$i++){
 		$sql=trim(str_replace("\n",'',str_replace("\r","",$rows[$i])));
 		foreach($arrSubst as $key=>$value){
 			$sql=str_replace($key,$value,$sql);
@@ -88,7 +88,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		if(preg_match_all('|@FOREIGNKEY(.+)@|Ui',$sql,$out,PREG_SET_ORDER)){
 			for($k=0;$k<count($out);$k++){
 				$str=$out[$k][0];
-				if($out[$k][1]=="[qtrelation][0]"){
+				if($out[$k][1]=="[relation][0]"){
 					$newVal="0";
 				}
 				elseif($out[$k][1]=="[catalog][]"){
@@ -123,7 +123,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 			}
 		}
 		if(preg_match("|@NEWKEY_I\[(.+)\]\[(.+)\]@|Ui",$sql,$out)) {
-			if($out[1]=='qtrelation' && !$out[2])
+			if($out[1]=='relation' && !$out[2])
 				$newId[$out[1]][$out[2]]="0";
 			else{
 				$table=str_replace('_id','',$out[1]);
@@ -149,8 +149,11 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		$out=Array();
 	
         try {
+        	$sql = "BEGIN;".str_replace("\'","\\''",$sql)."END;";
             $db->exec($sql);
         } catch(Exception $e) {
+        	        	echo "<p>$sql</p>";
+
             array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
         }
 	
@@ -244,12 +247,12 @@ function _getListValue($level,$val,$db){
             try {
                 $stmt = $db->prepare($sql);
                 $stmt->execute(array('val'=>$val));
-                list($name,$newval) = $stmt->fetch(PDO::FETCH_ASSOC);
+                list($name,$newval) = $stmt->fetch(PDO::FETCH_NUM);
             } catch(Exception $e) {
                 echo "<p>$sql</p>";
             }
             
-			if($level=="qtrelation" && !$val){
+			if($level=="relation" && !$val){
 				$result[]="[$level][0]";
 				return implode("",$result);
 			}
@@ -304,10 +307,9 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
     }
     
     //query per ottenere il tipo di dato
-    $sql = 'select udt_name from information_schema.columns where table_schema = :schema
+    $sqlType = 'select udt_name from information_schema.columns where table_schema = :schema
         and table_name = :table and column_name = :column';
-    $getColType = $db->prepare($sql);
-
+    $getColType = $db->prepare($sqlType);
 	$sql="SELECT * FROM ".DB_SCHEMA.".".$structure["table"][$currentLevel];
     if(!empty($filter)) {
         $sql .= ' WHERE '.implode(' AND ', $filter);
@@ -320,13 +322,12 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 		echo "<p>Errore nell'estrazione dei Dati del Livello $currentLevel<br>$sql</p>";
 		$Errors[]="<p>Errore nell'estrazione dei Dati del Livello $currentLevel</p>";
     }
-
+	$fldType=Array();
     $recordSet = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	for($i=0;$i<count($recordSet);$i++){	//RISULTATI DA INSERIRE NEL FILE
 		$rec=$recordSet[$i];
 		$fldIns=Array();
 		$valIns=Array();
-		$fldType=Array();
 		$j=0;
 		
 		foreach($rec as $key=>$val){		//Ciclo su tutti i campi
@@ -337,6 +338,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
                     'table'=>$structure["table"][$currentLevel],
                     'column'=>$key
                 ));
+                //print_r($getColType->fetchAll(PDO::FETCH_NUM));
                 $fldType[$key] = $getColType->fetchColumn(0);
                 $getColType->fetchAll(); //pdo si innervosisce se gli stmt rimangono mezzi aperti
             }
@@ -377,7 +379,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 			}
 
 			elseif(_isPKey($key,$pkey)){					//CHIAVI ESTERNE
-				if(($key=='qtrelation_id' && !$val) || ($key=='catalog_id' && $val==-1)){
+				if(($key=='relation_id' && !$val) || ($key=='catalog_id' && $val==-1)){
 					$values[$key]="$val";
 					$valutatedKey[$key][$val]=1;
 				}
@@ -396,6 +398,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 			}
 			else{
 				$values[$key]=($val)?("'".addslashes(trim(str_replace(chr(13),"\\n",$val)))."'::".$fldType[$key]):((!isset($val))?("null::".$fldType[$key]):(($val==='')?('\'\''):("0::".$fldType[$key])));
+				//echo "<p>".$values[$key]."</p>";
 			}
 			$j++;
 		}
