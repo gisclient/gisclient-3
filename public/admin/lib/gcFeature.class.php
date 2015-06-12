@@ -717,7 +717,7 @@ class gcFeature {
 
         $sql = "select style_id,angle,color,outlinecolor,bgcolor,size,minsize,maxsize,minwidth,width,style_def,symbol.symbol_name, pattern_def
                     from " . DB_SCHEMA . ".style left join " . DB_SCHEMA . ".symbol using (symbol_name) left join " . DB_SCHEMA . ".e_pattern using(pattern_id)
-                    where class_id=? order by style_order;";
+                    where class_id=? order by style_order DESC;";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($aClass["class_id"]));
