@@ -1,4 +1,6 @@
-SET search_path = gisclient_32, pg_catalog;
+--2015-6-12
+
+SET search_path = gisclient_3, pg_catalog;
 
 DELETE FROM e_level;
 INSERT INTO e_level VALUES (1, 'root', NULL, 1, NULL, NULL, 0, 0, NULL, NULL, 2);
@@ -14,8 +16,6 @@ INSERT INTO e_level VALUES (10, 'layergroup', 'layergroup', 4, 5, 2, 0, 1, 5, 'l
 INSERT INTO e_level VALUES (11, 'layer', 'layer', 5, 10, 3, 0, 1, 10, 'layer', 2);
 INSERT INTO e_level VALUES (12, 'class', 'class', 6, 11, 4, 0, 1, 11, 'class', 2);
 INSERT INTO e_level VALUES (14, 'style', 'style', 7, 12, 5, 1, 1, 12, 'style', 2);
-INSERT INTO e_level VALUES (16, 'qtrelation', 'qtrelation', 10, 11, 4, 1, 1, 11, 'qtrelation', 2);
-INSERT INTO e_level VALUES (17, 'qtfield', 'qtfield', 11, 11, 4, 1, 2, 11, 'qtfield', 2);
 INSERT INTO e_level VALUES (22, 'mapset_layergroup', 'mapset_layergroup', 17, 8, 2, 1, 1, 8, 'mapset_layergroup', 2);
 INSERT INTO e_level VALUES (27, 'selgroup', 'selgroup', NULL, 2, 1, 0, 8, 2, 'selgroup', 2);
 INSERT INTO e_level VALUES (33, 'project_admin', 'project_admin', 15, 2, 1, 1, 0, 2, 'project_admin', 2);
@@ -25,11 +25,13 @@ INSERT INTO e_level VALUES (32, 'user_project', 'project', 8, 2, 1, 1, 0, 2, 'us
 INSERT INTO e_level VALUES (47, 'layer_groups', 'layer_groups', NULL, 11, 4, 1, 0, 11, 'layer_groups', 2);
 INSERT INTO e_level VALUES (48, 'project_languages', 'project', NULL, 2, 1, 1, 1, 2, 'project_languages', 2);
 INSERT INTO e_level VALUES (49, 'authfilter', 'authfilter', 8, 1, 0, 1, 0, 1, 'authfilter', 2);
-INSERT INTO e_level VALUES (50, 'layer_authfilter', 'layer', 15, 11, 4, 1, 1, 11, 'layer_authfilter', 2);
 INSERT INTO e_level VALUES (51, 'group_authfilter', 'groups', 1, 3, 1, 1, 0, 3, 'group_authfilter', 2);
-INSERT INTO e_level VALUES (52, 'qtfield_groups', 'qtfield', 1, 17, 5, 1, 0, 17, 'qtfield_groups', 2);
 INSERT INTO e_level VALUES (19, 'qtlink', 'layer', 12, 11, 4, 1, 0, 11, 'qtlink', 2);
 INSERT INTO e_level VALUES (28, 'selgroup_layer', 'selgroup_layer', NULL, 27, 2, 1, 1, 27, 'selgroup_layer', 2);
+INSERT INTO e_level VALUES (16, 'relation', 'relation', 10, 11, 4, 1, 1, 11, 'relation', 2);
+INSERT INTO e_level VALUES (17, 'field', 'field', 11, 11, 4, 1, 2, 11, 'field', 2);
+INSERT INTO e_level VALUES (52, 'field_groups', 'field', 1, 17, 5, 1, 0, 17, 'field_groups', 2);
+INSERT INTO e_level VALUES (50, 'layer_authfilter', 'layer', 15, 11, 4, 1, 0, 11, 'layer_authfilter', 2);
 
 INSERT INTO e_form VALUES (213, 'selgroup_layer', 'selgroup_layer', 4, 28, NULL, 'selgroup_layer', 27, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (214, 'selgroup_layer', 'selgroup_layer', 5, 28, NULL, 'selgroup_layer', 27, NULL, NULL, NULL);
@@ -77,7 +79,7 @@ INSERT INTO e_form VALUES (133, 'project_admin', 'admin_project', 2, 33, NULL, N
 INSERT INTO e_form VALUES (134, 'project_admin', 'admin_project', 5, 33, NULL, 'admin_project', 6, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (151, 'user_groups', 'user_groups', 4, 46, NULL, 'user_groups', 4, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (152, 'user_groups', 'user_groups', 5, 46, NULL, 'user_groups', 4, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (75, 'qt_relation', 'qt_relation_addnew', 0, 16, NULL, NULL, 13, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (75, 'relation', 'relation_addnew', 0, 16, NULL, NULL, 13, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (30, 'layergroup', 'layergroup', 0, 10, NULL, 'layergroup', 5, NULL, NULL, 'layergroup_order,layergroup_title');
 INSERT INTO e_form VALUES (31, 'layergroup', 'layergroup', 1, 10, NULL, 'layergroup', 5, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (32, 'layergroup', 'layergroup', 1, 10, NULL, 'layergroup', 5, NULL, NULL, NULL);
@@ -85,14 +87,6 @@ INSERT INTO e_form VALUES (33, 'layergroup', 'layergroup', 2, 10, NULL, 'layergr
 INSERT INTO e_form VALUES (84, 'map_layer', 'mapset_layergroup', 4, 22, NULL, 'mapset_layergroup', 8, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (85, 'map_layer', 'mapset_layergroup', 5, 22, NULL, 'mapset_layergroup', 8, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (86, 'map_layer', 'mapset_layergroup', 0, 22, NULL, 'mapset_layergroup', 8, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (58, 'qt_relation', 'qtrelation', 0, 16, NULL, NULL, 11, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (59, 'qt_relation', 'qtrelation', 1, 16, NULL, NULL, 11, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (60, 'qt_relation', 'qtrelation', 1, 16, NULL, NULL, 11, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (61, 'qt_relation', 'qtrelation', 2, 16, NULL, NULL, 11, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (62, 'qt_fields', 'qtfield', 0, 17, NULL, NULL, 11, NULL, NULL, 'qtrelationtype_id,qtrelation_name,field_header,qtfield_name');
-INSERT INTO e_form VALUES (63, 'qt_fields', 'qtfield', 1, 17, NULL, NULL, 11, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (64, 'qt_fields', 'qtfield', 1, 17, NULL, NULL, 11, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (65, 'qt_fields', 'qtfield', 2, 17, NULL, NULL, 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (170, 'layer_groups', 'layer_groups', 4, 47, NULL, 'layer_groups', 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (171, 'layer_groups', 'layer_groups', 5, 47, NULL, 'layer_groups', 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (202, 'project_languages', 'project_languages', 0, 48, NULL, NULL, 2, NULL, NULL, NULL);
@@ -103,21 +97,28 @@ INSERT INTO e_form VALUES (206, 'layer_authfilter', 'layer_authfilter', 4, 50, N
 INSERT INTO e_form VALUES (207, 'layer_authfilter', 'layer_authfilter', 5, 50, NULL, 'layer_authfilter', 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (208, 'group_authfilter', 'group_authfilter', 0, 51, NULL, NULL, 3, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (209, 'group_authfilter', 'group_authfilter', 1, 51, NULL, NULL, 3, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (210, 'qtfield_groups', 'qtfield_groups', 4, 52, NULL, 'qtfield_groups', 17, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (211, 'qtfield_groups', 'qtfield_groups', 5, 52, NULL, 'qtfield_groups', 17, NULL, NULL, NULL);
-INSERT INTO e_form VALUES (212, 'qtfield_groups', 'qtfield_groups', 0, 52, NULL, 'qtfield_groups', 17, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (66, 'qtlink', 'qtlink', 2, 19, NULL, 'qtlink', 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (67, 'qtlink', 'qtlink', 0, 19, NULL, NULL, 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (68, 'qtlink', 'qtlink', 1, 19, NULL, 'qtlink', 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (69, 'qtlink', 'qtlink', 110, 19, NULL, NULL, 11, NULL, NULL, NULL);
 INSERT INTO e_form VALUES (20, 'group', 'group', 0, 3, NULL, 'group', 2, NULL, 'group', NULL);
 INSERT INTO e_form VALUES (18, 'user', 'user', 50, 4, NULL, 'user', 2, NULL, 'user', NULL);
+INSERT INTO e_form VALUES (58, 'relation', 'relation', 0, 16, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (59, 'relation', 'relation', 1, 16, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (60, 'relation', 'relation', 1, 16, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (61, 'relation', 'relation', 2, 16, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (63, 'fields', 'field', 1, 17, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (64, 'fields', 'field', 1, 17, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (65, 'fields', 'field', 2, 17, NULL, NULL, 11, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (62, 'fields', 'field', 0, 17, NULL, NULL, 11, NULL, NULL, 'relationtype_id,relation_name,field_header,field_name');
+INSERT INTO e_form VALUES (210, 'field_groups', 'field_groups', 4, 52, NULL, 'field_groups', 17, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (211, 'field_groups', 'field_groups', 5, 52, NULL, 'field_groups', 17, NULL, NULL, NULL);
+INSERT INTO e_form VALUES (212, 'field_groups', 'field_groups', 0, 52, NULL, 'field_groups', 17, NULL, NULL, NULL);
 
 INSERT INTO form_level VALUES (520, 27, 3, 213, 1, 1);
 INSERT INTO form_level VALUES (521, 28, 1, 214, 1, 1);
 INSERT INTO form_level VALUES (1, 1, 3, 2, 1, 1);
 INSERT INTO form_level VALUES (2, 2, 0, 3, 1, 1);
-INSERT INTO form_level VALUES (4, 2, 3, 8, 5, 1);
 INSERT INTO form_level VALUES (5, 2, 3, 5, 8, 1);
 INSERT INTO form_level VALUES (7, 2, 1, 7, 1, 1);
 INSERT INTO form_level VALUES (8, 2, 2, 6, 1, 1);
@@ -146,7 +147,6 @@ INSERT INTO form_level VALUES (37, 12, 3, 42, 3, 1);
 INSERT INTO form_level VALUES (38, 14, 0, 43, 1, 1);
 INSERT INTO form_level VALUES (39, 14, 1, 44, 1, 1);
 INSERT INTO form_level VALUES (40, 14, 2, 45, 1, 1);
-INSERT INTO form_level VALUES (45, 2, 3, 50, 4, 1);
 INSERT INTO form_level VALUES (46, 7, 0, 51, 1, 1);
 INSERT INTO form_level VALUES (47, 7, 1, 52, 1, 1);
 INSERT INTO form_level VALUES (48, 7, 2, 53, 1, 1);
@@ -194,10 +194,7 @@ INSERT INTO form_level VALUES (507, 2, 3, 202, 1, 1);
 INSERT INTO form_level VALUES (508, 49, 0, 205, 1, 1);
 INSERT INTO form_level VALUES (509, 49, 1, 205, 1, 1);
 INSERT INTO form_level VALUES (510, 49, 2, 205, 1, 1);
-INSERT INTO form_level VALUES (511, 1, 3, 204, 4, 1);
-INSERT INTO form_level VALUES (512, 11, 3, 206, 8, 1);
 INSERT INTO form_level VALUES (513, 50, 1, 207, 1, 1);
-INSERT INTO form_level VALUES (514, 3, 3, 208, 3, 1);
 INSERT INTO form_level VALUES (515, 51, 0, 209, 1, 1);
 INSERT INTO form_level VALUES (516, 51, 1, 209, 1, 1);
 INSERT INTO form_level VALUES (517, 51, 2, 209, 1, 1);
@@ -209,3 +206,8 @@ INSERT INTO form_level VALUES (61, 19, 1, 68, 1, 1);
 INSERT INTO form_level VALUES (62, 19, 1, 69, 2, 1);
 INSERT INTO form_level VALUES (175, 4, 3, 151, 2, 1);
 INSERT INTO form_level VALUES (163, 27, 3, 151, 1, 0);
+INSERT INTO form_level VALUES (511, 1, 3, 204, 4, 0);
+INSERT INTO form_level VALUES (512, 11, 3, 206, 8, 0);
+INSERT INTO form_level VALUES (514, 3, 3, 208, 3, 0);
+INSERT INTO form_level VALUES (4, 2, 3, 8, 4, 1);
+INSERT INTO form_level VALUES (45, 2, 3, 50, 5, 1);
