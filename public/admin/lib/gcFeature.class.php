@@ -48,6 +48,13 @@ class gcFeature {
     var $msVersion;
     var $forcePrivate = false;
     private $i18n;
+    
+    /**
+     * Container of feature information
+     * 
+     * @var array
+     */
+    private $aFeature;
 
     function __destruct() {
         unset($this->aFeature);
@@ -135,7 +142,7 @@ class gcFeature {
 
         $res = $stmt->fetchAll();
         if ($stmt->rowCount() == 0) {
-            $this->aFeature = false;
+            $this->aFeature = null;
             return;
         }
         $aFeature = $res[0];
@@ -159,6 +166,24 @@ class gcFeature {
         $aFeature["tileindex"] = false;
 
         print_debug($aFeature, null, 'template');
+        $this->aFeature = $aFeature;
+    }
+    
+    /**
+     * Return data of the current feature
+     * 
+     * @return array
+     */
+    public function getFeatureData() {
+        return $this->aFeature;
+    }
+    
+    /**
+     * Set feature data
+     * 
+     * @param array $aFeature
+     */
+    public function setFeatureData(array $aFeature) {
         $this->aFeature = $aFeature;
     }
 
@@ -749,7 +774,15 @@ class gcFeature {
         return $styleText;
     }
 
-    // SERVE A MARCO??????
+    /**
+     * Funzione utilizzato ancora in rpc.php
+     * 
+     * SERVE A MARCO??????
+     * 
+     * @param type $layerId
+     * @return type
+     */
+    
     public function getFeatureField($layerId = null) {
         $result = Array();
         if ($layerId)
@@ -781,6 +814,3 @@ class gcFeature {
     }
 
 }
-
-//end class
-?>

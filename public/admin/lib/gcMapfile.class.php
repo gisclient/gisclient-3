@@ -136,7 +136,7 @@ class gcMapfile{
 		//where ".$filter." order by theme_order desc, layergroup_order desc, layer_order desc;";	SERVE PER SCRIVERE I LAYER NEL MAPFILE UTILIZZANDO L'ORDINE RELATIVO TEMA-LAYERGROUP-LAYER. Sarebbe da sviluppare la funzione che permette all'utente di sceglierlo a livello di progetto
 
 		print_debug($sql,null,'writemap');
-
+                
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute($sqlParams);
 		$res = $stmt->fetchAll();
@@ -185,6 +185,14 @@ class gcMapfile{
 			$mapMaxScale[$mapName] = floatval($aLayer["mapset_maxscale"])?min(floatval($aLayer["mapset_maxscale"]), $projectMaxScale):$projectMaxScale;
 
 			$oFeature->initFeature($aLayer["layer_id"]);
+                        
+                        // use mapset extent if layer extent is not set
+                        // the layer extent is important to make wms layers work in some desktop gis clients
+                        $oFeatureData = $oFeature->getFeatureData();
+                        if (empty($oFeatureData['data_extent'])) {
+                            $oFeatureData['data_extent'] = $aLayer["mapset_extent"];
+                            $oFeature->setFeatureData($oFeatureData);
+                        }
 
 			// Force layer to be private if the mapset is private
             if (!empty($aLayer["mapset_private"]) && $aLayer["mapset_private"]) {
