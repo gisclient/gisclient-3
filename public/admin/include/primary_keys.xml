@@ -36,6 +36,12 @@
 		<pkey>link_id</pkey>
 		<parent>project</parent>
 	</link>
+	<layer_link>
+		<table>layer_link</table>
+		<pkey>layer_id</pkey>
+		<pkey>link_id</pkey>
+		<parent>layer</parent>
+	</layer_link>
 	<mapset_layergroup>
 		<table>mapset_layergroup</table>
 		<pkey>layergroup_id</pkey>

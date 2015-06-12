@@ -30,10 +30,10 @@ dato[] = ";relation_id;1%;edit"
 dato[] = ";relation_id;1%;delete"
 
 [title]
-edit = "Dati del Campo del Modello di Ricerca"
-view = "Dati del Campo del Modello di Ricerca"
-new = "Nuova Relazione del Modello di Ricerca"
-list = "Relazioni del Modello di Ricerca"
+edit = "Tabelle dati relazionate"
+view = "Tabelle dati relazionate"
+new = "Nuova tabelle dati relazionata"
+list = "Tabelle dati relazionate"
 
 [menu]
 new = "Nuovo Relazione"
