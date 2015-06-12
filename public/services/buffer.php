@@ -1,4 +1,5 @@
 <?php
+require_once "../../config/config.php";
 require_once ROOT_PATH . 'lib/GCService.php';
 
 $gcService = GCService::instance();
@@ -7,8 +8,6 @@ $gcService->startSession();
 if(empty($_REQUEST['features'])) die(json_encode(array('result'=>'error', 'error'=>'missing features')));
 if(empty($_REQUEST['projection'])) die(json_encode(array('result'=>'error', 'error'=>'missing projection')));
 if(empty($_REQUEST['buffer'])) die(json_encode(array('result'=>'error', 'error'=>'missing buffer')));
-
-require_once "../../config/config.php";
 
 list($auth, $srid) = explode(':', $_REQUEST['projection']);
 if(empty($auth) || empty($srid) || !is_numeric($srid)) die(json_encode(array('result'=>'error', 'error'=>'invalid projection')));
