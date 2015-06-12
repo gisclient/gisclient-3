@@ -610,6 +610,9 @@ INSERT INTO form_level (id, level, mode, form, order_fld, visible) VALUES (511, 
 INSERT INTO form_level (id, level, mode, form, order_fld, visible) VALUES (512, 11, 3, 206, 8, 0);
 INSERT INTO form_level (id, level, mode, form, order_fld, visible) VALUES (514, 3, 3, 208, 3, 0);
 
+
+--2015-6-11 fix bux
+
 CREATE OR REPLACE FUNCTION delete_relation()
   RETURNS trigger AS
 $BODY$
@@ -620,3 +623,6 @@ END
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
+
+
+--2015-6-12 delete autfilter dependency
