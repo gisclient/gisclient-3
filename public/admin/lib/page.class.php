@@ -572,7 +572,7 @@
 					$tb->tag=$tab["level"];
 					$tb->get_titolo();
 					$tb->mode="edit";
-					if($tab["level"]=="qtlink") {
+					if($tab["level"]=="layer_link") {
 						$filter=$tab["parent_name"]."_id = ".$this->db->quote($this->parametri[$tab["parent_name"]]);
 						$tb->tag=Array("pkey"=>"link","pkey_value"=>0);
 					}
