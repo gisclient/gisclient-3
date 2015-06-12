@@ -1,0 +1,12 @@
+{
+    "name": "gisclient/author",
+    "type": "application",
+    "description": "GisClient Author",
+    "keywords": ["application", "mapserver"],
+    "homepage": "http://gisclient.net",
+    "license": "GPL-3.0",
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "minimum-stability": "dev"
+}
