@@ -63,7 +63,7 @@ if($objRequest->getvaluebyname('layer')){
 
     $layers = array();
     if($aLayersIndexes=$oMap->getLayersIndexByGroup($objRequest->getvaluebyname('layer'))){
-		for($j=0;$j<count($aLayersIndexes);$j++) array_push($layers, $oMap->getLayer($aLayersIndexes[$j]));
+		for($j=0;$j<count($aLayersIndexes);$j++) array_unshift($layers, $oMap->getLayer($aLayersIndexes[$j]));
     } else {
         array_push($layers, $oMap->getLayerByName($objRequest->getvaluebyname('layer')));
     }
