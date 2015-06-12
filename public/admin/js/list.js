@@ -150,7 +150,7 @@ function openList(txt_field, data) {
     }
 
     if (!$.isArray(data)) {
-        if (dat.length > 0)
+        if (data.length > 0)
             data = data.split('@');
         else
             data = new Array();
