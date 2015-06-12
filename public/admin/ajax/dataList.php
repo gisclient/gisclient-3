@@ -135,8 +135,11 @@ switch($catalogData["connection_type"]){
 				$result['data'][$n] = array('pkey'=>$row['column_name']);
 				$result['data_objects'][$n] = array(
 					'data_unique' => $row['column_name'],
-					'data_extent' => implode(' ', $extent)
 				);
+                                // add data_extent only when requested
+                                if (isset($_REQUEST['data_extent'])) {
+                                    $result['data_objects'][$n]['data_extent'] = implode(' ', $extent);
+                                }
 				$n++;
 			}
 		}
