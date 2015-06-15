@@ -813,9 +813,9 @@ $BODY$
 
 
 -- inverte l'ordine dei layer e degli stili
-update layer set layer_order=sqrt(power(layer_order-1000,2)) ;
+update layer set layer_order=@(layer_order-1000,2) ;
 
-update style set style_order=sqrt(power(style_order-10,2)) ;
+update style set style_order=@(style_order-10,2) ;
 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
