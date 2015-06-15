@@ -1,8 +1,98 @@
---2015-6-12
-
 SET search_path = gisclient_3, pg_catalog;
 
-DELETE FROM e_level;
+DROP TABLE e_level CASCADE;
+DROP TABLE e_form CASCADE;
+DROP TABLE form_level CASCADE;
+
+CREATE TABLE e_level
+(
+  id integer NOT NULL,
+  name character varying,
+  parent_name character varying,
+  "order" smallint,
+  parent_id smallint,
+  depth smallint,
+  leaf smallint,
+  export integer DEFAULT 1,
+  struct_parent_id integer,
+  "table" character varying,
+  admintype_id integer DEFAULT 2,
+  CONSTRAINT e_livelli_pkey PRIMARY KEY (id),
+  CONSTRAINT e_level_name_key UNIQUE (name)
+);
+CREATE TABLE e_form
+(
+  id integer NOT NULL,
+  name character varying,
+  config_file character varying,
+  tab_type integer,
+  level_destination integer,
+  form_destination character varying,
+  save_data character varying,
+  parent_level integer,
+  js text,
+  table_name character varying,
+  order_by character varying,
+  CONSTRAINT e_form_pkey PRIMARY KEY (id),
+  CONSTRAINT e_form_level_destination_fkey FOREIGN KEY (level_destination)
+      REFERENCES gisclient_3.e_level (id) MATCH FULL
+      ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE form_level
+(
+  id integer NOT NULL,
+  level integer,
+  mode integer,
+  form integer,
+  order_fld integer,
+  visible smallint DEFAULT 1,
+  CONSTRAINT livelli_form_pkey PRIMARY KEY (id),
+  CONSTRAINT form_level_form_fkey FOREIGN KEY (form)
+      REFERENCES gisclient_3.e_form (id) MATCH FULL
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT form_level_level_fkey FOREIGN KEY (level)
+      REFERENCES gisclient_3.e_level (id) MATCH FULL
+      ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE OR REPLACE VIEW elenco_form AS 
+ SELECT form_level.id AS "ID", form_level.mode, 
+        CASE
+            WHEN form_level.mode = 2 THEN 'New'::text
+            WHEN form_level.mode = 3 THEN 'Elenco'::text
+            WHEN form_level.mode = 0 THEN 'View'::text
+            WHEN form_level.mode = 1 THEN 'Edit'::text
+            ELSE 'Non definito'::text
+        END AS "Modo Visualizzazione Pagina", e_form.id AS "Form ID", e_form.name AS "Nome Form", e_form.tab_type AS "Tipo Tabella", x.name AS "Livello Destinazione", e_level.name AS "Livello Visualizzazione", 
+        CASE
+            WHEN COALESCE(e_level.depth::integer, (-1)) = (-1) THEN 0
+            ELSE e_level.depth + 1
+        END AS "Profondita Albero", form_level.order_fld AS "Ordine Visualizzazione", 
+        CASE
+            WHEN form_level.visible = 1 THEN 'SI'::text
+            ELSE 'NO'::text
+        END AS "Visibile"
+   FROM gisclient_3.form_level
+   JOIN gisclient_3.e_level ON form_level.level = e_level.id
+   JOIN gisclient_3.e_form ON e_form.id = form_level.form
+   JOIN gisclient_3.e_level x ON x.id = e_form.level_destination
+  ORDER BY 
+CASE
+    WHEN COALESCE(e_level.depth::integer, (-1)) = (-1) THEN 0
+    ELSE e_level.depth + 1
+END, form_level.level, 
+CASE
+    WHEN form_level.mode = 2 THEN 'Nuovo'::text
+    WHEN form_level.mode = 0 OR form_level.mode = 3 THEN 'Elenco'::text
+    WHEN form_level.mode = 1 THEN 'View'::text
+    ELSE 'Edit'::text
+END, form_level.order_fld;
+
+
+
+
+
 INSERT INTO e_level VALUES (1, 'root', NULL, 1, NULL, NULL, 0, 0, NULL, NULL, 2);
 INSERT INTO e_level VALUES (2, 'project', 'project', 2, 1, 0, 0, 1, 1, 'project', 2);
 INSERT INTO e_level VALUES (3, 'groups', 'groups', 7, 1, 0, 0, 0, 1, 'groups', 1);
