@@ -1,11 +1,11 @@
 --###############################################
 --pg_dump -f gc32.sql -n gisclient_32 mydb
---cat gc32.sql | sed 's/gisclient_32/gisclient_3/' > gc33.sql
---psql -f gc33.sql mydb
+--cat gc32.sql | sed 's/gisclient_32/gisclient_34/' > gc34.sql
+--psql -f gc34.sql mydb
 --psql -f aggiornamento_merge.sql mydb
 --###############################################
 
-SET search_path = gisclient_3, pg_catalog;
+SET search_path = gisclient_34, pg_catalog;
 
 -- RENAME DI qt* 
 
@@ -376,6 +376,95 @@ DROP TABLE symbol_ttf CASCADE;
 DROP TABLE IF EXISTS tb_import CASCADE;
 DROP TABLE IF EXISTS tb_import_table CASCADE;
 DROP TABLE IF EXISTS tb_logs CASCADE;
+
+-- modifica delle view
+DROP VIEW vista_qtfield;
+
+CREATE OR REPLACE VIEW vista_field AS 
+ SELECT qt_field.field_id, qt_field.qt_id, qt_field.fieldtype_id, x.qtrelation_id, qt_field.field_name, qt_field.field_header, qt_field.field_order, COALESCE(qt_field.column_width, 0) AS column_width, x.name AS qtrelation_name, x.qtrelationtype_id, x.qtrelationtype_name
+   FROM qt_field
+   JOIN e_fieldtype USING (fieldtype_id)
+   JOIN ( SELECT y.qtrelationtype_id, y.qtrelation_id, y.name, z.qtrelationtype_name
+      FROM (         SELECT 0 AS qtrelation_id, 'Data Layer'::character varying AS name, 0 AS qtrelationtype_id
+           UNION ALL 
+                    SELECT qt_relation.qtrelation_id, COALESCE(qt_relation.qtrelation_name, 'Nessuna Relazione'::character varying) AS name, qt_relation.qtrelationtype_id
+                      FROM qt_relation) y
+   JOIN (         SELECT 0 AS qtrelationtype_id, ''::character varying AS qtrelationtype_name
+           UNION ALL 
+                    SELECT e_relationtype.relationtype_id, e_relationtype.relationtype_name
+                      FROM e_relationtype) z USING (qtrelationtype_id)) x USING (qtrelation_id)
+  ORDER BY qt_field.field_id, x.qtrelation_id, x.qtrelationtype_id;
+
+ALTER TABLE vista_field
+  OWNER TO gisclient;
+
+DROP VIEW vista_qtrelation;
+
+CREATE OR REPLACE VIEW vista_relation AS 
+ SELECT r.relation_id AS relation_id, r.catalog_id, r.relation_name AS relation_name, r.relationtype_id AS relationtype_id, r.data_field_1, r.data_field_2, r.data_field_3, r.table_name, r.table_field_1, r.table_field_2, r.table_field_3, r.language_id, r.layer_id, 
+        CASE
+            WHEN c.connection_type <> 6 THEN '(i) Controllo non possibile: connessione non PostGIS'::text
+            WHEN "substring"(c.catalog_path::text, 0, "position"(c.catalog_path::text, '/'::text)) <> current_database()::text THEN '(i) Controllo non possibile: DB diverso'::text
+            WHEN NOT (l.layer_name::text IN ( SELECT tables.table_name
+               FROM information_schema.tables
+              WHERE tables.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)))) THEN '(!) La tabella DB del layer non esiste'::text
+            WHEN NOT (r.table_name::text IN ( SELECT tables.table_name
+               FROM information_schema.tables
+              WHERE tables.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)))) THEN '(!) tabella DB di JOIN non esiste'::text
+            WHEN r.data_field_1 IS NULL OR r.table_field_1 IS NULL THEN '(!) Uno dei campi della JOIN 1 è vuoto'::text
+            WHEN NOT (r.data_field_1::text IN ( SELECT columns.column_name
+               FROM information_schema.columns
+              WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer non esiste'::text
+            WHEN NOT (r.table_field_1::text IN ( SELECT columns.column_name
+               FROM information_schema.columns
+              WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave della relazione non esiste'::text
+            WHEN r.data_field_2 IS NULL AND r.table_field_2 IS NULL THEN 'OK'::text
+            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Uno dei campi della JOIN 2 è vuoto'::text
+            WHEN NOT (r.data_field_2::text IN ( SELECT columns.column_name
+               FROM information_schema.columns
+              WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer della JOIN 2 non esiste'::text
+            WHEN NOT (r.table_field_2::text IN ( SELECT columns.column_name
+               FROM information_schema.columns
+              WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave relazione della JOIN 2 non esiste'::text
+            WHEN r.data_field_3 IS NULL AND r.table_field_3 IS NULL THEN 'OK'::text
+            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Uno dei campi della JOIN 3 è vuoto'::text
+            WHEN NOT (r.data_field_3::text IN ( SELECT columns.column_name
+               FROM information_schema.columns
+              WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer della JOIN 3 non esiste'::text
+            WHEN NOT (r.table_field_3::text IN ( SELECT columns.column_name
+               FROM information_schema.columns
+              WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave relazione della JOIN 3 non esiste'::text
+            ELSE 'OK'::text
+        END AS relation_control
+   FROM relation r
+   JOIN catalog c USING (catalog_id)
+   JOIN layer l USING (layer_id)
+   JOIN e_relationtype rt USING (relationtype_id);
+
+ALTER TABLE vista_relation
+  OWNER TO gisclient;
+
+DROP VIEW vista_link;
+
+CREATE OR REPLACE VIEW vista_link AS 
+ SELECT l.link_id, l.project_name, l.link_name, l.link_def, l.link_order, l.winw, l.winh, 
+        CASE
+            WHEN l.link_def::text !~~ 'http%://%@%@'::text THEN '(!) Definizione del link non corretta. La sintassi deve essere: http://url@campo@'::text
+            WHEN NOT (l.link_id IN ( SELECT link.link_id
+               FROM layer_link link)) THEN 'OK. Non utilizzato'::text
+            WHEN NOT (replace("substring"(l.link_def::text, '%#"@%@#"%'::text, '#'::text), '@'::text, ''::text) IN ( SELECT qtfield.field_name AS qtfield_name
+               FROM field qtfield
+              WHERE (qtfield.layer_id IN ( SELECT link.layer_id
+                       FROM layer_link link
+                      WHERE link.link_id = l.link_id)))) THEN '(!) Campo non presente nel layer'::text
+            ELSE 'OK. In uso'::text
+        END AS link_control
+   FROM link l;
+
+ALTER TABLE vista_link
+  OWNER TO gisclient;
+
+
 
 -- RICREA E-lEVEL E FORM
 
