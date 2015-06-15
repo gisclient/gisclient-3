@@ -1,4 +1,4 @@
-SET search_path = gisclient_3, pg_catalog;
+set search_path=gisclient_3,pg_catalog;
 
 DROP TABLE e_level CASCADE;
 DROP TABLE e_form CASCADE;
@@ -35,7 +35,7 @@ CREATE TABLE e_form
   order_by character varying,
   CONSTRAINT e_form_pkey PRIMARY KEY (id),
   CONSTRAINT e_form_level_destination_fkey FOREIGN KEY (level_destination)
-      REFERENCES gisclient_3.e_level (id) MATCH FULL
+      REFERENCES e_level (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -49,10 +49,10 @@ CREATE TABLE form_level
   visible smallint DEFAULT 1,
   CONSTRAINT livelli_form_pkey PRIMARY KEY (id),
   CONSTRAINT form_level_form_fkey FOREIGN KEY (form)
-      REFERENCES gisclient_3.e_form (id) MATCH FULL
+      REFERENCES e_form (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT form_level_level_fkey FOREIGN KEY (level)
-      REFERENCES gisclient_3.e_level (id) MATCH FULL
+      REFERENCES e_level (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -73,10 +73,10 @@ CREATE OR REPLACE VIEW elenco_form AS
             WHEN form_level.visible = 1 THEN 'SI'::text
             ELSE 'NO'::text
         END AS "Visibile"
-   FROM gisclient_3.form_level
-   JOIN gisclient_3.e_level ON form_level.level = e_level.id
-   JOIN gisclient_3.e_form ON e_form.id = form_level.form
-   JOIN gisclient_3.e_level x ON x.id = e_form.level_destination
+   FROM form_level
+   JOIN e_level ON form_level.level = e_level.id
+   JOIN e_form ON e_form.id = form_level.form
+   JOIN e_level x ON x.id = e_form.level_destination
   ORDER BY 
 CASE
     WHEN COALESCE(e_level.depth::integer, (-1)) = (-1) THEN 0
