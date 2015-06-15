@@ -4,6 +4,7 @@ function GCList(field) {
     this.options = {};
     this.urls = {
         'ajax/dataList.php': ['data'],
+        'ajax/fileList.php': ['filename'],
         'ajax/lookupList.php': ['lookup_table'],
         'ajax/fieldList.php': ['class_text', 'label_angle', 'label_color', 'label_outlinecolor', 'label_size', 'label_font', 'label_priority', 'angle', 'color', 'outlinecolor', 'size', 'labelitem', 'labelsizeitem', 'classitem', 'classtitle', 'field_name', 'data_field_1', 'data_field_2', 'data_field_3', 'table_field_1', 'table_field_2', 'table_field_3', 'filter_field_name'],
         'ajax/dbList.php': ['field_format', 'table_name', 'symbol_ttf_name', 'symbol_name', 'symbol_user_pixmap'],
@@ -15,6 +16,7 @@ function GCList(field) {
     this.currentStep = null;
     this.totSteps = null;
     
+    console.log(this);
     this.getUrl = function() {
         var self = this;
         var requestUrl = null;

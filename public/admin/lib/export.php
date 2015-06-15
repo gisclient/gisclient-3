@@ -147,9 +147,8 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		//}
 		fwrite($handle,$sql."\n");
 		$out=Array();
-	
+		$sql = str_replace("\'","\\''",$sql);
         try {
-        	$sql = "BEGIN;".str_replace("\'","\\''",$sql)."END;";
             $db->exec($sql);
         } catch(Exception $e) {
         	        	echo "<p>$sql</p>";
