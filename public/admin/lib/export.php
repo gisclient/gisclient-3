@@ -132,7 +132,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 			}
 		}
 		elseif(preg_match("|@NEWKEY_V\[(.+)\]\[(.+)\]@|Ui",$sql,$out)) {
-			if(in_array($out[1],Array("username","group")) ){
+			if(in_array($out[1],Array("username","group","mapset")) ){
 				$newid[$out[1]][$out[2]]=$out[2];
 			}
 			else{
@@ -149,6 +149,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		$out=Array();
 		$sql = str_replace("\'","\\''",$sql);
         try {
+        	echo $sql;
             $db->exec($sql);
         } catch(Exception $e) {
             array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
