@@ -145,14 +145,12 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		//	echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
 			$sql=str_replace($out[0],$newid[$out[1]][$out[2]],$sql);	
 		//}
-		fwrite($handle,$sql."\n");
+		fwrite($handle,str_replace("\'","\\''",$sql)."\n");
 		$out=Array();
 		$sql = str_replace("\'","\\''",$sql);
         try {
             $db->exec($sql);
         } catch(Exception $e) {
-        	        	echo "<p>$sql</p>";
-
             array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
         }
 	
