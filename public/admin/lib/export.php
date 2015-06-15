@@ -149,7 +149,6 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		$out=Array();
 		$sql = str_replace("\'","\\''",$sql);
         try {
-        	echo $sql;
             $db->exec($sql);
         } catch(Exception $e) {
             array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
