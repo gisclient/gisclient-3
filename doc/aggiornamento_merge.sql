@@ -94,7 +94,7 @@ CREATE OR REPLACE FUNCTION delete_relation()
   RETURNS trigger AS
 $BODY$
 BEGIN
-	delete from field where relation_id=old.relation_id;
+	delete from gisclient_34.field where relation_id=old.relation_id;
 	return old;
 END
 $BODY$
@@ -801,7 +801,7 @@ CREATE OR REPLACE FUNCTION delete_relation()
   RETURNS trigger AS
 $BODY$
 BEGIN
-	delete from field where relation_id=old.relation_id;
+	delete from gisclient_34.field where relation_id=old.relation_id;
 	return old;
 END
 $BODY$
@@ -846,6 +846,7 @@ CREATE OR REPLACE VIEW vista_mapset AS
 
 ALTER TABLE vista_mapset
   OWNER TO gisclient;
+ 
 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
