@@ -15,8 +15,6 @@ function GCList(field) {
     this.selectedData = {};
     this.currentStep = null;
     this.totSteps = null;
-    
-    console.log(this);
     this.getUrl = function() {
         var self = this;
         var requestUrl = null;
