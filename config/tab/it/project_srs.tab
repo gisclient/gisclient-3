@@ -1,8 +1,8 @@
 [standard]
 table = "project_srs"
 pkey = "project_name;srid"
-dato[] = "SRID;srid;6;intero"
-dato[] = "Parametri;projparam;50;text"
+dato[] = "SRID (Codice EPSG) *<br><font size=1>Consultare <a href="http://spatialreference.org/">spatialreference.org</a></font>;srid;6;intero"
+dato[] = "Parametri di correzione;projparam;50;text"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 
 [list]
@@ -16,9 +16,9 @@ dato[] = ";srid;1%#project_name;edit"
 dato[] = ";srid;1%#project_name;delete"
 
 [title]
-edit = "Modifica sistema di riferimento"
+edit = "Modifica sistema di riferimento - I campi marcati con * sono obbligatori"
 view = "Visualizza sistema di riferimento"
-new = "Inserisci sistema di riferimento"
+new = "Inserisci sistema di riferimento - I campi marcati con * sono obbligatori"
 list = "Sistemi di riferimento"
 
 [menu]

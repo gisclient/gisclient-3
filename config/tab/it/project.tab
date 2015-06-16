@@ -31,9 +31,9 @@ dato[] = ";project_name;1%;edit"
 dato[] = ";project_name;1%;delete"
 
 [title]
-edit = "Modifica progetto"
+edit = "Modifica progetto - I campi marcati con * sono obbligatori"
 view = "Visualizza progetto"
-new = "Inserisci progetto"
+new = "Inserisci progetto - I campi marcati con * sono obbligatori"
 list = "Elenco progetti"
 
 [menu]

@@ -1,9 +1,9 @@
 [standard]
 table = "link"
 pkey = "link_id"
-dato[] = "Nome;link_name;40;text"
-dato[] = "Link;link_def;60x3;textarea"
-dato[] = "Dimensioni finestra:<br>Larghezza;winw;4;intero|Altezza;winh;4;intero"
+dato[] = "Nome *;link_name;40;text"
+dato[] = "Link *;link_def;60x3;textarea"
+dato[] = "Dimensioni finestra:<br><font size=1>Larghezza(pixel)</font>;winw;4;intero|<font size=1>Altezza(pixel)</font>;winh;4;intero"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 [list]
 table = "link"
@@ -17,9 +17,9 @@ dato[] = ";link_id;1%;edit"
 dato[] = ";link_id;1%;delete"
 
 [title]
-edit = "Link"
-view = "Link"
-new = "Nuovo Link"
+edit = "Modifica Link - I campi marcati con * sono obbligatori"
+view = "Visualizza Link"
+new = "Inserisci Link - I campi marcati con * sono obbligatori"
 list = "Link"
 
 [menu]
