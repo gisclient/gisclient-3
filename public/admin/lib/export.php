@@ -132,8 +132,12 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 			}
 		}
 		elseif(preg_match("|@NEWKEY_V\[(.+)\]\[(.+)\]@|Ui",$sql,$out)) {
-			if(in_array($out[1],Array("username","group","mapset")) ){
+			if(in_array($out[1],Array("username","group"))){
 				$newid[$out[1]][$out[2]]=$out[2];
+			}
+			elseif($out[1]=='mapset'){
+				$newid[$out[1]][$out[2]]=$arrSubst["@PROJECTNAME@"]."_".$out[2];
+				//echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
 			}
 			else{
 				$table=str_replace('_name','',$out[1]);
@@ -142,7 +146,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 			}
 		}
 		//if($out){
-		//	echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
+			//echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
 			$sql=str_replace($out[0],$newid[$out[1]][$out[2]],$sql);	
 		//}
 		fwrite($handle,str_replace("\'","\\''",$sql)."\n");
