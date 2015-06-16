@@ -20,7 +20,8 @@ try {
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();
-		$ajax->success(array('box'=>$box));
+		$pages = $printMap->getDimensions();
+		$ajax->success(array('box'=>$box, 'pages'=>$pages));
 	}
 
 	if(!empty($_REQUEST['lang'])) {
