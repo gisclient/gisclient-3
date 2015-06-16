@@ -814,8 +814,38 @@ $BODY$
 
 -- inverte l'ordine dei layer e degli stili
 update layer set layer_order=@(layer_order-1000,2) ;
-
 update style set style_order=@(style_order-10,2) ;
+
+--fix per import/export
+DROP VIEW vista_mapset;
+
+ALTER TABLE mapset ALTER COLUMN mapset_scale_type type smallint;
+ALTER TABLE mapset ALTER COLUMN mapset_order type smallint;
+
+CREATE OR REPLACE VIEW vista_mapset AS 
+ SELECT m.mapset_name, m.project_name, m.mapset_title, m.template, m.mapset_extent, m.page_size, m.filter_data, m.dl_image_res, m.imagelabel, m.bg_color, m.refmap_extent, m.test_extent, m.mapset_srid, m.mapset_def, m.mapset_group, m.private, m.sizeunits_id, m.static_reference, m.metadata, m.mask, m.maxscale, m.minscale, m.mapset_scales, m.displayprojection, m.mapset_scale_type, m.mapset_order, 
+        CASE
+            WHEN NOT (m.mapset_name::text IN ( SELECT mapset_layergroup.mapset_name
+               FROM mapset_layergroup)) THEN '(!) Nessun layergroup presente'::text
+            WHEN 75 <= (( SELECT count(mapset_layergroup.layergroup_id) AS count
+               FROM mapset_layergroup
+              WHERE mapset_layergroup.mapset_name::text = m.mapset_name::text
+              GROUP BY mapset_layergroup.mapset_name)) THEN ('(!) '::text || (( SELECT count(mapset_layergroup.layergroup_id) AS count
+               FROM mapset_layergroup
+              WHERE mapset_layergroup.mapset_name::text = m.mapset_name::text
+              GROUP BY mapset_layergroup.mapset_name))) || ' layergroup presenti nel mapset. OpenLayers 2 non consente di rappresentare più di 74 layergroup alla volta'::text
+            WHEN m.mapset_scales IS NULL THEN '(!) Nessun elenco di scale configurato'::text
+            WHEN m.mapset_srid <> m.displayprojection THEN '(i) Coordinate visualizzate diverse da quelle di mappa'::text
+            WHEN 0 = (( SELECT max(mapset_layergroup.refmap) AS max
+               FROM mapset_layergroup
+              WHERE mapset_layergroup.mapset_name::text = m.mapset_name::text
+              GROUP BY mapset_layergroup.mapset_name)) THEN '(i) Nessuna reference map'::text
+            ELSE 'OK'::text
+        END AS mapset_control
+   FROM mapset m;
+
+ALTER TABLE vista_mapset
+  OWNER TO gisclient;
 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
