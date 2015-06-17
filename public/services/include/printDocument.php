@@ -90,7 +90,6 @@ class printDocument {
 				}
 			}
 		}
-		
 		if (!empty($_REQUEST['center']))
 			$options['center'] = $_REQUEST['center'];
 		if(!empty($_REQUEST['vectors'])) {
@@ -189,7 +188,7 @@ class printDocument {
 	public function getDimensions() {
 		return $this->dimensions;
 	}
-		
+
 	public function getBox() {
 		$this->calculateSizes();
 		
@@ -221,43 +220,105 @@ class printDocument {
 			$this->getLegendGraphicRequest = $legendGraphicRequest;
 		}
 	}
-	
-	private function buildLegendArray() {
+
+    protected function getLegendsFromMapfile() {
+        $layers = array();
+        $project = $mapset = null;
+        $themes = array();
+        
+        foreach($this->wmsList as $wms) {
+            if(!empty($wms['PARAMETERS']['PROJECT']) && empty($project)) $project = $wms['PARAMETERS']['PROJECT'];
+            if(!empty($wms['PARAMETERS']['MAP']) && empty($mapset)) $mapset = $wms['PARAMETERS']['MAP'];
+            
+            foreach($wms['PARAMETERS']['LAYERS'] as $layerName) {
+                if(isset($wms['options']['theme_id'])) {
+                    if(!isset($themes[$wms['options']['theme_id']])) {
+                        $themes[$wms['options']['theme_id']] = array(
+                            'id'=>$wms['options']['theme_id'],
+                            'title'=>$wms['options']['theme_title'],
+                            'layers'=>array()
+                        );
+                    }
+                    $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
+                }
+            }
+        }
+
+        if(!empty($project) && !empty($mapset)) {
+            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+            foreach($themes as &$theme) {
+                $theme['groups'] = array();
+                foreach($theme['layers'] as $layergroupName) {
+                    $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
+                    foreach($layerIndexes as $index) {
+                        $oLayer = $oMap->getLayer($index);
+                        $layerName = $oLayer->name;
+                        $group = array(
+                            'id'=>$layerName,
+                            'title'=>$oLayer->getMetaData('ows_title'),
+                            'layers'=>array()
+                        );
+                        for($n = 0; $n < $oLayer->numclasses; $n++) {
+                            $oClass = $oLayer->getClass($n);
+                            $exclude = $oClass->getMetaData('gc_no_image');
+                            if(!empty($exclude)) continue;
+                            array_push($group['layers'], array(
+                                'url'=>$layerName.'-'.$n,
+                                'title'=>$oClass->title
+                            ));
+                        }
+                        array_push($theme['groups'], $group);
+                    }
+                }
+            }
+            unset($theme);
+        }
+        return array('themes'=>$themes);
+    }	
+
+	protected function buildLegendArray() {
 		if(empty($this->options['legend'])) return null;
 		$this->buildLegendGraphicWmsList();
-		$legendImages = array();
-		foreach($this->options['legend']['themes'] as $theme) {
-			if(empty($theme['groups'])) continue;
-			$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
-			foreach($theme['groups'] as $group) {
-				$groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
-				if(empty($group['layers'])) continue;
-				foreach($group['layers'] as $key => $layer) {
-					$tmpFileId = $theme['id'].'-'.$group['id'];
-					if(!isset($legendImages[$layer['url']])) {
-						if(isset($group['sld'])) $sld = $group['sld'];
-						else $sld = null;
-						$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
+		try {
+			$legendImages = array();
+            if(!is_array($this->options['legend'])) {
+                $this->options['legend'] = $this->getLegendsFromMapfile();
+            }
+			foreach($this->options['legend']['themes'] as $theme) {
+				if(empty($theme['groups'])) continue;
+				$themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
+				foreach($theme['groups'] as $group) {
+					$groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
+					if(empty($group['layers'])) continue;
+					foreach($group['layers'] as $key => $layer) {
+						$tmpFileId = $theme['id'].'-'.$group['id'];
+						if(!isset($legendImages[$layer['url']])) {
+							if(isset($group['sld'])) $sld = $group['sld'];
+							else $sld = null;
+							$legendImages[$layer['url']] = $this->getLegendImageWMS($group['id'], $group['id'], $tmpFileId, $sld);
+						}
+						if(!$legendImages[$layer['url']]) {
+							continue;
+						}
+						if (filesize($legendImages[$layer['url']]) == 0) {
+							// something went wrong
+							continue;
+						}
+						// TODO: add some check if the image is high enough to be sliced
+						$source = imagecreatefrompng($legendImages[$layer['url']]);
+						$dest = imagecreatetruecolor(24, 16);
+						$offset = $key*16;
+						imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
+						$filename = $tmpFileId.'-'.$key.'.png';
+						imagepng($dest, $this->options['TMP_PATH'].$filename);
+						array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
 					}
-					if(!$legendImages[$layer['url']]) {
-						continue;
-					}
-					if (filesize($legendImages[$layer['url']]) == 0) {
-						// something went wrong
-						continue;
-					}
-					// TODO: add some check if the image is high enough to be sliced
-					$source = imagecreatefrompng($legendImages[$layer['url']]);
-					$dest = imagecreatetruecolor(24, 16);
-					$offset = $key*16;
-					imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
-					$filename = $tmpFileId.'-'.$key.'.png';
-					imagepng($dest, $this->options['TMP_PATH'].$filename);
-					array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>$this->options['TMP_URL'].$filename));
+					array_push($themeArray['groups'], $groupArray);
 				}
-				array_push($themeArray['groups'], $groupArray);
+				array_push($this->legendArray, $themeArray);
 			}
-			array_push($this->legendArray, $themeArray);
+		} catch(Exception $e) {
+			throw $e;
 		}
 	}
 	

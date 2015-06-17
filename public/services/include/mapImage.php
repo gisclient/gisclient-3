@@ -116,6 +116,7 @@ class mapImage {
 			}
             
             // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
+            // ???????????????????????????? MAH ???????????????????
             $parsedUrl = parse_url($url);
             if(!empty($parsedUrl['query'])) {
                 $urlParams = array();
@@ -124,8 +125,8 @@ class mapImage {
                     unset($urlParams[$key]);
                     $urlParams[strtoupper($key)] = $val;
                 }
-                if(!empty($urlParams['PROJECT']) && !empty($parameters['PROJECT'])) unset($parameters['PROJECT']);
-                if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
+                //if(!empty($urlParams['PROJECT']) && !empty($parameters['PROJECT'])) unset($parameters['PROJECT']);
+                //if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
             }
             
             if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
@@ -188,6 +189,7 @@ class mapImage {
 		));
 		session_write_close();
 
+
 		if (false === ($ch = curl_init())) {
 			throw new Exception("Could not init curl");
 		}
@@ -197,9 +199,11 @@ class mapImage {
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
+
 		if (false === ($mapImage = curl_exec($ch))) {
 			throw new Exception("Could not curl_exec" . curl_error($ch));
 		}
+
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
             throw new RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
         }

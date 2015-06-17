@@ -191,7 +191,6 @@ class gcMap{
 				array_push($mapConfig["mapProviders"],$this->mapProviders[$key]);
 			}
 		}
-		
 
 		$mapConfig["layers"] = $this->mapLayers;
 		$mapConfig["featureTypes"] = $this->featureTypes;
@@ -469,6 +468,7 @@ class gcMap{
 				$layerOptions["type"] = empty($row["layers"])?"null":$row["layers"];
 				$layerOptions["minZoomLevel"] = $this->levelOffset;
 				if($layerOptions["type"] == "terrain") $layerOptions["maxZoomLevel"] = 15;
+				$layerOptions["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 
 				//Risetto i valori se impostati in author
 				if(isset($layerOptions["maxScale"])){
@@ -485,6 +485,7 @@ class gcMap{
 */
 				if(!in_array($layerType,$this->listProviders) && $layerType!=BING_LAYER_TYPE) $this->listProviders[] = $layerType;
 				$layerOptions["type"] = empty($row["layers"])?"null":$row["layers"];
+				$layerOptions["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 				if($layerType == BING_LAYER_TYPE) {
 					$layerOptions["name"] = $aLayer["name"];
 					$layerOptions["key"] = BINGKEY;
@@ -502,6 +503,7 @@ class gcMap{
 				$this->fractionalZoom = 0;
 				if(!in_array($layerType,$this->listProviders)) $this->listProviders[] = $layerType;
 				$layerOptions["sphericalMercator"] = true;
+				$layerOptions["owsurl"] = $ows_url."?PROJECT=".$this->projectName."&MAP=".$mapsetName;
 				//???????????????????????????????????????
 				$layerOptions["zoomOffset"] = $this->levelOffset; //DA VEDERE
 				//???????????????????????????????????????
