@@ -111,7 +111,7 @@ class printDocument {
 		if(!isset($this->dimensions[$this->options['direction']])) throw new Exception('Invalid direction');
 		if(!isset($this->dimensions[$this->options['direction']][$this->options['format']])) throw new Exception('Invalid print format');
 		
-		if($options['scale_mode'] == 'user') {
+		if(isset($options['scale_mode']) && $options['scale_mode'] == 'user') {
 			if(empty($options['scale']))
 				throw new Exception('For user-defined scale mode, the scale must be provided');
 			if(empty($options['center']) || count($options['center']) != 2)
@@ -131,7 +131,7 @@ class printDocument {
 		if (!empty($_REQUEST['date']))
 			$this->documentElements['map-date'] = $_REQUEST['date'];
 		if(!empty($_REQUEST['northArrow']) && $_REQUEST['northArrow'] != 'null') {
-			$this->documentElements['north-arrow'] = $_REQUEST['northArrow'];
+			$this->documentElements['north-arrow'] = GC_PRINT_TPL_URL.$_REQUEST['northArrow'];
 		}
 		if(!empty($_REQUEST['copyrightString']) && $_REQUEST['copyrightString'] != 'null') {
 			$this->documentElements['copyright-string'] = $_REQUEST['copyrightString'];
@@ -140,6 +140,8 @@ class printDocument {
 		$this->documentElements['gisclient-folder'] = GC_PRINT_TPL_URL;
 		$this->documentElements['map-logo-sx'] = GC_PRINT_TPL_URL.$this->nullLogo;
 		$this->documentElements['map-logo-dx'] = GC_PRINT_TPL_URL.$this->nullLogo;
+		$this->documentElements['map-box'] = $_REQUEST['extent'];
+ 
 	}
 	
 	public function setLang($lang) {
@@ -151,7 +153,8 @@ class printDocument {
 	}
 	
 	public function printMapHTML() {
-		$xslFile = GC_PRINT_TPL_DIR.'print_map_html.xsl';
+		$xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map_html';//DEFAULT HTML TEMPLATE
+		$xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";
 		if(!file_exists($xslFile)) throw new RuntimeException('XSL file ('.$xslFile.') not found');
 		
 
@@ -173,7 +176,8 @@ class printDocument {
 	}
 	
 	public function printMapPDF() {
-		$xslFile = GC_PRINT_TPL_DIR.'print_map.xsl';
+		$xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map';//DEFAULT PDF TEMPLATE
+		$xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";;
 		if(!file_exists($xslFile)) {
 			throw new RuntimeException("XSL file '$xslFile'not found");
 		}
@@ -182,6 +186,7 @@ class printDocument {
 
 		$pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
 		$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
+		$this->deleteOldTmpFiles();
 		return $pdfFile;
 	}
 
