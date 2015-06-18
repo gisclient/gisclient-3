@@ -12,7 +12,8 @@ dato[] = "Formato Immagine di output<br><font size=1>N.B.: JPEG non è trasparen
 
 dato[] = "Parametri WMS"
 dato[] = "Layers: *<br><font size=1>Obbligatori e separati da virgola per WMS/TMS/WMTS</font>;layers;49x2;textarea"
-dato[] = "Crea tiles;tiletype_id;150#seldb_tiletype#;selectdb|SRID tiles;tiles_extent_srid;10;text|Estensione tiles;tiles_extent;55;text"
+//dato[] = "Crea tiles;tiletype_id;150#seldb_tiletype#;selectdb"
+dato[] = "SRID tiles;tiles_extent_srid;10;text|Estensione tiles;tiles_extent;55;text"
 dato[] = "URL;url;49x2;textarea"
 dato[] = "Parametri per TMS/WMTS<br><font size=1>Compilare anche i parametri WMS</font>"
 dato[] = "Origine del servizio TMS/WMTS:<br><font size=1>minX(lon) e minY(lat) separati da virgola</font>;tile_origin;55;text"
