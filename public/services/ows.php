@@ -152,12 +152,16 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 		}
 	}
 	if($hasPrivateLayers) {
-        if (!isset($_SERVER['PHP_AUTH_USER'])) {
-                header('WWW-Authenticate: Basic realm="Gisclient"');
-                header('HTTP/1.0 401 Unauthorized');
+		if(isset($_REQUEST['PRINTSERVICE'])) {
+            $user = new GCUser();
+            $user->login('printservice', md5(PRINT_SERVICE_PWD));
+        }
+        elseif (!isset($_SERVER['PHP_AUTH_USER'])) {
+            header('WWW-Authenticate: Basic realm="Gisclient"');
+            header('HTTP/1.0 401 Unauthorized');
         } else {
-             $user = new GCUser();
-             $user->login($_SERVER['PHP_AUTH_USER'], md5($_SERVER['PHP_AUTH_PW']));
+            $user = new GCUser();
+            $user->login($_SERVER['PHP_AUTH_USER'], md5($_SERVER['PHP_AUTH_PW']));
         }
     }
 
