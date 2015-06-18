@@ -42,8 +42,9 @@ if(!empty($_REQUEST['logout'])) {
 }
 
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $user->login($_POST['username'], $_POST['password']);
+    $user->login($_POST['username'], md5($_POST['password']));
 }
+
 
 if (!$user->isAuthenticated()) {
 	include_once ADMIN_PATH."enter.php";

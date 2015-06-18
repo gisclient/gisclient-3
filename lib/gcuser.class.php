@@ -55,7 +55,7 @@ abstract class AbstractUser {
         $stmt = $db->prepare($sql);
         $stmt->execute(array(
             'user'=>$username,
-            'pass'=>md5($password)
+            'pass'=>$password
         ));
         $usernameInDb = $stmt->fetchColumn(0);
         if(empty($usernameInDb)) {

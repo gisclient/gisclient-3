@@ -185,7 +185,11 @@ class printDocument {
 		$pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
 		return $pdfFile;
 	}
-	
+
+	public function getDimensions() {
+		return $this->dimensions;
+	}
+		
 	public function getBox() {
 		$this->calculateSizes();
 		
