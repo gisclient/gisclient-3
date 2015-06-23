@@ -14,6 +14,7 @@ $ajax = new GCAjax();
 //DAI TEMI RECUPERO I LAYERS
 
 $mapset = $_REQUEST["mapset"];
+$project='';
 $themes = str_replace(",","','",$_REQUEST["theme"]);
 $aLayers = array();
 
@@ -25,7 +26,13 @@ while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $aLayers[] = $row["layergroup_name"];
     $project = $row["project_name"];
 }
+
+if(count($aLayers)==0){
+    $ajax->error("L'elenco dei livelli è vuoto");
+}
+
 $layers = implode(",",$aLayers);
+
 
 
 
@@ -62,7 +69,7 @@ try {
 
 
 
-	print_array($_REQUEST);
+	//print_array($_REQUEST);
 
 
 
