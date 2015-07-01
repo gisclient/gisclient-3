@@ -69,6 +69,14 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 	}
 
 	$oMap=ms_newMapObj('');
+        
+        // set MAXSIZE of mapfile to the value defined in the configuration
+        if (defined('MAPFILE_MAX_SIZE')) {
+            $oMap->set('maxsize',  MAPFILE_MAX_SIZE);
+        } else {
+            $oMap->set('maxsize',  '4096');
+        }
+        
 	if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
 	$aExtent = explode(",",$_REQUEST['BBOX']);
 
