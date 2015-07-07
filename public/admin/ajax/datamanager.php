@@ -918,7 +918,7 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
         putenv("PGOPTIONS=-c bytea_output=".SET_BYTEA_OUTPUT);
     }
 	
-	$cmd = "shp2pgsql $index -W '".escapeshellarg($options['charset'])."' -s $srid $mode " . escapeshellarg($shapefile) . " " . 
+	$cmd = "shp2pgsql $index -g the_geom -W '".escapeshellarg($options['charset'])."' -s $srid $mode " . escapeshellarg($shapefile) . " " . 
 		escapeshellarg($tableName) . " > " . 
 		escapeshellarg($outputFile) . " 2> " . escapeshellarg($errorFile);
 
