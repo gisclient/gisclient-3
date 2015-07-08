@@ -366,9 +366,10 @@ switch($_REQUEST['action']) {
         
         if(!GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error('table does not exist');
         
-        $sql = 'truncate table '.$_REQUEST['table_name'];
+        $sql = 'truncate table '.$schema.'.'.$_REQUEST['table_name'];
         try {
             $db->exec($sql);
+            $ajax->success();
         } catch(Exception $e) {
             $ajax->error($e->getMessage() .' on '.$sql);
         }
