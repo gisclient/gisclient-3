@@ -73,6 +73,8 @@ class printDocument {
 			$options['direction'] = $_REQUEST['direction'];
 		if (!empty($_REQUEST['dpi']) && is_numeric($_REQUEST['dpi']))
 			$options['dpi'] = (int) $_REQUEST['dpi'];
+		if (!empty($_REQUEST['rotation']) && is_numeric($_REQUEST['rotation']))
+			$options['rotation'] = (int) $_REQUEST['rotation'];
 		if (!empty($_REQUEST['srid'])) {
 			$options['srid'] = $_REQUEST['srid'];
 			if (strpos($_REQUEST['srid'], ':') !== false) {
@@ -123,6 +125,16 @@ class printDocument {
 		$this->wmsMergeUrl = PUBLIC_URL.$this->wmsMergeUrl;
 		
 		$this->db = GCApp::getDB();
+		
+
+
+		if(!empty($_REQUEST["template"]))
+			$this->documentElements['template'] = $_REQUEST["template"];
+
+
+
+
+
 		
 		if (!empty($_REQUEST['text']))
 			$this->documentElements['map-text'] = $_REQUEST['text'];

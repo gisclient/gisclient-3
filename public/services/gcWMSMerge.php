@@ -79,6 +79,12 @@ ms_ResetErrorList();
 $oMap=ms_newMapObj('');
 if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB); 
 $oMap->setSize(intval($mapConfig['size'][0]), intval($mapConfig['size'][1]));
+
+print_debug($mapConfig,null,'mapconfig');
+
+//if(isset($mapConfig['rotation']))
+//	$oMap->setRotation(intval($mapConfig['rotation']));
+
 $sridParts = explode(':', strtolower($mapConfig['srs']));
 if (count($sridParts) == 2) {
 	// e.g.: EPSG:4306
