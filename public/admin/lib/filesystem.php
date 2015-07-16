@@ -6,6 +6,7 @@ function elenco_file($p, $ext = '', $fname = '') {
 	if(!is_dir($p)) return false;
 	if($dh = opendir($p)) {
 		while (($file = readdir($dh)) !== false) {
+			if($file[0] == '.') continue;
 			if(is_dir(addFinalSlash($p).$file)) continue;
 			if(!empty($ext)) {
 				$parts = explode('.', $file);

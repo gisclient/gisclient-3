@@ -1,0 +1,4 @@
+<FilesMatch ".*" >
+    ForceType application/octet-stream
+    Header add Content-Disposition "attachment"
+</FilesMatch>

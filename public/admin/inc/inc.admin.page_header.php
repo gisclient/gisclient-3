@@ -145,7 +145,8 @@
 						<li><a href="#import_dialog_raster">Raster</a></li>
 						<li><a href="#import_dialog_postgis">PostgreSQL</a></li>
 						<li><a href="#import_dialog_xls">XLS</a></li>
-						<!-- <li><a href="#import_dialog_csv">CSV</a></li> -->
+						<li style="display:none"><a href="#import_dialog_csv">CSV</a></li>
+						<li><a href="#import_dialog_doc">Doc</a></li>
 					</ul>
 					<div id="import_dialog_shp">
 						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
@@ -205,7 +206,7 @@
 						Tablename: <select name="xls_table_name_select" style="display:none;"></select><input type="text" name="xls_table_name"><br />
 						<button name="import" style="display:none">Import</button>
 					</div>
-					<!--
+					
 					<div id="import_dialog_csv">
 						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
 						<input id="csv_file_upload" name="file_upload" type="file" />
@@ -217,7 +218,24 @@
 						Tablename: <select name="csv_table_name_select" style="display:none;"></select><input type="text" name="csv_table_name"><br />
 						<button name="import" style="display:none">Import</button>
 					</div>
-					-->
+
+					<div id="import_dialog_doc">
+						<ol>
+							<li>1. Caricare i documenti tramite il pulsante "Select Files"</li>
+							<li>2. Per rendere disponibile il documento, selezionarlo tramite pulsante "Select", poi cliccare su "Public"</li>
+							<li>3. Per rendere non più disponibile un documento, selezionarlo tramite il pulsante "Select", poi cliccare su "Private"</li>
+							<li>4. Per eliminare un documento, cliccare sul pulsante "Delete"</li>
+						</ol>
+						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
+						<input id="doc_file_upload" name="file_upload" type="file" />
+						<div data-role="file_list">
+						</div>
+						<hr>
+						File: <input type="text" name="doc_file_name" disabled="disabled"><br />
+						<button name="public_doc" style="display:none">Public</button>
+						<button name="private_doc" style="display:none">Private</button>
+					</div>
+					
 				</div>
 				<div class="logs" style="color:red;" tabindex="100">
 				</div>

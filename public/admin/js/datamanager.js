@@ -94,6 +94,22 @@ $(document).ready(function() {
 		fileDesc: 'CSV files',
 		scriptData: {action:'upload-csv'}
 	});
+
+	$('#doc_file_upload').uploadify({
+		uploader: 'js/jquery/uploadify/uploadify.swf',
+		script: 'ajax/datamanager.php',
+		cancelImg: 'js/jquery/uploadify/cancel.png',
+		folder: 'import',
+		auto: true,
+		multi: true,
+		onAllComplete: function(event, data) {
+			dataManager.getFileList();
+			dataManager.checkPublicDocuments();
+		},
+		fileExt: '*',
+		fileDesc: 'DOC files',
+		scriptData: {action:'upload-doc'}
+	});
 	
 	$('#raster_file_upload').uploadify({
 		uploader: 'js/jquery/uploadify/uploadify.swf',
@@ -131,6 +147,14 @@ $(document).ready(function() {
 		event.preventDefault();
 		dataManager.createTileindex();
 		dataManager.createPyramidRaster();
+	});
+	$('div#import_dialog button[name="public_doc"]').button().hide().click(function(event) {
+		event.preventDefault();
+		dataManager.publicDocument($('div#import_dialog input[name="doc_file_name"]').val());
+	});
+	$('div#import_dialog button[name="private_doc"]').button().hide().click(function(event) {
+		event.preventDefault();
+		dataManager.privateDocument($('div#import_dialog input[name="doc_file_name"]').val());
 	});
 	
     var fieldTypeOptions = '';
@@ -184,7 +208,8 @@ function GCDataManager(catalogId) {
 		1: 'raster',
 		2: 'postgis',
 		3: 'xls',
-        4: 'csv'
+        4: 'csv',
+        5: 'doc'
 	};
     
 	this.columnTypes = {
@@ -246,8 +271,11 @@ function GCDataManager(catalogId) {
 			case 4:
 				self.fileType = 'csv';
 			break;
+			case 5:
+				self.fileType = 'doc';
+			break;
 			default:
-				alert('file type ' + index + 'Not implemented');
+				alert('file type ' + index + ' Not implemented');
 				return;
 			break;
 		}
@@ -272,6 +300,13 @@ function GCDataManager(catalogId) {
 				self.getFileList();
 			}
 		});
+
+		if(self.fileType == 'doc') {
+			var li = $('div#import_dialog_' + self.fileType + ' div[data-role="file_list"] li').has('a[data-file="'+fileName+'"]');
+			if(li.data('public') == 'true') {
+				self.privateDocument(fileName);
+			}
+		}
 	};
 	
 	this.deleteTable = function(tableName) {
@@ -523,7 +558,7 @@ function GCDataManager(catalogId) {
 	this.getFileList = function() {
 		var self = this;
 		
-		$('div#import_dialog div.logs').empty();
+		$('div#import_dialog_' + self.fileType + ' div.logs').empty();
 		
 		self.ajaxRequest({
 			data: {action:'get-uploaded-files', file_type:self.fileType},
@@ -537,26 +572,58 @@ function GCDataManager(catalogId) {
 				$.each(response.data, function(e, file) {
 					html += '<li><a href="#" class="button" data-action="delete" data-file="'+file.file_name+'">Delete</a>';
 					html += '<a href="#" class="button" data-action="select" data-file="'+file.file_name+'">Select</a>';
-					html += file.file_name+'</li>';
+					html += file.file_name;
+					html += '</li>';
 				});
 				html += '</ul>';
-				$('div#import_dialog div[data-role="file_list"]').empty().html(html);
+				$('div#import_dialog_' + self.fileType + ' div[data-role="file_list"]').empty().html(html);
 				
-				$('div#import_dialog div[data-role="file_list"] a[data-action="select"]').button().click(function(event) {
+				$('div#import_dialog_' + self.fileType + ' div[data-role="file_list"] a[data-action="select"]').button().click(function(event) {
 					event.preventDefault();
 					
 					var fileName = $(this).attr('data-file');
 					self.selectFile(fileName);
 				});
 				
-				$('div#import_dialog div[data-role="file_list"] a[data-action="delete"]').button().click(function(event) {
+				$('div#import_dialog_' + self.fileType + ' div[data-role="file_list"] a[data-action="delete"]').button().click(function(event) {
 					event.preventDefault();
 					
 					var fileName = $(this).attr('data-file');
 					self.deleteFile(fileName);
 				});
 				
+
+				if (self.fileType == 'doc') {
+					self.checkPublicDocuments();
+				}
 			}
+		});
+	};
+
+	this.checkPublicDocuments = function() {
+		var self = this;
+
+		var rows = $('div#import_dialog_' + self.fileType + ' div[data-role="file_list"] li');
+		rows.each(function() {
+			var li = $(this);
+			var fileName = li.find('a[data-action="select"]').data('file');
+			self.ajaxRequest({
+				data: {action:'check-public-file', file_name:fileName},
+				success: function(response) {
+					if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+						self.showErrorReponseAlert(response);
+						return;
+					} else {
+						if (response.public_url) {
+							li.data('public', 'true');
+							var html = '<span style="margin-left: 10px">'
+							html += '<b>public url:</b> ' + response.public_url;
+							html += '</span>';
+							li.append(html);
+						}
+					}
+				}
+			});
 		});
 	};
 	
@@ -590,6 +657,17 @@ function GCDataManager(catalogId) {
 				var fileNameWoExtension = fileName.replace('.csv', '');
 				$('div#import_dialog input[name="csv_table_name"]').val(fileNameWoExtension);
 				$('div#import_dialog button[name="import"]').show();
+			break;
+			case 'doc':
+				$('div#import_dialog input[name="doc_file_name"]').val(fileName);
+				var li = $('div#import_dialog_' + self.fileType + ' div[data-role="file_list"] li').has('a[data-file="'+fileName+'"]');
+				if(li.data('public') == 'true') {
+					$('div#import_dialog button[name="public_doc"]').hide();
+					$('div#import_dialog button[name="private_doc"]').show();
+				} else {
+					$('div#import_dialog button[name="public_doc"]').show();
+					$('div#import_dialog button[name="private_doc"]').hide();
+				}
 			break;
 			default:
 				return alert('unknown file type "' + self.fileType + '"');
@@ -678,6 +756,42 @@ function GCDataManager(catalogId) {
 				}
 				
 				$('div#import_dialog div.logs').html('Operation done succesfully<br><a href="export/'+response.filename+'" target="_blank">Click here</a> to download').focus();
+			}
+		});
+	};
+
+	this.publicDocument = function(fileName) {
+		var self = this;
+
+		self.ajaxRequest({
+			data: {action:'public-doc', file_name:fileName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					if(typeof(response.result) != 'undefined' && response.result == 'error' && typeof(response.error) != 'undefined') {
+						return $('div#import_dialog div.logs').html(response.error).focus();
+					}
+					return alert('Error');
+				}
+				
+				self.getFileList();
+			}
+		});
+	};
+
+	this.privateDocument = function(fileName) {
+		var self = this;
+
+		self.ajaxRequest({
+			data: {action:'private-doc', file_name:fileName},
+			success: function(response) {
+				if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+					if(typeof(response.result) != 'undefined' && response.result == 'error' && typeof(response.error) != 'undefined') {
+						return $('div#import_dialog div.logs').html(response.error).focus();
+					}
+					return alert('Error');
+				}
+				
+				self.getFileList();
 			}
 		});
 	};
@@ -790,7 +904,6 @@ function GCDataManager(catalogId) {
     this.showAddColumnDialog = function(tableName) {
         $('div#add_column_dialog span[data-role="tablename"]').html(tableName);
         $('div#add_column_dialog').dialog('open');
-        console.log($('div#add_column_dialog'));
     };
 	
     this.addColumn = function() {
