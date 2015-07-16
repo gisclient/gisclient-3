@@ -12,7 +12,7 @@ if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap
 if(!defined('REDLINE_TABLE') || !defined('REDLINE_SRID')) outputError('Missing config redline values');
 if(!defined('REDLINE_SCHEMA')) define('REDLINE_SCHEMA', 'public');
 if(!defined('REDLINE_FONT')) define('REDLINE_FONT', 'arial');
-if(!defined('POSTGIS_TRANSFORM_GEOMETRY')) define('POSTGIS_TRANSFORM_GEOMETRY', 'ST_Transform_Geometry');
+if(!defined('POSTGIS_TRANSFORM_GEOMETRY')) define('POSTGIS_TRANSFORM_GEOMETRY', 'Postgis_Transform_Geometry');
 
 
 //Creazione di un geotiff con le annotazioni
