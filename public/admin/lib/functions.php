@@ -278,6 +278,30 @@ $gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP
 			}
 		}
 	}
+
+	function setTriggerFunction($db) {
+		$trigger = 'CREATE OR REPLACE FUNCTION public.gc_check_srid()'
+			. ' RETURNS trigger AS'
+			. ' $BODY$ '
+			. ' DECLARE '
+			. '     table_srid integer;'
+			. ' BEGIN'
+			. '     table_srid = Find_SRID(TG_TABLE_SCHEMA::text, TG_TABLE_NAME::text, \'the_geom\'::text);'
+			. ' 	if(table_srid <> ST_SRID(new.the_geom)) then'
+			. '         new.the_geom = ST_Transform(new.the_geom, table_srid);'
+			. '     end if;'
+			. ' 	return new;'
+			. ' END'
+			. ' $BODY$'
+			. ' LANGUAGE plpgsql VOLATILE COST 100;'
+			. ' ALTER FUNCTION public.gc_check_srid() OWNER TO ' . MAP_USER . ';'
+			. ' GRANT EXECUTE ON FUNCTION public.gc_check_srid() TO public;'
+			. ' GRANT EXECUTE ON FUNCTION public.gc_check_srid() TO ' . MAP_USER . ';';
+
+		$result = pg_query($db,$trigger);
+		if(!$result) echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
+	}
+
 	function setLongApp(){
 		ini_set('max_execution_time',LONG_EXECUTION_TIME);
 		ini_set('memory_limit',LONG_EXECUTION_MEMORY);

@@ -92,6 +92,10 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 			//list($connStr,$schema)=connAdminInfofromPath($catalog["catalog_path"]);
 			//$newdb=pg_connect($connStr);
 			//setDBPermission($newdb,$schema,MAP_USER,'SELECT','GRANT',$_POST["dati"]["data"]);
+
+			$table = $dataDb->quote($_POST["dati"]["data"]);
+			$sql = "DROP TRIGGER IF EXISTS chk_srid ON {$schema}.{$table};CREATE TRIGGER chk_srid BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_check_srid();";
+			$dataDb->exec($sql);
 		}
 
 		if($save->mode == 'new' && $catalog['connection_type'] == 6) {
