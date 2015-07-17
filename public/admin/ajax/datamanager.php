@@ -46,6 +46,7 @@ switch($_REQUEST['action']) {
 			2=>'postgis',
 			3=>'xls',
 			// 4=>'csv', // not working, yet
+			5=>'doc',
 		);
 		checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
 		$dir = filesPathFromCatalog($_REQUEST['catalog_id']);
@@ -61,8 +62,13 @@ switch($_REQUEST['action']) {
 	case 'upload-xls':
 	case 'upload-csv':
 	case 'upload-shp':
+	case 'upload-doc':
 		$tempFile = $_FILES['Filedata']['tmp_name'];
-		$targetFile = IMPORT_PATH . $_FILES['Filedata']['name'];
+		$path = IMPORT_PATH;
+		if ($_REQUEST['action'] == 'upload-doc') {
+			$path .= 'doc/';
+		}
+		$targetFile =  $path . $_FILES['Filedata']['name'];
 		if (false === move_uploaded_file($tempFile, $targetFile)) {
 			throw new Exception("Could not move_uploaded_file($tempFile, $targetFile)");
 		}
@@ -99,6 +105,8 @@ switch($_REQUEST['action']) {
 			$files = elenco_file(IMPORT_PATH, array('xls','xlsx'));
 		} else if($_REQUEST['file_type'] == 'csv') {
 			$files = elenco_file(IMPORT_PATH, array('csv'));
+		} else if($_REQUEST['file_type'] == 'doc') {
+			$files = elenco_file(IMPORT_PATH. 'doc/');
 		} else {
 			$ajax->error("can not handle file_type '{$_REQUEST['file_type']}'");
 		}
@@ -399,7 +407,12 @@ switch($_REQUEST['action']) {
 	case 'delete-file':
 		checkMissingParameters($ajax, $_REQUEST, array('file_name', 'file_type'));
 		
-		$filePath = IMPORT_PATH.$_REQUEST['file_name'];
+		$path = IMPORT_PATH;
+		if($_REQUEST['file_type'] == 'doc') {
+			$path .= 'doc/';
+		}
+
+		$filePath = $path . $_REQUEST['file_name'];
 		if($_REQUEST['file_type'] == 'shp') {
 			if(!file_exists($filePath)) {
 				$ajax->error("File '$filePath' does not exist");
@@ -423,7 +436,7 @@ switch($_REQUEST['action']) {
 				// TODO: add to log
 				$ajax->error($e->getMessage());
 			}
-		} else if($_REQUEST['file_type'] == 'xls') {
+		} else if($_REQUEST['file_type'] == 'xls' || $_REQUEST['file_type'] == 'doc') {
             if(!file_exists($filePath)) {
 				$ajax->error("File '$filePath' does not exist");
 			}
@@ -842,6 +855,36 @@ switch($_REQUEST['action']) {
 			if(!mkdir($basePath.$targetDir)) $ajax->success(array('data'=>'Unable to create directory'));
 		}
 		$ajax->success(array('data'=>'ok'));
+	break;
+	case 'check-public-file':
+		checkMissingParameters($ajax, $_REQUEST, array('file_name'));
+
+		$fileName = $_REQUEST['file_name'];
+		if (is_link(ROOT_PATH.'public/services/documents/' . $fileName)) {
+			$ajax->success(array('public_url'=>PUBLIC_URL.'services/documents/' . rawurlencode($fileName)));
+		} else {
+			$ajax->success(array('private document'));
+		}
+	break;
+	case 'public-doc':
+		checkMissingParameters($ajax, $_REQUEST, array('file_name'));
+
+		$fileName = $_REQUEST['file_name'];
+		if (is_file(IMPORT_PATH.'doc/' . $fileName) && symlink(IMPORT_PATH.'doc/' . $fileName, ROOT_PATH.'public/services/documents/' . $fileName)) {
+			$ajax->success();
+		} else {
+			$ajax->error();
+		}
+	break;
+	case 'private-doc':
+		checkMissingParameters($ajax, $_REQUEST, array('file_name'));
+
+		$fileName = $_REQUEST['file_name'];
+		if (is_link(ROOT_PATH.'public/services/documents/' . $fileName) && unlink(ROOT_PATH.'public/services/documents/' . $fileName)) {
+			$ajax->success();
+		} else {
+			$ajax->error();
+		}
 	break;
 	default:
 		$ajax->error("action {$_REQUEST['action']} can not be handled");
