@@ -500,7 +500,7 @@ END";
 	
     function _getLegendSettings(){
         // default font
-        $legendFont = 'arial';
+        $legendFont = 'verdana';
         
         // get project font if assigned
         $sql="SELECT imagelabel_font FROM ".DB_SCHEMA.".project WHERE project_name = ?;";
