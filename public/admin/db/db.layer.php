@@ -1,4 +1,4 @@
-G98<?php
+<?php
 if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 	require_once ADMIN_PATH."lib/gcSymbol.class.php";
 	require_once ADMIN_PATH."lib/functions.php";
@@ -63,7 +63,7 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 			$smb=new Symbol("class");
 			$smb->table='class';
 			$smb->filter="class.class_id=$classId";
-			$smb->createIcon();
+			$smb->createIcon(); 
 		}
 	}
 	$save->hasErrors = true;
