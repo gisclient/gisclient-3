@@ -1,6 +1,6 @@
 [standard]
 table = "layer"
-pkey = "layer_id"
+pkey = "layer_id" 
 dato[] = "Nome *<br><font size=1>univoco nel layergroup!<br>Evitare la duplicazione di<br>nome layegroup + nome layer</font>;layer_name;55;text"
 dato[] = "Titolo *;layer_title;55;text"
 dato[] = "Ordine: *;layer_order;5;intero"
@@ -29,10 +29,6 @@ dato[] = "Nascondi geometria in interrogazione<br><font size=1 >Non verrà visua
 dato[] = "Nascondi in interrogazione<br><font size=1 >Non presente nello strumento di interrogazione<br>(Il WFS rimane attivo)</font>;hidden;;noyes"
 dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;searchable;;noyes"
 
-dato[] = "Template per WMS</font>"
-dato[] = "Template;template;44;text"
-dato[] = "Template header;header;44;text"
-dato[] = "Template footer;footer;44;text"
 
 //dato[] = "Max vect;maxvectfeatures;5;intero|Buffer di zoom;zoom_buffer;5;intero"
 //dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
