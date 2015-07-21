@@ -94,8 +94,14 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 			//setDBPermission($newdb,$schema,MAP_USER,'SELECT','GRANT',$_POST["dati"]["data"]);
 
 			$table = $_POST["dati"]["data"];
-			$sql = "DROP TRIGGER IF EXISTS chk_srid ON {$schema}.\"{$table}\";CREATE TRIGGER chk_srid BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_check_srid();";
-			$dataDb->exec($sql);
+            $tablequote = $dataDb->quote($table);
+            $schemaquote = $dataDb->quote($schema);
+            $sql = "SELECT count(tablename) as istable from pg_tables where schemaname = {$schemaquote} AND tablename = {$tablequote};";
+            $result = $dataDb->query($sql)->fetch();
+            if ($result["istable"] == 1) {
+                $sql = "DROP TRIGGER IF EXISTS chk_srid ON {$schema}.\"{$table}\";CREATE TRIGGER chk_srid BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_check_srid();";
+                $dataDb->exec($sql);
+            }
 		}
 
 		if($save->mode == 'new' && $catalog['connection_type'] == 6) {
