@@ -70,7 +70,7 @@ if($_REQUEST['action'] == 'search') {
 } else if($_REQUEST['action'] == 'get-geom') {
     if(empty($_REQUEST['id'])) $ajax->error('Undefined id');
     
-    $sql = ' select astext('.$config['geomfield'].') from '.$config['tablename'].' where '.$config['idfield'].' = :id ';
+    $sql = ' select st_astext('.$config['geomfield'].') from '.$config['tablename'].' where '.$config['idfield'].' = :id ';
     try {
         $stmt = $dataDb->prepare($sql);
         $stmt->execute(array('id'=>$_REQUEST['id']));
