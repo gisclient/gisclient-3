@@ -1,6 +1,7 @@
 <?php
 include_once "../../../config/config.php";
 include_once ROOT_PATH.'lib/ajax.class.php';
+include_once ROOT_PATH.'lib/gclog.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
 include_once ROOT_PATH.'lib/export.php';
 
@@ -25,6 +26,8 @@ $autoUpdaters = array(
 // real path per browsing
 $ajax = new GCAjax();
 $db = GCApp::getDB();
+$user = new GCUser();
+$log = new GCLog($db);
 
 if(empty($_REQUEST['action'])){
 	$ajax->error("Required parameter 'action' is missing");
@@ -72,6 +75,8 @@ switch($_REQUEST['action']) {
 		if (false === move_uploaded_file($tempFile, $targetFile)) {
 			throw new Exception("Could not move_uploaded_file($tempFile, $targetFile)");
 		}
+		$log->log($user->getUsername(), 'UPLOAD', 'fileName: ' . $targetFile);
+
 		echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 	break;
 	case 'upload-raster':
@@ -106,7 +111,7 @@ switch($_REQUEST['action']) {
 		} else if($_REQUEST['file_type'] == 'csv') {
 			$files = elenco_file(IMPORT_PATH, array('csv'));
 		} else if($_REQUEST['file_type'] == 'doc') {
-			$files = elenco_file(IMPORT_PATH. 'doc/');
+			$files = elenco_file(IMPORT_PATH. $_REQUEST['file_type'] .'/');
 		} else {
 			$ajax->error("can not handle file_type '{$_REQUEST['file_type']}'");
 		}
@@ -450,7 +455,7 @@ switch($_REQUEST['action']) {
 		if (file_exists($filePath)) {
 			$ajax->error("Internal error: File '$filePath' was not deleted");
 		}
-		
+		$log->log($user->getUsername(), 'DELETE', 'fileName: ' . $filePath);
 		$ajax->success();
 		
 	break;
@@ -871,6 +876,7 @@ switch($_REQUEST['action']) {
 
 		$fileName = $_REQUEST['file_name'];
 		if (is_file(IMPORT_PATH.'doc/' . $fileName) && symlink(IMPORT_PATH.'doc/' . $fileName, ROOT_PATH.'public/services/documents/' . $fileName)) {
+			$log->log($user->getUsername(), 'PUBLIC', 'add link: ' . ROOT_PATH.'public/services/documents/' . $fileName);
 			$ajax->success();
 		} else {
 			$ajax->error();
@@ -881,6 +887,7 @@ switch($_REQUEST['action']) {
 
 		$fileName = $_REQUEST['file_name'];
 		if (is_link(ROOT_PATH.'public/services/documents/' . $fileName) && unlink(ROOT_PATH.'public/services/documents/' . $fileName)) {
+			$log->log($user->getUsername(), 'PRIVATE', 'remove link: ' . ROOT_PATH.'public/services/documents/' . $fileName);
 			$ajax->success();
 		} else {
 			$ajax->error();

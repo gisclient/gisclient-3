@@ -1800,3 +1800,22 @@ ALTER TABLE seldb_sizeunits
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.30', 'author', '2015-06-19');
 
+-- aggiunta tabella per i log
+
+CREATE TABLE logs
+(
+  log_id serial NOT NULL,
+  log_user character varying,
+  log_time timestamp without time zone NOT NULL DEFAULT now(),
+  log_action character varying,
+  log_info character varying,
+  CONSTRAINT logs_pkey PRIMARY KEY (log_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE logs
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.31', 'author', '2015-07-22');
+
