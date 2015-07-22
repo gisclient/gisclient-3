@@ -265,13 +265,7 @@ if(!empty($layersParameter)) {
 		//layer aggiunto x highlight
 		$highlight = $objRequest->getvaluebyname('highlight');
 		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) $layer->set('sizeunits',MS_PIXELS);
-	
-		// layer nascosto
-		$hideLayer = $layer->getMetaData("gc_hide_layer");
-		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($hideLayer)) {
-			array_push($layersToRemove, $layer->name);
-			continue;
-		}
+
 		// layer privato
 		$privateLayer = $layer->getMetaData('gc_private_layer');
 		if(!empty($privateLayer)) {
