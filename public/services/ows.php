@@ -34,7 +34,7 @@ if(defined('DEBUG') && DEBUG == true) {
 
 $objRequest = ms_newOwsrequestObj();
 $skippedParams = array();
-$invertedAxisOrderSrids = array(31466,31467,31257,31258,31259);
+$invertedAxisOrderSrids = array(31466,31467,31254,31255,31256,31257,31258,31259);
 
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
