@@ -1661,7 +1661,7 @@ select l.*,
     WHEN replace(substring(link_def from '%#"@%@#"%' for '#'),'@','') not in (select qtfield_name from qtfield where layer_id in (select layer_id from qtlink where link_id=l.link_id))   THEN   '(!) Campo non presente nel layer'
     ELSE 'OK. In uso'
   END as link_control
-from link l
+from link l;
 
 ALTER TABLE gisclient_32.layer ALTER COLUMN sizeunits_id SET NOT NULL;
 
