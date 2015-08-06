@@ -1,8 +1,8 @@
 
 --###############################################
 
---pg_dump -f gc32.sql -n gisclient_32 mydb
---cat gc32.sql | sed 's/gisclient_32/gisclient_34/' > gc34.sql
+--pg_dump -f gc32.sql -n gisclient_34 mydb
+--cat gc32.sql | sed 's/gisclient_34/gisclient_34/' > gc34.sql
 --psql -f gc34.sql mydb
 --psql -f aggiornamento_merge.sql mydb
 --###############################################
