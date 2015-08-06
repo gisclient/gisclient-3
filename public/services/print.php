@@ -10,6 +10,11 @@ $gcService->startSession();
 
 $ajax = new GCAjax();
 
+$inputJSONText = file_get_contents('php://input');
+if (($data = json_decode($inputJSONText, true)) !== null) {
+    $_REQUEST = $data;
+}
+
 if ($_REQUEST['format'] == 'PDF') {
 	if(!file_exists(GC_FOP_LIB)) $ajax->error('fop lib does not exist');
 	require_once GC_FOP_LIB;
