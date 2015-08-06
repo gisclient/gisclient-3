@@ -223,9 +223,13 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$lbl = null;
 		if (ms_GetVersionInt() < 60200) {
 			$lbl = $oClass->label;
-		} else if($oClass->numlabels > 0) {
+		} else {
+			if($oClass->numlabels == 0) {
+				$oClass->addLabel(new labelObj());
+			}
 			$lbl = $oClass->getLabel(0);
 		}
+
 		if ($lbl) {
 			$lbl->set("position", MS_UR);
 			$lbl->set("offsetx", 5);
