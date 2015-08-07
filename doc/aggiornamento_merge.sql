@@ -6,7 +6,7 @@
 --psql -f gc34.sql mydb
 --psql -f aggiornamento_merge.sql mydb
 --###############################################
-
+BEGIN;
 SET search_path = gisclient_34, pg_catalog;
 
 -- RENAME DI qt* 
@@ -135,7 +135,8 @@ CREATE OR REPLACE VIEW vista_field AS
 
 ALTER TABLE qtlink RENAME TO layer_link;
 
-ALTER TABLE layer_link DROP CONSTRAINT qt_link_pkey;
+ALTER TABLE layer_link DROP CONSTRAINT IF EXISTS qtlink_pkey;
+ALTER TABLE layer_link DROP CONSTRAINT IF EXISTS qt_link_pkey;
 
 ALTER TABLE layer_link
   DROP CONSTRAINT IF EXISTS qt_link_link_id_fkey;
@@ -813,8 +814,8 @@ $BODY$
 
 
 -- inverte l'ordine dei layer e degli stili
-update layer set layer_order=@(layer_order-1000,2) ;
-update style set style_order=@(style_order-10,2) ;
+update layer set layer_order = abs(layer_order-1000) ;
+update style set style_order= abs(style_order-10) ;
 
 --fix per import/export
 DROP VIEW vista_mapset;
@@ -850,3 +851,5 @@ ALTER TABLE vista_mapset
 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
+
+COMMIT;
