@@ -366,9 +366,10 @@ switch($_REQUEST['action']) {
         
         if(!GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) $ajax->error('table does not exist');
         
-        $sql = 'truncate table '.$_REQUEST['table_name'];
+        $sql = 'truncate table '.$schema.'.'.$_REQUEST['table_name'];
         try {
             $db->exec($sql);
+            $ajax->success();
         } catch(Exception $e) {
             $ajax->error($e->getMessage() .' on '.$sql);
         }
@@ -918,7 +919,7 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
         putenv("PGOPTIONS=-c bytea_output=".SET_BYTEA_OUTPUT);
     }
 	
-	$cmd = "shp2pgsql $index -W '".escapeshellarg($options['charset'])."' -s $srid $mode " . escapeshellarg($shapefile) . " " . 
+	$cmd = "shp2pgsql $index -g the_geom -W '".escapeshellarg($options['charset'])."' -s $srid $mode " . escapeshellarg($shapefile) . " " . 
 		escapeshellarg($tableName) . " > " . 
 		escapeshellarg($outputFile) . " 2> " . escapeshellarg($errorFile);
 

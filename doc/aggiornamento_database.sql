@@ -1661,7 +1661,7 @@ select l.*,
     WHEN replace(substring(link_def from '%#"@%@#"%' for '#'),'@','') not in (select qtfield_name from qtfield where layer_id in (select layer_id from qtlink where link_id=l.link_id))   THEN   '(!) Campo non presente nel layer'
     ELSE 'OK. In uso'
   END as link_control
-from link l
+from link l;
 
 ALTER TABLE gisclient_32.layer ALTER COLUMN sizeunits_id SET NOT NULL;
 
@@ -1722,3 +1722,99 @@ CREATE OR REPLACE VIEW seldb_wmsversion AS
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.29', 'author', '2015-04-20');
 
+-- correzione della view vista_layer baccata 
+
+DROP VIEW IF EXISTS vista_layer;
+CREATE OR REPLACE VIEW vista_layer AS 
+ SELECT l.*, 
+        CASE
+          WHEN queryable = 1 and l.hidden = 0 and 
+               layer_id IN (SELECT qtfield.layer_id 
+                              FROM qtfield 
+                              WHERE qtfield.resultype_id != 4)
+          THEN 'SI. Config. OK'
+          WHEN queryable = 1 and l.hidden = 1 and
+               layer_id IN (SELECT qtfield.layer_id 
+                              FROM qtfield 
+                              WHERE qtfield.resultype_id != 4)
+          THEN 'SI. Ma èascosto'
+          WHEN queryable = 1 and 
+               layer_id IN (SELECT qtfield.layer_id 
+                              FROM qtfield 
+                              WHERE qtfield.resultype_id = 4)
+          THEN 'NO. Nessun campo nei risultati'
+          ELSE 'NO. WFS non abilitato'
+        END AS is_queryable, 
+        CASE
+            WHEN queryable = 1 and layer_id IN ( SELECT qtfield.layer_id
+               FROM qtfield
+              WHERE qtfield.editable = 1)
+            THEN 'SI. Config. OK' 
+            WHEN queryable = 1 and layer_id IN ( SELECT qtfield.layer_id
+               FROM qtfield
+              WHERE qtfield.editable = 0)
+            THEN 'NO. Nessun campo èditabile' 
+            WHEN queryable = 0 and layer_id IN ( SELECT qtfield.layer_id
+               FROM qtfield
+              WHERE qtfield.editable = 1)
+            THEN 'NO. Esiste un campo editabile ma il WFS non èttivo' 
+            ELSE 'NO.'
+        END AS is_editable,
+        CASE
+            WHEN connection_type != 6 then '(i) Controllo non possibile: connessione non PostGIS'
+            WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then '(i) Controllo non possibile: DB diverso'
+            WHEN layertype_id = 4 then '(i) Controllo non possibile: dato raster'
+            WHEN catalog_id <= 0 then '(!) Nessun catalogo configurato'
+            WHEN data not in (select table_name FROM information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)))  THEN '(!) La tabella non esiste nel DB'
+            when data_geom not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data and data_type = 'USER-DEFINED') then '(!) Il campo geometrico del layer non esiste'
+            when data_unique not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo chiave del layer non esiste'
+            when data_srid not in (select srid FROM public.geometry_columns where f_table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and f_table_name=data) then '(!) Lo SRID configurato non èuello corretto'
+            when upper(data_type) not in (select type FROM public.geometry_columns where f_table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and f_table_name=data) then '(!) Geometrytype non corretto'
+            WHEN labelitem not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo etichetta del layer non esiste'
+            WHEN labelitem not in (select qtfield_name FROM qtfield where layer_id = l.layer_id) then '(!) Campo etichetta non presente nei campi del layer'
+            WHEN labelsizeitem not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo altezza etichetta del layer non esiste'
+            WHEN labelsizeitem not in (select qtfield_name FROM qtfield where layer_id = l.layer_id) then '(!) Campo altezza etichetta non presente nei campi del layer'
+            WHEN layer_name in (select distinct layer_name FROM layer where layergroup_id != lg.layergroup_id and catalog_id in (select catalog_id FROM catalog where project_name = c.project_name)) THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'
+            WHEN layer_id not in (select layer_id FROM class) then 'OK (i) Non ci sono classi configurate in questo layer'
+            ELSE 'OK'
+          END as layer_control
+   FROM layer l
+LEFT JOIN catalog c using (catalog_id)
+JOIN e_layertype using (layertype_id)
+JOIN layergroup lg using (layergroup_id)
+JOIN theme t using (theme_id);
+
+ALTER TABLE vista_layer
+OWNER TO gisclient;  
+
+-- correzione della view di select per avere come default pixels e non avere errori in fase di salvataggio
+CREATE OR REPLACE VIEW seldb_sizeunits AS 
+ SELECT foo.id, foo.opzione
+   FROM (SELECT e_sizeunits.sizeunits_id AS id, 
+                    e_sizeunits.sizeunits_name AS opzione
+                   FROM e_sizeunits) foo
+  ORDER BY foo.id;
+
+ALTER TABLE seldb_sizeunits
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.30', 'author', '2015-06-19');
+
+-- aggiunta tabella per i log
+
+CREATE TABLE logs
+(
+  log_id serial NOT NULL,
+  log_user character varying,
+  log_time timestamp without time zone NOT NULL DEFAULT now(),
+  log_action character varying,
+  log_info character varying,
+  CONSTRAINT logs_pkey PRIMARY KEY (log_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE logs
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.31', 'author', '2015-07-22');
