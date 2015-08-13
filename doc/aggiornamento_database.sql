@@ -1846,5 +1846,35 @@ JOIN catalog c using (catalog_id)
 join layer l using (layer_id)
 JOIN e_qtrelationtype rt using (qtrelationtype_id);
 
-INSERT INTO version (version_name,version_key, version_date) values ('3.2.32', 'author', '2015-07-22');
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.32', 'author', '2015-08-12');
 
+
+-- fix campi della tabella style, in alcuni DB i campi sono di tipo integer
+DROP VIEW gisclient_32.vista_style;
+
+ALTER TABLE style ALTER COLUMN size TYPE CHARACTER VARYING USING size::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN minsize TYPE CHARACTER VARYING USING minsize::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN maxsize TYPE CHARACTER VARYING USING maxsize::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN width TYPE CHARACTER VARYING USING width::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN maxwidth TYPE CHARACTER VARYING USING maxwidth::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN minwidth TYPE CHARACTER VARYING USING minwidth::CHARACTER VARYING;
+
+CREATE OR REPLACE VIEW gisclient_32.vista_style AS 
+ SELECT s.style_id, s.class_id, s.style_name, s.symbol_name, s.color, 
+    s.outlinecolor, s.bgcolor, s.angle, s.size, s.minsize, s.maxsize, s.width, 
+    s.maxwidth, s.minwidth, s.locked, s.style_def, s.style_order, s.pattern_id, 
+        CASE
+            WHEN NOT (s.symbol_name::text IN ( SELECT symbol.symbol_name
+               FROM gisclient_32.symbol)) THEN '(!) Il simbolo non esiste'::text
+            WHEN s.color IS NULL AND s.outlinecolor IS NULL AND s.bgcolor IS NULL THEN '(!) Stile senza colore'::text
+            WHEN s.symbol_name IS NOT NULL AND s.size IS NULL THEN '(!) Stile senza dimensione'::text
+            ELSE 'OK'::text
+        END AS style_control
+   FROM gisclient_32.style s
+   LEFT JOIN gisclient_32.symbol USING (symbol_name)
+  ORDER BY s.style_order;
+
+ALTER TABLE gisclient_32.vista_style
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.33', 'author', '2015-08-13');
