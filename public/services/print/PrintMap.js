@@ -96,6 +96,23 @@ OpenLayers.Control.PrintMap = OpenLayers.Class(OpenLayers.Control.Button, {
         params["northArrow"] = me.northArrow;
         params["rotation"] = me.modifyControl.pageRotation;
 
+
+
+console.log(me.printBox)
+
+        var bounds = me.printBox.geometry.getBounds();
+        var center = bounds.getCenterLonLat();
+
+        var width = bounds.getWidth();
+        var height = bounds.getHeight();
+        var extent = [center.lon-width/2,center.lat-height/2,center.lon+width/2,center.lat+height/2];
+
+        params["center"] = [center.lon, center.lat];
+        params["extent"] = [center.lon-width/2,center.lat-height/2,center.lon+width/2,center.lat+height/2].join(",");
+
+
+
+
         if(me.loadingControl) me.loadingControl.maximizeControl();
         
          $.ajax({

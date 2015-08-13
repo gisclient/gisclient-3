@@ -22,6 +22,9 @@ dato[] = "Scarica immagine;dl_image_res;20;text"
 dato[] = "Colore sfondo;bg_color;11;color"
 dato[] = "Reference fissa;static_reference;;noyes|Tiles;mapset_tiles;120#seldb_mapset_tiles;selectdb"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+
+dato[] = "Definizioni aggiuntive<br><font size=1><a href= "http://mapserver.org/mapfile/map.html" target=blank>Documentazione MapServer MAP</a></font>;mapset_def;48x6;textarea"
+
 [list]
 table = "mapset"
 pkey = "mapset_name"

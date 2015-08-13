@@ -74,7 +74,7 @@ class printDocument {
 		if (!empty($_REQUEST['dpi']) && is_numeric($_REQUEST['dpi']))
 			$options['dpi'] = (int) $_REQUEST['dpi'];
 		if (!empty($_REQUEST['rotation']) && is_numeric($_REQUEST['rotation']))
-			$options['rotation'] = (int) $_REQUEST['rotation'];
+			$options['rotation'] = (double) $_REQUEST['rotation'];
 		if (!empty($_REQUEST['srid'])) {
 			$options['srid'] = $_REQUEST['srid'];
 			if (strpos($_REQUEST['srid'], ':') !== false) {

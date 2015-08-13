@@ -82,9 +82,6 @@ $oMap->setSize(intval($mapConfig['size'][0]), intval($mapConfig['size'][1]));
 
 print_debug($mapConfig,null,'mapconfig');
 
-//if(isset($mapConfig['rotation']))
-//	$oMap->setRotation(intval($mapConfig['rotation']));
-
 $sridParts = explode(':', strtolower($mapConfig['srs']));
 if (count($sridParts) == 2) {
 	// e.g.: EPSG:4306
@@ -233,6 +230,10 @@ if(isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format
 	$oMap->setFontSet('../../fonts/fonts.list');
 	$oMap->scalebar->updateFromString($scalebar);
 }
+
+if(isset($mapConfig['rotation']))
+	$oMap->setRotation(intval($mapConfig['rotation']));
+
 
 if ($enableDebug) { 
 	$oMap->save(DEBUG_DIR . 'debug.map');

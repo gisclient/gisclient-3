@@ -175,10 +175,12 @@ class mapImage {
 			$saveImage = true;
 		}
 
+
+//print_array($this->options["rotation"]);die();
 		$requestParameters = json_encode(array(
 			'layers'=>$this->wmsList,
 			'size'=>$this->imageSize,
-			'rotation'=>40,
+			'rotation'=>$this->options["rotation"],
 			'extent'=>$this->extent,
 			'srs'=>$this->options['auth_name'].':'.$this->srid,
 			'scalebar' => $this->options['scalebar'],

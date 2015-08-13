@@ -115,13 +115,16 @@ var initMap = function(){
     console.log(formId)
     $('#' + formId).on('click', 'button[role="print"]', function(event) {
         event.preventDefault();
+        btnPrint.center = 
+
+
         btnPrint.doPrint();
     });
 
     $('#'+formId).on('click', 'button[role="center"]', function(event) {
         var x = Math.round(parseFloat($('#'+formId+' input[name="coordx"]').val()));
         var y = Math.round(parseFloat($('#'+formId+' input[name="coordy"]').val()));
-             console.log(x,y)
+        console.log(x,y)
 
         if(x && y) {
           var position = new OpenLayers.LonLat(x,y).transform(proj_3003,proj_3857);
