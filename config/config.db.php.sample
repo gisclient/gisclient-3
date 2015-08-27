@@ -1,4 +1,4 @@
-?php
+<?php
 
 //Impostazioni database Postgresql
 define('DB_NAME', 'MY_DB_NAME');
