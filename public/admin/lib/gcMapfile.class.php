@@ -126,12 +126,13 @@ class gcMapfile{
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,outputformat_mimetype,
 		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
-		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title
+		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title, set_extent
 		from ".DB_SCHEMA.".layer 
 		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
 		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
 		INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
 		LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
+		LEFT JOIN ".DB_SCHEMA.".catalog using (catalog_id, project_name)
 		where ".$filter." order by layer_order DESC,layergroup_order;";	
 		//where ".$filter." order by theme_order desc, layergroup_order desc, layer_order desc;";	SERVE PER SCRIVERE I LAYER NEL MAPFILE UTILIZZANDO L'ORDINE RELATIVO TEMA-LAYERGROUP-LAYER. Sarebbe da sviluppare la funzione che permette all'utente di sceglierlo a livello di progetto
 
@@ -186,13 +187,13 @@ class gcMapfile{
 
 			$oFeature->initFeature($aLayer["layer_id"]);
                         
-                        // use mapset extent if layer extent is not set
-                        // the layer extent is important to make wms layers work in some desktop gis clients
-                        $oFeatureData = $oFeature->getFeatureData();
-                        if (empty($oFeatureData['data_extent'])) {
-                            $oFeatureData['data_extent'] = $aLayer["mapset_extent"];
-                            $oFeature->setFeatureData($oFeatureData);
-                        }
+            $oFeatureData = $oFeature->getFeatureData();
+            if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
+	            // use mapset extent if layer extent is not set
+	            // the layer extent is important to make wms layers work in some desktop gis clients
+                $oFeatureData['data_extent'] = $aLayer["mapset_extent"];
+                $oFeature->setFeatureData($oFeatureData);
+            }
 
 			// Force layer to be private if the mapset is private
             if (!empty($aLayer["mapset_private"]) && $aLayer["mapset_private"]) {

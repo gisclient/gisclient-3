@@ -1818,3 +1818,72 @@ ALTER TABLE logs
   OWNER TO gisclient;
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.31', 'author', '2015-07-22');
+
+-- fix vista_qtrelation
+
+create or replace view vista_qtrelation as 
+select r.qtrelation_id, r.catalog_id, r.qtrelation_name, r.qtrelationtype_id, r.data_field_1, r.data_field_2, r.data_field_3, r.table_name, r.table_field_1, r.table_field_2, r.table_field_3, r.language_id, r.layer_id,
+CASE
+  WHEN connection_type != 6 then '(i) Controllo non possibile: connessione non PostGIS'
+  WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then '(i) Controllo non possibile: DB diverso'
+  WHEN data not in (select table_name FROM information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path))) then '(!) La tabella DB del layer non esiste'
+  WHEN table_name not in (select table_name FROM information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path))) then '(!) tabella DB di JOIN non esiste'
+  WHEN data_field_1 is null or table_field_1 is null then '(!) Uno dei campi della JOIN 1 è vuoto'
+  WHEN data_field_1 not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo chiave layer non esiste'
+  WHEN table_field_1 not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = r.table_name) then '(!) Il campo chiave della relazione non esiste'
+  WHEN data_field_2 is null AND table_field_2 is null then 'OK'
+  WHEN data_field_2 is null or table_field_2 is null then '(!) Uno dei campi della JOIN 2 è vuoto'
+  WHEN data_field_2 not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo chiave layer della JOIN 2 non esiste'
+  WHEN table_field_2 not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = r.table_name) then '(!) Il campo chiave relazione della JOIN 2 non esiste'
+  WHEN data_field_3 is null AND table_field_3 is null then 'OK'
+  WHEN data_field_3 is null or table_field_3 is null then '(!) Uno dei campi della JOIN 3 è vuoto'
+  WHEN data_field_3 not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo chiave layer della JOIN 3 non esiste'
+  WHEN table_field_3 not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = r.table_name) then '(!) Il campo chiave relazione della JOIN 3 non esiste'
+  ELSE 'OK'
+  END as qtrelation_control
+FROM qtrelation r
+JOIN catalog c using (catalog_id)
+join layer l using (layer_id)
+JOIN e_qtrelationtype rt using (qtrelationtype_id);
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.32', 'author', '2015-08-12');
+
+
+-- fix campi della tabella style, in alcuni DB i campi sono di tipo integer
+DROP VIEW vista_style;
+
+ALTER TABLE style ALTER COLUMN size TYPE CHARACTER VARYING USING size::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN minsize TYPE CHARACTER VARYING USING minsize::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN maxsize TYPE CHARACTER VARYING USING maxsize::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN width TYPE CHARACTER VARYING USING width::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN maxwidth TYPE CHARACTER VARYING USING maxwidth::CHARACTER VARYING;
+ALTER TABLE style ALTER COLUMN minwidth TYPE CHARACTER VARYING USING minwidth::CHARACTER VARYING;
+
+CREATE OR REPLACE VIEW vista_style AS 
+ SELECT s.style_id, s.class_id, s.style_name, s.symbol_name, s.color, 
+    s.outlinecolor, s.bgcolor, s.angle, s.size, s.minsize, s.maxsize, s.width, 
+    s.maxwidth, s.minwidth, s.locked, s.style_def, s.style_order, s.pattern_id, 
+        CASE
+            WHEN NOT (s.symbol_name IN ( SELECT symbol_name
+               FROM symbol)) THEN '(!) Il simbolo non esiste'
+            WHEN s.color IS NULL AND s.outlinecolor IS NULL AND s.bgcolor IS NULL THEN '(!) Stile senza colore'
+            WHEN s.symbol_name IS NOT NULL AND s.size IS NULL THEN '(!) Stile senza dimensione'
+            ELSE 'OK'
+        END AS style_control
+   FROM gisclient_32.style s
+   LEFT JOIN symbol USING (symbol_name)
+  ORDER BY s.style_order;
+
+ALTER TABLE vista_style
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.2.33', 'author', '2015-08-13');
+
+
+-- AGGIORNAMENTO MERGE --
+
+ALTER TABLE catalog
+  ADD COLUMN set_extent smallint DEFAULT 1;
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.1', 'author', '2015-10-09');
