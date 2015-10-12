@@ -89,14 +89,12 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 		if($catalog["connection_type"]==6){
 			$dataDb = GCApp::getDataDB($catalog["catalog_path"]);
 			$schema = GCApp::getDataDBSchema($catalog['catalog_path']);
-			//list($connStr,$schema)=connAdminInfofromPath($catalog["catalog_path"]);
-			//$newdb=pg_connect($connStr);
-			//setDBPermission($newdb,$schema,MAP_USER,'SELECT','GRANT',$_POST["dati"]["data"]);
+			$table = $_POST["dati"]["data"];
+			$geometry_column = $_POST["dati"]["data_geom"];
 
-            // LA FUNZIONE  public.gc_check_srid() NON ESISTE!
-			//$table = $_POST["dati"]["data"];
-			//$sql = "DROP TRIGGER IF EXISTS chk_srid ON {$schema}.\"{$table}\";CREATE TRIGGER chk_srid BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_check_srid();";
-			//$dataDb->exec($sql);
+			if (defined('TRANSFORM_EDIT_GEOMETRY') && TRANSFORM_EDIT_GEOMETRY && $_POST["dati"]["querable"]) {
+	            setTriggerTransformGeometry($dataDb, $schema, $table, $geometry_column);
+	        }
 		}
 
 		if($save->mode == 'new' && $catalog['connection_type'] == 6) {
@@ -110,7 +108,7 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 			}
 			if (is_array($rows)) {
 			    foreach ($rows as $row) {
-					$newid = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'field', 'field_id');						
+					$newid = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'field', 'field_id');
 					$dataType = GCAuthor::GCTypeFromDbType($row['udt_name']);
 					if(!$dataType) continue;
 					$sqlParams = array(

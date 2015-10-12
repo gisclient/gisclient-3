@@ -17,5 +17,3 @@ if($save->action=="salva" && !$save->hasErrors && ($_POST["dati"]["catalog_path"
 			setDBPermission($db2,$schema,MAP_USER,'EXECUTE','GRANT');
 		}
 }
-
-?>
