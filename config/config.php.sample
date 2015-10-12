@@ -150,6 +150,7 @@ define('PRINT_PDF_FONT','times');
 /****************** DATA MANAGER ***************+*/
 define('USE_DATA_IMPORT', false);
 define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
+define('TRANSFORM_EDIT_GEOMETRY', false);
 //define('USE_PHP_EXCEL', true);
 //define('MEASURE_AREA_COL_NAME', 'gc_area'); 
 //define('MEASURE_LENGTH_COL_NAME', 'gc_length'); 
