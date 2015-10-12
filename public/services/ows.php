@@ -372,6 +372,9 @@ $contenttype = ms_iostripstdoutbuffercontenttype();
 if (substr($contenttype, 0, 6) == 'image/') {
 
 	header('Content-Type: '. $contenttype);
+	// Prevent apache to zip imnage
+        apache_setenv('no-gzip', 1);
+        ini_set('zlib.output_compression', 0);
 
 	$hasDynamicLayer = false;
 	if (defined('DYNAMIC_LAYERS')) {
