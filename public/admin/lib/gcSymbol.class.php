@@ -46,7 +46,7 @@ class Symbol{
 			left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name)";
 
 			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.=" order by style_order;";
+			$sql.=" order by style_order desc;";
             
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
