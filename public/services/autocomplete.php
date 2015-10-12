@@ -13,27 +13,47 @@ $maxNumResults = 100;
 $ajax = new GCAjax();
 $db = GCApp::getDB();
 
+$lang = !empty($_REQUEST['lang']) ? $_REQUEST['lang'] : null;
 if(empty($_REQUEST['field_id']) || !is_numeric($_REQUEST['field_id']) || (int)$_REQUEST['field_id'] != $_REQUEST['field_id']) {
-	$ajax->error('Undefined field_id');
+    $ajax->error('Undefined or invalid field_id');
 } else {
-	$fieldId = (int)$_REQUEST['field_id'];
+    $fieldId = (int)$_REQUEST['field_id'];
 }
 
-$lang = !empty($_REQUEST['lang']) ? $db->quote($_REQUEST['lang']) : null;
-
-$sql = 'select field_id, field_name, relation_id, layer_id, formula from '.DB_SCHEMA.'.field where field_id=:id';
+$dbSchema = DB_SCHEMA;
+$sql = "SELECT qtfield_id, qtfield_name, qtrelation_id, layer_id, formula, filter_field_name, layergroup_name, layer_name 
+        FROM {$dbSchema}.qtfield 
+        INNER JOIN {$dbSchema}.layer USING(layer_id)
+        INNER JOIN {$dbSchema}.layergroup USING(layergroup_id)
+        WHERE qtfield_id=:id";
 $stmt = $db->prepare($sql);
 $stmt->execute(array('id'=>$fieldId));
 $field = $stmt->fetch(PDO::FETCH_ASSOC);
 if(empty($field)) {
-	$ajax->error('Field '.$fieldId.' does not exists');
+    $ajax->error('Field '.$fieldId.' does not exists');
 }
 $isLayer = true;
 
-if(!empty($field['relation_id'])) {
-    $sql = 'select catalog.project_name, catalog_path, table_name as table, relation_name as alias from '.DB_SCHEMA.'.catalog inner join '.DB_SCHEMA.'.relation using(catalog_id) '.
-        ' where relation_id = :id';
-    $params = array('id'=>$field['relation_id']);
+// Check for related filters (filter of filter)
+function getRecursiveFilterField($db, $filterFieldName, $layerId) {
+    $result = array();
+    $sql = 'SELECT qtfield_id, qtfield_name, qtrelation_id, layer_id, formula, filter_field_name FROM '.DB_SCHEMA.'.qtfield WHERE qtfield_name=:qtfield_name AND layer_id=:layer_id';
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array('qtfield_name'=>$filterFieldName, 'layer_id'=>$layerId));
+    $field = $stmt->fetch(PDO::FETCH_ASSOC);
+    $result[] = $field;
+    if(!empty($field['filter_field_name'])) {
+        $result = array_merge($result, getRecursiveFilterField($db, $field['filter_field_name'], $field['layer_id']));
+    }
+    return $result;
+}
+$recursiveFields = getRecursiveFilterField($db, $field['filter_field_name'], $field['layer_id']);
+
+
+if(!empty($field['qtrelation_id'])) {
+    $sql = 'select catalog.project_name, catalog_path, table_name as table, qtrelation_name as alias from '.DB_SCHEMA.'.catalog inner join '.DB_SCHEMA.'.qtrelation using(catalog_id) '.
+        ' where qtrelation_id = :id';
+    $params = array('id'=>$field['qtrelation_id']);
     $isLayer = false;
 } else {
     $sql = 'select catalog.project_name, catalog_path, data as table, data_filter from '.DB_SCHEMA.'.catalog inner join '.DB_SCHEMA.'.layer using(catalog_id) '.
@@ -44,7 +64,7 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $catalog = $stmt->fetch(PDO::FETCH_ASSOC);
 if(empty($catalog)){
-	$ajax->error('No catalog found for layer_id '. $field['layer_id']);
+    $ajax->error('No catalog found for layer_id '. $field['layer_id']);
 }
 
 if($lang) {
@@ -73,12 +93,27 @@ $schema = GCApp::getDataDBSchema($catalog['catalog_path']);
 $constraints = array();
 $params = array();
 
-$fieldName = $field['field_name'];
+if (!empty($recursiveFields)) {
+    foreach($recursiveFields as $recursiveField) {
+        if (!empty($_REQUEST[$recursiveField['qtfield_name']])) {
+            array_push($constraints, "{$recursiveField['qtfield_name']}=:{$recursiveField['qtfield_name']}_search");
+            $params["{$recursiveField['qtfield_name']}_search"] = $_REQUEST[$recursiveField['qtfield_name']];
+        }
+    }
+}
+
+// Add gc-filter if present
+$gcLayerFilters = "{$field['layergroup_name']}.{$field['layer_name']}";
+if (!empty($_SESSION['GC_LAYER_FILTERS'][$gcLayerFilters])) {
+    array_push($constraints, $_SESSION['GC_LAYER_FILTERS'][$gcLayerFilters]);
+}
+
+$fieldName = $field['qtfield_name'];
 $alias = 'aliastable';
 if($isLayer) {
-	if(!empty($catalog['data_filter'])) {
-		array_push($constraints, '('.$catalog['data_filter'].')');
-	}
+    if(!empty($catalog['data_filter'])) {
+        array_push($constraints, '('.$catalog['data_filter'].')');
+    }
 } else {
     $alias = $catalog['alias'];
     $fieldName = $field['formula'];
@@ -89,18 +124,18 @@ if(!empty($_REQUEST['filter'])) {
     $params['filter'] = '%'.$_REQUEST['filter'].'%';
 }
 if (!empty($_REQUEST['do_id'])) {
-	if (!is_numeric($_REQUEST['do_id']) || (int) $_REQUEST['do_id'] != $_REQUEST['do_id']) {
-		$ajax->error('invalid value of do_id');
-	} else {
-		array_push($constraints, ' do_id = :do_id ');
-		$params['do_id'] = (int) $_REQUEST['do_id'];
-	}
+    if (!is_numeric($_REQUEST['do_id']) || (int) $_REQUEST['do_id'] != $_REQUEST['do_id']) {
+        $ajax->error('invalid value of do_id');
+    } else {
+        array_push($constraints, ' do_id = :do_id ');
+        $params['do_id'] = (int) $_REQUEST['do_id'];
+    }
 }
-$sql = 'select distinct '.$fieldName.' from '.$schema.'.'.$catalog['table'].' as '.$alias;
+$sql = "SELECT DISTINCT {$fieldName} FROM {$schema}.{$catalog['table']} AS {$alias}";
 if(!empty($constraints)) {
-    $sql .= ' where '.implode(' and ', $constraints);
+    $sql .= ' WHERE ('.implode(') AND (', $constraints) . ')';
 }
-$sql .= ' order by '.$fieldName . ' LIMIT '.$maxNumResults;
+$sql .= " ORDER BY {$fieldName} LIMIT {$maxNumResults}";
 
 try {
     $stmt = $dataDb->prepare($sql);
