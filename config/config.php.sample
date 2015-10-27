@@ -169,7 +169,8 @@ $GEOLOCATOR_CONFIG = array(
         'idfield'=>'id',
         'geomfield'=>'the_geom',
         'tablename'=>'common.map_search',
-        'order'=>' order_id, search_name'
+        'order'=>' order_id, search_name',
+        'where'=>"lang_id='de'"
     )
 );
 
