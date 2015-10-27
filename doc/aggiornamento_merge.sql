@@ -52,6 +52,10 @@ ALTER TABLE field_groups ADD CONSTRAINT field_groups_field_id_fkey FOREIGN KEY (
 ALTER TABLE field_groups DROP CONSTRAINT qtfield_groups_pkey;
 ALTER TABLE field_groups ADD CONSTRAINT field_groups_pkey PRIMARY KEY(field_id, groupname);
 
+UPDATE i18n_field SET table_name='field' where table_name='qtfield';
+UPDATE i18n_field SET field_name='field_name' where field_name='qtfield_name';
+
+
 ALTER TABLE e_qtrelationtype RENAME TO e_relationtype;
 ALTER TABLE e_relationtype RENAME qtrelationtype_id  TO relationtype_id;
 ALTER TABLE e_relationtype RENAME qtrelationtype_name  TO relationtype_name;
