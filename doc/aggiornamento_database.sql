@@ -1878,12 +1878,3 @@ ALTER TABLE vista_style
   OWNER TO gisclient;
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.2.33', 'author', '2015-08-13');
-
-
--- AGGIORNAMENTO MERGE --
-
-ALTER TABLE catalog
-  ADD COLUMN set_extent smallint DEFAULT 1;
-
--- version
-INSERT INTO version (version_name,version_key, version_date) values ('3.4.1', 'author', '2015-10-09');
