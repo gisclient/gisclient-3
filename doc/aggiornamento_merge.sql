@@ -852,8 +852,16 @@ CREATE OR REPLACE VIEW vista_mapset AS
 ALTER TABLE vista_mapset
   OWNER TO gisclient;
  
-
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
-
 COMMIT;
+
+------------------------------------------- INIZIO SVILUPPI AUTHOR 3.4 -------------------------------------------
+
+ALTER TABLE catalog
+  ADD COLUMN set_extent smallint DEFAULT 1;
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.1', 'author', '2015-10-09');
+
+
