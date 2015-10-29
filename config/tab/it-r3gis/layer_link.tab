@@ -1,11 +1,11 @@
 [standard]
-table = "qtlink"
+table = "layer_link"
 pkey = "layer_id;link_id"
 dato[] = "Nome;link_id;200#seldb_link#project;selectdb"
 dato[] = "Tipo Risultato;resultype_id;200#seldb_resultype;selectdb"
 dato[] = "Chiudi;azione;;submit;all;chiudi|Aggiungi;azione;;submit;all;aggiungi"
 [list]
-table = "qtlink"
+table = "layer_link"
 pkey = "layer_id;link_id"
 order_fld = "resultype_id"
 dato[] = "Nome;link_id;#link#link_name;chiave_esterna"
@@ -15,13 +15,13 @@ dato[] = "Tipo Risultato;resultype_id;#e_resultype#resultype_name;chiave_esterna
 dato[] = ";layer_id;1%#link_id;delete"
 
 [title]
-edit = "Link del Modello di Ricerca"
-view = "Link del Modello di Ricerca"
-new = "Link del Modello di Ricerca"
-list = "Link del Modello di Ricerca"
+edit = "Modifica link collegati al layer"
+view = "Link collegati al layer"
+new = "Inserisci link collegati al layer"
+list = "Link collegati al layer"
 
 [menu]
-standard = "Link del Modello di Ricerca"
+standard = "Link collegati al layer"
 
 [message]
 nodata = ""
