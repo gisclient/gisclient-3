@@ -270,6 +270,16 @@ class Symbol{
 	
 	}
 	
+	function removeByName($name) {
+		$dbSchema=DB_SCHEMA;
+		$sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		
+		$sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		return $rv; 
+	}
+
 	function importFilesmb($filename){
 		$handle=fopen($filename,'r');
 		$content=trim(fread($handle,filesize($filename)));
