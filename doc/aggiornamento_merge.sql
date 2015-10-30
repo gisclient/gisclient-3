@@ -852,6 +852,25 @@ CREATE OR REPLACE VIEW vista_mapset AS
 ALTER TABLE vista_mapset
   OWNER TO gisclient;
  
+-- da verificare -- 
+ALTER TABLE mapset ADD COLUMN IF NOT EXISTS mapset_description TEXT;
+
+DROP VIEW vista_mapset;
+CREATE OR REPLACE VIEW vista_mapset AS 
+select m.*,
+  CASE 
+    when mapset_name not in (select mapset_name from mapset_layergroup) then '(!) Nessun layergroup presente'
+    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) Openlayers non consente di rappresentare più di 75 layergroup alla volta'
+    WHEN mapset_scales is null THEN '(!) Nessun elenco di scale configurato'
+    WHEN mapset_srid != displayprojection then '(i) Coordinate visualizzate diverse da quelle di mappa'
+    WHEN 0 = (select max(refmap) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) THEN '(i) Nessuna reference map'
+    ELSE 'OK'
+  END as mapset_control
+from mapset m;
+
+ALTER TABLE vista_mapset
+  OWNER TO gisclient;  
+ 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
 COMMIT;
