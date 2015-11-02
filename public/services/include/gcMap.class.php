@@ -874,7 +874,7 @@ class gcMap{
         //FD: questi adesso sono qt_link oppure layer_link?!?!
         return array();
 		$sql = "select layer_id, link_name, link_def, winw, winh ".
-			" from ".DB_SCHEMA.".link inner join ".DB_SCHEMA.".qtlink using(link_id) ".
+			" from ".DB_SCHEMA.".link inner join ".DB_SCHEMA.".layer_link using(link_id) ".
 			" INNER JOIN ".DB_SCHEMA.".layer using (layer_id) ".
 			" INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) ".
 			" where mapset_layergroup.mapset_name=:mapset_name ORDER BY link_order;";
