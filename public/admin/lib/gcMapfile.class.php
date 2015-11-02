@@ -225,6 +225,10 @@ class gcMapfile{
 			}
 
 			if(defined('MAPPROXY_PATH')){
+				if(!empty($this->i18n)) {
+					$languageId = $this->i18n->getLanguageId();
+					$mapName.= "_".$languageId;
+				}
 				//DEFINIZIONE DEI LAYER PER MAPPROXY (COSTRUISCO UN LAYER WMS ANCHE PER I WMTS/TMS PER I TEST)
 				//TODO: AGGIUNGERE LA GESTIONE DEI LAYER WMS PRESI DA SERVIZI ESTERNI
 				if(empty($this->mpxLayers[$mapName])) $this->mpxLayers[$mapName] = array();
