@@ -13,6 +13,7 @@ dato[] = "Limita estensione<br><font size=1>Indicare: minX minY MAXX MAXY separa
 dato[] = "Template di apertura mappa;template;60;text"
 dato[] = "Tipo di scala automatico (potenza di 2);mapset_scale_type;;noyes"
 dato[] = "Ordine dei mapset;mapset_order;10;text"
+dato[] = "Metadata;metadata;48x6;textarea"
 dato[] = "Mappa privata<br><font size=1>Protegge con login il contenuto della mappa</font>;private;;noyes"
 
 dato[] = "Formati di stampa;page_size;20;text"
