@@ -1350,3 +1350,21 @@ and pattern_id = 0 and class_id in
 
 
 INSERT INTO version (version_name,version_key, version_date) values ('6', 'mapserver', CURRENT_DATE);
+
+
+/*
+--ROLLBACK TO MS5
+
+SET search_path=gisclient_32;
+
+update style s set
+symbol_name = pattern_name
+from e_pattern p where p.pattern_id=s.pattern_id
+and s.pattern_id != 0;
+
+update style set pattern_id = 0;
+
+update style set style_def = replace(style_def,'GAP','#GAP');
+
+-- eseguire reinsert dei simboli MS5
+*/
