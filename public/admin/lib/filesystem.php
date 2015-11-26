@@ -19,6 +19,7 @@ function elenco_file($p, $ext = '', $fname = '') {
 		}
 		closedir($dh);
 	}
+	sort($files);
 	return $files;
 }
 
