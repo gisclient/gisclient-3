@@ -75,9 +75,11 @@ if (isset($skippedParams['transparent'])) {
 
 // recupero lista layer dal parametro layers
 $layersParameter = null;
+$layerIndexList = null;
 if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 	$parameterName = 'LAYERS';
 	$layersParameter = $objRequest->getValueByName('layers');
+        $layerIndexList = $objRequest->getValueByName('indexes');
 	if ($requestedFormat == 'kmz') {
 		// KMZ is requested as KML and packaged later on
 		// this is dome in this way to allow icons to be bundeled
@@ -254,9 +256,10 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 	}
 }
 
-if(!empty($layersParameter)) {
+if(!empty($layersParameter) || !empty($layerIndexList)) {
 	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
-	
+	$layersArray = array_merge($layersArray, OwsHandler::getRequestedLayersById($oMap, $objRequest, $layerIndexList));
+        
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();
 	$layersToInclude = array();
@@ -372,9 +375,6 @@ $contenttype = ms_iostripstdoutbuffercontenttype();
 if (substr($contenttype, 0, 6) == 'image/') {
 
 	header('Content-Type: '. $contenttype);
-	// Prevent apache to zip imnage
-        apache_setenv('no-gzip', 1);
-        ini_set('zlib.output_compression', 0);
 
 	$hasDynamicLayer = false;
 	if (defined('DYNAMIC_LAYERS')) {
