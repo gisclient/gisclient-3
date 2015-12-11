@@ -320,7 +320,8 @@ class gcMap {
             $layergroupName = $row['layergroup_name'];
             $layergroupTitle = empty($row['layergroup_title']) ? $layergroupName : ((strtoupper(CHAR_SET) != 'UTF-8') ? utf8_encode($row["layergroup_title"]) : $row["layergroup_title"]);
             $layerType = intval($row["owstype_id"]);
-
+            $layerOrder = empty($row['layergroup_order']) ? 0 : $row['layergroup_order'];
+            
             //SE METTO LA / NON METTE GRUPPO
             /* ELIMINO???????????????????????? DA VEDERE COME CUSTOMIZZARE IL TEMA DI APPARTENENZA
               if(empty($row['tree_group']))
@@ -355,6 +356,7 @@ class gcMap {
             $layerOptions["theme_id"] = $row['theme_name'];
             $layerOptions["title"] = $layergroupTitle;
             $layerOptions["rootPath"] = $themeTitle;
+            $layerOptions["order"] = $layerOrder;
             
             if ($row["refmap"])
                 $aLayer["overview"] = true;
@@ -415,6 +417,7 @@ class gcMap {
                             $aLayer["options"]["title"] = $themeTitle;
                             $aLayer["options"]["visibility"] = false;
                             $aLayer["options"]["rootPath"] = "";
+                            unset($aLayer["options"]["order"]);
                             $aLayer["parameters"]["layers"] = array();
                             array_push($this->mapLayers, $aLayer);
                             $idx = count($this->mapLayers) - 1;
@@ -429,7 +432,7 @@ class gcMap {
                         if ($row["layergroup_single"] == 1) {
                             if ($row["status"] == 1)
                                 array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
-                            $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
+                            $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder);
                         }
 
                         //Layergroup con singoli layer distinti				(DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)		
@@ -448,31 +451,33 @@ class gcMap {
                                 $nodes[] = $arr;
                                 $layers[] = $userLayer["name"];
                             }
-                            $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "nodes" => $nodes);
+                            $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder, "nodes" => $nodes);
                         }
 
                         //INIZIALIZZO IL VALORE PER VERIFICARE CHE SIANO SETTATI MAXSCALE E MINSCALE PER TUTTI I LAYER DEL TEMA ALTRIMENTI NON SETTO IL VALORE NEL TEMA LAYER
-                        //if ($newFlag && !empty($layerOptions["minScale"]))
-                        //    $this->mapLayers[$idx]["options"]["minScale"] = $layerOptions["minScale"];
-                        //if ($newFlag && !empty($layerOptions["maxScale"]))
-                        //    $this->mapLayers[$idx]["options"]["maxScale"] = $layerOptions["maxScale"];
+                        if ($newFlag){
+                            $this->mapLayers[$idx]["options"]["minScale"] = 0;
+                            $this->mapLayers[$idx]["options"]["maxScale"] = PHP_INT_MAX;
+                        }
 
                         if (!empty($layerOptions["minScale"])) {
                             $node["minScale"] = $layerOptions["minScale"];
-                            if (!empty($this->mapLayers[$idx]["options"]["minScale"]))
+                            if (isset($this->mapLayers[$idx]["options"]["minScale"]))
                                 $this->mapLayers[$idx]["options"]["minScale"] = max($this->mapLayers[$idx]["options"]["minScale"], $layerOptions["minScale"]);
-			    else
-				$this->mapLayers[$idx]["options"]["minScale"] = $layerOptions["minScale"];
+                        } 
+                        else {
+                            unset($this->mapLayers[$idx]["options"]["minScale"]); 
                         }
-
-                        if (!empty($layerOptions["maxScale"])) {
+                        
+                        if (!empty($layerOptions["maxScale"])) {                              
                             $node["maxScale"] = $layerOptions["maxScale"];
-                            if (!empty($this->mapLayers[$idx]["options"]["maxScale"]))
+                            if (isset($this->mapLayers[$idx]["options"]["maxScale"]))
                                 $this->mapLayers[$idx]["options"]["maxScale"] = min($this->mapLayers[$idx]["options"]["maxScale"], $layerOptions["maxScale"]);
-		            else
-				$this->mapLayers[$idx]["options"]["maxScale"] = $layerOptions["maxScale"];
+                        } 
+                        else {  
+                            unset($this->mapLayers[$idx]["options"]["maxScale"]);                             
                         }
-
+                        
                         array_push($this->mapLayers[$idx]["nodes"], $node);
 
                         continue;
@@ -646,6 +651,7 @@ class gcMap {
                     $layerParameters["title"] = $layergroupTitle;
                     $layerParameters["theme_id"] = $row['theme_name'];
                     $layerParameters["rootPath"] = $themeTitle;
+                    $layerParameters["order"] = $layerOrder;
                     //$layerParameters["displayInLayerSwitcher"] = true;
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
