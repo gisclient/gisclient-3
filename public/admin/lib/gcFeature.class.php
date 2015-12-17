@@ -189,6 +189,12 @@ class gcFeature{
 	
 	public function getLayerText($layergroupName, $layergroup){
 		if(!$this->aFeature) return false;
+		
+		// translate layergroup
+		if(!empty($this->i18n)) {
+                        $layergroup = $this->i18n->translateRow($layergroup, 'layergroup', $layergroup['layergroup_id']);
+                }
+                
         $maxScale = $layergroup['layergroup_maxscale'];
         $minScale = $layergroup['layergroup_minscale'];
         // FIXME: the following does not use the return value, can it be removed?
