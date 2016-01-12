@@ -14,13 +14,13 @@ dato[] = ";language_id;1%#project_name;edit"
 dato[] = ";language_id;1%#project_name;delete"
 
 [title]
-edit = "Modifica lingua alternativa"
-view = "Visualizza lingua alternativa"
-new = "Inserisci lingua alternativa"
-list = "Elenco lingue alternative"
+edit = "Modifica lingua secondaria"
+view = "Visualizza lingua secondaria"
+new = "Inserisci lingua secondaria"
+list = "Elenco lingue secondaria"
 
 [menu]
-new = "Inserisci lingua alternativa"
+new = "Inserisci lingua secondaria"
 standard = "language_id"
 
 [message]
