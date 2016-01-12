@@ -8,6 +8,11 @@ require_once ROOT_PATH . 'lib/GCService.php';
 $gcService = GCService::instance();
 $gcService->startSession();
 
+$inputJSONText = file_get_contents('php://input');
+if (($data = json_decode($inputJSONText, true)) !== null) {
+    $_REQUEST = $data;
+}
+
 $ajax = new GCAjax();
 
 if (isset($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
