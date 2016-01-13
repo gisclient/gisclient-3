@@ -46,7 +46,7 @@ class Symbol{
 			left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name)";
 
 			if($this->filter) $sql.=" where ".$this->filter;
-			$sql.=" order by style_order;";
+			$sql.=" order by style_order desc;";
             
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
@@ -270,6 +270,16 @@ class Symbol{
 	
 	}
 	
+	function removeByName($name) {
+		$dbSchema=DB_SCHEMA;
+		$sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		
+		$sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
+		$rv = $this->db->exec($sql);
+		return $rv; 
+	}
+
 	function importFilesmb($filename){
 		$handle=fopen($filename,'r');
 		$content=trim(fread($handle,filesize($filename)));

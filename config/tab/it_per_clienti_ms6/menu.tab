@@ -45,13 +45,13 @@ constant = "'Nuovo Query Template'"
 [style]
 standard = "style_name"
 constant = "'Nuovo Stile'"
-[qtrelation]
-standard = "qtrelation_name"
+[relation]
+standard = "relation_name"
 constant = "'Nuova Relazione'"
-[qtfield]
-standard = "qtfield_name"
+[field]
+standard = "field_name"
 constant = "'Nuovo Campo'"
-[qtlink]
+[layer_link]
 constant = "'Link'"
 [mapset_groups]
 standard = "'Gruppi del Mapset '||mapset_name"
@@ -78,12 +78,5 @@ constant = "'Gruppi del Progetto'"
 constant = "'Utenti del Progetto'"
 [project_languages]
 constant = "'Lingue del Progetto'"
-[authfilter]
-standard = "filter_name"
-constant = "'Nuovo Filtro autenticazione'"
-[layer_authfilter]
-constant = "'Filtri autenticazione del Layer'"
-[group_authfilter]
-constant = "'Filtri autenticazione Gruppo'"
-[qtfield_groups]
+[field_groups]
 constant = "'Autorizzazioni sui campi del modello di ricerca'"

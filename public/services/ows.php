@@ -34,24 +34,24 @@ if(defined('DEBUG') && DEBUG == true) {
 
 $objRequest = ms_newOwsrequestObj();
 $skippedParams = array();
-$invertedAxisOrderSrids = array(31466,31467,31254,31255,31256,31257,31258,31259);
+$invertedAxisOrderSrids = array(31465,31466,31467,31468,31254,31255,31256,31257,31258,31259);
 
 foreach ($_REQUEST as $k => $v) {
-    // SLD parameter is handled later (to work also with getlegendgraphic)
-    // skipping this parameter does avoid a second request made by mapserver
+	// SLD parameter is handled later (to work also with getlegendgraphic)
+	// skipping this parameter does avoid a second request made by mapserver
 	// 
 	// filter handling is delayed, for issues with axis ordering
 	// 
 	// transparent handling is delayed in order to check, if the target format
 	// really supports tranparent pixels
-    if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
+	if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
 		$skippedParams[strtolower($k)] = $v;
-        continue;
-    }
+		continue;
+	}
 	
-    if (is_string($v)) {
-        $objRequest->setParameter($k, stripslashes($v));
-    }
+	if (is_string($v)) {
+		$objRequest->setParameter($k, stripslashes($v));
+	}
 }
 
 $parameterName = null;
@@ -82,7 +82,7 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
 		// KMZ is requested as KML and packaged later on
 		// this is dome in this way to allow icons to be bundeled
 		// in the ZIP archive
-        $objRequest->setParameter('format', 'kml');
+		$objRequest->setParameter('format', 'kml');
 	}
 } elseif (strtolower($objRequest->getValueByName('service')) == 'wfs') {
 	$parameterName = 'TYPENAME';
@@ -155,9 +155,9 @@ if(!empty($resolution) && $resolution != 72) {
 if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
 	if($sldContent !== false) {
-        $objRequest->setParameter('SLD_BODY', $sldContent);
-        $oMap->applySLD($sldContent); // for getlegendgraphic
-    }
+		$objRequest->setParameter('SLD_BODY', $sldContent);
+		$oMap->applySLD($sldContent); // for getlegendgraphic
+	}
 } else if(!empty($_REQUEST['SLD'])) {
 	$ch = curl_init($_REQUEST['SLD']);
 	curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -172,7 +172,7 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 		throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
 	}
 	curl_close($ch);
-    
+	
 	$objRequest->setParameter('SLD_BODY', $sldContent);
 	$oMap->applySLD($sldContent); // for getlegendgraphic
 }
@@ -207,10 +207,9 @@ if(!empty($_REQUEST['GCFILTERS'])){
 		list($layerName,$gcFilter)=explode('@',$v[$i]);
 
 		$oLayer = $oMap->getLayerByName($layerName);
-		if($oLayer)	{
+		if($oLayer) {
 			OwsHandler::applyGCFilter($oLayer,$gcFilter);
 		}
-		//print_debug($oLayer->getFilterString());
 	}
 }
 
@@ -254,50 +253,45 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 	}
 }
 
-if(!empty($layersParameter)) {
+if (!empty($layersParameter)) {
 	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();
 	$layersToInclude = array();
-	foreach($layersArray as $layer) {
-	
+	foreach ($layersArray as $layer) {
 		//layer aggiunto x highlight
 		$highlight = $objRequest->getvaluebyname('highlight');
-		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) $layer->set('sizeunits',MS_PIXELS);
-	
-		// layer nascosto
-		$hideLayer = $layer->getMetaData("gc_hide_layer");
-		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($hideLayer)) {
-			array_push($layersToRemove, $layer->name);
-			continue;
+		if (strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) {
+			$layer->set('sizeunits', MS_PIXELS);
 		}
+
 		// layer privato
 		$privateLayer = $layer->getMetaData('gc_private_layer');
-		if(!empty($privateLayer)) {
-			if(!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
+		if (!empty($privateLayer)) {
+			if (!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
 				array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
 				continue;
 			}
 		}
 		$n = 0;
 		// se ci sono filtri definiti per il layer, li ciclo
-		while($authFilter = $layer->getMetaData('gc_authfilter_'.$n)) {
-			if(empty($authFilter)) break; // se l'ennesimo filtro +1 non è definito, interrompo il ciclo
+		while ($authFilter = $layer->getMetaData('gc_authfilter_'.$n)) {
+			if (empty($authFilter)) break; // se l'ennesimo filtro +1 non è definito, interrompo il ciclo
 			$required = $layer->getMetaData('gc_authfilter_'.$n.'_required');
 			$n++;
 			// se il filtro è obbligatorio
-			if(!empty($required)) {
-				if(!isset($_SESSION['AUTHFILTERS'][$authFilter])) { // e se l'utente non ha quel filtro definito
+			if (!empty($required)) {
+				if (!isset($_SESSION['AUTHFILTERS'][$authFilter])) { // e se l'utente non ha quel filtro definito
 					array_push($layersToRemove, $layer->name); // rimuovo il layer
 					break;
 				}
 			}
 			// se ci sono filtri definiti
-			if(isset($_SESSION['AUTHFILTERS'][$authFilter])) {
+			if (isset($_SESSION['AUTHFILTERS'][$authFilter])) {
 				$filter = $layer->getFilterString();
 				$filter = trim($filter, '"');
-				if(!empty($filter)) { // se esiste già un filtro lo aggiungo
+				if (!empty($filter)) { // se esiste già un filtro lo aggiungo
 					$filter = $filter.' AND '.$_SESSION['AUTHFILTERS'][$authFilter];
 				} else {
 					$filter = $_SESSION['AUTHFILTERS'][$authFilter];
@@ -307,41 +301,57 @@ if(!empty($layersParameter)) {
 			}
 		}
 		
-		if(!empty($_SESSION['GC_LAYER_FILTERS'])) {
-            if(!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
-                $filter = $layer->getFilterString();
-                $filter = trim($filter, '"');
-                if(!empty($filter)) {
-                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
-                } else {
-                    $filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
-                }
-                $layer->setFilter($filter);
-            }
-        }
+		if (!empty($_SESSION['GC_LAYER_FILTERS'])) {
+			if (!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
+				$filter = $layer->getFilterString();
+				$filter = trim($filter, '"');
+				if (!empty($filter)) {
+					$filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
+				} else {
+					$filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
+				}
+				$layer->setFilter($filter);
+			}
+		}
 		
-		if(!in_array($layer->name, $layersToRemove)) {
+		if (!in_array($layer->name, $layersToRemove)) {
+			$filter = $layer->getFilterString();
+
+			if ($filter) {
+				$filter = trim($filter, '"');
+				$p1 = strpos($layer->data, '(');
+				$p2 = strpos($layer->data, ')', $p1);
+				$part1 = substr($layer->data, 0, $p1);
+				$part2 = substr($layer->data, $p1+1, $p2-$p1-1);
+				$part3 = substr($layer->data, $p2+1);
+
+				$part2 = "SELECT * FROM ({$part2}) AS foo2 WHERE ({$filter})";
+				$sql = "{$part1}({$part2}){$part3}";
+
+				$layer->data = $sql;
+				$layer->set('data', $sql);
+				$layer->setFilter('');
+			}
+
 			array_push($layersToInclude, $layer->name);
 		}
 	}
 	
 	// rimuovo i layer che l'utente non può visualizzare
-	foreach($layersToRemove as $layerName) {
+	foreach ($layersToRemove as $layerName) {
 		$layer = $oMap->getLayerByName($layerName);
 		$oMap->removeLayer($layer->index);
 	}
-	// aggiorno il parametro layers con i soli layers che l'utente può vedere 
-	$objRequest->setParameter($parameterName, implode(",",$layersToInclude));		
+	// aggiorno il parametro layers con i soli layers che l'utente può vedere
+	$objRequest->setParameter($parameterName, implode(",", $layersToInclude));
 }
 session_write_close();
 
 // Cache part 1
 $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
 $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
-if ((isset($_REQUEST['REQUEST']) && 
-     strtolower($_REQUEST['REQUEST']) == 'getmap') || 
-	(isset($_REQUEST['request']) && 
-     strtolower($_REQUEST['request']) == 'getmap')) {
+if ((isset($_REQUEST['REQUEST']) && strtolower($_REQUEST['REQUEST']) == 'getmap')
+	|| (isset($_REQUEST['request']) && strtolower($_REQUEST['request']) == 'getmap')) {
 	
 	if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < time() - $owsCacheTTL) {
 		header('HTTP/1.1 304 Not Modified');
@@ -349,7 +359,7 @@ if ((isset($_REQUEST['REQUEST']) &&
 	}
 }
 
-if(strtoupper($objRequest->getvaluebyname('request')) == 'GETLEGENDGRAPHIC') {
+if (strtoupper($objRequest->getvaluebyname('request')) == 'GETLEGENDGRAPHIC') {
 	include './include/wmsGetLegendGraphic.php';
 }
 
@@ -361,17 +371,20 @@ if (substr($sapi_type, 0, 3) != 'cgi') {
 	}
 }
 
-/* Enable output buffer */ 
-ms_ioinstallstdouttobuffer(); 
+/* Enable output buffer */
+ms_ioinstallstdouttobuffer();
 
-/* Execute request */ 
+/* Execute request */
 $oMap->owsdispatch($objRequest);
-$contenttype = ms_iostripstdoutbuffercontenttype(); 
+$contenttype = ms_iostripstdoutbuffercontenttype();
 
 /* Send response with appropriate header */ 
 if (substr($contenttype, 0, 6) == 'image/') {
 
 	header('Content-Type: '. $contenttype);
+		// Prevent apache to zip imnage
+		apache_setenv('no-gzip', 1);
+		ini_set('zlib.output_compression', 0);
 
 	$hasDynamicLayer = false;
 	if (defined('DYNAMIC_LAYERS')) {
@@ -384,15 +397,15 @@ if (substr($contenttype, 0, 6) == 'image/') {
 				}
 			}
 		}
-    }
+	}
 
-    // Cache part 2
+	// Cache part 2
 	if (!$hasDynamicLayer && $cacheExpireTimeout > 0 && $cacheExpireTimeout > time()) {
 		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTLOpen) . " GMT";
 		$serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";
-		header("Cache-Control: public, max-age={$owsCacheTTLOpen}, pre-check={$owsCacheTTLOpen}	");
+		header("Cache-Control: public, max-age={$owsCacheTTLOpen}, pre-check={$owsCacheTTLOpen} ");
 		header("Pragma: public");
-        header("Date: {$serverTime}");
+		header("Date: {$serverTime}");
 		header("Cache-Control: max-age={$owsCacheTTLOpen}");
 		header("Last-Modified: {$serverTime}");
 		header("Expires: {$cacheTime}");
@@ -400,9 +413,9 @@ if (substr($contenttype, 0, 6) == 'image/') {
 		// OL FIX: Prevent multiple request for the same layer. Fixed setting cache to 60 sec
 		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTL) . " GMT";
 		$serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";
-		header("Cache-Control: public, max-age={$owsCacheTTL}, pre-check={$owsCacheTTL}	");
+		header("Cache-Control: public, max-age={$owsCacheTTL}, pre-check={$owsCacheTTL} ");
 		header("Pragma: public");
-        header("Date: {$serverTime}");
+		header("Date: {$serverTime}");
 		header("Cache-Control: max-age={$owsCacheTTL}");
 		header("Last-Modified: {$serverTime}");
 		header("Expires: {$cacheTime}");
@@ -422,7 +435,7 @@ if (substr($contenttype, 0, 6) == 'image/') {
 		header("Content-Type: $contenttype");
 		header('Content-Disposition: attachment; filename="layerdata.kml"');
 		ms_iogetStdoutBufferBytes(); 
-	}	
+	}   
 } else { 
 	header("Content-Type: application/xml"); 
 	ms_iogetStdoutBufferBytes(); 

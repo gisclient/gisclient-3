@@ -14,7 +14,7 @@ dato[] = "Template di apertura mappa;template;60;text"
 dato[] = "Tipo di scala automatico (potenza di 2);mapset_scale_type;;noyes"
 dato[] = "Ordine dei mapset;mapset_order;10;text"
 dato[] = "Mappa privata<br><font size=1>Protegge con login il contenuto della mappa</font>;private;;noyes"
-
+dato[] = "Descrizione;mapset_description;48x4;textarea"
 dato[] = "Formati di stampa;page_size;20;text"
 dato[] = "Scarica immagine;dl_image_res;20;text"
 

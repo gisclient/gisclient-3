@@ -279,6 +279,37 @@ $gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP
 			}
 		}
 	}
+
+	function setTriggerTransformGeometry($db, $schema, $table, $geometry_column) {
+		$sql = "DROP TRIGGER IF EXISTS transform_geometry ON {$schema}.\"{$table}\";";
+		$result = $dataDb->exec($sql);
+		if(!$result) echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
+
+		$sql = "CREATE OR REPLACE FUNCTION {$schema}.gc_transform_geometry_{$table}()"
+			. ' RETURNS trigger AS'
+			. ' $BODY$ '
+			. ' DECLARE '
+			. '     table_srid integer;'
+			. ' BEGIN'
+			. "     table_srid = Find_SRID(TG_TABLE_SCHEMA::text, TG_TABLE_NAME::text, '{$geometry_column}'::text);"
+			. "     if(table_srid <> ST_SRID(new.{$geometry_column})) then"
+			. "         new.{$geometry_column} = ST_Transform(new.{$geometry_column}, table_srid);"
+			. '     end if;'
+			. '     return new;'
+			. ' END'
+			. ' $BODY$'
+			. ' LANGUAGE plpgsql VOLATILE COST 100;'
+			. " ALTER FUNCTION {$schema}.gc_transform_geometry_{$table}() OWNER TO " . MAP_USER . ';'
+			. " GRANT EXECUTE ON FUNCTION {$schema}.gc_transform_geometry_{$table}() TO public;"
+			. " GRANT EXECUTE ON FUNCTION {$schema}.gc_transform_geometry_{$table}() TO " . MAP_USER . ';';
+		$result = $dataDb->exec($sql);
+		if(!$result) echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
+
+		$sql = "CREATE TRIGGER transform_geometry BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE {$schema}.gc_transform_geometry_{$table}();";
+		$result = $dataDb->exec($sql);
+		if(!$result) echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
+	}
+
 	function setLongApp(){
 		ini_set('max_execution_time',LONG_EXECUTION_TIME);
 		ini_set('memory_limit',LONG_EXECUTION_MEMORY);
