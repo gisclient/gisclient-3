@@ -24,7 +24,12 @@ define('WMTS_LAYER_TYPE',2);
 define('WMS_CACHE_LAYER_TYPE',3);
 define('TMS_LAYER_TYPE',6);
 
+define('GOOGLE_MIN_ZOOM_LEVEL',0);
+define('GOOGLE_MAX_ZOOM_LEVEL',21);
+
 class gcMapfile{
+        const SCALE_TYPE_USER = 0;
+	const SCALE_TYPE_POWEROF2 = 1;
 	var $db;
 	var $projectName='';
 	private $projectTitle;
@@ -75,50 +80,46 @@ class gcMapfile{
 		$this->target = $target;
 	}
 
-	function writeMap($keytype,$keyvalue){
-		
-        $sqlParams = array();
-        
-		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
-				$filter="mapset.mapset_name=:keyvalue";
-				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";
-				$sqlParams['keyvalue'] = $keyvalue;
-                
-                $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute(array('mapset'=>$keyvalue));
-                $projectName = $stmt->fetchColumn(0);
-				
-		} elseif($keytype=="project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO OPPURE UNICO MAPFILE PER PROGETTO
-            $filter="project.project_name=:keyvalue";
-            if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
-                $joinMapset="";
-                $fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
-            } else {
-				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
-            }
-            $sqlParams['keyvalue'] = $keyvalue;
-            $projectName = $keyvalue;
-         
-		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
-				$filter="layergroup.layergroup_id=:keyvalue";
-				$joinMapset="";
-				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
-				$sqlParams['keyvalue'] = $keyvalue;
-	
-		
-		} elseif($keytype="print"){ //GENERO UN MAPFILE PER LA STAMPA
-				$_in = GCApp::prepareInStatement($keyvalue);
-				$sqlParams = $_in['parameters'];
-				$inQuery = $_in['inQuery'];
+	function writeMap($keytype, $keyvalue) {
 
-			$this->printMap = true;
-			$filter = "project_name||'.'||theme_name||'.'||layergroup_name in (".$inQuery.")";
-		}
-		
-		if(!empty($this->languageId)) { 
+            $sqlParams = array();
+
+            if ($keytype == "mapset") { //GENERO IL MAPFILE PER IL MAPSET
+                $filter = "mapset.mapset_name=:keyvalue";
+                $joinMapset = "INNER JOIN " . DB_SCHEMA . ".mapset using (project_name) INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (mapset_name,layergroup_id)";
+                $fieldsMapset = "mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset_scale_type,mapset_scales,";
+                $sqlParams['keyvalue'] = $keyvalue;
+
+                $sql = 'select project_name from ' . DB_SCHEMA . '.mapset where mapset_name=:mapset';
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute(array('mapset' => $keyvalue));
+                $projectName = $stmt->fetchColumn(0);
+            } elseif ($keytype == "project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO OPPURE UNICO MAPFILE PER PROGETTO
+                $filter = "project.project_name=:keyvalue";
+                if (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
+                    $joinMapset = "";
+                    $fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,null as mapset_scale_type,null as mapset_scales,';
+                } else {
+                    $joinMapset = "INNER JOIN " . DB_SCHEMA . ".mapset using (project_name) INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (mapset_name,layergroup_id)";
+                    $fieldsMapset = "mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset_scale_type,mapset_scales,";
+                }
+                $sqlParams['keyvalue'] = $keyvalue;
+                $projectName = $keyvalue;
+            } elseif ($keytype == "layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
+                $filter = "layergroup.layergroup_id=:keyvalue";
+                $joinMapset = "";
+                $fieldsMapset = "1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,null as mapset_scale_type,null as mapset_scales,";
+                $sqlParams['keyvalue'] = $keyvalue;
+            } elseif ($keytype = "print") { //GENERO UN MAPFILE PER LA STAMPA
+                $_in = GCApp::prepareInStatement($keyvalue);
+                $sqlParams = $_in['parameters'];
+                $inQuery = $_in['inQuery'];
+
+                $this->printMap = true;
+                $filter = "project_name||'.'||theme_name||'.'||layergroup_name in (" . $inQuery . ")";
+            }
+
+            if(!empty($this->languageId)) { 
 		  // inizializzo l'oggetto i18n per le traduzioni
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
@@ -126,13 +127,12 @@ class gcMapfile{
 
 		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,outputformat_mimetype,
 		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
-		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title, set_extent
+		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title
 		from ".DB_SCHEMA.".layer 
 		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
 		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
 		INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
 		LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
-		LEFT JOIN ".DB_SCHEMA.".catalog using (catalog_id, project_name)
 		where ".$filter." order by layer_order DESC,layergroup_order;";	
 		//where ".$filter." order by theme_order desc, layergroup_order desc, layer_order desc;";	SERVE PER SCRIVERE I LAYER NEL MAPFILE UTILIZZANDO L'ORDINE RELATIVO TEMA-LAYERGROUP-LAYER. Sarebbe da sviluppare la funzione che permette all'utente di sceglierlo a livello di progetto
 
@@ -162,6 +162,8 @@ class gcMapfile{
 		$mapText=array();
 		$mapSrid=array();
 		$mapExtent=array();
+                $mapScaleType=array();
+                $mapScaleUser=array();
 		$symbolsList=array();
 		$oFeature = new gcFeature($this->i18n);
 
@@ -169,7 +171,7 @@ class gcMapfile{
 		$this->mpxLayers=array();
 		$this->mpxCaches=array();
 
-		$this->_setMapProjections();
+		$this->_setProjectSRS();  
 		$oFeature->srsParams = $this->srsParams;
 
 		if($this->printMap) $mapName = time().'_print';
@@ -184,24 +186,31 @@ class gcMapfile{
 			$mapTitle[$mapName] = $aLayer["mapset_title"];
 			$mapExtent[$mapName] = $aLayer["mapset_extent"];
 			$mapMaxScale[$mapName] = floatval($aLayer["mapset_maxscale"])?min(floatval($aLayer["mapset_maxscale"]), $projectMaxScale):$projectMaxScale;
-
+                        $mapScaleType[$mapName] = $aLayer["mapset_scale_type"];
+                        $mapScaleUser[$mapName] = $aLayer["mapset_scales"];
+                        
 			$oFeature->initFeature($aLayer["layer_id"]);
                         
-            $oFeatureData = $oFeature->getFeatureData();
-            if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
-	            // use mapset extent if layer extent is not set
-	            // the layer extent is important to make wms layers work in some desktop gis clients
-                $oFeatureData['data_extent'] = $aLayer["mapset_extent"];
-                $oFeature->setFeatureData($oFeatureData);
-            }
+                        // **** Set grids from Mapset config, if any; else use default grids.
+                        $this->_setMapProjections($mapScaleType[$mapName], $mapScaleUser[$mapName], $mapSrid[$mapName]);
+                        
+                        // use mapset extent if layer extent is not set
+                        // the layer extent is important to make wms layers work in some desktop gis clients
+                        $oFeatureData = $oFeature->getFeatureData();
+                        if (empty($oFeatureData['data_extent'])) {
+                            $oFeatureData['data_extent'] = $aLayer["mapset_extent"];
+                            $oFeature->setFeatureData($oFeatureData);
+                        }
 
 			// Force layer to be private if the mapset is private
             if (!empty($aLayer["mapset_private"]) && $aLayer["mapset_private"]) {
                 $oFeature->setPrivate(true);
             }
 		
-			$layerText = $oFeature->getLayerText($layergroupName,$layerTreeGroup,$aLayer["layergroup_maxscale"],$aLayer["layergroup_minscale"]);
-			if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
+			//$layerText = $oFeature->getLayerText($layergroupName,$layerTreeGroup,$aLayer["layergroup_maxscale"],$aLayer["layergroup_minscale"]);
+			$layerText = $oFeature->getLayerText($layergroupName,$aLayer);
+			
+                        if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
 
 			if(!empty($this->i18n)) {
 				$aLayer = $this->i18n->translateRow($aLayer, 'layergroup', $aLayer['layergroup_id'], array('layergroup_title', 'layergroup_description'));
@@ -225,7 +234,7 @@ class gcMapfile{
 			}
 
 			if(defined('MAPPROXY_PATH')){
-				if(!empty($this->i18n)) {
+                                if(!empty($this->i18n)) {
 					$languageId = $this->i18n->getLanguageId();
 					$mapName.= "_".$languageId;
 				}
@@ -334,7 +343,7 @@ class gcMapfile{
 
 			$this->mapsetMaxScale = $mapMaxScale[$mapName];
 			$this->mapsetExtent = $projectExtent;
-
+                       
 			//non ho fissato un restricted extent per il mapset, quindi prendo l'extent in funzione della scala massima
 			if(empty($mapExtent[$mapName])){	
 				//EXTENT DEL MAPSET LO RICALCOLO SE NON POSSO USARE QUELLO DEL PROGETTO
@@ -348,7 +357,7 @@ class gcMapfile{
 		        }
 		        $this->mapsetExtent = $v;
 			}
-
+                        
 			if($symbolsList[$mapName]) $this->layerText .= $this->_getSymbolText($symbolsList[$mapName]);
 			$this->_writeFile($mapName);
             
@@ -795,87 +804,120 @@ END";
 		);
 	}
 
-	function _setMapProjections(){
-		//COSTRUISCO UNA LISTA DI PARAMETRI PER OGNI SRID CONTENUTO NEL PROGETTO PER EVITARE DI CALCOLARLI PER OGNI LAYER 
-		$sql="SELECT DISTINCT srid, projparam FROM ".DB_SCHEMA.".layer 
-			INNER JOIN ".DB_SCHEMA.".catalog USING(catalog_id) 
-			INNER JOIN ".DB_SCHEMA.".project_srs using(project_name)
-            WHERE project_name = ?;";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($this->projectName));
+    function _setProjectSRS() {
+        $sql = "SELECT DISTINCT srid, projparam FROM " . DB_SCHEMA . ".layer 
+			INNER JOIN " . DB_SCHEMA . ".catalog USING(catalog_id) 
+			INNER JOIN " . DB_SCHEMA . ".project_srs using(project_name)
+                        WHERE project_name = ?;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->projectName));
 
-		//GENERO LA LISTA DEGLI EXTENT PER I SISTEMI DI RIFERIMENTO
-		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
-			$this->srsParams[$row["srid"]] = $row["projparam"];
-		}
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $this->srsParams[$row["srid"]] = $row["projparam"];
+        }
 
-		//ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:(GRIDS)
-		//DEFAULT WEB MERCATOR   
-		$epsgList = array("EPSG:3857");
-		$gridList = array(			
-			"epsg3857" => array(
-	            'base'=>'GLOBAL_WEBMERCATOR',
-	            'srs'=>'EPSG:3857',
-	            'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
-        	)
-		);
+        //DEFAULT WEB MERCATOR   
+        $this->epsgList = array("EPSG:3857");
+        $this->grids = array("epsg3857" => array('srs' => 'EPSG:3857'));
 
-		$sql = "SELECT srid,".
-		"st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as xc, ".
-		"st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as yc, ".
-		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
-   		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
-   		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
-   		"FROM ".DB_SCHEMA.".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
-		$stmt = $this->db->prepare($sql);
+        $sql = "SELECT srid FROM " . DB_SCHEMA . ".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
+        $stmt = $this->db->prepare($sql);
 
-		$stmt->execute(array($this->projectName));
-		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		foreach ($rows as $row) {
-			$srs = "epsg".$row["srid"];
-			$epsgList[] = "EPSG:".$row["srid"];
-			$gridList[$srs] = array("srs"=>"EPSG:".$row["srid"]);
-			$gridList[$srs]["res"] = array();
-			$convFact = GCAuthor::$aInchesPerUnit[$row["um"]]*MAP_DPI;
-			$precision = $row["um"] == "dd"?10:2;
-        	if (defined('DEFAULT_SCALE_LIST')) {
-            	$scaleList = preg_split('/[\s]+/', DEFAULT_SCALE_LIST);
-        	} else {
-           	 $scaleList = GCAuthor::$defaultScaleList;
-			}
-			foreach($scaleList as $scaleValue)	$gridList[$srs]["res"][] = round((float)$scaleValue/$convFact, $precision);
-					
-			$aExtent=array();
-			$extent = round($gridList[$srs]["res"][0] * TILE_SIZE);
-			//echo $extent;return;
-			$aExtent[0] = round((float)($row["xc"] - $extent), $precision);
-			$aExtent[1] = round((float)($row["yc"] - $extent), $precision);
-			$aExtent[2] = round((float)($row["xc"] + $extent), $precision);
-			$aExtent[3] = round((float)($row["yc"] + $extent), $precision);
-			$gridList[$srs]["bbox"] = $aExtent;
-			$gridList[$srs]["bbox_srs"] = "EPSG:".$row["srid"];
-		};
-			
-/*		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
-			$epsgList[] = "EPSG:".$row["srid"];
-			if(isset($row["bbox"])){
-				$gridList["epsg".$row["srid"]] = array("srs"=>"EPSG:".$row["srid"]);
-				$gridList["epsg".$row["srid"]]["bbox"] = preg_split('/[\s]+/', $row["bbox"]);
-				$gridList["epsg".$row["srid"]]["bbox_srs"] = "EPSG:4326";
-				if(isset($row["resolutions"])){
-					$res = preg_split('/[\s]+/', $row["resolutions"]);
-					if(count($res)==1)
-						$gridList["epsg".$row["srid"]]["max_res"] = $res[0];
-					elseif(count($res)>1)
-						$gridList["epsg".$row["srid"]]["resolutions"] = $res;
-				}
-			}
-		}*/
-		$this->epsgList = $epsgList;
-		$this->grids = $gridList;
-	}
+        $stmt->execute(array($this->projectName));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $row) {
+            $this->epsgList[] = "EPSG:" . $row["srid"];
+            $srs = "epsg" . $row["srid"];
+            $this->grids[$srs] = array("srs" => "EPSG:" . $row["srid"]);
+        }
+    }
 
-	function _writeMapProxyConfig($mapName){
+    function _setMapProjections($mapScaleType, $mapScaleUser,$mapSRID) {
+        //COSTRUISCO UNA LISTA DI PARAMETRI PER OGNI SRID CONTENUTO NEL PROGETTO PER EVITARE DI CALCOLARLI PER OGNI LAYER 
+        
+        //ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:(GRIDS)
+        //DEFAULT WEB MERCATOR   
+
+        $sql = "SELECT srid," .
+                "st_x(st_transform(st_geometryfromtext('POINT('||" . $this->xCenter . "||' '||" . $this->yCenter . "||')'," . $this->projectSrid . "),srid)) as xc, " .
+                "st_y(st_transform(st_geometryfromtext('POINT('||" . $this->xCenter . "||' '||" . $this->yCenter . "||')'," . $this->projectSrid . "),srid)) as yc, " .
+                "CASE WHEN proj4text like '%+units=m%' then 'm' " .
+                "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' " .
+                "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um " .
+                "FROM " . DB_SCHEMA . ".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute(array($this->projectName));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $row) {
+            $srs = "epsg" . $row["srid"];
+            $precision = $row["um"] == "dd" ? 10 : 2;
+            
+            if (isset($mapScaleType)){
+                if ($mapScaleType != self::SCALE_TYPE_POWEROF2) {
+
+                    $gridList[$srs] = array("srs" => "EPSG:" . $row["srid"]);
+                    $gridList[$srs]["res"] = array();
+                    $convFact = GCAuthor::$aInchesPerUnit[$row["um"]] * MAP_DPI;
+
+                    if ($mapScaleType == self::SCALE_TYPE_USER && $mapScaleUser != "") {
+                        $scaleList = explode(',',$mapScaleUser);
+                    } else if (defined('DEFAULT_SCALE_LIST')) {
+                        $scaleList = explode(',', DEFAULT_SCALE_LIST);
+                    } else {
+                        $scaleList = GCAuthor::$defaultScaleList;
+                    }
+                    foreach ($scaleList as $scaleValue)
+                        $gridList[$srs]["res"][] = round((float) $scaleValue / $convFact, $precision);
+
+
+                    $aExtent = array();
+                    $extent = round($gridList[$srs]["res"][0] * TILE_SIZE);
+                    //echo $extent;return;
+                    $aExtent[0] = round((float) ($row["xc"] - $extent), $precision);
+                    $aExtent[1] = round((float) ($row["yc"] - $extent), $precision);
+                    $aExtent[2] = round((float) ($row["xc"] + $extent), $precision);
+                    $aExtent[3] = round((float) ($row["yc"] + $extent), $precision);
+                    $gridList[$srs]["bbox"] = $aExtent;
+                    $gridList[$srs]["bbox_srs"] = "EPSG:" . $row["srid"];
+                } else {
+                    if ($row["srid"] == $mapSRID){
+
+                        $srs = "epsg" . $mapSRID;
+
+                        $gridList = array(
+                            $srs  => array(
+                                'srs' => 'EPSG:' . $mapSRID,
+                                'num_levels' => GOOGLE_MAX_ZOOM_LEVEL + 1
+                            )
+                        );
+
+                        switch ($mapSRID){
+                            case 4326:
+                                $gridList[$srs]['base'] = 'GLOBAL_GEODETIC';
+                                break;
+                            case 900913:
+                                $gridList[$srs]['base'] = 'GLOBAL_MERCATOR';
+                                break;
+                            case 3857:
+                                $gridList[$srs]['base'] = 'GLOBAL_WEBMERCATOR';
+                                break;
+                            default:
+                                // **** TODO: define Power of 2 grid for other EPSG
+                        }
+                    }
+                }
+            }      
+        };
+
+        if (isset($this->grids))
+        {
+            unset($this->grids);
+        }
+        $this->grids = $gridList;
+    }
+
+    function _writeMapProxyConfig($mapName){
         $config = array(
             'services'=>array(
                 'tms'=>array(

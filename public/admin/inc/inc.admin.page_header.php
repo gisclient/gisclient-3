@@ -1,7 +1,12 @@
 <!-- ### STANDARD  PAGE  HEADER  INIZIO ##################################################### -->
 			<div id="intestazione">
 				<div id="gisClientAuthorLogo">
-					<b class="shadow">GisClient</b><strong class="color">Author</strong>
+                                        <?php if(defined('AUTHOR_LOGO') && AUTHOR_LOGO != null) { ?>
+						<?php echo AUTHOR_LOGO ?>
+					<?php } else { ?>
+						<b class="shadow">GisClient</b><strong class="color">Author</strong>
+					<?php } ?>
+					
 					
 				</div>
 				<div id="clientLogo" class="shadow">
