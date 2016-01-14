@@ -107,6 +107,14 @@ class GCApp {
             return $filename;
     }
     
+    public static function schemaExists($dataDb, $schema) {
+        $sql = 'select schema_name from information_schema.schemata '.
+            ' where schema_name = :schema ';
+        $stmt = $dataDb->prepare($sql);
+        $stmt->execute(array('schema'=>$schema));
+        return ($stmt->rowCount() > 0);
+    }
+    
     public static function tableExists($dataDb, $schema, $tableName) {
         $sql = "select table_name from information_schema.tables ".
             " where table_schema=:schema and table_name=:table ";
@@ -143,6 +151,25 @@ class GCApp {
         $stmt->execute(array('schema'=>$schema, 'table'=>$tableName));
         return $stmt->fetchColumn(0);
     }
+    
+    //questa stessa funzione è anche in admin/lib/functions.php
+    //TODO: trovare dove viene usata e sostituirla con questa
+	public static function nameReplace($name){
+
+		$search = explode(","," ,ç,æ,œ,á,é,í,ó,ú,à,è,ì,ò,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u,.");
+		$replace = explode(",","_,c,ae,oe,a,e,i,o,u,a,e,i,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u,_");
+		if(strtoupper(CHAR_SET)=='UTF-8'){
+			for($i=0;$i<count($search);$i++){
+				$name=str_replace($search[$i],$replace[$i],trim($name));
+}
+		}
+		else
+			$name = str_replace($search, $replace, trim($name));
+
+		return $name;
+		//return strtolower($name);
+		
+	}
 }
 
 class GCDataDB {
@@ -256,6 +283,127 @@ class GCAuthor {
 			}
 		}
 	}
+	
+    public static function buildFeatureQuery($aFeature, array $options = array()) {
+        $defaultOptions = array(
+            'include_1n_relations'=>false, //se true, le relazioni 1-n vengono incluse nella query (se, per esempio, si vuole filtrare su un campo della secondaria)
+            'group_1n'=>true, //se false, vengono inclusi i campi della secondaria, di conseguenza i records non sono più raggruppati per i campi della primaria (se, per esempio, si vogliono visualizzare i dati della secondaria in tabella),
+            'show_relation'=>null, //se voglio visualizzare i dati di una sola secondaria, popolo questo con il nome della relazione da visualizzare
+            'getGeomAs'=>null, // se text, viene usato st_astext, altrimenti nulla (astext serve per le interrogazioni, nulla serve per il mapfile)
+            'srid'=>null //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
+        );
+        $options = array_merge($defaultOptions, $options);
+        
+
+		//$aFeature = $this->aFeature;
+		$layerId=$aFeature["layer_id"];
+		$datalayerTable=$aFeature["data"];	
+		$datalayerGeom=$aFeature["data_geom"];			
+		$datalayerKey=$aFeature["data_unique"];	
+		$datalayerSRID=$aFeature["data_srid"];		
+		$datalayerSchema = $aFeature["table_schema"];
+		$datalayerFilter = $aFeature["data_filter"];
+
+		if(!empty($aFeature["tileindex"])) { //X TILERASTER
+			$location = "'".trim($aFeature["base_path"])."' || location as location";//value for location
+			$table = $aFeature["table_schema"].".".$aFeature["data"];
+			$datalayerTable="(SELECT $datalayerKey as gc_objid,$datalayerGeom as the_geom,$location FROM $table) AS ". DATALAYER_ALIAS_TABLE;
+			return "the_geom from ".$datalayerTable;
+		}
+		elseif(preg_match("|select (.+) from (.+)|i",$datalayerTable))//Definizione alias della tabella o vista pricipale (nel caso l'utente abbia definito una vista)  (da valutare se ha senso)
+			$datalayerTable="($datalayerTable) AS ".DATALAYER_ALIAS_TABLE; 
+		else
+			$datalayerTable=$datalayerSchema.".".$datalayerTable . " AS ".DATALAYER_ALIAS_TABLE; 
+			
+		$joinString = $datalayerTable;
+
+		//Elenco dei campi definiti
+		if($aFeature["fields"]){
+			$fieldList = array();
+            $groupByFieldList = array();
+			
+			foreach($aFeature["fields"] as $idField=>$aField){
+            
+                //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
+                if(!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
+                    if(!$options['include_1n_relations'] || $options['group_1n']) continue;
+                    else if(!empty($options['show_relation'])) {
+                        //se voglio vedere i dati della secondaria di una sola relazione, escludo i campi delle altre
+                        if($options['show_relation'] != $aFeature['relation'][$aField['relation']]['name']) continue;
+                    }
+                }
+            
+                //field su layer oppure su relazione 1-1
+                if(empty($aField['relation'])) {
+                    $aliasTable = DATALAYER_ALIAS_TABLE;
+                } else {
+                    $aliasTable = GCApp::nameReplace($aFeature["relation"][$aField["relation"]]["name"]);
+                }
+                
+                if(!empty($aField['formula'])) {
+                    if (empty($aField['relation'])){
+                        $fieldName = $aField["formula"] . " AS " . $aField["field_name"];
+                    }else{
+                        $fieldName = str_replace($aFeature["relation"][$aField["relation"]]["name"], $aliasTable, $aField["formula"]) . " AS " . $aField["field_name"];
+                    }
+                    $groupByFieldList[] = $aField['field_name'];
+                } else {
+                    $fieldName = $aliasTable . "." . $aField["field_name"];
+                    $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
+                }
+                
+                $fieldList[] = $fieldName;
+			}
+			
+			//Elenco delle relazioni
+			if($aRelation=$aFeature["relation"]) {
+				foreach($aRelation as $idrel => $rel){
+					$relationAliasTable = GCApp::nameReplace($rel["name"]);
+					
+					//se relazione 1-n, salta se non vogliamo il join
+                    //se vogliamo i dati della secondaria, elimina il groupBy
+					if($rel["relation_type"] == 2) {
+                        if(!$options['include_1n_relations']) continue;
+                        if(!empty($options['show_relation']) && $rel['name'] != $options['show_relation']) continue;
+                        
+                        if(!$options['group_1n']) {
+                            $groupByFieldList = null;
+                        }
+					}
+
+						
+                    $joinList = array();
+                    foreach($rel['join_field'] as $joinField) {
+                        $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
+                    }
+
+                    $joinFields = implode(" AND ",$joinList);
+                    $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
+				}
+				
+			}
+			
+			//$fieldString = implode(",",$fieldList);
+		}
+		
+        $geomField = DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom;
+        if($options['srid'] && $options['srid'] != 'EPSG:'.$aFeature['data_srid']) {
+            $srid = (int)str_replace('EPSG:', '', $options['srid']);
+            $geomField = 'st_transform('.$geomField.', '.$srid.')';
+        }
+        if($options['getGeomAs']) {
+            if($options['getGeomAs'] == 'text') {
+                $geomField = 'st_astext('.$geomField.')';
+            }
+        }
+		$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid, '.$geomField.' as gc_geom';
+        if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
+        $datalayerTable .= ' FROM '.$joinString;
+        if(!empty($groupByFieldList)) $datalayerTable .= ' group by '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.', '.DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom.', '. implode(', ', $groupByFieldList);
+		print_debug($datalayerTable,null,'datalayer');
+		return $datalayerTable;
+        
+    }
 	
 	public static function GCTypeFromDbType($dbType) {
 		$typesMap = array(
