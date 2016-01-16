@@ -145,6 +145,7 @@ class gcMap{
         $mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
         //$mapOptions["tilesExtent"] = $this->tilesExtent;
         if(!isset($this->tilesExtent))  $this->tilesExtent = $this->_getExtent($row["xc"],$row["yc"],$this->scaleListResolutions[0]);
+        $mapOptions["tilesExtent"] = $this->tilesExtent;
 
         //$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
         //Limita estensione:
