@@ -50,8 +50,8 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 
 	if(empty($_REQUEST['LAYERS'])) outputError('Missing layers');
 	$geomFields = array();
-	foreach($geomTypes as $type) array_push($geomFields, $type['db_field']);
-	$sql = "select ".implode(',', $geomFields)." from $schema.$tableName".
+	foreach($geomTypes as $type) array_push($geomFields, 'st_transform('. $type['db_field'] . ", $mapSRID) as " . $type['db_field']);
+	$sql = "select ".implode(",", $geomFields)." from $schema.$tableName".
 		" where print_id = ?";
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array($_REQUEST['LAYERS']));
@@ -93,14 +93,14 @@ WEB
 	METADATA
         # for mapserver 6.0
         "ows_enable_request" "*"
-		"ows_title"	"r3-signs"
+		"ows_title"	"print-vector-layers"
 		"wfs_encoding"	"UTF-8"
 		"wms_encoding"	"UTF-8"
     	"wms_onlineresource" "$onlineUrl"
     	"wfs_onlineresource" "$onlineUrl"
 		"wms_feature_info_mime_type"	"text/html"
 		"wfs_namespace_prefix"	"feature"
-		"wms_srs"	"EPSG:32632"
+		"wms_srs"	"EPSG:$mapSRID"
 	END
 	IMAGEPATH "/tmp/"
 	IMAGEURL "/tmp/"	
