@@ -808,15 +808,15 @@ class gcMap{
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
         
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
-                FROM ".DB_SCHEMA.".theme 
-                INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
-                INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
-                INNER JOIN ".DB_SCHEMA.".layer using (layergroup_id)
-                INNER JOIN ".DB_SCHEMA.".catalog using (catalog_id)
-                LEFT JOIN ".DB_SCHEMA.".field using(layer_id)
-                LEFT JOIN ".DB_SCHEMA.".relation using(relation_id)
-                LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, owstype_id, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+				FROM " . DB_SCHEMA . ".theme 
+				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id) 
+				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
+				INNER JOIN " . DB_SCHEMA . ".layer using (layergroup_id)
+				INNER JOIN " . DB_SCHEMA . ".catalog using (catalog_id)
+				LEFT JOIN " . DB_SCHEMA . ".field using(layer_id)
+				LEFT JOIN " . DB_SCHEMA . ".relation using(relation_id)
+				LEFT JOIN " . DB_SCHEMA . ".field_groups using(field_id)
                 WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
         $sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, field_order, field_header;";
         $stmt = $this->db->prepare($sql);
@@ -841,9 +841,9 @@ class gcMap{
             }
         
             $typeTitle = $row["layer_title"];
-            $groupTitle = empty($row["theme_title"])?$row["theme_name"]:$row["theme_title"];
-            $index = ($row['theme_single'] == 1 ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
-            if(!isset($featureTypes[$index])) 
+            $groupTitle = empty($row["theme_title"]) ? $row["theme_name"] : $row["theme_title"];
+            $index = ($row['theme_single'] == 1 && $row['owstype_id'] == WMS_LAYER_TYPE ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
+            if (!isset($featureTypes[$index]))
                 $featureTypes[$index] = array();
             if(!isset($featureTypes[$index][$typeName])) 
                 $featureTypes[$index][$typeName] = array();
@@ -855,7 +855,7 @@ class gcMap{
                 continue;
             } */
             
-            $featureTypes[$index][$typeName]["WMSLayerName"] = $row['theme_single']?$row['theme_name']:$row['layergroup_name']; 
+            $featureTypes[$index][$typeName]["WMSLayerName"] = $row['theme_single'] && $row['owstype_id'] == WMS_LAYER_TYPE ? $row['theme_name'] : $row['layergroup_name'];
             $featureTypes[$index][$typeName]["typeName"] = $typeName;   
             $featureTypes[$index][$typeName]["title"] = $typeTitle; 
             $featureTypes[$index][$typeName]["group"] = $groupTitle;    
