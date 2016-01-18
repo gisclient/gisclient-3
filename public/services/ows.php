@@ -151,6 +151,34 @@ if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('defresolution', 96);
 }
 
+if (empty($_REQUEST['SLD'])) {
+	// check if SLD is used
+	$sql = "SELECT sld FROM ".DB_SCHEMA.".layergroup WHERE layergroup_name=? ";
+	$stmt = $db->prepare($sql);
+	
+	foreach (explode(',', $_REQUEST['LAYERS']) as $layergroup) {
+		$stmt->execute(array($layergroup));
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		$ch = curl_init($row['sld']);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+		$sldContent = curl_exec($ch);
+		if($sldContent === false) {
+			throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
+		}
+		if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+			throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
+		}
+		curl_close($ch);
+
+		$objRequest->setParameter('SLD_BODY', $sldContent);
+		$oMap->applySLD($sldContent); // for getlegendgraphic
+	}
+}
+
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
 if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
@@ -176,7 +204,6 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 	$objRequest->setParameter('SLD_BODY', $sldContent);
 	$oMap->applySLD($sldContent); // for getlegendgraphic
 }
-
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
 if($objRequest->getvaluebyname('srsname')) {
