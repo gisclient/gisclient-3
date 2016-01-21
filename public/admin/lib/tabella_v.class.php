@@ -100,9 +100,12 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			break;
 		case "text":			
 		case "textkey":
-			$size=intval($w+($w/5));
+			$size=explode("#",$w);
+			$width=intval($size[0]+($size[0]/5));
+			if (isset($size[1]))
+				$onChange=(preg_match("|([\w]+)[(](.+)[)]|i",$size[1]))?("onChange=\"javascript:".$size[1]."\""):("onChange=javascript:\"".$size[1]."()\"");
 			$testo=stripslashes(str_replace("\\","\\\\",$dato));
-			$retval="<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" $disabilitato />$help";
+			$retval="<INPUT $class maxLength=\"$size[0]\" size=\"$width\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" $onChange $disabilitato />$help";
 			break;
 			
 		case "data":
@@ -196,15 +199,23 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			break;
 			
 		case "yesno":
+			$size=explode("#",$w);
+			$width=$size[0];
 			((!isset($dati[$campo])) or ($dati[$campo]==="t") or ($dati[$campo]==="on") or ($dati[$campo]==1))?($yselected="selected"):($nselected="selected");
 			$opzioni="<option value=1 $yselected>".GCAuthor::t('yes')."</option><option value=0 $nselected>".GCAuthor::t('no')."</option>";
-			$retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";		  
+			if (isset($size[1]))
+				$onChange=(preg_match("|([\w]+)[(](.+)[)]|i",$size[1]))?("onChange=\"javascript:".$size[1]."\""):("onChange=javascript:\"".$size[1]."()\"");
+			$retval="<select style=\"width:{$width}px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" $onChange onmousewheel=\"return false\" $disabilitato>$opzioni</select>";		  
 			break;
 			
 		case "noyes":
+			$size=explode("#",$w);
+			$width=$size[0];
 			((!isset($dati[$campo]) or ($dati[$campo]==="f") or ($dati[$campo]==="off") or ($dati[$campo]==0)))?($nselected="selected"):($yselected="selected");
 			$opzioni="<option value=1 $yselected>".GCAuthor::t('yes')."</option><option value=0 $nselected>".GCAuthor::t('no')."</option>";
-			$retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";		  
+			if (isset($size[1]))
+				$onChange=(preg_match("|([\w]+)[(](.+)[)]|i",$size[1]))?("onChange=\"javascript:".$size[1]."\""):("onChange=javascript:\"".$size[1]."()\"");
+			$retval="<select style=\"width:{$width}px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" $onChange onmousewheel=\"return false\" $disabilitato>$opzioni</select>";		  
 			break;	
 			
 		case "pword":

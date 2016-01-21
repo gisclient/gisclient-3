@@ -2,7 +2,7 @@
 table = "layer"
 pkey = "layer_id"
 
-dato[] = "Nome *<br><font size=1>univoco nel layergroup!<br>Evitare la duplicazione di<br>nome layegroup + nome layer</font>;layer_name;55;text"
+dato[] = "Nome *<br><font size=1>univoco nel layergroup!<br>Evitare la duplicazione di<br>nome layegroup + nome layer</font>;layer_name;55#changeQueryable(this);text"
 dato[] = "Titolo *;layer_title;55;text"
 dato[] = "Ordine: *;layer_order;5;intero"
 dato[] = "Opacità:<br><font size=1 >0 = Trasparente 100 = Opaco</font>;opacity;5;text"
@@ -33,7 +33,7 @@ dato[] = "Campo per la classificazione;classitem;30;text|Elenco;classitem;100#op
 
 dato[] = "Comportamento del layer"
 dato[] = "Privato<br><font size=1 >Visualizza il layer solo a utenti autenticati</font>;private;;noyes"
-dato[] = "Abilita WFS<br><font size=1 >Rende interrogabile il layer <br>(almeno un campo deve essere presente)</font>;queryable;;noyes"
+dato[] = "Abilita WFS<br><font size=1 >Rende interrogabile il layer <br>(almeno un campo deve essere presente)</font>;queryable;#changeQueryable(this);noyes"
 dato[] = "Nascondi geometria in interrogazione<br><font size=1 >Non verrà visualizzata la geometria WFS<br>dei risultati di ricerca/interogazione</font>;hide_vector_geom;;noyes"
 dato[] = "Nascondi in interrogazione<br><font size=1 >Non presente nello strumento di interrogazione<br>(Il WFS rimane attivo)</font>;hidden;;noyes"
 dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;searchable_id;200#seldb_searchable;selectdb"

@@ -239,3 +239,27 @@ function updateExtent(txt_field) {
         });
     });
 }
+
+function changeQueryable() {
+    console.log($('#queryable').val());
+    if($('#queryable').val() == '1') {
+        $('.textbox#template').prop('readonly', false);
+        $('.textbox#header').prop('readonly', false);
+        $('.textbox#footer').prop('readonly', false);
+        $('.textbox#template').val('template_wms/' + $('#layergroup_title').val() + '.' + $('#layer_name').val() + '.html');
+        $('.textbox#header').val('template_wms/header.html');
+        $('.textbox#footer').val('template_wms/footer.html');
+    } else {
+        $('.textbox#template').val('');
+        $('.textbox#header').val('');
+        $('.textbox#footer').val('');
+        $('.textbox#template').prop('readonly', true);
+        $('.textbox#header').prop('readonly', true);
+        $('.textbox#footer').prop('readonly', true);
+    }
+}
+
+$(document).ready(function() {
+    changeQueryable();
+});
+
