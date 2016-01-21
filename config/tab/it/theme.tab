@@ -5,8 +5,8 @@ dato[] = "Nome *<br><font size=1>univoco nel progetto!</font>;theme_name;100;tex
 dato[] = "Titolo *;theme_title;100;text"
 dato[] = "Ordine *;theme_order;3;intero"
 dato[] = "Copyright su mappa;copyright_string;50x2;textarea"
-dato[] = "Livello unico;theme_single;3;noyes"
-dato[] = "Radio;radio;3;noyes"
+dato[] = "Livello unico;theme_single;;noyes"
+dato[] = "Radio;radio;;noyes"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;project;#openCopy;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
 [list]
 table = "theme"

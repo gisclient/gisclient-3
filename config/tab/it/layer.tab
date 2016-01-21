@@ -26,7 +26,7 @@ dato[] = "Parametri per etichette<br><font size=1>Vedere anche classi per config
 dato[] = "Campo per l'etichetta;labelitem;20;text|Elenco;labelitem;100#openList#catalog_id#layertype_id#data;button"
 dato[] = "Campo altezza etichetta;labelsizeitem;20;text|Elenco;labelsizeitem;100#openList#catalog_id#layertype_id#data;button"
 dato[] = "Visibilità etichette:<br><font size=1>Scala max.</font>;labelmaxscale;8;intero|<font size=1>Scala min.</font>;labelminscale;8;intero"
-dato[] = "POSTLABELCACHE;postlabelcache;3;noyes"
+dato[] = "POSTLABELCACHE;postlabelcache;;noyes"
 
 dato[] = "Elementi di vestizione e campi collegati<br><font size=1>(inserire prima le relazioni e i campi per avere gli elenchi completi)</font>"
 dato[] = "Campo per la classificazione;classitem;30;text|Elenco;classitem;100#openList#catalog_id#layertype_id#data;button"

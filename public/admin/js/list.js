@@ -241,7 +241,6 @@ function updateExtent(txt_field) {
 }
 
 function changeQueryable() {
-    console.log($('#queryable').val());
     if($('#queryable').val() == '1') {
         $('.textbox#template').prop('readonly', false);
         $('.textbox#header').prop('readonly', false);
@@ -260,6 +259,8 @@ function changeQueryable() {
 }
 
 $(document).ready(function() {
-    changeQueryable();
+    if ($('#livello').val() == 'layer') {
+        changeQueryable();
+    }
 });
 
