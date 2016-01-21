@@ -259,7 +259,7 @@ function changeQueryable() {
 }
 
 $(document).ready(function() {
-    if ($('#livello').val() == 'layer') {
+    if ($('input[name=livello]').val() == 'layer') {
         changeQueryable();
     }
 });
