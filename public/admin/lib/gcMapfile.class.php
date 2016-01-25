@@ -554,9 +554,9 @@ END #MAP";
 					GCError::register($errorMsg);
 					return;
 				}
-			} else {
-				$this->_writeTemplateWms($projectDir);
 			}
+			$this->_writeTemplateWms($projectDir);
+			
 			if(!empty($this->i18n)) {
 				$languageId = $this->i18n->getLanguageId();
 				$mapFile.= "_".$languageId;
@@ -1022,7 +1022,12 @@ END";
 			}
 		}
 
-		if (!file_exists($templateDir . 'header.html')) {
+		$languageId;
+		if(!empty($this->i18n)) {
+			$languageId = '_' . $this->i18n->getLanguageId();
+		}
+
+		if (!file_exists($templateDir . 'header' . $languageId . '.html')) {
 			$data = <<<EOF
 <!-- MapServer Template -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/transitional.dtd">
@@ -1059,7 +1064,7 @@ END";
 	</head>   
 	<body>
 EOF;
-			$r = file_put_contents($templateDir . 'header.html', $data);
+			$r = file_put_contents($templateDir . 'header' . $languageId . '.html', $data);
 
 			if ($r === false) {
 				$errorMsg = "Could not open $templateDir for writing";
@@ -1068,13 +1073,13 @@ EOF;
 			}
 		}
 
-		if (!file_exists($templateDir . 'footer.html')) {
+		if (!file_exists($templateDir . 'footer' . $languageId . '.html')) {
 			$data = <<<EOF
 <!-- MapServer Template -->    
 	</body>
 </html>
 EOF;
-			$r = file_put_contents($templateDir . 'footer.html', $data);
+			$r = file_put_contents($templateDir . 'footer' . $languageId . '.html', $data);
 
 			if ($r === false) {
 				$errorMsg = "Could not open $templateDir for writing";
@@ -1101,7 +1106,7 @@ EOF;
 		$resLayer = $stmtLayers->fetchAll();
 
 		foreach ($resLayer as $item) {
-			$templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . '.html';
+			$templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . $languageId . ' '.html';
 
 			$data = "<!-- MapServer Template -->
 			<table>
