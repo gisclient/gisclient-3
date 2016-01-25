@@ -1106,7 +1106,7 @@ EOF;
 		$resLayer = $stmtLayers->fetchAll();
 
 		foreach ($resLayer as $item) {
-			$templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . $languageId . ' '.html';
+			$templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . $languageId . '.html';
 
 			$data = "<!-- MapServer Template -->
 			<table>
