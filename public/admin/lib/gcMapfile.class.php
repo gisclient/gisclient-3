@@ -420,6 +420,10 @@ class gcMapfile{
 	}
 	
 	function _writeFile(&$mapFile){
+		if(!empty($this->i18n)) {
+			$languageId = $this->i18n->getLanguageId();
+			$mapFile.= "_".$languageId;
+		}
 		$projectName = $this->projectName;
 		$fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts';	
 		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
@@ -557,10 +561,6 @@ END #MAP";
 			}
 			$this->_writeTemplateWms($projectDir);
 			
-			if(!empty($this->i18n)) {
-				$languageId = $this->i18n->getLanguageId();
-				$mapFile.= "_".$languageId;
-			}
 			$mapFilePath = $projectDir.$mapFile.".map";
 		}
 		if (false === ($f = fopen ($mapFilePath,"w"))) {
