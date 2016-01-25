@@ -1098,7 +1098,7 @@ EOF;
 		$sqlField = "SELECT field_name, field_header "
 			. " FROM " . DB_SCHEMA . ".field "
 			. " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
-			. " WHERE layer_id = ? "
+			. " WHERE resultype_id <> 4 AND layer_id = ? "
 			. " ORDER BY field_order";
 		$stmtField = $this->db->prepare($sqlField);
 		
