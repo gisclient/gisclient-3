@@ -1012,7 +1012,12 @@ END";
 			}
 		}
 
-		foreach (glob($templateDir . '*.html') as $filename) {
+		$languageId = '';
+		if(!empty($this->i18n)) {
+			$languageId = '_' . $this->i18n->getLanguageId();
+		}
+
+		foreach (glob($templateDir . '*' . $languageId . '.html') as $filename) {
 			$r = unlink($filename);
 
 			if ($r === false) {
@@ -1020,11 +1025,6 @@ END";
 				GCError::register($errorMsg);
 				return;
 			}
-		}
-
-		$languageId;
-		if(!empty($this->i18n)) {
-			$languageId = '_' . $this->i18n->getLanguageId();
 		}
 
 		if (!file_exists($templateDir . 'header' . $languageId . '.html')) {
