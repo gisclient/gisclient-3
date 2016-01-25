@@ -1095,7 +1095,7 @@ EOF;
 			. " WHERE resultype_id <> 4 AND queryable = 1";
 		$stmtLayers = $this->db->prepare($sqlLayers);
 		
-		$sqlField = "SELECT field_name, field_header "
+		$sqlField = "SELECT field_id, field_name, field_header "
 			. " FROM " . DB_SCHEMA . ".field "
 			. " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
 			. " WHERE resultype_id <> 4 AND layer_id = ? "
@@ -1124,7 +1124,7 @@ EOF;
 			$dataTmp = '';
 			foreach ($resField as $field) {
 				if ($this->i18n) {
-					$field = $this->i18n->translateRow($field, 'field', $field['field_name'], array('field_header', 'field_name'));
+					$field = $this->i18n->translateRow($field, 'field', $field['field_id'], array('field_header', 'field_name'));
 				}
 
 				$data .= "<th>{$field['field_header']}</th>";
