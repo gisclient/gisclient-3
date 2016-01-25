@@ -5,6 +5,7 @@ require_once '../../config/config.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
+$db = GCApp::getDB();
 $gcService = GCService::instance();
 $gcService->startSession(true);
 
