@@ -1108,9 +1108,11 @@ EOF;
 		foreach ($resLayer as $item) {
 			$templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . $languageId . '.html';
 
+			$translate = $this->i18n->translateRow($item, 'layer', $item['layer_id'], array('layer_title'));
+
 			$data = "<!-- MapServer Template -->
 			<table>
-			<caption>{$item['layer_title']}</caption>  <!-- Titolo del layer -->
+			<caption>{$translate['layer_title']}</caption>  <!-- Titolo del layer -->
 			<tbody>
 				<tr>";
 
@@ -1119,7 +1121,9 @@ EOF;
 
 			$dataTmp = '';
 			foreach ($resField as $field) {
-				$data .= "<th>{$field['field_header']}</th>";
+				$translate = $this->i18n->translateRow($field, 'field', $field['field_name'], array('field_header'));
+
+				$data .= "<th>{$translate['field_header']}</th>";
 				$dataTmp .= '<td>[item name=' . $field['field_name'] . ' format=$value escape=none]</td>';
 			}
 			$data .= '</tr><tr>' . $dataTmp;
