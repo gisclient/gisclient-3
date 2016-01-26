@@ -331,7 +331,7 @@ if (!empty($layersParameter)) {
 			if ($filter) {
 				$filter = trim($filter, '"');
 				$p1 = strpos($layer->data, '(');
-				$p2 = strpos($layer->data, ')', $p1);
+				$p2 = strrpos($layer->data, ')', $p1);
 				$part1 = substr($layer->data, 0, $p1);
 				$part2 = substr($layer->data, $p1+1, $p2-$p1-1);
 				$part3 = substr($layer->data, $p2+1);
