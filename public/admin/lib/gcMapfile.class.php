@@ -826,7 +826,7 @@ END";
         "CASE WHEN proj4text like '%+units=m%' then 'm' ".
         "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
         "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
-        "FROM ".DB_SCHEMA.".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
+        "FROM ".DB_SCHEMA.".project_srs inner join spatial_ref_sys using(srid) WHERE srid<>3857 AND project_name = ?;";
         $stmt = $this->db->prepare($sql);
 
         $stmt->execute(array($this->projectName));
@@ -841,7 +841,7 @@ END";
             if (defined('DEFAULT_SCALE_LIST')) {
                 $scaleList = preg_split('/[\s]+/', DEFAULT_SCALE_LIST);
             } else {
-             $scaleList = GCAuthor::$defaultScaleList;
+                $scaleList = GCAuthor::$defaultScaleList;
             }
             foreach($scaleList as $scaleValue)  $gridList[$srs]["res"][] = round((float)$scaleValue/$convFact, $precision);
                     
@@ -871,6 +871,7 @@ END";
                 }
             }
         }*/
+
         $this->epsgList = $epsgList;
         $this->grids = $gridList;
     }
