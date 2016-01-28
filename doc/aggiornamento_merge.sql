@@ -870,6 +870,9 @@ from mapset m;
 
 ALTER TABLE vista_mapset
   OWNER TO gisclient;  
+  
+Update export_i18n set table_name='field' where table_name='qtfield';
+update export_i18n set field_name='field_name' where field_name='qtfield_name';
  
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
