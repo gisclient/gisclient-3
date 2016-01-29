@@ -183,4 +183,22 @@ class OwsHandler {
 		return $kmzContent;
 	}
 
+	public  static function getSldContent($sldUrl) {
+		$ch = curl_init($sldUrl);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+		$sldContent = curl_exec($ch);
+		
+		if($sldContent === false) {
+			throw new RuntimeException("Call to {$sldUrl} return with error:". var_export(curl_error($ch), true));
+		}
+		if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+			throw new RuntimeException("Call to {$sldUrl} return HTTP code $httpCode and body ".$sldContent);
+		}
+		curl_close($ch);
+
+		return $sldContent;
+	}
 }
