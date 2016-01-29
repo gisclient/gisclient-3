@@ -239,3 +239,13 @@ function updateExtent(txt_field) {
         });
     });
 }
+
+function setDefaultTemplate() {
+    if($('#queryable').val() == '1') {
+        $('.textbox#template').val('template_wms/' + $('#layergroup_title').val() + '.' + $('#layer_name').val() + '.html');
+        $('.textbox#header').val('template_wms/header.html');
+        $('.textbox#footer').val('template_wms/footer.html');
+    } else {
+        alert('Layers is not queryable');
+    }
+}
