@@ -1,7 +1,7 @@
 <?php
 include __DIR__ .'/../config/config.php';
 
-$project = 'vuz'; //inserire il nome di un progetto se ci sono più progetti
+$project = ''; //inserire il nome di un progetto se ci sono più progetti
 
 echo "\n\ninizio... \n\n";
 

@@ -40,9 +40,9 @@ dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;
 
 dato[] = "Altri parametri"
 dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
-dato[] = "Template;template;44;text"
-dato[] = "Template header;header;44;text"
-dato[] = "Template footer;footer;44;text"
+dato[] = "Template;template;70;text|Imposta template di default;data;150#setDefaultTemplate;button"
+dato[] = "Template header;header;70;text"
+dato[] = "Template footer;footer;70;text"
 dato[] = "Dimesione selezione;selection_width;3;text|Colore selezione;selection_color;11;color"
 dato[] = "Numero massimo di oggetti visualizzati;maxfeatures;5;intero"
 dato[] = "Numero massimo di oggetti vettoriali;maxvectfeatures;5;intero"

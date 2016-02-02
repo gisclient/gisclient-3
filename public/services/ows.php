@@ -3,8 +3,10 @@
 define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
 require_once ROOT_PATH . 'lib/GCService.php';
+require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
+$db = GCApp::getDB();
 $gcService = GCService::instance();
 $gcService->startSession(true);
 
@@ -34,7 +36,7 @@ if(defined('DEBUG') && DEBUG == true) {
 
 $objRequest = ms_newOwsrequestObj();
 $skippedParams = array();
-$invertedAxisOrderSrids = array(31465,31466,31467,31468,31254,31255,31256,31257,31258,31259);
+$invertedAxisOrderSrids = array(2178,31465,31466,31467,31468,31254,31255,31256,31257,31258,31259);
 
 foreach ($_REQUEST as $k => $v) {
 	// SLD parameter is handled later (to work also with getlegendgraphic)
@@ -151,6 +153,29 @@ if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('defresolution', 96);
 }
 
+if (empty($_REQUEST['SLD'])) {
+	// check if SLD is used
+	$sql = "SELECT layergroup_id, sld FROM ".DB_SCHEMA.".layergroup WHERE layergroup_name=? AND sld IS NOT NULL ";
+	$stmt = $db->prepare($sql);
+
+	$i18n = new GCi18n($project, $objRequest->getvaluebyname('lang'));
+	foreach (explode(',', $_REQUEST['LAYERS']) as $layergroup) {
+		if (strpos($layergroup, '.') !== false) {
+			list($layergroup, $layername) = explode('.', $layergroup);
+		}
+		$stmt->execute(array($layergroup));
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		if ($row !== false) {
+			$sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
+
+			$sldContent = OwsHandler::getSldContent($sld);
+			$objRequest->setParameter('SLD_BODY', $sldContent);
+			$oMap->applySLD($sldContent); // for getlegendgraphic
+		}
+	}
+}
+
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
 if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 	$sldContent = file_get_contents($_REQUEST['SLD_BODY']);
@@ -159,24 +184,10 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 		$oMap->applySLD($sldContent); // for getlegendgraphic
 	}
 } else if(!empty($_REQUEST['SLD'])) {
-	$ch = curl_init($_REQUEST['SLD']);
-	curl_setopt($ch, CURLOPT_HEADER, 0);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-	curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
-	$sldContent = curl_exec($ch);
-	if($sldContent === false) {
-		throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
-	}
-	if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-		throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
-	}
-	curl_close($ch);
-	
+	$sldContent = OwsHandler::getSldContent($_REQUEST['SLD']);
 	$objRequest->setParameter('SLD_BODY', $sldContent);
 	$oMap->applySLD($sldContent); // for getlegendgraphic
 }
-
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
 if($objRequest->getvaluebyname('srsname')) {
@@ -320,7 +331,7 @@ if (!empty($layersParameter)) {
 			if ($filter) {
 				$filter = trim($filter, '"');
 				$p1 = strpos($layer->data, '(');
-				$p2 = strpos($layer->data, ')', $p1);
+				$p2 = strrpos($layer->data, ')', $p1);
 				$part1 = substr($layer->data, 0, $p1);
 				$part2 = substr($layer->data, $p1+1, $p2-$p1-1);
 				$part3 = substr($layer->data, $p2+1);

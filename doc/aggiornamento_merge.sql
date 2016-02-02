@@ -870,6 +870,9 @@ from mapset m;
 
 ALTER TABLE vista_mapset
   OWNER TO gisclient;  
+  
+Update export_i18n set table_name='field' where table_name='qtfield';
+update export_i18n set field_name='field_name' where field_name='qtfield_name';
  
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
@@ -877,10 +880,18 @@ COMMIT;
 
 ------------------------------------------- INIZIO SVILUPPI AUTHOR 3.4 -------------------------------------------
 
+-- parametro per non scrivere l'estensione del layer nel mapfile se il catalogo è WMS
 ALTER TABLE catalog
   ADD COLUMN set_extent smallint DEFAULT 1;
 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.1', 'author', '2015-10-09');
 
+-- 2015-01-25 Aggiunta traduzioni per template dei layer
+INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (22,'layer','template');
+INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (23,'layer','header');
+INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (24,'layer','footer');
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.2', 'author', '2016-01-25');
 
