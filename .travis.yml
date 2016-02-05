@@ -10,6 +10,7 @@ before_install:
 
 before_script:
   - pear install PHP_CodeSniffer
+  - phpenv rehash
   - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gisclient' SUPERUSER"
   - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient;" 
   - psql -U postgres -d gisclient_ci -c "CREATE EXTENSION postgis"
