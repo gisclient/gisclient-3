@@ -35,5 +35,5 @@ before_script:
   - sudo service apache2 restart
 
 script: 
-  - phpcs --standard="ruleset.xml" .
+  - phpcs --standard="PSR2" .
   - phpunit --configuration tests/travis.xml
