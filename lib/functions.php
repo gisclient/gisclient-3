@@ -137,7 +137,7 @@
 			for($i=0;$i<count($ris);$i++){
 				// vecchia riga modificata come sotto
 				//$sql="select udt_name from information_schema.parameters where specific_name='".$ris[$i]["specific_name"]."' and specific_schema='$sk' order by ordinal_position";
-				$sql="select udt_schema,udt_name from information_schema.parameters where specific_name='".$ris[$i]["specific_name"]."' and specific_schema='$sk' order by ordinal_position";
+				$sql="select udt_schema,udt_name from information_schema.parameters where specific_name='".$ris[$i]["specific_name"]."' and parameter_mode='IN' and specific_schema='$sk' order by ordinal_position";
 				$fld=Array();
 				$result=pg_query($db,$sql);
 				if(!$result) echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
