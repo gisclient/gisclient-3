@@ -722,7 +722,6 @@ END";
 		// mapfile snippet
 		$formatText = "LEGEND\n" .
 					  "    STATUS ON\n" .
-					  "    OUTLINECOLOR 0 0 0 \n" .
 					  "    KEYSIZE ".$iconW." ".$iconH."\n" .
 					  "    LABEL\n" .
 					  "       TYPE TRUETYPE\n" .
