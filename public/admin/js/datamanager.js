@@ -1,20 +1,3 @@
-flashIsAvailable = function () {
-    var hasFlash = false;
-    try {
-      var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
-      if (fo) {
-        hasFlash = true;
-      }
-    } catch (e) {
-      if (navigator.mimeTypes
-            && navigator.mimeTypes['application/x-shockwave-flash'] !== undefined
-            && navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin) {
-        hasFlash = true;
-      }
-    }
-    return hasFlash;
-}
-
 $(document).ready(function() {
     if(initDataManager != true || $('#catalog').length < 1) {
         return;
@@ -24,9 +7,6 @@ $(document).ready(function() {
     dataManager.checkAvailableImports();
     
     $('a[data-action="data_manager"]').show().click(function(event) {
-        if (!flashIsAvailable()) {
-           $('span.flash_is_missing_message').css('display', 'inline-block');
-        }
         event.preventDefault();
         
         $('div#import_dialog').dialog('open');
@@ -49,75 +29,80 @@ $(document).ready(function() {
             dataManager.getFileList();
         }
     });
-    
-    $('#shp_file_upload').uploadify({
-        uploader: 'js/jquery/uploadify/uploadify.swf',
-        script: 'ajax/datamanager.php',
-        cancelImg: 'js/jquery/uploadify/cancel.png',
-        folder: 'import',
-        auto: true,
-        multi: true,
-        onAllComplete: function(event, data) {
+
+    var shpUploader = uploader({
+        dataUrl: 'action=upload-shp',
+        validation: function (file) {
+            if (/.+\.(shp|shx|dbf)$/.test(file.name)) {
+                console.log(file);
+                return file;
+            }
+            return false;
+        },
+        onAllComplete: function () {
             dataManager.getFileList();
         },
-        fileExt: '*.shp;*.shx;*.dbf;',
-        fileDesc: 'Shapefiles',
-        scriptData: {action:'upload-shp'}
+        
     });
-    
-    $('#xls_file_upload').uploadify({
-        uploader: 'js/jquery/uploadify/uploadify.swf',
-        script: 'ajax/datamanager.php',
-        cancelImg: 'js/jquery/uploadify/cancel.png',
-        folder: 'import',
-        auto: true,
-        multi: true,
-        onAllComplete: function(event, data) {
+    var shpHandler = fileHandler(shpUploader);
+    shpHandler.input('shp_file_upload');
+
+    var xlsUploader = uploader({
+        dataUrl: 'action=upload-xls',
+        validation: function (file) {           
+            if (/.+\.xlsx?$/.test(file.name)) {
+                return file;
+            }
+            return false;
+        },
+        onAllComplete: function () {
             dataManager.getFileList();
         },
-        fileExt: '*.xls;*.xlsx;',
-        fileDesc: 'Excel files',
-        scriptData: {action:'upload-xls'}
     });
+    var xlsHandler = fileHandler(xlsUploader);
+    xlsHandler.input('xls_file_upload');
     
-    $('#csv_file_upload').uploadify({
-        uploader: 'js/jquery/uploadify/uploadify.swf',
-        script: 'ajax/datamanager.php',
-        cancelImg: 'js/jquery/uploadify/cancel.png',
-        folder: 'import',
-        auto: true,
-        multi: true,
-        onAllComplete: function(event, data) {
+    /*var csvUploader = uploader({
+        dataUrl: 'action=upload-csv',
+        validation: function (file) {           
+            if (/.+\.csv$/.test(file.name)) {
+                return file;
+            }
+            return false;
+        },
+        onAllComplete: function () {
             dataManager.getFileList();
         },
-        fileExt: '*.csv;',
-        fileDesc: 'CSV files',
-        scriptData: {action:'upload-csv'}
     });
-    
-    $('#raster_file_upload').uploadify({
-        uploader: 'js/jquery/uploadify/uploadify.swf',
-        script: 'ajax/datamanager.php',
-        cancelImg: 'js/jquery/uploadify/cancel.png',
-        folder: 'import',
-        auto: false,
-        multi: true,
-        onAllComplete: function(event, data) {
-            dataManager.getFileList();
-        },
-        onSelectOnce: function() {
+    var csvHandler = fileHandler(csvUploader);
+    csvHandler.input('csv_file_upload');*/
+
+    var rasterUploader = uploader({
+        dataUrl: 'action=upload-raster&catalog_id=' + $('#catalog').val(),
+        validation: function (file) {
             var directory = $('div#import_dialog input[name="dir_name"]').val();
             if(directory == '') {
-                $('#raster_file_upload').uploadifyClearQueue();
-                return alert('Empty directory');
+                alert('Empty directory');
+                return false;
+            } else {
+                rasterUploader.setDataUrl('action=upload-raster&catalog_id=' + $('#catalog').val() + '&directory=' + directory);
             }
-            $('#raster_file_upload').uploadifySettings('scriptData', {directory:directory});
-            dataManager.checkUploadFolderName(directory);
+
+            if (/.+\.(tif|tiff|tfw|ecw|jpg|jpeg|jgw|png|pgw|gif|gfw)$/.test(file.name)) {
+                return file;
+            }
+            return false;
         },
-        fileExt: '*.tif;*.tiff;*.tfw;*.ecw;*.jpg;*.jpeg;*.jgw;*.png;*.pgw;*.gif;*.gfw;',
-        fileDesc: 'Raster',
-        scriptData: {action:'upload-raster', catalog_id:$('#catalog').val()}
+        onAllComplete: function () {
+            dataManager.getFileList();
+        },
     });
+    var rasterHandler = fileHandler(rasterUploader);
+    rasterHandler.input('raster_file_upload');
+
+    $('div#import_dialog input[name="dir_name"]').change(function (event) {
+        $('#raster_file_upload').prop( "disabled", !event.target.value);
+    }).change();
     
     $('div#import_dialog div#import_dialog_shp button[name="import"]').button().hide().click(function(event) {
         event.preventDefault();
@@ -849,5 +834,205 @@ function GCDataManager(catalogId) {
         obj = $.extend(true, defaultObj, obj);
         $.ajax(obj);
     };
-    
 }
+
+var fileHandler = (function (uploader) {
+    'use strict';
+
+    var uiProcess = function (files) {
+        /*// files is a FileList of File objects. List some properties.
+        var output = [];
+        var totalSize = 0;
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+            output.push(
+                '<li><strong>',
+                escape(f.name),
+                '</strong> (',
+                f.type || 'n/a',
+                ') - ',
+                f.size,
+                ' bytes, last modified: ',
+                f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                '</li>'
+            );
+            totalSize += f.size;
+        }
+        document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+        console.log(totalSize/1024);*/
+    }
+
+    function dragAndDrop(id) {
+        function handleDragOver(evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+            evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+        }
+
+        // Setup the dnd listeners.
+        var dropZone = document.getElementById(id);
+        dropZone.addEventListener('dragover', handleDragOver, false);
+        dropZone.addEventListener('drop', function (evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+
+            handleFileSelect(evt.dataTransfer.files);
+        }, false);
+    }
+
+    function input(id) {
+        document.getElementById(id).addEventListener('change', function (evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+
+            handleFileSelect(evt.target.files);
+        }, false);
+    }
+
+    function handleFileSelect(files) {
+        uiProcess();
+
+        for (var i = 0; i < files.length; i++) {
+            uploader.addFile(files[i]);
+        }
+
+        uploader.startUpload();
+    }
+
+    if (!uploader) {
+        return false;
+    } else {
+        return {
+            dragAndDrop: dragAndDrop,
+            input: input
+        }
+    }
+});
+
+var uploader = (function (config) {
+    'use strict';
+
+    var BYTES_PER_CHUNK = config.bytesPerChunk || 1024 * 1024;
+    var TARGET_URL = config.targetUrl || 'ajax/datamanager.php';
+    var DATA_URL = config.dataUrl || '';
+    var PROGRESS_BAR = config.progressBar || false;
+    var validation = config.validation || function (file) {
+        return file;
+    };
+    var onAllComplete = config.onAllComplete || function () {};
+    var errorLog = config.errorLog || function(error) {
+        alert(error);
+    };
+
+    var files = [];
+    var completeCount = 0;
+
+    function addFile(file) {
+        function isValid(file) {
+            if (!(file instanceof Blob)) {
+                errorLog('Error: not a file');
+                return false;
+            }
+
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].name == file.name) {
+                    errorLog('Error: file with the same name already added');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (!isValid(file)) {
+            return false;
+        }
+        console.log(file);
+
+        var f = validation(file);
+        if (!!f) {
+            files.push(f);
+        }
+
+        return !!f;
+    }
+
+    function startUpload() {
+        for (var i = 0; i < files.length; i++) {
+            sendRequest(files[i]);
+        }
+    }
+
+    function setAsComplete() {
+        completeCount++;
+        if (completeCount == files.length) {
+            files = [];
+            completeCount = 0;
+            onAllComplete();
+        }
+    }
+
+    function setDataUrl(dataUrl) {
+        DATA_URL = dataUrl;
+    }
+
+    function sendRequest(file) {
+        var start = 0;
+        var end = BYTES_PER_CHUNK;
+        var uploadcounter = 0;
+        var uploadfilearray = [];
+
+        while( start < file.size ) {
+            var chunk = file.slice(start, end);
+            uploadfilearray[uploadcounter] = chunk;
+            uploadcounter++;
+            start = end;
+            end = start + BYTES_PER_CHUNK;
+        }
+
+        if (PROGRESS_BAR) {
+            PROGRESS_BAR.max = PROGRESS_BAR.max + uploadcounter;
+        }
+
+        uploadcounter = 0;
+        uploadFile();
+        
+        function uploadFile() {
+            var fd = new FormData();
+            fd.append("fileToUpload", uploadfilearray[uploadcounter]);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("POST", TARGET_URL + '?filename=' + file.name + '&' + DATA_URL);
+
+            xhr.addEventListener("error", transferFailed, false);
+            //xhr.addEventListener("abort", transferCanceled, false);
+            xhr.addEventListener("load", uploadComplete, false);
+            xhr.onload = function (e) {
+                uploadcounter++;
+                if (uploadfilearray.length > uploadcounter ) {
+                    uploadFile(uploadfilearray[uploadcounter], file.name);
+                } else {
+                    setAsComplete();
+                }
+            };
+
+            xhr.send(fd);
+        }
+
+        function uploadComplete() {
+            if (PROGRESS_BAR) {
+                PROGRESS_BAR.value = (PROGRESS_BAR.value? PROGRESS_BAR.value : 1) + 1;
+            }
+        }
+
+        function transferFailed() {
+            uploadFile(uploadfilearray[uploadcounter], file.name);
+        }
+    }
+
+    return {
+        addFile: addFile,
+        setDataUrl: setDataUrl,
+        startUpload: startUpload,
+    };
+});

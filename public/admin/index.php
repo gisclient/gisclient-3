@@ -126,10 +126,7 @@ if(isset($p->parametri['project'])) {
 	<script type="text/javascript" src="js/layout.js"></script>
 	<script type="text/javascript" src="js/options.js"></script>
 	<?php if($initDataManager == 'true') { ?>
-	<link href="js/jquery/uploadify/uploadify.css" type="text/css" rel="stylesheet" />
 	<script type="text/javascript" src="js/datamanager.js"></script>
-	<script type="text/javascript" src="js/jquery/jquery.uploadify.js"></script>
-	<script type="text/javascript" src="js/jquery/swfobject.js"></script>
 	<?php } ?>
 	<?php if($initPreviewMap == 'true') { ?>
 	<script type="text/javascript" src="js/previewMap.js"></script>

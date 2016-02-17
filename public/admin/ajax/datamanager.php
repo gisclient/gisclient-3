@@ -61,11 +61,26 @@ switch($_REQUEST['action']) {
 	case 'upload-xls':
 	case 'upload-csv':
 	case 'upload-shp':
-		$tempFile = $_FILES['Filedata']['tmp_name'];
-		$targetFile = IMPORT_PATH . $_FILES['Filedata']['name'];
-		if (false === move_uploaded_file($tempFile, $targetFile)) {
-			throw new Exception("Could not move_uploaded_file($tempFile, $targetFile)");
+		$tmp_name = $_FILES['fileToUpload']['tmp_name'];
+		//$name = $_FILES['fileToUpload']['name'];
+		$name2 = $_REQUEST['filename'];
+
+		//$targetFile = IMPORT_PATH . $name;
+		$targetFile = IMPORT_PATH . $name2;
+		$com = fopen($targetFile, "ab");
+
+		// Read binary input stream and append it to temp file
+		$in = fopen($tmp_name, "rb");
+		if ($in) {
+		    while ($buff = fread($in, 1048576)) {
+		        fwrite($com, $buff);
+		    }
+		} else {
+			throw new Exception("Could not fopen($tmp_name)");
 		}
+		fclose($in);
+
+		fclose($com);
 		echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 	break;
 	case 'upload-raster':
@@ -78,9 +93,22 @@ switch($_REQUEST['action']) {
 			mkdir($basePath.$targetDir);
 		}
 		
-		$tempFile = $_FILES['Filedata']['tmp_name'];
-		$targetFile = $basePath.$targetDir.$_FILES['Filedata']['name'];
-		move_uploaded_file($tempFile, $targetFile);
+		$tmp_name = $_FILES['fileToUpload']['tmp_name'];
+		$targetFile = $basePath.$targetDir.$_REQUEST['filename'];;
+		$com = fopen($targetFile, "ab");
+
+		// Read binary input stream and append it to temp file
+		$in = fopen($tmp_name, "rb");
+		if ($in) {
+		    while ($buff = fread($in, 1048576)) {
+		        fwrite($com, $buff);
+		    }
+		} else {
+			throw new Exception("Could not fopen($tmp_name)");
+		}
+		fclose($in);
+
+		fclose($com);
 		echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 	break;
 	case 'get-uploaded-files':

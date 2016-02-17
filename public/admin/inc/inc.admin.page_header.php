@@ -148,8 +148,7 @@
 						<!-- <li><a href="#import_dialog_csv">CSV</a></li> -->
 					</ul>
 					<div id="import_dialog_shp">
-						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
-						<input id="shp_file_upload" name="file_upload" type="file" />
+						<input id="shp_file_upload" name="file_upload" type="file" multiple="multiple" accept=".shp, .shx, .dbf" />
 						<div data-role="file_list">
 						</div>
 						<hr>
@@ -162,8 +161,7 @@
 					</div>
 					<div id="import_dialog_raster">
 						Directory: <input type="text" name="dir_name"><br />
-						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
-						<input id="raster_file_upload" name="file_upload" type="file" />
+						<input id="raster_file_upload" name="file_upload" type="file" multiple="multiple" accept=".tif, .tiff, .tfw, .ecw, .jpg, .jpeg, .jgw, .png, .pgw, .gif, .gfw"/>
 						<div data-role="file_list">
 						</div>
 						<hr>
@@ -195,8 +193,7 @@
 						<button name="create_table">Create</button>
 					</div>
 					<div id="import_dialog_xls">
-						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
-						<input id="xls_file_upload" name="file_upload" type="file" />
+						<input id="xls_file_upload" name="file_upload" type="file" multiple="multiple" accept=".xls, .xlsx" />
 						<div data-role="file_list">
 						</div>
 						<hr>
@@ -207,7 +204,6 @@
 					</div>
 					<!--
 					<div id="import_dialog_csv">
-						<span class="flash_is_missing_message" class="alert_message" style="color:red; background-color:#d0d0d0; padding: 5px; display:none">Flash is not installed, but required for file upload</span><br />
 						<input id="csv_file_upload" name="file_upload" type="file" />
 						<div data-role="file_list">
 						</div>
