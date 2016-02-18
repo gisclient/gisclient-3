@@ -669,9 +669,9 @@ class gcFeature {
             $clsText[] = "EXPRESSION " . $aClass["expression"];
 
         if (!empty($aClass["class_text"])) {
-            $clsText[] = "TEXT (" . $aClass["class_text"] . ")";
+            $clsText[] = "TEXT '" . $aClass["class_text"] . "'";
         } elseif (!empty($aClass["smbchar"])) {//simbolo true type
-            $clsText[] = "TEXT (" . $aClass["smbchar"] . ")";
+            $clsText[] = "TEXT '" . $aClass["smbchar"] . "'";
         }
 
         if (!empty($aClass["maxscale"]))
