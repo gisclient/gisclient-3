@@ -34,11 +34,11 @@ $(document).ready(function() {
         dataUrl: 'action=upload-shp',
         validation: function (file) {
             if (/.+\.(shp|shx|dbf)$/.test(file.name)) {
-                console.log(file);
                 return file;
             }
             return false;
         },
+        progressBar: document.getElementById('progress_shp'),
         onAllComplete: function () {
             dataManager.getFileList();
         },
@@ -55,6 +55,7 @@ $(document).ready(function() {
             }
             return false;
         },
+        progressBar: document.getElementById('progress_xls'),
         onAllComplete: function () {
             dataManager.getFileList();
         },
@@ -70,6 +71,7 @@ $(document).ready(function() {
             }
             return false;
         },
+        progressBar: document.getElementById('progress_csv'),
         onAllComplete: function () {
             dataManager.getFileList();
         },
@@ -93,6 +95,7 @@ $(document).ready(function() {
             }
             return false;
         },
+        progressBar: document.getElementById('progress_raster'),
         onAllComplete: function () {
             dataManager.getFileList();
         },
@@ -946,7 +949,6 @@ var uploader = (function (config) {
         if (!isValid(file)) {
             return false;
         }
-        console.log(file);
 
         var f = validation(file);
         if (!!f) {
@@ -958,6 +960,9 @@ var uploader = (function (config) {
 
     function startUpload() {
         for (var i = 0; i < files.length; i++) {
+            if (PROGRESS_BAR) {
+                PROGRESS_BAR.style.display = "inline";
+            }
             sendRequest(files[i]);
         }
     }
@@ -967,6 +972,9 @@ var uploader = (function (config) {
         if (completeCount == files.length) {
             files = [];
             completeCount = 0;
+            if (PROGRESS_BAR) {
+                PROGRESS_BAR.style.display = "none";
+            }
             onAllComplete();
         }
     }

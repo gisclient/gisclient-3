@@ -149,6 +149,7 @@
                     </ul>
                     <div id="import_dialog_shp">
                         <input id="shp_file_upload" name="file_upload" type="file" multiple="multiple" accept=".shp, .shx, .dbf" />
+                        <progress id="progress_shp" value="" max="" style="display:none;"></progress>
                         <div data-role="file_list">
                         </div>
                         <hr>
@@ -162,6 +163,7 @@
                     <div id="import_dialog_raster">
                         Directory: <input type="text" name="dir_name"><br />
                         <input id="raster_file_upload" name="file_upload" type="file" multiple="multiple" accept=".tif, .tiff, .tfw, .ecw, .jpg, .jpeg, .jgw, .png, .pgw, .gif, .gfw"/>
+                        <progress id="progress_raster" value="" max="" style="display:none;"></progress>
                         <div data-role="file_list">
                         </div>
                         <hr>
@@ -194,6 +196,7 @@
                     </div>
                     <div id="import_dialog_xls">
                         <input id="xls_file_upload" name="file_upload" type="file" multiple="multiple" accept=".xls, .xlsx" />
+                        <progress id="progress_xls" value="" max="" style="display:none;"></progress>
                         <div data-role="file_list">
                         </div>
                         <hr>
@@ -205,6 +208,7 @@
                     <!--
                     <div id="import_dialog_csv">
                         <input id="csv_file_upload" name="file_upload" type="file" />
+                        <progress id="progress_csv" value="" max="" style="display:none;"></progress>
                         <div data-role="file_list">
                         </div>
                         <hr>
