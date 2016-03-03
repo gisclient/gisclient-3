@@ -398,7 +398,7 @@ CREATE OR REPLACE VIEW vista_relation AS
             WHEN NOT (r.table_name::text IN ( SELECT tables.table_name
                FROM information_schema.tables
               WHERE tables.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)))) THEN '(!) tabella DB di JOIN non esiste'::text
-            WHEN r.data_field_1 IS NULL OR r.table_field_1 IS NULL THEN '(!) Uno dei campi della JOIN 1 è vuoto'::text
+            WHEN r.data_field_1 IS NULL OR r.table_field_1 IS NULL THEN '(!) Uno dei campi della JOIN 1 Ã¨ vuoto'::text
             WHEN NOT (r.data_field_1::text IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer non esiste'::text
@@ -406,7 +406,7 @@ CREATE OR REPLACE VIEW vista_relation AS
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave della relazione non esiste'::text
             WHEN r.data_field_2 IS NULL AND r.table_field_2 IS NULL THEN 'OK'::text
-            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Uno dei campi della JOIN 2 è vuoto'::text
+            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Uno dei campi della JOIN 2 Ã¨ vuoto'::text
             WHEN NOT (r.data_field_2::text IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer della JOIN 2 non esiste'::text
@@ -414,7 +414,7 @@ CREATE OR REPLACE VIEW vista_relation AS
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave relazione della JOIN 2 non esiste'::text
             WHEN r.data_field_3 IS NULL AND r.table_field_3 IS NULL THEN 'OK'::text
-            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Uno dei campi della JOIN 3 è vuoto'::text
+            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Uno dei campi della JOIN 3 Ã¨ vuoto'::text
             WHEN NOT (r.data_field_3::text IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer della JOIN 3 non esiste'::text
@@ -496,6 +496,81 @@ CREATE OR REPLACE VIEW vista_link AS
 ALTER TABLE vista_link
   OWNER TO gisclient;
   
+DROP VIEW IF EXISTS vista_layer;
+CREATE OR REPLACE VIEW vista_layer AS 
+ SELECT l.*, 
+        CASE
+          WHEN queryable = 1 and l.hidden = 0 and 
+               layer_id IN (SELECT field.layer_id 
+                              FROM field 
+                              WHERE field.resultype_id != 4)
+          THEN 'SI. Config. OK'
+          WHEN queryable = 1 and l.hidden = 1 and
+               layer_id IN (SELECT field.layer_id 
+                              FROM field 
+                              WHERE field.resultype_id != 4)
+          THEN 'SI. Ma Ã¨ nascosto'
+          WHEN queryable = 1 and 
+               layer_id IN (SELECT field.layer_id 
+                              FROM field 
+                              WHERE field.resultype_id = 4)
+          THEN 'NO. Nessun campo nei risultati'
+          ELSE 'NO. WFS non abilitato'
+        END AS is_queryable, 
+        CASE
+            WHEN queryable = 1 and layer_id IN ( SELECT field.layer_id
+               FROM field
+              WHERE field.editable = 1)
+            THEN 'SI. Config. OK' 
+            WHEN queryable = 1 and layer_id IN ( SELECT field.layer_id
+               FROM field
+              WHERE field.editable = 0)
+            THEN 'NO. Nessun campo Ã¨ editabile' 
+            WHEN queryable = 0 and layer_id IN ( SELECT field.layer_id
+               FROM field
+              WHERE field.editable = 1)
+            THEN 'NO. Esiste un campo editabile ma il WFS non Ã¨ attivo' 
+            ELSE 'NO.'
+        END AS is_editable,
+        CASE
+            WHEN connection_type != 6 then '(i) Controllo non possibile: connessione non PostGIS'
+            WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then '(i) Controllo non possibile: DB diverso'
+            WHEN data not in (select table_name FROM information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)))  THEN '(!) La tabella non esiste nel DB'
+            when data_geom not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data and data_type = 'USER-DEFINED') then '(!) Il campo geometrico del layer non esiste'
+            when data_unique not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo chiave del layer non esiste'
+            when data_srid not in (select srid FROM public.geometry_columns where f_table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and f_table_name=data) then '(!) Lo SRID configurato non Ã¨ quello corretto'
+            when upper(data_type) not in (select type FROM public.geometry_columns where f_table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and f_table_name=data) then '(!) Geometrytype non corretto'
+            WHEN labelitem not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo etichetta del layer non esiste'
+            WHEN labelitem not in (select field_name FROM field where layer_id = l.layer_id) then '(!) Campo etichetta non presente nei campi del layer'
+            WHEN labelsizeitem not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo altezza etichetta del layer non esiste'
+            WHEN labelsizeitem not in (select field_name FROM field where layer_id = l.layer_id) then '(!) Campo altezza etichetta non presente nei campi del layer'
+            --WHEN layer_name in (select distinct layer_name FROM layer where layergroup_id != lg.layergroup_id and catalog_id in (select catalog_id FROM catalog where project_name = c.project_name)) THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'
+            WHEN t.project_name||'.'||lg.layergroup_name||'.'||l.layer_name IN (select t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name 
+              FROM layer l2
+              JOIN layergroup lg2 using (layergroup_id)
+              JOIN theme t2 using (theme_id)
+              group by t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name
+              having count(t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name) > 1) 
+              THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'
+            WHEN layer_id not in (select layer_id FROM class) then 'OK (i) Non ci sono classi configurate in questo layer'
+            ELSE 'OK'
+          END as layer_control
+   FROM layer l
+JOIN catalog c using (catalog_id)
+JOIN e_layertype using (layertype_id)
+JOIN layergroup lg using (layergroup_id)
+JOIN theme t using (theme_id);
+ALTER TABLE vista_layer
+  OWNER TO gisclient;
+  
+--da verificare. Ho problemi con pattern obbligatori su MS5
+CREATE OR REPLACE VIEW seldb_pattern AS 
+  --SELECT (-1) AS id, 'Seleziona ====>' AS opzione
+  --UNION ALL 
+  SELECT pattern_id AS id, pattern_name AS opzione
+  FROM e_pattern;
+ALTER TABLE seldb_pattern
+  OWNER TO gisclient;
   
 -- RICREA E-lEVEL E FORM
 DROP TABLE e_level CASCADE;
@@ -838,7 +913,7 @@ CREATE OR REPLACE VIEW vista_mapset AS
               GROUP BY mapset_layergroup.mapset_name)) THEN ('(!) '::text || (( SELECT count(mapset_layergroup.layergroup_id) AS count
                FROM mapset_layergroup
               WHERE mapset_layergroup.mapset_name::text = m.mapset_name::text
-              GROUP BY mapset_layergroup.mapset_name))) || ' layergroup presenti nel mapset. OpenLayers 2 non consente di rappresentare più di 74 layergroup alla volta'::text
+              GROUP BY mapset_layergroup.mapset_name))) || ' layergroup presenti nel mapset. OpenLayers 2 non consente di rappresentare piÃ¹ di 74 layergroup alla volta'::text
             WHEN m.mapset_scales IS NULL THEN '(!) Nessun elenco di scale configurato'::text
             WHEN m.mapset_srid <> m.displayprojection THEN '(i) Coordinate visualizzate diverse da quelle di mappa'::text
             WHEN 0 = (( SELECT max(mapset_layergroup.refmap) AS max
@@ -853,14 +928,14 @@ ALTER TABLE vista_mapset
   OWNER TO gisclient;
  
 -- da verificare -- 
-ALTER TABLE mapset ADD COLUMN IF NOT EXISTS mapset_description TEXT;
+ALTER TABLE mapset ADD COLUMN  mapset_description TEXT;
 
 DROP VIEW vista_mapset;
 CREATE OR REPLACE VIEW vista_mapset AS 
 select m.*,
   CASE 
     when mapset_name not in (select mapset_name from mapset_layergroup) then '(!) Nessun layergroup presente'
-    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) Openlayers non consente di rappresentare più di 75 layergroup alla volta'
+    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) Openlayers non consente di rappresentare piÃ¹ di 75 layergroup alla volta'
     WHEN mapset_scales is null THEN '(!) Nessun elenco di scale configurato'
     WHEN mapset_srid != displayprojection then '(i) Coordinate visualizzate diverse da quelle di mappa'
     WHEN 0 = (select max(refmap) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) THEN '(i) Nessuna reference map'
@@ -871,8 +946,30 @@ from mapset m;
 ALTER TABLE vista_mapset
   OWNER TO gisclient;  
   
-Update export_i18n set table_name='field' where table_name='qtfield';
-update export_i18n set field_name='field_name' where field_name='qtfield_name';
+-- CREO LA TABELLA export_i18n SE NON ESISTE per non far crashare lo script nel successivo UPDATE
+CREATE TABLE IF NOT EXISTS export_i18n
+(
+  exporti18n_id serial NOT NULL,
+  table_name character varying,
+  field_name character varying,
+  project_name character varying,
+  pkey_id character varying,
+  language_id character varying,
+  value text,
+  original_value text,
+  CONSTRAINT export_i18n_pkey PRIMARY KEY (exporti18n_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE export_i18n
+  OWNER TO gisclient;
+  
+UPDATE export_i18n SET table_name='field' WHERE table_name='qtfield';
+UPDATE export_i18n SET field_name='field_name' WHERE field_name='qtfield_name';
+
+UPDATE class SET class_text=REPLACE(class_text,'''','');
+UPDATE class SET class_text=REPLACE(class_text,'"','');
  
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
@@ -880,7 +977,7 @@ COMMIT;
 
 ------------------------------------------- INIZIO SVILUPPI AUTHOR 3.4 -------------------------------------------
 
--- parametro per non scrivere l'estensione del layer nel mapfile se il catalogo è WMS
+-- parametro per non scrivere l'estensione del layer nel mapfile se il catalogo Ã¨ WMS
 ALTER TABLE catalog
   ADD COLUMN set_extent smallint DEFAULT 1;
 
