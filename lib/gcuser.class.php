@@ -146,7 +146,7 @@ abstract class AbstractUser {
             INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
-            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order;';
+            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order DESC;';
 
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
