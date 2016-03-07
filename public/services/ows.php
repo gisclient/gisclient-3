@@ -153,7 +153,7 @@ if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('defresolution', 96);
 }
 
-if (empty($_REQUEST['SLD'])) {
+if (empty($_REQUEST['SLD']) && !empty($_REQUEST['LAYERS'])) {
 	// check if SLD is used
 	$sql = "SELECT layergroup_id, sld FROM ".DB_SCHEMA.".layergroup WHERE layergroup_name=? AND sld IS NOT NULL ";
 	$stmt = $db->prepare($sql);
