@@ -14,7 +14,6 @@ dato[] = "Formula;formula;48x2;textarea"
 
 dato[] = "Azioni sul campo"
 dato[] = "Nei risultati di ricerca;resultype_id;200#seldb_resultype;selectdb"
-dato[] = "Modo di ricerca;searchtype_id;200#seldb_searchtype;selectdb"
 dato[] = "Modo di ricerca<br><font size=1>Nessuno = non ricercabile</font>;searchtype_id;200#seldb_searchtype;selectdb"
 dato[] = "Filtrato in ricerca per;filter_field_name;30;text|Elenco;filter_field_name;100#openList#layer#qtrelation_id;button"
 dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
