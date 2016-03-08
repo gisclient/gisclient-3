@@ -968,9 +968,6 @@ ALTER TABLE export_i18n
 UPDATE export_i18n SET table_name='field' WHERE table_name='qtfield';
 UPDATE export_i18n SET field_name='field_name' WHERE field_name='qtfield_name';
 
-UPDATE class SET class_text=REPLACE(class_text,'''','');
-UPDATE class SET class_text=REPLACE(class_text,'"','');
- 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
 COMMIT;
@@ -992,3 +989,9 @@ INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (24,'layer','foot
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.2', 'author', '2016-01-25');
 
+-- 2016-03-08: fix database necessario in seguito a commit: 2afd6e0
+UPDATE class SET class_text=REPLACE(class_text,'''','');
+UPDATE class SET class_text=REPLACE(class_text,'"','');
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.3', 'author', '2016-03-08');
