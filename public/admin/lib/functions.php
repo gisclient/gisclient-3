@@ -239,7 +239,11 @@ $gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP
 			
 			$ris=pg_fetch_all($result);
 			for($i=0;$i<count($ris);$i++){
+				
 				$sql="select udt_name from information_schema.parameters where specific_name='".$ris[$i]["specific_name"]."' and specific_schema='$sk' order by ordinal_position";
+
+				$sql="select udt_schema,udt_name from information_schema.parameters where specific_name='".$ris[$i]["specific_name"]."' and parameter_mode='IN' and specific_schema='$sk' order by ordinal_position";
+
 				$fld=Array();
 				$result=pg_query($db,$sql);
 				if(!$result) echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";

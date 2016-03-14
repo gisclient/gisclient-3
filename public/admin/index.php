@@ -42,7 +42,7 @@ if(!empty($_REQUEST['logout'])) {
 }
 
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $user->login($_POST['username'], $_POST['password']);
+    $user->login($_POST['username'], md5($_POST['password']));
 }
 
 
@@ -68,9 +68,9 @@ if (in_array(strtolower($p->action),$arr_action) || in_array(strtolower($p->acti
 
 	include_once ADMIN_PATH."lib/savedata.class.php";
 	if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH."db/db.".$_POST["savedata"].".php")) 
-		include ADMIN_PATH."db/db.save.php";
+		include_once ADMIN_PATH."db/db.save.php";
 	else
-		include ADMIN_PATH."db/db.".$_POST["savedata"].".php";
+		include_once ADMIN_PATH."db/db.".$_POST["savedata"].".php";
 	
 }
 else

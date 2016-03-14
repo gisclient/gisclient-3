@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Base Openlayers Map</title>
+    <link rel="stylesheet" href="../../maps/resources/themes/openlayers/style.css" type="text/css">
+    <script type="text/javascript" src="../../maps/resources/jslib/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="../../resources/jslib/jquery.easyui.min.js"></script>-->
+    <script type="text/javascript" src="../../maps/resources/jslib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../../maps/resources/external/select2/select2.js"></script>
+
+    <script src="../../maps/resources/jslib/OpenLayers-11.js"></script>
+    <script src="../../maps/resources/jslib/GisClientMap.js"></script>   
+    <script src="../../maps/resources/jslib/LoadingPanel.js"></script>
+    <script src="../../maps/resources/jslib/proj4js.js"></script>
+
+    <!--<script src="../../maps/resources/jslib/PrintMap.js"></script>-->
+
+
+<!-- per lo sviluppo uso un PrintMap.js in questa cartella -->
+    <script src="PrintMap.js"></script>
+    <script src="testprint.js" type="text/javascript"></script>
+
+
+  </head>
+  <body class="map-layout">
+  
+<div >
+<form id="printpanel" role="form">
+    <!-- fieldset cose generali stampa -->
+    <div class="form-group">
+        <label for="print_panel_text">Testo</label>
+        <textarea name="text" class="form-control" id="print_panel_text"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="print_panel_date">Data</label>
+        <input type="date" name="date" class="form-control" id="print_panel_date">
+    </div>
+    <!-- fieldset proprietà di stampa -->
+    <div class="form-group">
+        <label for="print_panel_legend">Legenda</label>
+        <label class="radio-inline">
+            <input type="radio" name="legend" id="print_panel_legend" value="yes" checked> Si
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="legend" id="" value="no"> No
+        </label>
+    </div>
+    
+    <div class="form-group">
+        <label for="print_panel_layout">Layout di stampa</label>
+        <label class="radio-inline">
+            <input type="radio" name="direction" id="print_panel_layout" value="vertical" checked> Verticale
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="direction" id="" value="horizontal"> Orizzontale
+        </label>
+    </div>
+    
+    <div class="form-group">
+        <label for="print_panel_pageformat">Formato di stampa</label>
+        <select name="page_format" id="print_panel_pageformat" class="form-control">
+            <option value="A4" selected>A4</option>
+            <option value="A3">A3</option>
+            <option value="A2">A2</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="print_panel_template">Template di stampa</label>
+        <select name="template" id="print_panel_template" class="form-control">
+            <option value="default">Default</option>
+            <option value="pippo">Pippo</option>
+            <option value="pluto">Pluto</option>
+            <option value="paperino">Paperino</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label class="checkbox-inline">
+            <input type="checkbox" name="opt_northarrow" id="opt_northarrow" value="north1.png">Freccia Nord
+        </label>
+    </div>    
+    <div class="form-group">
+        <label for="print_panel_format">Formato</label>
+        <label class="radio-inline">
+            <input type="radio" name="print_format" id="print_panel_format" value="HTML" checked> HTML
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="print_format" id="" value="PDF"> PDF
+        </label>
+    </div>
+    <div class="form-group">
+        <label class="input-inline">Scala 1:
+            <input type="text" name="scale" id="scale" style="width:80px">
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="print_panel_resolution">Risoluzione</label>
+        <select id="print_panel_resolution" name="print_resolution" class="form-control">
+            <option value="150" selected>Media</option>
+            <option value="300">Alta</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label class="checkbox-inline">
+            <input type="checkbox" name="opt_rotation" id="opt_rotation">Consenti rotazione
+        </label>
+    </div>
+    <div class="form-group">
+        <label class="checkbox-inline">
+            <input type="checkbox" name="opt_center" id="opt_center">Centra automaticamente
+        </label>
+    </div>
+    <div class="form-group">
+    <label for="coordx">Xc: </label>
+    <input type="text" name="coordx" id="coordx" style="width:80px">
+    <label for="coordy">Yc: </label>
+    <input type="text" name="coordy" id="coordy" style="width:80px">    
+    <label for="boxw">W: </label>
+    <input type="text" name="boxw" id="boxw" style="width:80px">
+    <label for="boxh">H: </label>
+    <input type="text" name="boxh" id="boxh" style="width:80px">
+    <label for="boxr">R: </label>
+    <input type="text" name="boxr" id="boxr" style="width:80px">
+    </div>
+    <p>
+        <button type="button" role="center" class="btn btn-default">Centra</button>
+        <button type="button" role="print" class="btn btn-default">Stampa</button>
+        <a href="#" target="_blank" role="html"><span role="icon" class="glyphicon-disabled glyphicon-file print-download-icon"></span><span></span></a>
+        <a href="#" target="_blank" role="pdf"><span role="icon" class="glyphicon-disabled glyphicon-print print-download-icon"></span><span></span> </a>
+    </p>
+    
+    <div class="results" style="display: none;">
+        <span name="result">
+            
+        </span>
+    </div>
+    
+</form>
+</div>
+
+<div id="content">
+  <div id="map" style="width:900px;height:400px;border:1px solid black;position:absolute"></div>
+</div>
+
+  </body>
+</html>

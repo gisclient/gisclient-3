@@ -165,11 +165,11 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	return $err;
 }
 function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1,$filtro="",$delete=0){
-	//$shapeDir="/shape/";
+	$shapeDir="";
 	$db = GCApp::getDB();
     $err = array();
     
-	$sql="select coalesce(base_path,'')||'/".$shapeDir."'||coalesce(shape_dir,'')||'/".$d."' as dir from ".DB_SCHEMA.".catalog inner join ".DB_SCHEMA.".project using (project_name) where catalog_id=$catalog_id";
+	$sql="select coalesce(base_path,'')||coalesce(catalog_path,'')||'/".$d."' as dir from ".DB_SCHEMA.".catalog inner join ".DB_SCHEMA.".project using (project_name) where catalog_id=$catalog_id";
     try {
         $result = $db->query($sql)->fetchColumn(0);
     } catch(Exception $e) {
