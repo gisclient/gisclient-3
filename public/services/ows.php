@@ -286,6 +286,8 @@ if (!empty($layersParameter)) {
 			}
 		}
 		$n = 0;
+
+/* RIMOSSO AUTHFILTER		
 		// se ci sono filtri definiti per il layer, li ciclo
 		while ($authFilter = $layer->getMetaData('gc_authfilter_'.$n)) {
 			if (empty($authFilter)) break; // se l'ennesimo filtro +1 non è definito, interrompo il ciclo
@@ -311,6 +313,7 @@ if (!empty($layersParameter)) {
 				$layer->setFilter($filter);
 			}
 		}
+*/
 		
 		if (!empty($_SESSION['GC_LAYER_FILTERS'])) {
 			if (!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {

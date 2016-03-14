@@ -156,6 +156,7 @@ abstract class AbstractUser {
 			$featureType = $row['layergroup_name'].".".$row['layer_name'];
 			$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
 
+/* RIMOSSO AUTHFILTER
 			if(!empty($row['layer_id'])) {
 				// se il filtro è richiesto e non è settato in sessione, escludi il layer
 				if(isset($requiredAuthFilters[$row['layer_id']])) {
@@ -164,6 +165,8 @@ abstract class AbstractUser {
 				}
 				$this->authorizedLayers[] = $row['layer_id'];
 			}
+*/   
+       
 			// create arrays if not exists
 			if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
 			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array();

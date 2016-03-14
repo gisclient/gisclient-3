@@ -627,6 +627,7 @@ class gcFeature {
             $aMeta["gc_private_layer"] = '1';
         }
 
+/* RIMOSSO AUTHFILTER
         $sql = "select af.filter_name, laf.required " .
                 " from " . DB_SCHEMA . ".authfilter af inner join " . DB_SCHEMA . ".layer_authfilter laf using(filter_id) " .
                 " where layer_id = ? ";
@@ -639,6 +640,9 @@ class gcFeature {
                 $aMeta['gc_authfilter_' . $n . '_required'] = 1;
             $n++;
         }
+*/
+
+
 
         foreach ($aMeta as $key => $value) {
             $metaText .= "\t\"$key\"\t\"$value\"\n\t";
