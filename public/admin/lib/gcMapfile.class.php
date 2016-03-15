@@ -776,13 +776,15 @@ END";
 
     function _calculateExtentFromCenter($maxScale, $srid) {
         $sql = "SELECT ".
-        "st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),$srid)) as xc, ".
-        "st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),$srid)) as yc, ".
+        "st_x(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),".$srid.")) as xc, ".
+        "st_y(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),".$srid.")) as yc, ".
         "CASE WHEN proj4text like '%+units=m%' then 'm' ".
         "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
         "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
         "FROM spatial_ref_sys WHERE srid=:srid;";
+
         $stmt = $this->db->prepare($sql);
+
         $stmt->execute(array(':srid' => $srid));
         $row=$stmt->fetch(PDO::FETCH_ASSOC);
         $x = $row["xc"];
@@ -826,8 +828,8 @@ END";
         );
 
         $sql = "SELECT srid,".
-        "st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as xc, ".
-        "st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as yc, ".
+        "st_x(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),srid)) as xc, ".
+        "st_y(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),srid)) as yc, ".
         "CASE WHEN proj4text like '%+units=m%' then 'm' ".
         "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
         "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
