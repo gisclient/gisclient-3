@@ -173,6 +173,7 @@ define('OWS_CACHE_TTL_OPEN', 4*60*60); // Map cache for the 1st open of the map
 
 $GEOLOCATOR_CONFIG = array(
     'mapset' => array(
+        'catalogname'=>'common',
         'namefield'=>'search_name',
         'idfield'=>'id',
         'geomfield'=>'the_geom',
