@@ -38,11 +38,13 @@ dato[] = "Nascondi geometria in interrogazione<br><font size=1 >Non verrà visua
 dato[] = "Nascondi in interrogazione<br><font size=1 >Non presente nello strumento di interrogazione<br>(Il WFS rimane attivo)</font>;hidden;;noyes"
 dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;searchable_id;200#seldb_searchable;selectdb"
 
+dato[] = "Template per interrogazione WMS"
+dato[] = "Template<br><font size=1 >Scrivere:<br>template_wms/nome_layergroup.nome_layer.html</font>;template;44;text"
+dato[] = "Header<br><font size=1 >Scrivere:<br>template_wms/header.html</font>;header;44;text"
+dato[] = "Footer<br><font size=1 >Scrivere:<br>template_wms/footer.html</font>;footer;44;text"
+
 dato[] = "Altri parametri"
 dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
-dato[] = "Template;template;44;text"
-dato[] = "Template header;header;44;text"
-dato[] = "Template footer;footer;44;text"
 dato[] = "Dimesione selezione;selection_width;3;text|Colore selezione;selection_color;11;color"
 dato[] = "Numero massimo di oggetti visualizzati;maxfeatures;5;intero"
 dato[] = "Numero massimo di oggetti vettoriali;maxvectfeatures;5;intero"
