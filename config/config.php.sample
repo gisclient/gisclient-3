@@ -54,7 +54,7 @@ define('GISCLIENT_OWS_URL', PUBLIC_URL.'services/ows.php');//NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL', PUBLIC_URL.'services/tms/');//NON E' OBBLIGATORIO
 
 /********************* MAPPROXY ***************/
-define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
+define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO; ? finale è necessario (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
 define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
 define('MAPPROXY_PATH', '/opt/mapproxy/');
 define('MAPPROXY_URL', '/');
@@ -98,13 +98,16 @@ require_once (ROOT_PATH."config/config.db.php");
 require_once (ROOT_PATH.'lib/gcapp.class.php');
 
 //Author
-define('ADMIN_PATH',ROOT_PATH.'public/admin/');
+define('ADMIN_PATH', ROOT_PATH.'public/admin/');
 
 //debug
-if(!defined('DEBUG_DIR')) define('DEBUG_DIR',ROOT_PATH.'config/debug/');
-if(!defined('DEBUG')) define('DEBUG', 0); // Debugging 0 off 1 on
-
-require_once (ROOT_PATH."config/login.php");
+if (!defined('DEBUG_DIR')) {
+    define('DEBUG_DIR', ROOT_PATH.'config/debug/');
+}
+if (!defined('DEBUG')) {
+    define('DEBUG', 1); //Debugging 0 off 1 on
+}
+require_once ROOT_PATH."config/login.php";
 
 /****************** QUERY REPORTS ***************+*/
 define('MAX_REPORT_ROWS',5000);
@@ -131,7 +134,7 @@ define('DATALAYER_ALIAS_TABLE','__data__');//nome riservato ad alias per il nome
 define('WRAP_READLINE','\\');
 define('COLOR_REDLINE','0 0 255');//Colore Line di contorno oggetti poligono o linea selezionati
 define('OBJ_COLOR_SELECTION','255 255 0');//Colore Line di contorno oggetti poligono o linea selezionati
-define('MAP_DPI', 90.714);//Tiles standard resolutions
+define('MAP_DPI',72);//Mapserver map resolution
 define('TILE_SIZE',256);//Mapserver map resolution
 // define('SERVICE_MAX_RESOLUTION',156543.03392812); // WMTS: Calcolare in base al valore presente nel campo ScaleDenominator del GetCapabilities (nella TileMatrix 0)
 // define('SERVICE_MIN_ZOOM_LEVEL',7); // WMTS: min zoom level (default: 0 for google maps)
@@ -175,6 +178,7 @@ define('OWS_CACHE_TTL_OPEN', 4*60*60); // Map cache for the 1st open of the map
 
 $GEOLOCATOR_CONFIG = array(
     'mapset' => array(
+        'catalogname'=>'common',
         'namefield'=>'search_name',
         'idfield'=>'id',
         'geomfield'=>'the_geom',
@@ -183,4 +187,3 @@ $GEOLOCATOR_CONFIG = array(
         'where'=>"lang_id='de'"
     )
 );
-

@@ -23,13 +23,13 @@ dato[] = "Mappa di orientamento;refmap;7%;yesno"
 dato[] = "Nascosto in elenco;hide;7%;yesno"
 
 [title]
-edit = "Modifica layergroup del mapset"
-view = "Visualizza layergroup del mapset"
-new = "Inserisci layergroup del mapset"
-list = "Layergroup presenti nel mapset"
+edit = "Modifica gruppo di layer del mapset"
+view = "Visualizza gruppo di layer del mapset"
+new = "Inserisci gruppo di layer del mapset"
+list = "Gruppi di layers presenti nel mapset"
 
 [menu]
-standard = "Inserisci layergroup del mapset"
+standard = "Inserisci gruppo di layer del mapset"
 
 [message]
 nodata = ""

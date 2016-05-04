@@ -29,10 +29,14 @@ require_once ADMIN_PATH."lib/functions.php";
 require_once ROOT_PATH."lib/i18n.php";
 require_once ROOT_PATH . 'lib/GCService.php';
 
-if(empty($_REQUEST["jsonformat"]))
+if(empty($_REQUEST["jsonformat"])) {
 	require_once 'include/gcMap.class.php';
-else
+} else {
 	require_once 'include/gcMap.class.r3gis.php';
+    if (!empty($_REQUEST['format']) && $_REQUEST['format'] == 'senchatouch') {
+        require_once 'include/gcMap.class.r3gis.senchatouch.php';
+    }
+}
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -55,15 +59,18 @@ header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 header ("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); // always modified
 header ("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header ("Pragma: no-cache"); // HTTP/1.0
-header("Content-Type: application/json; Charset=UTF-8");
+header ("Content-Type: application/json; Charset=UTF-8");
 
 if(empty($_REQUEST['mapset'])) die(json_encode(array('error' => 200, 'message' => 'No mapset name')));
 
-if(empty($_REQUEST["jsonformat"]))
+if(empty($_REQUEST["jsonformat"])) {
 	$output = $objMapset->mapConfig;
-else
+} else {
 	$output = $objMapset->mapOptions;
-
+    if(!empty($_REQUEST['format']) && $_REQUEST['format'] == 'senchatouch') {
+        $output = gcMapSenchaTouchUtils::toSenchaTouch($output);
+    }
+}
 
 if(empty($_REQUEST["callback"]))
 	die(json_encode($output));
