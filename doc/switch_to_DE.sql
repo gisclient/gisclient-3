@@ -558,7 +558,7 @@ CREATE OR REPLACE VIEW vista_relation AS
                FROM information_schema.columns
               WHERE columns.table_schema = "substring"(c.catalog_path, "position"(c.catalog_path, '/') + 1, length(c.catalog_path)) AND columns.table_name = r.table_name)) THEN '(!) Das Index-Feld der Relation existiert nicht'
             WHEN r.data_field_2 IS NULL AND r.table_field_2 IS NULL THEN 'OK'
-            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Uno dei campi della JOIN 2 è vuoto'
+            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Ein Feld der JOIN 2 ist leer'
             WHEN NOT (r.data_field_2 IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema = "substring"(c.catalog_path, "position"(c.catalog_path, '/') + 1, length(c.catalog_path)) AND columns.table_name = l.layer_name)) THEN '(!) Das Index-Feld layer der JOIN 2 existiert nicht'
@@ -566,7 +566,7 @@ CREATE OR REPLACE VIEW vista_relation AS
                FROM information_schema.columns
               WHERE columns.table_schema = "substring"(c.catalog_path, "position"(c.catalog_path, '/') + 1, length(c.catalog_path)) AND columns.table_name = r.table_name)) THEN '(!)Das Index-Feld Relation der JOIN 2 existiert nicht'
             WHEN r.data_field_3 IS NULL AND r.table_field_3 IS NULL THEN 'OK'
-            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Uno dei campi della JOIN 3 è vuoto'
+            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Ein Feld der JOIN 3 ist leer'
             WHEN NOT (r.data_field_3 IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema = "substring"(c.catalog_path, "position"(c.catalog_path, '/') + 1, length(c.catalog_path)) AND columns.table_name = l.layer_name)) THEN '(!)Das Index-Feld Relation der JOIN 3 existiert nicht'
