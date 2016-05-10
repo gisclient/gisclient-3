@@ -7,9 +7,12 @@ $ajax = new GCAjax();
 $auth = new GCUser();
 $db = GCApp::getDb();
 
-$inputJSONText = file_get_contents('php://input');
-if (($data = json_decode($inputJSONText, true)) === null) {
-    $data = $_REQUEST;
+if (!isset($data))
+{
+    $inputJSONText = file_get_contents('php://input');
+    if (($data = json_decode($inputJSONText, true)) === null) {
+        $data = $_REQUEST;
+    }
 }
 
 switch($data['export_format']) {
@@ -232,4 +235,46 @@ switch($data['export_format']) {
         file_put_contents(GC_WEB_TMP_DIR.$filename, $content);
         die(json_encode(array('result'=>'ok','file'=>GC_WEB_TMP_URL.$filename)));
     break;
+    case 'pdf':
+        
+        if(empty($data['data']) || !is_array($data['data'])) {
+            die(json_encode(array('result' => 'error', 'error' => 'Empty data')));
+        }
+
+        if(empty($data['fields']) || !is_array($data['fields'])) {
+            die(json_encode(array('result' => 'error', 'error' => 'Empty fields')));
+        }
+
+        if(empty($data['export_format']) || !in_array($data['export_format'], array('xls', 'pdf'))) {
+            die(json_encode(array('result' => 'error', 'error' => 'Invalid export format')));
+        }
+        
+	if(!file_exists(GC_FOP_LIB)) {
+            die(json_encode(array('result'=>'error','error' => 'fop lib does not exist')));
+        }
+	
+        require_once GC_FOP_LIB;
+        
+        $_REQUEST['request_type'] = 'table';
+        require_once 'include/printDocument.php';
+        
+        try {
+            $printTable = new printDocument();
+
+            if(!empty($_REQUEST['lang'])) {
+                    $printTable->setLang($_REQUEST['lang']);
+            }
+            if(!empty($_REQUEST['logoSx'])) $printTable->setLogo($_REQUEST['logoSx']);
+                else if(defined('GC_PRINT_LOGO_SX')) $printTable->setLogo(GC_PRINT_LOGO_SX);
+            if(!empty($_REQUEST['logoDx'])) $printTable->setLogo($_REQUEST['logoDx'], 'dx');
+                else if(defined('GC_PRINT_LOGO_DX')) $printTable->setLogo(GC_PRINT_LOGO_DX, 'dx');
+
+            $TmpPath = GC_WEB_TMP_DIR;
+            $file = $printTable->printTablePDF($data);
+         } 
+         catch (Exception $e) {
+            die(json_encode(array('result'=>'error','error' => $e->getMessage())));
+         }
+         die(json_encode(array('result'=>'ok','file'=>$file)));
+    break;   
 }

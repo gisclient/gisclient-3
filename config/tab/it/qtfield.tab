@@ -1,13 +1,15 @@
 [standard]
-table = "qtfield"
+table = "qt_field"
 pkey = "qtfield_id"
-dato[] = "Layer o Relazione;qtrelation_id;200#seldb_qtrelation#layer_id;selectdb"
-dato[] = "Campo;qtfield_name;100;text|Elenco campi;qtfield_name;100#openList#layer#qtrelation_id;button"
+dato[] = "Layer o Relazione;qtrelation_id;200#seldb_qt_relation#qt_id;selectdb"
+dato[] = "Campo;qtfield_name;100;text|Elenco campi;qtfield_name;100#openList#qt#qtrelation_id;button"
 dato[] = "Titolo;field_header;40;text"
 dato[] = "Tipo di Campo;fieldtype_id;200#seldb_fieldtype;selectdb"
 dato[] = "Tipo di Dato;datatype_id;200#seldb_datatype;selectdb"
 dato[] = "Formula;formula;48x2;textarea"
+dato[] = "Larghezza campo;column_width;48;intero"
 dato[] = "Formato;field_format;48x2;textarea|Elenco Formati;field_format;100#openList;button"
+dato[] = "Filtrato in ricerca per;field_filter;200#seldb_qt_field_filter#qt_id#qtfield_id;selectdb"
 dato[] = "Modo di ricerca;searchtype_id;200#seldb_searchtype;selectdb"
 dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
 dato[] = "Ordine;qtfield_order;3;intero|Op predefinito;default_op;5;text"
@@ -26,10 +28,10 @@ dato[] = ";qtfield_id;1%;edit"
 dato[] = ";qtfield_id;1%;delete"
 
 [title]
-edit = "Modifica campo"
-view = "Visualizza campo"
-new = "Inserisci campo"
-list = "Campi del layer"
+edit = "Modifica campo report"
+view = "Visualizza campo report"
+new = "Inserisci campo report"
+list = "Campi del report"
 
 [menu]
 new = "Nuovo campo"

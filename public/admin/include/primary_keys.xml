@@ -87,10 +87,15 @@
 		<parent>layer</parent>
 	</qtlink>
         <qtfield>
-		<table>qtfield</table>
+		<table>qt_field</table>
 		<pkey>qtfield_id</pkey>
 		<parent>qt</parent>
 	</qtfield>
+        <qtrelation>
+		<table>qt_relation</table>
+		<pkey>qtrelation_id</pkey>
+		<parent>qt</parent>
+	</qtrelation>
 	<relation>
 		<table>relation</table>
 		<pkey>relation_id</pkey>

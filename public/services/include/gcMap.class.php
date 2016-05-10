@@ -69,6 +69,7 @@ class gcMap{
     var $listProviders = array(); //Elenco dei provider settati per il mapset
     var $projDefs = array();
     var $getLegend = false;
+    var $mapsetTiles = 0;
 
     var $mapProviders = array(
         VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
@@ -124,7 +125,7 @@ class gcMap{
         $mapConfig["mapsetTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
         $mapConfig["projectName"] = $row["project_name"];   
         if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
-        $mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
+        $this->mapsetTiles = (int)$row["mapset_tiles"];       
         $mapConfig["dpi"] = MAP_DPI;
         if(count($this->projDefs)>0) 
             $mapConfig['projdefs'] = $this->projDefs;
@@ -167,6 +168,8 @@ class gcMap{
         $this->_getSelgroup();
         $this->_getLayers();
         $this->_getFeatureTypes();
+        
+        $mapConfig["mapsetTiles"] = $this->mapsetTiles;
         
         if(count($this->listProviders)>0){
             $mapConfig["mapProviders"] = array();
@@ -256,8 +259,27 @@ class gcMap{
 
         $sqlParams = array();
         $sqlAuthorizedLayers = "";
-        if (count($authorizedLayers)>0) 
+        if (count($authorizedLayers)>0) {
             $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', $authorizedLayers).")";
+            
+            // **** Old Snapo ****
+            // **** Check if there are layergroups on by defautl but not authorized
+            // **** if so, disable full mapset in WMS/WMTS layer
+            // !!!! TODO: mapproxy auth !!!!
+            $sqlAuthLayers = "SELECT count(layergroup_id) as layernum from ".DB_SCHEMA.".mapset_layergroup WHERE layergroup_id not in (SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
+            $sqlAuthLayers .= " UNION SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL) AND status=1 AND mapset_name = :mapset_name";
+            
+            $stmt = $this->db->prepare($sqlAuthLayers);
+            $stmt->bindValue(':mapset_name', $this->mapsetName);
+            $stmt->execute();
+            
+            $ctRow = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($ctRow) {
+                if (intval($ctRow['layernum']) > 0)
+                    $this->mapsetTiles = 0;
+            }    
+            
+        }
         $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id) 
             WHERE layergroup_id IN (
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
@@ -946,9 +968,8 @@ class gcMap{
                     $fieldSpecs["relationName"] =  $row["relation_name"];
                     $fieldSpecs["relationType"] = intval($row["relationtype_id"]);
                 }
-                if($row["filter_field_name"]){
-                    $fieldSpecs["filterFieldName"] = $row["filter_field_name"];
-                    intval($row["field_filter"]);
+                if(intval($row["field_filter"]) > 0){
+                    //$fieldSpecs["filterFieldName"] = $row["filter_field_name"];
                     $fieldSpecs["fieldFilter"] =  intval($row["field_filter"]);
                 }
 
