@@ -18,7 +18,7 @@ new = "Verwalter des Projekt hinzufügen"
 list = "Verwalter des Projekt"
 
 [menu]
-standard = "Amministratori"
+standard = "Verwalter"
 
 [message]
 nodata = ""

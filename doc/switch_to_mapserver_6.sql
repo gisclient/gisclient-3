@@ -24,13 +24,9 @@ INSERT INTO e_symbolcategory VALUES (9, 'SkiGIS', NULL);
 INSERT INTO e_symbolcategory VALUES (10, 'SIGNS', NULL);
 --INSERT INTO e_symbolcategory VALUES (11, 'VEHICLES', NULL);
 INSERT INTO e_symbolcategory VALUES (12, 'R3-Ambiente', NULL);
---AUTHOR
+
 INSERT INTO e_symbolcategory VALUES (90, 'PIXMAP', NULL);
 INSERT INTO e_symbolcategory VALUES (91, 'R3-MAPSYMBOLS', NULL);
--- CLIENTI
---INSERT INTO e_symbolcategory VALUES (50, 'Sentieri CMSO', NULL);
---INSERT INTO e_symbolcategory VALUES (60, 'P.E.I. CMVerbano', NULL);
---INSERT INTO e_symbolcategory VALUES (70, 'PRG TSI Mori', NULL);
 
 -- POPOLA I PATTERN E AGGIORNA GLI STILI
 INSERT INTO e_pattern VALUES(0,'NO PATTERN','#PATTERN END',0);
