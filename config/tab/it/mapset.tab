@@ -1,7 +1,7 @@
 [standard]
 table = "mapset"
 pkey = "mapset_name"
-dato[] = "Nome *<br><font size=1>univoco anche tra progetti diversi!</font>;mapset_name;20;text"
+dato[] = "Nome *<br><font size=1>univoco anche tra progetti diversi!</font>;mapset_name;50;text"
 dato[] = "Titolo *;mapset_title;60;text"
 dato[] = "Scala massima *;maxscale;10;text|Scala minima;minscale;10;text"
 dato[] = "SRID (Codice EPSG) *<br><font size=1>Sistema di riferimento della mappa</font>;mapset_srid;100#seldb_mapset_srid#project_name;selectdb"
