@@ -49,7 +49,7 @@ $(document).ready(function() {
 
     var xlsUploader = uploader({
         dataUrl: 'action=upload-xls',
-        validation: function (file) {           
+        validation: function (file) {
             if (/.+\.xlsx?$/.test(file.name)) {
                 return file;
             }
@@ -63,9 +63,9 @@ $(document).ready(function() {
     var xlsHandler = fileHandler(xlsUploader);
     xlsHandler.input('xls_file_upload');
     
-    /*var csvUploader = uploader({
+    var csvUploader = uploader({
         dataUrl: 'action=upload-csv',
-        validation: function (file) {           
+        validation: function (file) {
             if (/.+\.csv$/.test(file.name)) {
                 return file;
             }
@@ -77,13 +77,46 @@ $(document).ready(function() {
         },
     });
     var csvHandler = fileHandler(csvUploader);
-    csvHandler.input('csv_file_upload');*/
+    csvHandler.input('csv_file_upload');
+
+    var docUploader = uploader({
+        dataUrl: 'action=upload-doc&parent_id=' + $('div#import_dialog input[name=current_id]').val(),
+        progressBar: document.getElementById('progress_doc'),
+        validationPromise: function (file, successPromise) {
+            var parent_id = $('div#import_dialog input[name=current_id]').val();
+            docUploader.setDataUrl('action=upload-doc&parent_id=' + $('div#import_dialog input[name=current_id]').val());
+
+            dataManager.ajaxRequest({
+                data: {action: 'check-virtual-name', name: file.name, parent_id: parent_id},
+                success: function(response) {
+                    if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                        self.showErrorReponseAlert(response);
+                        return;
+                    }
+
+                    if (response.isValidName) {
+                        successPromise(file);
+                    }
+                }
+            });
+
+            return function() {
+
+            };
+        },
+        onAllComplete: function () {
+            dataManager.getFsList($('div#import_dialog input[name=current_id]').val());
+        },
+    });
+    var docHandler = fileHandler(docUploader);
+    docHandler.input('doc_file_upload');
+    docHandler.dragAndDrop('fs_list');
 
     var rasterUploader = uploader({
         dataUrl: 'action=upload-raster&catalog_id=' + $('#catalog').val(),
         validation: function (file) {
             var directory = $('div#import_dialog input[name="dir_name"]').val();
-            if(directory == '') {
+            if(directory === '') {
                 alert('Empty directory');
                 return false;
             } else {
@@ -105,6 +138,27 @@ $(document).ready(function() {
 
     $('div#import_dialog input[name="dir_name"]').change(function (event) {
         $('#raster_file_upload').prop( "disabled", !event.target.value);
+    }).change();
+
+    $('div#import_dialog input[name=doc_folder_name]').change(function(event){
+        var self = dataManager;
+        var folder_name = event.target.value;
+        var parent_id = $('div#import_dialog input[name=current_id]').val();
+        if (!!folder_name) {
+            self.ajaxRequest({
+                data: {action: 'check-virtual-name', name: folder_name, parent_id: parent_id},
+                success: function(response) {
+                    if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                        self.showErrorReponseAlert(response);
+                        return;
+                    }
+
+                    $('div#import_dialog button[name="create_folder"]').button("option", "disabled", !response.isValidName);
+                }
+            });
+        } else {
+            $('div#import_dialog button[name="create_folder"]').button("option", "disabled", true);
+        }
     }).change();
     
     $('div#import_dialog div#import_dialog_shp button[name="import"]').button().hide().click(function(event) {
@@ -161,6 +215,10 @@ $(document).ready(function() {
         var type = $(this).attr('name').substr(0, 3);
         dataManager.changeImportMethod(type, $(this).val());
     });
+    $('div#import_dialog button[name="create_folder"]').click(function(event) {
+        event.preventDefault();
+        dataManager.createVirtualFolder();
+    });
 });
 
 function GCDataManager(catalogId) {
@@ -172,7 +230,8 @@ function GCDataManager(catalogId) {
         1: 'raster',
         2: 'postgis',
         3: 'xls',
-        4: 'csv'
+        4: 'csv',
+        5: 'doc'
     };
     
     this.columnTypes = {
@@ -187,7 +246,7 @@ function GCDataManager(catalogId) {
         } else {
             alert('Error');
         }
-    }
+    };
     
     this.checkAvailableImports = function() {
         var self = this;
@@ -212,7 +271,7 @@ function GCDataManager(catalogId) {
                 //self.hasMeasureColumn = !!response.measureColumn;
             }
         });
-    }
+    };
 
     this.fileTypeSelected = function(index) {
         var self = this;
@@ -233,6 +292,10 @@ function GCDataManager(catalogId) {
             break;
             case 4:
                 self.fileType = 'csv';
+            break;
+            case 5:
+                self.fileType = 'doc';
+                return self.getFsList();
             break;
             default:
                 alert('file type ' + index + 'Not implemented');
@@ -486,7 +549,7 @@ function GCDataManager(catalogId) {
         });
     };
     
-    this.checkUploadFolderName = function(directory) {
+    /*this.checkUploadFolderName = function(directory) {
         var self = this;
         
         $('div#import_dialog div.logs').empty();
@@ -499,13 +562,101 @@ function GCDataManager(catalogId) {
                     return;
                 }
                 if(response.data != 'ok') {
-                    $('#raster_file_upload').uploadifyClearQueue();
                     $('div#import_dialog div.logs').html(response.data).focus();
                     return;
                 }
-                $('#raster_file_upload').uploadifyUpload();
             }
         });
+    };*/
+
+    this.getFsList = function(folder_id) {
+        var self = this;
+        
+        $('div#import_dialog div.logs').empty();
+        
+        self.ajaxRequest({
+            data: {action:'get-virtual-fs', folder_id: folder_id},
+            success: function(response) {
+                if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                    self.showErrorReponseAlert(response);
+                    return;
+                }
+                
+                var html = '<input type="hidden" name="current_id" value="' + (response.data.id || '') + '">';
+                html += '<span><b>PATH:</b>' + response.data.path + '</span>';
+                html += '<ul>';
+                if (response.data.id !== null) {
+                    var parent_id = response.data.parent_id || '';
+                    html += '<li><a href="#" data-action="getfs" data-doc_id="' + parent_id + '">..</a></li>';
+                }
+                $.each(response.data.content, function(e, file) {
+                    if (file.doc_type == 'folder') {
+                        html += '<li>';
+                        html += '<a href="#" data-action="getfs" data-doc_id="' + file.doc_id + '">' + file.doc_name + '</a>';
+                        if (response.data.id !== null) {
+                            html += '<a href="#" class="button" data-action="delete" data-doc_id="'+file.doc_id+'">Delete</a>';
+                        }
+                        html += '</li>';
+                    } else {
+                        html += '<li>' + file.doc_name + '<a href="#" class="button" data-action="delete" data-doc_id="' + file.doc_id + '">Delete</a></li>';
+                    }
+                });
+                html += '</ul>';
+                $('div#import_dialog div[data-role="fs_list"]').empty().html(html);
+                
+                $('div#import_dialog div[data-role="fs_list"] a[data-action="getfs"]').button().click(function(event) {
+                    event.preventDefault();
+                    
+                    var next_folder_id = $(this).attr('data-doc_id');
+                    self.getFsList(next_folder_id);
+                });
+                
+                $('div#import_dialog div[data-role="fs_list"] a[data-action="delete"]').button().click(function(event) {
+                    event.preventDefault();
+                    var id = $(this).attr('data-doc_id');
+                    
+                    self.deleteVirtualFs(id);
+                });
+                
+            }
+        });
+    };
+
+    this.createVirtualFolder = function() {
+        var self = this;
+        var folder_name = $('div#import_dialog input[name=doc_folder_name]').val();
+        var parent_id = $('div#import_dialog input[name=current_id]').val();
+        if (!!folder_name) {
+            self.ajaxRequest({
+                data: {action: 'create-virtual-folder', folder_name: folder_name, parent_id: parent_id},
+                success: function(response) {
+                    if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                        self.showErrorReponseAlert(response);
+                        return;
+                    }
+                    $('div#import_dialog input[name=doc_folder_name]').val('');
+                    self.getFsList(response.doc_id);
+                }
+            });
+        }
+    };
+
+    this.deleteVirtualFs = function(id) {
+        var self = this;
+        var r = confirm("ATTENZIONE! Cancellare l'elemento e tutto il suo contenuto?");
+        if (r === true) {
+            self.ajaxRequest({
+                data: {action:'delete-from-virtual-fs', doc_id: id},
+                success: function(response) {
+                    if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                        self.showErrorReponseAlert(response);
+                        return;
+                    }
+
+                    self.getFsList($('div#import_dialog input[name=current_id]').val());
+                }
+            });
+        }
     };
     
     this.getFileList = function() {
@@ -863,7 +1014,7 @@ var fileHandler = (function (uploader) {
         }
         document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
         console.log(totalSize/1024);*/
-    }
+    };
 
     function dragAndDrop(id) {
         function handleDragOver(evt) {
@@ -899,7 +1050,7 @@ var fileHandler = (function (uploader) {
             uploader.addFile(files[i]);
         }
 
-        uploader.startUpload();
+        //startUpload();
     }
 
     if (!uploader) {
@@ -908,7 +1059,7 @@ var fileHandler = (function (uploader) {
         return {
             dragAndDrop: dragAndDrop,
             input: input
-        }
+        };
     }
 });
 
@@ -922,6 +1073,7 @@ var uploader = (function (config) {
     var validation = config.validation || function (file) {
         return file;
     };
+    var validationPromise = config.validationPromise || false;
     var onAllComplete = config.onAllComplete || function () {};
     var errorLog = config.errorLog || function(error) {
         alert(error);
@@ -930,7 +1082,7 @@ var uploader = (function (config) {
     var files = [];
     var completeCount = 0;
 
-    function addFile(file) {
+    function addFile(file) { //do it as promise!
         function isValid(file) {
             if (!(file instanceof Blob)) {
                 errorLog('Error: not a file');
@@ -950,12 +1102,19 @@ var uploader = (function (config) {
             return false;
         }
 
-        var f = validation(file);
-        if (!!f) {
-            files.push(f);
+        if (validationPromise) {
+            validationPromise(file, function() {
+                files.push(file);
+                startUpload();
+            });
+        } else {
+            var f = validation(file);
+            if (!!f) {
+                files.push(f);
+                startUpload();
+            }
         }
 
-        return !!f;
     }
 
     function startUpload() {
