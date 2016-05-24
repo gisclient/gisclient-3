@@ -220,14 +220,17 @@
                     </div>
                     
                     <div id="import_dialog_doc">
+                        Select import folder <br>
                         <input id="doc_file_upload" name="file_upload" type="file" multiple="multiple" />
                         <progress id="progress_doc" value="" max="" style="display:none;"></progress>
                         <hr>
                         <div id="fs_list" data-role="fs_list">
                         </div>
                         <hr>
-                        New folder: <input type="text" name="doc_folder_name">
-                        <button name="create_folder">Create</button>
+                        <div id="doc_new_folder" style="display:none;">
+                            New folder: <input type="text" name="doc_folder_name">
+                            <button name="create_folder">Create</button>
+                        </div>
                     </div>
                 </div>
                 <div class="logs" style="color:red;" tabindex="100">

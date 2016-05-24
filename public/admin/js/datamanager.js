@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    if(initDataManager != true || $('#catalog').length < 1) {
+    if(initDataManager !== true || $('#catalog').length < 1) {
         return;
     }
     
@@ -140,7 +140,7 @@ $(document).ready(function() {
         $('#raster_file_upload').prop( "disabled", !event.target.value);
     }).change();
 
-    $('div#import_dialog input[name=doc_folder_name]').change(function(event){
+    $('div#import_dialog input[name=doc_folder_name]').keyup(function(event){
         var self = dataManager;
         var folder_name = event.target.value;
         var parent_id = $('div#import_dialog input[name=current_id]').val();
@@ -159,7 +159,7 @@ $(document).ready(function() {
         } else {
             $('div#import_dialog button[name="create_folder"]').button("option", "disabled", true);
         }
-    }).change();
+    }).keyup();
     
     $('div#import_dialog div#import_dialog_shp button[name="import"]').button().hide().click(function(event) {
         event.preventDefault();
@@ -591,17 +591,26 @@ function GCDataManager(catalogId) {
                 }
                 $.each(response.data.content, function(e, file) {
                     if (file.doc_type == 'folder') {
-                        html += '<li>';
+                        html += '<li style="clear:both"><span style="float:left">';
                         html += '<a href="#" data-action="getfs" data-doc_id="' + file.doc_id + '">' + file.doc_name + '</a>';
+                        html += '</span><span style="float:right">';
                         if (response.data.id !== null) {
-                            html += '<a href="#" class="button" data-action="delete" data-doc_id="'+file.doc_id+'">Delete</a>';
+                            html += '<a href="#" data-action="delete" data-doc_id="'+file.doc_id+'">Delete</a>';
                         }
-                        html += '</li>';
+                        html += '</span></li>';
                     } else {
-                        html += '<li>' + file.doc_name + '<a href="#" class="button" data-action="delete" data-doc_id="' + file.doc_id + '">Delete</a></li>';
+                        html += '<li style="clear:both"><span style="float:left">' + file.doc_name + '</span><span style="float:right">';
+                        if (file.doc_public === true) {
+                            html += '<a href="../services/documents' + file.doc_path + '" target="_blank" data-action="open_link">Open link</a>';
+                            html += '<a href="#" data-action="private" data-doc_id="' + file.doc_id + '">Private</a>';
+                        } else {
+                            html += '<a href="#" data-action="public" data-doc_id="' + file.doc_id + '">Public</a>';
+                        }
+                        html += '<a href="#" data-action="delete" data-doc_id="' + file.doc_id + '">Delete</a>';
+                        html += '</span></li>';
                     }
                 });
-                html += '</ul>';
+                html += '</ul><br style="clear:both">';
                 $('div#import_dialog div[data-role="fs_list"]').empty().html(html);
                 
                 $('div#import_dialog div[data-role="fs_list"] a[data-action="getfs"]').button().click(function(event) {
@@ -617,6 +626,22 @@ function GCDataManager(catalogId) {
                     
                     self.deleteVirtualFs(id);
                 });
+                $('div#import_dialog div[data-role="fs_list"] a[data-action="open_link"]').button({icons:{primary:'ui-icon-extlink'}, text:false});
+                $('div#import_dialog div[data-role="fs_list"] a[data-action="private"]').button().click(function(event) {
+                    event.preventDefault();
+                    var id = $(this).attr('data-doc_id');
+                    
+                    self.setPrivateVirtualFs(id);
+                });
+                $('div#import_dialog div[data-role="fs_list"] a[data-action="public"]').button().click(function(event) {
+                    event.preventDefault();
+                    var id = $(this).attr('data-doc_id');
+                    
+                    self.setPublicVirtualFs(id);
+                });
+
+                $('div#import_dialog #doc_file_upload').prop('disabled', response.data.id === null);
+                $('div#import_dialog #doc_new_folder').toggle(response.data.id !== null);
                 
             }
         });
@@ -658,6 +683,36 @@ function GCDataManager(catalogId) {
             });
         }
     };
+
+    this.setPublicVirtualFs = function(id) {
+        var self = this;
+        self.ajaxRequest({
+            data: {action:'set-public-virtual-fs', doc_id: id},
+            success: function(response) {
+                if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                    self.showErrorReponseAlert(response);
+                    return;
+                }
+
+                self.getFsList($('div#import_dialog input[name=current_id]').val());
+            }
+        });
+    };
+
+    this.setPrivateVirtualFs = function(id) {
+        var self = this;
+        self.ajaxRequest({
+            data: {action:'set-private-virtual-fs', doc_id: id},
+            success: function(response) {
+                if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                    self.showErrorReponseAlert(response);
+                    return;
+                }
+
+                self.getFsList($('div#import_dialog input[name=current_id]').val());
+            }
+        });
+    };
     
     this.getFileList = function() {
         var self = this;
@@ -667,7 +722,7 @@ function GCDataManager(catalogId) {
         self.ajaxRequest({
             data: {action:'get-uploaded-files', file_type:self.fileType},
             success: function(response) {
-                if(typeof(response) != 'object' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+                if(typeof(response) != 'object' || response === null || typeof(response.result) == 'undefined' || response.result != 'ok') {
                     self.showErrorReponseAlert(response);
                     return;
                 }
@@ -1029,7 +1084,6 @@ var fileHandler = (function (uploader) {
         dropZone.addEventListener('drop', function (evt) {
             evt.stopPropagation();
             evt.preventDefault();
-
             handleFileSelect(evt.dataTransfer.files);
         }, false);
     }
@@ -1040,17 +1094,25 @@ var fileHandler = (function (uploader) {
             evt.preventDefault();
 
             handleFileSelect(evt.target.files);
+            evt.target.value = '';
+
         }, false);
     }
 
     function handleFileSelect(files) {
         uiProcess();
-
-        for (var i = 0; i < files.length; i++) {
-            uploader.addFile(files[i]);
+        var completeAdd = [];
+        var fileLength = files.length;
+        function setCompleteAdd(file) {
+            completeAdd.push(file);
+            if (completeAdd.length == fileLength) {
+                uploader.startUpload();
+            }
         }
 
-        //startUpload();
+        for (var i = 0; i < files.length; i++) {
+            uploader.addFile(files[i], setCompleteAdd);
+        }
     }
 
     if (!uploader) {
@@ -1075,16 +1137,16 @@ var uploader = (function (config) {
     };
     var validationPromise = config.validationPromise || false;
     var onAllComplete = config.onAllComplete || function () {};
-    var errorLog = config.errorLog || function(error) {
+    var errorLog = config.errorLog || function (error) {
         alert(error);
     };
 
     var files = [];
     var completeCount = 0;
 
-    function addFile(file) { //do it as promise!
+    function addFile(file, callback) {
         function isValid(file) {
-            if (!(file instanceof Blob)) {
+            if (!(file instanceof Blob) || !file.type) {
                 errorLog('Error: not a file');
                 return false;
             }
@@ -1099,20 +1161,29 @@ var uploader = (function (config) {
         }
 
         if (!isValid(file)) {
-            return false;
+            callback(false);
+            return;
         }
 
         if (validationPromise) {
-            validationPromise(file, function() {
-                files.push(file);
-                startUpload();
+            validationPromise(file, function (file) {
+                if (!!file) {
+                    files.push(file);
+                } else {
+                    errorLog('Error: file not valid');
+                }
+                callback(file);
+                return;
             });
         } else {
             var f = validation(file);
             if (!!f) {
                 files.push(f);
-                startUpload();
+            } else {
+                errorLog('Error: file not valid');
             }
+            callback(file);
+            return;
         }
 
     }

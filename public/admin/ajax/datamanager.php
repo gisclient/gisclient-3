@@ -1,6 +1,7 @@
 <?php
 include_once "../../../config/config.php";
 include_once ROOT_PATH.'lib/ajax.class.php';
+include_once ROOT_PATH.'lib/gclog.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
 include_once ROOT_PATH.'lib/export.php';
 
@@ -25,6 +26,8 @@ $autoUpdaters = array(
 // real path per browsing
 $ajax = new GCAjax();
 $db = GCApp::getDB();
+$user = new GCUser();
+$log = new GCLog($db);
 
 if (empty($_REQUEST['action'])) {
     $ajax->error("Required parameter 'action' is missing");
@@ -88,6 +91,8 @@ switch($_REQUEST['action']) {
 
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
+
+        $log->log($user->getUsername(), 'UPLOAD', 'file: ' . $_REQUEST['filename']);
         break;
 
     case 'upload-raster':
@@ -117,6 +122,8 @@ switch($_REQUEST['action']) {
 
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
+
+        $log->log($user->getUsername(), 'UPLOAD', 'raster: ' . $targetFile);
         break;
 
     case 'upload-doc':
@@ -125,12 +132,23 @@ switch($_REQUEST['action']) {
         $parent_id = $_REQUEST['parent_id']? $_REQUEST['parent_id'] : null;
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
         $name = $_REQUEST['filename'];
-        $sql = "INSERT INTO " . DB_SCHEMA . ".document (doc_parent_id, doc_name, doc_type) VALUES(?, ?, ?) RETURNING doc_id";
 
-        $stmt = $db->prepare($sql);
+        $checkSql = "SELECT doc_id FROM " . DB_SCHEMA . ".document WHERE doc_parent_id = ? AND doc_name = ? AND doc_type = ?";
+
+        $stmt = $db->prepare($checkSql);
         $stmt->execute(array($parent_id, $name, $_FILES["fileToUpload"]["type"]));
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            $sql = "INSERT INTO " . DB_SCHEMA . ".document (doc_parent_id, doc_name, doc_type) VALUES(?, ?, ?) RETURNING doc_id";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array($parent_id, $name, $_FILES["fileToUpload"]["type"]));
+
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
 
         if (!is_dir(IMPORT_PATH . 'doc/')) {
             mkdir(IMPORT_PATH . 'doc/');
@@ -155,7 +173,7 @@ switch($_REQUEST['action']) {
 
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
-
+        $log->log($user->getUsername(), 'UPLOAD', 'doc -> doc_id: ' . $row['doc_id'] . ' doc_name: ' . $name);
 
         break;
 
@@ -234,7 +252,7 @@ switch($_REQUEST['action']) {
         $data = array();
 
         if (!empty($_REQUEST['folder_id'])) {
-            $sql = "SELECT doc_parent_id, doc_name, doc_path FROM " . DB_SCHEMA . ".document INNER JOIN " . DB_SCHEMA . ".vista_document_paths USING(doc_id) WHERE doc_id = " . $db->quote($_REQUEST['folder_id']);
+            $sql = "SELECT doc_parent_id, doc_name, doc_path FROM " . DB_SCHEMA . ".vista_document_paths WHERE doc_id = " . $db->quote($_REQUEST['folder_id']);
             $stmt = $db->prepare($sql);
             $stmt->execute();
 
@@ -249,7 +267,7 @@ switch($_REQUEST['action']) {
             $data['path'] = '/';
         }
 
-        $sql = "SELECT doc_id, doc_name, doc_type FROM " . DB_SCHEMA . ".document ";
+        $sql = "SELECT * FROM " . DB_SCHEMA . ".vista_document_paths ";
         if (!empty($_REQUEST['folder_id'])) {
             $sql .= " WHERE doc_parent_id = " . $db->quote($_REQUEST['folder_id']);
         } else {
@@ -304,6 +322,7 @@ switch($_REQUEST['action']) {
         $stmt->execute(array($parent_id, $folder_name));
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $log->log($user->getUsername(), 'CREATE', 'new folder: ' . $folder_name . '  in parent_id: ' . $parent_id);
 
         $ajax->success($row);
         break;
@@ -311,44 +330,47 @@ switch($_REQUEST['action']) {
     case 'delete-from-virtual-fs':
         checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'doc_id'));
 
-        function deleteRecursive($doc_id)
-        {
-            $db = GCApp::getDB();
-            $sql = 'SELECT doc_id FROM ' . DB_SCHEMA . '.document WHERE doc_parent_id = ?';
-            $stmt = $db->prepare($sql);
-            $stmt->execute(array($doc_id));
-
-            $result = true;
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC) && $result) {
-                $result = deleteRecursive($row['doc_id']);
-            }
-
-            $documentSql = 'SELECT * FROM ' . DB_SCHEMA . '.document WHERE doc_id = ?';
-            $stmt = $db->prepare($documentSql);
-            $stmt->execute(array($doc_id));
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($row['doc_type'] != 'folder') {
-                $path = IMPORT_PATH . 'doc/' . $row['doc_id'];
-                $res = unlink($path);
-
-                if (false === $res) {
-                    return false;
-                }
-            }
-
-            $deleteSql = 'DELETE FROM ' . DB_SCHEMA . '.document WHERE doc_id = ?';
-            $stmt = $db->prepare($deleteSql);
-            $result = $stmt->execute(array($doc_id));
-
-            return $result;
-        }
+        
 
         $result = deleteRecursive($_REQUEST['doc_id']);
 
         if (!$result) {
             $ajax->error("Error during delete");
         } else {
+            $ajax->success();
+        }
+
+        break;
+
+    case 'set-public-virtual-fs':
+        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'doc_id'));
+
+        $db = GCApp::getDB();
+        $sql = 'UPDATE ' . DB_SCHEMA . '.document SET doc_public = true WHERE doc_id = ?';
+        $stmt = $db->prepare($sql);
+        $result = $stmt->execute(array($_REQUEST['doc_id']));
+
+        if (!$result) {
+            $ajax->error("Error public document");
+        } else {
+            $log->log($user->getUsername(), 'PUBLIC', 'doc_id: ' . $_REQUEST['doc_id']);
+            $ajax->success();
+        }
+
+        break;
+
+    case 'set-private-virtual-fs':
+        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'doc_id'));
+
+        $db = GCApp::getDB();
+        $sql = 'UPDATE ' . DB_SCHEMA . '.document SET doc_public = false WHERE doc_id = ?';
+        $stmt = $db->prepare($sql);
+        $result = $stmt->execute(array($_REQUEST['doc_id']));
+
+        if (!$result) {
+            $ajax->error("Error private document");
+        } else {
+            $log->log($user->getUsername(), 'PRIVATE', 'doc_id: ' . $_REQUEST['doc_id']);
             $ajax->success();
         }
 
@@ -397,8 +419,7 @@ switch($_REQUEST['action']) {
         if (!GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) {
             $ajax->error("table '{$_REQUEST['table_name']}' does not exist");
         }
-        
-        
+
         $dataDb->beginTransaction();
         
         if ($autoUpdaters['last_edit_user']) {
@@ -1117,6 +1138,49 @@ switch($_REQUEST['action']) {
     default:
         $ajax->error("action {$_REQUEST['action']} can not be handled");
         break;
+}
+
+function deleteRecursive($doc_id)
+{
+    $db = GCApp::getDB();
+    $user = new GCUser();
+    $log = new GCLog($db);
+
+    $sql = 'SELECT doc_id FROM ' . DB_SCHEMA . '.document WHERE doc_parent_id = ?';
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array($doc_id));
+
+    $result = true;
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $result = deleteRecursive($row['doc_id']);
+        if ($result === false) {
+            return false;
+        }
+    }
+
+    $documentSql = 'SELECT * FROM ' . DB_SCHEMA . '.document WHERE doc_id = ?';
+    $stmt2 = $db->prepare($documentSql);
+    $stmt2->execute(array($doc_id));
+    $doc = $stmt2->fetch(PDO::FETCH_ASSOC);
+    
+
+    if ($doc['doc_type'] != 'folder') {
+        $path = IMPORT_PATH . 'doc/' . $doc['doc_id'];
+        $res = unlink($path);
+
+        if (false === $res) {
+            return false;
+        }
+    }
+
+    $deleteSql = 'DELETE FROM ' . DB_SCHEMA . '.document WHERE doc_id = ?';
+    $stmt = $db->prepare($deleteSql);
+    $result = $stmt->execute(array($doc_id));
+    if ($result) {
+        $log->log($user->getUsername(), 'DELETE', 'doc_id: ' . $doc['doc_id'] . ' doc_name: ' . $doc['doc_name']);
+    }
+
+    return $result;
 }
 
 function filesPathFromCatalog($catalogId)
