@@ -9,7 +9,7 @@ dato[] = "Ordine *;field_order;3;intero"
 dato[] = "Parametri del campo"
 dato[] = "Tipo di Campo;fieldtype_id;200#seldb_fieldtype;selectdb"
 dato[] = "Tipo di Dato;datatype_id;200#seldb_datatype;selectdb"
-dato[] = "Formula;formula;48x2;textarea"
+dato[] = "Formula;formula;48x2;textarea|Elenco Formati;formula;100#openList;button"
 dato[] = "Formato;field_format;48x2;textarea|Elenco Formati;field_format;100#openList;button"
 
 dato[] = "Azioni sul campo"
