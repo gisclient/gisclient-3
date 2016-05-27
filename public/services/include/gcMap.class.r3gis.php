@@ -569,7 +569,16 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, layer_title, data_unique, data_geom, layer.data, layer.hide_vector_geom, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, 
+                       layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, 
+                       layer_title, data_unique, data_geom, layer.data, layer.hide_vector_geom, catalog.catalog_id, 
+                       catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, 
+                       selection_color, selection_width, field_id, field_name, filter_field_name, field_header, 
+                       fieldtype_id, relation_name, relationtype_id, searchtype_id, resultype_id, datatype_id, 
+                       field_filter, layer.hidden, field.editable as field_editable, field.field_format, 
+                       field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, 
+                       field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, 
+                       relation.data_field_1, relation.table_field_1
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -578,9 +587,8 @@ class gcMap{
 				LEFT JOIN ".DB_SCHEMA.".field using(layer_id)
 				LEFT JOIN ".DB_SCHEMA.".relation using(relation_id)
 				LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
-				WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
-		$sql .= " ORDER BY theme_order, theme_id, layergroup_order, layergroup_id, layer_order, field_order;";
-		
+				WHERE {$userGroupFilter} layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name
+		        ORDER BY theme_order, theme_id, layergroup_order, layergroup_id, layer_order, field_order;";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->mapsetName));
 		$featureTypes = array();
@@ -671,6 +679,7 @@ class gcMap{
 					'editable'=>$userCanEdit ? $row['field_editable'] : 0,
 					"relationType"=>intval($row["relationtype_id"]),
 					"resultType"=>intval($row["resultype_id"]),
+                                        "format"=>$row["field_format"],
                     'filterFieldName'=>$row['filter_field_name'],
 					"fieldFilter"=>intval($row["field_filter"]),
 					'isPrimaryKey'=>$isPrimaryKey
