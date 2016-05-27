@@ -7,7 +7,7 @@ function GCList(field) {
         'ajax/fileList.php': ['filename'],
         'ajax/lookupList.php': ['lookup_table'],
         'ajax/fieldList.php': ['class_text', 'label_angle', 'label_color', 'label_outlinecolor', 'label_size', 'label_font', 'label_priority', 'angle', 'color', 'outlinecolor', 'size', 'labelitem', 'labelsizeitem', 'classitem', 'classtitle', 'field_name', 'data_field_1', 'data_field_2', 'data_field_3', 'table_field_1', 'table_field_2', 'table_field_3', 'filter_field_name'],
-        'ajax/dbList.php': ['field_format', 'table_name', 'symbol_ttf_name', 'symbol_name', 'symbol_user_pixmap'],
+        'ajax/dbList.php': ['field_format', 'table_name', 'symbol_ttf_name', 'symbol_name', 'symbol_user_pixmap', 'formula'],
         'ajax/fontList.php': ['symbol_user_font']
     };
     this.requireSquareBrackets = ['class_text', 'label_angle', 'label_color', 'label_outlinecolor', 'label_size', 'label_font', 'label_priority', 'angle', 'color', 'outlinecolor', 'size', 'classtitle'];
@@ -77,6 +77,18 @@ function GCList(field) {
         return errorMsg;
     };
     
+    // a very fast replace method
+    this.replaceMarker = function (text) {
+        "use strict";
+        var match;
+        var reg = new RegExp(/{{(.*?)}}/g);
+        while((match = reg.exec(text)) !== null) {
+            var newValue = $('#' + match[1]).val();
+            text = text.replace(match[0], newValue);
+        }
+        return text;
+    };
+    
     this.loadList = function (params) {
         var self = this;
         var dialogId = this.dialogId;
@@ -122,13 +134,23 @@ function GCList(field) {
                             html += '<td class="data-' + fieldName + '"></td>';
                             return;
                         }
-                        html += '<td class="data-' + fieldName + '">' + rowData[fieldName] + '</td>';
+                        if (response.enable_replace) {
+                            var data = self.replaceMarker(rowData[fieldName]);
+                        } else {
+                            var data = rowData[fieldName];
+                        }
+                        html += '<td class="data-' + fieldName + '">' + data + '</td>';
                     });
                     html += '</tr>';
                 });
                 resultTable.append(html);
 
                 $.each(response.data_objects, function (rowId, rowData) {
+                    if (response.enable_replace) {
+                        $.each(rowData, function (key, val) {
+                            rowData[key] = self.replaceMarker(val);
+                        });
+                    }
                     self.listData[rowId] = rowData;
                 });
 
