@@ -83,6 +83,17 @@ update e_symbolcategory set symbolcategory_name = 'Kataster' where symbolcategor
 update e_tiletype set tiletype_name = 'Nein' where tiletype_id = 0;
 update e_tiletype set tiletype_name = 'Ja' where tiletype_id = 1;
 
+update e_formula set formula_name = '0 Dezimalstelle (ohne Tausendertrennzeichen)' where formula_id = 1;
+update e_formula set formula_name = '1 Dezimalstelle (ohne Tausendertrennzeichen)' where formula_id = 2;
+update e_formula set formula_name = '2 Dezimalstellen (ohne Tausendertrennzeichen)' where formula_id = 3;
+update e_formula set formula_name = '3 Dezimalstellen (ohne Tausendertrennzeichen)' where formula_id = 4;
+update e_formula set formula_name = '0 Dezimalstelle' where formula_id = 5;
+update e_formula set formula_name = '1 Dezimalstelle' where formula_id = 6;
+update e_formula set formula_name = '2 Dezimalstellen' where formula_id = 7;
+update e_formula set formula_name = '3 Dezimalstellen' where formula_id = 8;
+update e_formula set formula_name = 'Datum (DD/MM/YYYY)' where formula_id = 9;
+update e_formula set formula_name = 'Betrag (€)' where formula_id = 10;
+
 -------------------- UPDATE DELLE VIEW SELDB_* --------------------
 
 CREATE OR REPLACE VIEW seldb_catalog AS 

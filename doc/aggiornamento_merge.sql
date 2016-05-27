@@ -995,3 +995,29 @@ UPDATE class SET class_text=REPLACE(class_text,'"','');
 
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.3', 'author', '2016-03-08');
+
+-- 2016-05-07: selezione dei formati per la formattazione dei campi nei risultati
+CREATE TABLE e_formula
+(
+  formula_id integer NOT NULL,
+  formula_name character varying NOT NULL,
+  formula_format character varying NOT NULL,
+  formula_order smallint,
+  CONSTRAINT e_formula_pkey PRIMARY KEY (formula_id)
+);
+ALTER TABLE e_form OWNER TO gisclient;
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (1, '0 decimali - senza separatore migliaia', 'to_char({{field_name}}, ''FM9999999990'')', 10);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (2, '1 decimali - senza separatore migliaia', 'to_char({{field_name}}, ''FM9999999990.0'')', 20);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (3, '2 decimali - senza separatore migliaia', 'to_char({{field_name}}, ''FM9999999990.00'')', 30);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (4, '3 decimali - senza separatore migliaia', 'to_char({{field_name}}, ''FM9999999990.000'')', 40);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (5, '0 decimali', 'to_char({{field_name}}, ''FM9,999,999,990'')', 50);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (6, '1 decimali', 'to_char({{field_name}}, ''FM9,999,999,990.0'')', 60);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (7, '2 decimali', 'to_char({{field_name}}, ''FM9,999,999,990.00'')', 70);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (8, '3 decimali', 'to_char({{field_name}}, ''FM9,999,999,990.000'')', 80);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (9, 'Data (GG/MM/YYYY)', 'to_char({{field_name}}, ''DD/MM/YYYY'')', 110);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (10, 'Data (GG.MM.YYYY)', 'to_char({{field_name}}, ''DD.MM.YYYY'')', 110);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (11, 'Valuta (€)', 'to_char({{field_name}}, ''FM€ 9999999990.00'')', 210);
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.4', 'author', '2016-05-07');
+
