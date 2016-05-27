@@ -97,7 +97,7 @@ class gcMapfile{
 				$fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
 			} else {
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";				
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private,";				
 			}
 			$sqlParams['keyvalue'] = $keyvalue;
 			$projectName = $keyvalue;
