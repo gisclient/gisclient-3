@@ -82,7 +82,7 @@ class gcMapfile{
 		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
 				$filter="mapset.mapset_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,";
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private,";
 				$sqlParams['keyvalue'] = $keyvalue;
 				
 				$sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
