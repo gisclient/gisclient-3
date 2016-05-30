@@ -45,7 +45,6 @@ if (!defined('SERVICE_MAX_ZOOM_LEVEL')) {
 	define('SERVICE_MAX_ZOOM_LEVEL',21);
 }
 
-
 class gcMap{
 	const SCALE_TYPE_USER = 0;
 	const SCALE_TYPE_POWEROF2 = 1;
@@ -180,8 +179,12 @@ class gcMap{
 		} else {
 			$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));
 		}
-		
-		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName));
+        //print_r($user);
+        //unset($_SESSION['GISCLIENT_USER_LAYER']);
+		//die;
+
+		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName, 'show_as_public' => !$user->isAuthenticated()));
+        
 		
 		$mapOptions["theme"] = $this->_getLayers();
 		$this->_getSelgroup();
@@ -214,18 +217,33 @@ class gcMap{
         $extents = $this->_getMaxExtents();
 
 		$sqlParams = array();
-		$sqlPrivateLayers = "";
+		$sqlPrivateLayers = "FALSE";
 		if ($this->authorizedLayers) {
-			$sqlPrivateLayers = " OR layer_id IN (".implode(',', $this->authorizedLayers).")";
+			$sqlPrivateLayers = "layer_id IN (".implode(',', $this->authorizedLayers).")";
 		}
-		$sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) 
-			WHERE layergroup_id IN (
-				SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlPrivateLayers;
-		$sqlLayers .= " UNION
-				SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL
-			) AND mapset_name = :mapset_name
-                        ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;"; 
-			
+		$sqlLayers = "SELECT theme_id, theme_name, theme_title, theme_single, theme.radio, theme.copyright_string,
+                             layergroup.*, mapset_layergroup.*, outputformat_mimetype, outputformat_extension
+                      FROM ".DB_SCHEMA.".layergroup 
+                      INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING (layergroup_id) 
+                      INNER JOIN ".DB_SCHEMA.".theme USING(theme_id) 
+                      LEFT JOIN ".DB_SCHEMA.".e_outputformat USING(outputformat_id) 
+			          WHERE mapset_name = :mapset_name AND 
+                            layergroup_id IN (
+                                SELECT layergroup_id 
+                                FROM ".DB_SCHEMA.".layer 
+                                INNER JOIN gisclient_34.layergroup using(layergroup_id) 
+                                INNER JOIN gisclient_34.mapset_layergroup USING (layergroup_id) 
+                                INNER JOIN gisclient_34.mapset USING (mapset_name) 
+                                WHERE {$sqlPrivateLayers} OR (layer.private=0 AND mapset.private=0) 
+                                UNION
+                                SELECT layergroup_id 
+                                FROM ".DB_SCHEMA.".layergroup 
+                                LEFT JOIN ".DB_SCHEMA.".layer 
+                                USING (layergroup_id) 
+                                WHERE layer_id IS NULL)
+                      ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,
+                               layergroup.layergroup_title;"; 
+		// echo $sqlLayers; die;
 		$stmt = $this->db->prepare($sqlLayers);
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
@@ -550,7 +568,6 @@ class gcMap{
 		return $legendArray;
 	}
 	
-	
 	function _getFeatureTypes(){
 		$returnFeatureTypes = array(
 			'theme'=>array(),
@@ -593,7 +610,7 @@ class gcMap{
 		$stmt->execute(array($this->mapsetName));
 		$featureTypes = array();
         $layersWith1n = array();
-
+//print_r($_SESSION['GISCLIENT_USER_LAYER']); 
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			if(!empty($this->i18n)) {
 				$row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
@@ -605,7 +622,13 @@ class gcMap{
 			if($row['private'] == 0) {
 				if(!$this->isPublicLayerQueryable) continue;
 			} else {
-				if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) continue;
+                
+                //echo "[$typeName] ";
+				if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) {
+                    continue;
+                }
+                //echo "KO";
+                
 			}
 		
 			$typeTitle = empty($row["layer_title"])?$typeName:$row["layer_title"];
