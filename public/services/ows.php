@@ -259,6 +259,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 			print_debug('unauthorized access', null, 'system');
 			header('WWW-Authenticate: Basic realm="Gisclient"');
 			header('HTTP/1.0 401 Unauthorized');
+            echo "<h1>Authorization required</h1>";
 			exit(0);
 		}
 	}
@@ -279,11 +280,19 @@ if (!empty($layersParameter)) {
 
 		// layer privato
 		$privateLayer = $layer->getMetaData('gc_private_layer');
+        //echo "[$privateLayer]";
 		if (!empty($privateLayer)) {
 			if (!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
 				array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
 				continue;
 			}
+            
+            $user = new GCUser();
+            $isAuthenticated = $user->isAuthenticated();
+            if (!$isAuthenticated) {
+                array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
+				continue;
+            }
 		}
 		$n = 0;
 		// se ci sono filtri definiti per il layer, li ciclo
@@ -357,7 +366,7 @@ if (!empty($layersParameter)) {
 	$objRequest->setParameter($parameterName, implode(",", $layersToInclude));
 }
 session_write_close();
-
+//die;
 // Cache part 1
 $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
 $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
@@ -393,9 +402,10 @@ $contenttype = ms_iostripstdoutbuffercontenttype();
 if (substr($contenttype, 0, 6) == 'image/') {
 
 	header('Content-Type: '. $contenttype);
-		// Prevent apache to zip imnage
-		apache_setenv('no-gzip', 1);
-		ini_set('zlib.output_compression', 0);
+    
+	// Prevent apache to zip immage
+	apache_setenv('no-gzip', 1);
+	ini_set('zlib.output_compression', 0);
 
 	$hasDynamicLayer = false;
 	if (defined('DYNAMIC_LAYERS')) {
