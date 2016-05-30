@@ -173,7 +173,7 @@ if(isset($p->parametri['project'])) {
         $version = $db->query($sql)->fetchColumn(0);
         echo $version;
         ?>
-        - 2009 - 2015
+        - 2009 - 2016
     </div>
 </div>
 </div>
