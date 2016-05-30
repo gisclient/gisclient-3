@@ -1021,3 +1021,56 @@ INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) v
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.4', 'author', '2016-05-07');
 
+
+-- 2016-05-30 modulo documenti datamanager
+CREATE TABLE document (
+    doc_id integer NOT NULL,
+    doc_parent_id integer,
+    doc_name character varying NOT NULL,
+    doc_type character varying NOT NULL,
+    doc_public boolean DEFAULT false
+);
+ALTER TABLE document OWNER TO gisclient;
+
+CREATE SEQUENCE document_doc_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE document_doc_id_seq OWNER TO gisclient;
+ALTER SEQUENCE document_doc_id_seq OWNED BY document.doc_id;
+ALTER TABLE ONLY document ALTER COLUMN doc_id SET DEFAULT nextval('document_doc_id_seq'::regclass);
+ALTER TABLE ONLY document ADD CONSTRAINT document_pkey PRIMARY KEY (doc_id);
+ALTER TABLE ONLY document ADD CONSTRAINT document_doc_parent_id_fkey FOREIGN KEY (doc_parent_id) REFERENCES document(doc_id);
+
+INSERT INTO document VALUES (1, NULL, 'documenti', 'folder', false);
+
+SELECT pg_catalog.setval('document_doc_id_seq', max(doc_id), true)
+FROM document;
+
+CREATE OR REPLACE VIEW vista_document_paths AS 
+ WITH RECURSIVE paths(doc_path, doc_id) AS (
+         SELECT '/'::text || document_1.doc_name::text AS doc_path,
+            document_1.doc_id
+           FROM document document_1
+          WHERE document_1.doc_parent_id IS NULL
+        UNION ALL
+         SELECT (p.doc_path || '/'::text) || c.doc_name::text AS doc_path,
+            c.doc_id
+           FROM document c
+             JOIN paths p ON p.doc_id = c.doc_parent_id
+        )
+ SELECT document.doc_id,
+    document.doc_parent_id,
+    document.doc_name,
+    document.doc_type,
+    document.doc_public,
+    paths.doc_path
+   FROM document
+     JOIN paths USING (doc_id);
+
+ALTER TABLE vista_document_paths
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.5', 'author', '2016-05-30');
