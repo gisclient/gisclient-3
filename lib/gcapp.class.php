@@ -197,7 +197,7 @@ class GCAuthor {
 		$mapfile->setTarget($target);
 		$mapfile->writeProjectMapfile = true;
 		$mapfile->writeMap("project",$project);
-		
+        
 		$localization = new GCLocalization($project);
 		$alternativeLanguages = $localization->getAlternativeLanguages();
 		if($alternativeLanguages){
@@ -209,31 +209,28 @@ class GCAuthor {
 		}
 	}
 	
-	public static function refreshMapfiles($project, $publish = false) {
-		require_once ADMIN_PATH."lib/functions.php";
-		require_once ADMIN_PATH.'lib/spyc.php';		
-		require_once ADMIN_PATH.'lib/gcFeature.class.php';
-		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
-		require_once ROOT_PATH."lib/i18n.php";
-		
-		$target = $publish ? 'public' : 'tmp';
-
-		$mapfile = new gcMapfile();
-		$mapfile->setTarget($target);
-		$mapfile->writeMap("project",$project);
-		
-		$localization = new GCLocalization($project);
-		$alternativeLanguages = $localization->getAlternativeLanguages();
-		if($alternativeLanguages){
-			foreach($alternativeLanguages as $languageId => $foo) {
-				$mapfile = new gcMapfile($languageId);
-				$mapfile->setTarget($target);
-				$mapfile->writeMap('project', $project);
-			}
-		}
+    /**
+     * Regenerate all the mapfiles for the given project
+     *
+     * @param string $project               The projet_name
+     * @param bool $publish                 If false, generate a temporary mapfile (like tmp.)
+     * @param bool $refreshLayerMapfile     If true, generate alse one mapfile for each layer (like layer.layer_group.layer)
+     */
+	public static function refreshMapfiles($project, $publish = false, $refreshLayerMapfile = false) {
+        foreach(GCAuthor::getMapsets($project) as $mapset) {
+            GCAuthor::refreshMapfile($project, $mapset['mapset_name'], $publish, $refreshLayerMapfile);
+        }
 	}
 	
-	public static function refreshMapfile($project, $mapset, $publish = false) {
+    /**
+     * Regenerate the mapfiles for the given project and mapset
+     *
+     * @param string $project               The projet_name
+     * @param string $mapset                The mapset_name
+     * @param bool $publish                 If false, generate a temporary mapfile (like tmp.)
+     * @param bool $refreshLayerMapfile     If true, generate alse one mapfile for each layer (like layer.layer_group.layer)
+     */
+	public static function refreshMapfile($project, $mapset, $publish = false, $refreshLayerMapfile = false) {
 		require_once ADMIN_PATH."lib/functions.php";
 		require_once ADMIN_PATH.'lib/spyc.php';		
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
@@ -245,6 +242,14 @@ class GCAuthor {
 		$mapfile = new gcMapfile();
 		$mapfile->setTarget($target);
 		$mapfile->writeMap("mapset",$mapset);
+        
+        if ($refreshLayerMapfile) {
+            foreach(GCAuthor::getLayerList($project, $mapset) as $mapsetData) {
+                $mapfile = new gcMapfile();
+                $mapfile->setTarget('layer');
+                $mapfile->writeMap('layer', "{$mapset}.{$mapsetData['feature_type']}");
+            }
+        }
 
 		$localization = new GCLocalization($project);
 		$alternativeLanguages = $localization->getAlternativeLanguages();
@@ -253,6 +258,14 @@ class GCAuthor {
 				$mapfile = new gcMapfile($languageId);
 				$mapfile->setTarget($target);
 				$mapfile->writeMap('mapset', $mapset);
+                
+                if ($refreshLayerMapfile) {
+                    foreach(GCAuthor::getLayerList($project, $mapset) as $mapsetData) {
+                        $mapfile = new gcMapfile();
+                        $mapfile->setTarget('layer');
+                        $mapfile->writeMap('layer', "{$mapset}.{$mapsetData['feature_type']}");
+                    }
+                }
 			}
 		}
 	}
@@ -315,18 +328,46 @@ class GCAuthor {
 		return $mapsets;
 	}
 	
-	public static function getTowsFeatures($project) {
+    /**
+     * Return the list of layers fo the given project
+     * @param string $project      The project name
+     * @param string|null $mapset  The mapset name. If givet the result is filtered for the given mapset
+     * @return array               The array layers data
+     */
+	public static function getLayerList($project, $mapset=null) {
 		$db = GCApp::getDB();
 		
-		$sql = "select project_name, theme_title, layergroup_title, layer_title, layergroup_name || '.' || layer_name as feature_type from ".DB_SCHEMA.".layer ".
-			" inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
-			" inner join ".DB_SCHEMA.".theme using(theme_id) ".
-			" inner join ".DB_SCHEMA.".field using(layer_id) ".
-			" where layer.queryable=1 and field.editable=1 and theme.project_name=? ".
-			" group by project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type ".
-			" order by theme_title, layergroup_title, layer_title ";
-		$stmt = $db->prepare($sql);
-		$stmt->execute(array($project));
+        if (empty($mapset)) {
+            $sql = "SELECT theme.project_name, theme_title, layergroup_title, layer_title, 
+                           layergroup_name || '.' || layer_name AS feature_type,
+                           TRUE AS is_wms,
+                           (queryable=1 AND SUM(editable)>0) AS is_wfst
+                    FROM ".DB_SCHEMA.".layer
+                    INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id)
+                    INNER JOIN ".DB_SCHEMA.".theme USING(theme_id)
+                    INNER JOIN ".DB_SCHEMA.".field USING(layer_id)
+                    WHERE theme.project_name=?
+                    GROUP BY project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type
+                    ORDER BY theme_title, layergroup_title, layer_title";
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array($project));
+        } else {
+            $sql = "SELECT theme.project_name, theme_title, layergroup_title, layer_title, 
+                           layergroup_name || '.' || layer_name AS feature_type,
+                           TRUE AS is_wms,
+                           (queryable=1 AND SUM(editable)>0) AS is_wfst
+                    FROM ".DB_SCHEMA.".layer
+                    INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id)
+                    INNER JOIN ".DB_SCHEMA.".theme USING(theme_id)
+                    INNER JOIN ".DB_SCHEMA.".field USING(layer_id)
+                    INNER JOIN ".DB_SCHEMA.".mapset_layergroup ON layergroup.layergroup_id=mapset_layergroup.layergroup_id
+                    INNER JOIN ".DB_SCHEMA.".mapset USING(mapset_name)
+                    WHERE theme.project_name=? AND mapset_name=?
+                    GROUP BY theme.project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type
+                    ORDER BY theme_title, layergroup_title, layer_title";
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array($project, $mapset));
+        }
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 	
