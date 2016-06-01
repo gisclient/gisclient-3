@@ -53,28 +53,54 @@
                         foreach ($mapsets as $mapset) {
                             echo '<tr>
                                 <td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
-                                <td><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
-                                <td><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
+                                <td align="center"><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
+                                <td align="center"><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
                             </tr>';
                         }
                     }
                     ?>
                 </table>
-                <?php if (defined('TINYOWS_PATH')) { ?>
+                <?php 
+                    $showSingleWmsLayers = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
+                    $showWfstLayers = defined('TINYOWS_PATH');
+                    
+                    if ($showSingleWmsLayers || $showWfstLayers) { 
+                ?>
                 <br><br>
                 <table border="1" cellpadding="3" class="stiletabella">
-                <tr class="ui-widget ui-state-default"><th><?php echo GCAuthor::t('theme'); ?></th><th><?php echo GCAuthor::t('layergroup'); ?></th><th><?php echo GCAuthor::t('layer'); ?></th><th>FeatureType</th><th>WFS-T</th></tr>
+                
+                <tr class="ui-widget ui-state-default">
+                    <th><?php echo GCAuthor::t('theme'); ?></th>
+                    <th><?php echo GCAuthor::t('layergroup'); ?></th>
+                    <th><?php echo GCAuthor::t('layer'); ?></th>
+                    <th><?php echo GCAuthor::t('FeatureType'); ?></th>
+                    <th nowrap><?php if ($showWfstLayers)             echo GCAuthor::t('WFS-T'); ?>&nbsp;</th>
+                    <th nowrap>&nbsp;<?php if ($showSingleWmsLayers)  echo GCAuthor::t('WMS'); ?></th>
+                </tr>
                 <?php
-                    if (isset($towsFeatures)) {
-                        foreach ($towsFeatures as $towsf) {
-                            echo '<tr>
-                                <td>'.$towsf['theme_title'].'</td>
-                                <td>'.$towsf['layergroup_title'].'</td>
-                                <td>'.$towsf['layer_title'].'</td>
-                                <td>'.$towsf['feature_type'].'</td>
-                                <td><a href="'.TINYOWS_ONLINE_RESOURCE.$towsf['project_name'].'/'.$towsf['feature_type'].'/?service=wfs&request=getcapabilities" data-action="getcapabilities" target="_blank">WFS-T</A></td>
-                            </tr>';
+                    foreach ($layerList as $layer) {
+                        if (!$showSingleWmsLayers && !$layer['is_wfst']) {
+                            continue;
                         }
+                        if (!$showWfstLayers && !$layer['is_wms']) {
+                            continue;
+                        }
+                        echo "<tr>\n";
+                        echo "<td>{$layer['theme_title']}</td>\n";
+                        echo "<td>{$layer['layergroup_title']}</td>\n";
+                        echo "<td>{$layer['layer_title']}</td>\n";
+                        echo "<td>{$layer['feature_type']}</td>";
+                        if ($showWfstLayers && $layer['is_wfst']) {
+                            echo "<td align=\"center\"><a href=\"" . TINYOWS_ONLINE_RESOURCE . "{$layer['project_name']}/{$layer['feature_type']}/?service=wfs&request=getcapabilities\" data-action=\"getcapabilities\" target=\"_blank\">WFS-T GetCapabilities</A></td>\n";
+                        } else {
+                            echo "<td></td>\n";
+                        }
+                        if ($showSingleWmsLayers && $layer['is_wms']) {
+                            echo "<td align=\"center\"><a href=\"../services/ows.php?project={$mapset['project_name']}&map=layer.{$layer['feature_type']}&request=getcapabilities&service=WMS&version=1.1.1\" data-action=\"getcapabilities\" target=\"_blank\">WMS GetCapabilities</a></td>\n";
+                        } else {
+                            echo "<td></td>\n";
+                        }    
+                        echo "</tr>";
                     }
                 ?>
                 </table>
