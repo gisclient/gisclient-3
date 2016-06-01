@@ -103,9 +103,10 @@ if(in_array($p->livello, array('layer', 'layergroup')) && $p->mode == 0) {
 $isAuthor = true;
 
 $initOgcServices = 'false';
+$layerList = array();
 if(isset($p->parametri['project'])) {
     $mapsets = GCAuthor::getMapsets($p->parametri['project']);
-    $towsFeatures = GCAuthor::getTowsFeatures($p->parametri['project']);
+    $layerList = GCAuthor::getLayerList($p->parametri['project']);
     $initOgcServices = 'true';
 }
 ?><!DOCTYPE HTML>
@@ -174,6 +175,14 @@ if(isset($p->parametri['project'])) {
         echo $version;
         ?>
         - 2009 - 2016
+        <?php
+        if (function_exists('ms_GetVersionInt')) {
+            $msVersion = ms_GetVersionInt();
+            $msVersionMajor = (int)($msVersion / 10000);
+            $msVersionMinor = (int)(($msVersion-$msVersionMajor*10000)/100);
+            echo " | MapServer {$msVersionMajor}.{$msVersionMinor}";
+        }
+        ?>
     </div>
 </div>
 </div>
