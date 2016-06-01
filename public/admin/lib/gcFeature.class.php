@@ -659,10 +659,10 @@ class gcFeature {
             $clsText[] = "EXPRESSION " . $aClass["expression"];
         if (ms_GetVersionInt() < 60000) {
             // MapServer 5
-            if (!empty($aClass["class_text"])) {
-                $clsText[] = "\tTEXT '" . $aClass["class_text"] . "'";
-            } elseif (!empty($aClass["smbchar"])) {//simbolo true type
-                $clsText[] = "\tTEXT '" . $aClass["smbchar"] . "'";
+            if(!empty($aClass["class_text"])){
+                $clsText[]="TEXT (". $aClass["class_text"].")";
+            }elseif(!empty($aClass["smbchar"])){//simbolo true type
+                $clsText[]="TEXT (". $aClass["smbchar"].")";
             }
         }
 
