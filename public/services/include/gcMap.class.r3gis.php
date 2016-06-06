@@ -524,7 +524,8 @@ class gcMap{
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
                 if (false === ($sldContent = curl_exec($ch))) {
-			throw new Exception(curl_error($ch));
+                	$errMsg = sprintf("Error getting data from '%s': %s. Server return code %d", curl_getinfo($ch, CURLINFO_EFFECTIVE_URL), curl_error($ch), curl_getinfo($ch, CURLINFO_HTTP_CODE));
+			throw new Exception($errMsg);
 		}
                 curl_close($ch);
                 
