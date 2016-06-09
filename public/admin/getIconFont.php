@@ -2,12 +2,20 @@
 require_once "../../config/config.php";
 require_once ADMIN_PATH."lib/gcSymbol.class.php";
 
-$smb = new Symbol('');
+$smb = new Symbol('symbol');
 
 $code = $_REQUEST['code'];
 $font = $_REQUEST['font'];
 
-$img = $smb->createFontIcon($font, $code);
+if ($font) {
+    $smb->filter = "font_name='" . $font . "'";
+    if ($code) {
+        $smb->filter .= " AND ascii_code='" . $code . "'";
+    }
+}
+ 
+
+$img = $smb->createIcon();
 
 header('Content-type:image/png');
 header("Cache-Control: no-store, no-cache, must-revalidate");  // HTTP/1.1

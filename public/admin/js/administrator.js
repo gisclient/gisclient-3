@@ -431,7 +431,12 @@ function symbolsLoadList() {
 }
 
 function fontLoadList() {
-    var params = {type:'TRUETYPE'};
+    
+    var fontName = $('#font #loadFont').val();
+    if (fontName.length == 0) fontName = 'r3-map-symbols.ttf';
+    fontName = fontName.substring(fontName.lastIndexOf('\\')+1);
+    
+    var params = {type:'TRUETYPE', font_name: fontName};
     var list = new GCList('symbol_user_font');
     list.dialogId = 'font';
     list.options = {
@@ -479,23 +484,19 @@ function importSymbols() {
 }
 
 function downloadFont() {
-    $.ajax({
-        url: 'ajax/font.php',
-        type: 'POST',
-        data: {
-            action: 'download',
-            font_name: 'r3-map-symbols.ttf'
-        },
-        success: function(response){
-            console.log(response);
-        }
-    });
+   var fontName = $('#font #loadFont').val();
+   if (fontName.length == 0) fontName = 'r3-map-symbols.ttf';
+   fontName = fontName.substring(fontName.lastIndexOf('\\')+1);
+   window.location.assign("getFont.php?font="+fontName); 
 }
 
 function importFont() {
     function readFile(file) {
         var FR = new FileReader();
         FR.onload = function(e) {
+            var fontName = $('#font #loadFont').val();
+            if (fontName.length == 0) fontName = 'r3-map-symbols.ttf';
+            fontName = fontName.substring(fontName.lastIndexOf('\\')+1);
             $.ajax({
                 url: 'ajax/font.php',
                 type: 'POST',
@@ -503,7 +504,7 @@ function importFont() {
                 data: {
                     action: 'import',
                     font_file: e.target.result,
-                    file_name: 'r3-map-symbols.ttf'
+                    file_name: fontName
                 },
                 success: function(response){
                     if (response.result === 'ok') {
@@ -579,6 +580,10 @@ function saveFontSymbols() {
         return !!this.value;
     });
     
+    var namesUpd = $('#font .font-old input').filter(function(){
+        return !!this.value;
+    });
+    
     var namesOld = $('#font .font-old input').filter(function(){
         return !this.value;
     });
@@ -592,13 +597,27 @@ function saveFontSymbols() {
          return false;
     }
 
+    var fontName = $('#font #loadFont').val();
+    if (fontName.length == 0) fontName = 'r3-map-symbols.ttf';
+    fontName = fontName.substring(fontName.lastIndexOf('\\')+1);
+    
     var data = {
         action: 'saveFontSymbols',
-        font_name: 'r3-map-symbols.ttf',
+        font_name: fontName,
         symbols: [],
     };
     for (i=0; i < namesNew.length; i++) {
         var newName = namesNew[i];
+        code = newName.name.substring(4);
+        data.symbols.push({
+            symbol_name: newName.value,
+            symbol_code: code,
+            action: 'new'
+        });
+    }
+    
+    for (i=0; i < namesUpd.length; i++) {
+        var newName = namesUpd[i];
         code = newName.name.substring(4);
         data.symbols.push({
             symbol_name: newName.value,
@@ -625,6 +644,10 @@ function saveFontSymbols() {
         });
     }
 
+    if (data.symbols.length == 0) {
+        alert ('Impostare almeno un font per il caricamento');
+        return;
+    }
     $.ajax({
         url: 'ajax/font.php',
         type: 'POST',

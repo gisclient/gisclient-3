@@ -472,14 +472,14 @@ Class saveData{
 				if($parent_fld["value"] && ($v["column_name"]==$arr[$arr[$lev]["parent"]]["name"]."_id" || $v["column_name"]==$arr[$arr[$lev]["parent"]]["name"]."_name")){
 					$value[]="'{$parent_fld["value"]}'";
 				}
-				elseif(preg_match("|(.*)name$|i",$v["column_name"]) && $v['column_name'] != 'symbol_ttf_name'){
+				elseif(preg_match("|(.*)name$|i",$v["column_name"]) && $v['column_name'] != 'symbol_ttf_name' && $v['column_name'] != 'symbol_name'){
 					$value[]=($newname!="" && $struct["name"]."_name"==$v["column_name"])?("'$newname'"):(($start_lev!=$lev)?($v["column_name"]):("copia"));
 				}
 				else
 					$value[]=$v["column_name"];
 			}
 			
-			$list_flds=@implode(",",$flds);	
+ 			$list_flds=@implode(",",$flds);	
 			$list_value=@implode(",",$value);	
 		}
 		

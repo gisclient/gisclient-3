@@ -73,13 +73,15 @@ class GCLevels {
 		'theme'=>array('pkey'=>'theme_id', 'title'=>'theme_title'),
 		'layergroup'=>array('pkey'=>'layergroup_id', 'title'=>'layergroup_title'),
 		'layer'=>array('pkey'=>'layer_id', 'title'=>'layer_title'),
-		'class'=>array('pkey'=>'class_id', 'title'=>'class_title')
+		'class'=>array('pkey'=>'class_id', 'title'=>'class_title'),
+                'style'=>array('pkey'=>'style_id', 'title'=>'style_name')
 	);
 	static private $copyLimits = array(
 		'theme'=>'theme',
 		'layergroup'=>'theme',
 		'layer'=>'theme',
-		'class'=>'project'
+		'class'=>'project',
+                'style'=>'project'
 	);
 	
 	public function getLevels() {

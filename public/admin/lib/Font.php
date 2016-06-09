@@ -38,11 +38,11 @@ class Font {
 
 	public function newSymbol($fontName, $symbolCode, $symbolName){
 		// insert record into db
-		$selectCategoryId = "SELECT symbolcategory_id FROM {$this->dbSchema}.e_symbolcategory WHERE symbolcategory_name = 'R3-MAPSYMBOLS'";
+		$selectCategoryId = "SELECT symbolcategory_id FROM {$this->dbSchema}.e_symbolcategory WHERE symbolcategory_name = '" . DEFAULT_SYMBOLCATEGORY . "'";
 		$q = $this->db->query($selectCategoryId);
 		$categoryId = $q->fetchColumn();
 		if(false === $categoryId) {
-			$insertCategoryId = "INSERT INTO {$this->dbSchema}.e_symbolcategory VALUES (91, 'R3-MAPSYMBOLS', NULL)";
+			$insertCategoryId = "INSERT INTO {$this->dbSchema}.e_symbolcategory VALUES (91, '" . DEFAULT_SYMBOLCATEGORY . "', NULL)";
 			$count = $this->db->exec($insertCategoryId);
 			if(false === $count) {
 				throw new Exception("Error in query: $insertCategoryId", 1);
