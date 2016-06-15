@@ -1,6 +1,6 @@
 [standard]
 table = "qtfield_groups"
-pkey = "qtfield_id;groupname"
+pkey = "qt_field_id;groupname"
 order_fld = "groupname"
 dato[] = "Benutzergruppe;groupname;50%;text"
 dato[] = "Aktiv;groupname;7%#presente;check"
@@ -9,7 +9,7 @@ dato[] = "Editierbar;editable;7%#editable#editable;check1"
 
 [list]
 table = "qtfield_groups"
-pkey = "qtfield_id;groupname"
+pkey = "qt_field_id;groupname"
 order_fld = "groupname"
 
 dato[] = "Benutzergruppe;groupname;50%;text"

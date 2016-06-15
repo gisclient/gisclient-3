@@ -20,7 +20,7 @@ $db = GCApp::getDB();
 /* Recupero i dati del layer */
 //qt_filter -> data_filter
 
-$sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter, qt_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.qt  using (layer_id) inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.qt_field using(qt_id) where qtfield_id=:field_id';
+$sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter, qt_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.qt  using (layer_id) inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.qt_field using(qt_id) where qt_field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -36,12 +36,12 @@ $sTable = $datalayerSchema.".".$datalayerTable;
 
 
 /* Recupero i dati del campo */
-$sql = 'select qt_field.qtfield_id, qtfield_name, field_filter, catalog_path,  qt_relation.qtrelation_name, qtrelation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.qt_field left join '.DB_SCHEMA.'.qt_relation using (qtrelation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where qt_field.qtfield_id=:field_id';
+$sql = 'select qt_field.qt_field_id, qtfield_name, field_filter, catalog_path,  qt_relation.qtrelation_name, qt_relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.qt_field left join '.DB_SCHEMA.'.qt_relation using (qt_relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where qt_field.qt_field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
 $field = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if(empty($field['qtrelation_id'])) {
+if(empty($field['qt_relation_id'])) {
     $field["qtrelation_name"] = DATALAYER_ALIAS_TABLE;//alias per la tabella del livello
     $field["schema"] = $datalayerSchema;
     $field["table_name"] = $datalayerTable;
@@ -62,12 +62,12 @@ $fieldFilterId = $field["field_filter"];
 
 if(isset($fieldFilterId) && isset($_REQUEST["filtervalue"])){
     /* Recupero i dati del campo filtro */
-    $sql = 'select qt_field.qtfield_id, qtfield_name, field_filter, qt_relation.qtrelation_name, qtrelation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.qt_field left join '.DB_SCHEMA.'.qt_relation using (qtrelation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where qt_field.qtfield_id=:field_id';
+    $sql = 'select qt_field.qt_field_id, qtfield_name, field_filter, qt_relation.qtrelation_name, qt_relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.qt_field left join '.DB_SCHEMA.'.qt_relation using (qt_relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where qt_field.qt_field_id=:field_id';
     $stmt = $db->prepare($sql);
     $stmt->execute(array('field_id'=>$fieldFilterId));
     $fieldFilter = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if(!empty($fieldFilter['qtrelation_id'])) {
+    if(!empty($fieldFilter['qt_relation_id'])) {
         $fieldFilter['schema'] = GCApp::getDataDBSchema($fieldFilter['catalog_path']);
     }
 
@@ -77,7 +77,7 @@ if(isset($fieldFilterId) && isset($_REQUEST["filtervalue"])){
 }
 }
 
-if(!empty($field["qtrelation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
+if(!empty($field["qt_relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
     if(empty($field['formula'])) {
         $fieldName = $field['qtrelation_name'] . '.' . $fieldName;
     }
@@ -91,7 +91,7 @@ if(!empty($field["qtrelation_id"])) {//il campo oggetto di autosuggest è su tab
     $fromString = "(" . $fromString . " inner join ". $field["schema"].".".$field["table_name"]." as ". $field["qtrelation_name"]." on ($joinFields)) ";
 }
 
-if(!empty($fieldFilter["qtrelation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
+if(!empty($fieldFilter["qt_relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
     if(empty($fieldFilter['formula'])) {
         $fieldFilterName = $fieldFilter['qtrelation_name'] . '.' . $fieldFilterName;
     }

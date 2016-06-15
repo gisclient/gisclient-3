@@ -42,10 +42,10 @@ constant = "'Nuova Classe'"
 [qt]
 standard = "qt_name"
 constant = "'Nuovo Modello di Report'"
-[qtfield]
+[qt_field]
 standard = "qtfield_name"
 constant = "'Nuovo Campo Report'"
-[qtrelation]
+[qt_relation]
 standard = "qtrelation_name"
 constant = "'Nuova Relazione Report'"
 [style]

@@ -12,8 +12,8 @@ $selectedField = $_REQUEST['selectedField'];
 
 if(!empty($_REQUEST['relation_id'])) {
 	$relationId = $_REQUEST['relation_id'];
-} else if(!empty($_REQUEST['qtrelation_id'])) {
-	$qtrelationId = $_REQUEST['qtrelation_id'];
+} else if(!empty($_REQUEST['qt_relation_id'])) {
+	$qtrelationId = $_REQUEST['qt_relation_id'];
 } else if(!empty($_REQUEST['layer'])) {
 	$layerId = $_REQUEST['layer'];
 } else if(!empty($_REQUEST['qt'])) {
@@ -37,7 +37,7 @@ if(!empty($relationId)) {
 	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 	$data = $catalogData['table_name'];
 } else if(!empty($qtrelationId)) {
-	$sql="select catalog_path, connection_type, qt_relation.table_name from ".DB_SCHEMA.".qt_relation left join ".DB_SCHEMA.".catalog  USING (catalog_id) where qtrelation_id = ?";
+	$sql="select catalog_path, connection_type, qt_relation.table_name from ".DB_SCHEMA.".qt_relation left join ".DB_SCHEMA.".catalog  USING (catalog_id) where qt_relation_id = ?";
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array($qtrelationId));
 	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);

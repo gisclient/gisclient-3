@@ -1,6 +1,6 @@
 [standard]
 table = "qtrelation"
-pkey = "qtrelation_id"
+pkey = "qt_relation_id"
 dato[] = "Nome relazione*;qtrelation_name;40;text"
 
 dato[] = "Parametri di JOIN"
@@ -16,9 +16,9 @@ dato[] = "Salva;azione;;submit;all;salva|Elimina;azione;;submit;edit;elimina|Ann
 
 [list]
 table = "vista_qtrelation"
-pkey = "qtrelation_id"
+pkey = "qt_relation_id"
 order_fld = "table_name#qtrelation_name"
-dato[] = "Nome;qtrelation_name;10%#qtrelation_id;goto"
+dato[] = "Nome;qtrelation_name;10%#qt_relation_id;goto"
 dato[] = "Tabella JOIN;table_name;10%;text"
 dato[] = "Join 1<br>Campo layer;data_field_1;10%;text"
 dato[] = "Join 1<br>Campo relazione;table_field_1;10%;text"
@@ -28,9 +28,9 @@ dato[] = "Join 3<br>Campo layer;data_field_3;10%;text"
 dato[] = "Join 3<br>Campo relazione;table_field_3;10%;text"
 dato[] = "Tipo;qtrelationtype_id;10%#e_qtrelationtype#qtrelationtype_name;chiave_esterna"
 dato[] = "<font color="#404040">Controllo</font>;qtrelation_control;10%;text"
-dato[] = ";qtrelation_id;1%;info"
-dato[] = ";qtrelation_id;1%;edit"
-dato[] = ";qtrelation_id;1%;delete"
+dato[] = ";qt_relation_id;1%;info"
+dato[] = ";qt_relation_id;1%;edit"
+dato[] = ";qt_relation_id;1%;delete"
 
 [title]
 edit = "Dati del Campo del Modello di Ricerca"

@@ -21,7 +21,7 @@ dato[] = "Operatore predefinito;default_op;5;text"
 
 dato[] = "Edit via WFS-T<br><font size=1>E' necessario agire anche sui permessi del layer</font>"
 dato[] = "Campo editabile;editable;;noyes"
-dato[] = "Lookup per campo editabile<br><font size=1>Tabella</font>;lookup_table;15;text|<font size=1>Campo Chiave</font>;lookup_id;10;text|<font size=1>Campo visualizzato</font>;lookup_name;10;text|Configura;lookup_table;100#openList#layer#qtrelation_id;button"
+dato[] = "Lookup per campo editabile<br><font size=1>Tabella</font>;lookup_table;15;text|<font size=1>Campo Chiave</font>;lookup_id;10;text|<font size=1>Campo visualizzato</font>;lookup_name;10;text|Configura;lookup_table;100#openList#layer#qt_relation_id;button"
 
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 [list]

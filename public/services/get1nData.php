@@ -22,26 +22,26 @@ function replaceNullWithBlank(array &$data) {
 	}
 }
 
-if(empty($_REQUEST['qtrelation_id'])) $ajax->error('Undefined qtrelation_id');
+if(empty($_REQUEST['qt_relation_id'])) $ajax->error('Undefined qt_relation_id');
 if(empty($_REQUEST['f_key_value'])) $ajax->error('Undefined f_key_value');
 
 $ajax = new GCAjax();
 $db = GCApp::getDB();
 
-$sql = 'select qtrelation_id, catalog.catalog_id, catalog_path, qtrelation_name, qtrelationtype_id, data_field_1, table_name, table_field_1, layer_id, layer.data as layer_table
-    from '.DB_SCHEMA.'.qtrelation inner join '.DB_SCHEMA.'.catalog using(catalog_id) inner join '.DB_SCHEMA.'.layer using(layer_id) where qtrelation_id = :qtrelation_id';
+$sql = 'select qt_relation_id, catalog.catalog_id, catalog_path, qtrelation_name, qtrelationtype_id, data_field_1, table_name, table_field_1, layer_id, layer.data as layer_table
+    from '.DB_SCHEMA.'.qtrelation inner join '.DB_SCHEMA.'.catalog using(catalog_id) inner join '.DB_SCHEMA.'.layer using(layer_id) where qt_relation_id = :qt_relation_id';
 
 $stmt = $db->prepare($sql);
-$stmt->execute(array('qtrelation_id'=>$_REQUEST['qtrelation_id']));
+$stmt->execute(array('qt_relation_id'=>$_REQUEST['qt_relation_id']));
 $qtRelation = $stmt->fetch(PDO::FETCH_ASSOC);
-if(empty($qtRelation)) $ajax->error('Invalid qtrelation_id');
+if(empty($qtRelation)) $ajax->error('Invalid qt_relation_id');
 
-$sql = 'select qtfield_name, field_header, qtrelation_id from '.DB_SCHEMA.'.qtfield where searchtype_id not in (4,5) and qtrelation_id in (0, '.$qtRelation['qtrelation_id'].') and layer_id = '.$qtRelation['layer_id'];
+$sql = 'select qtfield_name, field_header, qt_relation_id from '.DB_SCHEMA.'.qtfield where searchtype_id not in (4,5) and qt_relation_id in (0, '.$qtRelation['qt_relation_id'].') and layer_id = '.$qtRelation['layer_id'];
 $fields = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 if(empty($fields)) $ajax->error('No fields defined');
 
 $fieldsName = array();
-foreach($fields as $field) array_push($fieldsName, 't_'.$field['qtrelation_id'].'.'.$field['qtfield_name']);
+foreach($fields as $field) array_push($fieldsName, 't_'.$field['qt_relation_id'].'.'.$field['qtfield_name']);
 
 $sql = 'select catalog_path from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog using(catalog_id) where layer_id = '.$qtRelation['layer_id'];
 $layerCatalogPath = $db->query($sql)->fetchColumn(0);
@@ -54,7 +54,7 @@ $relationSchema = GCApp::getDataDBSchema($qtRelation['catalog_path']);
 $layerTable = $qtRelation['layer_table'];
 $relationTable = $qtRelation['table_name'];
 
-$sql = 'select '.implode(', ', $fieldsName).' from '.$layerSchema.'.'.$layerTable.' as t_0 left join '.$relationSchema.'.'.$relationTable.' as t_'.$qtRelation['qtrelation_id'].'  on t_'.$qtRelation['qtrelation_id'].'.'.$qtRelation['table_field_1'].' = t_0.'.$qtRelation['data_field_1'].' where t_0.'.$qtRelation['data_field_1'].' = :value';
+$sql = 'select '.implode(', ', $fieldsName).' from '.$layerSchema.'.'.$layerTable.' as t_0 left join '.$relationSchema.'.'.$relationTable.' as t_'.$qtRelation['qt_relation_id'].'  on t_'.$qtRelation['qt_relation_id'].'.'.$qtRelation['table_field_1'].' = t_0.'.$qtRelation['data_field_1'].' where t_0.'.$qtRelation['data_field_1'].' = :value';
 
 $stmt = $layerDataDb->prepare($sql);
 

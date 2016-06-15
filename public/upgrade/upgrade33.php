@@ -90,7 +90,7 @@ $sqlLayer = '';
 //$db->beginTransaction();
 
 $sql = "insert into ".DB_SCHEMA.".field (field_id,relation_id,field_name,field_header,fieldtype_id,searchtype_id,resultype_id,field_format,column_width,orderby_id,field_filter,datatype_id,field_order,default_op,layer_id,formula)
-    select qtfield_id,qtfield.qtrelation_id, 
+    select qtfield_id,qtfield.qt_relation_id, 
     case when (qtfield.qtfield_name LIKE '%(%' OR qtfield.qtfield_name LIKE '%::%' OR qtfield.qtfield_name LIKE '%||%') then 'formula_'||qtfield.qtfield_id else qtfield.qtfield_name end,
     field_header,fieldtype_id,searchtype_id,resultype_id,field_format,column_width,orderby_id,field_filter,datatype_id,qtfield_order,default_op,qt.layer_id,
     case when (qtfield.qtfield_name LIKE '%(%' OR qtfield.qtfield_name LIKE '%::%' OR qtfield.qtfield_name LIKE '%||%') then qtfield.qtfield_name else null end

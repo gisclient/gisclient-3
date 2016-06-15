@@ -171,9 +171,9 @@ class gcReport {
         
         $dbschema=DB_SCHEMA;
         
-        $sqlField="select qt_field.*, qt_relation.qtrelation_name, qt_relation.qtrelation_id, qt_relation.qtrelationtype_id, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
+        $sqlField="select qt_field.*, qt_relation.qtrelation_name, qt_relation.qt_relation_id, qt_relation.qtrelationtype_id, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
         from $dbschema.qt_field 
-        left join $dbschema.qt_relation using (qtrelation_id) 
+        left join $dbschema.qt_relation using (qt_relation_id) 
         left join $dbschema.catalog using (catalog_id) 
         where qt_field.qt_id = :qt_id 
         order by qtfield_order;";
@@ -184,7 +184,7 @@ class gcReport {
 		$qField = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			$Id=$row["qt_id"];
-			$fieldId=$row["qtfield_id"];
+			$fieldId=$row["qt_field_id"];
 			$qField[$Id][$fieldId]["field_name"]=trim($row["qtfield_name"]);
 			$qField[$Id][$fieldId]["field_alias"]=trim($row["field_header"]);
                         $qField[$Id][$fieldId]["title"]=trim($row["field_header"]);
@@ -197,12 +197,12 @@ class gcReport {
 			$qField[$Id][$fieldId]["result_type"]=trim($row["resultype_id"]);
 			$qField[$Id][$fieldId]["field_filter"]=trim($row["field_filter"]);
 			$qField[$Id][$fieldId]["search_function"]=(isset($row["search_function"]))?trim($row["search_function"]):'';
-			$qField[$Id][$fieldId]["relation"]=$row["qtrelation_id"];
+			$qField[$Id][$fieldId]["relation"]=$row["qt_relation_id"];
 			$qField[$Id][$fieldId]["column_width"]=$row["column_width"];
 			$f=array();
         
-                        if(!empty($row['qtrelation_id'])) {
-                                $relationId = $row['qtrelation_id'];
+                        if(!empty($row['qt_relation_id'])) {
+                                $relationId = $row['qt_relation_id'];
 				if(($row["data_field_1"])&&($row["table_field_1"])) $f[]=array(trim($row["data_field_1"]),trim($row["table_field_1"]));
 				if(($row["data_field_2"])&&($row["table_field_2"])) $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
 				if(($row["data_field_3"])&&($row["table_field_3"])) $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
@@ -502,7 +502,7 @@ class gcReport {
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
         
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme.theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, qt.qt_id, coalesce(qt_title,qt_name) as report_title, data_unique, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, qt.zoom_buffer, qt.selection_color, selection_width, qtfield_id, qtfield_name, qt_field.filter_field_name as filter_field_name, qt_field.field_header as field_header, qt_field.fieldtype_id as fieldtype_id, qt_field.column_width as column_width, qtrelation_name, qtrelationtype_id, qt_field.searchtype_id as searchtype_id, qt_field.resultype_id as resultype_id, qt_field.datatype_id as datatype_id, qt_field.field_filter as field_filter, layer.hidden, qt_field.editable as field_editable, layer.data_type as data_type, qt_field.lookup_table as lookup_table, qt_field.lookup_id, qt_field.lookup_name,qt_relation.qtrelation_id, qt_relation.data_field_1, qt_relation.table_field_1
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme.theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, qt.qt_id, coalesce(qt_title,qt_name) as report_title, data_unique, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, qt.zoom_buffer, qt.selection_color, selection_width, qt_field_id, qtfield_name, qt_field.filter_field_name as filter_field_name, qt_field.field_header as field_header, qt_field.fieldtype_id as fieldtype_id, qt_field.column_width as column_width, qtrelation_name, qtrelationtype_id, qt_field.searchtype_id as searchtype_id, qt_field.resultype_id as resultype_id, qt_field.datatype_id as datatype_id, qt_field.field_filter as field_filter, layer.hidden, qt_field.editable as field_editable, layer.data_type as data_type, qt_field.lookup_table as lookup_table, qt_field.lookup_id, qt_field.lookup_name,qt_relation.qt_relation_id, qt_relation.data_field_1, qt_relation.table_field_1
 				FROM " . DB_SCHEMA . ".theme 
 				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id) 
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
@@ -510,7 +510,7 @@ class gcReport {
 				INNER JOIN " . DB_SCHEMA . ".catalog using (catalog_id)
                                 INNER JOIN " . DB_SCHEMA . ".qt using (layer_id)
 				LEFT JOIN " . DB_SCHEMA . ".qt_field using(qt_id)
-				LEFT JOIN " . DB_SCHEMA . ".qt_relation using(qtrelation_id)
+				LEFT JOIN " . DB_SCHEMA . ".qt_relation using(qt_relation_id)
                 WHERE mapset_layergroup.mapset_name=:mapset_name ";
         $sql .= " ORDER BY theme_title, theme_id, qt_order, qt_name, qtfield_order, qt_field.field_header;";
         $stmt = $this->db->prepare($sql);
@@ -622,7 +622,7 @@ class gcReport {
                     "name"=>$fieldName,     
                     "header"=>(strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["field_header"]):$row["field_header"],
                     "type"=>"String",//TODO
-                    "fieldId"=>intval($row["qtfield_id"]),
+                    "fieldId"=>intval($row["qt_field_id"]),
                     "fieldType"=>intval($row["fieldtype_id"]),
                     "dataType"=>intval($row["datatype_id"]),
                     "width"=>intval($row["column_width"]),
