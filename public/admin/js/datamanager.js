@@ -1146,7 +1146,7 @@ var uploader = (function (config) {
 
     function addFile(file, callback) {
         function isValid(file) {
-            if (!(file instanceof Blob) || !file.type) {
+            if (!(file instanceof Blob)) { 
                 errorLog('Error: not a file');
                 return false;
             }
