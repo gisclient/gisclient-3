@@ -1,58 +1,19 @@
-﻿<?php
-
-//SE IL DATABASE NON È QUELLO DOVE RISIEDE LO SCHEMA GISCLIENT RIDEFINISCO LE COSTANTI
-define('DB_NAME','geoweb_dati');
-//define('DB_USER','******'); 
-//define('DB_PWD','*******');
-//define('DB_HOST','******');
-//define('DB_PORT','*****');
-
-
-/***** CONFIGURAZIONE ELEMENTI DA INTERCETTARE : condotta, valvola, sollevamento, riduttore, serbatoio, vasca 
-(altri elementi e/o campi delle tabelle possono essere aggiunti a piacere dall'utente) ****/
-$SCHEMA = "acq";
+<?php
+/***** CONFIGURAZIONE ELEMENTI DA INTERCETTARE : condotta, valvola, sollevamento, riduttore, serbatoio, vasca ****/
+define('POSTGIS_TRANSFORM_GEOMETRY','postgis_transform_geometry');
+$SCHEMA = "acqua";
 $FID_FIELD = "gs_id";
 $GEOM_FIELD = "geom";
-$GEOM_SRID = "25832";
-$TIME_OUT = "10000";
+$GEOM_SRID = "3003";
+$TIME_OUT = "50000";
 $ELEMENTS = array(
 	"condotta" => array("featureType"=>array(
-		"table" => "ra_traccia_acquedotto_pg_v",
+		"table" => "ratraccia_v",
 		"title" => "Condotta",
 		"properties" => array(
 			array(
-				"name"=>"gs_id_a",
-				"fieldHeader"=>"Gs_id",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"tipo_traccia",
-				"fieldHeader"=>"Tipo condotta",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"comune",
-				"fieldHeader"=>"Comune",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"via",
-				"fieldHeader"=>"Via",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"materiale",
-				"fieldHeader"=>"Materiale",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"lunghezza",
-				"fieldHeader"=>"Lunghezza",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"profondita",
-				"fieldHeader"=>"Profondità",
+				"name"=>"ubicaz_con",
+				"fieldHeader"=>"Indirizzo",
 				"type"=>"string"
 			),
 			array(
@@ -61,183 +22,124 @@ $ELEMENTS = array(
 				"type"=>"string"
 			),
 			array(
-				"name"=>"stato",
-				"fieldHeader"=>"Stato",
+				"name"=>"materiale",
+				"fieldHeader"=>"Materiale",
+				"type"=>"string"
+			),		
+			array(
+				"name"=>"profondita",
+				"fieldHeader"=>"Profondit�",
 				"type"=>"string"
 			),
 			array(
-				"name"=>"sede_posa",
-				"fieldHeader"=>"Sede posa",
+				"name"=>"note",
+				"fieldHeader"=>"Note",
 				"type"=>"string"
 			)
 		)
 	)),
 	"valvola" => array("featureType"=>array(
-		"table" => "ra_saracinesca_rete_pg_v",
+		"table" => "ravalvola_generica_v",
 		"title" => "Valvola",
 		"properties" => array(
 			array(
-				"name"=>"gs_id_a",
-				"fieldHeader"=>"Gs_id",
+				"name"=>"indirizzo",
+				"fieldHeader"=>"Indirizzo",
 				"type"=>"string"
 			),
 			array(
-				"name"=>"comune",
-				"fieldHeader"=>"Comune",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"via",
-				"fieldHeader"=>"Via",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"tipologia",
-				"fieldHeader"=>"Tipologia",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"tipo_valvola",
-				"fieldHeader"=>"Tipo valvola",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"materiale",
-				"fieldHeader"=>"Materiale",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"diametro",
-				"fieldHeader"=>"Diametro",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"n_cameretta",
-				"fieldHeader"=>"Nr. cameretta",
+				"name"=>"codice",
+				"fieldHeader"=>"Codice",
 				"type"=>"string"
 			),
 			array(
 				"name"=>"stato",
 				"fieldHeader"=>"Stato",
 				"type"=>"string"
-			),
+			),		
 			array(
-				"name"=>"sede_posa",
-				"fieldHeader"=>"Sede posa",
+				"name"=>"note",
+				"fieldHeader"=>"Note",
 				"type"=>"string"
 			)
 		)
 	)),
 	"sollevamento" => array("featureType"=>array(
-		"table" => "ra_stazioni_sollevamento_pg_v",
+		"table" => "rastaz_sollevamento_v",
 		"title" => "Stazione sollevamento",
 		"properties" => array(
 			array(
-				"name"=>"comune",
-				"fieldHeader"=>"Comune",
+				"name"=>"indirizzo",
+				"fieldHeader"=>"Indirizzo",
 				"type"=>"string"
 			),
 			array(
-				"name"=>"via",
-				"fieldHeader"=>"Via",
+				"name"=>"codice",
+				"fieldHeader"=>"Codice",
 				"type"=>"string"
 			),
 			array(
-				"name"=>"tipologia",
-				"fieldHeader"=>"Tipologia",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"n_pompe",
-				"fieldHeader"=>"Nr.pompe",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"denominazione",
-				"fieldHeader"=>"Denominazione",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"stato",
+				"name"=>"stato_funz",
 				"fieldHeader"=>"Stato",
+				"type"=>"string"
+			),		
+			array(
+				"name"=>"note",
+				"fieldHeader"=>"Note",
 				"type"=>"string"
 			)
 		)
 	)),
 	"riduttore" => array("featureType"=>array(
-		"table" => "ra_riduttore_pg_v",
+		"table" => "rariduttore_v",
 		"title" => "Riduttore",
 		"properties" => array(
+
 			array(
-				"name"=>"comune",
-				"fieldHeader"=>"Comune",
+				"name"=>"codice",
+				"fieldHeader"=>"Codice",
 				"type"=>"string"
-			),
+			),	
 			array(
-				"name"=>"via",
-				"fieldHeader"=>"Via",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"diametro",
-				"fieldHeader"=>"Diametro",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"stato",
-				"fieldHeader"=>"Stato",
+				"name"=>"note",
+				"fieldHeader"=>"Note",
 				"type"=>"string"
 			)
 		)
 	)),
 	"serbatoio" => array("featureType"=>array(
-		"table" => "ra_serbatoi_pg_v",
+		"table" => "raserbatoio_v",
 		"title" => "Serbatoio",
 		"properties" => array(
 			array(
-				"name"=>"comune",
-				"fieldHeader"=>"Comune",
+				"name"=>"indirizzo",
+				"fieldHeader"=>"Indirizzo",
 				"type"=>"string"
 			),
 			array(
-				"name"=>"via",
-				"fieldHeader"=>"Via",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"denominazione",
-				"fieldHeader"=>"Denominazione",
+				"name"=>"codice",
+				"fieldHeader"=>"Codice",
 				"type"=>"string"
 			),
 			array(
 				"name"=>"stato",
 				"fieldHeader"=>"Stato",
+				"type"=>"string"
+			),		
+			array(
+				"name"=>"note",
+				"fieldHeader"=>"Note",
 				"type"=>"string"
 			)
 		)
 	)),
 	"vasca" => array("featureType"=>array(
-		"table" => "ra_vasca_decantazione_pg_v",
-		"title" => "Vasca decantazione",
+		"table" => "ravasca_rompitratta_v",
+		"title" => "Vasca rompitratta",
 		"properties" => array(
 			array(
-				"name"=>"comune",
-				"fieldHeader"=>"Comune",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"via",
-				"fieldHeader"=>"Via",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"denominazione",
-				"fieldHeader"=>"Denominazione",
-				"type"=>"string"
-			),
-			array(
-				"name"=>"stato",
-				"fieldHeader"=>"Stato",
+				"name"=>"funzione",
+				"fieldHeader"=>"Funzione",
 				"type"=>"string"
 			)
 		)

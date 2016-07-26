@@ -463,7 +463,7 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 // dalla tabella crea la lista di opzioni per il controllo SELECT
 
 	if (!isset($this->db)) $this->connettidb();
-	$sql='SELECT id,opzione FROM '.$this->schemadb.'.'.$tabella;
+	$sql='SELECT DISTINCT id,opzione FROM '.$this->schemadb.'.'.$tabella;
 	if (is_array($filtro)){
 		
 		for($i=0;$i<count($filtro);$i++){

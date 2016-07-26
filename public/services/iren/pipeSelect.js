@@ -2,7 +2,7 @@
 OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 
     EVENT_TYPES: ["beforeSelect","afterSelect","selected"],
-	
+    type: OpenLayers.Control.TYPE_BUTTON,
     clearOnDeactivate: false,
     layers: null,
 	pipelayer:null,
@@ -52,18 +52,30 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 
 	select: function(geometry) {
 		
-		//se c'è un popup aperto non faccio nulla
-		this.events.triggerEvent("beforeSelect", {
-			
-		});
+            //se c'Ã¨ un popup aperto non faccio nulla
+            for(var i=0; i<this.map.popups.length; i++){
+                if(this.map.popups[i].id == 'pipeselect-popup'){
+                   alert('Chiudere tutte le finestre popup prima di effettuare una nuova ricerca valvole');
+                   return;
+                }
+             }
+            
+            this.events.triggerEvent("beforeSelect", {
+
+            });
 
 		//var ctrl = this.map.getControlsByClass("OpenLayers.Control.LoadingPanel")[0];	
 		//ctrl.maximizeControl();
 		
 		if (!(geometry instanceof OpenLayers.Geometry)) {
-            var point = this.map.getLonLatFromPixel(geometry.xy);
-            geometry = new OpenLayers.Geometry.Point(point.lon, point.lat);		
-			this.point = geometry;
+                    var resultLayer = this.getResultLayer();
+                    if (resultLayer)
+                        if (resultLayer.features.length > 0)
+                            if (!confirm('Effettuare una nuova ricerca valvole?'))
+                                return;
+                    var point = this.map.getLonLatFromPixel(geometry.xy);
+                    geometry = new OpenLayers.Geometry.Point(point.lon, point.lat);		
+                    this.point = geometry;
         }
 
 		//CHIAMATA AL SERVER PER AVERE DATO IL PUNTO LA TRATTA DEL GRAFO E L'ELENCO DEGLI OGGETTI INTERESSATI 
@@ -80,7 +92,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
                             layer:this.pipelayer,
 							distance:this.distance,
 							srs:this.map.projection,
-                            x: geometry.x,
+                            x:geometry.x,
                             y:geometry.y,
 							exclude:this.exclude,
                             request: "tratta"
@@ -312,9 +324,9 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 					//SULLA SELEZIONE DISATTIVO TUTTO (??)
 						if(feature.fid.indexOf('genova.ratraccia_v')!=-1) return false
 						ctrl.selectedPipeObject = feature;
-						//highlightCtrl.deactivate();
-						//selectControl.deactivate();
-						ctrl.deactivate();
+						highlightCtrl.deactivate();
+						selectControl.deactivate();
+						//ctrl.deactivate();
 					}
 				}
 			);
@@ -327,8 +339,13 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 				selectControl.activate();
 			});
 			this.events.register('deactivate',this,function(e){
-				highlightCtrl.deactivate();			
-				selectControl.deactivate();
+                            highlightCtrl.deactivate();			
+                            selectControl.deactivate();
+                            if(this.clearOnDeactivate) {
+                                var resultLayer = this.map.getLayer('gc_pipe_vector_layer');
+                                if (resultLayer)
+                                    resultLayer.removeAllFeatures();
+                            }
 			});
 			
 			this.selectControl = selectControl;
@@ -377,7 +394,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 		oPopupPos.lat -= topOffset * nReso;
 
 		var popup = new OpenLayers.Popup.Anchored(
-			"chicken", 
+			"pipeselect-popup", 
 			oPopupPos,
 			new OpenLayers.Size(200,400),
 			popupInfo,
@@ -399,21 +416,23 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 			self.popup = null;
 			self.selectControl.unselect(self.selectedPipeObject);
 			self.selectedPipeObject = null;
-			self.activate();			
+			//self.activate();
+                        self.highlightCtrl.activate();		
+                        self.selectControl.activate();
 		});
 
 		if(typeof(Ext)!='undefined'){
 			Ext.select('div.myTool').on('click', function() {
 				self.exclude.push(this.id);
-				self.select(self.point);
 				self.map.removePopup(popup);
+                                self.select(self.point);
 			});
 		}
 		else if(typeof($)!='undefined'){
 			$('div.myTool').on('click', function() {
 				self.exclude.push(this.id);
-				self.select(self.point);
 				self.map.removePopup(popup);
+                                self.select(self.point);
 			});		
 		}
 
