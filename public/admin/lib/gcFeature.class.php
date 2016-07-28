@@ -494,28 +494,18 @@ class gcFeature {
                     } else {
                         $aliasTable = DATALAYER_ALIAS_TABLE;
                     }
-                    $groupByFieldList[] = $aliasTable . '.' . $aField['field_name'];
 
                     //Campi calcolati non metto tabella.campo
                     //if(strpos($aField["field_name"],'(')!==false)
                     //if(preg_match('|[(](.+)[)]|i',$aField["field_name"]) || strpos($aField["field_name"],"||"))
                     if ($aField["formula"]) {
                         $fieldName = $aField["formula"] . " AS " . $aField["field_name"]; // . " AS " . strtolower(NameReplace($aField["field_title"]));
+                        $groupByFieldList[] = $aField['field_name'];
                     } else {
                         $fieldName = $aliasTable . "." . $aField["field_name"];
+                        $groupByFieldList[] = $aliasTable . '.' . $aField['field_name'];
                     }
-                    // **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
-                    $groupByFieldList[] = $aField['field_name'];
-                    
                     $fieldList[] = $fieldName;
-
-                    /*
-                      if($aField["relation"]>0)
-                      $fieldString = $fieldName;// .  " AS " . $aliasTable . "_" . NameReplace($aField["field_title"]);
-                      else
-                      $fieldString = $fieldName;
-                      $fieldList[] = $fieldString;
-                     */
                 }
             }
 
@@ -527,18 +517,18 @@ class gcFeature {
 
                     //TODO RELAZIONI 1-MOLTI IN GC3
                     if ($rel["relation_type"] == 2) {
-                        continue;
+                        //continue;
                         //aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore è vuoto
-                        //$keyList = array();
-                        //foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
-                        //$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
+                        $keyList = array();
+                        foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
+                        $fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
 
-                        //$groupBy = ' GROUP BY  ' . implode(', ', $groupByFieldList) . ', ' . $datalayerGeom;
-                        //$fieldList[] = ' count(' . $relationAliasTable . '.' . $rel['join_field'][0][1] . ') as num_' . $idrel;
+                        $groupBy = ' GROUP BY  ' . implode(', ', $groupByFieldList) . ', ' . $datalayerGeom;
+                        $fieldList[] = ' count(' . $relationAliasTable . '.' . $rel['join_field'][0][1] . ') as num_' . $idrel;
 
-                        //if (!isset($this->aFeature['1n_count_fields']))
-                        //    $this->aFeature['1n_count_fields'] = array();
-                        //array_push($this->aFeature['1n_count_fields'], 'num_' . $idrel);
+                        if (!isset($this->aFeature['1n_count_fields']))
+                            $this->aFeature['1n_count_fields'] = array();
+                        array_push($this->aFeature['1n_count_fields'], 'num_' . $idrel);
                     }
 
                     $joinList = array();

@@ -195,7 +195,7 @@ class GCAuthor {
 
 		$mapfile = new gcMapfile();
 		$mapfile->setTarget($target);
-        $mapfile->writeProjectMapfile = true;
+		$mapfile->writeProjectMapfile = true;
 		$mapfile->writeMap("project",$project);
 		
 		$localization = new GCLocalization($project);

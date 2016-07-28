@@ -45,7 +45,6 @@ if (!defined('SERVICE_MAX_ZOOM_LEVEL')) {
 	define('SERVICE_MAX_ZOOM_LEVEL',21);
 }
 
-
 class gcMap{
 	const SCALE_TYPE_USER = 0;
 	const SCALE_TYPE_POWEROF2 = 1;
@@ -180,8 +179,12 @@ class gcMap{
 		} else {
 			$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));
 		}
-		
-		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName));
+        //print_r($user);
+        //unset($_SESSION['GISCLIENT_USER_LAYER']);
+		//die;
+
+		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName, 'show_as_public' => !$user->isAuthenticated()));
+        
 		
 		$mapOptions["theme"] = $this->_getLayers();
 		$this->_getSelgroup();
@@ -214,18 +217,33 @@ class gcMap{
         $extents = $this->_getMaxExtents();
 
 		$sqlParams = array();
-		$sqlPrivateLayers = "";
+		$sqlPrivateLayers = "FALSE";
 		if ($this->authorizedLayers) {
-			$sqlPrivateLayers = " OR layer_id IN (".implode(',', $this->authorizedLayers).")";
+			$sqlPrivateLayers = "layer_id IN (".implode(',', $this->authorizedLayers).")";
 		}
-		$sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) 
-			WHERE layergroup_id IN (
-				SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlPrivateLayers;
-		$sqlLayers .= " UNION
-				SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL
-			) AND mapset_name = :mapset_name
-                        ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;"; 
-			
+		$sqlLayers = "SELECT theme_id, theme_name, theme_title, theme_single, theme.radio, theme.copyright_string,
+                             layergroup.*, mapset_layergroup.*, outputformat_mimetype, outputformat_extension
+                      FROM ".DB_SCHEMA.".layergroup 
+                      INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING (layergroup_id) 
+                      INNER JOIN ".DB_SCHEMA.".theme USING(theme_id) 
+                      LEFT JOIN ".DB_SCHEMA.".e_outputformat USING(outputformat_id) 
+			          WHERE mapset_name = :mapset_name AND 
+                            layergroup_id IN (
+                                SELECT layergroup_id 
+                                FROM ".DB_SCHEMA.".layer 
+                                INNER JOIN gisclient_34.layergroup using(layergroup_id) 
+                                INNER JOIN gisclient_34.mapset_layergroup USING (layergroup_id) 
+                                INNER JOIN gisclient_34.mapset USING (mapset_name) 
+                                WHERE {$sqlPrivateLayers} OR (layer.private=0 AND mapset.private=0) 
+                                UNION
+                                SELECT layergroup_id 
+                                FROM ".DB_SCHEMA.".layergroup 
+                                LEFT JOIN ".DB_SCHEMA.".layer 
+                                USING (layergroup_id) 
+                                WHERE layer_id IS NULL)
+                      ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,
+                               layergroup.layergroup_title;"; 
+		// echo $sqlLayers; die;
 		$stmt = $this->db->prepare($sqlLayers);
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
@@ -550,7 +568,6 @@ class gcMap{
 		return $legendArray;
 	}
 	
-	
 	function _getFeatureTypes(){
 		$returnFeatureTypes = array(
 			'theme'=>array(),
@@ -569,7 +586,16 @@ class gcMap{
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
 		}
 		
-		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, layer_title, data_unique, data_geom, layer.data, layer.hide_vector_geom, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+		$sql = "SELECT theme.project_name, theme_name, theme_single, theme_id, layergroup_id, 
+                       layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, 
+                       layer_title, data_unique, data_geom, layer.data, layer.hide_vector_geom, catalog.catalog_id, 
+                       catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, 
+                       selection_color, selection_width, field_id, field_name, filter_field_name, field_header, 
+                       fieldtype_id, relation_name, relationtype_id, searchtype_id, resultype_id, datatype_id, 
+                       field_filter, layer.hidden, field.editable as field_editable, field.field_format, 
+                       field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, 
+                       field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, 
+                       relation.data_field_1, relation.table_field_1
 				FROM ".DB_SCHEMA.".theme 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
 				INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -578,14 +604,13 @@ class gcMap{
 				LEFT JOIN ".DB_SCHEMA.".field using(layer_id)
 				LEFT JOIN ".DB_SCHEMA.".relation using(relation_id)
 				LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
-				WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
-		$sql .= " ORDER BY theme_order, theme_id, layergroup_order, layergroup_id, layer_order, field_order;";
-		
+				WHERE {$userGroupFilter} layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name
+		        ORDER BY theme_order, theme_id, layergroup_order, layergroup_id, layer_order, field_order;";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($this->mapsetName));
 		$featureTypes = array();
         $layersWith1n = array();
-
+//print_r($_SESSION['GISCLIENT_USER_LAYER']); 
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			if(!empty($this->i18n)) {
 				$row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
@@ -597,7 +622,13 @@ class gcMap{
 			if($row['private'] == 0) {
 				if(!$this->isPublicLayerQueryable) continue;
 			} else {
-				if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) continue;
+                
+                //echo "[$typeName] ";
+				if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) {
+                    continue;
+                }
+                //echo "KO";
+                
 			}
 		
 			$typeTitle = empty($row["layer_title"])?$typeName:$row["layer_title"];
@@ -671,6 +702,7 @@ class gcMap{
 					'editable'=>$userCanEdit ? $row['field_editable'] : 0,
 					"relationType"=>intval($row["relationtype_id"]),
 					"resultType"=>intval($row["resultype_id"]),
+                                        "format"=>$row["field_format"],
                     'filterFieldName'=>$row['filter_field_name'],
 					"fieldFilter"=>intval($row["field_filter"]),
 					'isPrimaryKey'=>$isPrimaryKey
