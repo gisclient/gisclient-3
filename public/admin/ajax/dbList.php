@@ -15,8 +15,9 @@ $result = array(
 	'steps'=>1,
 	'data'=>array(),
 	'data_objects'=>array(),
-	'step'=>1
-		);
+	'step'=>1,
+    'enable_replace'=>false,        // Enable replacement (eg in formula list we replace the marker with the field name)
+);
 
 switch($selectedField) {
 	case 'field_format':
@@ -32,7 +33,23 @@ switch($selectedField) {
 			$result['data_objects'][] = array('field_format'=>$row['fieldformat_format']);
 		}
 	break;
-	
+    case 'formula':
+        $result['enable_replace'] = true;
+		$result['fields'] = array(
+			'format'=>GCAuthor::t('format'),
+			'description'=>GCAuthor::t('description')
+			);
+		
+		$sql="select formula_name, formula_format from ".DB_SCHEMA.".e_formula order by formula_order;";
+		$stmt = $db->query($sql);
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			$result['data'][] = array('format'=>$row['formula_format'], 'description'=>$row['formula_name']);
+			$result['data_objects'][] = array('formula'=>$row['formula_format']);
+		}
+	break;
+    
+    
+    
 	case "class_symbol_ttf":	
 	case "symbol_ttf_name":
 		if($selectedField=="symbol_ttf_name" && empty($_REQUEST["label_font"])) {

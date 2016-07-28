@@ -133,10 +133,27 @@ abstract class AbstractUser {
 		if (empty($filter['show_as_public'])) {
 			$authClause = '(layer.private=1 '.$groupFilter.' ) OR (coalesce(layer.private,0)=0)';
 		} else {
-			$authClause = '(coalesce(layer.private,0)=0)';
+			//$authClause = '(coalesce(layer.private,0)=0 AND mapset.private=0)';
+            $authClause = '(coalesce(layer.private,0)=0)';
 		}
 		
-        $sql = ' SELECT project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
+        /*$sql = ' SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
+                        layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
+            case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
+            case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
+            case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfst').' else 1 end as wfst,
+            layer_order
+            FROM '.DB_SCHEMA.'.theme 
+            INNER JOIN '.DB_SCHEMA.'.layergroup USING (theme_id) 
+            INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
+            INNER JOIN '.DB_SCHEMA.'.mapset USING (mapset_name) 
+            LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
+            LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
+            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order DESC;';*/
+            
+            
+        $sql = ' SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
+                        layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfst').' else 1 end as wfst,
@@ -147,12 +164,11 @@ abstract class AbstractUser {
             LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
             WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order DESC;';
-
+            
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
-
+//echo nl2br($sql) . "<br>" . print_r($sqlValues, true) . "<br>";
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
 			$featureType = $row['layergroup_name'].".".$row['layer_name'];
 			$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
 
@@ -176,6 +192,9 @@ abstract class AbstractUser {
                 array_push($this->mapLayers[$row['theme_name']][$row['layergroup_name']], array("name" => $featureType, "title" => $row['layer_title']?$row['layer_title']:$row['layer_name'], "grouptitle" => $row['layergroup_title'], "minScale" => $row['minscale'], "maxScale" => $row['maxscale'], "hidden" => $row['hidden']));
 
 		};
+        //echo "<br><br>\n";
+        //print_r($_SESSION['GISCLIENT_USER_LAYER']);
+        //echo "<br><br>\n";
 	}
 	
 	public function getAuthorizedLayers(array $filter) { //TODO: controllare chi la usa
