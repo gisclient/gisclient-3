@@ -82,7 +82,7 @@ class gcMapfile{
 		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
 				$filter="mapset.mapset_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private,";
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private";
 				$sqlParams['keyvalue'] = $keyvalue;
 				
 				$sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
@@ -94,10 +94,10 @@ class gcMapfile{
 			$filter="project.project_name=:keyvalue";
 			if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
 				$joinMapset="";
-				$fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
+				$fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent';
 			} else {
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private,";				
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private";				
 			}
 			$sqlParams['keyvalue'] = $keyvalue;
 			$projectName = $keyvalue;
@@ -105,11 +105,18 @@ class gcMapfile{
 		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
 				$filter="layergroup.layergroup_id=:keyvalue";
 				$joinMapset="";
-				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
+				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";			
 				$sqlParams['keyvalue'] = $keyvalue;
-	
+
+        } elseif($keytype=="layer") { //GENERO IL MAPFILE PER IL LAYER NEL SISTEMA DI RIF DEL PROGETTO. CHIAVE UNIVOCA: MAPSET.LAYERGROUP.LAYER
+            //echo "[$keytype=$keyvalue]";
+				$filter="(mapset.mapset_name || '.' || layergroup.layergroup_name || '.' || layer.layer_name)=:keyvalue";
+				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
+				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";			
+				$sqlParams['keyvalue'] = $keyvalue;
 		
 		} elseif($keytype="print"){ //GENERO UN MAPFILE PER LA STAMPA
+                $fieldsMapset="1 AS dummy";
 				$_in = GCApp::prepareInStatement($keyvalue);
 				$sqlParams = $_in['parameters'];
 				$inQuery = $_in['inQuery'];
@@ -123,19 +130,24 @@ class gcMapfile{
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
 		
-
-		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,outputformat_mimetype,
-		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
-		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title, set_extent
-		from ".DB_SCHEMA.".layer 
-		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
-		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
-		INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
-		LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
-		LEFT JOIN ".DB_SCHEMA.".catalog using (catalog_id, project_name)
-		where ".$filter." order by layer_order DESC,layergroup_order;";	
+		$sql = "SELECT project_name, {$fieldsMapset}, base_url, max_extent_scale, project_srid, xc, yc, 
+                       outputformat_mimetype, theme_title, theme_name, theme_single, layergroup_name, layergroup_title,
+                       layergroup_id, layergroup_description, layergroup_maxscale, layergroup_minscale, isbaselayer,
+                       layergroup_single, tree_group, tiletype_id, owstype_id, layer_id, layer_name, layer_title, 
+                       layer.hidden,layertype_id, project_title, set_extent
+		        FROM ".DB_SCHEMA.".layer 
+                INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
+                INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
+                INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
+                LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
+                LEFT JOIN ".DB_SCHEMA.".catalog using (catalog_id, project_name)
+                WHERE {$filter}
+                ORDER BY layer_order DESC, layergroup_order;";	
 		//where ".$filter." order by theme_order desc, layergroup_order desc, layer_order desc;";	SERVE PER SCRIVERE I LAYER NEL MAPFILE UTILIZZANDO L'ORDINE RELATIVO TEMA-LAYERGROUP-LAYER. Sarebbe da sviluppare la funzione che permette all'utente di sceglierlo a livello di progetto
-
+        //print_r($sqlParams);
+        //echo "$sql\n\n";
+        
+        
 		print_debug($sql,null,'writemap');
 				
 		$stmt = $this->db->prepare($sql);
@@ -176,8 +188,12 @@ class gcMapfile{
 		
 		$defaultLayers = array();
 		foreach ($res as $aLayer){
-		
-			$mapName = $aLayer["mapset_name"];
+            if ($this->target == 'layer') {
+                $mapName = "{$aLayer["mapset_name"]}.{$aLayer["layer_name"]}";
+            } else {
+                $mapName = $aLayer["mapset_name"];
+            }
+            
 			$layergroupName = NameReplace($aLayer["layergroup_name"]);
 			$layerTreeGroup = $aLayer["tree_group"];
 			$mapSrid[$mapName] = $aLayer["mapset_srid"];	
@@ -411,87 +427,91 @@ class gcMapfile{
 					);
 				}
 */
-                //$this->_writeMapProxyConfig($mpxLayers,$this->mpxCaches);
-                $this->_writeMapProxyConfig($mapName);
-            }
-        }
+				//$this->_writeMapProxyConfig($mpxLayers,$this->mpxCaches);
+				$this->_writeMapProxyConfig($mapName);
+			}
+		}
+//echo "[mapname=$mapName]\n";
+		return $mapName;
+	}
+	
+	function _writeFile(&$mapFile){
+		$projectName = $this->projectName;
+		$fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts';	
+		$projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
+		$configDebugfile = '';
+		$debugLevel = '';
+		if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
+			$configDebugfile = "CONFIG 'MS_ERRORFILE' '".DEBUG_DIR.basename($mapFile).".debug'";
+			$debugLevel = "DEBUG 5";
+		}
+		$outputFormat = $this->_getOutputFormat($mapFile);
 
-        return $mapName;
-    }
-    
-    function _writeFile(&$mapFile){
-        $projectName = $this->projectName;
-        $fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts'; 
-        $projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
-        $configDebugfile = '';
-        $debugLevel = '';
-        if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
-            $configDebugfile = "CONFIG 'MS_ERRORFILE' '".DEBUG_DIR.basename($mapFile).".debug'";
-            $debugLevel = "DEBUG 5";
-        }
-        $outputFormat = $this->_getOutputFormat($mapFile);
+		//$outputFormat = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
+		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
+		$metadata_inc = '';
+		//$legend_inc = file_get_contents (ROOT_PATH."config/mapfile.legend.inc");
+		$legend_inc = $this->_getLegendSettings();
+		//$legend_inc = '';
+		
+		$imgPath = "IMAGEPATH \"".IMAGE_PATH."\"";
+		$imgUrl = "IMAGEURL \"".IMAGE_URL."\"";
+		$imgResolution = "RESOLUTION ".MAP_DPI;
+		$size = TILE_SIZE . " " . TILE_SIZE;
 
-        //$outputFormat = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
-        //$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
-        $metadata_inc = '';
-        //$legend_inc = file_get_contents (ROOT_PATH."config/mapfile.legend.inc");
-        $legend_inc = $this->_getLegendSettings();
-        //$legend_inc = '';
-        
-        $imgPath = "IMAGEPATH \"".IMAGE_PATH."\"";
-        $imgUrl = "IMAGEURL \"".IMAGE_URL."\"";
-        $imgResolution = "RESOLUTION ".MAP_DPI;
-        $size = TILE_SIZE . " " . TILE_SIZE;
-
-        $wms_mime_type = "\t\"wms_feature_info_mime_type\"  \"text/html\"";
-        $ows_title = "\t\"ows_title\"\t\"". $mapFile ."\"";
-        $project_name = "\t\"project_name\"\t\"". $projectName ."\"";
-        $ows_wfs_encoding = $this->_getEncoding();
-        $ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
-        $wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
-        $ows_srs = "\t\"wms_srs\"\t\"". implode(" ",$this->epsgList) ."\"";
-        $ows_accessConstraints = '';
-        if(!empty($this->layersWithAccessConstraints)) {
-            $ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
-        }
-        
-        $owsUrl = null;
-        if (defined('GISCLIENT_OWS_URL')) {
-            
-            $owsUrl = rtrim(GISCLIENT_OWS_URL, '?&');
-            
-            if (false === ($owsUrlQueryPart = parse_url($owsUrl, PHP_URL_QUERY))) {
-                throw new Exception("Could not parse '". GISCLIENT_OWS_URL . "' as string");
-            }
-            if(!empty($owsUrlQueryPart)) {
-                $sep = '&';
+		$wms_mime_type = "\t\"wms_feature_info_mime_type\"	\"text/html\"";
+		$ows_title = "\t\"ows_title\"\t\"". $mapFile ."\"";
+		$project_name = "\t\"project_name\"\t\"". $projectName ."\"";
+		$ows_wfs_encoding = $this->_getEncoding();
+		$ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
+		$wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
+		$ows_srs = "\t\"wms_srs\"\t\"". implode(" ",$this->epsgList) ."\"";
+		$ows_accessConstraints = '';
+		if(!empty($this->layersWithAccessConstraints)) {
+			$ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
+		}
+		
+		$owsUrl = null;
+		if (defined('GISCLIENT_OWS_URL')) {
+			
+			$owsUrl = rtrim(GISCLIENT_OWS_URL, '?&');
+			
+			if (false === ($owsUrlQueryPart = parse_url($owsUrl, PHP_URL_QUERY))) {
+				throw new Exception("Could not parse '". GISCLIENT_OWS_URL . "' as string");
+			}
+			if(!empty($owsUrlQueryPart)) {
+				$sep = '&';
+			} else {
+				$sep = '?';
+			}
+            if (in_array($this->target, array('tmp', 'layer'))) {
+                $owsUrl .= "{$sep}project={$this->projectName}&map={$this->target}.{$mapFile}";
             } else {
-                $sep = '?';
+                $owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
             }
-            $owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
 
-            if(!empty($this->i18n)) {
-                $owsUrl .= '&lang=' . $this->i18n->getLanguageId();
-            }
-        }
+			if(!empty($this->i18n)) {
+				$owsUrl .= '&lang=' . $this->i18n->getLanguageId();
+			}
+		}
 
-        $wms_onlineresource = '';
-        $wfs_onlineresource = '';
-        if(!empty($owsUrl)) {
-            $wms_onlineresource = "\t".'"wms_onlineresource" "'.$owsUrl.'"';
-            $wfs_onlineresource = "\t".'"wfs_onlineresource" "'.$owsUrl.'"';
-        }
-        
-        $layerText = $this->layerText;
-        $mapProjection = "\t\"init=epsg:".$this->mapsetSrid."\"";
-        if(!empty($this->srsParams[$this->mapsetSrid])) $mapProjection .= "\n\t\"+towgs84=".$this->srsParams[$this->mapsetSrid]."\"";
-        $mapsetExtent = "EXTENT ". implode(" ", $this->mapsetExtent);
+		$wms_onlineresource = '';
+		$wfs_onlineresource = '';
+		if(!empty($owsUrl)) {
+			$wms_onlineresource = "\t".'"wms_onlineresource" "'.$owsUrl.'"';
+			$wfs_onlineresource = "\t".'"wfs_onlineresource" "'.$owsUrl.'"';
+		}
+		
+		$layerText = $this->layerText;
+		$mapProjection = "\t\"init=epsg:".$this->mapsetSrid."\"";
+		if(!empty($this->srsParams[$this->mapsetSrid])) $mapProjection .= "\n\t\"+towgs84=".$this->srsParams[$this->mapsetSrid]."\"";
+		$mapsetExtent = "EXTENT ". implode(" ", $this->mapsetExtent);
 
-        if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
-        else $maxSize = '4096';
-        $fontList = '../../fonts/'.$fontList.'.list';
+		if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
+		else $maxSize = '4096';
+		$fontList = '../../fonts/'.$fontList.'.list';
 
-        $fileContent=
+		$fileContent=
 "MAP
 NAME \"$mapFile\"
 SIZE $size  
@@ -528,102 +548,105 @@ $legend_inc
 $outputFormat
 END #MAP";
 
-        if (!is_dir(ROOT_PATH)) {
-            $errorMsg = ROOT_PATH . " is not a directory";
-            GCError::register($errorMsg);
-            return;
-        }
-        
-        if($this->printMap) {
-            $mapfileDir = ROOT_PATH."map/tmp/";
-            if(!is_dir($mapfileDir)) {
-                $rv = mkdir($mapfileDir, 0777, true);
-                if ($rv === false) {
-                    $errorMsg = "Could not create directory $mapfileDir";
-                    GCError::register($errorMsg);
-                    return;
-                }
-            }
-            $mapFilePath=$mapfileDir.$mapFile.".map";
-        } else {
-            $mapfileDir = ROOT_PATH.'map/';
-            if($this->target == 'tmp') {
-                $mapFile = 'tmp.'.$mapFile;
-            }
-            $projectDir = $mapfileDir.$projectName.'/';
-            if(!is_dir($projectDir)) {
-                $rv = mkdir($projectDir, 0777, true);
-                if ($rv === false) {
-                    $errorMsg = "Could not create directory $projectDir";
-                    GCError::register($errorMsg);
-                    return;
-                }
-            }
-            $this->_writeTemplateWms($projectDir);
-            
-            if(!empty($this->i18n)) {
-                $languageId = $this->i18n->getLanguageId();
-                $mapFile.= "_".$languageId;
-            }
-            $mapFilePath = $projectDir.$mapFile.".map";
-        }
-        if (false === ($f = fopen ($mapFilePath,"w"))) {
-            $errorMsg = "Could not open $mapFilePath for writing";
-            GCError::register($errorMsg);
-            return;
-        }
-        if (false === (fwrite($f, $fileContent))) {
-            $errorMsg = "Could not write to $mapFilePath";
-            GCError::register($errorMsg);
-            return;
-        }
-        fclose($f); 
+		if (!is_dir(ROOT_PATH)) {
+			$errorMsg = ROOT_PATH . " is not a directory";
+			GCError::register($errorMsg);
+			return;
+		}
+		
+		if($this->printMap) {
+			$mapfileDir = ROOT_PATH."map/tmp/";
+			if(!is_dir($mapfileDir)) {
+				$rv = mkdir($mapfileDir, 0777, true);
+				if ($rv === false) {
+					$errorMsg = "Could not create directory $mapfileDir";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
+			$mapFilePath=$mapfileDir.$mapFile.".map";
+		} else {
+			$mapfileDir = ROOT_PATH.'map/';
+			if($this->target == 'tmp') {
+				$mapFile = 'tmp.'.$mapFile;
+			}
+            if($this->target == 'layer') {
+				$mapFile = 'layer.'.$mapFile;
+			}
+			$projectDir = $mapfileDir.$projectName.'/';
+			if(!is_dir($projectDir)) {
+				$rv = mkdir($projectDir, 0777, true);
+				if ($rv === false) {
+					$errorMsg = "Could not create directory $projectDir";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
+			$this->_writeTemplateWms($projectDir);
+			
+			if(!empty($this->i18n)) {
+				$languageId = $this->i18n->getLanguageId();
+				$mapFile.= "_".$languageId;
+			}
+			$mapFilePath = $projectDir.$mapFile.".map";
+		}
+		if (false === ($f = fopen ($mapFilePath,"w"))) {
+			$errorMsg = "Could not open $mapFilePath for writing";
+			GCError::register($errorMsg);
+			return;
+		}
+		if (false === (fwrite($f, $fileContent))) {
+			$errorMsg = "Could not write to $mapFilePath";
+			GCError::register($errorMsg);
+			return;
+		}
+		fclose($f);	
 
-        if(!$this->printMap && empty($this->i18n) && !empty($this->tinyOWSLayers)) {
-            foreach($this->tinyOWSLayers as $layer) {
-                $towsOnlineResource = TINYOWS_ONLINE_RESOURCE.$projectName.'/'.$layer['feature'].'/?';
-                $fileContent = '<tinyows online_resource="'.$towsOnlineResource.'" schema_dir="'.TINYOWS_SCHEMA_DIR.'" check_schema="0" check_valid_geom="1" meter_precision="7" expose_pk="1" log_level="7"><pg host="'.DB_HOST.'" user="'.DB_USER.'" password="'.DB_PWD.'" dbname="'.$layer['database'].'" port="'.DB_PORT.'"/><metadata name="TinyOWS Server" title="TinyOWS Server" /><contact name="Admin" site="http://gisclient.net" email="admin@gisclient.net" />';
-                $fileContent .= '<layer retrievable="1" writable="1" ns_prefix="feature" ns_uri="http://www.tinyows.org/" schema="'.$layer['schema'].'" name="'.$layer['name'].'" title="'.$layer['title'].'" />';
-                $fileContent .= '</tinyows>';
-                
-                $tinyOwsConfigFile = $projectDir.'/'.$layer['feature'].'.xml';
-                if (false === file_put_contents($tinyOwsConfigFile, $fileContent)) {
-                    $errorMsg = "Could not write to $tinyOwsConfigFile";
-                    GCError::register($errorMsg);
-                    return;
-                }
-            }
-        }
-    
-        //test sintassi mapfile     
-        ms_ResetErrorList();
-        try {
-            @ms_newMapobj($mapFilePath);
-        } 
-        catch (Exception $e) {
-            $error = ms_GetErrorObj();      
-            if($error->code != MS_NOERR){
-                $this->mapError=150;
-                while(is_object($error) && $error->code != MS_NOERR) {
-                    $errorMsg = "MAPFILE ERROR $mapFile<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
-                    GCError::register($errorMsg);
-                    $error = $error->next();
-                }
-                return;
-            }   
-            return;
-        }
-    }
-    
-    function _getCacheType($fileName){
-        $ret = array('type'=>MAPPROXY_CACHE_TYPE);
-        if(MAPPROXY_CACHE_TYPE == 'mbtiles') $ret["filename"] = $fileName.'.mbtiles';
-        return $ret;
-    }
+		if(!$this->printMap && empty($this->i18n) && !empty($this->tinyOWSLayers)) {
+			foreach($this->tinyOWSLayers as $layer) {
+				$towsOnlineResource = TINYOWS_ONLINE_RESOURCE.$projectName.'/'.$layer['feature'].'/?';
+				$fileContent = '<tinyows online_resource="'.$towsOnlineResource.'" schema_dir="'.TINYOWS_SCHEMA_DIR.'" check_schema="0" check_valid_geom="1" meter_precision="7" expose_pk="1" log_level="7"><pg host="'.DB_HOST.'" user="'.DB_USER.'" password="'.DB_PWD.'" dbname="'.$layer['database'].'" port="'.DB_PORT.'"/><metadata name="TinyOWS Server" title="TinyOWS Server" /><contact name="Admin" site="http://gisclient.net" email="admin@gisclient.net" />';
+				$fileContent .= '<layer retrievable="1" writable="1" ns_prefix="feature" ns_uri="http://www.tinyows.org/" schema="'.$layer['schema'].'" name="'.$layer['name'].'" title="'.$layer['title'].'" />';
+				$fileContent .= '</tinyows>';
+				
+				$tinyOwsConfigFile = $projectDir.'/'.$layer['feature'].'.xml';
+				if (false === file_put_contents($tinyOwsConfigFile, $fileContent)) {
+					$errorMsg = "Could not write to $tinyOwsConfigFile";
+					GCError::register($errorMsg);
+					return;
+				}
+			}
+		}
+	
+		//test sintassi mapfile		
+		ms_ResetErrorList();
+		try {
+			@ms_newMapobj($mapFilePath);
+		} 
+		catch (Exception $e) {
+			$error = ms_GetErrorObj();		
+			if($error->code != MS_NOERR){
+				$this->mapError=150;
+				while(is_object($error) && $error->code != MS_NOERR) {
+					$errorMsg = "MAPFILE ERROR $mapFile<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
+					GCError::register($errorMsg);
+					$error = $error->next();
+				}
+				return;
+			}	
+			return;
+		}
+	}
+	
+	function _getCacheType($fileName){
+		$ret = array('type'=>MAPPROXY_CACHE_TYPE);
+		if(MAPPROXY_CACHE_TYPE == 'mbtiles') $ret["filename"] = $fileName.'.mbtiles';
+		return $ret;
+	}
 
-    function _getPrintFormat(){
-    
-        $formatText ="
+	function _getPrintFormat(){
+	
+		$formatText ="
 OUTPUTFORMAT
     NAME \"aggpng24\"
     DRIVER \"AGG/PNG\"

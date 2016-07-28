@@ -52,6 +52,7 @@ define('OPENLAYERS','http://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/Ope
 /*******************OWS service url *************************/
 define('GISCLIENT_OWS_URL', PUBLIC_URL.'services/ows.php');//NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL', PUBLIC_URL.'services/tms/');//NON E' OBBLIGATORIO
+define('ENABLE_OGC_SINGLE_LAYER_WMS', false); // true = ABILITA IL WMS PER SINGOLO LAYER NEI SERVIZI OGC
 
 /********************* MAPPROXY ***************/
 define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv?'); //NON E' OBBLIGATORIO; ? finale è necessario (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)

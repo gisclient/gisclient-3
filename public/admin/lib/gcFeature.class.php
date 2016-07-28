@@ -661,7 +661,14 @@ class gcFeature {
             $clsText[] = "GROUP \"" . $aClass["classgroup_name"] . "\"";
         if (!empty($aClass["expression"]))
             $clsText[] = "EXPRESSION " . $aClass["expression"];
-
+        if (ms_GetVersionInt() < 60000) {
+            // MapServer 5
+            if(!empty($aClass["class_text"])){
+                $clsText[]="TEXT (". $aClass["class_text"].")";
+            }elseif(!empty($aClass["smbchar"])){//simbolo true type
+                $clsText[]="TEXT (". $aClass["smbchar"].")";
+            }
+        }
 
         if (!empty($aClass["maxscale"]))
             $clsText[] = "MAXSCALEDENOM " . $aClass["maxscale"];
@@ -679,10 +686,12 @@ class gcFeature {
             $clsText[] = "\tTYPE TRUETYPE";
             $clsText[] = "\tPARTIALS TRUE";
             $clsText[] = "\tFONT \"" . $aClass["label_font"] . "\"";
-            if (!empty($aClass["class_text"])) {
-                $clsText[] = "\tTEXT '" . $aClass["class_text"] . "'";
-            } elseif (!empty($aClass["smbchar"])) {//simbolo true type
-                $clsText[] = "\tTEXT '" . $aClass["smbchar"] . "'";
+            if (ms_GetVersionInt() >= 60000) {
+                if (!empty($aClass["class_text"])) {
+                    $clsText[] = "\tTEXT '" . $aClass["class_text"] . "'";
+                } elseif (!empty($aClass["smbchar"])) {//simbolo true type
+                    $clsText[] = "\tTEXT '" . $aClass["smbchar"] . "'";
+                }
             }
             if ($aClass["label_angle"])
                 $clsText[] = "\tANGLE " . $aClass["label_angle"];

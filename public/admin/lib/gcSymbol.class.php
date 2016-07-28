@@ -150,7 +150,7 @@ class Symbol{
 	function _iconFromClass($class){
 		//creo la mappa 
 		$oMap = $this->oMap;
-		$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');		
+		$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
 		$oMap->outputformat->set('name','PNG');
 		$oMap->outputformat->set('driver','GD/PNG');
 		$oMap->outputformat->set('extension','png');
@@ -194,7 +194,7 @@ class Symbol{
 		ms_ResetErrorList();
 		try {
 			print_debug(implode("\n",$mapText),null,'symbolmap');
-			$this->oMap = @ms_newMapObjFromString(implode("\n",$mapText),ROOT_PATH.'map/tmp');
+			$this->oMap = ms_newMapObjFromString(implode("\n",$mapText), ROOT_PATH . 'map/tmp');
 		} 
 		catch (Exception $e) {
 			$error = ms_GetErrorObj();		
