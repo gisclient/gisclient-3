@@ -968,6 +968,9 @@ ALTER TABLE export_i18n
 UPDATE export_i18n SET table_name='field' WHERE table_name='qtfield';
 UPDATE export_i18n SET field_name='field_name' WHERE field_name='qtfield_name';
 
+-- fix extent per cataloghi WMS
+UPDATE catalog SET set_extent = 0 where connection_type = 7;
+
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
 COMMIT;
