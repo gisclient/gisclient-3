@@ -689,6 +689,14 @@ switch($_REQUEST['action']) {
         if (!GCApp::tableExists($dataDb, $dbParams['schema'], $_REQUEST['table_name'])) {
             $ajax->error('table does not exist');
         }
+
+        // Check for SQL injection (already checked if the table exsists)
+        $sql = "SELECT TRUE FROM {$dbParams['schema']}.{$_REQUEST['table_name']}";
+        $hasRecord = $dataDb->query($sql)->fetchColumn();
+        if (!$hasRecord) {
+            $ajax->error("No record found on table {$dbParams['schema']}.{$_REQUEST['table_name']}");
+            break;
+        }
         
         $sql = 'select * from '.$dbParams['schema'].'.'.$_REQUEST['table_name'];
         $data = $dataDb->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -719,6 +727,14 @@ switch($_REQUEST['action']) {
             $ajax->error('table does not exist');
         }
         
+        // Check for SQL injection (already checked if the table exsists)
+        $sql = "SELECT TRUE FROM {$dbParams['schema']}.{$_REQUEST['table_name']}";
+        $hasRecord = $dataDb->query($sql)->fetchColumn();
+        if (!$hasRecord) {
+            $ajax->error("No record found on table {$dbParams['schema']}.{$_REQUEST['table_name']}");
+            break;
+        }
+
         $sql = "SELECT column_name FROM information_schema.columns WHERE " .
                 "  table_schema=:schema AND table_name=:table ORDER BY ordinal_position";
         $stmt = $dataDb->prepare($sql);
@@ -763,6 +779,14 @@ switch($_REQUEST['action']) {
             $ajax->error('table does not exist');
         }
         
+        // Check for SQL injection (already checked if the table exsists)
+        $sql = "SELECT TRUE FROM {$dbParams['schema']}.{$_REQUEST['table_name']}";
+        $hasRecord = $dataDb->query($sql)->fetchColumn();
+        if (!$hasRecord) {
+            $ajax->error("No record found on table {$dbParams['schema']}.{$_REQUEST['table_name']}");
+            break;
+        }
+
         $export = new GCExport($dataDb, 'shp');
         $tables = array(
             array(
