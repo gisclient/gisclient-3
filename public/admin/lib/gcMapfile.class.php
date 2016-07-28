@@ -82,7 +82,7 @@ class gcMapfile{
 		if($keytype=="mapset") {	//GENERO IL MAPFILE PER IL MAPSET
 				$filter="mapset.mapset_name=:keyvalue";
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private,";
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private";
 				$sqlParams['keyvalue'] = $keyvalue;
 				
 				$sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset';
@@ -94,10 +94,10 @@ class gcMapfile{
 			$filter="project.project_name=:keyvalue";
 			if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
 				$joinMapset="";
-				$fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent,';
+				$fieldsMapset = '1 as layergroup_status, project_name as mapset_name, project_title as mapset_title, project_srid as mapset_srid, null as mapset_extent';
 			} else {
 				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
-				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private,";				
+				$fieldsMapset="mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private";				
 			}
 			$sqlParams['keyvalue'] = $keyvalue;
 			$projectName = $keyvalue;
@@ -105,11 +105,18 @@ class gcMapfile{
 		} elseif($keytype=="layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
 				$filter="layergroup.layergroup_id=:keyvalue";
 				$joinMapset="";
-				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";			
+				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";			
 				$sqlParams['keyvalue'] = $keyvalue;
-	
+
+        } elseif($keytype=="layer") { //GENERO IL MAPFILE PER IL LAYER NEL SISTEMA DI RIF DEL PROGETTO. CHIAVE UNIVOCA: MAPSET.LAYERGROUP.LAYER
+            //echo "[$keytype=$keyvalue]";
+				$filter="(mapset.mapset_name || '.' || layergroup.layergroup_name || '.' || layer.layer_name)=:keyvalue";
+				$joinMapset="INNER JOIN ".DB_SCHEMA.".mapset using (project_name) INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (mapset_name,layergroup_id)";
+				$fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";			
+				$sqlParams['keyvalue'] = $keyvalue;
 		
 		} elseif($keytype="print"){ //GENERO UN MAPFILE PER LA STAMPA
+                $fieldsMapset="1 AS dummy";
 				$_in = GCApp::prepareInStatement($keyvalue);
 				$sqlParams = $_in['parameters'];
 				$inQuery = $_in['inQuery'];
@@ -123,19 +130,24 @@ class gcMapfile{
 			$this->i18n = new GCi18n($projectName, $this->languageId);
 		}
 		
-
-		$sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,outputformat_mimetype,
-		theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
-		isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title, set_extent
-		from ".DB_SCHEMA.".layer 
-		INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
-		INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
-		INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
-		LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
-		LEFT JOIN ".DB_SCHEMA.".catalog using (catalog_id, project_name)
-		where ".$filter." order by layer_order DESC,layergroup_order;";	
+		$sql = "SELECT project_name, {$fieldsMapset}, base_url, max_extent_scale, project_srid, xc, yc, 
+                       outputformat_mimetype, theme_title, theme_name, theme_single, layergroup_name, layergroup_title,
+                       layergroup_id, layergroup_description, layergroup_maxscale, layergroup_minscale, isbaselayer,
+                       layergroup_single, tree_group, tiletype_id, owstype_id, layer_id, layer_name, layer_title, 
+                       layer.hidden,layertype_id, project_title, set_extent
+		        FROM ".DB_SCHEMA.".layer 
+                INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id) 
+                INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
+                INNER JOIN ".DB_SCHEMA.".project using (project_name) ".$joinMapset."
+                LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id)
+                LEFT JOIN ".DB_SCHEMA.".catalog using (catalog_id, project_name)
+                WHERE {$filter}
+                ORDER BY layer_order DESC, layergroup_order;";	
 		//where ".$filter." order by theme_order desc, layergroup_order desc, layer_order desc;";	SERVE PER SCRIVERE I LAYER NEL MAPFILE UTILIZZANDO L'ORDINE RELATIVO TEMA-LAYERGROUP-LAYER. Sarebbe da sviluppare la funzione che permette all'utente di sceglierlo a livello di progetto
-
+        //print_r($sqlParams);
+        //echo "$sql\n\n";
+        
+        
 		print_debug($sql,null,'writemap');
 				
 		$stmt = $this->db->prepare($sql);
@@ -176,8 +188,12 @@ class gcMapfile{
 		
 		$defaultLayers = array();
 		foreach ($res as $aLayer){
-		
-			$mapName = $aLayer["mapset_name"];
+            if ($this->target == 'layer') {
+                $mapName = "{$aLayer["mapset_name"]}.{$aLayer["layer_name"]}";
+            } else {
+                $mapName = $aLayer["mapset_name"];
+            }
+            
 			$layergroupName = NameReplace($aLayer["layergroup_name"]);
 			$layerTreeGroup = $aLayer["tree_group"];
 			$mapSrid[$mapName] = $aLayer["mapset_srid"];	
@@ -415,7 +431,7 @@ class gcMapfile{
 				$this->_writeMapProxyConfig($mapName);
 			}
 		}
-
+//echo "[mapname=$mapName]\n";
 		return $mapName;
 	}
 	
@@ -468,7 +484,11 @@ class gcMapfile{
 			} else {
 				$sep = '?';
 			}
-			$owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
+            if (in_array($this->target, array('tmp', 'layer'))) {
+                $owsUrl .= "{$sep}project={$this->projectName}&map={$this->target}.{$mapFile}";
+            } else {
+                $owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
+            }
 
 			if(!empty($this->i18n)) {
 				$owsUrl .= '&lang=' . $this->i18n->getLanguageId();
@@ -549,6 +569,9 @@ END #MAP";
 			$mapfileDir = ROOT_PATH.'map/';
 			if($this->target == 'tmp') {
 				$mapFile = 'tmp.'.$mapFile;
+			}
+            if($this->target == 'layer') {
+				$mapFile = 'layer.'.$mapFile;
 			}
 			$projectDir = $mapfileDir.$projectName.'/';
 			if(!is_dir($projectDir)) {
