@@ -35,6 +35,9 @@ abstract class AbstractUser {
         if(!$project) {
             return ($this->username == $this->adminUsername);
         } else {
+            // **** The global Admin should be administrator for every project
+            if ($this->username == $this->adminUsername)
+                return true;
             $db = GCApp::getDB();
             $sql = 'select username from '.DB_SCHEMA.'.project_admin 
                 where project_name = :project and username = :username';

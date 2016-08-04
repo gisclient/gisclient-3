@@ -825,8 +825,9 @@ class gcMap{
         $userGroupFilter = '';
         $user = new GCUser();
         if(!$user->isAdmin($this->projectName)) {
+            $this->authorizedGroups = $user->getUserGroups($user->getUsername());
             $userGroup = '';
-            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
+            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("',", $this->authorizedGroups)."')";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
         
@@ -845,8 +846,14 @@ class gcMap{
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
         $layersWith1n = array();
-
+        $filedID = 0;
+        
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            // **** Avoid duplicates
+            if ($fieldID === $row['field_id'])
+                continue;
+            $fieldID = $row['field_id'];
+            
             if(!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
                 $row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name','field_header'));
