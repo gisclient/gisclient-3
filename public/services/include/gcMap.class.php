@@ -70,19 +70,22 @@ class gcMap{
     var $projDefs = array();
     var $getLegend = false;
     var $mapsetTiles = 0;
-
-    var $mapProviders = array(
-        VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
-        YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
-        OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-        GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?sensor=false");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
+    
+    var $mapProviders;//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
 
     private $i18n;
     protected $oMap;
     protected $sldContents = array();
     
     function __construct ($mapsetName, $getLegend = false, $languageId = null){
-
+        
+        $gmapKey = defined(GMAPKEY)?"key=".GMAPKEY:'';
+        $this->mapProviders = array(
+                        VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
+                        YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
+                        OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
+                        GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?$gmapKey");
+        
         $this->db = GCApp::getDB();
 
         $sql = "SELECT mapset.*, ".
