@@ -170,7 +170,7 @@ if($objRequest->getvaluebyname('layer')){
                 }
             }
 
-            if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
+            if ($gcLegendText && !($oLayer->type===MS_LAYER_ANNOTATION || $oLayer->type===MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
                 //Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
                 foreach($classToRemove as $className){
                     for ($clno=0; $clno < $oLayer->numclasses; $clno++) {

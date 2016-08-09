@@ -79,7 +79,7 @@ class gcMap{
     
     function __construct ($mapsetName, $getLegend = false, $languageId = null){
         
-        $gmapKey = defined(GMAPKEY)?"key=".GMAPKEY:'';
+        $gmapKey = defined('GMAPKEY')?"key=".GMAPKEY:'';
         $this->mapProviders = array(
                         VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
                         YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
