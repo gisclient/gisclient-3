@@ -40,7 +40,7 @@ dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;
 
 dato[] = "Altri parametri"
 dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
-dato[] = "Template;template;70;text|Imposta template di default;data;150#setDefaultTemplate;button"
+dato[] = "Template;template;70;text|Imposta template di default;data;200#setDefaultTemplate;button"
 dato[] = "Template header;header;70;text"
 dato[] = "Template footer;footer;70;text"
 dato[] = "Dimesione selezione;selection_width;3;text|Colore selezione;selection_color;11;color"
@@ -49,7 +49,7 @@ dato[] = "Numero massimo di oggetti vettoriali;maxvectfeatures;5;intero"
 dato[] = "Buffer di zoom;zoom_buffer;5;intero"
 dato[] = "Ultimo aggiornamento;last_update;44;text"
 
-dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;layergroup;#openCopy;button|Sposta;layergroup;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Wizard WMS;azione;120;submit;new;wizard wms|Classifica;azione;120;submit;edit;classifica"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;layergroup;#openCopy;button|Sposta;layergroup;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Wizard WMS;azione;120;submit;new;wizard wms|Classifica;azione;80;submit;edit;classifica"
 [list]
 table = "layer"
 pkey = "layer_id"
