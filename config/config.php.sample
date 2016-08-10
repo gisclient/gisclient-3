@@ -40,6 +40,7 @@ define('LONG_EXECUTION_MEMORY','512M');
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 define('PUBLIC_URL', 'http://localhost/gisclient-3/');
 define('MAP_URL', 'http://localhost/gisclient-3/template/');
+define('PRIVATE_MAP_URL', 'http://localhost/gisclient-3/template/');
 define('IMAGE_PATH','/tmp/');
 define('IMAGE_URL','/tmp/');
 define('PROJ_LIB',"/usr/share/proj");
@@ -98,13 +99,16 @@ require_once (ROOT_PATH."config/config.db.php");
 require_once (ROOT_PATH.'lib/gcapp.class.php');
 
 //Author
-define('ADMIN_PATH',ROOT_PATH.'public/admin/');
+define('ADMIN_PATH', ROOT_PATH.'public/admin/');
 
 //debug
-if(!defined('DEBUG_DIR')) define('DEBUG_DIR',ROOT_PATH.'config/debug/');
-if(!defined('DEBUG')) define('DEBUG', 0); // Debugging 0 off 1 on
-
-require_once (ROOT_PATH."config/login.php");
+if (!defined('DEBUG_DIR')) {
+    define('DEBUG_DIR', ROOT_PATH.'config/debug/');
+}
+if (!defined('DEBUG')) {
+    define('DEBUG', 1); //Debugging 0 off 1 on
+}
+require_once ROOT_PATH."config/login.php";
 
 /****************** QUERY REPORTS ***************+*/
 define('MAX_REPORT_ROWS',5000);
@@ -164,6 +168,7 @@ define('TRANSFORM_EDIT_GEOMETRY', false);
 //define('UPLOADED_FILES_PUBLIC_URL', PUBLIC_URL.'services/files/');
 
 define('CLIENT_LOGO', null);
+define('AUTHOR_LOGO', null);
 
 define('MAPFILE_MAX_SIZE', '4096');
 
@@ -183,4 +188,3 @@ $GEOLOCATOR_CONFIG = array(
         'where'=>"lang_id='de'"
     )
 );
-

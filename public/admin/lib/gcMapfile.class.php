@@ -514,31 +514,31 @@ class gcMapfile{
 		$fileContent=
 "MAP
 NAME \"$mapFile\"
-SIZE $size	
+SIZE $size  
 MAXSIZE $maxSize
 $imgResolution
 FONTSET $fontList
 $projLib
 WEB
-	METADATA
-		# for mapserver 6.0
-		\"wms_enable_request\" \"*\"
-		\"ows_enable_request\" \"*\"
-	$project_name
-	$ows_title
-	$ows_abstract
-	$ows_wfs_encoding
-	$wms_onlineresource
-	$wfs_onlineresource
-	$wms_mime_type
-	$wfs_namespace_prefix
-	$ows_srs
-	$ows_accessConstraints
+    METADATA
+        # for mapserver 6.0
+        \"wms_enable_request\" \"*\"
+        \"ows_enable_request\" \"*\"
+    $project_name
+    $ows_title
+    $ows_abstract
+    $ows_wfs_encoding
+    $wms_onlineresource
+    $wfs_onlineresource
+    $wms_mime_type
+    $wfs_namespace_prefix
+    $ows_srs
+    $ows_accessConstraints
 $metadata_inc
-	END
-	$imgPath
-	$imgUrl	
-END	
+    END
+    $imgPath
+    $imgUrl 
+END 
 PROJECTION
 $mapProjection
 END
@@ -648,519 +648,521 @@ END #MAP";
 	
 		$formatText ="
 OUTPUTFORMAT
-	NAME \"aggpng24\"
-	DRIVER \"AGG/PNG\"
-	MIMETYPE \"image/png\"
-	IMAGEMODE RGB
-	EXTENSION \"png\"	
-	FORMATOPTION \"INTERLACE=OFF\"
-	TRANSPARENT OFF
+    NAME \"aggpng24\"
+    DRIVER \"AGG/PNG\"
+    MIMETYPE \"image/png\"
+    IMAGEMODE RGB
+    EXTENSION \"png\"   
+    FORMATOPTION \"INTERLACE=OFF\"
+    TRANSPARENT OFF
 END";
-		return $formatText;
+        return $formatText;
 
-	}
-	
-	function _isDriverSupported($driverName) {
-		$mapserverSupport = ms_GetVersion();
-		
-		list($driver, $format) = explode('/', $driverName);
-		
-		// check on support
-		if (preg_match_all ("/SUPPORTS=([A-Z_]+)/", $mapserverSupport, $supports)) {
-			if (!in_array($driver, $supports[1]))
-				return false;
-		}
-		
-		// check on output
-		if (preg_match_all ("/OUTPUT=([A-Z]+)/", $mapserverSupport, $outputs)) {
-			if (!in_array($format, $outputs[1]))
-				return false;
-		}
-		
-		return true;
-	}
-	
-	function _getOutputFormat($mapName){
-			$formatText = '';
-			$sql="select distinct e_outputformat.* from ".DB_SCHEMA.".e_outputformat;";
-			$stmt = $this->db->prepare($sql);
-			$stmt->execute(); 
-		   // print_debug($sql);
-			$numResults = $stmt->rowCount();
-			if($numResults > 0) {
-				while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-					// ignore outputformat  with unsupported driver
-					if (!$this->_isDriverSupported($row["outputformat_driver"]))
-						continue;
-					$formatText .= "OUTPUTFORMAT	
-	NAME \"".$row["outputformat_name"]."\"
-	DRIVER \"".$row["outputformat_driver"]."\"
-	MIMETYPE \"".$row["outputformat_mimetype"]."\"
-	IMAGEMODE ".$row["outputformat_imagemode"] ."
-	EXTENSION \"".$row["outputformat_extension"]."\"
-	FORMATOPTION \"INTERLACE=OFF\"";
-					if($row["outputformat_option"]) $formatText.= "\n".$row["outputformat_option"];
-					$formatText .= "\nEND\n";	
-				}
-			} else {
-				$formatText = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
-			}
-			return $formatText;
-		}
-	
-	function _getEncoding(){
-		$ows_wfs_encoding ='';
-		$sql = "select charset_encodings_name 
-			from ".DB_SCHEMA.".e_charset_encodings INNER JOIN ".DB_SCHEMA.".project on e_charset_encodings.charset_encodings_id=project.charset_encodings_id 
-			where project_name=:projectName";
+    }
+    
+    function _isDriverSupported($driverName) {
+        $mapserverSupport = ms_GetVersion();
+        
+        list($driver, $format) = explode('/', $driverName);
+        
+        // check on support
+        if (preg_match_all ("/SUPPORTS=([A-Z_]+)/", $mapserverSupport, $supports)) {
+            if (!in_array($driver, $supports[1]))
+                return false;
+        }
+        
+        // check on output
+        if (preg_match_all ("/OUTPUT=([A-Z]+)/", $mapserverSupport, $outputs)) {
+            if (!in_array($format, $outputs[1]))
+                return false;
+        }
+        
+        return true;
+    }
+    
+    function _getOutputFormat($mapName){
+            $formatText = '';
+            $sql="select distinct e_outputformat.* from ".DB_SCHEMA.".e_outputformat;";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(); 
+           // print_debug($sql);
+            $numResults = $stmt->rowCount();
+            if($numResults > 0) {
+                while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+                    // ignore outputformat  with unsupported driver
+                    if (!$this->_isDriverSupported($row["outputformat_driver"]))
+                        continue;
+                    $formatText .= "OUTPUTFORMAT    
+    NAME \"".$row["outputformat_name"]."\"
+    DRIVER \"".$row["outputformat_driver"]."\"
+    MIMETYPE \"".$row["outputformat_mimetype"]."\"
+    IMAGEMODE ".$row["outputformat_imagemode"] ."
+    EXTENSION \"".$row["outputformat_extension"]."\"
+    FORMATOPTION \"INTERLACE=OFF\"";
+                    if($row["outputformat_option"]) $formatText.= "\n".$row["outputformat_option"];
+                    $formatText .= "\nEND\n";   
+                }
+            } else {
+                $formatText = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
+            }
+            return $formatText;
+        }
+    
+    function _getEncoding(){
+        $ows_wfs_encoding ='';
+        $sql = "select charset_encodings_name 
+            from ".DB_SCHEMA.".e_charset_encodings INNER JOIN ".DB_SCHEMA.".project on e_charset_encodings.charset_encodings_id=project.charset_encodings_id 
+            where project_name=:projectName";
 
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array(':projectName' => $this->projectName));
-		$res=$stmt->fetch(PDO::FETCH_ASSOC);
-		if(!empty($res)) $ows_wfs_encoding = "\t\"wfs_encoding\"\t\"".$res['charset_encodings_name']."\"\n".
-											"\t\t\"wms_encoding\"\t\"".$res['charset_encodings_name']."\"\n";
-		return $ows_wfs_encoding;
-	}
-	
-	
-	function _getLegendSettings(){
-		// default font
-		$legendFont = 'verdana';
-		
-		// get project font if assigned
-		$sql="SELECT imagelabel_font,icon_w,icon_h,legend_font_size FROM ".DB_SCHEMA.".project WHERE project_name = ?;";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($this->projectName));
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array(':projectName' => $this->projectName));
+        $res=$stmt->fetch(PDO::FETCH_ASSOC);
+        if(!empty($res)) $ows_wfs_encoding = "\t\"wfs_encoding\"\t\"".$res['charset_encodings_name']."\"\n".
+                                            "\t\t\"wms_encoding\"\t\"".$res['charset_encodings_name']."\"\n";
+        return $ows_wfs_encoding;
+    }
+    
+    
+    function _getLegendSettings(){
+        // default font
+        $legendFont = 'verdana';
+        
+        // get project font if assigned
+        $sql="SELECT imagelabel_font,icon_w,icon_h,legend_font_size FROM ".DB_SCHEMA.".project WHERE project_name = ?;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->projectName));
 
-		$numResults = $stmt->rowCount();
-		if($numResults > 0) {
-			$row=$stmt->fetch(PDO::FETCH_ASSOC);
-			if (trim($row['imagelabel_font']) != '')
-				$legendFont = $row['imagelabel_font'];
-			$iconW = $row['icon_w']?$row['icon_w']:16;
-			$iconH = $row['icon_h']?$row['icon_h']:10;
-			$fontSize = $row['legend_font_size']?$row['legend_font_size']:10;
-		}
-		
-		// mapfile snippet
-		$formatText = "LEGEND\n" .
-					  "    STATUS ON\n" .
-					  "    KEYSIZE ".$iconW." ".$iconH."\n" .
-					  "    LABEL\n" .
-					  "       TYPE TRUETYPE\n" .
-					  "       FONT '{$legendFont}'\n" .
-					  "       SIZE ".$fontSize."\n" .
-					  "       COLOR 0 0 0\n" .
-					  "    END\n" .
-					  "END\n";
-		
-		return $formatText;
-	}
-	
+        $numResults = $stmt->rowCount();
+        if($numResults > 0) {
+            $row=$stmt->fetch(PDO::FETCH_ASSOC);
+            if (trim($row['imagelabel_font']) != '')
+                $legendFont = $row['imagelabel_font'];
+            $iconW = $row['icon_w']?$row['icon_w']:16;
+            $iconH = $row['icon_h']?$row['icon_h']:10;
+            $fontSize = $row['legend_font_size']?$row['legend_font_size']:10;
+        }
+        
+        // mapfile snippet
+        $formatText = "LEGEND\n" .
+                      "    STATUS ON\n" .
+                      "    KEYSIZE ".$iconW." ".$iconH."\n" .
+                      "    LABEL\n" .
+                      "       TYPE TRUETYPE\n" .
+                      "       FONT '{$legendFont}'\n" .
+                      "       SIZE ".$fontSize."\n" .
+                      "       COLOR 0 0 0\n" .
+                      "    END\n" .
+                      "END\n";
+        
+        return $formatText;
+    }
+    
 
-	function _getSymbolText($aSymbols){
-				$_in = GCApp::prepareInStatement($aSymbols);
-				$sqlParams = $_in['parameters'];
-				$inQuery = $_in['inQuery'];
+    function _getSymbolText($aSymbols){
+                $_in = GCApp::prepareInStatement($aSymbols);
+                $sqlParams = $_in['parameters'];
+                $inQuery = $_in['inQuery'];
 
-				$sql="select * from ".DB_SCHEMA.".symbol 
-					where symbol_name in (".$inQuery.");";
-					
-				$stmt = $this->db->prepare($sql);
-				$stmt->execute($sqlParams);
-				$res = $stmt->fetchAll();
+                $sql="select * from ".DB_SCHEMA.".symbol 
+                    where symbol_name in (".$inQuery.");";
+                    
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute($sqlParams);
+                $res = $stmt->fetchAll();
 
-		$smbText=array();	
-		for($i=0;$i<count($res);$i++){
-			$smbText[]="SYMBOL";
-			$smbText[]="\tNAME \"".$res[$i]["symbol_name"]."\"";
-			if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
-			if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
-			//if($res[$i]["ascii_code"]) $smbText[]="\tCHARACTER \"&#".$res[$i]["ascii_code"].";\"";//IN MAPSERVER 5.0 SEMBRA DARE PROBLEMI
-			if($res[$i]["ascii_code"]) {
-				if($res[$i]["ascii_code"]==34)
-					$smbText[]="\tCHARACTER '".chr($res[$i]["ascii_code"])."'";
-				else if($res[$i]["ascii_code"]==92)
-					$smbText[]="\tCHARACTER '".chr($res[$i]["ascii_code"]).chr($res[$i]["ascii_code"])."'";
-				else
-					$smbText[]="\tCHARACTER \"".chr($res[$i]["ascii_code"])."\"";
+        $smbText=array();   
+        for($i=0;$i<count($res);$i++){
+            $smbText[]="SYMBOL";
+            $smbText[]="\tNAME \"".$res[$i]["symbol_name"]."\"";
+            if($res[$i]["symbol_type"])$smbText[]="\tTYPE ".$res[$i]["symbol_type"];
+            if($res[$i]["font_name"]) $smbText[]="\tFONT \"".$res[$i]["font_name"]."\"";
+            //if($res[$i]["ascii_code"]) $smbText[]="\tCHARACTER \"&#".$res[$i]["ascii_code"].";\"";//IN MAPSERVER 5.0 SEMBRA DARE PROBLEMI
+            if($res[$i]["ascii_code"]) {
+                if($res[$i]["ascii_code"]==34)
+                    $smbText[]="\tCHARACTER '".chr($res[$i]["ascii_code"])."'";
+                else if($res[$i]["ascii_code"]==92)
+                    $smbText[]="\tCHARACTER '".chr($res[$i]["ascii_code"]).chr($res[$i]["ascii_code"])."'";
+                else
+                    $smbText[]="\tCHARACTER \"".chr($res[$i]["ascii_code"])."\"";
 
-			}
-			if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
-			if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
-			if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
-			if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
-			$smbText[]="END";
-		}
-		$txt = "\n###### SYMBOLS #######\n";
-		$txt.= implode("\n",$smbText);
-		return $txt;
-	}
+            }
+            if($res[$i]["filled"]) $smbText[]="\tFILLED TRUE";
+            if($res[$i]["points"]) $smbText[]="\tPOINTS ".$res[$i]["points"]." END";
+            if($res[$i]["image"]) $smbText[]="\tIMAGE \"".$res[$i]["image"]."\"";
+            if($res[$i]["symbol_def"]) $smbText[]=$res[$i]["symbol_def"];
+            $smbText[]="END";
+        }
+        $txt = "\n###### SYMBOLS #######\n";
+        $txt.= implode("\n",$smbText);
+        return $txt;
+    }
 
-	function _calculateExtentFromCenter($maxScale, $srid) {
-		$sql = "SELECT ".
-		"st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),$srid)) as xc, ".
-		"st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),$srid)) as yc, ".
-		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
-		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
-		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
-		"FROM spatial_ref_sys WHERE srid=:srid;";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array(':srid' => $srid));
-		$row=$stmt->fetch(PDO::FETCH_ASSOC);
-		$x = $row["xc"];
-		$y = $row["yc"];
-		$factor = GCAuthor::$aInchesPerUnit[$row["um"]];
-		$precision = $row["um"] == "dd"?6:2;
-		$maxResolution = $maxScale/( MAP_DPI * $factor );
-		$extent = $maxResolution * TILE_SIZE * 4; //4 tiles??
+    function _calculateExtentFromCenter($maxScale, $srid) {
+        $sql = "SELECT ".
+        "st_x(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),".$srid.")) as xc, ".
+        "st_y(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),".$srid.")) as yc, ".
+        "CASE WHEN proj4text like '%+units=m%' then 'm' ".
+        "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
+        "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
+        "FROM spatial_ref_sys WHERE srid=:srid;";
 
-		return array(
-			0 => round($x - $extent, $precision),
-			1 => round($y - $extent, $precision),
-			2 => round($x + $extent, $precision),
-			3 => round($y + $extent, $precision)
-		);
-	}
+        $stmt = $this->db->prepare($sql);
 
-	function _setMapProjections(){
-		//COSTRUISCO UNA LISTA DI PARAMETRI PER OGNI SRID CONTENUTO NEL PROGETTO PER EVITARE DI CALCOLARLI PER OGNI LAYER 
-		$sql="SELECT DISTINCT srid, projparam FROM ".DB_SCHEMA.".layer 
-			INNER JOIN ".DB_SCHEMA.".catalog USING(catalog_id) 
-			INNER JOIN ".DB_SCHEMA.".project_srs using(project_name)
-			WHERE project_name = ?;";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($this->projectName));
+        $stmt->execute(array(':srid' => $srid));
+        $row=$stmt->fetch(PDO::FETCH_ASSOC);
+        $x = $row["xc"];
+        $y = $row["yc"];
+        $factor = GCAuthor::$aInchesPerUnit[$row["um"]];
+        $precision = $row["um"] == "dd"?6:2;
+        $maxResolution = $maxScale/( MAP_DPI * $factor );
+        $extent = $maxResolution * TILE_SIZE * 4; //4 tiles??
 
-		//GENERO LA LISTA DEGLI EXTENT PER I SISTEMI DI RIFERIMENTO
-		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
-			$this->srsParams[$row["srid"]] = $row["projparam"];
-		}
+        return array(
+            0 => round($x - $extent, $precision),
+            1 => round($y - $extent, $precision),
+            2 => round($x + $extent, $precision),
+            3 => round($y + $extent, $precision)
+        );
+    }
 
-		//ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:(GRIDS)
-		//DEFAULT WEB MERCATOR   
-		$epsgList = array("EPSG:3857");
-		$gridList = array(			
-			"epsg3857" => array(
-				'base'=>'GLOBAL_WEBMERCATOR',
-				'srs'=>'EPSG:3857',
-				'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
-			)
-		);
+    function _setMapProjections(){
+        //COSTRUISCO UNA LISTA DI PARAMETRI PER OGNI SRID CONTENUTO NEL PROGETTO PER EVITARE DI CALCOLARLI PER OGNI LAYER 
+        $sql="SELECT DISTINCT srid, projparam FROM ".DB_SCHEMA.".layer 
+            INNER JOIN ".DB_SCHEMA.".catalog USING(catalog_id) 
+            INNER JOIN ".DB_SCHEMA.".project_srs using(project_name)
+            WHERE project_name = ?;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->projectName));
 
-		$sql = "SELECT srid,".
-		"st_x(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as xc, ".
-		"st_y(st_transform(st_geometryfromtext('POINT('||".$this->xCenter."||' '||".$this->yCenter."||')',".$this->projectSrid."),srid)) as yc, ".
-		"CASE WHEN proj4text like '%+units=m%' then 'm' ".
-		"WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
-		"WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
-		"FROM ".DB_SCHEMA.".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
-		$stmt = $this->db->prepare($sql);
+        //GENERO LA LISTA DEGLI EXTENT PER I SISTEMI DI RIFERIMENTO
+        while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
+            $this->srsParams[$row["srid"]] = $row["projparam"];
+        }
 
-		$stmt->execute(array($this->projectName));
-		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		foreach ($rows as $row) {
-			$srs = "epsg".$row["srid"];
-			$epsgList[] = "EPSG:".$row["srid"];
-			$gridList[$srs] = array("srs"=>"EPSG:".$row["srid"]);
-			$gridList[$srs]["res"] = array();
-			$convFact = GCAuthor::$aInchesPerUnit[$row["um"]]*MAP_DPI;
-			$precision = $row["um"] == "dd"?10:2;
-			if (defined('DEFAULT_SCALE_LIST')) {
-				$scaleList = preg_split('/[\s]+/', DEFAULT_SCALE_LIST);
-			} else {
-			 $scaleList = GCAuthor::$defaultScaleList;
-			}
-			foreach($scaleList as $scaleValue)	$gridList[$srs]["res"][] = round((float)$scaleValue/$convFact, $precision);
-					
-			$aExtent=array();
-			$extent = round($gridList[$srs]["res"][0] * TILE_SIZE);
-			//echo $extent;return;
-			$aExtent[0] = round((float)($row["xc"] - $extent), $precision);
-			$aExtent[1] = round((float)($row["yc"] - $extent), $precision);
-			$aExtent[2] = round((float)($row["xc"] + $extent), $precision);
-			$aExtent[3] = round((float)($row["yc"] + $extent), $precision);
-			$gridList[$srs]["bbox"] = $aExtent;
-			$gridList[$srs]["bbox_srs"] = "EPSG:".$row["srid"];
-		};
-			
-/*		while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
-			$epsgList[] = "EPSG:".$row["srid"];
-			if(isset($row["bbox"])){
-				$gridList["epsg".$row["srid"]] = array("srs"=>"EPSG:".$row["srid"]);
-				$gridList["epsg".$row["srid"]]["bbox"] = preg_split('/[\s]+/', $row["bbox"]);
-				$gridList["epsg".$row["srid"]]["bbox_srs"] = "EPSG:4326";
-				if(isset($row["resolutions"])){
-					$res = preg_split('/[\s]+/', $row["resolutions"]);
-					if(count($res)==1)
-						$gridList["epsg".$row["srid"]]["max_res"] = $res[0];
-					elseif(count($res)>1)
-						$gridList["epsg".$row["srid"]]["resolutions"] = $res;
-				}
-			}
-		}*/
-		$this->epsgList = $epsgList;
-		$this->grids = $gridList;
-	}
+        //ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:(GRIDS)
+        //DEFAULT WEB MERCATOR   
+        $epsgList = array("EPSG:3857");
+        $gridList = array(          
+            "epsg3857" => array(
+                'base'=>'GLOBAL_WEBMERCATOR',
+                'srs'=>'EPSG:3857',
+                'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
+            )
+        );
 
-	function _writeMapProxyConfig($mapName){
-		$config = array(
-			'services'=>array(
-				'tms'=>array(
-					'srs'=>$this->epsgList,
-					'use_grid_names'=>false,
-					'origin'=>'nw'
-				),
-				'kml'=>array(
-					'use_grid_names'=>false
-				),
-				'wmts'=>array(
-					'srs'=>$this->epsgList
-				),
-				'wms'=>array(
-					'srs'=>$this->epsgList,
-					'md'=>array(
-						'title'=>$this->mapsetTitle,
-						'abstract'=>$this->mapsetTitle,
-						'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&amp;map=".$mapName,
-						'contact'=>array(
-							//ma serve sta roba?!?!
-							'person'=>'Roberto'
-						),
-						'access_constraints'=>'None',
-						'fees'=>'None'
-					)
-				)
-			),
-			'sources'=>array(
-				'mapserver_wms_source'=>array(
-					'type'=>'wms',
-					'supported_srs'=>$this->epsgList,
-					'req'=>array(
-						'url'=>MAPSERVER_URL,
-						'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
-						'format'=>'image/png',
-						'transparent'=> true,
-						'exceptions'=> 'inimage'
-					),
-					'coverage'=>array(
-						'bbox'=>$this->mapsetExtent,
-						'srs'=>'EPSG:'.$this->mapsetSrid
-					),
-					'image'=>array(
-						'transparent_color'=>'#ffffff',
-						'transparent_color_tolerance'=>0
-					)
-				),
-				'mapserver_source'=>array(
-					'type'=>'mapserver',
-					'req'=>array(                        
-						'transparent'=>true,
-						'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
-						'exceptions'=> 'inimage'
-					),
-					'coverage'=>array(
-						'bbox'=>$this->mapsetExtent,
-						'srs'=>'EPSG:'.$this->mapsetSrid
-					),
-					'image'=>array(
-						'transparent_color'=>'#ffffff',
-						'transparent_color_tolerance'=>0
-					),
-					'mapserver'=>array(
-						'binary'=>MAPSERVER_BINARY_PATH,
-						'working_dir'=>ROOT_PATH.'map/'.$this->projectName
-					)
+        $sql = "SELECT srid,".
+        "st_x(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),srid)) as xc, ".
+        "st_y(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),srid)) as yc, ".
+        "CASE WHEN proj4text like '%+units=m%' then 'm' ".
+        "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' ".
+        "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' ELSE 'm' END AS um ".
+        "FROM ".DB_SCHEMA.".project_srs inner join spatial_ref_sys using(srid) WHERE  project_name = ?;";
+        $stmt = $this->db->prepare($sql);
 
-				)
-			),
-			'globals'=>array(
-				'srs'=>array(
-					'proj_data_dir'=>PROJ_LIB
-				),
-				'cache'=>array(
-					'type'=>MAPPROXY_CACHE_TYPE,
-					'base_dir'=>MAPPROXY_CACHE_PATH.$this->projectName.'/',
-					'lock_dir'=>MAPPROXY_CACHE_PATH.'locks/',
-					'tile_lock_dir'=>MAPPROXY_CACHE_PATH.'tile_locks/'
-				)
-			)
-		);
+        $stmt->execute(array($this->projectName));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $row) {
+            $srs = "epsg".$row["srid"];
+            $epsgList[] = "EPSG:".$row["srid"];
+            $gridList[$srs] = array("srs"=>"EPSG:".$row["srid"]);
+            $gridList[$srs]["res"] = array();
+            $convFact = GCAuthor::$aInchesPerUnit[$row["um"]]*MAP_DPI;
+            $precision = $row["um"] == "dd"?10:2;
+            if (defined('DEFAULT_SCALE_LIST')) {
+                $scaleList = preg_split('/[\s]+/', DEFAULT_SCALE_LIST);
+            } else {
+             $scaleList = GCAuthor::$defaultScaleList;
+            }
+            foreach($scaleList as $scaleValue)  $gridList[$srs]["res"][] = round((float)$scaleValue/$convFact, $precision);
+                    
+            $aExtent=array();
+            $extent = round($gridList[$srs]["res"][0] * TILE_SIZE);
+            //echo $extent;return;
+            $aExtent[0] = round((float)($row["xc"] - $extent), $precision);
+            $aExtent[1] = round((float)($row["yc"] - $extent), $precision);
+            $aExtent[2] = round((float)($row["xc"] + $extent), $precision);
+            $aExtent[3] = round((float)($row["yc"] + $extent), $precision);
+            $gridList[$srs]["bbox"] = $aExtent;
+            $gridList[$srs]["bbox_srs"] = "EPSG:".$row["srid"];
+        };
+            
+/*      while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
+            $epsgList[] = "EPSG:".$row["srid"];
+            if(isset($row["bbox"])){
+                $gridList["epsg".$row["srid"]] = array("srs"=>"EPSG:".$row["srid"]);
+                $gridList["epsg".$row["srid"]]["bbox"] = preg_split('/[\s]+/', $row["bbox"]);
+                $gridList["epsg".$row["srid"]]["bbox_srs"] = "EPSG:4326";
+                if(isset($row["resolutions"])){
+                    $res = preg_split('/[\s]+/', $row["resolutions"]);
+                    if(count($res)==1)
+                        $gridList["epsg".$row["srid"]]["max_res"] = $res[0];
+                    elseif(count($res)>1)
+                        $gridList["epsg".$row["srid"]]["resolutions"] = $res;
+                }
+            }
+        }*/
+        $this->epsgList = $epsgList;
+        $this->grids = $gridList;
+    }
 
-		if(defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) $config["services"]["demo"]=array('name'=>$mapName);
-		if($this->grids) $config["grids"] = $this->grids;
-		if($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) $config["caches"] = $this->mpxCaches[$mapName];
-		if($this->mpxLayers) $config["layers"] = array_values($this->mpxLayers[$mapName]);
+    function _writeMapProxyConfig($mapName){
+        $config = array(
+            'services'=>array(
+                'tms'=>array(
+                    'srs'=>$this->epsgList,
+                    'use_grid_names'=>false,
+                    'origin'=>'nw'
+                ),
+                'kml'=>array(
+                    'use_grid_names'=>false
+                ),
+                'wmts'=>array(
+                    'srs'=>$this->epsgList
+                ),
+                'wms'=>array(
+                    'srs'=>$this->epsgList,
+                    'md'=>array(
+                        'title'=>$this->mapsetTitle,
+                        'abstract'=>$this->mapsetTitle,
+                        'online_resource'=>GISCLIENT_OWS_URL."?project=".$this->projectName."&amp;map=".$mapName,
+                        'contact'=>array(
+                            //ma serve sta roba?!?!
+                            'person'=>'Roberto'
+                        ),
+                        'access_constraints'=>'None',
+                        'fees'=>'None'
+                    )
+                )
+            ),
+            'sources'=>array(
+                'mapserver_wms_source'=>array(
+                    'type'=>'wms',
+                    'supported_srs'=>$this->epsgList,
+                    'req'=>array(
+                        'url'=>MAPSERVER_URL,
+                        'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
+                        'format'=>'image/png',
+                        'transparent'=> true,
+                        'exceptions'=> 'inimage'
+                    ),
+                    'coverage'=>array(
+                        'bbox'=>$this->mapsetExtent,
+                        'srs'=>'EPSG:'.$this->mapsetSrid
+                    ),
+                    'image'=>array(
+                        'transparent_color'=>'#ffffff',
+                        'transparent_color_tolerance'=>0
+                    )
+                ),
+                'mapserver_source'=>array(
+                    'type'=>'mapserver',
+                    'req'=>array(                        
+                        'transparent'=>true,
+                        'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
+                        'exceptions'=> 'inimage'
+                    ),
+                    'coverage'=>array(
+                        'bbox'=>$this->mapsetExtent,
+                        'srs'=>'EPSG:'.$this->mapsetSrid
+                    ),
+                    'image'=>array(
+                        'transparent_color'=>'#ffffff',
+                        'transparent_color_tolerance'=>0
+                    ),
+                    'mapserver'=>array(
+                        'binary'=>MAPSERVER_BINARY_PATH,
+                        'working_dir'=>ROOT_PATH.'map/'.$this->projectName
+                    )
 
-		if(count($this->grids)==0) unset($config["grids"]);
+                )
+            ),
+            'globals'=>array(
+                'srs'=>array(
+                    'proj_data_dir'=>PROJ_LIB
+                ),
+                'cache'=>array(
+                    'type'=>MAPPROXY_CACHE_TYPE,
+                    'base_dir'=>MAPPROXY_CACHE_PATH.$this->projectName.'/',
+                    'lock_dir'=>MAPPROXY_CACHE_PATH.'locks/',
+                    'tile_lock_dir'=>MAPPROXY_CACHE_PATH.'tile_locks/'
+                )
+            )
+        );
 
-		
-		//if(!is_dir(MAPPROXY_FILES)) mkdir(MAPPROXY_FILES);
-		//if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
+        if(defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) $config["services"]["demo"]=array('name'=>$mapName);
+        if($this->grids) $config["grids"] = $this->grids;
+        if($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) $config["caches"] = $this->mpxCaches[$mapName];
+        if($this->mpxLayers) $config["layers"] = array_values($this->mpxLayers[$mapName]);
 
-		//Verifica esistenza cartella dei tiles
-		if(!is_dir(TILES_CACHE)) mkdir(TILES_CACHE);
-		if(!is_dir(TILES_CACHE.$this->projectName)) mkdir(TILES_CACHE.$this->projectName);
-		
-		//$content = yaml_emit($config,YAML_UTF8_ENCODING);
+        if(count($this->grids)==0) unset($config["grids"]);
 
-		print_debug($config,null,'yaml');
-		$content = Spyc::YAMLDump($config,1,0);
+        
+        //if(!is_dir(MAPPROXY_FILES)) mkdir(MAPPROXY_FILES);
+        //if(!is_dir(ROOT_PATH.'mapproxy/'.$this->projectName)) mkdir(ROOT_PATH.'mapproxy/'.$this->projectName);
 
-		//file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
-		//AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
+        //Verifica esistenza cartella dei tiles
+        if(!is_dir(TILES_CACHE)) mkdir(TILES_CACHE);
+        if(!is_dir(TILES_CACHE.$this->projectName)) mkdir(TILES_CACHE.$this->projectName);
+        
+        //$content = yaml_emit($config,YAML_UTF8_ENCODING);
+
+        print_debug($config,null,'yaml');
+        $content = Spyc::YAMLDump($config,1,0);
+
+        //file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
+        //AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
 
 
-		$mapfileDir = ROOT_PATH.'map/';
-		$projectDir = $mapfileDir.$this->projectName.'/';
+        $mapfileDir = ROOT_PATH.'map/';
+        $projectDir = $mapfileDir.$this->projectName.'/';
 
-		//CREO IL FILE DI CONFIGURAZIONE SE NON ESISTE
-		$wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
-		if(!file_exists ($wsgiConfigFile)){
-			$content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
-			$content.= "execfile(activate_this, dict(__file__=activate_this))\n";
-			$content.= "from mapproxy.multiapp import make_wsgi_app\n";
-			$content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
-			file_put_contents($wsgiConfigFile, $content);
-		}
-		file_put_contents($projectDir.$mapName.'.yaml', $content);
-	}
-	
-	public function _writeTemplateWms($projectDir) {
-		$templateDir = $projectDir . 'template_wms/';
-		if (!file_exists($templateDir)) {
-			$r = mkdir($templateDir);
+        //CREO IL FILE DI CONFIGURAZIONE SE NON ESISTE
+        $wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
+        if(!file_exists ($wsgiConfigFile)){
+            $content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
+            $content.= "execfile(activate_this, dict(__file__=activate_this))\n";
+            $content.= "from mapproxy.multiapp import make_wsgi_app\n";
+            $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
+            file_put_contents($wsgiConfigFile, $content);
+        }
+        file_put_contents($projectDir.$mapName.'.yaml', $content);
+    }
+    
+    public function _writeTemplateWms($projectDir) {
+        $templateDir = $projectDir . 'template_wms/';
+        if (!file_exists($templateDir)) {
+            $r = mkdir($templateDir);
 
-			if ($r === false) {
-				$errorMsg = "Could not create $templateDir";
-				GCError::register($errorMsg);
-				return;
-			}
-		}
+            if ($r === false) {
+                $errorMsg = "Could not create $templateDir";
+                GCError::register($errorMsg);
+                return;
+            }
+        }
 
-		$languageId = '';
-		if(!empty($this->i18n)) {
-			$languageId = '_' . $this->i18n->getLanguageId();
-		}
+        $languageId = '';
+        if(!empty($this->i18n)) {
+            $languageId = '_' . $this->i18n->getLanguageId();
+        }
 
-		foreach (glob($templateDir . '*' . $languageId . '.html') as $filename) {
-			$r = unlink($filename);
+        foreach (glob($templateDir . '*' . $languageId . '.html') as $filename) {
+            $r = unlink($filename);
 
-			if ($r === false) {
-				$errorMsg = "Could not delete $filename";
-				GCError::register($errorMsg);
-				return;
-			}
-		}
+            if ($r === false) {
+                $errorMsg = "Could not delete $filename";
+                GCError::register($errorMsg);
+                return;
+            }
+        }
 
-		if (!file_exists($templateDir . 'header' . $languageId . '.html')) {
-			$data = <<<EOF
+        if (!file_exists($templateDir . 'header' . $languageId . '.html')) {
+            $data = <<<EOF
 <!-- MapServer Template -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
-	<head>
-		<!-- enforce the client to display result html as UTF-8 encoding -->  
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
-		<style type="text/css">
-			table, th, td {
-				border:1px solid #e5e5e5;
-				border-collapse:collapse;
-				font-family: verdana;          
-				font-size: 80%;            
-				color: #333333
-			}
-			th, td {
-				vertical-align: top;
-				text-align: center;
-			}          
-			th {
-				background-color: #E8E7D7
-			}
-			caption {
-				border:1px solid #e5e5e5;
-				border-collapse:collapse;
-				font-family: verdana;          
-				font-weight: bold;
-				font-size: 80%;      
-				text-align: left;      
-				color: #333333;        
-			}
-		</style>
-		<title>GetFeatureInfo Response</title>
-	</head>   
-	<body>
+    <head>
+        <!-- enforce the client to display result html as UTF-8 encoding -->  
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <style type="text/css">
+            table, th, td {
+                border:1px solid #e5e5e5;
+                border-collapse:collapse;
+                font-family: verdana;          
+                font-size: 80%;            
+                color: #333333
+            }
+            th, td {
+                vertical-align: top;
+                text-align: center;
+            }          
+            th {
+                background-color: #E8E7D7
+            }
+            caption {
+                border:1px solid #e5e5e5;
+                border-collapse:collapse;
+                font-family: verdana;          
+                font-weight: bold;
+                font-size: 80%;      
+                text-align: left;      
+                color: #333333;        
+            }
+        </style>
+        <title>GetFeatureInfo Response</title>
+    </head>   
+    <body>
 EOF;
-			$r = file_put_contents($templateDir . 'header' . $languageId . '.html', $data);
+            $r = file_put_contents($templateDir . 'header' . $languageId . '.html', $data);
 
-			if ($r === false) {
-				$errorMsg = "Could not open $templateDir for writing";
-				GCError::register($errorMsg);
-				return;
-			}
-		}
+            if ($r === false) {
+                $errorMsg = "Could not open $templateDir for writing";
+                GCError::register($errorMsg);
+                return;
+            }
+        }
 
-		if (!file_exists($templateDir . 'footer' . $languageId . '.html')) {
-			$data = <<<EOF
+        if (!file_exists($templateDir . 'footer' . $languageId . '.html')) {
+            $data = <<<EOF
 <!-- MapServer Template -->    
-	</body>
+    </body>
 </html>
 EOF;
-			$r = file_put_contents($templateDir . 'footer' . $languageId . '.html', $data);
+            $r = file_put_contents($templateDir . 'footer' . $languageId . '.html', $data);
 
-			if ($r === false) {
-				$errorMsg = "Could not open $templateDir for writing";
-				GCError::register($errorMsg);
-				return;
-			}
-		}
+            if ($r === false) {
+                $errorMsg = "Could not open $templateDir for writing";
+                GCError::register($errorMsg);
+                return;
+            }
+        }
 
-		$sqlLayers = "SELECT DISTINCT layergroup_name, layer_id, layer_name, layer_title "
-			. " FROM " . DB_SCHEMA . ".field "
-			. " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
-			. " INNER JOIN " . DB_SCHEMA . ".layergroup USING (layergroup_id) "
-			. " WHERE resultype_id <> 4 AND queryable = 1";
-		$stmtLayers = $this->db->prepare($sqlLayers);
-		
-		$sqlField = "SELECT field_id, field_name, field_header "
-			. " FROM " . DB_SCHEMA . ".field "
-			. " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
-			. " WHERE resultype_id <> 4 AND layer_id = ? "
-			. " ORDER BY field_order";
-		$stmtField = $this->db->prepare($sqlField);
-		
-		$stmtLayers->execute();
-		$resLayer = $stmtLayers->fetchAll();
+        $sqlLayers = "SELECT DISTINCT layergroup_name, layer_id, layer_name, layer_title "
+            . " FROM " . DB_SCHEMA . ".field "
+            . " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
+            . " INNER JOIN " . DB_SCHEMA . ".layergroup USING (layergroup_id) "
+            . " WHERE resultype_id <> 4 AND queryable = 1";
+        $stmtLayers = $this->db->prepare($sqlLayers);
+        
+        $sqlField = "SELECT field_id, field_name, field_header "
+            . " FROM " . DB_SCHEMA . ".field "
+            . " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
+            . " WHERE resultype_id <> 4 AND layer_id = ? "
+            . " ORDER BY field_order";
+        $stmtField = $this->db->prepare($sqlField);
+        
+        $stmtLayers->execute();
+        $resLayer = $stmtLayers->fetchAll();
 
-		foreach ($resLayer as $item) {
-			$templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . $languageId . '.html';
+        foreach ($resLayer as $item) {
+            $templateName = $templateDir . $item['layergroup_name'] . '.' . $item['layer_name'] . $languageId . '.html';
 
-			if ($this->i18n) {
-				$item = $this->i18n->translateRow($item, 'layer', $item['layer_id'], array('layer_title', 'layer_id'));
-			}
+            if ($this->i18n) {
+                $item = $this->i18n->translateRow($item, 'layer', $item['layer_id'], array('layer_title', 'layer_id'));
+            }
 
-			$data = "<!-- MapServer Template -->
-			<table>
-			<caption>{$item['layer_title']}</caption>  <!-- Titolo del layer -->
-			<tbody>
-				<tr>";
+            $data = "<!-- MapServer Template -->
+            <table>
+            <caption>{$item['layer_title']}</caption>  <!-- Titolo del layer -->
+            <tbody>
+                <tr>";
 
-			$stmtField->execute(array($item['layer_id']));
-			$resField = $stmtField->fetchAll();
+            $stmtField->execute(array($item['layer_id']));
+            $resField = $stmtField->fetchAll();
 
-			$dataTmp = '';
-			foreach ($resField as $field) {
-				if ($this->i18n) {
-					$field = $this->i18n->translateRow($field, 'field', $field['field_id'], array('field_header', 'field_name'));
-				}
+            $dataTmp = '';
+            foreach ($resField as $field) {
+                if ($this->i18n) {
+                    $field = $this->i18n->translateRow($field, 'field', $field['field_id'], array('field_header', 'field_name'));
+                }
 
-				$data .= "<th>{$field['field_header']}</th>";
-				$dataTmp .= '<td>[item name=' . $field['field_name'] . ' format=$value escape=none]</td>';
-			}
-			$data .= '</tr><tr>' . $dataTmp;
-			$data .= '</tr></tbody></table><br/>';
+                $data .= "<th>{$field['field_header']}</th>";
+                $dataTmp .= '<td>[item name=' . $field['field_name'] . ' format=$value escape=none]</td>';
+            }
+            $data .= '</tr><tr>' . $dataTmp;
+            $data .= '</tr></tbody></table><br/>';
 
-			file_put_contents($templateName, $data);
-		}
-	}
+            file_put_contents($templateName, $data);
+        }
+    }
 
 }

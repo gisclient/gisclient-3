@@ -946,10 +946,10 @@
 									$level=$this->get_idLivello();
 									$project=$this->parametri["project"];
 									$objId=$this->parametri[$tab["level"]];
-									include ADMIN_PATH."include/import_raster.php";
+									include_once ADMIN_PATH."include/import_raster.php";
 									$this->write_page_param($prm);
 									echo "</form>";
-									echo $resultForm;
+									if(isset($resultForm)) echo $resultForm;
 									break;
 								case "wizard wms":
 									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
@@ -959,7 +959,7 @@
 									include ADMIN_PATH."include/import_raster.php";
 									$this->write_page_param($prm);
 									echo "</form>";
-									echo $resultForm;
+									if(isset($resultForm)) echo $resultForm;
 									break;
 									break;
 								case "esporta test":
