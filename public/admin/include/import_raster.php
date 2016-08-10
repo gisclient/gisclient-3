@@ -27,8 +27,8 @@ foreach($ext as $e){
 	if($e!="SHP") $extension[]=$e;
 }
 
-if($_POST["importa"]){
-	include ADMIN_PATH."lib/export.php";
+if(isset($_POST["importa"])){
+	include_once ADMIN_PATH."lib/export.php";
 	extract($_POST);
 	if(!$srid) $srid=-1;
 	$error=import_raster($rasterdir,$extension,$objId,$catalog_id,$srid,$filtro,$delete);

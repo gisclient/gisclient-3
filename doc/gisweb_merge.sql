@@ -346,3 +346,8 @@ CREATE OR REPLACE VIEW vista_version AS
  update layer set data_srid=3857 where data_srid=900913;
  update mapset set mapset_srid=3857 where mapset_srid=900913;
 delete from project_srs where srid=900913;
+
+
+-- inverte l'ordine dei layer e degli stili
+update layer set layer_order = 1000 - layer_order;
+update style set style_order= 10 - style_order;
