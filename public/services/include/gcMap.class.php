@@ -1249,7 +1249,7 @@ class gcMap{
 
     function _getExtent($xCenter, $yCenter, $Resolution) {
         $aExtent = array();
-        $extent = $Resolution * TILE_SIZE; //4 tiles?
+        $extent = $Resolution * TILE_SIZE * 4; //4 tiles?
         //echo $extent;return;
         $aExtent[0] = $xCenter - $extent;
         $aExtent[1] = $yCenter - $extent;
