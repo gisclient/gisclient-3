@@ -216,11 +216,17 @@ class gcMap{
 		$featureTypes = $this->_getFeatureTypes();
         $extents = $this->_getMaxExtents();
 
-		$sqlParams = array();
-		$sqlPrivateLayers = "FALSE";
-		if ($this->authorizedLayers) {
-			$sqlPrivateLayers = "layer_id IN (".implode(',', $this->authorizedLayers).")";
-		}
+
+        $user = new GCUser();
+        $user->setAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
+
+        $userLayers = $user->getMapLayers(array('mapset_name'=>$this->mapsetName));
+
+        $sqlParams = array();
+        $sqlAuthorizedLayers = "FALSE";
+        if (count($this->authorizedLayers)) {
+            $sqlAuthorizedLayers = "layer_id IN (".implode(',', $this->authorizedLayers).")";
+        }
 		$sqlLayers = "SELECT theme_id, theme_name, theme_title, theme_single, theme.radio, theme.copyright_string,
                              layergroup.*, mapset_layergroup.*, outputformat_mimetype, outputformat_extension
                       FROM ".DB_SCHEMA.".layergroup 
@@ -231,10 +237,10 @@ class gcMap{
                             layergroup_id IN (
                                 SELECT layergroup_id 
                                 FROM ".DB_SCHEMA.".layer 
-                                INNER JOIN gisclient_34.layergroup using(layergroup_id) 
-                                INNER JOIN gisclient_34.mapset_layergroup USING (layergroup_id) 
-                                INNER JOIN gisclient_34.mapset USING (mapset_name) 
-                                WHERE {$sqlPrivateLayers} OR (layer.private=0 AND mapset.private=0) 
+                                INNER JOIN ".DB_SCHEMA.".layergroup using(layergroup_id) 
+                                INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING (layergroup_id) 
+                                INNER JOIN ".DB_SCHEMA.".mapset USING (mapset_name) 
+                                WHERE mapset_name = :mapset_name AND ({$sqlAuthorizedLayers} OR (layer.private=0 AND mapset.private=0)) 
                                 UNION
                                 SELECT layergroup_id 
                                 FROM ".DB_SCHEMA.".layergroup 
@@ -243,11 +249,10 @@ class gcMap{
                                 WHERE layer_id IS NULL)
                       ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,
                                layergroup.layergroup_title;"; 
-		// echo $sqlLayers; die;
 		$stmt = $this->db->prepare($sqlLayers);
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
-						
+
 		$ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
 		$tiles_cache_url = (defined('GISCLIENT_TMS_URL')) ? GISCLIENT_TMS_URL : "../../services/tms/";	
 

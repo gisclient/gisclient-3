@@ -172,16 +172,16 @@ abstract class AbstractUser {
 			$featureType = $row['layergroup_name'].".".$row['layer_name'];
 			$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
 
-/* RIMOSSO AUTHFILTER
 			if(!empty($row['layer_id'])) {
+/* RIMOSSO AUTHFILTER
 				// se il filtro è richiesto e non è settato in sessione, escludi il layer
 				if(isset($requiredAuthFilters[$row['layer_id']])) {
 					$filterName = $requiredAuthFilters[$row['layer_id']];
 					if(!isset($_SESSION['GISCLIENT']['AUTHFILTERS'][$filterName])) continue;
 				}
+*/   
 				$this->authorizedLayers[] = $row['layer_id'];
 			}
-*/   
        
 			// create arrays if not exists
 			if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
@@ -197,12 +197,12 @@ abstract class AbstractUser {
         //echo "<br><br>\n";
 	}
 	
-	public function getAuthorizedLayers(array $filter) { //TODO: controllare chi la usa
-		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
+	public function getAuthorizedLayers(array $filter) {
+		if(empty($this->authorizedLayers)) $this->setAuthorizedLayers($filter);
 		return $this->authorizedLayers;
 	}
 	
-	public function getMapLayers(array $filter) { //TODO: controllare chi la usa
+	public function getMapLayers(array $filter) {
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->mapLayers;
 	}
