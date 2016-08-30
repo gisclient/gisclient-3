@@ -39,7 +39,7 @@ dato[] = "Nascondi in interrogazione<br><font size=1 >Non presente nello strumen
 dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;searchable_id;200#seldb_searchable;selectdb"
 
 dato[] = "Template per interrogazione WMS"
-dato[] = "Template<br><font size=1 >Scrivere:<br>template_wms/nome_layergroup.nome_layer.html</font>;template;44;text"
+dato[] = "Template<br><font size=1 >Scrivere:<br>template_wms/nome_layergroup.nome_layer.html</font>;template;70;text|Imposta template di default;data;200#setDefaultTemplate;button"
 dato[] = "Header<br><font size=1 >Scrivere:<br>template_wms/header.html</font>;header;44;text"
 dato[] = "Footer<br><font size=1 >Scrivere:<br>template_wms/footer.html</font>;footer;44;text"
 
