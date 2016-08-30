@@ -1,0 +1,29 @@
+[standard]
+table = "authfilter"
+pkey = "filter_id"
+dato[] = "Name;filter_name;100;text"
+dato[] = "Beschreibung;filter_description;48x2;textarea"
+dato[] = "Priorität;filter_priority;5;intero"
+dato[] = "Speichern;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+[list]
+table = "authfilter"
+pkey = "filter_id"
+order_fld = "filter_id"
+dato[] = "Name;filter_name;30%#filter_id;goto"
+dato[] = "Beschreibung;filter_description;67%;text"
+dato[] = ";filter_id;1%;info"
+dato[] = ";filter_id;1%;edit"
+dato[] = ";filter_id;1%;delete"
+
+[title]
+edit = "Filterberechtigungen ändern"
+view = "Filterberechtigungen anzeigen"
+new = "Filterberechtigungen hinzufügen"
+list = "Filterberechtigungen"
+
+[menu]
+new = "Inserisci filtro di autenticazione"
+standard = "filter_id"
+
+[message]
+nodata = ""

@@ -1,0 +1,23 @@
+[standard]
+table = "qt_selgroup"
+pkey = "selgroup_id;qt_id";
+order_fld = "theme_title#qt_name"
+dato[] = ";presente;1%;idriga"
+dato[] = "Vorhanden;qt_id;9%#qt_id#presente;check1"
+dato[] = "Suchmodell;qt_name;45%;text"
+dato[] = "Thema;theme_title;45%;text"
+[list]
+table = "qt_selgroup"
+pkey = "selgroup_id;qt_id";
+order_fld = "theme_title#qt_name"
+dato[] = "Suchmodell;qt_id;45%#qt#qt_name;chiave_esterna"
+dato[] = "Thema;theme_title;45%;text"
+
+[title]
+edit = Suchmodelle der Auswahlgruppe"
+view = "Suchmodelle der Auswahlgruppe"
+new = "Suchmodelle der Auswahlgruppe"
+list = "Suchmodelle der Auswahlgruppe"
+
+[message]
+nodata = "Kein Suchmodell"
