@@ -205,9 +205,29 @@ class gcMapfile{
 						
 			$oFeatureData = $oFeature->getFeatureData();
 			if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
+                                if ($oFeatureData['data_srid'] !== $this->projectSrid) {
+                                     $sql = "SELECT st_xmin(foo.e) || ' ' || st_ymin(foo.e) || ' ' || st_xmax(foo.e) || ' ' || st_ymax(foo.e) FROM";
+                                     $sql .= "(SELECT ST_Extent(ST_Transform(ST_MakeEnvelope(:minx, :miny, :maxx, :maxy, :fromsrid), :tosrid)) as e) as foo";
+                                     $stmt = $this->db->prepare($sql);
+
+                                     $ext = explode(' ', $aLayer["mapset_extent"]);
+
+                                     $stmt->execute(array(
+                                          ':minx' => $ext[0],
+                                          ':miny' => $ext[1],
+                                          ':maxx' => $ext[2],
+                                          ':maxy' => $ext[3],
+                                          ':fromsrid' => $this->projectSrid,
+                                          ':tosrid' => $oFeatureData['data_srid']
+                                     ));
+                                     $extent = $stmt->fetchColumn(0);
+                                } else {
+                                     $extent = $aLayer["mapset_extent"];
+                                }
+
 				// use mapset extent if layer extent is not set
 				// the layer extent is important to make wms layers work in some desktop gis clients
-				$oFeatureData['data_extent'] = $aLayer["mapset_extent"];
+				$oFeatureData['data_extent'] = $extent;
 				$oFeature->setFeatureData($oFeatureData);
 			}
 
