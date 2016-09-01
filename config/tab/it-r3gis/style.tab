@@ -16,7 +16,7 @@ dato[] = "Definizione simbolo<br><font size=1><a href= "http://mapserver.org/map
 
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;class;#openCopy;button|Sposta;class;#openMove;button"
 [list]
-table = "style"
+table = "vista_style"
 pkey = "style_id"
 order_fld = "style_order#style_name"
 dato[] = "Nome;style_name;15%#style_id;goto"
@@ -29,6 +29,7 @@ dato[] = "Dim.;size;6%;text"
 dato[] = "Spess.;width;6%;text"
 dato[] = "Rotaz.;angle;6%;text"
 dato[] = "Ordine;style_order;6%;text"
+dato[] = "Controllo;style_control;20%;text"
 dato[] = ";style_id;1%;info"
 dato[] = ";style_id;1%;edit"
 dato[] = ";style_id;1%;delete"
