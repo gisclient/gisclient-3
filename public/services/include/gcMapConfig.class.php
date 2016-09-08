@@ -41,7 +41,8 @@ define('GOOGLE_MIN_ZOOM_LEVEL',0);
 define('GOOGLE_MAX_ZOOM_LEVEL',21);
 
 class gcMap{
-
+    const SCALE_TYPE_USER = 0;
+    const SCALE_TYPE_POWEROF2 = 1;
     var $db;
     var $authorizedLayers = array();
     var $authorizedGroups = array();
@@ -138,13 +139,15 @@ class gcMap{
         $mapOptions["matrixSet"] = $this->mapsetGRID;
         $this->fractionalZoom = 1;
 
-        $this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$row["mapset_scales"]);
+        //$this->_getResolutions($row["minscale"],empty($row["maxscale"])?$row["max_extent_scale"]:$row["maxscale"],$row["mapset_scales"]);
+        //$mapOptions["resolutions"] = $this->mapResolutions;
+        $this->mapResolutions = $this->_getResolutions($row["mapset_scale_type"]);
         $mapOptions["resolutions"] = $this->mapResolutions;
         $mapOptions["levelOffset"] = $this->levelOffset;
 
         $mapOptions["maxExtent"] = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
         //$mapOptions["tilesExtent"] = $this->tilesExtent;
-        if(!isset($this->tilesExtent))  $this->tilesExtent = $this->_getExtent($row["xc"],$row["yc"],$this->scaleListResolutions[0]);
+        if(!isset($this->tilesExtent))  $this->tilesExtent = $this->_getExtent($row["xc"],$row["yc"],$this->mapResolutions[0]);
         $mapOptions["tilesExtent"] = $this->tilesExtent;
 
         //$mapOptions["wmtsBaseUrl"] = GISCLIENT_WMTS_URL;
@@ -328,10 +331,8 @@ class gcMap{
             $aLayer["typeId"] = intval($row["owstype_id"]);
             $aLayer["type"] = $row["owstype_name"];
             $layerOptions = array();
-            if($row["status"] == 0) 
-                $layerOptions["visibility"] = false;
-            if($row["hidden"] == 1) 
-                $layerOptions["displayInLayerSwitcher"] = false;
+            $layerOptions["visibility"] = $row["status"] === 0? false : true;
+            $layerOptions["displayInLayerSwitcher"] = $row["hide"] === 1? false : true;
             if(!empty($row['copyright_string'])) 
                 $layerOptions["attribution"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["copyright_string"]):$row["copyright_string"];
             if($row["isbaselayer"] == 1 && $row["status"] == 1) 
@@ -352,6 +353,9 @@ class gcMap{
             if ($row["refmap"])
                 $aLayer["overview"] = true;
 
+            if($this->getLegend) {
+                $aLayer['legend'] = $this->_getLegendArray($row['layergroup_id']);
+            }
 
             //ALLA ROVESCIA RISPETTO A MAPSERVER
             if($row["layergroup_maxscale"]>0) 
@@ -1123,7 +1127,7 @@ class gcMap{
             }
     }
     
-    function _getScaleList() {
+   /* function _getScaleList() {
         $sql = "SELECT mapset_scales FROM " . DB_SCHEMA . ".mapset WHERE mapset_name=?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
@@ -1137,9 +1141,42 @@ class gcMap{
             $ret = GCAuthor::$defaultScaleList;
         }
         return $ret;
+    }*/
+
+    function _getScaleList() {
+        $sql = "SELECT mapset_scales FROM ".DB_SCHEMA.".mapset WHERE mapset_name=?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->mapsetName));
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        print_debug($sql,null,'mapoptions');
+        if ($row['mapset_scales'] !='') {
+            $ret = explode(',', $row['mapset_scales']);
+        } else if (defined('SCALE')) {
+            $ret = explode(',', SCALE);
+        } else {
+            $ret = GCAuthor::$defaultScaleList;
+        }
+        return $ret;
     }
 
-    function _getResolutions($minScale, $maxScale, $mapsetScales) {
+    function _getResolutions($scaleType){
+        $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
+        $aRes=array();
+        if (self::SCALE_TYPE_POWEROF2 == $scaleType) {
+            //calculate scale from scale level and base resolution 
+            for($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) {
+                $aRes[] = SERVICE_MAX_RESOLUTION / pow(2,$lev);
+            }
+        } elseif (self::SCALE_TYPE_USER == $scaleType) {
+            $scaleList = $this->_getScaleList();
+            foreach($scaleList as $scaleValue)      $aRes[]=$scaleValue/$convFact;
+        } else {
+            throw new Exception("Unknown scale type");
+        }
+        return $aRes;
+    }
+
+ /*   function _getResolutions($minScale, $maxScale, $mapsetScales) {
 
         //Fattore di conversione tra dpi e unità della mappa
 
@@ -1194,7 +1231,7 @@ class gcMap{
         $this->levelOffset = $minIndex;
         $this->scaleListResolutions = $aRes;
         $this->mapResolutions = array_slice($aRes, $minIndex, $maxIndex);
-    }
+    }*/
 
     function _getProjInfo() {
         $exclude = array(3857, 900913, 3587);
