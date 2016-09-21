@@ -9,7 +9,7 @@ dato[] = "Visualizza coordinate in SRID<br><font size=1>Visualizza le coordinate
 dato[] = "Unità di misura della mappa<br><font size=1>Preferibile in metri</font>;sizeunits_id;160#seldb_sizeunits;selectdb"
 dato[] = "Elenco scale su mappa:<br><font size=1>Valori decrescenti separati da virgola</font>;mapset_scales;48x4;textarea"
 dato[] = "Estensione massima del Mapset *<br><font size=1>Indicare: minX minY MAXX MAXY separati da spazio</font>;mapset_extent;60;text;"
-dato[] = "Limita estensione<br><font size=1>Indicare: minX minY MAXX MAXY separati da spazio</font>;mapset_extent;60;text"
+dato[] = "Estensione Reference<br><font size=1>Indicare: minX minY MAXX MAXY separati da spazio</font>;refmap_extent;60;text"
 dato[] = "Template di apertura mappa;template;60;text"
 dato[] = "Tipo di scala automatico (potenza di 2);mapset_scale_type;;noyes"
 dato[] = "Ordine dei mapset;mapset_order;10;text"
@@ -17,13 +17,11 @@ dato[] = "Mappa privata<br><font size=1>Protegge con login il contenuto della ma
 dato[] = "Descrizione;mapset_description;48x4;textarea"
 dato[] = "Formati di stampa;page_size;20;text"
 dato[] = "Scarica immagine;dl_image_res;20;text"
-
+dato[] = "Definizioni aggiuntive<br><font size=1><a href= "http://mapserver.org/mapfile/map.html" target=blank>Documentazione MapServer MAP</a></font>;mapset_def;48x6;textarea"
 
 dato[] = "Colore sfondo;bg_color;11;color"
 dato[] = "Reference fissa;static_reference;;noyes|Tiles;mapset_tiles;120#seldb_mapset_tiles;selectdb"
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
-
-dato[] = "Definizioni aggiuntive<br><font size=1><a href= "http://mapserver.org/mapfile/map.html" target=blank>Documentazione MapServer MAP</a></font>;mapset_def;48x6;textarea"
 
 [list]
 table = "mapset"

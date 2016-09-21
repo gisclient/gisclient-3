@@ -74,7 +74,7 @@ class gcMap{
         VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
         YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
         OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-        GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?sensor=false");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
+        GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
 
     private $i18n;
     protected $oMap;

@@ -1,0 +1,28 @@
+[standard]
+table = "selgroup_layer"
+pkey = "selgroup_id;layer_id";
+order_fld = "theme_title"
+dato[] = ";presente;1%;idriga"
+dato[] = "Anwesend;layer_id;9%#layer_id#presente;check1"
+dato[] = "Layer;layer_name;30%;string"
+dato[] = "Layergruppe;layergroup_name;30%;text"
+dato[] = "Thema;theme_title;30%;text"
+[list]
+table = "selgroup_layer"
+pkey = "selgroup_id;layer_id";
+order_fld = "theme_title#layergroup_name#layer_name"
+dato[] = "Layer;layer_name;30%;text"
+dato[] = "Layergruppe;layergroup_name;30%;text"
+dato[] = "Thema;theme_title;30%;text"
+
+[title]
+edit = "Abfragbare Layer der Auswahlgruppen ändern"
+view = "Abfragbare Layer der Auswahlgruppen anzeigen"
+new = "Abfragbare Layer der Auswahlgruppen hinzufügen"
+list = "Abfragbare Layer der Auswahlgruppen"
+
+[menu]
+standard = "Abfragbare Layer der Auswahlgruppen"
+
+[message]
+nodata = "Kein abfragbares Layer"

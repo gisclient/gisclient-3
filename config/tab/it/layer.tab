@@ -38,18 +38,20 @@ dato[] = "Nascondi geometria in interrogazione<br><font size=1 >Non verrà visua
 dato[] = "Nascondi in interrogazione<br><font size=1 >Non presente nello strumento di interrogazione<br>(Il WFS rimane attivo)</font>;hidden;;noyes"
 dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;searchable_id;200#seldb_searchable;selectdb"
 
+dato[] = "Template per interrogazione WMS"
+dato[] = "Template<br><font size=1 >Scrivere:<br>template_wms/nome_layergroup.nome_layer.html</font>;template;70;text|Imposta template di default;data;200#setDefaultTemplate;button"
+dato[] = "Header<br><font size=1 >Scrivere:<br>template_wms/header.html</font>;header;70;text"
+dato[] = "Footer<br><font size=1 >Scrivere:<br>template_wms/footer.html</font>;footer;70;text"
+
 dato[] = "Altri parametri"
 dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
-dato[] = "Template;template;44;text"
-dato[] = "Template header;header;44;text"
-dato[] = "Template footer;footer;44;text"
 dato[] = "Dimesione selezione;selection_width;3;text|Colore selezione;selection_color;11;color"
 dato[] = "Numero massimo di oggetti visualizzati;maxfeatures;5;intero"
 dato[] = "Numero massimo di oggetti vettoriali;maxvectfeatures;5;intero"
 dato[] = "Buffer di zoom;zoom_buffer;5;intero"
 dato[] = "Ultimo aggiornamento;last_update;44;text"
 
-dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;layergroup;#openCopy;button|Sposta;layergroup;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Wizard WMS;azione;120;submit;new;wizard wms|Classifica;azione;120;submit;edit;classifica"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;layergroup;#openCopy;button|Sposta;layergroup;#openMove;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa|Wizard WMS;azione;120;submit;new;wizard wms|Classifica;azione;80;submit;edit;classifica"
 [list]
 table = "layer"
 pkey = "layer_id"

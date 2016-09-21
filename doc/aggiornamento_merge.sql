@@ -398,7 +398,7 @@ CREATE OR REPLACE VIEW vista_relation AS
             WHEN NOT (r.table_name::text IN ( SELECT tables.table_name
                FROM information_schema.tables
               WHERE tables.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)))) THEN '(!) tabella DB di JOIN non esiste'::text
-            WHEN r.data_field_1 IS NULL OR r.table_field_1 IS NULL THEN '(!) Uno dei campi della JOIN 1 � vuoto'::text
+            WHEN r.data_field_1 IS NULL OR r.table_field_1 IS NULL THEN '(!) Uno dei campi della JOIN 1 è vuoto'::text
             WHEN NOT (r.data_field_1::text IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer non esiste'::text
@@ -406,7 +406,7 @@ CREATE OR REPLACE VIEW vista_relation AS
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave della relazione non esiste'::text
             WHEN r.data_field_2 IS NULL AND r.table_field_2 IS NULL THEN 'OK'::text
-            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Uno dei campi della JOIN 2 � vuoto'::text
+            WHEN r.data_field_2 IS NULL OR r.table_field_2 IS NULL THEN '(!) Uno dei campi della JOIN 2 è vuoto'::text
             WHEN NOT (r.data_field_2::text IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer della JOIN 2 non esiste'::text
@@ -414,7 +414,7 @@ CREATE OR REPLACE VIEW vista_relation AS
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = r.table_name::text)) THEN '(!) Il campo chiave relazione della JOIN 2 non esiste'::text
             WHEN r.data_field_3 IS NULL AND r.table_field_3 IS NULL THEN 'OK'::text
-            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Uno dei campi della JOIN 3 � vuoto'::text
+            WHEN r.data_field_3 IS NULL OR r.table_field_3 IS NULL THEN '(!) Uno dei campi della JOIN 3 è vuoto'::text
             WHEN NOT (r.data_field_3::text IN ( SELECT columns.column_name
                FROM information_schema.columns
               WHERE columns.table_schema::text = "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) AND columns.table_name::text = l.layer_name::text)) THEN '(!) Il campo chiave layer della JOIN 3 non esiste'::text
@@ -496,6 +496,81 @@ CREATE OR REPLACE VIEW vista_link AS
 ALTER TABLE vista_link
   OWNER TO gisclient;
   
+DROP VIEW IF EXISTS vista_layer;
+CREATE OR REPLACE VIEW vista_layer AS 
+ SELECT l.*, 
+        CASE
+          WHEN queryable = 1 and l.hidden = 0 and 
+               layer_id IN (SELECT field.layer_id 
+                              FROM field 
+                              WHERE field.resultype_id != 4)
+          THEN 'SI. Config. OK'
+          WHEN queryable = 1 and l.hidden = 1 and
+               layer_id IN (SELECT field.layer_id 
+                              FROM field 
+                              WHERE field.resultype_id != 4)
+          THEN 'SI. Ma è nascosto'
+          WHEN queryable = 1 and 
+               layer_id IN (SELECT field.layer_id 
+                              FROM field 
+                              WHERE field.resultype_id = 4)
+          THEN 'NO. Nessun campo nei risultati'
+          ELSE 'NO. WFS non abilitato'
+        END AS is_queryable, 
+        CASE
+            WHEN queryable = 1 and layer_id IN ( SELECT field.layer_id
+               FROM field
+              WHERE field.editable = 1)
+            THEN 'SI. Config. OK' 
+            WHEN queryable = 1 and layer_id IN ( SELECT field.layer_id
+               FROM field
+              WHERE field.editable = 0)
+            THEN 'NO. Nessun campo è editabile' 
+            WHEN queryable = 0 and layer_id IN ( SELECT field.layer_id
+               FROM field
+              WHERE field.editable = 1)
+            THEN 'NO. Esiste un campo editabile ma il WFS non è attivo' 
+            ELSE 'NO.'
+        END AS is_editable,
+        CASE
+            WHEN connection_type != 6 then '(i) Controllo non possibile: connessione non PostGIS'
+            WHEN substring(c.catalog_path,0,position('/' in c.catalog_path)) != current_database() then '(i) Controllo non possibile: DB diverso'
+            WHEN data not in (select table_name FROM information_schema.tables where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)))  THEN '(!) La tabella non esiste nel DB'
+            when data_geom not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data and data_type = 'USER-DEFINED') then '(!) Il campo geometrico del layer non esiste'
+            when data_unique not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo chiave del layer non esiste'
+            when data_srid not in (select srid FROM public.geometry_columns where f_table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and f_table_name=data) then '(!) Lo SRID configurato non è quello corretto'
+            when upper(data_type) not in (select type FROM public.geometry_columns where f_table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and f_table_name=data) then '(!) Geometrytype non corretto'
+            WHEN labelitem not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo etichetta del layer non esiste'
+            WHEN labelitem not in (select field_name FROM field where layer_id = l.layer_id) then '(!) Campo etichetta non presente nei campi del layer'
+            WHEN labelsizeitem not in (select column_name FROM information_schema.columns where table_schema=substring(catalog_path,position('/' in catalog_path)+1,length(catalog_path)) and table_name = data) then '(!) Il campo altezza etichetta del layer non esiste'
+            WHEN labelsizeitem not in (select field_name FROM field where layer_id = l.layer_id) then '(!) Campo altezza etichetta non presente nei campi del layer'
+            --WHEN layer_name in (select distinct layer_name FROM layer where layergroup_id != lg.layergroup_id and catalog_id in (select catalog_id FROM catalog where project_name = c.project_name)) THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'
+            WHEN t.project_name||'.'||lg.layergroup_name||'.'||l.layer_name IN (select t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name 
+              FROM layer l2
+              JOIN layergroup lg2 using (layergroup_id)
+              JOIN theme t2 using (theme_id)
+              group by t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name
+              having count(t2.project_name||'.'||lg2.layergroup_name||'.'||l2.layer_name) > 1) 
+              THEN '(!) Combinazione nome layergroup + nome layer non univoca. Cambiare nome al layer o al layergroup'
+            WHEN layer_id not in (select layer_id FROM class) then 'OK (i) Non ci sono classi configurate in questo layer'
+            ELSE 'OK'
+          END as layer_control
+   FROM layer l
+JOIN catalog c using (catalog_id)
+JOIN e_layertype using (layertype_id)
+JOIN layergroup lg using (layergroup_id)
+JOIN theme t using (theme_id);
+ALTER TABLE vista_layer
+  OWNER TO gisclient;
+  
+--da verificare. Ho problemi con pattern obbligatori su MS5
+CREATE OR REPLACE VIEW seldb_pattern AS 
+  --SELECT (-1) AS id, 'Seleziona ====>' AS opzione
+  --UNION ALL 
+  SELECT pattern_id AS id, pattern_name AS opzione
+  FROM e_pattern;
+ALTER TABLE seldb_pattern
+  OWNER TO gisclient;
   
 -- RICREA E-lEVEL E FORM
 DROP TABLE e_level CASCADE;
@@ -838,7 +913,7 @@ CREATE OR REPLACE VIEW vista_mapset AS
               GROUP BY mapset_layergroup.mapset_name)) THEN ('(!) '::text || (( SELECT count(mapset_layergroup.layergroup_id) AS count
                FROM mapset_layergroup
               WHERE mapset_layergroup.mapset_name::text = m.mapset_name::text
-              GROUP BY mapset_layergroup.mapset_name))) || ' layergroup presenti nel mapset. OpenLayers 2 non consente di rappresentare pi� di 74 layergroup alla volta'::text
+              GROUP BY mapset_layergroup.mapset_name))) || ' layergroup presenti nel mapset. OpenLayers 2 non consente di rappresentare più di 74 layergroup alla volta'::text
             WHEN m.mapset_scales IS NULL THEN '(!) Nessun elenco di scale configurato'::text
             WHEN m.mapset_srid <> m.displayprojection THEN '(i) Coordinate visualizzate diverse da quelle di mappa'::text
             WHEN 0 = (( SELECT max(mapset_layergroup.refmap) AS max
@@ -853,14 +928,14 @@ ALTER TABLE vista_mapset
   OWNER TO gisclient;
  
 -- da verificare -- 
-ALTER TABLE mapset ADD COLUMN IF NOT EXISTS mapset_description TEXT;
+ALTER TABLE mapset ADD COLUMN  mapset_description TEXT;
 
 DROP VIEW vista_mapset;
 CREATE OR REPLACE VIEW vista_mapset AS 
 select m.*,
   CASE 
     when mapset_name not in (select mapset_name from mapset_layergroup) then '(!) Nessun layergroup presente'
-    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) Openlayers non consente di rappresentare pi� di 75 layergroup alla volta'
+    when 75 <= (select count(layergroup_id) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) then '(!) Openlayers non consente di rappresentare più di 75 layergroup alla volta'
     WHEN mapset_scales is null THEN '(!) Nessun elenco di scale configurato'
     WHEN mapset_srid != displayprojection then '(i) Coordinate visualizzate diverse da quelle di mappa'
     WHEN 0 = (select max(refmap) from mapset_layergroup where mapset_name=m.mapset_name group by mapset_name) THEN '(i) Nessuna reference map'
@@ -870,17 +945,135 @@ from mapset m;
 
 ALTER TABLE vista_mapset
   OWNER TO gisclient;  
- 
+  
+-- CREO LA TABELLA export_i18n SE NON ESISTE per non far crashare lo script nel successivo UPDATE
+CREATE TABLE IF NOT EXISTS export_i18n
+(
+  exporti18n_id serial NOT NULL,
+  table_name character varying,
+  field_name character varying,
+  project_name character varying,
+  pkey_id character varying,
+  language_id character varying,
+  value text,
+  original_value text,
+  CONSTRAINT export_i18n_pkey PRIMARY KEY (exporti18n_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE export_i18n
+  OWNER TO gisclient;
+  
+UPDATE export_i18n SET table_name='field' WHERE table_name='qtfield';
+UPDATE export_i18n SET field_name='field_name' WHERE field_name='qtfield_name';
+
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.0', 'author', '2015-06-15');
 COMMIT;
 
 ------------------------------------------- INIZIO SVILUPPI AUTHOR 3.4 -------------------------------------------
 
+-- parametro per non scrivere l'estensione del layer nel mapfile se il catalogo è WMS
 ALTER TABLE catalog
   ADD COLUMN set_extent smallint DEFAULT 1;
 
+-- fix extent per cataloghi WMS
+UPDATE catalog SET set_extent = 0 where connection_type = 7;
+  
 -- version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.1', 'author', '2015-10-09');
 
+-- 2015-01-25 Aggiunta traduzioni per template dei layer
+INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (22,'layer','template');
+INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (23,'layer','header');
+INSERT INTO i18n_field (i18nf_id,table_name,field_name) values (24,'layer','footer');
 
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.2', 'author', '2016-01-25');
+
+-- 2016-03-08: fix database necessario in seguito a commit: 2afd6e0
+UPDATE class SET class_text=REPLACE(class_text,'''','');
+UPDATE class SET class_text=REPLACE(class_text,'"','');
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.3', 'author', '2016-03-08');
+
+-- 2016-05-07: selezione dei formati per la formattazione dei campi nei risultati
+CREATE TABLE e_formula
+(
+  formula_id integer NOT NULL,
+  formula_name character varying NOT NULL,
+  formula_format character varying NOT NULL,
+  formula_order smallint,
+  CONSTRAINT e_formula_pkey PRIMARY KEY (formula_id)
+);
+ALTER TABLE e_form OWNER TO gisclient;
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (1, '0 decimali', 'to_char({{field_name}}, ''FM9999999990'')', 10);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (2, '1 decimali', 'to_char({{field_name}}, ''FM9999999990.0'')', 20);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (3, '2 decimali', 'to_char({{field_name}}, ''FM9999999990.00'')', 30);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (4, '3 decimali', 'to_char({{field_name}}, ''FM9999999990.000'')', 40);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (5, '0 decimali - con sep. migliaia', 'to_char({{field_name}}, ''FM9,999,999,990'')', 50);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (6, '1 decimali - con sep. migliaia', 'to_char({{field_name}}, ''FM9,999,999,990.0'')', 60);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (7, '2 decimali - con sep. migliaia', 'to_char({{field_name}}, ''FM9,999,999,990.00'')', 70);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (8, '3 decimali - con sep. migliaia', 'to_char({{field_name}}, ''FM9,999,999,990.000'')', 80);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (9, 'Data (GG/MM/YYYY)', 'to_char({{field_name}}, ''DD/MM/YYYY'')', 110);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (10, 'Data (GG.MM.YYYY)', 'to_char({{field_name}}, ''DD.MM.YYYY'')', 110);
+INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (11, 'Valuta (€)', 'to_char({{field_name}}, ''FM€ 9999999990.00'')', 210);
+
+-- version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.4', 'author', '2016-05-07');
+
+
+-- 2016-05-30 modulo documenti datamanager
+CREATE TABLE document (
+    doc_id integer NOT NULL,
+    doc_parent_id integer,
+    doc_name character varying NOT NULL,
+    doc_type character varying NOT NULL,
+    doc_public boolean DEFAULT false
+);
+ALTER TABLE document OWNER TO gisclient;
+
+CREATE SEQUENCE document_doc_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE document_doc_id_seq OWNER TO gisclient;
+ALTER SEQUENCE document_doc_id_seq OWNED BY document.doc_id;
+ALTER TABLE ONLY document ALTER COLUMN doc_id SET DEFAULT nextval('document_doc_id_seq'::regclass);
+ALTER TABLE ONLY document ADD CONSTRAINT document_pkey PRIMARY KEY (doc_id);
+ALTER TABLE ONLY document ADD CONSTRAINT document_doc_parent_id_fkey FOREIGN KEY (doc_parent_id) REFERENCES document(doc_id);
+
+INSERT INTO document VALUES (1, NULL, 'documenti', 'folder', false);
+
+SELECT pg_catalog.setval('document_doc_id_seq', max(doc_id), true)
+FROM document;
+
+CREATE OR REPLACE VIEW vista_document_paths AS 
+ WITH RECURSIVE paths(doc_path, doc_id) AS (
+         SELECT '/'::text || document_1.doc_name::text AS doc_path,
+            document_1.doc_id
+           FROM document document_1
+          WHERE document_1.doc_parent_id IS NULL
+        UNION ALL
+         SELECT (p.doc_path || '/'::text) || c.doc_name::text AS doc_path,
+            c.doc_id
+           FROM document c
+             JOIN paths p ON p.doc_id = c.doc_parent_id
+        )
+ SELECT document.doc_id,
+    document.doc_parent_id,
+    document.doc_name,
+    document.doc_type,
+    document.doc_public,
+    paths.doc_path
+   FROM document
+     JOIN paths USING (doc_id);
+
+ALTER TABLE vista_document_paths
+  OWNER TO gisclient;
+
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.5', 'author', '2016-05-30');

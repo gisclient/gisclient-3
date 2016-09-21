@@ -53,7 +53,7 @@ $ajax->success($result);
 $numRec = 0;
 function getUniqueFileName($path, $fileName, $ext) {
     global $numRec;
-    if($numRec > 10) throw new Exception('Che cazzo sta succedendo???? '.$path. ' - ' . $fileName);
+    if($numRec > 10) throw new Exception("Can't create unique file in {$path} for {$fileName}");
     $numRec++;
     if(!file_exists($path.$fileName.'.'.$ext)) return $fileName;
     

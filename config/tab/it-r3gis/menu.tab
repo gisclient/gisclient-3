@@ -51,7 +51,7 @@ constant = "'Nuova Relazione'"
 [field]
 standard = "field_name"
 constant = "'Nuovo Campo'"
-[qtlink]
+[layer_link]
 constant = "'Link'"
 [mapset_groups]
 standard = "'Gruppi del Mapset '||mapset_name"

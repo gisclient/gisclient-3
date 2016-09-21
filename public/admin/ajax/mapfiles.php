@@ -13,10 +13,12 @@ switch($_REQUEST['action']) {
 		if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE){
             GCAuthor::refreshProjectMapfile($_REQUEST['project'], ($_REQUEST['target'] == 'public'));
         } else {
+            $refreshLayerMapfile = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
+            $publish = $_REQUEST['target'] == 'public';
             if(empty($_REQUEST['mapset'])) {
-                GCAuthor::refreshMapfiles($_REQUEST['project'], ($_REQUEST['target'] == 'public'));
+                GCAuthor::refreshMapfiles($_REQUEST['project'], $publish, $refreshLayerMapfile);
             } else {
-                GCAuthor::refreshMapfile($_REQUEST['project'], $_REQUEST['mapset'], ($_REQUEST['target'] == 'public'));
+                GCAuthor::refreshMapfile($_REQUEST['project'], $_REQUEST['mapset'], $publish, $refreshLayerMapfile);
             }
         }
 		$errors = GCError::get();

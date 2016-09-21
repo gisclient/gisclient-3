@@ -91,7 +91,9 @@ $authorized = false;
 if(!empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$typeName]['WFST'])) {
 	$authorized = true;
 } else {
-	print_debug(var_export($_SESSION['GISCLIENT_USER_LAYER'], true), null, 'tinyows');
+    if (isset($_SESSION['GISCLIENT_USER_LAYER'])) {
+        print_debug(var_export($_SESSION['GISCLIENT_USER_LAYER'], true), null, 'tinyows');
+    }
 }
 
 if(!$authorized) {

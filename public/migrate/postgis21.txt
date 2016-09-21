@@ -1,0 +1,11 @@
+pg_dump -h localhost -p 5432 -U postgres -Fc -b -v -f mydb.dump mydb
+createdb mydb_postgis21
+psql -d mydb_postgis21 -c "CREATE EXTENSION postgis;"
+psql -d mydb_postgis21 -c "CREATE EXTENSION postgis_topology;"
+perl /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis_restore.pl mydb_postgis15.dump > mydb_postgis21.dump
+psql -f mydb_postgis21.dump mydb_postgis21
+
+Escludo il catalog public per non mischiare i postgis (oppure eliminare public.functions prima del dump)
+pg_dump -h localhost -p 5432 -U postgres -Fc -b -v -N public -f mydb.dump mydb
+/usr/share/postgresql/9.4/contrib/postgis-2.2/postgis_restore.pl mydb.dump |psql newdb
+

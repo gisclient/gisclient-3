@@ -221,10 +221,12 @@
 						$navTreeTitle = $_row['val'];
 					}
 
-					if ((is_numeric($value) && $value>0) || (!is_numeric($value) && strlen($value)>0))
+					if ((is_numeric($value) && $value>0) || (!is_numeric($value) && strlen($value)>0)) {
 						$lbl.="<a class=\"link_label next\" href=\"#\" onclick=\"javascript:navigate(['".@implode("','",$lvl)."'],['".@implode("','",$val)."'])\"> $navTreeTitle</a>";
-					else
-						$lbl.="<a class=\"link_label next\" href=\"#\"> $navTreeTitle</a>";
+						$lbl.="<input type=\"hidden\" id=\"{$key}_title\" value=\"$navTreeTitle\">";
+					} else {
+ 						$lbl.="<a class=\"link_label next\" href=\"#\"> $navTreeTitle</a>";
+					}
 				}
 			}
 			echo "

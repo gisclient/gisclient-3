@@ -227,6 +227,12 @@ class gcFeature {
     public function getLayerText($layergroupName, $layergroup) {
         if (!$this->aFeature)
             return false;
+            
+        // translate layergroup
+        if(!empty($this->i18n)) {
+            $layergroup = $this->i18n->translateRow($layergroup, 'layergroup', $layergroup['layergroup_id']);
+        }
+            
         $maxScale = $layergroup['layergroup_maxscale'];
         $minScale = $layergroup['layergroup_minscale'];
         // FIXME: the following does not use the return value, can it be removed?
@@ -488,28 +494,18 @@ class gcFeature {
                     } else {
                         $aliasTable = DATALAYER_ALIAS_TABLE;
                     }
-                    $groupByFieldList[] = $aliasTable . '.' . $aField['field_name'];
 
                     //Campi calcolati non metto tabella.campo
                     //if(strpos($aField["field_name"],'(')!==false)
                     //if(preg_match('|[(](.+)[)]|i',$aField["field_name"]) || strpos($aField["field_name"],"||"))
                     if ($aField["formula"]) {
                         $fieldName = $aField["formula"] . " AS " . $aField["field_name"]; // . " AS " . strtolower(NameReplace($aField["field_title"]));
+                        $groupByFieldList[] = $aField['field_name'];
                     } else {
                         $fieldName = $aliasTable . "." . $aField["field_name"];
+                        $groupByFieldList[] = $aliasTable . '.' . $aField['field_name'];
                     }
-                    // **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
-                    $groupByFieldList[] = $aField['field_name'];
-                    
                     $fieldList[] = $fieldName;
-
-                    /*
-                      if($aField["relation"]>0)
-                      $fieldString = $fieldName;// .  " AS " . $aliasTable . "_" . NameReplace($aField["field_title"]);
-                      else
-                      $fieldString = $fieldName;
-                      $fieldList[] = $fieldString;
-                     */
                 }
             }
 
@@ -521,18 +517,18 @@ class gcFeature {
 
                     //TODO RELAZIONI 1-MOLTI IN GC3
                     if ($rel["relation_type"] == 2) {
-                        continue;
+                        //continue;
                         //aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore è vuoto
-                        //$keyList = array();
-                        //foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
-                        //$fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
+                        $keyList = array();
+                        foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
+                        $fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
 
-                        //$groupBy = ' GROUP BY  ' . implode(', ', $groupByFieldList) . ', ' . $datalayerGeom;
-                        //$fieldList[] = ' count(' . $relationAliasTable . '.' . $rel['join_field'][0][1] . ') as num_' . $idrel;
+                        $groupBy = ' GROUP BY  ' . implode(', ', $groupByFieldList) . ', ' . $datalayerGeom;
+                        $fieldList[] = ' count(' . $relationAliasTable . '.' . $rel['join_field'][0][1] . ') as num_' . $idrel;
 
-                        //if (!isset($this->aFeature['1n_count_fields']))
-                        //    $this->aFeature['1n_count_fields'] = array();
-                        //array_push($this->aFeature['1n_count_fields'], 'num_' . $idrel);
+                        if (!isset($this->aFeature['1n_count_fields']))
+                            $this->aFeature['1n_count_fields'] = array();
+                        array_push($this->aFeature['1n_count_fields'], 'num_' . $idrel);
                     }
 
                     $joinList = array();
@@ -621,6 +617,7 @@ class gcFeature {
             $aMeta["gc_private_layer"] = '1';
         }
 
+/* RIMOSSO AUTHFILTER
         $sql = "select af.filter_name, laf.required " .
                 " from " . DB_SCHEMA . ".authfilter af inner join " . DB_SCHEMA . ".layer_authfilter laf using(filter_id) " .
                 " where layer_id = ? ";
@@ -633,6 +630,9 @@ class gcFeature {
                 $aMeta['gc_authfilter_' . $n . '_required'] = 1;
             $n++;
         }
+*/
+
+
 
         foreach ($aMeta as $key => $value) {
             $metaText .= "\t\"$key\"\t\"$value\"\n\t";
@@ -661,11 +661,13 @@ class gcFeature {
             $clsText[] = "GROUP \"" . $aClass["classgroup_name"] . "\"";
         if (!empty($aClass["expression"]))
             $clsText[] = "EXPRESSION " . $aClass["expression"];
-
-        if (!empty($aClass["class_text"])) {
-            $clsText[] = "TEXT (" . $aClass["class_text"] . ")";
-        } elseif (!empty($aClass["smbchar"])) {//simbolo true type
-            $clsText[] = "TEXT (" . $aClass["smbchar"] . ")";
+        if (ms_GetVersionInt() < 60000) {
+            // MapServer 5
+            if(!empty($aClass["class_text"])){
+                $clsText[]="TEXT (". $aClass["class_text"].")";
+            }elseif(!empty($aClass["smbchar"])){//simbolo true type
+                $clsText[]="TEXT (". $aClass["smbchar"].")";
+            }
         }
 
         if (!empty($aClass["maxscale"]))
@@ -684,6 +686,13 @@ class gcFeature {
             $clsText[] = "\tTYPE TRUETYPE";
             $clsText[] = "\tPARTIALS TRUE";
             $clsText[] = "\tFONT \"" . $aClass["label_font"] . "\"";
+            if (ms_GetVersionInt() >= 60000) {
+                if (!empty($aClass["class_text"])) {
+                    $clsText[] = "\tTEXT '" . $aClass["class_text"] . "'";
+                } elseif (!empty($aClass["smbchar"])) {//simbolo true type
+                    $clsText[] = "\tTEXT '" . $aClass["smbchar"] . "'";
+                }
+            }
             if ($aClass["label_angle"])
                 $clsText[] = "\tANGLE " . $aClass["label_angle"];
             if ($aClass["label_color"])
