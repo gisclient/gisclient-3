@@ -35,9 +35,10 @@ $config = $GEOLOCATOR_CONFIG[$mapset];
 
 $db = GCApp::getDB();
 
-$sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:name';
+$sql = 'select catalog_path from '.DB_SCHEMA.'.catalog INNER JOIN '.DB_SCHEMA.'.mapset USING(project_name) where catalog_name=:name AND mapset_name=:mapset';
+
 $stmt = $db->prepare($sql);
-$stmt->execute(array('name'=>$config['catalogname']));
+$stmt->execute(array('name'=>$config['catalogname'], 'mapset'=>$mapset));
 $catalogPath = $stmt->fetchColumn(0);
 if (empty($catalogPath)) {
 	$ajax->error("Invalid catalog name \"{$config['catalogname']}\" in configuration");
