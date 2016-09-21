@@ -16,3 +16,6 @@ define('MAP_PWD','MY_DB_MAPSERVER_PASSWORD');
 
 // user with manager permission (can create new users and groups)
 define('SUPER_USER', 'admin');
+
+// **** Google Maps API Key - if needed uncomment and initialize key
+//define('GMAPKEY', 'keyid');

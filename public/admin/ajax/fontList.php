@@ -6,7 +6,7 @@ $ajax = new GCAjax();
 $db = GCApp::getDB();
 $dbSchema = DB_SCHEMA;
 
-$font = 'r3-map-symbols.ttf';
+$font = isset($_REQUEST['font_name'])?$_REQUEST['font_name']:'r3-map-symbols.ttf';
 $fontName = basename($font, '.ttf');
 
 $result = array(

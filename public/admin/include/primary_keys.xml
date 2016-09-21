@@ -80,17 +80,22 @@
 		<pkey>qt_id</pkey>
 		<parent>theme</parent>
 	</qt>
-	<qtlink>
-		<table>qtlink</table>
+	<qt_link>
+		<table>qt_link</table>
 		<pkey>layer_id</pkey>
 		<pkey>link_id</pkey>
 		<parent>layer</parent>
-	</qtlink>
-        <qtfield>
-		<table>qtfield</table>
-		<pkey>qtfield_id</pkey>
+	</qt_link>
+        <qt_field>
+		<table>qt_field</table>
+		<pkey>qt_field_id</pkey>
 		<parent>qt</parent>
-	</qtfield>
+	</qt_field>
+        <qt_relation>
+		<table>qt_relation</table>
+		<pkey>qt_relation_id</pkey>
+		<parent>qt</parent>
+	</qt_relation>
 	<relation>
 		<table>relation</table>
 		<pkey>relation_id</pkey>

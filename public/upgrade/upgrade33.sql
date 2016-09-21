@@ -1095,7 +1095,7 @@ INSERT INTO e_relationtype values (2,'Secondaria (Info 1 a molti)',2);
 
 --INSERISCO LE RELAZIONI 1 A 1 
 insert into relation(relation_id,catalog_id,relation_name,relationtype_id,data_field_1,data_field_2,data_field_3,table_name,table_field_1,table_field_2,table_field_3,language_id,layer_id,relation_title)
-select qtrelation_id,catalog_id,lower(qtrelation_name),qtrelationtype_id,data_field_1,data_field_2,data_field_3,table_name,table_field_1,table_field_2,table_field_3,language_id,layer_id,qtrelation_name
+select qt_relation_id,catalog_id,lower(qtrelation_name),qtrelationtype_id,data_field_1,data_field_2,data_field_3,table_name,table_field_1,table_field_2,table_field_3,language_id,layer_id,qtrelation_name
 from qtrelation inner join qt using(qt_id);
 
 DROP VIEW seldb_field_filter;

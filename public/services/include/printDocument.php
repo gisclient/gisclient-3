@@ -54,7 +54,7 @@ class printDocument {
         if(!empty($_REQUEST['tiles']) && is_array($_REQUEST['tiles'])) {
             $this->tiles = $_REQUEST['tiles'];
         } else {
-            if(empty($_REQUEST['request_type']) || $_REQUEST['request_type'] != 'get-box') {
+            if(empty($_REQUEST['request_type']) || ($_REQUEST['request_type'] != 'get-box' &&$_REQUEST['request_type'] != 'table')) {
                 throw new Exception('No tiles');
             }
         }
@@ -113,14 +113,16 @@ class printDocument {
         if(!isset($this->dimensions[$this->options['direction']])) throw new Exception('Invalid direction');
         if(!isset($this->dimensions[$this->options['direction']][$this->options['format']])) throw new Exception('Invalid print format');
         
-        if(isset($options['scale_mode']) && $options['scale_mode'] == 'user') {
-            if(empty($options['scale']))
-                throw new Exception('For user-defined scale mode, the scale must be provided');
-            if(empty($options['center']) || count($options['center']) != 2)
-                throw new Exception('For user-defined scale mode, an array of center coordinates must be provided');
-        } else {
-            if(empty($options['extent']))
-                throw new Exception('For auto scale mode, the extend must be provided');
+        if (!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] != 'table') {
+            if(isset($options['scale_mode']) && $options['scale_mode'] == 'user') {
+                if(empty($options['scale']))
+                    throw new Exception('For user-defined scale mode, the scale must be provided');
+                if(empty($options['center']) || count($options['center']) != 2)
+                    throw new Exception('For user-defined scale mode, an array of center coordinates must be provided');
+            } else {
+                if(empty($options['extent']))
+                    throw new Exception('For auto scale mode, the extend must be provided');
+            }
         }
         $this->wmsMergeUrl = PUBLIC_URL.$this->wmsMergeUrl;
         
@@ -192,6 +194,21 @@ class printDocument {
         $xml = $dom->saveXML();
 
         $pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
+        $pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
+        $this->deleteOldTmpFiles();
+        return $pdfFile;
+    }
+
+    public function printTablePDF($data) {
+        $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_table';//DEFAULT PDF TEMPLATE
+        $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";;
+        if(!file_exists($xslFile)) {
+            throw new RuntimeException("XSL file '$xslFile'not found");
+        }
+        $dom = $this->buildTableDOM($data, true);
+        $xml = $dom->saveXML();
+
+        $pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintTable-', 'out_name'=>$this->options['TMP_PATH'].'PrintTable-'.date('Ymd-His').'.pdf'));
         $pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
         $this->deleteOldTmpFiles();
         return $pdfFile;
@@ -477,6 +494,97 @@ class printDocument {
             }
         }
         
+        $xmlContent = $dom->saveXML();
+        $xmlFile = $this->options['TMP_PATH'].'print.xml';
+        if (false === file_put_contents($xmlFile, $xmlContent)) {
+            throw new RuntimeException("Could not write to $xmlFile");
+        }
+        
+        return $dom;
+    }
+    
+    private function buildTableDOM($tableData, $absoluteUrls = false) {
+        
+        $dom = new DOMDocument('1.0', 'utf-8');
+        $dom->formatOutput = true;
+        
+        $dom_report = $dom->appendChild(new DOMElement('Report'));
+        
+        $dom_table = $dom_report->appendChild(new DOMElement('ReportData'));
+        
+        if(empty($tableData['data']) || !is_array($tableData['data'])) {
+            return $dom;
+        }
+
+        if(empty($tableData['fields']) || !is_array($tableData['fields'])) {
+            return $dom;
+        }
+
+        // **** Set column headers
+        $tot_col_width = 0;
+        $dom_col_headers = $dom_table->appendChild(new DOMElement('ColumnHeaders'));
+        foreach($tableData['fields'] as $field){
+            $dom_col_header = $dom_col_headers->appendChild(new DOMElement('ColumnHeader'));
+            $dom_col_name = $dom_col_header->appendChild(new DOMElement('Name'));
+            $dom_col_name->appendChild(new DOMText($field['title']));
+            
+            $col_width=0;
+            if (isset($field['width']) && $field['width'] > 0) {
+                $col_width = $field['width'];
+            }
+            else {
+                $col_width = strlen($field['title']);
+                $col_width = ceil($col_width/3);
+            }
+            $tot_col_width += $col_width;
+            $dom_col_width = $dom_col_header->appendChild(new DOMElement('Width'));
+            $dom_col_width->appendChild(new DOMText($col_width));         
+        }
+
+        // **** Set table rows
+        $dom_rows = $dom_table->appendChild(new DOMElement('Rows'));
+        foreach($tableData['data'] as $row) {
+            $dom_row = $dom_rows->appendChild(new DOMElement('Row'));
+            foreach($tableData['fields'] as $field) {
+                $dom_col = $dom_row->appendChild(new DOMElement('Column'));
+                if(isset($row[$field['field_name']]) && !empty($row[$field['field_name']]) && $row[$field['field_name']] != 'null') {
+                    $dom_col->appendChild(new DOMText($row[$field['field_name']]));
+                }
+            }
+        } 
+ 
+        $dom_total_width = $dom_report->appendChild(new DOMElement('total-width'));
+        $dom_total_width->appendChild(new DOMText($tot_col_width));
+        
+        $dom_layout = $dom_report->appendChild(new DOMElement('page-layout'));
+        
+        $layout = '';
+        if ($this->dimensions[$this->options['direction']][$this->options['format']]['w'] >= $tot_col_width ) {
+            $direction = ($this->options['direction'] == 'vertical') ? 'P' : 'L';
+            $layout = $this->options['format'].$direction;
+        }
+        else {
+            foreach($this->dimensions[$this->options['direction']] as $format => $dim) {
+                if ($dim['w'] >= $tot_col_width) {
+                    $direction = ($this->options['direction'] == 'vertical') ? 'P' : 'L';
+                    $layout = $format.$direction;
+                    break;
+                }
+            }
+        }
+        if (strlen($layout) == 0)
+            $layout = 'A0L';
+        
+        
+            
+        $dom_layout->appendChild(new DOMText($layout));
+
+        foreach($this->documentElements as $key => $val) {
+            $dom_element = $dom_report->appendChild(new DOMElement($key));
+            if(strpos($key, 'map-logo') !== false && $absoluteUrls) $val = printDocument::addPrefixToRelativeUrl($val);
+            $dom_element->appendChild(new DOMText($val));
+        }
+
         $xmlContent = $dom->saveXML();
         $xmlFile = $this->options['TMP_PATH'].'print.xml';
         if (false === file_put_contents($xmlFile, $xmlContent)) {

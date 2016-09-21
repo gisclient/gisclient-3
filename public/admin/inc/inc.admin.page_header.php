@@ -111,7 +111,7 @@
 						<li>Se il campo nome è popolato il carattere verrà importato e sostituito.</li>
 					</ol>
 					<input id="loadFont" type="file" accept=".ttf"><button onclick="fontLoadList()">Carica</button>
-					<a target="_blank" href="getFont.php?font=r3-map-symbols.ttf" class="button">Scarica Attuale</a>
+					<button onclick="downloadFont()">Scarica Attuale</button>
 					<a target="_blank" href="getFont.php?font=r3-map-symbols_tpl.ttf" class="button">Scarica Template</a>
 					<h2>Simboli font (TTF)</h2>
 					<table border="1" cellpadding="3" class="stiletabella" id="glyfList"></table>

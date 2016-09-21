@@ -280,8 +280,18 @@ class gcFeature {
             $layText[] = "HEADER \"" . $this->aFeature["header"] . "\"";;
         if (!empty($this->aFeature["footer"]))
             $layText[] = "FOOTER \"" . $this->aFeature["footer"] . "\"";;
-        if (!empty($this->aFeature["opacity"]))
-            $layText[] = "OPACITY " . $this->aFeature["opacity"];
+        if (!empty($this->aFeature["opacity"])) {
+            // **** Old Snapo - Mapserver 7 compatibility 
+            // **** OPACITY directive deperecated, use COMPOSITE block instead
+            if ($this->msVersion >= 7) {
+                $layText[] = "COMPOSITE";
+                $layText[] = "\tOPACITY " . $this->aFeature["opacity"];
+                $layText[] = "END";
+            }
+            else {
+                $layText[] = "OPACITY " . $this->aFeature["opacity"];
+            }
+        }
         if (!empty($this->aFeature["symbolscale"]))
             $layText[] = "SYMBOLSCALEDENOM " . $this->aFeature["symbolscale"];
 
@@ -360,8 +370,17 @@ class gcFeature {
                     if (!empty($this->aFeature["data_srid"]))
                         $sData .= " USING SRID=" . $this->aFeature["data_srid"];
                     $layText[] = "DATA \"$sData\"";
-                    if (!empty($this->aFeature["data_filter"]))
-                        $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                    if (!empty($this->aFeature["data_filter"])){
+                        // **** Old Snapo - Mapserver 7 compatibility 
+                        // **** Layer FILTERs must use MapServer expression syntax only.
+                        // **** use NATIVE_FILTER processing key instead.
+                        if ($this->msVersion >= 7) {
+                            $layText[] = "PROCESSING \"NATIVE_FILTER=" . str_replace('"', '\"', $this->aFeature["data_filter"]) . "\"";
+                        }
+                        else {
+                            $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                        }
+                    }    
                     $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
                     if ($this->aFeature["queryable"] == 1)
                         $layText[] = "DUMP TRUE";
@@ -760,7 +779,7 @@ class gcFeature {
             $styText[] = "WIDTH " . $aStyle["width"];
         else
             $styText[] = "WIDTH 1"; //pach mapserver 5.6 non disegna un width di default
-        if (!empty($aStyle["pattern_def"]) && $this->msVersion == '6')
+        if (!empty($aStyle["pattern_def"]) && $this->msVersion >= '6')
             $styText[] = $aStyle["pattern_def"];
         if (!empty($aStyle["minwidth"]))
             $styText[] = "MINWIDTH " . $aStyle["minwidth"];

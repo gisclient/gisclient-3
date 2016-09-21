@@ -200,7 +200,8 @@ class gcMapfile{
                 $oFeature->setPrivate(true);
             }
         
-            $layerText = $oFeature->getLayerText($layergroupName,$layerTreeGroup,$aLayer["layergroup_maxscale"],$aLayer["layergroup_minscale"]);
+            $layerText = $oFeature->getLayerText($layergroupName,$aLayer);
+			
             if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
 
             if(!empty($this->i18n)) {

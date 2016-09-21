@@ -15,13 +15,13 @@ dato[] = "Formato;field_format;48x2;textarea|Elenco Formati;field_format;100#ope
 dato[] = "Azioni sul campo"
 dato[] = "Nei risultati di ricerca;resultype_id;200#seldb_resultype;selectdb"
 dato[] = "Modo di ricerca<br><font size=1>Nessuno = non ricercabile</font>;searchtype_id;200#seldb_searchtype;selectdb"
-dato[] = "Filtrato in ricerca per;filter_field_name;30;text|Elenco;filter_field_name;100#openList#layer#qtrelation_id;button"
+dato[] = "Filtrato in ricerca per;field_filter;200#seldb_field_filter#layer_id#field_id;selectdb"
 dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
 dato[] = "Operatore predefinito;default_op;5;text"
 
 dato[] = "Edit via WFS-T<br><font size=1>E' necessario agire anche sui permessi del layer</font>"
 dato[] = "Campo editabile;editable;;noyes"
-dato[] = "Lookup per campo editabile<br><font size=1>Tabella</font>;lookup_table;15;text|<font size=1>Campo Chiave</font>;lookup_id;10;text|<font size=1>Campo visualizzato</font>;lookup_name;10;text|Configura;lookup_table;100#openList#layer#qtrelation_id;button"
+dato[] = "Lookup per campo editabile<br><font size=1>Tabella</font>;lookup_table;15;text|<font size=1>Campo Chiave</font>;lookup_id;10;text|<font size=1>Campo visualizzato</font>;lookup_name;10;text|Configura;lookup_table;100#openList#layer#qt_relation_id;button"
 
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
 [list]

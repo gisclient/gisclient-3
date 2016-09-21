@@ -12,8 +12,12 @@ $selectedField = $_REQUEST['selectedField'];
 
 if(!empty($_REQUEST['relation_id'])) {
 	$relationId = $_REQUEST['relation_id'];
+} else if(!empty($_REQUEST['qt_relation_id'])) {
+	$qtrelationId = $_REQUEST['qt_relation_id'];
 } else if(!empty($_REQUEST['layer'])) {
 	$layerId = $_REQUEST['layer'];
+} else if(!empty($_REQUEST['qt'])) {
+	$qtId = $_REQUEST['qt'];
 } else {
 	if(empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_REQUEST['catalog_id'] < 1) $ajax->error('catalog_id');
 	$catalogId = $_REQUEST['catalog_id'];
@@ -32,10 +36,22 @@ if(!empty($relationId)) {
 	$stmt->execute(array($relationId));
 	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 	$data = $catalogData['table_name'];
+} else if(!empty($qtrelationId)) {
+	$sql="select catalog_path, connection_type, qt_relation.table_name from ".DB_SCHEMA.".qt_relation left join ".DB_SCHEMA.".catalog  USING (catalog_id) where qt_relation_id = ?";
+	$stmt = $db->prepare($sql);
+	$stmt->execute(array($qtrelationId));
+	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
+	$data = $catalogData['table_name'];
 } else if(!empty($layerId)) {
 	$sql = "select catalog_path, connection_type, layer.data from ".DB_SCHEMA.".layer left join ".DB_SCHEMA.".catalog USING (catalog_id) where layer_id=?";
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array($layerId));
+	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
+	$data = $catalogData['data'];
+} else if(!empty($qtId)) {
+	$sql = "select catalog_path, connection_type, layer.data from ".DB_SCHEMA.".layer left join ".DB_SCHEMA.".qt USING (layer_id) left join ".DB_SCHEMA.".catalog USING (catalog_id) where qt_id=?";
+	$stmt = $db->prepare($sql);
+	$stmt->execute(array($qtId));
 	$catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 	$data = $catalogData['data'];
 } else {

@@ -166,6 +166,8 @@ define('TRANSFORM_EDIT_GEOMETRY', false);
 define('CLIENT_LOGO', null);
 define('AUTHOR_LOGO', null);
 
+define('DEFAULT_SYMBOLCATEGORY', 'R3-MAPSYMBOLS');
+
 define('MAPFILE_MAX_SIZE', '4096');
 
 // Cache in ows.php
