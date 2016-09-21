@@ -205,7 +205,7 @@ class gcMapfile{
 						
 			$oFeatureData = $oFeature->getFeatureData();
 			if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
-                                if ($oFeatureData['data_srid'] !== $this->projectSrid) {
+                                if ($oFeatureData['data_srid'] !== $aLayer["mapset_srid"]) {
                                      $sql = "SELECT st_xmin(foo.e) || ' ' || st_ymin(foo.e) || ' ' || st_xmax(foo.e) || ' ' || st_ymax(foo.e) FROM";
                                      $sql .= "(SELECT ST_Extent(ST_Transform(ST_MakeEnvelope(:minx, :miny, :maxx, :maxy, :fromsrid), :tosrid)) as e) as foo";
                                      $stmt = $this->db->prepare($sql);
@@ -217,7 +217,7 @@ class gcMapfile{
                                           ':miny' => $ext[1],
                                           ':maxx' => $ext[2],
                                           ':maxy' => $ext[3],
-                                          ':fromsrid' => $this->projectSrid,
+                                          ':fromsrid' => $aLayer["mapset_srid"],
                                           ':tosrid' => $oFeatureData['data_srid']
                                      ));
                                      $extent = $stmt->fetchColumn(0);
