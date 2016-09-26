@@ -849,7 +849,7 @@ class gcMap{
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
         $layersWith1n = array();
-        $filedID = 0;
+        $fieldID = 0;
         
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             // **** Avoid duplicates
