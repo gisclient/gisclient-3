@@ -1,8 +1,8 @@
 <?php
-require_once '../../../config/config.php';
+require_once '../../../../config/config.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
-require_once '../include/printDocument.php';
-require_once '../include/mapImage.php';
+require_once ROOT_PATH.'public/services/include/printDocument.php';
+require_once ROOT_PATH.'public/services/include/mapImage.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 require_once ROOT_PATH . 'lib/fop.php';
 
