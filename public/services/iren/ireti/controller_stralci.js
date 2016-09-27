@@ -323,6 +323,12 @@ $(function() {
             map.zoomToExtent(this.getBounds(),true);
         }
     });
+    if(x && y && btnPrint.printBox){   
+        btnPrint.centerBox = new OpenLayers.LonLat(x,y).transform("EPSG:3003","EPSG:3857");
+        btnPrint.movePrintBox(new OpenLayers.LonLat(x,y).transform("EPSG:3003","EPSG:3857"));
+        map.zoomToExtent(btnPrint.getBounds(),true);
+    }
+    
 
     //VISUALIZZAZIONE DELLE COORDINATE
     var projection = this.mapOptions.displayProjection || this.mapOptions.projection;
