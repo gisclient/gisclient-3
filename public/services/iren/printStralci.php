@@ -54,7 +54,7 @@ try {
                    ));
 
     $printMap = new printDocument();
-
+    
     if(!empty($_REQUEST['lang'])) {
         $printMap->setLang($_REQUEST['lang']);
     }
@@ -69,7 +69,7 @@ try {
 
     $fileUrl = $printMap->printMapPDF();
     $filePath = str_replace(GC_WEB_TMP_URL, GC_WEB_TMP_DIR, $fileUrl);
-
+    
     
 } catch (Exception $e) {
     $ajax->error($e->getMessage());
@@ -79,17 +79,11 @@ if (file_exists($filePath) && filesize($filePath)>0){
     $f = fopen($filePath,'r');
     $content = fread($f,filesize($filePath));
     fclose($f);
-    $result = Array(
-            "success"=>1,
-            "content"=>base64_encode($content)
-        );
+    $fileContent = base64_encode($content);
+    $ajax->success(array("content"=>base64_encode($content)));
 }
 else{
-    $result=Array(
-        "success"=>0,
-        "message"=>"Errore nella creazione della stampa",
-        "content"=>""
-    );
+    $ajax->error("Errore file $filePath non trovato");
 }
 
-$ajax->success(result);
+
