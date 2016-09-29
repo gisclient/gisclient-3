@@ -262,17 +262,18 @@ class printDocument {
             if(!empty($wms['parameters']['MAP']) && empty($mapset)) $mapset = $wms['parameters']['MAP'];
             
             //print_array($wms);
-
-            foreach($wms['parameters']['LAYERS'] as $layerName) {
-                if(isset($wms['options']['theme_id'])) {
-                    if(!isset($themes[$wms['options']['theme_id']])) {
-                        $themes[$wms['options']['theme_id']] = array(
-                            'id'=>$wms['options']['theme_id'],
-                            'title'=>$wms['options']['theme_title'],
-                            'layers'=>array()
-                        );
+            if (isset($wms['parameters']['LAYERS'])){
+                foreach($wms['parameters']['LAYERS'] as $layerName) {
+                    if(isset($wms['options']['theme_id'])) {
+                        if(!isset($themes[$wms['options']['theme_id']])) {
+                            $themes[$wms['options']['theme_id']] = array(
+                                'id'=>$wms['options']['theme_id'],
+                                'title'=>$wms['options']['theme_title'],
+                                'layers'=>array()
+                            );
+                        }
+                        $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
                     }
-                    $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
                 }
             }
         }
