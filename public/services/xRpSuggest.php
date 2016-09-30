@@ -79,7 +79,7 @@ if(isset($fieldFilterId) && isset($_REQUEST["filtervalue"])){
 
 if(!empty($field["qt_relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
     if(empty($field['formula'])) {
-        $fieldName = $field['qtrelation_name'] . '.' . $fieldName;
+        $fieldName = $field['qtrelation_name'] . '.' . $field["qtfield_name"];
     }
     
     $joinList = array();
