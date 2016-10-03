@@ -19,7 +19,7 @@ if(empty($_REQUEST['field_id']) || !is_numeric($_REQUEST['field_id']) || (int)$_
 	$fieldId = (int)$_REQUEST['field_id'];
 }
 
-$lang = !empty($_REQUEST['lang']) ? $db->quote($_REQUEST['lang']) : null;
+$lang = !empty($_REQUEST['lang']) ? $_REQUEST['lang'] : null;
 
 $sql = 'select field_id, field_name, relation_id, layer_id, formula from '.DB_SCHEMA.'.field where field_id=:id';
 $stmt = $db->prepare($sql);
