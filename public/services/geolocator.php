@@ -54,11 +54,16 @@ if($_REQUEST['action'] == 'search') {
     $sql = ' select '.$config['namefield'].' as name, '.$config['idfield'].' as id from '.$config['tablename'].' where '.$config['namefield'].' ilike :key ';
     if(!empty($config['where'])) $sql .= ' and '.$config['where'];
     if(!empty($config['order'])) $sql .= ' order by '.$config['order'];
-    $sql .= ' limit 30';
+    $sql .= ' limit :limit ';
+    $sql .= ' offset :offset';
 
     try {
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('key'=>'%'.$key.'%'));
+        $stmt->execute(array(
+'key'=>'%'.$key.'%',
+'limit' => !empty($_REQUEST['limit'])? $_REQUEST['limit'] : 30,
+'offset' => !empty($_REQUEST['offset'])? $_REQUEST['offset'] : 0,
+));
         $results = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             array_push($results, $row);
