@@ -346,6 +346,7 @@ class gcMap{
 
             $layerOptions["theme"] = $themeTitle;
             $layerOptions["theme_id"] = $row['theme_name'];
+            $layerOptions["radio"] = intval($row['radio']);
             $layerOptions["title"] = $layergroupTitle;
             $layerOptions["rootPath"] = $themeTitle;
             $layerOptions["order"] = $layerOrder;
