@@ -1000,10 +1000,8 @@ class gcMap{
         unset($featureTypes);
 
     }
-    
+
     private function _getFeatureTypesLinks() {
-        //FD: questi adesso sono qt_link oppure layer_link?!?!
-        return array();
         $sql = "select layer_id, link_name, link_def, winw, winh ".
             " from ".DB_SCHEMA.".link inner join ".DB_SCHEMA.".layer_link using(link_id) ".
             " INNER JOIN ".DB_SCHEMA.".layer using (layer_id) ".
@@ -1013,8 +1011,7 @@ class gcMap{
         $stmt->execute(array(':mapset_name'=>$this->mapsetName));
         $links = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if(strtoupper(CHAR_SET) != 'UTF-8') 
-                $row["link_name"] = utf8_encode($row["link_name"]);
+            if(strtoupper(CHAR_SET) != 'UTF-8') $row["link_name"] = utf8_encode($row["link_name"]);
             $links[$row['layer_id']][] = array('name'=>$row["link_name"],'url'=>$row['link_def'],'width'=>$row['winw'],'height'=>$row['winh']);
         }
         return $links;
