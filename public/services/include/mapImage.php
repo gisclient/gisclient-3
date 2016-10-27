@@ -100,7 +100,7 @@ class mapImage {
     
     protected function buildWmsList() {
         foreach($this->tiles as $key => $tile) {
-            if(is_array($tile['url']))
+            if(isset($tile['url']) && is_array($tile['url']))
                 $tile['url']=$tile['url'][0];
             $url = trim($tile['url'], '?');
             $url = printDocument::addPrefixToRelativeUrl($url);
