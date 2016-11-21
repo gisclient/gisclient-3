@@ -823,7 +823,7 @@ class gcMap{
                 LEFT JOIN ".DB_SCHEMA.".relation using(relation_id)
                 LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
                 WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
-        $sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, field_order, field_header;";
+        $sql .= " ORDER BY theme_order, theme_title, theme_id, layergroup_order, layer_order, layer_title, layer_name, field_order, field_header;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
