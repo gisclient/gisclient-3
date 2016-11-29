@@ -45,6 +45,10 @@ if (!defined('SERVICE_MAX_ZOOM_LEVEL')) {
 	define('SERVICE_MAX_ZOOM_LEVEL',21);
 }
 
+if(defined('GEOSERVER_URL') && GEOSERVER_URL) {
+    require_once __DIR__ . '/gcMap.class.r3gis.geoserver.php';
+}
+
 class gcMap{
 	const SCALE_TYPE_USER = 0;
 	const SCALE_TYPE_POWEROF2 = 1;
@@ -184,7 +188,6 @@ class gcMap{
 		//die;
 
 		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName, 'show_as_public' => !$user->isAuthenticated()));
-        
 		
 		$mapOptions["theme"] = $this->_getLayers();
 		$this->_getSelgroup();
@@ -253,7 +256,11 @@ class gcMap{
 		$stmt->bindValue(':mapset_name', $this->mapsetName);
 		$stmt->execute();
 
-		$ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
+        if (defined('GEOSERVER_URL') && GEOSERVER_URL) {
+            $ows_url = gcMapGeoServerUtils::getWmsBaseUrl($this->projectName, $this->mapsetName) . 'wms?';
+        } else {
+            $ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
+        }
 		$tiles_cache_url = (defined('GISCLIENT_TMS_URL')) ? GISCLIENT_TMS_URL : "../../services/tms/";	
 
 		$rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -333,6 +340,11 @@ class gcMap{
 
 				}
                 
+                if (defined('GEOSERVER_URL') && GEOSERVER_URL) {
+                    $layerParameters = gcMapGeoServerUtils::fixLayerData($layerParameters);
+                }
+                
+        
                 if (!empty($row['sld']))
                     $layerParameters["sld"] = $row["sld"];
                     
