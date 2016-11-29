@@ -172,11 +172,6 @@ define('OWS_CACHE_TTL', 60);            // Map cache (Prevent OL bug for multipl
 define('OWS_CACHE_TTL_OPEN', 4*60*60);  // Map cache for the 1st open of the map
 //define('DYNAMIC_LAYERS', '');         // comma separated list of dynamic layers (same url different result)
 
-// GEOSERVER SECTION
-//define('GEOSERVER_URL',  'http://admin:geoserver@localhost:8081/geoserver?timeout=5000');    // if defined enable the Geoserver support
-//define('GEOSERVER_PATH', '/usr/local/geoserver/');                                           // Geoserver root dir
-
-
 $GEOLOCATOR_CONFIG = array(
     'mapset' => array(                      //NOME DEL MAPSET AUTHOR
         'catalogname'=>'common',            //NOME DEL CATALOGO AUTHOR
