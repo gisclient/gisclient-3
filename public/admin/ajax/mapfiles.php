@@ -10,7 +10,13 @@ switch($_REQUEST['action']) {
 	case 'refresh':
 		if(empty($_REQUEST['target'])) $ajax->error(1);
 		if(empty($_REQUEST['project'])) $ajax->error(2);
-		if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE){
+        if(defined('GEOSERVER_URL') && GEOSERVER_URL){
+            // GeoServer support
+            require_once ROOT_PATH."lib/geoserver/vendor/autoload.php";
+            $geoServerWrapper = new GisClient\GeoServer\Author2Geoserver();
+            $geoServerWrapper->setLogger(new GisClient\Logger\AuthorLogger ());
+            $geoServerWrapper->sync($_REQUEST['project'], $_REQUEST['mapset'], $_REQUEST['target'] == 'public');
+		}else if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE){
             GCAuthor::refreshProjectMapfile($_REQUEST['project'], ($_REQUEST['target'] == 'public'));
         } else {
             $refreshLayerMapfile = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
