@@ -108,7 +108,7 @@ class Author2GeoServer implements LoggerAwareInterface
      */
     private function addStyle($workspaceName, array $layerData)
     {
-        $styleName = "{$layerData['layergroup_name']}_{$layerData['layer_name']}";
+        $styleName = "{$layerData['layergroup_name']}-{$layerData['layer_name']}";
 
         $sldClass = new AuthorSldGenerator(AuthorWrapper::getDb(), AuthorWrapper::getGcSchema());
         $sldClass->setLogger($this->logger);
@@ -283,8 +283,8 @@ class Author2GeoServer implements LoggerAwareInterface
                 foreach ($layerList as $layerData) {
                     if ($layerData['conntype_name'] == 'Postgis') {
                         $datastoreName = "{$projectName}-{$layerData['catalog_name']}";
-                        $styleName = "{$layerData['layergroup_name']}_{$layerData['layer_name']}";
-                        $layerName = "{$layerData['layergroup_name']}_{$layerData['layer_name']}";
+                        $styleName = "{$layerData['layergroup_name']}-{$layerData['layer_name']}";
+                        $layerName = "{$layerData['layergroup_name']}.{$layerData['layer_name']}";
                         $layerDescription = "{$layerData['theme_name']}.{$layerData['layergroup_name']}.{$layerData['layer_name']}";
                         $this->addStyle($workspaceName, $layerData);
                         $this->addLayer($workspaceName, $datastoreName, $layerData['data'], $layerName,
