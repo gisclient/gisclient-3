@@ -16,7 +16,7 @@ class gcMapGeoServerUtils {
     static public function getWmsBaseUrl($projectName, $mapsetName)
     {
         $basePath = self::getBaseUrl();
-        $path = $basePath . urlencode($projectName) . '-' . urlencode($mapsetName) . '/wms?';
+        $path = $basePath . urlencode($projectName) . '-' . urlencode($mapsetName) . '/ows?';
         return $path;
     }
     
