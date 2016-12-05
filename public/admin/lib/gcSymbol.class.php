@@ -184,6 +184,9 @@ class Symbol{
 	}
 	
 	function _createMapFile($aSymbol){
+        debug_print_backtrace();
+        
+        die;
 		//creazione del file di simboli
 		$mapText=array();
 		$mapText[] = "MAP";
