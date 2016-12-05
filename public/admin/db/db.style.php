@@ -10,11 +10,13 @@ if(!$save->hasErrors && $save->action=="salva"){
 	$stmt->execute(array($class_id));
 	$type = $stmt->fetchColumn(0);
 	if($type == 1){
-		require_once ADMIN_PATH."lib/gcSymbol.class.php";
-		$smb=new Symbol("class");
-		$smb->table='class';
-		$smb->filter="class.class_id=$class_id";
-		$smb->createIcon();	
+        if(!defined('GEOSERVER_URL')){
+            require_once ADMIN_PATH."lib/gcSymbol.class.php";
+            $smb=new Symbol("class");
+            $smb->table='class';
+            $smb->filter="class.class_id=$class_id";
+            $smb->createIcon();	
+        }
 	};
 	
 }
