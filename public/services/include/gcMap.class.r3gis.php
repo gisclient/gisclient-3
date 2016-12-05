@@ -257,7 +257,7 @@ class gcMap{
 		$stmt->execute();
 
         if (defined('GEOSERVER_URL') && GEOSERVER_URL) {
-            $ows_url = gcMapGeoServerUtils::getWmsBaseUrl($this->projectName, $this->mapsetName) . 'wms?';
+            $ows_url = gcMapGeoServerUtils::getWmsBaseUrl($this->projectName, $this->mapsetName);
         } else {
             $ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
         }
