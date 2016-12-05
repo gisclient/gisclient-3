@@ -3,6 +3,23 @@ require_once "../../config/config.php";
 require_once ADMIN_PATH."lib/gcSymbol.class.php";
 
 $db = GCApp::getDB();
+
+if(defined('GEOSERVER_URL') && GEOSERVER_URL){
+    $dbSchema = DB_SCHEMA;
+    $sql = "SELECT * FROM {$dbSchema}.symbol WHERE symbol_name=:symbol_name";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array('symbol_name'=>$_REQUEST['id']));
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!empty($data['symbol_def'])) {
+        $fileName = ROOT_PATH . substr($data['symbol_def'], 25, -1);
+        if (file_exists($fileName)) {
+            echo file_get_contents($fileName);
+        }
+    }
+    die;
+}
+
 $smb=new Symbol($_REQUEST['table']);
 
 if($smb->table == 'class') {
