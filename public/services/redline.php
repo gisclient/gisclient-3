@@ -217,13 +217,13 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('sizeunits', MS_PIXELS);
 		$oLay->set('labelitem', "note");
 		
-		// TODO: already called some lines before. Can this be removed?
 		$oClass = ms_newClassObj($oLay);
 		// Label properties
 		$lbl = null;
 		if (ms_GetVersionInt() < 60200) {
 			$lbl = $oClass->label;
-		} else if($oClass->numlabels > 0) {
+		} else {
+			$oClass->addLabel(new labelObj());
 			$lbl = $oClass->getLabel(0);
 		}
 		if ($lbl) {
