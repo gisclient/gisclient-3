@@ -35,9 +35,9 @@ dato[] = "Verstecke bei Abfrage<br><font size=1 >Nicht im Abfrage-Tool vorhanden
 dato[] = "In Suche sichtbar<br><font size=1 >Anwesend auf Karte in dem Suche-Reiter</font>;searchable_id;200#seldb_searchable;selectdb"
 
 dato[] = "Template für WMS"
-dato[] = "Template<br><font size=1 >Scrivere:<br>template_wms/nome_layergroup.nome_layer.html</font>;template;70;text|Template einfügen;data;200#setDefaultTemplate;button"
-dato[] = "Header<br><font size=1 >Scrivere:<br>template_wms/header.html</font>;header;70;text"
-dato[] = "Footer<br><font size=1 >Scrivere:<br>template_wms/footer.html</font>;footer;70;text"
+dato[] = "Template<br><font size=1 >Schreiben:<br>template_wms/nome_layergroup.nome_layer.html</font>;template;70;text|Template einfügen;data;150#setDefaultTemplate;button"
+dato[] = "Header<br><font size=1 >Schreiben:<br>template_wms/header.html</font>;header;70;text"
+dato[] = "Footer<br><font size=1 >Schreiben:<br>template_wms/footer.html</font>;footer;70;text"
 
 //dato[] = "Sonstige Parameter"
 //dato[] = "Tolleranza;tolerance;5;intero|Unità tolleranza;toleranceunits_id;160#seldb_sizeunits;selectdb"
