@@ -9,7 +9,7 @@ modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,/ht
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -479,7 +479,7 @@ class gcMapfile{
 		$imgResolution = "RESOLUTION ".MAP_DPI;
 		$size = TILE_SIZE . " " . TILE_SIZE;
 
-		$wms_mime_type = "\t\"wms_feature_info_mime_type\"	\"text/html\"";
+		$wms_mime_type = "\t\"wms_feature_info_mime_type\"	\"text/html, text/xml\"";
 		$ows_title = "\t\"ows_title\"\t\"". $mapFile ."\"";
 		$project_name = "\t\"project_name\"\t\"". $projectName ."\"";
 		$ows_wfs_encoding = $this->_getEncoding();

@@ -1077,3 +1077,9 @@ ALTER TABLE vista_document_paths
   OWNER TO gisclient;
 
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.5', 'author', '2016-05-30');
+
+-- 2016-10-26 clean field layertype_name of table e_layertype
+UPDATE e_layertype SET layertype_name = trim(layertype_name);
+
+--version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.6', 'author', '2016-10-26');

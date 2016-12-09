@@ -346,6 +346,7 @@ class gcMap{
 
             $layerOptions["theme"] = $themeTitle;
             $layerOptions["theme_id"] = $row['theme_name'];
+            $layerOptions["radio"] = intval($row['radio']);
             $layerOptions["title"] = $layergroupTitle;
             $layerOptions["rootPath"] = $themeTitle;
             $layerOptions["order"] = $layerOrder;
@@ -822,7 +823,7 @@ class gcMap{
                 LEFT JOIN ".DB_SCHEMA.".relation using(relation_id)
                 LEFT JOIN ".DB_SCHEMA.".field_groups using(field_id)
                 WHERE $userGroupFilter layer.queryable = 1 AND mapset_layergroup.mapset_name=:mapset_name ";
-        $sql .= " ORDER BY theme_title, theme_id, layer_title, layer_name, field_order, field_header;";
+        $sql .= " ORDER BY theme_order, theme_title, theme_id, layergroup_order, layer_order, layer_title, layer_name, field_order, field_header;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
@@ -999,10 +1000,8 @@ class gcMap{
         unset($featureTypes);
 
     }
-    
+
     private function _getFeatureTypesLinks() {
-        //FD: questi adesso sono qt_link oppure layer_link?!?!
-        return array();
         $sql = "select layer_id, link_name, link_def, winw, winh ".
             " from ".DB_SCHEMA.".link inner join ".DB_SCHEMA.".layer_link using(link_id) ".
             " INNER JOIN ".DB_SCHEMA.".layer using (layer_id) ".
@@ -1012,8 +1011,7 @@ class gcMap{
         $stmt->execute(array(':mapset_name'=>$this->mapsetName));
         $links = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if(strtoupper(CHAR_SET) != 'UTF-8') 
-                $row["link_name"] = utf8_encode($row["link_name"]);
+            if(strtoupper(CHAR_SET) != 'UTF-8') $row["link_name"] = utf8_encode($row["link_name"]);
             $links[$row['layer_id']][] = array('name'=>$row["link_name"],'url'=>$row['link_def'],'width'=>$row['winw'],'height'=>$row['winh']);
         }
         return $links;
