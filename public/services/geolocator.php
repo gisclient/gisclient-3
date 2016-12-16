@@ -21,24 +21,25 @@ if (empty($_REQUEST['mapset'])) {
 }
 $mapset = $_REQUEST['mapset'];
 if (!empty($_REQUEST['lang'])) {
-    $mapset = "{$mapset}_{$_REQUEST['lang']}";
-    if (empty($GEOLOCATOR_CONFIG[$mapset])) {
+    $config = $GEOLOCATOR_CONFIG["{$mapset}_{$_REQUEST['lang']}"];
+    if (empty($config)) {
         // language mapset configuration not available
-        $mapset = $_REQUEST['mapset'];
+        $config = $GEOLOCATOR_CONFIG[$mapset];
     }
+} else {
+    $config = $GEOLOCATOR_CONFIG[$mapset];
 }
 
-if (empty($GEOLOCATOR_CONFIG[$mapset])) {
+if (empty($config)) {
     $ajax->error("Missing geolocator configuration \"{$mapset}\"");
 }
-$config = $GEOLOCATOR_CONFIG[$mapset];
 
 $db = GCApp::getDB();
 
 $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog INNER JOIN '.DB_SCHEMA.'.mapset USING(project_name) where catalog_name=:name AND mapset_name=:mapset';
 
 $stmt = $db->prepare($sql);
-$stmt->execute(array('name'=>$config['catalogname'], 'mapset'=>$mapset));
+$stmt->execute(array('name'=>$config['catalogname'], 'mapset'=>$_REQUEST['mapset']));
 $catalogPath = $stmt->fetchColumn(0);
 if (empty($catalogPath)) {
     $ajax->error("Invalid catalog name \"{$config['catalogname']}\" in configuration");
