@@ -476,7 +476,7 @@ class gcReport {
 		$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid, '.$geomField.' as gc_geom';
         if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
         $datalayerTable .= ' FROM '.$joinString;
-        if(!empty($groupByFieldList)) $datalayerTable .= ' group by '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.', '.DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom.', '. implode(', ', $groupByFieldList);
+        if(!empty($groupByFieldList)) $datalayerTable .= ' group by '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.', '.DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom.', '. implode(', ', $groupByFieldList) . ' ORDER BY gc_objid';
 		print_debug($datalayerTable,null,'datalayer');
 		return $datalayerTable;
         
