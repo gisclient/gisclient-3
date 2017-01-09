@@ -305,6 +305,8 @@ class mapImage {
                 ));
             }
             $sql = 'GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER;
+            $sql = 'ALTER SEQUENCE '.$schema.'.'.$tableName.'_print_id_seq OWNED BY '.$tableName.'.print_id';
+            $sql = 'ALTER TABLE  '.$schema.'.'.$tableName.' ADD PRIMARY KEY (gid)';
             $db->exec($sql);
         }
         
