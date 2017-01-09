@@ -6,7 +6,6 @@ require_once ROOT_PATH . 'lib/GCService.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
-$db = GCApp::getDB();
 $gcService = GCService::instance();
 $gcService->startSession(true);
 
@@ -154,6 +153,7 @@ if(!empty($resolution) && $resolution != 72) {
 }
 
 if (empty($_REQUEST['SLD']) && !empty($_REQUEST['LAYERS'])) {
+    $db = GCApp::getDB();
     // check if SLD is used
     $sql = "SELECT layergroup_id, sld FROM ".DB_SCHEMA.".layergroup WHERE layergroup_name=? AND sld IS NOT NULL ";
     $stmt = $db->prepare($sql);
