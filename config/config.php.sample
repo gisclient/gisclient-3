@@ -186,3 +186,4 @@ $GEOLOCATOR_CONFIG = array(
     )
 );
 
+//$GEOLOCATOR_CONFIG_PATH = ROOT_PATH . 'custumer_config/'; //cartella contenente sottocartelle per ogni mapset con geolocator.json

@@ -8,7 +8,7 @@ $gcService->startSession();
 
 $ajax = new GCAjax();
 
-if (empty($GEOLOCATOR_CONFIG)) {
+if (empty($GEOLOCATOR_CONFIG) && empty($GEOLOCATOR_CONFIG_PATH)) {
     $ajax->error('Missing geolocator configuration');
 }
 
@@ -20,14 +20,37 @@ if (empty($_REQUEST['mapset'])) {
     $ajax->error('Undefined mapset');
 }
 $mapset = $_REQUEST['mapset'];
-if (!empty($_REQUEST['lang'])) {
-    $config = $GEOLOCATOR_CONFIG["{$mapset}_{$_REQUEST['lang']}"];
-    if (empty($config)) {
-        // language mapset configuration not available
+
+if ($GEOLOCATOR_CONFIG_PATH) {
+    $configFile = $GEOLOCATOR_CONFIG_PATH . "{$mapset}/geolocator.json";
+
+    if (is_file($configFile)) {
+        $json = json_decode(file_get_contents($configFile), true);
+        if (!empty($_REQUEST['lang'])) {
+            foreach ($json as $lang => $c) {
+                if ($lang == $_REQUEST['lang']) {
+                    $config = $c;
+                }
+            }
+            if (empty($config)) {
+                // language mapset configuration not available
+                $config = array_values($json)[0];
+            }
+        } else {
+            $config = array_values($json)[0];
+        }
+    }
+}
+if ($GEOLOCATOR_CONFIG && empty($config)) {
+    if (!empty($_REQUEST['lang'])) {
+        $config = $GEOLOCATOR_CONFIG["{$mapset}_{$_REQUEST['lang']}"];
+        if (empty($config)) {
+            // language mapset configuration not available
+            $config = $GEOLOCATOR_CONFIG[$mapset];
+        }
+    } else {
         $config = $GEOLOCATOR_CONFIG[$mapset];
     }
-} else {
-    $config = $GEOLOCATOR_CONFIG[$mapset];
 }
 
 if (empty($config)) {
@@ -68,10 +91,10 @@ if ($_REQUEST['action'] == 'search') {
     try {
         $stmt = $dataDb->prepare($sql);
         $stmt->execute(array(
-'key'=>'%'.$key.'%',
-'limit' => !empty($_REQUEST['limit'])? $_REQUEST['limit'] : 30,
-'offset' => !empty($_REQUEST['offset'])? $_REQUEST['offset'] : 0,
-));
+            'key'=>'%'.$key.'%',
+            'limit' => !empty($_REQUEST['limit'])? $_REQUEST['limit'] : 30,
+            'offset' => !empty($_REQUEST['offset'])? $_REQUEST['offset'] : 0,
+        ));
         $results = array();
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             array_push($results, $row);
