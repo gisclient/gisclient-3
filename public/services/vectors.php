@@ -99,6 +99,7 @@ WEB
     	"wms_onlineresource" "$onlineUrl"
     	"wfs_onlineresource" "$onlineUrl"
 		"wms_feature_info_mime_type"	"text/html"
+		"wms_feature_info_mime_type"	"text/xml"
 		"wfs_namespace_prefix"	"feature"
 		"wms_srs"	"EPSG:$mapSRID"
 	END
