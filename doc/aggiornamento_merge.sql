@@ -1083,3 +1083,10 @@ UPDATE e_layertype SET layertype_name = trim(layertype_name);
 
 --version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.6', 'author', '2016-10-26');
+
+--apertura link su nuova scheda se mancano dimensioni finestra 
+ALTER TABLE link ALTER COLUMN winw DROP DEFAULT;
+ALTER TABLE link ALTER COLUMN winh DROP DEFAULT;
+
+--version
+INSERT INTO version (version_name,version_key, version_date) values ('3.4.7', 'author', '2017-01-16');
