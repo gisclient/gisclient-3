@@ -323,7 +323,7 @@ class mapImage {
         
         foreach($vectors as $type => $features) {
             $field = self::$vectorTypes[$type]['db_field'];
-            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$field.') values (:print_id, st_transform(st_geomfromtext(:geom,' . $this->srid . '), :srid))';
+            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$field.') values (:print_id, st_transform(st_geomfromtext(:geom,' . $this->srid . '), :srid::INTEGER))';
             $stmt = $db->prepare($sql);
             foreach($features as $feature) {
                 $stmt->execute(array(
