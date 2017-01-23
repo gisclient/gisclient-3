@@ -21,7 +21,8 @@ if (empty($_REQUEST['mapset'])) {
 }
 $mapset = $_REQUEST['mapset'];
 
-if ($GEOLOCATOR_CONFIG_PATH) {
+$config = null;
+if (!empty($GEOLOCATOR_CONFIG_PATH)) {
     $configFile = $GEOLOCATOR_CONFIG_PATH . "{$mapset}/geolocator.json";
 
     if (is_file($configFile)) {
@@ -41,14 +42,10 @@ if ($GEOLOCATOR_CONFIG_PATH) {
         }
     }
 }
-if ($GEOLOCATOR_CONFIG && empty($config)) {
-    if (!empty($_REQUEST['lang'])) {
+if (!empty($GEOLOCATOR_CONFIG) && empty($config)) {
+    if (!empty($_REQUEST['lang']) && !empty($GEOLOCATOR_CONFIG["{$mapset}_{$_REQUEST['lang']}"])) {
         $config = $GEOLOCATOR_CONFIG["{$mapset}_{$_REQUEST['lang']}"];
-        if (empty($config)) {
-            // language mapset configuration not available
-            $config = $GEOLOCATOR_CONFIG[$mapset];
-        }
-    } else {
+    } else if (!empty($GEOLOCATOR_CONFIG[$mapset])) {
         $config = $GEOLOCATOR_CONFIG[$mapset];
     }
 }
