@@ -18,6 +18,7 @@ dato[] = "Descrizione;mapset_description;48x4;textarea"
 dato[] = "Formati di stampa;page_size;20;text"
 dato[] = "Scarica immagine;dl_image_res;20;text"
 dato[] = "Definizioni aggiuntive<br><font size=1><a href= "http://mapserver.org/mapfile/map.html" target=blank>Documentazione MapServer MAP</a></font>;mapset_def;48x6;textarea"
+dato[] = "Metadata;metadata;48x4;textarea"
 
 dato[] = "Colore sfondo;bg_color;11;color"
 dato[] = "Reference fissa;static_reference;;noyes|Tiles;mapset_tiles;120#seldb_mapset_tiles;selectdb"
