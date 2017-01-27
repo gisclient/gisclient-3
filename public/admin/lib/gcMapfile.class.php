@@ -469,7 +469,7 @@ class gcMapfile{
 
 		//$outputFormat = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
 		//$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
-		$metadata_inc = '';
+		$metadata_inc = $this->_getMapsetMetadata($mapFile);
 		//$legend_inc = file_get_contents (ROOT_PATH."config/mapfile.legend.inc");
 		$legend_inc = $this->_getLegendSettings();
 		//$legend_inc = '';
@@ -741,7 +741,22 @@ END";
                                             "\t\t\"wms_encoding\"\t\"".$res['charset_encodings_name']."\"\n";
         return $ows_wfs_encoding;
     }
-    
+
+    private function _getMapsetMetadata($mapName)
+    {
+        $sql = "select metadata "
+            . "from ".DB_SCHEMA.".mapset "
+            . "where mapset_name=:mapName";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array(':mapName' => $mapName));
+        $res=$stmt->fetch(PDO::FETCH_ASSOC);
+        if (!empty($res)) {
+            return $res['metadata'];
+        } else {
+            return '';
+        }
+    }
     
     function _getLegendSettings(){
         // default font
