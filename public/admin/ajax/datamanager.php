@@ -475,20 +475,6 @@ switch ($_REQUEST['action']) {
 
         $dataDb->beginTransaction();
 
-        // controllo e inserimento funzione per aggiornare lunghezza e area
-        $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
-        $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_measure'));
-        $res = $stmt->fetchColumn(0);
-
-        if (empty($res)) {
-            try {
-                createAutoUpdateMeasureFunction($dataDb);
-            } catch (Exception $e) {
-                $ajax->error($e->getMessage());
-            }
-        }
-
         // controllo e inserimento funzione per aggiornare le coordinate del punto
         $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
         $stmt = $dataDb->prepare($sql);
@@ -515,18 +501,15 @@ switch ($_REQUEST['action']) {
 
         if ($columnName && $measureFunction) { //aggiungo colonne e trigger per lunghezza/area
             try {
-                $sql = 'DROP TRIGGER IF EXISTS trigger_'.$_REQUEST['table_name'].'_measure_auto_updater ON '.$schema.'.'.$_REQUEST['table_name'];
-                $dataDb->exec($sql);
+                $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName float';
+                $stmt = $dataDb->prepare($sql);
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $columnName));
 
-                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$columnName.' float';
-                $dataDb->exec($sql);
+                $sql = 'UPDATE :tableName set :columnName = :updater';
+                $stmt = $dataDb->prepare($sql);
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $columnName, 'updater' => "{$measureFunction}({$geomColumn['column_name']})"));
 
-                $sql = 'update '.$schema.'.'.$_REQUEST['table_name'].' set '.$columnName.' = '.$measureFunction.'('.$geomColumn['column_name'].')';
-                $dataDb->exec($sql);
-
-                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_measure_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
-                        EXECUTE PROCEDURE public.gc_auto_update_measure('$columnName', '$measureFunction', '".$geomColumn['column_name']."');";
-                $dataDb->exec($sql);
+                setAutoUpdateMeasureTrigger($dataDb, $schema, $_REQUEST['table_name'], $columnName, $measureFunction, $geomColumn['column_name']);
             } catch (Exception $e) {
                 $ajax->error($e->getMessage() .' on '.$sql);
             }
@@ -1450,4 +1433,21 @@ function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
     $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date(:columnName);';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnName' => $column));
+}
+
+function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $function, $geomColumn)
+{
+    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_measure'));
+    $updateMeasureExists = ($stmt->fetchColumn(0) > 0);
+    if (!$updateMeasureExists) {
+        createAutoUpdateMeasureFunction($dataDb);
+    }
+
+    $triggerName = "trigger_{$table}_measure_auto_updater";
+    $sql = 'DROP TRIGGER IF EXISTS :triggerName on :tableName;';
+    $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure(:columnName, :measureFunction, :geomColumn);';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnName' => $column, 'measureFunction' => $function, 'geomColumn' => $geomColumn));
 }
