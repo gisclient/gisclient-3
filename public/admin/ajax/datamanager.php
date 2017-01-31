@@ -438,7 +438,6 @@ switch ($_REQUEST['action']) {
             try {
                 array_push($results, 'usiamo last_edit_date');
                 $sql = "ALTER TABLE {$schema}.{$table} ADD COLUMN {$autoUpdaters['last_edit_date']} timestamp without time zone";
-                $dataDb->exec($sql);
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute();
                 array_push($results, 'aggiunta la colonna '.$autoUpdaters['last_edit_date']);
