@@ -468,7 +468,7 @@ switch ($_REQUEST['action']) {
 
         $sql = 'select type, f_geometry_column as column_name from public.geometry_columns where f_table_schema = :schema and f_table_name = :table';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('schema'=>$schema, 'table'=>$_REQUEST['table_name']));
+        $stmt->execute(array('schema'=>$schema, 'table'=>$table));
         $geomColumn = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$geomColumn) {
