@@ -419,28 +419,14 @@ switch ($_REQUEST['action']) {
         $dataDb->beginTransaction();
 
         if ($autoUpdaters['last_edit_user']) {
-            array_push($results, 'usiamo last_edit_user');
-            $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
-            $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_user'));
-            $updateUserExists = ($stmt->fetchColumn(0) > 0);
-
             try {
-                if (!$updateUserExists) {
-                    array_push($results, 'non esiste la funzione gc_auto_update_user');
-                    if (!defined('CURRENT_EDITING_USER_TABLE')) {
-                        throw new Exception("constant CURRENT_EDITING_USER_TABLE is not defined");
-                    }
-                    createAutoUpdateUserFunction($dataDb, CURRENT_EDITING_USER_TABLE);
-                    array_push($results, 'creata la funzione gc_auto_update_user');
-                }
-                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['last_edit_user'].' text';
-                $dataDb->exec($sql);
+                array_push($results, 'usiamo last_edit_user');
+                $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName text';
+                $stmt = $dataDb->prepare($sql);
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['last_edit_user']));
                 array_push($results, 'creata la colonna '.$autoUpdaters['last_edit_user']);
 
-                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_last_edit_user_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
-                        EXECUTE PROCEDURE public.gc_auto_update_user('".$autoUpdaters['last_edit_user']."');";
-                $dataDb->exec($sql);
+                setAutoUpdateUserTrigger($dataDb, $schema, $_REQUEST['table_name'], $autoUpdaters['last_edit_user']);
                 array_push($results, 'creato il trigger ..._last_edit_user_auto_updater ');
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
@@ -1438,4 +1424,24 @@ function createAutoUpdateCoordinatesFunction($dataDb)
             '$body$'.
             "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
     $dataDb->exec($sql);
+}
+
+function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
+{
+    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_user'));
+    $updateUserExists = ($stmt->fetchColumn(0) > 0);
+    if (!$updateUserExists) {
+        if (!defined('CURRENT_EDITING_USER_TABLE')) {
+            throw new Exception('constant CURRENT_EDITING_USER_TABLE is not defined');
+        }
+        createAutoUpdateUserFunction($dataDb, CURRENT_EDITING_USER_TABLE);
+    }
+
+    $triggerName = "trigger_{$table}_last_edit_user_auto_updater";
+    $sql = 'DROP TRIGGER IF EXISTS :triggerName on :tableName;';
+    $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user(:columnName);';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnName' => $column));
 }
