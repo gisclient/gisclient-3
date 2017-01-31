@@ -489,9 +489,9 @@ switch ($_REQUEST['action']) {
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute();
 
-                $sql = "UPDATE {$schema}.{$table} SET {$columnName} = {$measureFunction}(:geomColumn)";
+                $sql = "UPDATE {$schema}.{$table} SET {$columnName} = {$measureFunction}({$geomInfo['column_name']})";
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('geomColumn' => $geomInfo['column_name']));
+                $stmt->execute();
 
                 setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $columnName, $measureFunction, $geomInfo['column_name']);
             } catch (Exception $e) {
@@ -507,9 +507,9 @@ switch ($_REQUEST['action']) {
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute();
 
-                $sql = "UPDATE {$schema}.{$table} SET {$autoUpdaters['pointx']} = st_x(:geomColumn), {$autoUpdaters['pointy']} = st_y(:geomColumn)";
+                $sql = "UPDATE {$schema}.{$table} SET {$autoUpdaters['pointx']} = st_x({$geomInfo['column_name']}), {$autoUpdaters['pointy']} = st_y({$geomInfo['column_name']})";
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('geomColumn' => $geomInfo['column_name']));
+                $stmt->execute();
 
                 setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $autoUpdaters['pointx'], $autoUpdaters['pointy'], $geomInfo['column_name']);
             } catch (Exception $e) {
@@ -1401,9 +1401,9 @@ function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
 
     $triggerName = "trigger_{$table}_last_edit_user_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user(':columnName');";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user({$column});";
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('columnName' => $column));
+    $stmt->execute();
 }
 
 function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
@@ -1414,9 +1414,9 @@ function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
 
     $triggerName = "trigger_{$table}_last_edit_date_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date(':columnName');";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date({$column});";
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('columnName' => $column));
+    $stmt->execute();
 }
 
 function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $function, $geomColumn)
@@ -1427,9 +1427,9 @@ function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $functio
 
     $triggerName = "trigger_{$table}_measure_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure(':columnName', ':measureFunction', ':geomColumn');";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure({$column}, {$function}, {$geomColumn});";
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('columnName' => $column, 'measureFunction' => $function, 'geomColumn' => $geomColumn));
+    $stmt->execute();
 }
 
 function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $columnY, $geomColumn)
@@ -1440,9 +1440,9 @@ function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $co
 
     $triggerName = "trigger_{$table}_coordinates_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates(':columnNameX', ':columnNameY', ':geomColumn');";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates({columnX}, {$columnY}, {$geomColumn});";
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('columnNameX' => $columnX, 'columnNameY' => $columnY, 'geomColumn' => $geomColumn));
+    $stmt->execute();
 }
 
 function getGeometryColumnInfo($dataDb, $schema, $table)
