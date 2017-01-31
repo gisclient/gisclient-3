@@ -1382,7 +1382,7 @@ function createAutoUpdateCoordinatesFunction($dataDb)
     $dataDb->exec($sql);
 }
 
-function checkExistDbFunction($functionName)
+function checkExistDbFunction($dataDb, $functionName)
 {
     $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
     $stmt = $dataDb->prepare($sql);
@@ -1392,7 +1392,7 @@ function checkExistDbFunction($functionName)
 
 function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
 {
-    if (!checkExistDbFunction('gc_auto_update_user')) {
+    if (!checkExistDbFunction($dataDb, 'gc_auto_update_user')) {
         if (!defined('CURRENT_EDITING_USER_TABLE')) {
             throw new Exception('constant CURRENT_EDITING_USER_TABLE is not defined');
         }
@@ -1401,46 +1401,46 @@ function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
 
     $triggerName = "trigger_{$table}_last_edit_user_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user(:columnName);";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user(':columnName');";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('columnName' => $column));
 }
 
 function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
 {
-    if (!checkExistDbFunction('gc_auto_update_date')) {
+    if (!checkExistDbFunction($dataDb, 'gc_auto_update_date')) {
         createAutoUpdateDateFunction($dataDb);
     }
 
     $triggerName = "trigger_{$table}_last_edit_date_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date(:columnName);";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date(':columnName');";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('columnName' => $column));
 }
 
 function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $function, $geomColumn)
 {
-    if (!checkExistDbFunction('gc_auto_update_measure')) {
+    if (!checkExistDbFunction($dataDb, 'gc_auto_update_measure')) {
         createAutoUpdateMeasureFunction($dataDb);
     }
 
     $triggerName = "trigger_{$table}_measure_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure(:columnName, :measureFunction, :geomColumn);";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure(':columnName', ':measureFunction', ':geomColumn');";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('columnName' => $column, 'measureFunction' => $function, 'geomColumn' => $geomColumn));
 }
 
 function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $columnY, $geomColumn)
 {
-    if (!checkExistDbFunction('gc_auto_update_coordinates')) {
+    if (!checkExistDbFunction($dataDb, 'gc_auto_update_coordinates')) {
         createAutoUpdateCoordinatesFunction($dataDb);
     }
 
     $triggerName = "trigger_{$table}_coordinates_auto_updater";
     $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
-    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates(:columnNameX, :columnNameY, :geomColumn);";
+    $sql .= "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates(':columnNameX', ':columnNameY', ':geomColumn');";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('columnNameX' => $columnX, 'columnNameY' => $columnY, 'geomColumn' => $geomColumn));
 }
