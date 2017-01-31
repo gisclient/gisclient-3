@@ -475,20 +475,6 @@ switch ($_REQUEST['action']) {
 
         $dataDb->beginTransaction();
 
-        // controllo e inserimento funzione per aggiornare le coordinate del punto
-        $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
-        $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_coordinates'));
-        $res = $stmt->fetchColumn(0);
-
-        if (empty($res)) {
-            try {
-                createAutoUpdateCoordinatesFunction($dataDb);
-            } catch (Exception $e) {
-                $ajax->error($e->getMessage());
-            }
-        }
-
         //controllo tipo geometria per area/lunghezza
         $columnName = $measureFunction = null;
         if (in_array($geomColumn['type'], array('POLYGON', 'MULTIPOLYGON')) && $autoUpdaters['area']) {
@@ -505,7 +491,7 @@ switch ($_REQUEST['action']) {
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $columnName));
 
-                $sql = 'UPDATE :tableName set :columnName = :updater';
+                $sql = 'UPDATE :tableName SET :columnName = :updater';
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $columnName, 'updater' => "{$measureFunction}({$geomColumn['column_name']})"));
 
@@ -513,23 +499,19 @@ switch ($_REQUEST['action']) {
             } catch (Exception $e) {
                 $ajax->error($e->getMessage() .' on '.$sql);
             }
-            //aggiungo colonne e trigger per coordinate
         } else if (in_array($geomColumn['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
+            //aggiungo colonne e trigger per coordinate
             try {
-                $sql = 'DROP TRIGGER IF EXISTS trigger_'.$_REQUEST['table_name'].'_coordinates_auto_updater ON '.$schema.'.'.$_REQUEST['table_name'];
-                $dataDb->exec($sql);
+                $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName float';
+                $stmt = $dataDb->prepare($sql);
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['pointx']));
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['pointy']));
 
-                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['pointx'].' float';
-                $dataDb->exec($sql);
-                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['pointy'].' float';
-                $dataDb->exec($sql);
+                $sql = 'UPDATE :tableName SET :columnNameX =st_x(:geomColumn), :columnNameY =st_y(:geomColumn)';
+                $stmt = $dataDb->prepare($sql);
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnNameX' => $autoUpdaters['pointx'], 'columnNameY' => $autoUpdaters['pointy'], 'geomColumn' => $geomColumn['column_name']));
 
-                $sql = 'update '.$schema.'.'.$_REQUEST['table_name'].' set '.$autoUpdaters['pointx'].'=st_x('.$geomColumn['column_name'].'), '.$autoUpdaters['pointy'].'=st_y('.$geomColumn['column_name'].')';
-                $dataDb->exec($sql);
-
-                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_coordinates_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
-                        EXECUTE PROCEDURE public.gc_auto_update_coordinates('".$autoUpdaters['pointx']."', '".$autoUpdaters['pointy']."', '".$geomColumn['column_name']."');";
-                $dataDb->exec($sql);
+                setAutoUpdateCoordinatesTrigger($dataDb, $schema, $_REQUEST['table_name'], $autoUpdaters['pointx'], $autoUpdaters['pointy'], $geomColumn['column_name']);
             } catch (Exception $e) {
                 $ajax->error($e->getMessage() .' on '.$sql);
             }
@@ -1450,4 +1432,21 @@ function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $functio
     $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure(:columnName, :measureFunction, :geomColumn);';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnName' => $column, 'measureFunction' => $function, 'geomColumn' => $geomColumn));
+}
+
+function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $columnY, $geomColumn)
+{
+    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_coordinates'));
+    $updateCoordinatesExists = ($stmt->fetchColumn(0) > 0);
+    if (!$updateCoordinatesExists) {
+        createAutoUpdateCoordinatesFunction($dataDb);
+    }
+
+    $triggerName = "trigger_{$table}_coordinates_auto_updater";
+    $sql = 'DROP TRIGGER IF EXISTS :triggerName on :tableName;';
+    $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates(:columnNameX, :columnNameY, :geomColumn);';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnNameX' => $columnX, 'columnNameY' => $columnY, 'geomColumn' => $geomColumn));
 }
