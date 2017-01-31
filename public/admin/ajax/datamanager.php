@@ -1380,13 +1380,17 @@ function createAutoUpdateCoordinatesFunction($dataDb)
     $dataDb->exec($sql);
 }
 
-function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
+function checkExistDbFunction($functionName)
 {
     $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_user'));
-    $updateUserExists = ($stmt->fetchColumn(0) > 0);
-    if (!$updateUserExists) {
+    $stmt->execute(array('schema'=>'public', 'functionName'=>$functionName));
+    return ($stmt->fetchColumn(0) > 0);
+}
+
+function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
+{
+    if (!checkExistDbFunction('gc_auto_update_user')) {
         if (!defined('CURRENT_EDITING_USER_TABLE')) {
             throw new Exception('constant CURRENT_EDITING_USER_TABLE is not defined');
         }
@@ -1402,11 +1406,7 @@ function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
 
 function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
 {
-    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
-    $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_date'));
-    $updateDateExists = ($stmt->fetchColumn(0) > 0);
-    if (!$updateDateExists) {
+    if (!checkExistDbFunction('gc_auto_update_date')) {
         createAutoUpdateDateFunction($dataDb);
     }
 
@@ -1419,11 +1419,7 @@ function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
 
 function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $function, $geomColumn)
 {
-    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
-    $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_measure'));
-    $updateMeasureExists = ($stmt->fetchColumn(0) > 0);
-    if (!$updateMeasureExists) {
+    if (!checkExistDbFunction('gc_auto_update_measure')) {
         createAutoUpdateMeasureFunction($dataDb);
     }
 
@@ -1436,11 +1432,7 @@ function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $functio
 
 function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $columnY, $geomColumn)
 {
-    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
-    $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_coordinates'));
-    $updateCoordinatesExists = ($stmt->fetchColumn(0) > 0);
-    if (!$updateCoordinatesExists) {
+    if (!checkExistDbFunction('gc_auto_update_coordinates')) {
         createAutoUpdateCoordinatesFunction($dataDb);
     }
 
