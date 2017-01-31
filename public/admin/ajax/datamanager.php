@@ -434,26 +434,15 @@ switch ($_REQUEST['action']) {
         }
 
         if ($autoUpdaters['last_edit_date']) {
-            array_push($results, 'usiamo last_edit_date');
-            $sql = 'select count(*) from information_schema.routines where routine_name = :functionName and routine_schema = :schema';
-            $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_date'));
-            $updateDateExists = ($stmt->fetchColumn(0) > 0);
-
             try {
-                if (!$updateDateExists) {
-                    array_push($results, 'non esiste la funzione gc_auto_update_date');
-                    createAutoUpdateDateFunction($dataDb);
-                    array_push($results, 'creata la funzione gc_auto_update_date');
-                }
-
-                $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$autoUpdaters['last_edit_date'].' timestamp without time zone';
+                array_push($results, 'usiamo last_edit_date');
+                $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName timestamp without time zone';
                 $dataDb->exec($sql);
+                $stmt = $dataDb->prepare($sql);
+                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['last_edit_date']));
                 array_push($results, 'aggiunta la colonna '.$autoUpdaters['last_edit_date']);
 
-                $sql = "CREATE TRIGGER trigger_".$_REQUEST['table_name']."_last_edit_date_auto_updater BEFORE INSERT OR UPDATE ON $schema.".$_REQUEST['table_name']." FOR EACH ROW
-                        EXECUTE PROCEDURE public.gc_auto_update_date('".$autoUpdaters['last_edit_date']."');";
-                $dataDb->exec($sql);
+                setAutoUpdateDateTrigger($dataDb, $schema, $_REQUEST['table_name'], $autoUpdaters['last_edit_date']);
                 array_push($results, 'aggiunto il trigger ..._last_edit_date_auto_updater');
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
@@ -1442,6 +1431,23 @@ function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
     $triggerName = "trigger_{$table}_last_edit_user_auto_updater";
     $sql = 'DROP TRIGGER IF EXISTS :triggerName on :tableName;';
     $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user(:columnName);';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnName' => $column));
+}
+
+function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
+{
+    $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('schema'=>'public', 'functionName'=>'gc_auto_update_date'));
+    $updateDateExists = ($stmt->fetchColumn(0) > 0);
+    if (!$updateDateExists) {
+        createAutoUpdateDateFunction($dataDb);
+    }
+
+    $triggerName = "trigger_{$table}_last_edit_date_auto_updater";
+    $sql = 'DROP TRIGGER IF EXISTS :triggerName on :tableName;';
+    $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date(:columnName);';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnName' => $column));
 }
