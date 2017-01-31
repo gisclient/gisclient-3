@@ -466,7 +466,7 @@ switch ($_REQUEST['action']) {
         $schema = GCApp::getDataDBSchema($catalogPath);
         $table = $_REQUEST['table_name'];
 
-        $geomInfo = getGeometryColumnInfo($schema, $table);
+        $geomInfo = getGeometryColumnInfo($dataDb, $schema, $table);
         if (!$geomInfo) {
             $ajax->error("Could not find the geometry column for {$schema}.{$table}");
         }
@@ -796,6 +796,7 @@ switch ($_REQUEST['action']) {
             $dataDb->exec($sql);
             $sql = "GRANT SELECT ON TABLE $schema.$tableName TO ".MAP_USER.";";
             $dataDb->exec($sql);
+            checkAutoUpdatersColumns($dataDb, $schema, $tableName, $autoUpdaters);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
         }
@@ -945,6 +946,7 @@ switch ($_REQUEST['action']) {
         }
 
         $dataDb->exec('GRANT SELECT ON TABLE '.$schema.'.'.$_REQUEST['table_name'].' TO '.MAP_USER);
+        checkAutoUpdatersColumns($dataDb, $schema, $tableName, $autoUpdaters);
         $dataDb->commit();
         $ajax->success();
         break;
@@ -1441,10 +1443,63 @@ function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $co
     $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnNameX' => $columnX, 'columnNameY' => $columnY, 'geomColumn' => $geomColumn));
 }
 
-function getGeometryColumnInfo($schema, $table)
+function getGeometryColumnInfo($dataDb, $schema, $table)
 {
     $sql = 'SELECT type, f_geometry_column AS column_name FROM public.geometry_columns WHERE f_table_schema = :schema AND f_table_name = :table';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('schema'=>$schema, 'table'=>$table));
     return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function checkAutoUpdatersColumns($dataDb, $schema, $table, $autoUpdaters)
+{
+    $sql = 'SELECT * FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('schema'=>$schema, 'table'=>$table));
+
+    $pointx = null;
+    $pointy = null;
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        foreach ($autoUpdaters as $type => $colName) {
+            if ($row['column_name'] == $colName) {
+                switch ($type) {
+                    case 'last_edit_user':
+                        setAutoUpdateUserTrigger($dataDb, $schema, $table, $autoUpdaters['last_edit_user']);
+                        break;
+
+                    case 'last_edit_date':
+                        setAutoUpdateDateTrigger($dataDb, $schema, $table, $autoUpdaters['last_edit_date']);
+                        break;
+
+                    case 'area':
+                        $geomInfo = getGeometryColumnInfo($dataDb, $schema, $table);
+                        setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $autoUpdaters['area'], 'st_area', $geomInfo['column_name']);
+                        break;
+
+                    case 'length':
+                        $geomInfo = getGeometryColumnInfo($dataDb, $schema, $table);
+                        setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $autoUpdaters['length'], 'st_length', $geomInfo['column_name']);
+                        break;
+
+                    case 'pointx':
+                        if (!empty($pointy)) {
+                            $geomInfo = getGeometryColumnInfo($dataDb, $schema, $table);
+                            setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $autoUpdaters['pointx'], $pointy, $geomInfo['column_name']);
+                        } else {
+                            $pointx = $autoUpdaters['pointx'];
+                        }
+                        break;
+
+                    case 'pointy':
+                        if (!empty($pointx)) {
+                            $geomInfo = getGeometryColumnInfo($dataDb, $schema, $table);
+                            setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $pointx, $autoUpdaters['pointy'], $geomInfo['column_name']);
+                        } else {
+                            $pointy = $autoUpdaters['pointy'];
+                        }
+                        break;
+                }
+            }
+        }
+    }
 }
