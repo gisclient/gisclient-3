@@ -410,10 +410,11 @@ switch ($_REQUEST['action']) {
 
         $dataDb = GCApp::getDataDB($catalogPath);
         $schema = GCApp::getDataDBSchema($catalogPath);
+        $table = $_REQUEST['table_name'];
         $results = array();
 
-        if (!GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name'])) {
-            $ajax->error("table '{$_REQUEST['table_name']}' does not exist");
+        if (!GCApp::tableExists($dataDb, $schema, $table)) {
+            $ajax->error("table '{$table}' does not exist");
         }
 
         $dataDb->beginTransaction();
@@ -423,10 +424,10 @@ switch ($_REQUEST['action']) {
                 array_push($results, 'usiamo last_edit_user');
                 $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName text';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['last_edit_user']));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $autoUpdaters['last_edit_user']));
                 array_push($results, 'creata la colonna '.$autoUpdaters['last_edit_user']);
 
-                setAutoUpdateUserTrigger($dataDb, $schema, $_REQUEST['table_name'], $autoUpdaters['last_edit_user']);
+                setAutoUpdateUserTrigger($dataDb, $schema, $table, $autoUpdaters['last_edit_user']);
                 array_push($results, 'creato il trigger ..._last_edit_user_auto_updater ');
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
@@ -439,10 +440,10 @@ switch ($_REQUEST['action']) {
                 $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName timestamp without time zone';
                 $dataDb->exec($sql);
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['last_edit_date']));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $autoUpdaters['last_edit_date']));
                 array_push($results, 'aggiunta la colonna '.$autoUpdaters['last_edit_date']);
 
-                setAutoUpdateDateTrigger($dataDb, $schema, $_REQUEST['table_name'], $autoUpdaters['last_edit_date']);
+                setAutoUpdateDateTrigger($dataDb, $schema, $table, $autoUpdaters['last_edit_date']);
                 array_push($results, 'aggiunto il trigger ..._last_edit_date_auto_updater');
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
@@ -463,6 +464,7 @@ switch ($_REQUEST['action']) {
 
         $dataDb = GCApp::getDataDB($catalogPath);
         $schema = GCApp::getDataDBSchema($catalogPath);
+        $table = $_REQUEST['table_name'];
 
         $sql = 'select type, f_geometry_column as column_name from public.geometry_columns where f_table_schema = :schema and f_table_name = :table';
         $stmt = $dataDb->prepare($sql);
@@ -470,7 +472,7 @@ switch ($_REQUEST['action']) {
         $geomColumn = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$geomColumn) {
-            $ajax->error("Could not find the geometry column for $schema.{$_REQUEST['table_name']}");
+            $ajax->error("Could not find the geometry column for {$schema}.{$table}");
         }
 
         $dataDb->beginTransaction();
@@ -489,13 +491,13 @@ switch ($_REQUEST['action']) {
             try {
                 $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName float';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $columnName));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $columnName));
 
                 $sql = 'UPDATE :tableName SET :columnName = :updater';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $columnName, 'updater' => "{$measureFunction}({$geomColumn['column_name']})"));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $columnName, 'updater' => "{$measureFunction}({$geomColumn['column_name']})"));
 
-                setAutoUpdateMeasureTrigger($dataDb, $schema, $_REQUEST['table_name'], $columnName, $measureFunction, $geomColumn['column_name']);
+                setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $columnName, $measureFunction, $geomColumn['column_name']);
             } catch (Exception $e) {
                 $ajax->error($e->getMessage() .' on '.$sql);
             }
@@ -504,14 +506,14 @@ switch ($_REQUEST['action']) {
             try {
                 $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName float';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['pointx']));
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnName' => $autoUpdaters['pointy']));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $autoUpdaters['pointx']));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $autoUpdaters['pointy']));
 
                 $sql = 'UPDATE :tableName SET :columnNameX =st_x(:geomColumn), :columnNameY =st_y(:geomColumn)';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$_REQUEST['table_name']}", 'columnNameX' => $autoUpdaters['pointx'], 'columnNameY' => $autoUpdaters['pointy'], 'geomColumn' => $geomColumn['column_name']));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnNameX' => $autoUpdaters['pointx'], 'columnNameY' => $autoUpdaters['pointy'], 'geomColumn' => $geomColumn['column_name']));
 
-                setAutoUpdateCoordinatesTrigger($dataDb, $schema, $_REQUEST['table_name'], $autoUpdaters['pointx'], $autoUpdaters['pointy'], $geomColumn['column_name']);
+                setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $autoUpdaters['pointx'], $autoUpdaters['pointy'], $geomColumn['column_name']);
             } catch (Exception $e) {
                 $ajax->error($e->getMessage() .' on '.$sql);
             }
