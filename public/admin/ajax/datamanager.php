@@ -466,12 +466,8 @@ switch ($_REQUEST['action']) {
         $schema = GCApp::getDataDBSchema($catalogPath);
         $table = $_REQUEST['table_name'];
 
-        $sql = 'select type, f_geometry_column as column_name from public.geometry_columns where f_table_schema = :schema and f_table_name = :table';
-        $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('schema'=>$schema, 'table'=>$table));
-        $geomColumn = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$geomColumn) {
+        $geomInfo = getGeometryColumnInfo($schema, $table);
+        if (!$geomInfo) {
             $ajax->error("Could not find the geometry column for {$schema}.{$table}");
         }
 
@@ -479,10 +475,10 @@ switch ($_REQUEST['action']) {
 
         //controllo tipo geometria per area/lunghezza
         $columnName = $measureFunction = null;
-        if (in_array($geomColumn['type'], array('POLYGON', 'MULTIPOLYGON')) && $autoUpdaters['area']) {
+        if (in_array($geomInfo['type'], array('POLYGON', 'MULTIPOLYGON')) && $autoUpdaters['area']) {
             $columnName = $autoUpdaters['area'];
             $measureFunction = 'st_area';
-        } else if (in_array($geomColumn['type'], array('LINESTRING', 'MULTILINESTRING')) && $autoUpdaters['length']) {
+        } else if (in_array($geomInfo['type'], array('LINESTRING', 'MULTILINESTRING')) && $autoUpdaters['length']) {
             $columnName = $autoUpdaters['length'];
             $measureFunction = 'st_length';
         }
@@ -495,13 +491,13 @@ switch ($_REQUEST['action']) {
 
                 $sql = 'UPDATE :tableName SET :columnName = :updater';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $columnName, 'updater' => "{$measureFunction}({$geomColumn['column_name']})"));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $columnName, 'updater' => "{$measureFunction}({$geomInfo['column_name']})"));
 
-                setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $columnName, $measureFunction, $geomColumn['column_name']);
+                setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $columnName, $measureFunction, $geomInfo['column_name']);
             } catch (Exception $e) {
-                $ajax->error($e->getMessage() .' on '.$sql);
+                $ajax->error($e->getMessage());
             }
-        } else if (in_array($geomColumn['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
+        } else if (in_array($geomInfo['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
             //aggiungo colonne e trigger per coordinate
             try {
                 $sql = 'ALTER TABLE :tableName ADD COLUMN :columnName float';
@@ -509,13 +505,13 @@ switch ($_REQUEST['action']) {
                 $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $autoUpdaters['pointx']));
                 $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnName' => $autoUpdaters['pointy']));
 
-                $sql = 'UPDATE :tableName SET :columnNameX =st_x(:geomColumn), :columnNameY =st_y(:geomColumn)';
+                $sql = 'UPDATE :tableName SET :columnNameX = st_x(:geomColumn), :columnNameY = st_y(:geomColumn)';
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnNameX' => $autoUpdaters['pointx'], 'columnNameY' => $autoUpdaters['pointy'], 'geomColumn' => $geomColumn['column_name']));
+                $stmt->execute(array('tableName' => "{$schema}.{$table}", 'columnNameX' => $autoUpdaters['pointx'], 'columnNameY' => $autoUpdaters['pointy'], 'geomColumn' => $geomInfo['column_name']));
 
-                setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $autoUpdaters['pointx'], $autoUpdaters['pointy'], $geomColumn['column_name']);
+                setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $autoUpdaters['pointx'], $autoUpdaters['pointy'], $geomInfo['column_name']);
             } catch (Exception $e) {
-                $ajax->error($e->getMessage() .' on '.$sql);
+                $ajax->error($e->getMessage());
             }
         }
         $dataDb->commit();
@@ -1443,4 +1439,12 @@ function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $co
     $sql .= 'CREATE TRIGGER :triggerName BEFORE INSERT OR UPDATE ON :tableName FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates(:columnNameX, :columnNameY, :geomColumn);';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute(array('triggerName' => $triggerName, 'tableName' => "{$schema}.{$table}", 'columnNameX' => $columnX, 'columnNameY' => $columnY, 'geomColumn' => $geomColumn));
+}
+
+function getGeometryColumnInfo($schema, $table)
+{
+    $sql = 'SELECT type, f_geometry_column AS column_name FROM public.geometry_columns WHERE f_table_schema = :schema AND f_table_name = :table';
+    $stmt = $dataDb->prepare($sql);
+    $stmt->execute(array('schema'=>$schema, 'table'=>$table));
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
