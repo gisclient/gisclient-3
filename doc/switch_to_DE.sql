@@ -1,4 +1,4 @@
-----------------------AGGIORNATO AD AUTHOR 3.4.3----------------------
+----------------------AGGIORNATO AD AUTHOR 3.4.8----------------------
 set search_path=gisclient_34,public;
 
 -------------------- UPDATE DELLE TABELLE DI LOOKUP  E_* --------------------
@@ -6,8 +6,8 @@ set search_path=gisclient_34,public;
 update e_datatype set datatype_name = 'Text' where datatype_id = 1;
 update e_datatype set datatype_name = 'Nummer' where datatype_id = 2;
 update e_datatype set datatype_name = 'Datum' where datatype_id = 3;
-update e_datatype set datatype_name = 'Immagine' where datatype_id = 10;
-update e_datatype set datatype_name = 'File' where datatype_id = 15;
+update e_datatype set datatype_name = 'Bild' where datatype_id = 10;
+update e_datatype set datatype_name = 'Datei' where datatype_id = 15;
 
 update e_fieldformat set fieldformat_name = 'Ganzzahlig' where fieldformat_id = 1;
 update e_fieldformat set fieldformat_name = 'Dezimal (1 Zahl)' where fieldformat_id = 2;
@@ -74,8 +74,8 @@ update e_searchtype set searchtype_name = 'Datum' where searchtype_id = 5;
 update e_searchtype set searchtype_name = 'Aufklappliste, kein WFS' where searchtype_id = 6;
 
 delete from e_sizeunits where sizeunits_id not in (1,5);
-update e_sizeunits set sizeunits_name = 'Pixel' where sizeunits_id = 0;
-update e_sizeunits set sizeunits_name = 'Meters' where sizeunits_id = 1;
+update e_sizeunits set sizeunits_name = 'Pixel' where  sizeunits_name = 'pixel';
+update e_sizeunits set sizeunits_name = 'Meters' where sizeunits_name = 'meters';
 
 update e_symbolcategory set symbolcategory_name = 'Grundierung' where symbolcategory_name = 'Campiture';
 update e_symbolcategory set symbolcategory_name = 'Kataster' where symbolcategory_name = 'Catasto CML';
@@ -323,18 +323,8 @@ UNION
 
 ALTER TABLE seldb_theme
   OWNER TO gisclient;
-  
-CREATE OR REPLACE VIEW seldb_tilegrid AS 
- SELECT (-1) AS id,
-    'Auswählen ====>'::character varying AS opzione
-UNION ALL
- SELECT e_tilegrid.tilegrid_id AS id,
-    e_tilegrid.tilegrid_title AS opzione
-   FROM e_tilegrid;
 
-ALTER TABLE seldb_tilegrid
-  OWNER TO gisclient;
-  
+
 CREATE OR REPLACE VIEW seldb_wmsversion AS 
  SELECT NULL::smallint AS id,
     'Auswählen ====>'::character varying AS opzione,
