@@ -79,6 +79,7 @@ update e_sizeunits set sizeunits_name = 'Meters' where sizeunits_name = 'meters'
 
 update e_symbolcategory set symbolcategory_name = 'Grundierung' where symbolcategory_name = 'Campiture';
 update e_symbolcategory set symbolcategory_name = 'Kataster' where symbolcategory_name = 'Catasto CML';
+update e_symbolcategory set symbolcategory_name = 'Zahlen und Buschstaben' where symbolcategory_name = 'Numeri e Lettere';
 
 update e_tiletype set tiletype_name = 'Nein' where tiletype_id = 0;
 update e_tiletype set tiletype_name = 'Ja' where tiletype_id = 1;
