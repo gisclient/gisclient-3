@@ -12,7 +12,6 @@ dato[] = "Sichtbarkeit der Klasse:<br><font size=1>Max. Maßstab</font>;maxscale
 
 dato[] = "Konfiguration der Label"
 dato[] = "Font;label_font;200#seldb_font##unsetFK('symbol_ttf_name');selectdb"
-dato[] = "Font Größe:<br><font size=1>Max.</font>;label_maxsize;3;intero|<font size=1>Min.</font>;label_minsize;3;intero|<font size=1>Optimal</font>;label_size;20;text|Feld auswählen;label_size;80#openList#layer;button"
 dato[] = "Font Größe:<br><font size=1>Max.</font>;label_maxsize;3;intero|<font size=1>Min.</font>;label_minsize;3;intero|<font size=1>Optimal</font>;label_size;20;text|Feld auswählen;label_size;100#openList#layer;button"
 dato[] = "Text für gleiche Labelierung;class_text;65;text"
 dato[] = "Label Einstellungen"
