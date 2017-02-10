@@ -544,6 +544,7 @@ WEB
         # for mapserver 6.0
         \"wms_enable_request\" \"*\"
         \"ows_enable_request\" \"*\"
+        \"wfs_getfeature_formatlist\" \"GEOJSON\"
     $project_name
     $ows_title
     $ows_abstract
@@ -554,7 +555,7 @@ WEB
     $wfs_namespace_prefix
     $ows_srs
     $ows_accessConstraints
-$metadata_inc
+    $metadata_inc
     END
     $imgPath
     $imgUrl 
@@ -684,6 +685,14 @@ END";
         $mapserverSupport = ms_GetVersion();
         
         list($driver, $format) = explode('/', $driverName);
+
+        if ($driver == 'OGR') {
+	        if (preg_match_all ("/INPUT=([A-Z_]+)/", $mapserverSupport, $supports)) {
+	            if (in_array($driver, $supports[1]))
+	                return true;
+	        }
+        }
+
         
         // check on support
         if (preg_match_all ("/SUPPORTS=([A-Z_]+)/", $mapserverSupport, $supports)) {
@@ -712,14 +721,16 @@ END";
                     // ignore outputformat  with unsupported driver
                     if (!$this->_isDriverSupported($row["outputformat_driver"]))
                         continue;
-                    $formatText .= "OUTPUTFORMAT    
-    NAME \"".$row["outputformat_name"]."\"
-    DRIVER \"".$row["outputformat_driver"]."\"
-    MIMETYPE \"".$row["outputformat_mimetype"]."\"
-    IMAGEMODE ".$row["outputformat_imagemode"] ."
-    EXTENSION \"".$row["outputformat_extension"]."\"
-    FORMATOPTION \"INTERLACE=OFF\"";
-                    if($row["outputformat_option"]) $formatText.= "\n".$row["outputformat_option"];
+                    $formatText .= "OUTPUTFORMAT\n";
+                    $formatText .= "    NAME \"".$row["outputformat_name"]."\"\n";
+					$formatText .= "    DRIVER \"".$row["outputformat_driver"]."\"\n";
+					$formatText .= "    MIMETYPE \"".$row["outputformat_mimetype"]."\"\n";
+					if ($row["outputformat_imagemode"] !== 'JSON') {
+						$formatText .= "    IMAGEMODE \"".$row["outputformat_imagemode"] ."\"\n";
+					}
+					$formatText .= "    EXTENSION \"".$row["outputformat_extension"]."\"\n";
+					$formatText .= "    FORMATOPTION \"INTERLACE=OFF\"\n";
+                    if($row["outputformat_option"]) $formatText.= $row["outputformat_option"];
                     $formatText .= "\nEND\n";   
                 }
             } else {
