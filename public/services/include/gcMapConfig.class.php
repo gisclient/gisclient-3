@@ -44,41 +44,41 @@ class gcMap
 {
     const SCALE_TYPE_USER = 0;
     const SCALE_TYPE_POWEROF2 = 1;
-    private $db;
-    private $authorizedLayers = array();
-    private $authorizedGroups = array();
-    private $selgroupList = array();
-    private $mapLayers = array();
-    private $featureTypes = array();
-    private $defaultLayers = array();
-    private $projectName;
-    private $mapsetName;
-    private $mapsetSingleLayer;
-    private $mapConfig;
-    private $mapsetSRID;
-    private $mapsetGRID;
-    private $mapsetUM = "m";
-    private $mapResolutions = array();
-    private $mapsetResolutions = array();
-    private $scaleListResolutions = array();
-    private $levelOffset = 0;
-    private $tilesExtent;
-    private $activeBaseLayer = '';
-    private $isPublicLayerQueryable = true; //FLAG CHE SETTA I LAYER PUBBLICI ANCHE INTERROGABILI
-    private $fractionalZoom = 0;
-    private $allOverlays = 0;
-    private $coordSep = ' ';
-    private $listProviders = array(); //Elenco dei provider settati per il mapset
-    private $projDefs = array();
-    private $getLegend = false;
+    public $db;
+    public $authorizedLayers = array();
+    public $authorizedGroups = array();
+    public $selgroupList = array();
+    public $mapLayers = array();
+    public $featureTypes = array();
+    public $defaultLayers = array();
+    public $projectName;
+    public $mapsetName;
+    public $mapsetSingleLayer;
+    public $mapConfig;
+    public $mapsetSRID;
+    public $mapsetGRID;
+    public $mapsetUM = "m";
+    public $mapResolutions = array();
+    public $mapsetResolutions = array();
+    public $scaleListResolutions = array();
+    public $levelOffset = 0;
+    public $tilesExtent;
+    public $activeBaseLayer = '';
+    public $isPublicLayerQueryable = true; //FLAG CHE SETTA I LAYER PUBBLICI ANCHE INTERROGABILI
+    public $fractionalZoom = 0;
+    public $allOverlays = 0;
+    public $coordSep = ' ';
+    public $listProviders = array(); //Elenco dei provider settati per il mapset
+    public $projDefs = array();
+    public $getLegend = false;
 
-    private $mapProviders = array(
+    public $mapProviders = array(
         VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
         YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
         OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
         GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
 
-    private $i18n;
+    public $i18n;
     protected $oMap;
     protected $sldContents = array();
     
