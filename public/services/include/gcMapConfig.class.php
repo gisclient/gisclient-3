@@ -35,6 +35,7 @@ define('TMS_LAYER_TYPE', 6);
 define('GMAP_LAYER_TYPE', 7);
 define('BING_LAYER_TYPE', 8);
 define('XYZ_LAYER_TYPE', 9);
+define('WFS_LAYER_TYPE', 10);
 define('GOOGLESRID', 3857);
 define('GOOGLE_MAX_RESOLUTION', 156543.03390625);
 define('GOOGLE_MIN_ZOOM_LEVEL', 0);
@@ -104,7 +105,6 @@ class gcMap
             die();
         }
 
-        
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!empty($languageId)) {
@@ -251,7 +251,6 @@ class gcMap
         return $value;
     }
 
-
     public function _getLayers()
     {
         // **** Retrieve Layer names/mapserver ID hash
@@ -387,6 +386,7 @@ class gcMap
 
             switch ($layerType) {
                 case WMS_LAYER_TYPE:
+                case WFS_LAYER_TYPE:
                     //TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
                     $layerParameters = array();
 
@@ -395,7 +395,11 @@ class gcMap
                     $layerParameters["project"] = $this->projectName;
                     $layerParameters["map"] = $mapsetName; // AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
                     $layerParameters["exceptions"] = (defined('DEBUG') && DEBUG == 1) ? 'xml' : 'blank';
-                    $layerParameters["format"] = $row["outputformat_mimetype"];
+                    if ($layerType == WMS_LAYER_TYPE) {
+                        $layerParameters["format"] = $row["outputformat_mimetype"];
+                    } elseif ($layerType == WFS_LAYER_TYPE) {
+                        $layerParameters["outputformat"] = $row["outputformat_mimetype"];
+                    }
                     $layerParameters["transparent"] = true;
                     if (!empty($row['sld'])) {
                         $layerParameters["sld"] = PUBLIC_URL . "sld/" . $row["sld"];
@@ -795,7 +799,7 @@ class gcMap
         
         if (trim($row['sld']) != '') {
             if (is_null($this->oMap)) {
-                $this->oMap = ms_newMapobj("../../map/{$this->mapsetName}.map");
+                $this->oMap = ms_newMapobj(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map");
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
                 $ch = curl_init($row['sld']);
