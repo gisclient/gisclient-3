@@ -371,8 +371,7 @@ ms_ioinstallstdouttobuffer();
 /* Execute request */
 $oMap->owsdispatch($objRequest);
 $contenttype = ms_iostripstdoutbuffercontenttype();
-
-/* Send response with appropriate header */ 
+/* Send response with appropriate header */
 if (substr($contenttype, 0, 6) == 'image/') {
     header('Content-Type: '. $contenttype);
 
@@ -384,7 +383,7 @@ if (substr($contenttype, 0, 6) == 'image/') {
     if (defined('DYNAMIC_LAYERS')) {
         $dynamicLayers = explode(',', DYNAMIC_LAYERS);
         if (isset($layersToInclude)) {
-            foreach($layersToInclude as $currentLayer) {
+            foreach ($layersToInclude as $currentLayer) {
                 if (in_array($currentLayer, $dynamicLayers)) {
                     $hasDynamicLayer = true;
                     break;
@@ -414,9 +413,8 @@ if (substr($contenttype, 0, 6) == 'image/') {
         header("Last-Modified: {$serverTime}");
         header("Expires: {$cacheTime}");
     }
-    ms_iogetStdoutBufferBytes(); 
+    ms_iogetStdoutBufferBytes();
 } elseif (strstr($contenttype, 'google-earth')) {
-    
     if ($requestedFormat == 'kmz' &&
         strtolower($objRequest->getValueByName('format')) == 'kml') {
         header("Content-Type: application/vnd.google-earth.kmz");
@@ -428,11 +426,17 @@ if (substr($contenttype, 0, 6) == 'image/') {
     } else {
         header("Content-Type: $contenttype");
         header('Content-Disposition: attachment; filename="layerdata.kml"');
-        ms_iogetStdoutBufferBytes(); 
-    }   
-} else { 
-    header("Content-Type: application/xml"); 
-    ms_iogetStdoutBufferBytes(); 
+        ms_iogetStdoutBufferBytes();
+    }
+} elseif ($objRequest->getValueByName('outputformat') == 'GEOJSON') {
+    ms_iostripstdoutbuffercontentheaders();
+    header("Content-Type: application/json");
+    
+    ms_iogetStdoutBufferBytes();
+} else {
+    header("Content-Type: application/xml");
+    
+    ms_iogetStdoutBufferBytes();
 }
 
 ms_ioresethandlers();
