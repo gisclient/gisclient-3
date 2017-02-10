@@ -9,12 +9,12 @@ require_once __DIR__.'/include/OwsHandler.php';
 $gcService = GCService::instance();
 $gcService->startSession(true);
 
-if(!defined('GC_SESSION_NAME')) {
+if (!defined('GC_SESSION_NAME')) {
     throw new Exception('Undefined GC_SESSION_NAME in config');
 }
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
-if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
+if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
     include "./include/putrequest.php";
     exit(0);
 }
@@ -28,7 +28,7 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
     exit(0);
 }
 
-if(defined('DEBUG') && DEBUG == true) {
+if (defined('DEBUG') && DEBUG == true) {
     ini_set('display_errors', 'On');
     error_reporting(E_ALL ^ E_NOTICE);
 }
@@ -40,9 +40,9 @@ $invertedAxisOrderSrids = array(2178,31465,31466,31467,31468,31254,31255,31256,3
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
     // skipping this parameter does avoid a second request made by mapserver
-    // 
+    //
     // filter handling is delayed, for issues with axis ordering
-    // 
+    //
     // transparent handling is delayed in order to check, if the target format
     // really supports tranparent pixels
     if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
@@ -107,11 +107,11 @@ if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
     header('HTTP/1.0 400 Bad Request');
     echo "invalid PROJECT name";
     exit(1);
-} 
+}
 
 // se è definita una lingua, apro il relativo mapfile
 $mapfileBasename = $objRequest->getvaluebyname('map');
-if($objRequest->getvaluebyname('lang')) {
+if ($objRequest->getvaluebyname('lang')) {
     $maplang = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
     if (file_exists($projectDirectory.$maplang.'.map')) {
         $mapfileBasename = $maplang;
@@ -122,7 +122,7 @@ if($objRequest->getvaluebyname('lang')) {
 
 //Files temporanei
 $showTmpMapfile = $objRequest->getvaluebyname('tmp');
-if(!empty($showTmpMapfile)) {
+if (!empty($showTmpMapfile)) {
     $mapfileBasename = "tmp.".$mapfileBasename;
 }
 
@@ -134,20 +134,20 @@ if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
     header('HTTP/1.0 400 Bad Request');
     echo "invalid MAP name";
     exit(1);
-} 
+}
 if (!is_readable($mapfile)) {
     // map file not found
     print_debug('mapfile ' .$mapfile. ' not readable', null, 'system');
     header('HTTP/1.0 400 Bad Request');
     echo "invalid MAP name";
     exit(1);
-} 
+}
 
 $oMap = ms_newMapobj($mapfile);
 print_debug('opened mapfile "' .realpath($mapfile). '": '.get_class($oMap), null, 'system');
 
 $resolution = $objRequest->getvaluebyname('resolution');
-if(!empty($resolution) && $resolution != 72) {
+if (!empty($resolution) && $resolution != 72) {
     $oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
     $oMap->set('defresolution', 96);
 }
@@ -177,26 +177,26 @@ if (empty($_REQUEST['SLD']) && !empty($_REQUEST['LAYERS'])) {
 }
 
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
-if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
+if (!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'], -4)=='.xml') {
     $sldContent = file_get_contents($_REQUEST['SLD_BODY']);
-    if($sldContent !== false) {
+    if ($sldContent !== false) {
         $objRequest->setParameter('SLD_BODY', $sldContent);
         $oMap->applySLD($sldContent); // for getlegendgraphic
     }
-} else if(!empty($_REQUEST['SLD'])) {
+} elseif (!empty($_REQUEST['SLD'])) {
     $sldContent = OwsHandler::getSldContent($_REQUEST['SLD']);
     $objRequest->setParameter('SLD_BODY', $sldContent);
     $oMap->applySLD($sldContent); // for getlegendgraphic
 }
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
-if($objRequest->getvaluebyname('srsname')) {
+if ($objRequest->getvaluebyname('srsname')) {
     $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
 }
-if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) {
+if ($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) {
     $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
 }
-if($objRequest->getvaluebyname('srs')) {
+if ($objRequest->getvaluebyname('srs')) {
     $srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
     if (count($srsParts) == 7) {
         // e.g.: 'urn:ogc:def:crs:EPSG::4306'
@@ -209,144 +209,141 @@ if($objRequest->getvaluebyname('srs')) {
 }
 
 $url = OwsHandler::currentPageURL();
-$oMap->setMetaData("ows_onlineresource",$url.'?project='.$objRequest->getvaluebyname('project')."&map=".$objRequest->getvaluebyname('map'));
+$oMap->setMetaData("ows_onlineresource", $url.'?project='.$objRequest->getvaluebyname('project')."&map=".$objRequest->getvaluebyname('map'));
 
-if(!empty($_REQUEST['GCFILTERS'])){
-
-    $v = explode(',',stripslashes($_REQUEST['GCFILTERS']));
-    for($i=0;$i<count($v);$i++){
-        list($layerName,$gcFilter)=explode('@',$v[$i]);
+if (!empty($_REQUEST['GCFILTERS'])) {
+    $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
+    for ($i=0; $i<count($v); $i++) {
+        list($layerName, $gcFilter)=explode('@', $v[$i]);
 
         $oLayer = $oMap->getLayerByName($layerName);
-        if($oLayer) {
-            OwsHandler::applyGCFilter($oLayer,$gcFilter);
+        if ($oLayer) {
+            OwsHandler::applyGCFilter($oLayer, $gcFilter);
         }
     }
 }
 
 $cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;
-if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
-	$hasPrivateLayers = false;
-	$layersArray = array();
-	if(!empty($layersParameter)) {
-		$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
-	}
-	
-	foreach($layersArray as $layer) {
-		$privateLayer = $layer->getMetaData('gc_private_layer');
-		if(!empty($privateLayer)) {
-			$hasPrivateLayers = true;
-			break;
-		}
-	}
-	
-	if ($hasPrivateLayers) {
-		$user = new GCUser();
-		$isAuthenticated = $user->isAuthenticated();
+if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
+    $hasPrivateLayers = false;
+    $layersArray = array();
+    if (!empty($layersParameter)) {
+        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
+    }
+    
+    foreach ($layersArray as $layer) {
+        $privateLayer = $layer->getMetaData('gc_private_layer');
+        if (!empty($privateLayer)) {
+            $hasPrivateLayers = true;
+            break;
+        }
+    }
+    
+    if ($hasPrivateLayers) {
+        $user = new GCUser();
+        $isAuthenticated = $user->isAuthenticated();
 
-		// user does not have an open session, try to log in
-		if (!$isAuthenticated &&
-			isset($_SERVER['PHP_AUTH_USER']) &&
-			isset($_SERVER['PHP_AUTH_PW'])) {
-			if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-				$user->setAuthorizedLayers(array('mapset_name' => $objRequest->getValueByName('map')));
-				$isAuthenticated = true;
-			}
-		}
+        // user does not have an open session, try to log in
+        if (!$isAuthenticated &&
+            isset($_SERVER['PHP_AUTH_USER']) &&
+            isset($_SERVER['PHP_AUTH_PW'])) {
+            if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+                $user->setAuthorizedLayers(array('mapset_name' => $objRequest->getValueByName('map')));
+                $isAuthenticated = true;
+            }
+        }
 
-		// user could not even log in, send correct headers and exit
-		if (!$isAuthenticated) {
-			print_debug('unauthorized access', null, 'system');
-			header('WWW-Authenticate: Basic realm="Gisclient"');
-			header('HTTP/1.0 401 Unauthorized');
+        // user could not even log in, send correct headers and exit
+        if (!$isAuthenticated) {
+            print_debug('unauthorized access', null, 'system');
+            header('WWW-Authenticate: Basic realm="Gisclient"');
+            header('HTTP/1.0 401 Unauthorized');
             echo "<h1>Authorization required</h1>";
-			exit(0);
-		}
-	}
+            exit(0);
+        }
+    }
 }
 
 if (!empty($layersParameter)) {
-	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
-	
-	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
-	$layersToRemove = array();
-	$layersToInclude = array();
-	foreach ($layersArray as $layer) {
-		//layer aggiunto x highlight
-		$highlight = $objRequest->getvaluebyname('highlight');
-		if (strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) {
-			$layer->set('sizeunits', MS_PIXELS);
-		}
+    $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
+    
+    // stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
+    $layersToRemove = array();
+    $layersToInclude = array();
+    foreach ($layersArray as $layer) {
+        //layer aggiunto x highlight
+        $highlight = $objRequest->getvaluebyname('highlight');
+        if (strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) {
+            $layer->set('sizeunits', MS_PIXELS);
+        }
 
-		// layer privato
-		$privateLayer = $layer->getMetaData('gc_private_layer');
-		if (!empty($privateLayer)) {
-			if (!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
-				array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
-				continue;
-			}
+        // layer privato
+        $privateLayer = $layer->getMetaData('gc_private_layer');
+        if (!empty($privateLayer)) {
+            if (!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $layer->name)) {
+                array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
+                continue;
+            }
             
             $user = new GCUser();
             $isAuthenticated = $user->isAuthenticated();
             if (!$isAuthenticated) {
                 array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
-				continue;
+                continue;
             }
-		}
-		$n = 0;
+        }
+        $n = 0;
 
-		if (!empty($_SESSION['GC_LAYER_FILTERS'])) {
-			if (!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
-				$filter = $layer->getFilterString();
-				$filter = trim($filter, '"');
-				if (!empty($filter)) {
-					$filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
-				} else {
-					$filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
-				}
-				$layer->setFilter($filter);
-			}
-		}
-		
-		if (!in_array($layer->name, $layersToRemove)) {
-			$filter = $layer->getFilterString();
+        if (!empty($_SESSION['GC_LAYER_FILTERS'])) {
+            if (!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
+                $filter = $layer->getFilterString();
+                $filter = trim($filter, '"');
+                if (!empty($filter)) {
+                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
+                } else {
+                    $filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
+                }
+                $layer->setFilter($filter);
+            }
+        }
+        
+        if (!in_array($layer->name, $layersToRemove)) {
+            $filter = $layer->getFilterString();
 
-			if ($filter) {
-				$filter = trim($filter, '"');
-				$p1 = strpos($layer->data, '(');
-				$p2 = strrpos($layer->data, ')', $p1);
-				$part1 = substr($layer->data, 0, $p1);
-				$part2 = substr($layer->data, $p1+1, $p2-$p1-1);
-				$part3 = substr($layer->data, $p2+1);
+            if ($filter) {
+                $filter = trim($filter, '"');
+                $p1 = strpos($layer->data, '(');
+                $p2 = strrpos($layer->data, ')', $p1);
+                $part1 = substr($layer->data, 0, $p1);
+                $part2 = substr($layer->data, $p1+1, $p2-$p1-1);
+                $part3 = substr($layer->data, $p2+1);
 
-				$part2 = "SELECT * FROM ({$part2}) AS foo2 WHERE ({$filter})";
-				$sql = "{$part1}({$part2}){$part3}";
+                $part2 = "SELECT * FROM ({$part2}) AS foo2 WHERE ({$filter})";
+                $sql = "{$part1}({$part2}){$part3}";
 
-				$layer->data = $sql;
-				$layer->set('data', $sql);
-				$layer->setFilter('');
-			}
+                $layer->data = $sql;
+                $layer->set('data', $sql);
+                $layer->setFilter('');
+            }
 
-			array_push($layersToInclude, $layer->name);
-		}
-	}
-	
-	// rimuovo i layer che l'utente non può visualizzare
-	foreach ($layersToRemove as $layerName) {
-		$layer = $oMap->getLayerByName($layerName);
-		$oMap->removeLayer($layer->index);
-	}
-	// aggiorno il parametro layers con i soli layers che l'utente può vedere
-	$objRequest->setParameter($parameterName, implode(",", $layersToInclude));
+            array_push($layersToInclude, $layer->name);
+        }
+    }
+    
+    // rimuovo i layer che l'utente non può visualizzare
+    foreach ($layersToRemove as $layerName) {
+        $layer = $oMap->getLayerByName($layerName);
+        $oMap->removeLayer($layer->index);
+    }
+    // aggiorno il parametro layers con i soli layers che l'utente può vedere
+    $objRequest->setParameter($parameterName, implode(",", $layersToInclude));
 }
 session_write_close();
 //die;
 // Cache part 1
 $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
 $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
-if ((isset($_REQUEST['REQUEST']) && strtolower($_REQUEST['REQUEST']) == 'getmap')
-    || (isset($_REQUEST['request']) && strtolower($_REQUEST['request']) == 'getmap')) {
-    
+if ((isset($_REQUEST['REQUEST']) && strtolower($_REQUEST['REQUEST']) == 'getmap') || (isset($_REQUEST['request']) && strtolower($_REQUEST['request']) == 'getmap')) {
     if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < time() - $owsCacheTTL) {
         header('HTTP/1.1 304 Not Modified');
         die(); // Dont' return image
