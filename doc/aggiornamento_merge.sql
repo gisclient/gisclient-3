@@ -1092,7 +1092,7 @@ ALTER TABLE link ALTER COLUMN winh DROP DEFAULT;
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.7', 'author', '2017-01-16');
 
 --fix unique key per combinazione layer_id + relation_id + field_header anzichè  layer_id + field_header. Questa modifica consente alias
-ALTER TABLE gisclient_34.field DROP CONSTRAINT qtfield_unique_key;
+ALTER TABLE gisclient_34.field DROP CONSTRAINT if exists qtfield_unique_key;
 ALTER TABLE gisclient_34.field
   ADD CONSTRAINT qtfield_unique_key UNIQUE(layer_id, relation_id, field_header);
 
