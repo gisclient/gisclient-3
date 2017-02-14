@@ -280,22 +280,20 @@ class gcMapfile
                 if (empty($defaultLayers[$mapName])) {
                     $defaultLayers[$mapName] = array();
                 }
-              //CACHE PER I TEMI SINGLE
+                
+                //CACHE PER I TEMI
                 //print_array($aLayer);
-                if ($aLayer['theme_single']) {
-                    $cacheName = $aLayer['theme_name'].'_cache';
-                    if (empty($this->mpxCaches[$mapName][$cacheName])) {
-                            $this->mpxCaches[$mapName][$cacheName] = array(
-                            'grids'=>array_keys($this->grids),
-                            'cache'=>$this->_getCacheType($aLayer['theme_name']),
-                            'layergroups'=>array(),
-                            'theme_name'=>$aLayer['theme_name'],
-                            'theme_title'=>$aLayer['theme_title']
-                        );
-                    }
-
-                    array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
+                $cacheName = $aLayer['theme_name'].'_cache';
+                if (empty($this->mpxCaches[$mapName][$cacheName])) {
+                        $this->mpxCaches[$mapName][$cacheName] = array(
+                        'grids'=>array_keys($this->grids),
+                        'cache'=>$this->_getCacheType($aLayer['theme_name']),
+                        'layergroups'=>array(),
+                        'theme_name'=>$aLayer['theme_name'],
+                        'theme_title'=>$aLayer['theme_title']
+                    );
                 }
+                array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
 
                 //LAYER ACCESI DI DEFAULT PER LA CACHE DEL MAPSET INTERO
                 //$defaulMapsetLayers = array();
@@ -1151,6 +1149,7 @@ END";
 
         $mapfileDir = ROOT_PATH.'map/';
         $projectDir = $mapfileDir.$this->projectName.'/';
+        file_put_contents($projectDir.$mapName.'.yaml', $content);
 
         //CREO IL FILE DI CONFIGURAZIONE SE NON ESISTE
         $wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
@@ -1161,7 +1160,11 @@ END";
             $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
             file_put_contents($wsgiConfigFile, $content);
         }
-        file_put_contents($projectDir.$mapName.'.yaml', $content);
+        
+        $importConfigFile = MAPPROXY_PATH . 'conf/' . $mapName . '.yaml';
+        if (!file_exists($importConfigFile)) {
+            file_put_contents($importConfigFile, 'base: [' . $projectDir.$mapName . '.yaml]');
+        }
     }
     
     public function _writeTemplateWms($projectDir)
