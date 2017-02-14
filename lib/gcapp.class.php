@@ -41,6 +41,7 @@ class GCApp {
 			return self::$dataDBs[$path]->$param;
 		} else {
 			return array(
+            //....altro
 				'schema'=>self::$dataDBs[$path]->schema,
 				'db_name'=>self::$dataDBs[$path]->dbName,
 			);
@@ -176,20 +177,75 @@ class GCDataDB {
 	public $schema;
 	public $db;
 	public $dbName;
+    public $dbUser;
+    public $dbPass;
+    public $dbHost;
+    public $dbPort;
+    
+    /**
+     * Return an array with the parsed connection string
+     */
+    public static function parseConnectionPath($path) {
+        $result = array(
+            'db_user'=>null,
+            'db_pass'=>null,
+            'db_host'=>null,
+            'db_name'=>null,
+            'db_port'=>null,
+            'schema'=>null
+        );
+        $pathInfo = explode("/", $path);
+        
+        $mapUser = defined('MAP_USER') ? MAP_USER : DB_USER;
+		$mapPwd = defined('MAP_USER') ? MAP_PWD : DB_PWD;
+        $result['db_user'] = $mapUser;
+        $result['db_pass'] = $mapPwd;
+        $result['db_host'] = DB_HOST;
+        $result['db_name'] = DB_NAME;
+        $result['db_port'] = DB_PORT;
+
+        if(count($pathInfo) == 1) { // No database conection info. Use author database
+            $result['schema'] = $pathInfo[0];
+		} else {
+            $result['schema'] = $pathInfo[1];
+            $connInfo = explode(" ", $pathInfo[0]);
+            if(count($connInfo) == 1) {
+                // No full connection string given
+				$result['db_name'] = $pathInfo[0];
+			} else {
+                // Full connection string
+                foreach($connInfo as $confValue) {
+                    foreach(array('user'=>'db_user', 'password'=>'db_pass', 'dbname'=>'db_name', 'host'=>'db_host', 'port'=>'db_port') as $cfgKey=>$resultKey) {
+                        if (strpos("{$confValue}=", $cfgKey) === 0) {  // Found entry at position 0
+                            $result[$resultKey] = trim(substr($confValue, strlen($cfgKey) + 1));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return $result;
+    }
 	
-	function __construct($path) { //TODO: vedere per path diversi
-		list($dbName, $schema) = explode('/', $path);
-		
-		$dsn = 'pgsql:dbname='.$dbName.';host='.DB_HOST;
-		if(defined('DB_PORT')) $dsn .= ';port='.DB_PORT;
+	function __construct($path) {
+		$connectionInfo = $this->parseConnectionPath($path);
+
+		$dsn = "pgsql:dbname={$connectionInfo['db_name']};host={$connectionInfo['db_host']}";
+		if (defined('DB_PORT')) {
+            $dsn .= ";port={$connectionInfo['db_port']}";
+        }
 		try {
-			$this->db = new PDO($dsn, DB_USER, DB_PWD);
+			$this->db = new PDO($dsn, $connectionInfo['db_user'], $connectionInfo['db_pass']);
 			$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		} catch(Exception $e) {
 			throw $e;
 		}
-		$this->schema = $schema;
-		$this->dbName = $dbName;
+        $this->schema = $connectionInfo['schema'];
+        $this->dbName = $connectionInfo['db_name'];
+        $this->dbUser = $connectionInfo['db_user'];
+        $this->dbPass = $connectionInfo['db_pass'];
+        $this->dbHost = $connectionInfo['db_host'];
+        $this->dbPort = $connectionInfo['db_port'];
 	}
 }
 
