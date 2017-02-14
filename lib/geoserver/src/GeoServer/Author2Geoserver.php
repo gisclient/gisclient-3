@@ -6,6 +6,8 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use GisClient\Logger\EmptyLogger;
 
+require_once __DIR__ . '/../../../../lib/gcapp.class.php';
+
 class Author2GeoServer implements LoggerAwareInterface
 {
 
@@ -84,15 +86,15 @@ class Author2GeoServer implements LoggerAwareInterface
             if ($catalog['conntype_name'] == 'Postgis') {
                 $datastoreName = "{$projectName}-{$catalog['catalog_name']}";
                 $this->logger->debug("Workspace \"{$workspaceName}\": Add datastore \"{$datastoreName}\"");
-                list($dbName, $dbSchema) = explode('/', $catalog['catalog_path']);
+                $connectionInfo = \GCDataDB::parseConnectionPath($catalog['catalog_path']);
                 $opt = array(
                     'description' => $catalog['catalog_description'],
-                    'host' => DB_HOST,
-                    'port' => DB_PORT,
-                    'database' => $dbName,
-                    'user' => DB_USER, // mapserver user
-                    'passwd' => DB_PWD, // mapserver password
-                    'schema' => $dbSchema
+                    'host' => $connectionInfo['db_host'],
+                    'port' => $connectionInfo['db_port'],
+                    'database' => $connectionInfo['db_name'],
+                    'user' => $connectionInfo['db_user'],
+                    'passwd' => $connectionInfo['db_pass'],
+                    'schema' => $connectionInfo['schema']
                 );
                 $this->geoserver->addDatastore($workspaceName, $datastoreName, $opt);
             } else {
