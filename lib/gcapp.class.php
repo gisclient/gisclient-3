@@ -41,9 +41,12 @@ class GCApp {
 			return self::$dataDBs[$path]->$param;
 		} else {
 			return array(
-            //....altro
 				'schema'=>self::$dataDBs[$path]->schema,
 				'db_name'=>self::$dataDBs[$path]->dbName,
+                'db_user'=>self::$dataDBs[$path]->dbUser,
+                'db_pass'=>self::$dataDBs[$path]->dbPass,
+                'db_host'=>self::$dataDBs[$path]->dbHost,
+                'db_port'=>self::$dataDBs[$path]->dbPort
 			);
 		}
 	}
