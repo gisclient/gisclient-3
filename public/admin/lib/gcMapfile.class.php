@@ -285,7 +285,7 @@ class gcMapfile
                 //print_array($aLayer);
                 $cacheName = $aLayer['theme_name'].'_cache';
                 if (empty($this->mpxCaches[$mapName][$cacheName])) {
-                        $this->mpxCaches[$mapName][$cacheName] = array(
+                    $this->mpxCaches[$mapName][$cacheName] = array(
                         'grids'=>array_keys($this->grids),
                         'cache'=>$this->_getCacheType($aLayer['theme_name']),
                         'layergroups'=>array(),
@@ -461,9 +461,11 @@ class gcMapfile
 
                 //AGGIUNGO IL LAYER PER LA NAVIGAZIONE VELOCE
                 $this->mpxCaches[$mapName][$mapName."_cache"] = array(
-                    'sources'=>array('mapserver_source:'.implode(",", $defaultLayers[$mapName])),
+                    //'sources'=>array('mapserver_source:'.implode(",", $defaultLayers[$mapName])), //prendo dalle altre cache
+                    'sources'=>array_keys($this->mpxCaches[$mapName]),
                     'minimize_meta_requests'=>true,
-                    'cache'=>$this->_getCacheType($mapName),
+                    //'cache'=>$this->_getCacheType($mapName), //non serve duplicare la cache
+                    'disable_storage'=>true,
                     'grids'=>array_keys($this->grids)
                     //'grids'=>array("epsg3857")//PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                 );
