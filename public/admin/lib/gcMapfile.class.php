@@ -1114,18 +1114,20 @@ END";
         if (defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) {
             $config["services"]["demo"] = null;
         }
-        if ($this->grids) {
+        if (count($this->grids) > 0) {
             $config["grids"] = $this->grids;
+            if ($this->mapsetExtent) { //force grid to map extent
+                foreach ($config["grids"] as $name => $grid) {
+                    $config["grids"][$name]['bbox'] = $this->mapsetExtent;
+                    $config["grids"][$name]['bbox_srs'] ='EPSG:'.$this->mapsetSrid;
+                }
+            }
         }
         if ($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) {
             $config["caches"] = $this->mpxCaches[$mapName];
         }
         if ($this->mpxLayers) {
             $config["layers"] = array_values($this->mpxLayers[$mapName]);
-        }
-
-        if (count($this->grids)==0) {
-            unset($config["grids"]);
         }
 
         
