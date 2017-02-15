@@ -286,7 +286,7 @@ class gcMapfile
                 $cacheName = $aLayer['theme_name'].'_cache';
                 if (empty($this->mpxCaches[$mapName][$cacheName])) {
                     $this->mpxCaches[$mapName][$cacheName] = array(
-                        'grids'=>array_keys($this->grids),
+                        'grids'=>array_keys($this->epsgList),
                         'cache'=>$this->_getCacheType($aLayer['theme_name']),
                         'layergroups'=>array(),
                         'theme_name'=>$aLayer['theme_name'],
@@ -350,7 +350,7 @@ class gcMapfile
                                 "minimize_meta_requests"=>true,
                                 "request_format"=>$aLayer["outputformat_mimetype"],
                                 "cache"=>$this->_getCacheType($aLayer["theme_name"].'.'.$aLayer["layergroup_name"]),
-                                "grids"=>array_keys($this->grids)
+                                "grids"=>array_keys($this->epsgList)
                                 //'grids'=>array("epsg3857")                //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                             );
                         }
@@ -466,15 +466,13 @@ class gcMapfile
                     'minimize_meta_requests'=>true,
                     //'cache'=>$this->_getCacheType($mapName), //non serve duplicare la cache
                     'disable_storage'=>true,
-                    'grids'=>array_keys($this->grids)
+                    'grids'=>array_keys($this->epsgList)
                     //'grids'=>array("epsg3857")//PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                 );
                 $this->mpxLayers[$mapName][$mapName."_tiles"] = array(
                     'name'=>$mapName."_tiles",
                     'title'=>$mapName."_tiles",
                     'sources'=>array($mapName."_cache")
-
-
                 );
 
                 //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
@@ -482,7 +480,7 @@ class gcMapfile
                     $this->mpxCaches[$mapName][$cacheName."_output"] = array(
                         'sources'=>array($cacheName),
                         'disable_storage'=>true,
-                        'grids'=>array_keys($this->grids)
+                        'grids'=>array_keys($this->epsgList)
                     );
                 }
 */
@@ -526,7 +524,7 @@ class gcMapfile
         $ows_wfs_encoding = $this->_getEncoding();
         $ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
         $wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
-        $ows_srs = "\t\"wms_srs\"\t\"". implode(" ", $this->epsgList) ."\"";
+        $ows_srs = "\t\"wms_srs\"\t\"". implode(" ", array_values($this->epsgList)) ."\"";
         $ows_accessConstraints = '';
         if (!empty($this->layersWithAccessConstraints)) {
             $ows_accessConstraints = "\t\"ows_accessconstraints\"\t\"Layers ".implode(', ', $this->layersWithAccessConstraints)." need authentication\"";
@@ -946,6 +944,7 @@ END";
 
     public function _setMapProjections()
     {
+        $epsgList = array();
         //COSTRUISCO UNA LISTA DI PARAMETRI PER OGNI SRID CONTENUTO NEL PROGETTO PER EVITARE DI CALCOLARLI PER OGNI LAYER
         $sql="SELECT DISTINCT srid, projparam FROM ".DB_SCHEMA.".layer 
             INNER JOIN ".DB_SCHEMA.".catalog USING(catalog_id) 
@@ -957,19 +956,26 @@ END";
         //GENERO LA LISTA DEGLI EXTENT PER I SISTEMI DI RIFERIMENTO
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $this->srsParams[$row["srid"]] = $row["projparam"];
+            $srs = "epsg".$row["srid"];
+            $epsgList[$srs] = "EPSG:".$row["srid"];
         }
 
         //ELENCO DEI SISTEMI DI RIFERIMENTO NEI QUALI SI ESPONE IL SERVIZIO:(GRIDS)
         //DEFAULT WEB MERCATOR
-        $epsgList = array("EPSG:3857");
+        /*$epsgList = array("EPSG:3857");
         $gridList = array(
             "epsg3857" => array(
                 'base'=>'GLOBAL_WEBMERCATOR',
                 'srs'=>'EPSG:3857',
                 'num_levels'=>MAPPROXY_GRIDS_NUMLEVELS
             )
-        );
+        );*/
 
+        $this->epsgList = $epsgList;
+    }
+
+    private function _getMapproxyGrids($mapName)
+    {
         $sql = "SELECT srid,".
         "st_x(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),srid)) as xc, ".
         "st_y(st_transform(st_geometryfromtext('POINT(".$this->xCenter." ".$this->yCenter.")',".$this->projectSrid."),srid)) as yc, ".
@@ -981,50 +987,60 @@ END";
 
         $stmt->execute(array($this->projectName));
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $tmpList = array();
         foreach ($rows as $row) {
             $srs = "epsg".$row["srid"];
-            $epsgList[] = "EPSG:".$row["srid"];
-            $gridList[$srs] = array("srs"=>"EPSG:".$row["srid"]);
-            $gridList[$srs]["res"] = array();
-            $convFact = GCAuthor::$aInchesPerUnit[$row["um"]]*MAP_DPI;
-            $precision = $row["um"] == "dd"?10:2;
-            if (defined('DEFAULT_SCALE_LIST')) {
-                $scaleList = preg_split('/[\s]+/', DEFAULT_SCALE_LIST);
+            $tmpList[$srs] = array(
+                'um' => $row["um"],
+                'xc' => $row["xc"],
+                'yc' => $row["yc"],
+                'xc' => $row["xc"],
+                'yc' => $row["yc"]
+            );
+        };
+
+
+        $grids = array();
+        foreach ($this->epsgList as $key => $srs) {
+            $grids[$key] = array("srs"=>$srs);
+            $grids[$key]["res"] = array();
+            $convFact = GCAuthor::$aInchesPerUnit[$tmpList[$key]["um"]]*MAP_DPI;
+            $precision = $tmpList[$key]["um"] == "dd"?10:2;
+
+            $sql = "SELECT mapset_scales FROM ".DB_SCHEMA.".mapset WHERE mapset_name=?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array($mapName));
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($row['mapset_scales'] !='') {
+                $scaleList = explode(',', $row['mapset_scales']);
+            } else if (defined('SCALE')) {
+                $scaleList = explode(',', SCALE);
             } else {
                 $scaleList = GCAuthor::$defaultScaleList;
             }
+
             foreach ($scaleList as $scaleValue) {
-                $gridList[$srs]["res"][] = round((float)$scaleValue/$convFact, $precision);
+                $grids[$key]["res"][] = round((float)$scaleValue/$convFact, $precision);
             }
-                    
-            $aExtent=array();
-            $extent = round($gridList[$srs]["res"][0] * TILE_SIZE);
-            //echo $extent;return;
-            $aExtent[0] = round((float)($row["xc"] - $extent), $precision);
-            $aExtent[1] = round((float)($row["yc"] - $extent), $precision);
-            $aExtent[2] = round((float)($row["xc"] + $extent), $precision);
-            $aExtent[3] = round((float)($row["yc"] + $extent), $precision);
-            $gridList[$srs]["bbox"] = $aExtent;
-            $gridList[$srs]["bbox_srs"] = "EPSG:".$row["srid"];
-        };
-            
-/*      while($row =  $stmt->fetch(PDO::FETCH_ASSOC)){
-            $epsgList[] = "EPSG:".$row["srid"];
-            if(isset($row["bbox"])){
-                $gridList["epsg".$row["srid"]] = array("srs"=>"EPSG:".$row["srid"]);
-                $gridList["epsg".$row["srid"]]["bbox"] = preg_split('/[\s]+/', $row["bbox"]);
-                $gridList["epsg".$row["srid"]]["bbox_srs"] = "EPSG:4326";
-                if(isset($row["resolutions"])){
-                    $res = preg_split('/[\s]+/', $row["resolutions"]);
-                    if(count($res)==1)
-                        $gridList["epsg".$row["srid"]]["max_res"] = $res[0];
-                    elseif(count($res)>1)
-                        $gridList["epsg".$row["srid"]]["resolutions"] = $res;
-                }
+
+            if ($this->mapsetExtent) { //force grid to map extent
+                $grids[$key]["bbox"] = $this->mapsetExtent;
+                $grids[$key]["bbox_srs"] ='EPSG:'.$this->mapsetSrid;
+            } else {
+                $aExtent=array();
+                $extent = round($grids[$key]["res"][0] * TILE_SIZE);
+                //echo $extent;return;
+                $aExtent[0] = round((float)($tmpList[$key]["xc"] - $extent), $precision);
+                $aExtent[1] = round((float)($tmpList[$key]["yc"] - $extent), $precision);
+                $aExtent[2] = round((float)($tmpList[$key]["xc"] + $extent), $precision);
+                $aExtent[3] = round((float)($tmpList[$key]["yc"] + $extent), $precision);
+                $grids[$key]["bbox"] = $aExtent;
+                $grids[$key]["bbox_srs"] = $srs;
             }
-        }*/
-        $this->epsgList = $epsgList;
-        $this->grids = $gridList;
+        }
+
+        return $grids;
     }
 
     public function _writeMapProxyConfig($mapName)
@@ -1043,7 +1059,7 @@ END";
                     'kvp' => true
                 ),
                 'wms'=>array(
-                    'srs'=>$this->epsgList,
+                    'srs'=>array_values($this->epsgList),
                     'md'=>array(
                         'title'=>$this->mapsetTitle,
                         'abstract'=>$this->mapsetTitle,
@@ -1060,7 +1076,7 @@ END";
             'sources'=>array(
                 'mapserver_wms_source'=>array(
                     'type'=>'wms',
-                    'supported_srs'=>$this->epsgList,
+                    'supported_srs'=>array_values($this->epsgList),
                     'req'=>array(
                         'url'=>MAPSERVER_URL,
                         'map'=>ROOT_PATH.'map/'.$this->projectName."/".$mapName.".map",
@@ -1114,14 +1130,8 @@ END";
         if (defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) {
             $config["services"]["demo"] = null;
         }
-        if (count($this->grids) > 0) {
-            $config["grids"] = $this->grids;
-            if ($this->mapsetExtent) { //force grid to map extent
-                foreach ($config["grids"] as $name => $grid) {
-                    $config["grids"][$name]['bbox'] = $this->mapsetExtent;
-                    $config["grids"][$name]['bbox_srs'] ='EPSG:'.$this->mapsetSrid;
-                }
-            }
+        if (count($this->epsgList) > 0) {
+            $config["grids"] = $this->_getMapproxyGrids($mapName);
         }
         if ($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) {
             $config["caches"] = $this->mpxCaches[$mapName];
