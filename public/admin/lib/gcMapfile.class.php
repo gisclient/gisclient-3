@@ -1032,7 +1032,6 @@ END";
         $config = array(
             'services'=>array(
                 'tms'=>array(
-                    'srs'=>$this->epsgList,
                     'use_grid_names'=>false,
                     'origin'=>'nw'
                 ),
@@ -1040,7 +1039,8 @@ END";
                     'use_grid_names'=>false
                 ),
                 'wmts'=>array(
-                    'srs'=>$this->epsgList
+                    'restful' => true,
+                    'kvp' => true
                 ),
                 'wms'=>array(
                     'srs'=>$this->epsgList,
@@ -1104,7 +1104,6 @@ END";
                     'proj_data_dir'=>PROJ_LIB
                 ),
                 'cache'=>array(
-                    'type'=>MAPPROXY_CACHE_TYPE,
                     'base_dir'=>MAPPROXY_CACHE_PATH.$this->projectName.'/',
                     'lock_dir'=>MAPPROXY_CACHE_PATH.'locks/',
                     'tile_lock_dir'=>MAPPROXY_CACHE_PATH.'tile_locks/'
@@ -1113,7 +1112,7 @@ END";
         );
 
         if (defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) {
-            $config["services"]["demo"]=array('name'=>$mapName);
+            $config["services"]["demo"] = null;
         }
         if ($this->grids) {
             $config["grids"] = $this->grids;
