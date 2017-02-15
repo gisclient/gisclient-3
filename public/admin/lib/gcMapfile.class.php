@@ -1174,7 +1174,7 @@ END";
     private function _writeMapProxySeed($mapName)
     {
         $caches = array_filter($this->mpxCaches[$mapName], function ($cache) {
-            return !($cache['disable_storage']);
+            return !(isset($cache['disable_storage']) && $cache['disable_storage']);
         });
 
         $config = array(
