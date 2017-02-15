@@ -488,6 +488,7 @@ class gcMapfile
 */
                 //$this->_writeMapProxyConfig($mpxLayers,$this->mpxCaches);
                 $this->_writeMapProxyConfig($mapName);
+                $this->_writeMapProxySeed($mapName);
             }
         }
 //echo "[mapname=$mapName]\n";
@@ -1167,6 +1168,23 @@ END";
         if (!file_exists($importConfigFile)) {
             file_put_contents($importConfigFile, 'base: [' . $projectDir.$mapName . '.yaml]');
         }
+    }
+
+    private function _writeMapProxySeed($mapName)
+    {
+        $config = array(
+            'seeds' => array(
+                'offline' => array(
+                    'caches' => array_keys($this->mpxCaches[$mapName])
+                )
+            )
+        );
+
+        $content = Spyc::YAMLDump($config, 1, 0);
+
+        $mapfileDir = ROOT_PATH.'map/';
+        $projectDir = $mapfileDir.$this->projectName.'/';
+        file_put_contents($projectDir.$mapName.'.seed.yaml', $content);
     }
     
     public function _writeTemplateWms($projectDir)
