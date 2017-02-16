@@ -8,5 +8,10 @@
     "require": {
         "php": ">=5.3.3"
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "autoload": {
+        "prs-4": {
+            "GisClient\\": "src/"
+        }
+    }
 }
