@@ -36,7 +36,7 @@ define('LONG_EXECUTION_MEMORY','512M');
 //define('PRIVATE_MAP_URL', 'http://localhost/map/index.php'); //URL CLIENT DI MAPPA PRIVATA
 //define('EXTERNAL_LOGIN_KEY', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
-define('LAYER_CLOSE_CONNECTION_DEFER', false);
+define('LAYER_CLOSE_CONNECTION_DEFER', true);
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
