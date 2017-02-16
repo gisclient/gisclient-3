@@ -229,4 +229,92 @@ class OwsHandler {
 
 		return $sldContent;
 	}
+    
+    /**
+     * Return the SLD url from request (using php $_REQUEST to prevent applying sld to mapserver and performance issue)
+     * Return null if no parameter found
+     */
+    public static function getParameterFromRequest(array $keys) {
+        $sldUrl = null;
+        foreach($keys as $param) {
+            if (!empty($_REQUEST[$param])) {
+                $sldUrl = $_REQUEST[$param];
+                break;
+            }
+        }
+        return $sldUrl;
+    }
+    
+    /**
+     * Remove the layers not present in the request
+     * Speed improvement (eg SLD)
+     */
+    public function removeLayersNotInRequest($oMap, $objRequest, $requestLayers) {
+        $layersArray = self::getRequestedLayers($oMap, $objRequest, $requestLayers);
+        $layersFromRequest = array();
+        foreach($layersArray as $l) {
+            $layersFromRequest[] = $l->name;
+        }
+        for ($i = $oMap->numlayers - 1; $i >= 0; $i--) {
+            $l = $oMap->getLayer($i);
+            if (!in_array($l->name, $layersFromRequest)) {
+                $oMap->removeLayer($i);
+            }
+        }
+    }
+    
+    /**
+     * Apply sld to the current request (GetMap, GetLegendGraphic, form request parameter SLD, SDL_BODY or author) 
+     */
+    public static function applyWmsSld(\PDO $db, \GCi18n $i18n, $oMap, $objRequest) {
+        $requestService = strtolower($objRequest->getValueByName('service'));
+        $requestRequest = strtolower($objRequest->getValueByName('request'));
+        $requestSldUrl = self::getParameterFromRequest(array('SLD', 'sld'));
+        $requestSldBody = self::getParameterFromRequest(array('SLD_BODY', 'sld_body'));
+        
+        if ($requestService !== 'wms') {
+            throw new \Exception("Can't apply SLD to a non WMS request ({$requestService})");
+        }
+        
+        if ($requestRequest == 'getlegendgraphic') {
+            $requestLayers = $objRequest->getValueByName('layer');
+        } else if ($requestRequest == 'getmap') {
+            $requestLayers = $objRequest->getValueByName('layers');
+        } else {
+            throw new \Exception("Can't apply SLD to WMS/{$objRequest->getValueByName('request')} request. Only GetLegendGraphic and GetMap allowed");
+        }
+        
+        if (empty($requestLayers)) {
+            $layerParamName = $requestRequest == 'getlegendgraphic' ? 'LAYER' : 'LAYERS';
+            throw new \Exception("Missing {$layerParamName} parameter");
+        }
+        
+        self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
+        $layerList = explode(',', $requestLayers);
+        if (empty($requestSldUrl) && empty($requestSldBody)) {
+            // No SLD from request. 
+            // Apply SLD from author database
+            $dbSchema = DB_SCHEMA;
+            $sql = "SELECT layergroup_id, sld 
+                    FROM {$dbSchema}.layergroup
+                    INNER JOIN {$dbSchema}.mapset_layergroup USING (layergroup_id)
+                    WHERE mapset_name=:mapset_name AND layergroup_name=:layergroup_name AND sld IS NOT NULL ";
+            $stmt = $db->prepare($sql);
+            foreach ($layerList as $layerGroup) {
+                list($layerGroup) = explode('.', $layerGroup, 1);  // Extract layer group
+                $stmt->execute(array(
+                    'mapset_name'=>$objRequest->getValueByName('map'), 
+                    'layergroup_name'=>$layerGroup));
+                if (($row = $stmt->fetch(PDO::FETCH_ASSOC)) !== false) {
+                    $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
+                    $sldContent = self::getSldContent($sld);
+                    $oMap->applySLD($sldContent);
+                }
+            }
+        } else if (!empty($requestSldUrl)) {
+            $sldContent = self::getSldContent($requestSldUrl);
+            $oMap->applySLD($sldContent); // for getlegendgraphic
+        }
+    }
+    
 }
