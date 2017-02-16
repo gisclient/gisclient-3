@@ -63,7 +63,7 @@ if($objRequest->getvaluebyname('layer')){
 
     $layers = array();
     
-    // qGis sed the layer lists
+    // QGIS set the layers list
     foreach(explode(',', $objRequest->getvaluebyname('layer')) as $layerName) {
         if($aLayersIndexes=$oMap->getLayersIndexByGroup($objRequest->getvaluebyname('layer'))){
             for($j=0;$j<count($aLayersIndexes);$j++) array_unshift($layers, $oMap->getLayer($aLayersIndexes[$j]));
