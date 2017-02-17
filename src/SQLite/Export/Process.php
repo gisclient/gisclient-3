@@ -8,7 +8,8 @@ use GisClient\Author\Catalog;
 class Process
 {
     private $logDir;
-    //ogr2ogr -f SQLite db.sqlite  PG:"dbname=milano host=127.0.0.1 port=5432 user=milano password=milanox" -sql "SELECT di_id, di_label, the_geom FROM district_area WHERE do_id = 1" -nln district_area
+    //ogr2ogr -f SQLite db.sqlite  PG:"dbname=milano host=127.0.0.1 port=5432 user=milano password=milanox"
+    //-sql "SELECT di_id, di_label, the_geom FROM district_area WHERE do_id = 1" -nln district_area
     public function __construct($logDir)
     {
         if (is_writable($logDir)) {
