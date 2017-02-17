@@ -35,5 +35,5 @@ before_script:
 #  - sudo service apache2 restart
 
 script: 
-  - phpcs --standard="PSR2" .
+  - phpcs --standard="PSR2" src/
   - phpunit --configuration tests/travis.xml
