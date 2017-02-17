@@ -9,8 +9,6 @@ before_install:
   - sudo apt-get install apache2 libapache2-mod-fastcgi
 
 before_script:
-  - pyrus install pear/PHP_CodeSniffer
-  - phpenv rehash
   - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gisclient' SUPERUSER"
   - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient;" 
   - psql -U postgres -d gisclient_ci -c "CREATE EXTENSION postgis"
@@ -33,6 +31,9 @@ before_script:
   - sudo cp -f config/travis/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
+# phpcs
+  - pear install PHP_CodeSniffer
+  - phpenv rehash
 
 script: 
   - phpcs --standard="PSR2" src/
