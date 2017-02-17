@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get install apache2 libapache2-mod-fastcgi
 
 before_script:
-  - pear install PHP_CodeSniffer
+  - pyrus install pear/PHP_CodeSniffer
   - phpenv rehash
   - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gisclient' SUPERUSER"
   - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient;" 
