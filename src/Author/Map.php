@@ -19,7 +19,6 @@ class Map
             throw new Exception("Error: '$projectName' not found", 1);
         }
 
-        $schema = DB_SCHEMA;
         $sql = "SELECT * FROM {$schema}.mapset WHERE project_name = ? AND mapset_name = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($projectName, $mapName));
