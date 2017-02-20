@@ -92,7 +92,7 @@ class Task
         return $percentage;
     }
 
-    public function cleaup()
+    public function cleanup()
     {
         unlink($this->logFile);
         unlink($this->errFile);

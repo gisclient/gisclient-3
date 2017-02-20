@@ -49,10 +49,6 @@ class Process
     {
         $pid = shell_exec($this->getComand($task));
 
-        while ($task->getProgress() < 100) {
-            echo $task->getProgress();
-        }
-
         return $pid;
     }
 
