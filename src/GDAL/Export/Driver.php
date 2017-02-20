@@ -2,7 +2,7 @@
 
 namespace GisClient\GDAL\Export;
 
-abstract class Driver
+interface Driver
 {
-    abstract public function getName();
+    public function getName();
 }

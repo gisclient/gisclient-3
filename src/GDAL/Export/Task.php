@@ -2,17 +2,17 @@
 
 namespace GisClient\GDAL\Export;
 
-abstract class Task
+interface Task
 {
-    abstract public function getTaskName();
+    public function getTaskName();
 
-    abstract public function getLogFile();
+    public function getLogFile();
 
-    abstract public function getErrFile();
+    public function getErrFile();
 
-    abstract public function getErrors();
+    public function getErrors();
 
-    abstract public function getSource();
+    public function getSource();
 
-    abstract public function getFileName();
+    public function getFileName();
 }

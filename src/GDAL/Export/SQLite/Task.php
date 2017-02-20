@@ -5,7 +5,7 @@ namespace GisClient\GDAL\Export\SQLite;
 use GisClient\Author\Layer;
 use GisClient\Author\Catalog;
 
-class Task extends \GisClient\GDAL\Export\Task
+class Task implements \GisClient\GDAL\Export\Task
 {
     private $logFile;
     private $errFile;
