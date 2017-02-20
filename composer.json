@@ -13,5 +13,12 @@
         "psr-4": {
             "GisClient\\": "src/"
         }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "mkdir -p var",
+            "chmod g+ws var",
+            "chown apache var"
+        ]
     }
 }
