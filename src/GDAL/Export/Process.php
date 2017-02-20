@@ -6,9 +6,9 @@ class Process
 {
     private $driver;
 
-    public function __construct($driver)
+    public function __construct(Driver $driver)
     {
-        $this->driver = $driver;
+        $this->driver = $driver->getName();
     }
 
     private function getComand(Task $task)
@@ -50,7 +50,6 @@ class Process
 
     public function start(Task $task)
     {
-        echo $this->getComand($task);
         $pid = shell_exec($this->getComand($task));
 
         return $pid;
