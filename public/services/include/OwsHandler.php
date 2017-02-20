@@ -289,7 +289,6 @@ class OwsHandler {
             throw new \Exception("Missing {$layerParamName} parameter");
         }
         
-        self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
         $layerList = explode(',', $requestLayers);
         if (empty($requestSldUrl) && empty($requestSldBody)) {
             // No SLD from request. 
@@ -306,12 +305,14 @@ class OwsHandler {
                     'mapset_name'=>$objRequest->getValueByName('map'), 
                     'layergroup_name'=>$layerGroup));
                 if (($row = $stmt->fetch(PDO::FETCH_ASSOC)) !== false) {
+                    self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
                     $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
                     $sldContent = self::getSldContent($sld);
                     $oMap->applySLD($sldContent);
                 }
             }
         } else if (!empty($requestSldUrl)) {
+            self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
             $sldContent = self::getSldContent($requestSldUrl);
             $oMap->applySLD($sldContent); // for getlegendgraphic
         }
