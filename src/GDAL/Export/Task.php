@@ -15,4 +15,6 @@ interface Task
     public function getSource();
 
     public function getFileName();
+
+    public function cleanup();
 }

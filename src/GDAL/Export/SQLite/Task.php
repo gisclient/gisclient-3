@@ -152,4 +152,10 @@ class Task implements \GisClient\GDAL\Export\Task
     {
         return ROOT_PATH . "tmp/{$this->getTaskName()}.sqlite";
     }
+
+    public function cleaup()
+    {
+        unlink($this->logFile);
+        unlink($this->errFile);
+    }
 }

@@ -91,4 +91,10 @@ class Task
 
         return $percentage;
     }
+
+    public function cleaup()
+    {
+        unlink($this->logFile);
+        unlink($this->errFile);
+    }
 }
