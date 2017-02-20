@@ -25,10 +25,60 @@ class Layer
         }
     }
 
-    public function getCatalog()
+    private function get($value)
     {
         if (!empty($this->data)) {
-            return new Catalog($this->data['catalog_id']);
+            return $this->data[$value];
+        } else {
+            throw new Exception("Error: property '$value' not found", 1);
         }
+    }
+
+    public function getCatalog()
+    {
+        return new Catalog($this->get('catalog_id'));
+    }
+
+    public function getTable()
+    {
+        return $this->get('data');
+    }
+
+    public function getFields()
+    {
+        $fields = null;
+        if (!empty($this->data)) {
+            $fields = array();
+
+            $schema = DB_SCHEMA;
+            $sql = "SELECT field_id FROM {$schema}.field WHERE layer_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array($this->get('layer_id')));
+            while ($field_id = $stmt->fetchColumn(0)) {
+                $fields[] = new Field($field_id);
+            }
+        }
+
+        return $fields;
+    }
+
+    public function getFilter()
+    {
+        return $this->get('data_filter');
+    }
+
+    public function getName()
+    {
+        return $this->get('layer_name');
+    }
+
+    public function getGeomColumn()
+    {
+        return $this->get('data_geom');
+    }
+
+    public function getId()
+    {
+        return $this->get('layer_id');
     }
 }

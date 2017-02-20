@@ -19,7 +19,7 @@ class Process
         }
     }
 
-    public function start(Layer $layer)
+    private function getComand(Layer $layer)
     {
         $catalog = $layer->getCatalog();
         if ($catalog->getConnectionType() == Catalog::POSTGIS_CONNECTION) {
@@ -29,29 +29,65 @@ class Process
             $dbParams['db_port'] = DB_PORT;
             $dbParams['db_user'] = defined('MAP_USER') ? MAP_USER : DB_USER;
             $dbParams['db_pass'] = defined('MAP_USER') ? MAP_PWD : DB_PWD;
-            $dbParams['db_host'] = DB_HOST;
 
-            $connectionTpl = 'PG:"host=%s port=%s user=%s password=%s dbname=%s schema=%s"';
+            $connectionTpl = 'PG:"host=%s port=%s user=%s password=%s dbname=%s schemas=%s"';
             $connection = sprintf(
                 $connectionTpl,
                 $dbParams['db_host'],
                 $dbParams['db_port'],
                 $dbParams['db_user'],
-                $dbParams['db_password'],
+                $dbParams['db_pass'],
                 $dbParams['db_name'],
                 $dbParams['schema']
             );
-            print_r($a);
         } else {
             throw new Exception("Connection type not supported", 1);
         }
 
-        //$layer->table
-        //$layer->fields
-        //$layer->filter
+        $table = $layer->getTable();
+        $fields = $layer->getFields();
 
+        $fieldsText = '';
+        foreach ($fields as $field) {
+            $fieldsText .= $field->getName() . ',';
+        }
+        $fieldsText .= $layer->getGeomColumn();
+
+        $filter = $layer->getFilter();
+
+        $name = $layer->getName();
+        
+        $sqlTpl = '-sql "SELECT %s FROM %s WHERE %s" -nln %s';
+        $sql = sprintf(
+            $sqlTpl,
+            $fieldsText,
+            $table,
+            $filter,
+            $name
+        );
+
+        $source = $connection . ' ' . $sql;
+
+        $id = $layer->getId();
+        $filename = ROOT_PATH . "tmp/{$name}.{$id}.sqlite";
+        
         //using gdal 1.X
-        $cmdTpl = "ogr2ogr -f SQLite -update %s %s";
-        $cmd = sprintf($cmdTpl, $filename, $source);
+        $cmdTpl = "ogr2ogr -f SQLite %s %s -overwrite > %s 2> %s & echo $!";
+        $cmd = sprintf(
+            $cmdTpl,
+            $filename,
+            $source,
+            $this->logDir . "{$name}.{$id}.log",
+            $this->logDir . "{$name}.{$id}.err"
+        );
+        
+        return $cmd;
+    }
+
+    public function start(Layer $layer)
+    {
+        $pid = shell_exec($this->getComand($layer));
+
+        return $pid;
     }
 }
