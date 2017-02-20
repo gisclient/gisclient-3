@@ -14,7 +14,7 @@ class Process
     private function getComand(Task $task)
     {
         //using gdal 1.X
-        $cmdTpl = "ogr2ogr -f %s %s %s -overwrite > %s 2> %s & echo $!";
+        $cmdTpl = "ogr2ogr -f %s %s %s -overwrite -progress > %s 2> %s & echo $!";
         $cmd = sprintf(
             $cmdTpl,
             $this->driver,
@@ -35,13 +35,10 @@ class Process
             $task->getFileName()
         ));
         $r = preg_split("/\n/", $result);
-
-        for ($i=0; $i < count($r); $i++) {
-            $a = preg_split("/\s+/", trim($r[$i]));
-            if (in_array($this->bin, $a)) {
-                if ($a[4] !== 'sh') {
-                    return (int)$a[0];
-                }
+        for ($i = 0; $i < count($r); $i++) {
+            $p = preg_split("/\s+/", trim($r[$i]));
+            if (in_array($this->driver, $p) && !in_array('grep', $p)) {
+                return (int)$p[0];
             }
         }
 
@@ -52,6 +49,27 @@ class Process
     {
         $pid = shell_exec($this->getComand($task));
 
+        while ($task->getProgress() < 100) {
+            echo $task->getProgress();
+        }
+
         return $pid;
+    }
+
+    public function isRunning(Task $task)
+    {
+        $pid = $this->getPID($task);
+        if ($pid !== false) {
+            return true;
+        }
+        return false;
+    }
+
+    public function stop(Task $task)
+    {
+        $pid = $this->getPID($task);
+        if ($pid) {
+            shell_exec(sprintf('kill %d', $pid));
+        }
     }
 }

@@ -87,7 +87,7 @@ class Task implements \GisClient\GDAL\Export\Task
             $char = fgetc($f);
         }
 
-        if (preg_match('/(\d{1,3})\.\d{2}%/', $buffer, $matches)) {
+        if (preg_match('/.*\.(\d{1,3})/', $buffer, $matches)) {
             $percentage = $matches[1];
         } else {
             $percentage = 0;

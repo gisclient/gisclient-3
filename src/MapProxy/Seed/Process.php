@@ -48,12 +48,10 @@ class Process
         $result = shell_exec(sprintf('ps x | grep "%s" | grep "%s"', $this->bin, $task->getTaskName()));
         $r = preg_split("/\n/", $result);
 
-        for ($i=0; $i < count($r); $i++) {
-            $a = preg_split("/\s+/", trim($r[$i]));
-            if (in_array($this->bin, $a)) {
-                if ($a[4] !== 'sh') {
-                    return (int)$a[0];
-                }
+        for ($i = 0; $i < count($r); $i++) {
+            $p = preg_split("/\s+/", trim($r[$i]));
+            if (in_array($this->bin, $p) && !in_array('grep', $p)) {
+                return (int)$p[0];
             }
         }
 
@@ -76,7 +74,7 @@ class Process
         return false;
     }
 
-    public function stopTask(Task $task)
+    public function stop(Task $task)
     {
         $pid = $this->getPID($task);
         if ($pid) {
