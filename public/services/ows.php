@@ -322,7 +322,7 @@ $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
 if ((isset($_REQUEST['REQUEST']) && strtolower($_REQUEST['REQUEST']) == 'getmap')
     || (isset($_REQUEST['request']) && strtolower($_REQUEST['request']) == 'getmap')) {
     
-    if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < time() - $owsCacheTTL) {
+    if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && time() - strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < $owsCacheTTL) {
         header('HTTP/1.1 304 Not Modified');
         die(); // Dont' return image
     }
