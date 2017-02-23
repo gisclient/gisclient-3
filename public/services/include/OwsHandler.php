@@ -299,14 +299,23 @@ class OwsHandler {
                     INNER JOIN {$dbSchema}.mapset_layergroup USING (layergroup_id)
                     WHERE mapset_name=:mapset_name AND layergroup_name=:layergroup_name AND sld IS NOT NULL ";
             $stmt = $db->prepare($sql);
+            $layersWithSld = array();
+            // Group all the different SLD and apply less times as possible (to prevent performance issue)
             foreach ($layerList as $layerGroup) {
                 list($layerGroup) = explode('.', $layerGroup, 1);  // Extract layer group
                 $stmt->execute(array(
                     'mapset_name'=>$objRequest->getValueByName('map'), 
                     'layergroup_name'=>$layerGroup));
                 if (($row = $stmt->fetch(PDO::FETCH_ASSOC)) !== false) {
-                    self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
                     $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
+                    if (!in_array($sld, $layersWithSld)) {
+                        $layersWithSld[] = $sld;
+                    }
+                }
+            }
+            if (count($layersWithSld) > 0) {
+                self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
+                foreach($layersWithSld as $sld) {
                     $sldContent = self::getSldContent($sld);
                     $oMap->applySLD($sldContent);
                 }
