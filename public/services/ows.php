@@ -152,42 +152,17 @@ if(!empty($resolution) && $resolution != 72) {
     $oMap->set('defresolution', 96);
 }
 
-if (empty($_REQUEST['SLD']) && !empty($_REQUEST['LAYERS'])) {
+
+// APPLY SLD FOR WMS REQUEST
+$requestService = strtolower($objRequest->getValueByName('service'));
+$requestRequest = strtolower($objRequest->getValueByName('request'));
+if (strtolower($objRequest->getValueByName('service')) == 'wms' &&
+    in_array($requestRequest, array('getlegendgraphic', 'getmap'))) {
     $db = GCApp::getDB();
-    // check if SLD is used
-    $sql = "SELECT layergroup_id, sld FROM ".DB_SCHEMA.".layergroup WHERE layergroup_name=? AND sld IS NOT NULL ";
-    $stmt = $db->prepare($sql);
-
     $i18n = new GCi18n($project, $objRequest->getvaluebyname('lang'));
-    foreach (explode(',', $_REQUEST['LAYERS']) as $layergroup) {
-        if (strpos($layergroup, '.') !== false) {
-            list($layergroup, $layername) = explode('.', $layergroup);
-        }
-        $stmt->execute(array($layergroup));
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($row !== false) {
-            $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
-
-            $sldContent = OwsHandler::getSldContent($sld);
-            $objRequest->setParameter('SLD_BODY', $sldContent);
-            $oMap->applySLD($sldContent); // for getlegendgraphic
-        }
-    }
+    OwsHandler::applyWmsSld($db, $i18n, $oMap, $objRequest);
 }
 
-// visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
-if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
-    $sldContent = file_get_contents($_REQUEST['SLD_BODY']);
-    if($sldContent !== false) {
-        $objRequest->setParameter('SLD_BODY', $sldContent);
-        $oMap->applySLD($sldContent); // for getlegendgraphic
-    }
-} else if(!empty($_REQUEST['SLD'])) {
-    $sldContent = OwsHandler::getSldContent($_REQUEST['SLD']);
-    $objRequest->setParameter('SLD_BODY', $sldContent);
-    $oMap->applySLD($sldContent); // for getlegendgraphic
-}
 
 //CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
 if($objRequest->getvaluebyname('srsname')) {
@@ -347,7 +322,7 @@ $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
 if ((isset($_REQUEST['REQUEST']) && strtolower($_REQUEST['REQUEST']) == 'getmap')
     || (isset($_REQUEST['request']) && strtolower($_REQUEST['request']) == 'getmap')) {
     
-    if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < time() - $owsCacheTTL) {
+    if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && time() - strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < $owsCacheTTL) {
         header('HTTP/1.1 304 Not Modified');
         die(); // Dont' return image
     }
