@@ -67,4 +67,19 @@ class Map
 
         return $layerGroups;
     }
+
+    public function getThemes()
+    {
+        $themes = array();
+
+        $schema = DB_SCHEMA;
+        $sql = "SELECT DISTINCT theme_id FROM {$schema}.theme INNER JOIN {$schema}.layergroup USING(theme_id) WHERE layergroup_id IN(SELECT layergroup_id FROM {$schema}.mapset_layergroup WHERE mapset_name = ?) AND project_name = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->data['mapset_name'], $this->data['project_name']));
+        while ($theme_id = $stmt->fetchColumn(0)) {
+            $themes[] = new Theme($theme_id);
+        }
+
+        return $themes;
+    }
 }

@@ -10,9 +10,11 @@ class Task implements \GisClient\GDAL\Export\Task
     private $logFile;
     private $errFile;
     private $layer;
+    private $path;
 
     public function __construct(Layer $layer, $logDir)
     {
+        $this->path = 'var/SQLite/';
         $this->layer = $layer;
 
         if (is_writable($logDir)) {
@@ -20,6 +22,12 @@ class Task implements \GisClient\GDAL\Export\Task
             $this->errFile = $logDir . $this->getTaskName() . '.err';
         } else {
             throw new \Exception("Error: Directory not exists or not writable '$logDir'", 1);
+        }
+
+        if (!is_dir(ROOT_PATH . $this->path)) {
+            if (!mkdir(ROOT_PATH . $this->path, 0700, true)) {
+                throw new Exception("Error: Failed to create {$this->path}", 1);
+            }
         }
     }
 
@@ -150,7 +158,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getFileName()
     {
-        return ROOT_PATH . "var/{$this->getTaskName()}.sqlite";
+        return ROOT_PATH . "{$this->path}{$this->getTaskName()}.sqlite";
     }
 
     public function cleanup()
