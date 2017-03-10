@@ -30,6 +30,29 @@ class Map
         }
     }
 
+    private function get($value)
+    {
+        if (empty($this->data)) {
+            throw new Exception("Error: failed initialization", 1);
+        }
+
+        if (isset($this->data[$value])) {
+            return $this->data[$value];
+        } else {
+            throw new Exception("Error: property '$value' not found", 1);
+        }
+    }
+
+    public function getProject()
+    {
+        return $this->get('project_name');
+    }
+
+    public function getName()
+    {
+        return $this->get('mapset_name');
+    }
+
     public function getLayerGroups()
     {
         $layerGroups = array();

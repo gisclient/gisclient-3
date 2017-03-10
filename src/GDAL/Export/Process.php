@@ -11,7 +11,7 @@ class Process
         $this->driver = $driver->getName();
     }
 
-    private function getComand(Task $task)
+    private function getCommand(Task $task)
     {
         //using gdal 1.X
         $cmdTpl = "ogr2ogr -f %s %s %s -overwrite -progress > %s 2> %s & echo $!";
@@ -47,7 +47,11 @@ class Process
 
     public function start(Task $task)
     {
-        $pid = shell_exec($this->getComand($task));
+        if (!$this->isRunning($task)) {
+            $pid = shell_exec($this->getCommand($task));
+        } else {
+            $pid = $this->getPID($task);
+        }
 
         return $pid;
     }
@@ -63,9 +67,11 @@ class Process
 
     public function stop(Task $task)
     {
-        $pid = $this->getPID($task);
-        if ($pid) {
-            shell_exec(sprintf('kill %d', $pid));
+        while ($this->isRunning($task)) {
+            $pid = $this->getPID($task);
+            if ($pid) {
+                shell_exec(sprintf('kill %d', $pid));
+            }
         }
     }
 }

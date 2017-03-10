@@ -58,9 +58,13 @@ class Process
         return false;
     }
 
-    public function startTask(Task $task)
+    public function start(Task $task)
     {
-        $pid = shell_exec($this->getCommand($task));
+        if (!$this->isRunning($task)) {
+            $pid = shell_exec($this->getCommand($task));
+        } else {
+            $pid = $this->getPID($task);
+        }
 
         return $pid;
     }
@@ -76,9 +80,11 @@ class Process
 
     public function stop(Task $task)
     {
-        $pid = $this->getPID($task);
-        if ($pid) {
-            shell_exec(sprintf('kill %d', $pid));
+        while ($this->isRunning($task)) {
+            $pid = $this->getPID($task);
+            if ($pid) {
+                shell_exec(sprintf('kill %d', $pid));
+            }
         }
     }
 }
