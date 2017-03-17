@@ -24,7 +24,7 @@ class Catalog
             if (!empty($data)) {
                 $this->data = $data;
             } else {
-                throw new Exception("Error: catalog with id = '$id' not found", 1);
+                throw new \Exception("Error: catalog with id = '$id' not found", 1);
             }
         }
     }

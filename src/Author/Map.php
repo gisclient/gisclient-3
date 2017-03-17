@@ -16,7 +16,7 @@ class Map
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($projectName));
         if ($stmt->fetchColumn(0) !== 1) {
-            throw new Exception("Error: '$projectName' not found", 1);
+            throw new \Exception("Error: project '$projectName' not found", 1);
         }
 
         $sql = "SELECT * FROM {$schema}.mapset WHERE project_name = ? AND mapset_name = ?";
@@ -26,20 +26,20 @@ class Map
         if (!empty($data)) {
             $this->data = $data;
         } else {
-            throw new Exception("Error: '$mapName' not found in project '$projectName'", 1);
+            throw new \Exception("Error: map '$mapName' not found in project '$projectName'", 1);
         }
     }
 
     private function get($value)
     {
         if (empty($this->data)) {
-            throw new Exception("Error: failed initialization", 1);
+            throw new \Exception("Error: failed initialization", 1);
         }
 
         if (isset($this->data[$value])) {
             return $this->data[$value];
         } else {
-            throw new Exception("Error: property '$value' not found", 1);
+            throw new \Exception("Error: property '$value' not found", 1);
         }
     }
 

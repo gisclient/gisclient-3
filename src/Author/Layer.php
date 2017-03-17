@@ -20,7 +20,7 @@ class Layer
             if (!empty($data)) {
                 $this->data = $data;
             } else {
-                throw new Exception("Error: layer with id = '$id' not found", 1);
+                throw new \Exception("Error: layer with id = '$id' not found", 1);
             }
         }
     }
@@ -30,7 +30,7 @@ class Layer
         if (!empty($this->data)) {
             return $this->data[$value];
         } else {
-            throw new Exception("Error: property '$value' not found", 1);
+            throw new \Exception("Error: property '$value' not found", 1);
         }
     }
 

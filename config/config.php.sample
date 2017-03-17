@@ -36,7 +36,7 @@ define('LONG_EXECUTION_MEMORY','512M');
 //define('PRIVATE_MAP_URL', 'http://localhost/map/index.php'); //URL CLIENT DI MAPPA PRIVATA
 //define('EXTERNAL_LOGIN_KEY', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
-define('LAYER_CLOSE_CONNECTION_DEFER', false);
+define('LAYER_CLOSE_CONNECTION_DEFER', true);
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
@@ -170,8 +170,8 @@ define('CLIENT_LOGO', null); //LOGO CLIENTE PERSONALIZZATO IN AUTHOR
 define('MAPFILE_MAX_SIZE', '4096'); //MASSIMA DIMENSIONE IN PIXEL DEL MAPFILE. PER STAMPE A0 INSERIRE: 20480
 
 // Cache in ows.php
-define('OWS_CACHE_TTL', 60);            // Map cache (Prevent OL bug for multiple request)
-define('OWS_CACHE_TTL_OPEN', 4*60*60);  // Map cache for the 1st open of the map
+define('OWS_CACHE_TTL', 60);            // CACHE PER EVITARE DOPPIE RICHIESTE DI OL
+define('OWS_CACHE_TTL_OPEN', 4*60*60);  // CACHE ALLA PRIMA RICHIESTA DI MAPPA PER VELOCIZZARE
 //define('DYNAMIC_LAYERS', '');         // comma separated list of dynamic layers (same url different result)
 
 $GEOLOCATOR_CONFIG = array(

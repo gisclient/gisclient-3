@@ -26,7 +26,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
         if (!is_dir(ROOT_PATH . $this->path)) {
             if (!mkdir(ROOT_PATH . $this->path, 0700, true)) {
-                throw new Exception("Error: Failed to create {$this->path}", 1);
+                throw new \Exception("Error: Failed to create {$this->path}", 1);
             }
         }
     }
@@ -126,7 +126,7 @@ class Task implements \GisClient\GDAL\Export\Task
                 $dbParams['schema']
             );
         } else {
-            throw new Exception("Connection type not supported", 1);
+            throw new \Exception("Connection type not supported", 1);
         }
 
         $table = $this->layer->getTable();

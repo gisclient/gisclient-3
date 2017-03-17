@@ -33,6 +33,8 @@ if (!empty($_REQUEST['tiles']) && is_array($_REQUEST['tiles'])) {
 if (empty($_REQUEST['viewport_size']) || !is_array($_REQUEST['viewport_size']) || count($_REQUEST['viewport_size']) != 2) {
     print_debug('No tiles', null, 'size');
     die(json_encode(array('result' => 'error', 'error' => 'No size')));
+} else {
+    $viewport_size = $_REQUEST['viewport_size'];
 }
 
 if (empty($_REQUEST['srid'])) {

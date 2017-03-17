@@ -20,7 +20,7 @@ class Field
             if (!empty($data)) {
                 $this->data = $data;
             } else {
-                throw new Exception("Error: field with id = '$id' not found", 1);
+                throw new \Exception("Error: field with id = '$id' not found", 1);
             }
         }
     }
@@ -30,7 +30,7 @@ class Field
         if (!empty($this->data)) {
             return $this->data[$value];
         } else {
-            throw new Exception("Error: property '$value' not found", 1);
+            throw new \Exception("Error: property '$value' not found", 1);
         }
     }
 

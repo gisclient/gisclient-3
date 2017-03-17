@@ -273,7 +273,7 @@ class gcMap
         if (count($authorizedLayers)>0) {
             $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', $authorizedLayers).")";
         }
-        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id) 
+        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name, wmsversion_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id) LEFT JOIN ".DB_SCHEMA.".e_wmsversion using (wmsversion_id)
             WHERE layergroup_id IN (
             SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
         $sqlLayers .= " UNION
@@ -406,6 +406,10 @@ class gcMap
                     }
                     if (!empty($_REQUEST["tmp"])) {
                         $layerParameters['tmp'] = 1;
+                    }
+
+                    if (!empty($row['wmsversion_name'])) {
+                        $layerParameters['version'] = $row['wmsversion_name'];
                     }
 
                     // TODO: check for layergroup.layername

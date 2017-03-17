@@ -20,7 +20,7 @@ class Theme
             if (!empty($data)) {
                 $this->data = $data;
             } else {
-                throw new Exception("Error: theme with id = '$id' not found", 1);
+                throw new \Exception("Error: theme with id = '$id' not found", 1);
             }
         }
     }
@@ -28,13 +28,13 @@ class Theme
     private function get($value)
     {
         if (empty($this->data)) {
-            throw new Exception("Error: failed initialization", 1);
+            throw new \Exception("Error: failed initialization", 1);
         }
 
         if (isset($this->data[$value])) {
             return $this->data[$value];
         } else {
-            throw new Exception("Error: property '$value' not found", 1);
+            throw new \Exception("Error: property '$value' not found", 1);
         }
     }
 
