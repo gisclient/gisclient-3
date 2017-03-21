@@ -149,7 +149,10 @@ class OfflineMap
             }
         }
 
-        $zip->addFromString('config.json', file_get_contents(PUBLIC_URL . "services/gcmapconfig.php?mapset={$name}&legend=1"));
+        $zip->addFromString(
+            'config.json',
+            file_get_contents(PUBLIC_URL . "services/gcmapconfig.php?mapset={$name}&legend=1")
+        );
 
         $zip->close();
 
