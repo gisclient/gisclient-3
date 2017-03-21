@@ -98,8 +98,9 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			$testo=stripslashes($dato);
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\"  id=\"locked_$campo\" value=\"$testo\" disabled /><input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" />$help";
 			break;
-		case "text":			
+		case "text":
 		case "textkey":
+		case "image":			
 			$size=intval($w+($w/5));
 			$testo=stripslashes(str_replace("\\","\\\\",$dato));
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" $disabilitato />$help";
@@ -229,7 +230,7 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			$size=explode("#",$w);
 			$width=($size[0])?("size=\"$size[0]\""):("");
 			$maxsize=($size[1])?($size[1]):("500");
-			$retval="<input $class type=\"file\" $width name=\"$campo\" id=\"upl_$campo\" value=\"\" disabled>$help<input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"$maxsize\" />";
+			$retval="<input $class type=\"file\" $width name=\"$campo\" id=\"upl_$campo\" value=\"\">$help <a target=\"_blank\" href=\"$dato\">$dato</a>";
 			break;
 		case "checklist":
 			$retval="<div style=\"overflown:auto;scroll:auto;height:400px;\">";
@@ -256,6 +257,7 @@ function get_dato($tipo,$w,$campo){
 		case "locked":
 		case "text":
 		case "string":
+		case "upload":
 			if(isset($dati[$campo]))
 				$retval=$dati[$campo];
 			else
@@ -324,7 +326,7 @@ function get_dato($tipo,$w,$campo){
 			$dim=explode("x",$size[0]);
 			$v=$dati[$size[1]];
 			if ($dati[$campo])
-				$retval="<img src=\"getImage.php?id=$v&tb=$campo\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\">";
+				$retval="$dati[$campo] <img src=\"getImage.php?id=$dati[$campo]&table=symbol\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\">";
 			else
 				$retval="Nessuna immagine salvata";
 			break;
