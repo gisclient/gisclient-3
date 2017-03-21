@@ -225,6 +225,25 @@ Class saveData{
 					$p->get_conf();
 					return $p;
 				}
+
+				if (count($_FILES)) {
+					if(!(defined('UPLOADED_FILES_PRIVATE_PATH') && defined('UPLOADED_FILES_PUBLIC_URL'))) {
+						GCError::registerException(new Exception("Wrong configuration: undefined upload path", 1));
+					    $this->hasErrors=true;
+					} else {
+						$target_dir = UPLOADED_FILES_PRIVATE_PATH;
+						foreach ($_FILES as $key => $uploadFile) {
+							$target_file = $target_dir . basename($uploadFile["name"]);
+							$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+							if (move_uploaded_file($uploadFile["tmp_name"], $target_file)) {
+								$Dati[$key] = UPLOADED_FILES_PUBLIC_URL . basename($uploadFile["name"]);
+							}
+
+						}
+					}
+				}
+						
 				switch ($this->mode){
 					case "multiple-save":
 						$Dati=$this->_validaMultipleDati();
