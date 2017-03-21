@@ -1100,3 +1100,11 @@ ALTER TABLE gisclient_34.field
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.8', 'author', '2017-02-03');
 
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) values (10, 'WFS', 4);
+INSERT INTO (outputformat_id, outputformat_name, outputformat_driver, outputformat_mimetype, outputformat_imagemode, outputformat_extension, outputformat_option, outputformat_order)
+  values (10, 'GEOJSON', 'OGR/GEOJSON', 'application/json; subtype=geojson', 'JSON', 'json', 'FORMATOPTION "STORAGE=stream" FORMATOPTION "FORM=SIMPLE"');
+
+ALTER TABLE theme
+  ADD COLUMN symbol_name character varying;
+ALTER TABLE theme
+  ADD FOREIGN KEY (symbol_name) REFERENCES symbol (symbol_name) ON UPDATE CASCADE ON DELETE SET NULL;
+
