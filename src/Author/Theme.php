@@ -5,9 +5,10 @@ namespace GisClient\Author;
 class Theme
 {
     private $db;
+    private $mapName;
     private $data;
 
-    public function __construct($id = null)
+    public function __construct($id = null, $mapName = null)
     {
         if ($id) {
             $this->db = \GCApp::getDB();
@@ -23,6 +24,8 @@ class Theme
                 throw new \Exception("Error: theme with id = '$id' not found", 1);
             }
         }
+        
+        $this->mapName = $mapName;
     }
 
     private function get($value)
@@ -38,8 +41,34 @@ class Theme
         }
     }
 
+    public function getLayerGroups()
+    {
+        $layerGroups = array();
+        $schema = DB_SCHEMA;
+        $sql = "SELECT l.layergroup_id FROM {$schema}.layergroup l ";
+        if (isset($this->mapName)) {
+            $sql .= "INNER JOIN gisclient_34.mapset_layergroup m ";
+            $sql .= "ON (l.layergroup_id = m.layergroup_id AND mapset_name = " . $this->db->quote($this->mapName);
+            $sql .= ") ";
+        }
+        $sql .= "WHERE theme_id = ?";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->data['theme_id']));
+        while ($layergroup_id = $stmt->fetchColumn(0)) {
+            $layerGroups[] = new LayerGroup($layergroup_id);
+        }
+
+        return $layerGroups;
+    }
+
     public function getName()
     {
         return $this->get('theme_name');
+    }
+
+    public function getTitle()
+    {
+        return $this->get('theme_title');
     }
 }

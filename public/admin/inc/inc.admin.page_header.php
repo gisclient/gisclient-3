@@ -24,9 +24,10 @@
                         <a class="button" data-action="ogc_services" style="display:none;"><?php echo GCAuthor::t('ogc_services'); ?></a>
                         <?php
                         if (!empty($p->parametri['project'])) {
-                            echo '<a class="button" data-action="mapfiles_manager">'.GCAuthor::t('online_maps').'</a>';
-                        }
                         ?>
+                            <a class="button" data-action="mapfiles_manager"><?php echo GCAuthor::t('online_maps'); ?></a>
+                            <a class="button" data-action="offline_manager"><?php echo GCAuthor::t('offline_maps'); ?></a>
+                        <?php } ?>
                         <?php } else { ?>
                         <a class="button" href="admin/">Author</a>
                         <?php } ?>
@@ -163,6 +164,42 @@
                 ?>
                 </table>
             </div>
+
+            <script type="text/template" id="offline_mapset">
+                <table border="1" cellpadding="3" class="stiletabella">
+                <tr class="ui-widget ui-state-default">
+                    <th>Mapset</th>
+                    <th><?php echo GCauthor::t('create') ?></th>
+                    <th><?php echo GCAuthor::t('download') ?></th>
+                </tr>
+                <?php
+                if (isset($mapsets)) {
+                    foreach ($mapsets as $mapset) {
+                ?>
+                <tr>
+                    <td><?php echo "{$mapset['mapset_title']} ({$mapset['mapset_name']})" ?></td>
+                    <td style="text-align:center;"><a href="#" data-action="create" data-mapset="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('create') ?></a></td>
+                    <td style="text-align:center;"><a href="#" data-action="download" data-mapset="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('download') ?></a></td>
+                </tr>
+                <?php
+                    }
+                }
+                ?>
+                </table>
+            </script>
+            <script type="text/template" id="offline_theme">
+                <table border="1" cellpadding="3" class="stiletabella">
+                    <tr class="ui-widget ui-state-default">
+                        <th><?php echo GCauthor::t('theme') ?></th>
+                        <th><?php echo GCauthor::t('mbtiles') ?></th>
+                        <th><?php echo GCAuthor::t('sqlite') ?></th>
+                    </tr>
+                </table>
+                <button id="offline_theme_back"><?php echo GCAuthor::t('back') ?></button>
+            </script>
+            <div id="offline_manager" style="display:none;" data-title="<?php echo GCAuthor::t('offline_maps') ?>">
+            </div>
+
             <!-- TODO: allineare verticalmente, cosi è bruttino -->
             <div id="import_dialog" style="display:none;">
                 <div id="import_dialog_tabs">

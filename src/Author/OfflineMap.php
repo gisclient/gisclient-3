@@ -112,9 +112,14 @@ class OfflineMap
      * se è già pronto lo zip
      * o se ci sono dei processi ancora attivi (con percentuale)
      */
-    public function status()
+    public function status($only = null)
     {
-        # code...
+        $logDir = DEBUG_DIR;
+
+        if ($only == 'mbtiles' || empty($only)) {
+            $task = new SeedTask('offline', $logDir);
+            return $this->seedProcess->isRunning($task);
+        }
     }
 
     /*

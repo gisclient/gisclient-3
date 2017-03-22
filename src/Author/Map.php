@@ -85,7 +85,7 @@ class Map
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->data['mapset_name'], $this->data['project_name']));
         while ($theme_id = $stmt->fetchColumn(0)) {
-            $themes[] = new Theme($theme_id);
+            $themes[] = new Theme($theme_id, $this->data['mapset_name']);
         }
 
         return $themes;

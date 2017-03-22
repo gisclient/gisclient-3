@@ -123,6 +123,7 @@ if(isset($p->parametri['project'])) {
     <script type="text/javascript" src="js/list.js"></script>
     <script type="text/javascript" src="js/copy.js"></script>
     <script type="text/javascript" src="js/mapfiles.js"></script>
+    <script type="text/javascript" src="js/offline.js"></script>
     <script type="text/javascript" src="js/administrator.js"></script>
     <script type="text/javascript" src="js/layout.js"></script>
     <script type="text/javascript" src="js/options.js"></script>
