@@ -11,53 +11,100 @@ $ajax = new GCAjax();
 
 if (empty($_REQUEST['action'])) {
     $ajax->error();
+    die;
 }
 
-switch ($_REQUEST['action']) {
+if (empty($_REQUEST['project'])) {
+    $ajax->error();
+    die;
+}
+
+if (empty($_REQUEST['map'])) {
+    $ajax->error();
+    die;
+}
+
+$action = $_REQUEST['action'];
+$project = $_REQUEST['project'];
+$map = $_REQUEST['map'];
+
+$map = new Map($project, $map);
+$offline = new OfflineMap($map);
+
+switch ($action) {
     case 'get-data':
         $result = array();
-
-        $map = new Map($_REQUEST['project'], $_REQUEST['mapset']);
-        $offline = new OfflineMap($map);
 
         $themes = $map->getThemes();
         $result['themes'] = array();
         foreach ($themes as $theme) {
-            $layerGroups = $theme->getLayerGroups();
-
-            $hasSqlite = false;
-            $hasMbTiles = false;
-            foreach ($layerGroups as $layerGroup) {
-                switch ($layerGroup->getType()) {
-                    case LayerGroup::WFS_LAYER_TYPE:
-                        $hasSqlite = true;
-                        break;
-                    
-                    case LayerGroup::WMS_LAYER_TYPE:
-                        $hasMbTiles = true;
-                        break;
-                }
-            }
-
-            //check MbTiles
-            if (!file_exists(MAPPROXY_CACHE_PATH . $map->getProject() . '/' . $theme->getName() . '.mbtiles')) {
-                $mbTilesState = 'to-do';
-            } else {
-                if ($offline->status('mbtiles')) {
-                    $mbTilesState = 'running';
-                } else {
-                    $mbTilesState = 'stopped';
-                }
-            }
-
-            $result['themes'][] = array(
-                'name' => $theme->getName(),
-                'title' => $theme->getTitle(),
-                'hasMbTiles' => $hasMbTiles,
-                'hasSqlite' => $hasSqlite,
-                'mbTilesState' => $mbTilesState
-            );
+            $themeStatus = $offline->status($theme)[$theme->getName()];
+            $themeStatus['name'] = $theme->getName();
+            $themeStatus['title'] = $theme->getTitle();
+            $result['themes'][] = $themeStatus;
         }
+
+        $ajax->success($result);
+        break;
+
+    case 'start':
+        $result = array();
+
+        $themeName = $_REQUEST['theme'];
+        $target = $_REQUEST['target'];
+
+        $theme = null;
+        foreach ($map->getThemes() as $t) {
+            if ($t->getName() == $themeName) {
+                $theme = $t;
+            }
+        }
+
+        $offline->start($theme, $target);
+
+        $ajax->success($result);
+        break;
+
+    case 'stop':
+        $result = array();
+
+        $themeName = $_REQUEST['theme'];
+        $target = $_REQUEST['target'];
+
+        $theme = null;
+        foreach ($map->getThemes() as $t) {
+            if ($t->getName() == $themeName) {
+                $theme = $t;
+            }
+        }
+
+        $offline->stop($theme, $target);
+
+        $ajax->success($result);
+        break;
+
+    case 'clear':
+        $result = array();
+
+        $themeName = $_REQUEST['theme'];
+        $target = $_REQUEST['target'];
+
+        $theme = null;
+        foreach ($map->getThemes() as $t) {
+            if ($t->getName() == $themeName) {
+                $theme = $t;
+            }
+        }
+
+        $offline->clear($theme, $target);
+
+        $ajax->success($result);
+        break;
+
+    case 'download':
+        $result = array();
+
+        $result['file'] = $offline->get();
 
         $ajax->success($result);
         break;

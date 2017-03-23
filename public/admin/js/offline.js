@@ -1,3 +1,4 @@
+var loadingGif = '<img src="../images/ajax_loading.gif">';
 $(document).ready(function() {
     var dialog = $('div#offline_manager');
     dialog.dialog({
@@ -8,19 +9,19 @@ $(document).ready(function() {
         open: initOfflineDialog
     });
 
-    function mapsetView(mapset) {
+    function loadMapView(map) {
         dialog.empty();
         dialog.append($('#offline_theme').html());
         
         var params = {
             action: 'get-data',
             project: $('input#project').val(),
-            mapset: mapset
+            map: map
         };
 
         $.ajax({
             url: 'ajax/offline.php',
-            type: 'POST',
+            type: 'GET',
             dataType: 'json',
             data: params,
             success: function(response) {
@@ -42,28 +43,42 @@ $(document).ready(function() {
                         var theme = response.themes[i];
                         html += '<tr>';
                         html += '<td>' + theme.title + ' (' + theme.name + ')</td>';
-                        if (theme.hasMbTiles) {
+                        if (Object.keys(theme.mbtiles).length) {
                             html += '<td id="td_' + theme.name + '">';
-                            switch (theme.mbTilesState) {
+                            switch (theme.mbtiles.state) {
                                 case 'running':
-                                    html += '<a href="#" data-action="check" data-target="mbtiles" data-mapset="' + mapset + '">Check</a>';
-                                    html += '<a href="#" data-action="stop" data-target="mbtiles" data-mapset="' + mapset + '">Stop</a>';
+                                    html += '<a href="#" data-action="check" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
+                                    html += '<a href="#" data-action="stop" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
                                     break;
 
                                 case 'stopped':
-                                    html += '<a href="#" data-action="clear" data-target="mbtiles" data-mapset="' + mapset + '">Clear</a>';
+                                    html += '<a href="#" data-action="clear" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
                                 /* fall through */
                                 case 'to-do':
-                                    html += '<a href="#" data-action="generate" data-target="mbtiles" data-mapset="' + mapset + '">Generate</a>';
+                                    html += '<a href="#" data-action="generate" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                            }
+
+                            if (theme.mbtiles.progress) {
+                                html += theme.mbtiles.progress + '%';
                             }
                             html += '</td>';
                         } else {
                             html += '<td>no tiles</td>';
                         }
-                        if (theme.hasSqlite) {
+                        if (Object.keys(theme.sqlite).length) {
                             html += '<td>';
-                            html += '<a href="#" data-action="clear" data-target="sqlite" data-mapset="' + mapset + '">Clear</a>';
-                            html += '<a href="#" data-action="generate" data-target="sqlite" data-mapset="' + mapset + '">Generate</a>';
+                            switch (theme.sqlite.state) {
+                                case 'running':
+                                    html += '<a href="#" data-action="check" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
+                                    html += '<a href="#" data-action="stop" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
+                                    break;
+
+                                case 'stopped':
+                                    html += '<a href="#" data-action="clear" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
+                                /* fall through */
+                                case 'to-do':
+                                    html += '<a href="#" data-action="generate" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                            }
                             html += '</td>';
                         } else {
                             html += '<td>no sqlite</td>';
@@ -75,24 +90,48 @@ $(document).ready(function() {
                     $('div#offline_manager a[data-action="check"]').button(
                         {icons:{primary:'ui-icon-refresh'}, text:false}
                     ).click(function () {
-                        mapsetView($(this).attr('data-mapset'));
+                        loadMapView($(this).attr('data-map'));
                     });
-                    $('div#offline_manager a[data-action="clear"]').button({icons:{primary:'ui-icon-close'}, text:false});
+                    $('div#offline_manager a[data-action="clear"]').button(
+                        {icons:{primary:'ui-icon-close'}, text:false}
+                    ).click(function () {
+                        if (!confirm('Delete this?')) {
+                            return;
+                        }
+                        var params = {
+                            action: 'clear',
+                            project: $('input#project').val(),
+                            map: $(this).attr('data-map'),
+                            target: $(this).attr('data-target'),
+                            theme: $(this).attr('data-theme')
+                        };
+                        $.ajax({
+                            url: 'ajax/offline.php',
+                            type: 'GET',
+                            dataType: 'json',
+                            data: params,
+                            success: function(response) {
+                                loadMapView(params.map);
+                            }
+                        });
+                    });
                     $('div#offline_manager a[data-action="stop"]').button(
                         {icons:{primary:'ui-icon-stop'}, text:false}
                     ).click(function () {
                         var params = {
                             action: 'stop',
                             project: $('input#project').val(),
-                            map: $(this).attr('data-mapset')
+                            map: $(this).attr('data-map'),
+                            target: $(this).attr('data-target'),
+                            theme: $(this).attr('data-theme')
                         };
                         $.ajax({
-                            url: '../services/test.php',
+                            url: 'ajax/offline.php',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                mapsetView(params.map);
+                                loadMapView(params.map);
                             }
                         });
                     });
@@ -102,15 +141,17 @@ $(document).ready(function() {
                         var params = {
                             action: 'start',
                             project: $('input#project').val(),
-                            map: $(this).attr('data-mapset')
+                            map: $(this).attr('data-map'),
+                            target: $(this).attr('data-target'),
+                            theme: $(this).attr('data-theme')
                         };
                         $.ajax({
-                            url: '../services/test.php',
+                            url: 'ajax/offline.php',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                mapsetView(params.map);
+                                loadMapView(params.map);
                             }
                         });
                     });
@@ -137,10 +178,35 @@ $(document).ready(function() {
         $('div#offline_manager a[data-action="create"]').button(
             {icons:{primary:'ui-icon-arrowreturnthick-1-e'}, text:false}
         ).click(function (event) {
-            mapsetView($(this).attr('data-mapset'));
+            loadMapView($(this).attr('data-map'));
         });
 
-        $('div#offline_manager a[data-action="download"]').button({icons:{primary:'ui-icon-arrowthickstop-1-s'}, text:false});
+        $('div#offline_manager a[data-action="download"]').button(
+            {icons:{primary:'ui-icon-arrowthickstop-1-s'}, text:false}
+        ).click(function () {
+            var activeLink = this;
+            var activeLinkContainer = $(this).parent();
+            $(activeLink).hide();
+            $(activeLinkContainer).append(loadingGif);
+
+            var params = {
+                action: 'download',
+                project: $('input#project').val(),
+                map: $(this).attr('data-map')
+            };
+            $.ajax({
+                url: 'ajax/offline.php',
+                type: 'GET',
+                dataType: 'json',
+                data: params,
+                success: function(response) {
+                    $(activeLink).show();
+                    $('img', activeLinkContainer).remove();
+
+                    console.log(response);
+                }
+            });
+        });
     }
 
     $('a[data-action="offline_manager"]').click(function(event) {

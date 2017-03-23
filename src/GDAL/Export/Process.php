@@ -18,7 +18,7 @@ class Process
         $cmd = sprintf(
             $cmdTpl,
             $this->driver,
-            $task->getFileName(),
+            $task->getFilePath(),
             $task->getSource(),
             $task->getLogFile(),
             $task->getErrFile()
@@ -32,7 +32,7 @@ class Process
         $result = shell_exec(sprintf(
             'ps x | grep "%s" | grep "%s"',
             'ogr2ogr -f ' . $this->driver,
-            $task->getFileName()
+            $task->getFilePath()
         ));
         $r = preg_split("/\n/", $result);
         for ($i = 0; $i < count($r); $i++) {

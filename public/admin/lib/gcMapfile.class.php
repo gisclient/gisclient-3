@@ -287,7 +287,7 @@ class gcMapfile
                 if (empty($this->mpxCaches[$mapName][$cacheName])) {
                     $this->mpxCaches[$mapName][$cacheName] = array(
                         'grids'=>array_keys($this->epsgList),
-                        'cache'=>$this->_getCacheType($aLayer['theme_name']),
+                        'cache'=>$this->_getCacheType($mapName.'_'.$aLayer['theme_name']),
                         'layergroups'=>array(),
                         'theme_name'=>$aLayer['theme_name'],
                         'theme_title'=>$aLayer['theme_title']
@@ -349,7 +349,7 @@ class gcMapfile
                                 "format"=>($aLayer["isbaselayer"])?"image/jpeg":"image/png",
                                 "minimize_meta_requests"=>true,
                                 "request_format"=>$aLayer["outputformat_mimetype"],
-                                "cache"=>$this->_getCacheType($aLayer["theme_name"].'.'.$aLayer["layergroup_name"]),
+                                "cache"=>$this->_getCacheType($mapName.'_'.$aLayer["theme_name"].'.'.$aLayer["layergroup_name"]),
                                 "grids"=>array_keys($this->epsgList)
                                 //'grids'=>array("epsg3857")                //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                             );
@@ -1194,6 +1194,12 @@ END";
                 )
             )
         );
+
+        foreach ($caches as $cache => $value) {
+            $config['seeds'][$mapName . '_' . basename($cache, '_cache')] = array(
+                'caches' => array($cache)
+            );
+        }
 
         $content = Spyc::YAMLDump($config, 1, 0);
 

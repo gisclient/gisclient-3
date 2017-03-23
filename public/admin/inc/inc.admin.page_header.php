@@ -178,8 +178,8 @@
                 ?>
                 <tr>
                     <td><?php echo "{$mapset['mapset_title']} ({$mapset['mapset_name']})" ?></td>
-                    <td style="text-align:center;"><a href="#" data-action="create" data-mapset="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('create') ?></a></td>
-                    <td style="text-align:center;"><a href="#" data-action="download" data-mapset="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('download') ?></a></td>
+                    <td style="text-align:center;"><a href="#" data-action="create" data-map="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('create') ?></a></td>
+                    <td style="text-align:center;"><a href="#" data-action="download" data-map="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('download') ?></a></td>
                 </tr>
                 <?php
                     }

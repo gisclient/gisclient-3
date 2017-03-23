@@ -58,6 +58,15 @@ class Process
         return false;
     }
 
+    public function isRunning(Task $task)
+    {
+        $pid = $this->getPID($task);
+        if ($pid !== false) {
+            return true;
+        }
+        return false;
+    }
+
     public function start(Task $task)
     {
         if (!$this->isRunning($task)) {
@@ -67,15 +76,6 @@ class Process
         }
 
         return $pid;
-    }
-
-    public function isRunning(Task $task)
-    {
-        $pid = $this->getPID($task);
-        if ($pid !== false) {
-            return true;
-        }
-        return false;
     }
 
     public function stop(Task $task)

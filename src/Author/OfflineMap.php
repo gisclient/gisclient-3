@@ -40,17 +40,28 @@ class OfflineMap
      * Fa partire il processo di generezione dei db spatial
      * Genera il file di configurazione del client
      */
-    public function generate($only = null)
+    public function start(Theme $theme = null, $only = null)
     {
         $logDir = DEBUG_DIR;
 
         if ($only == 'mbtiles' || empty($only)) {
-            $task = new SeedTask('offline', $logDir);
+            if (empty($theme)) {
+                $task = new SeedTask($this->map->getProject(), 'offline', $logDir);
+            } else {
+                $taskName = $this->map->getName() . '_' . $theme->getName();
+                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+            }
+//var_dump($task);die;
             $this->seedProcess->start($task);
         }
 
         if ($only == 'sqlite' || empty($only)) {
-            $layerGroups = $this->map->getLayerGroups();
+            if (empty($theme)) {
+                $layerGroups = $this->map->getLayerGroups();
+            } else {
+                $layerGroups = $theme->getLayerGroups();
+            }
+
             foreach ($layerGroups as $layerGroup) {
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
@@ -61,13 +72,6 @@ class OfflineMap
                 }
             }
         }
-
-        /*if ($only == 'config' || empty($only)) {
-            file_put_contents(
-                ROOT_PATH . "/var/config-{$name}.json",
-                file_get_contents(PUBLIC_URL . "services/gcmapconfig.php?mapset={$name}&legend=1")
-            );
-        }*/
     }
 
     /*
@@ -75,17 +79,28 @@ class OfflineMap
      * Interrompe il processo di generazione spatial se attivo -> il db corrente va cancellato
      * Pulisce i file temporanei
      */
-    public function stop($only = null)
+    public function stop(Theme $theme = null, $only = null)
     {
         $logDir = DEBUG_DIR;
 
         if ($only == 'mbtiles' || empty($only)) {
-            $task = new SeedTask('offline', $logDir);
+            if (empty($theme)) {
+                $task = new SeedTask($this->map->getProject(), 'offline', $logDir);
+            } else {
+                $taskName = $this->map->getName() . '_' . $theme->getName();
+                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+            }
+
             $this->seedProcess->stop($task);
         }
 
         if ($only == 'sqlite' || empty($only)) {
-            $layerGroups = $this->map->getLayerGroups();
+            if (empty($theme)) {
+                $layerGroups = $this->map->getLayerGroups();
+            } else {
+                $layerGroups = $theme->getLayerGroups();
+            }
+
             foreach ($layerGroups as $layerGroup) {
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
@@ -102,9 +117,36 @@ class OfflineMap
      * In base ai parametri cancella un mbtiles o uno spatial o il file di configurazione.
      * Vengono cancellati anche i relativi file temporanei
      */
-    public function clear()
+    public function clear(Theme $theme = null, $only = null)
     {
-        # code...
+        $logDir = DEBUG_DIR;
+
+        if (!empty($theme)) {
+            $themes = array($theme);
+        } else {
+            $themes = $this->map->getThemes();
+        }
+
+        foreach ($themes as $theme) {
+            if ($only == 'mbtiles' || empty($only)) {
+                $taskName = $this->map->getName() . '_' . $theme->getName();
+                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+                $task->cleanup();
+            }
+
+            if ($only == 'sqlite' || empty($only)) {
+                $layerGroups = $theme->getLayerGroups();
+                foreach ($layerGroups as $layerGroup) {
+                    if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
+                        $layers = $layerGroup->getLayers();
+                        foreach ($layers as $layer) {
+                            $task = new SQLiteTask($layer, $logDir);
+                            $task->cleanup();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /*
@@ -112,14 +154,71 @@ class OfflineMap
      * se è già pronto lo zip
      * o se ci sono dei processi ancora attivi (con percentuale)
      */
-    public function status($only = null)
+    public function status(Theme $theme = null, $only = null)
     {
         $logDir = DEBUG_DIR;
+        $result = array();
 
-        if ($only == 'mbtiles' || empty($only)) {
-            $task = new SeedTask('offline', $logDir);
-            return $this->seedProcess->isRunning($task);
+        if (!empty($theme)) {
+            $themes = array($theme);
+        } else {
+            $themes = $this->map->getThemes();
         }
+
+        foreach ($themes as $t) {
+            $result[$t->getName()] = array(
+                'mbtiles' => array(),
+                'sqlite' => array()
+            );
+
+            if ($only == 'mbtiles' || empty($only)) {
+                $taskName = $this->map->getName() . '_' . $t->getName();
+                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+                if (!file_exists($task->getFilePath())) {
+                    $mbTilesState = 'to-do';
+                } else {
+                    if ($this->seedProcess->isRunning($task)) {
+                        $mbTilesState = 'running';
+                    } else {
+                        $mbTilesState = 'stopped';
+                    }
+                }
+                
+                $result[$t->getName()]['mbtiles'] = array(
+                    'state' => $mbTilesState,
+                    'progress' => $task->getProgress()
+                );
+            }
+
+            if ($only == 'sqlite' || empty($only)) {
+                $sqliteState = null;
+                foreach ($t->getLayerGroups() as $layerGroup) {
+                    if ($sqliteState == 'running') {
+                        break;
+                    }
+                    if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
+                        $sqliteState = 'to-do';
+                        $layers = $layerGroup->getLayers();
+                        foreach ($layers as $layer) {
+                            $task = new SQLiteTask($layer, $logDir);
+                            if (file_exists($task->getFilePath())) {
+                                if ($this->gdalProcess->isRunning($task)) {
+                                    $sqliteState = 'running';
+                                    break;
+                                } else {
+                                    $sqliteState = 'stopped';
+                                }
+                            }
+                        }
+                        $result[$t->getName()]['sqlite'] = array(
+                            'state' => $sqliteState
+                        );
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 
     /*
@@ -130,8 +229,8 @@ class OfflineMap
         $logDir = DEBUG_DIR;
 
         $zip = new \ZipArchive();
-        $name = $this->map->getName();
-        $zipFile = ROOT_PATH . 'var/' . $name . '.zip';
+        $mapName = $this->map->getName();
+        $zipFile = ROOT_PATH . 'var/' . $mapName . '.zip';
 
         if ($zip->open($zipFile, \ZipArchive::CREATE) !== true) {
             throw new \Exception("Failed to create zip file '{$zipFile}'", 1);
@@ -139,24 +238,25 @@ class OfflineMap
 
         $themes = $this->map->getThemes();
         foreach ($themes as $theme) {
-            $file = MAPPROXY_CACHE_PATH . $this->map->getProject() . '/' . $theme->getName() . '.mbtiles';
-            $zip->addFile($file, basename($file));
-        }
+            $taskName = $mapName . '_' . $theme->getName();
+            $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+            $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
 
-        $layerGroups = $this->map->getLayerGroups();
-        foreach ($layerGroups as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                $layers = $layerGroup->getLayers();
-                foreach ($layers as $layer) {
-                    $task = new SQLiteTask($layer, $logDir);
-                    $zip->addFile($task->getFileName(), basename($task->getFileName()));
+            $layerGroups = $theme->getLayerGroups();
+            foreach ($layerGroups as $layerGroup) {
+                if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
+                    $layers = $layerGroup->getLayers();
+                    foreach ($layers as $layer) {
+                        $task = new SQLiteTask($layer, $logDir);
+                        $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+                    }
                 }
             }
         }
 
         $zip->addFromString(
             'config.json',
-            file_get_contents(PUBLIC_URL . "services/gcmapconfig.php?mapset={$name}&legend=1")
+            file_get_contents(PUBLIC_URL . "services/gcmapconfig.php?mapset={$mapName}&legend=1")
         );
 
         $zip->close();

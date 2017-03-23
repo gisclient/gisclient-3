@@ -156,7 +156,7 @@ class Task implements \GisClient\GDAL\Export\Task
         return $source;
     }
 
-    public function getFileName()
+    public function getFilePath()
     {
         return ROOT_PATH . "{$this->path}{$this->getTaskName()}.sqlite";
     }
@@ -165,5 +165,6 @@ class Task implements \GisClient\GDAL\Export\Task
     {
         unlink($this->logFile);
         unlink($this->errFile);
+        unlink($this->getFilePath());
     }
 }

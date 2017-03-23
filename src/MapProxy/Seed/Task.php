@@ -6,10 +6,12 @@ class Task
 {
     private $logFile;
     private $errFile;
+    private $project;
     private $task;
 
-    public function __construct($taskName, $logDir)
+    public function __construct($project, $taskName, $logDir)
     {
+        $this->project = $project;
         $this->task = $taskName;
 
         if (is_writable($logDir)) {
@@ -55,7 +57,8 @@ class Task
 
         // parse process progression
         if (!file_exists($this->logFile)) {
-            throw new \Exception("Error: File not exists '{$this->logFile}'", 1);
+            return '';
+            //throw new \Exception("Error: File not exists '{$this->logFile}'", 1);
         }
         $f = fopen($this->logFile, 'r');
         $cursor = -1;
@@ -96,5 +99,11 @@ class Task
     {
         unlink($this->logFile);
         unlink($this->errFile);
+        unlink($this->getFilePath());
+    }
+
+    public function getFilePath()
+    {
+        return MAPPROXY_CACHE_PATH . "{$this->project}/{$this->task}.mbtiles";
     }
 }
