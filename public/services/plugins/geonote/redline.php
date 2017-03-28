@@ -5,7 +5,7 @@ require_once ROOT_PATH . 'lib/GCService.php';
 $gcService = GCService::instance();
 $gcService->startSession();
 
-if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayer', 'GetLayers', 'PrintMap'))) {
+if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayer', 'GetLayers', 'PrintMap', 'attUpload'))) {
 	outputError("REQUEST unknown");
 }
 
@@ -15,6 +15,21 @@ if(!defined('REDLINE_FONT')) define('REDLINE_FONT', 'arial');
 if(!defined('POSTGIS_TRANSFORM_GEOMETRY')) define('POSTGIS_TRANSFORM_GEOMETRY', 'Postgis_Transform_Geometry');
 
 $redlineFields = array ('color' => 'varchar', 'label' => 'text', 'attach' => 'text');
+
+if ($_REQUEST["REQUEST"] == "attUpload") {
+    if(!defined('REDLINE_UPLOAD_DIR') || !defined('REDLINE_UPLOAD_URL')) outputError('Missing upload config values, cannot execute request');
+    if(!isset($_FILES["ATTACHMENT"])) outputError('No attachment specified, invalid operation');
+    $attachType = pathinfo(basename($_FILES["ATTACHMENT"]["name"]),PATHINFO_EXTENSION); 
+    // **** TODO - check file types?
+    $attachName = uniqid("", true);
+    $attachName .= '.' . $attachType;
+    if (move_uploaded_file($_FILES["ATTACHMENT"]["tmp_name"], REDLINE_UPLOAD_DIR . '/' . $attachName)) {
+        die(json_encode(array('attachUrl'=>REDLINE_UPLOAD_URL . $attachName)));
+    }
+    else {
+        ouputError('Upload failed');
+    }
+}
 
 //Creazione di un geotiff con le annotazioni
 if ($_REQUEST["REQUEST"] == "PrintMap") {
