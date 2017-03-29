@@ -53,10 +53,12 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 	select: function(geometry) {
 		
             //se c'è un popup aperto non faccio nulla
-            if (this.map.popups.map( (el) => el.id ).indexOf("pipeselect-popup") < 0) {
-                alert('Chiudere tutte le finestre popup prima di effettuare una nuova ricerca valvole');
-                return;
-            }
+            for(var i=0; i<this.map.popups.length; i++){
+                if(this.map.popups[i].id == 'pipeselect-popup'){
+                   alert('Chiudere tutte le finestre popup prima di effettuare una nuova ricerca valvole');
+                   return;
+                }
+             }
 
             this.events.triggerEvent("beforeSelect", {
 
