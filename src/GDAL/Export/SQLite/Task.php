@@ -139,6 +139,9 @@ class Task implements \GisClient\GDAL\Export\Task
         $fieldsText .= $this->layer->getGeomColumn();
 
         $filter = $this->layer->getFilter();
+        if (!$filter) {
+            $filter = 'true';
+        }
 
         $name = $this->layer->getName();
         
