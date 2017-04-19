@@ -23,11 +23,11 @@ class OfflineMap
         $name = $this->map->getName();
         $project = $this->map->getProject();
 
-        $mapFile = "{$project}.{$name}.yaml";
+        $mapFile = "{$project}/{$name}.yaml";
         $seedFile = "{$project}/{$name}.seed.yaml";
 
         $binPath = MAPPROXY_PATH . 'bin/';
-        $mapConfig = MAPPROXY_PATH . 'conf/' . $mapFile;
+        $mapConfig = ROOT_PATH . 'map/' . $mapFile;
         $seedConfig = ROOT_PATH . 'map/' . $seedFile;
 
 
@@ -51,7 +51,6 @@ class OfflineMap
                 $taskName = $this->map->getName() . '_' . $theme->getName();
                 $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
             }
-//var_dump($task);die;
             $this->seedProcess->start($task);
         }
 
