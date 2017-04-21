@@ -10,12 +10,14 @@ class Task implements \GisClient\GDAL\Export\Task
     private $logFile;
     private $errFile;
     private $layer;
+    private $taskName;
     private $path;
 
-    public function __construct(Layer $layer, $logDir)
+    public function __construct(Layer $layer, $taskName, $logDir)
     {
         $this->path = 'var/SQLite/';
         $this->layer = $layer;
+        $this->taskName = $taskName;
 
         if (is_writable($logDir)) {
             $this->logFile = $logDir . $this->getTaskName() . '.log';
@@ -33,8 +35,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getTaskName()
     {
-        $name = "{$this->layer->getName()}.{$this->layer->getId()}";
-        return $name;
+        return $this->taskName;
     }
 
     public function getLogFile()
@@ -136,7 +137,7 @@ class Task implements \GisClient\GDAL\Export\Task
         foreach ($fields as $field) {
             $fieldsText .= $field->getName() . ',';
         }
-        $fieldsText .= $this->layer->getGeomColumn();
+        $fieldsText .= 'ST_asText(' . $this->layer->getGeomColumn() . ') as wkt_geom';
 
         $filter = $this->layer->getFilter();
         if (!$filter) {

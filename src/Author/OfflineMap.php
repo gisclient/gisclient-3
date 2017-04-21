@@ -65,7 +65,8 @@ class OfflineMap
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
                     foreach ($layers as $layer) {
-                        $task = new SQLiteTask($layer, $logDir);
+                        $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                        $task = new SQLiteTask($layer, $taskName, $logDir);
                         $this->gdalProcess->start($task);
                     }
                 }
@@ -104,7 +105,8 @@ class OfflineMap
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
                     foreach ($layers as $layer) {
-                        $task = new SQLiteTask($layer, $logDir);
+                        $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                        $task = new SQLiteTask($layer, $taskName, $logDir);
                         $this->gdalProcess->stop($task);
                     }
                 }
@@ -139,7 +141,8 @@ class OfflineMap
                     if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                         $layers = $layerGroup->getLayers();
                         foreach ($layers as $layer) {
-                            $task = new SQLiteTask($layer, $logDir);
+                            $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                            $task = new SQLiteTask($layer, $taskName, $logDir);
                             $task->cleanup();
                         }
                     }
@@ -199,7 +202,8 @@ class OfflineMap
                         $sqliteState = 'to-do';
                         $layers = $layerGroup->getLayers();
                         foreach ($layers as $layer) {
-                            $task = new SQLiteTask($layer, $logDir);
+                            $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                            $task = new SQLiteTask($layer, $taskName, $logDir);
                             if (file_exists($task->getFilePath())) {
                                 if ($this->gdalProcess->isRunning($task)) {
                                     $sqliteState = 'running';
@@ -246,7 +250,8 @@ class OfflineMap
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
                     foreach ($layers as $layer) {
-                        $task = new SQLiteTask($layer, $logDir);
+                        $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                        $task = new SQLiteTask($layer, $taskName, $logDir);
                         $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
                     }
                 }
