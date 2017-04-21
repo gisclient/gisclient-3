@@ -77,6 +77,7 @@ class Task
         /**
          * Read until the start of file or first newline char
          */
+        $buffer = '';
         while ($char !== false && $char !== "\n" && $char !== "\r") {
             /**
              * Prepend the new char
