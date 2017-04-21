@@ -72,4 +72,9 @@ class LayerGroup
 
         return $layers;
     }
+
+    public function getName()
+    {
+        return $this->get('layergroup_name');
+    }
 }
