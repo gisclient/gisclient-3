@@ -10,7 +10,7 @@ use GisClient\GDAL\Export\SQLite\Driver as SQLiteDriver;
 
 class OfflineMap
 {
-    private $map;
+    protected $map;
 
     public function __construct(Map $map)
     {
