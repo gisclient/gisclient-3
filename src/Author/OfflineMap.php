@@ -239,11 +239,25 @@ class OfflineMap
             throw new \Exception("Failed to create zip file '{$zipFile}'", 1);
         }
 
+        require_once ADMIN_PATH . "lib/gcSymbol.class.php";
+
         $themes = $this->map->getThemes();
         foreach ($themes as $theme) {
             $taskName = $mapName . '_' . $theme->getName();
             $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
             $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+
+            $symbol = $theme->getSymbolName();
+            if ($symbol) {
+                $smb=new \Symbol('symbol');
+
+                $smb->filter = "symbol.symbol_name='{$symbol}'";
+
+                $img = $smb->createIcon();
+                if ($img) {
+                    $zip->addFromString($theme->getName() . '.png', $img);
+                }
+            }
 
             $layerGroups = $theme->getLayerGroups();
             foreach ($layerGroups as $layerGroup) {
