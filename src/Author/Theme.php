@@ -37,7 +37,8 @@ class Theme
         if (isset($this->data[$value])) {
             return $this->data[$value];
         } else {
-            throw new \Exception("Error: property '$value' not found", 1);
+            return null;
+            //throw new \Exception("Error: property '$value' not found", 1);
         }
     }
 
@@ -65,6 +66,11 @@ class Theme
     public function getName()
     {
         return $this->get('theme_name');
+    }
+
+    public function getSymbolName()
+    {
+        return $this->get('symbol_name');
     }
 
     public function getTitle()
