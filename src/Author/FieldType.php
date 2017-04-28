@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Field
+class FieldType
 {
     private $db;
     private $data;
@@ -13,7 +13,7 @@ class Field
             $this->db = \GCApp::getDB();
 
             $schema = DB_SCHEMA;
-            $sql = "SELECT * FROM {$schema}.field WHERE field_id = ?";
+            $sql = "SELECT * FROM {$schema}.e_fieldtype WHERE e_fieldtype_id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute(array($id));
             $data = $stmt->fetch();
@@ -34,20 +34,8 @@ class Field
         }
     }
 
-    public function getFormat()
-    {
-        return $this->get('field_format');
-    }
-
     public function getName()
     {
-        return $this->get('field_name');
-    }
-
-    public function getType()
-    {
-        $fieldType = new FieldType($this->get('fieldtype_id'));
-        
-        return $fieldType->getName();
+        return $this->get('fieldtype_name');
     }
 }

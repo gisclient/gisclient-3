@@ -67,11 +67,6 @@ class Layer
         return $this->get('data_filter');
     }
 
-    public function getName()
-    {
-        return $this->get('layer_name');
-    }
-
     public function getGeomColumn()
     {
         return $this->get('data_geom');
@@ -80,5 +75,25 @@ class Layer
     public function getId()
     {
         return $this->get('layer_id');
+    }
+
+    public function getLinks()
+    {
+        $links = array();
+        $schema = DB_SCHEMA;
+        $sql = "SELECT link_id FROM {$schema}.layer_link WHERE layer_id = ?";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($this->data['layer_id']));
+        while ($link_id = $stmt->fetchColumn(0)) {
+            $links[] = new Link($link_id);
+        }
+
+        return $links;
+    }
+
+    public function getName()
+    {
+        return $this->get('layer_name');
     }
 }

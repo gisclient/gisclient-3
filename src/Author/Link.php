@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Field
+class Link
 {
     private $db;
     private $data;
@@ -13,7 +13,7 @@ class Field
             $this->db = \GCApp::getDB();
 
             $schema = DB_SCHEMA;
-            $sql = "SELECT * FROM {$schema}.field WHERE field_id = ?";
+            $sql = "SELECT * FROM {$schema}.link WHERE link_id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute(array($id));
             $data = $stmt->fetch();
@@ -34,20 +34,13 @@ class Field
         }
     }
 
-    public function getFormat()
+    public function getDefinition()
     {
-        return $this->get('field_format');
+        return $this->get('link_def');
     }
 
     public function getName()
     {
-        return $this->get('field_name');
-    }
-
-    public function getType()
-    {
-        $fieldType = new FieldType($this->get('fieldtype_id'));
-        
-        return $fieldType->getName();
+        return $this->get('link_name');
     }
 }
