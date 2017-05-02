@@ -13,7 +13,7 @@ class FieldType
             $this->db = \GCApp::getDB();
 
             $schema = DB_SCHEMA;
-            $sql = "SELECT * FROM {$schema}.e_fieldtype WHERE e_fieldtype_id = ?";
+            $sql = "SELECT * FROM {$schema}.e_fieldtype WHERE fieldtype_id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute(array($id));
             $data = $stmt->fetch();
