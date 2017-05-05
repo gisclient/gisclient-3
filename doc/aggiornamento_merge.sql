@@ -1108,3 +1108,6 @@ ALTER TABLE theme
 ALTER TABLE theme
   ADD FOREIGN KEY (symbol_name) REFERENCES symbol (symbol_name) ON UPDATE CASCADE ON DELETE SET NULL;
 
+ALTER TABLE gisclient_34.theme
+  ADD COLUMN theme_description character varying;
+
