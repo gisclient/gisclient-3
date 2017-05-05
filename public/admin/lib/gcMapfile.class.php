@@ -1177,10 +1177,6 @@ END";
             file_put_contents($wsgiConfigFile, $content);
         }
         
-        $importConfigFile = MAPPROXY_PATH . 'conf/' . $this->projectName . '.' . $mapName . '.yaml';
-        if (!file_exists($importConfigFile)) {
-            file_put_contents($importConfigFile, 'base: [' . $projectDir.$mapName . '.yaml]');
-        }
     }
 
     private function _writeMapProxySeed($mapName)
