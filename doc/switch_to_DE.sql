@@ -433,7 +433,7 @@ CREATE OR REPLACE VIEW vista_layer AS
                layer_id IN (SELECT field.layer_id 
                               FROM field 
                               WHERE field.resultype_id = 4)
-          THEN 'NEIN. Resultat enthä kein Feld'
+          THEN 'NEIN. Kein Feld in Suchergebnis'
           ELSE 'NEIN. WFS nicht aktiv'
         END AS is_queryable, 
         CASE
