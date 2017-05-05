@@ -1021,7 +1021,7 @@ END";
             }
 
             foreach ($scaleList as $scaleValue) {
-                $grids[$key]["res"][] = round((float)$scaleValue/$convFact, $precision);
+                $grids[$key]["res"][] = round((float)$scaleValue/$convFact, 10);
             }
 
             if ($this->mapsetExtent) { //force grid to map extent
