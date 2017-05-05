@@ -45,7 +45,7 @@ class Process
 
     private function getPID(Task $task)
     {
-        $result = shell_exec(sprintf('ps x | grep "%s" | grep "%s"', $this->bin, $task->getTaskName()));
+        $result = shell_exec(sprintf('ps x | grep "%s" | grep "%s$"', $this->bin, $task->getTaskName()));
         $r = preg_split("/\n/", $result);
 
         for ($i = 0; $i < count($r); $i++) {

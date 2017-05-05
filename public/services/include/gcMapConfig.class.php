@@ -841,7 +841,7 @@ class gcMap
         }
         
         // default mode
-        $sqlLegend = "SELECT class_id, class_name, class_title, legendtype_id FROM " . DB_SCHEMA . ".class INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) WHERE layer.layergroup_id=? ORDER BY layer_order, class_order";
+        $sqlLegend = "SELECT class_id, class_name, class_title, expression, legendtype_id FROM " . DB_SCHEMA . ".class INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) WHERE layer.layergroup_id=? ORDER BY layer_order, class_order";
         print_debug($sqlLegend, null, 'maplegend');
         $stmt = $this->db->prepare($sqlLegend);
         $stmt->execute(array($layergroupId));
@@ -850,6 +850,30 @@ class gcMap
         for ($i=0; $i < count($rowset); $i++) {
             if (!empty($this->i18n)) {
                 $rowset[$i]['class_title'] = $this->i18n->translate($rowset[$i]['class_title'], 'class', $rowset[$i]['class_id'], 'class_title');
+            }
+            $sqlStyle = "SELECT color, outlinecolor, bgcolor, size FROM " . DB_SCHEMA . ".style WHERE class_id = ?";
+            $stmt = $this->db->prepare($sqlStyle);
+            $stmt->execute(array($rowset[$i]['class_id']));
+            $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $styles = [];
+            for ($j=0; $j < count($row); $j++) {
+                $style = [];
+                if (!empty($row[$j]['color'])) {
+                    $style['color'] = "RGB(" . str_replace(" ", ",", $row[$j]['color']) . ")";
+                }
+                if (!empty($row[$j]['outlinecolor'])) {
+                    $style['outlinecolor'] = "RGB(" . str_replace(" ", ",", $row[$j]['outlinecolor']) . ")";
+                }
+                if (!empty($row[$j]['bgcolor'])) {
+                    $style['bgcolor'] = "RGB(" . str_replace(" ", ",", $row[$j]['bgcolor']) . ")";
+                }
+                if (!empty($row[$j]['size'])) {
+                    $style['size'] = $row[$j]['size'];
+                }
+                $styles[] = $style;
+            }
+            if (count($styles)) {
+                $rowset[$i]['styles'] = $styles;
             }
             array_push($legendArray, $rowset[$i]);
         }

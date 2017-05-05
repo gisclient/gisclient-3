@@ -1155,7 +1155,9 @@ END";
         //$content = yaml_emit($config,YAML_UTF8_ENCODING);
 
         print_debug($config, null, 'yaml');
-        $content = Spyc::YAMLDump($config, 1, 0);
+        $Spyc = new Spyc();
+        $Spyc->setting_dump_force_quotes = true;
+        $content = $Spyc->YAMLDump($config, 1, 0);
 
         //file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
         //AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
@@ -1201,7 +1203,9 @@ END";
             );
         }
 
-        $content = Spyc::YAMLDump($config, 1, 0);
+        $Spyc = new Spyc();
+        $Spyc->setting_dump_force_quotes = true;
+        $content = $Spyc->YAMLDump($config, 1, 0);
 
         $mapfileDir = ROOT_PATH.'map/';
         $projectDir = $mapfileDir.$this->projectName.'/';
