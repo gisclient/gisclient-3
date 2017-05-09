@@ -43,7 +43,7 @@ class Symbol{
 			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
 			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name) 
 			inner join $dbSchema.e_layertype using (layertype_id)
-			left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name)";
+			left join $dbSchema.style using(class_id) left join $dbSchema.symbol on symbol.symbol_name = style.symbol_name";
 
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" order by style_order desc;";
