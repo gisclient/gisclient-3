@@ -39,6 +39,21 @@ class Field
         return $this->get('field_format');
     }
 
+    public function getLookupId()
+    {
+        return $this->get('lookup_id');
+    }
+
+    public function getLookupName()
+    {
+        return $this->get('lookup_name');
+    }
+
+    public function getLookupTable()
+    {
+        return $this->get('lookup_table');
+    }
+
     public function getName()
     {
         return $this->get('field_name');

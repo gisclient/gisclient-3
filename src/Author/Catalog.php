@@ -29,13 +29,27 @@ class Catalog
         }
     }
 
+    private function get($value)
+    {
+        if (!empty($this->data)) {
+            return $this->data[$value];
+        } else {
+            throw new \Exception("Error: property '$value' not found", 1);
+        }
+    }
+
     public function getConnectionType()
     {
-        return $this->data['connection_type'];
+        return $this->get('connection_type');
+    }
+
+    public function getId()
+    {
+        return $this->get('catalog_id');
     }
 
     public function getPath()
     {
-        return $this->data['catalog_path'];
+        return $this->get('catalog_path');
     }
 }

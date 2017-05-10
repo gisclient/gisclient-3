@@ -39,6 +39,11 @@ class Layer
         return new Catalog($this->get('catalog_id'));
     }
 
+    public function getCatalogId()
+    {
+        return $this->get('catalog_id');
+    }
+
     public function getTable()
     {
         return $this->get('data');
