@@ -116,7 +116,7 @@ class Task implements \GisClient\GDAL\Export\Task
             $dbParams['db_user'] = defined('MAP_USER') ? MAP_USER : DB_USER;
             $dbParams['db_pass'] = defined('MAP_USER') ? MAP_PWD : DB_PWD;
 
-            $connectionTpl = 'PG:"host=%s port=%s user=%s password=%s dbname=%s schemas=%s"';
+            $connectionTpl = "PG:'host=%s port=%s user=%s password=%s dbname=%s schemas=%s'";
             $connection = sprintf(
                 $connectionTpl,
                 $dbParams['db_host'],
