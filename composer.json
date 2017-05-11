@@ -6,7 +6,8 @@
     "homepage": "http://gisclient.net",
     "license": "GPL-3.0",
     "require": {
-        "php": ">=5.3.3"
+        "php": ">=5.3.3",
+        "ext-curl": "*"
     },
     "minimum-stability": "dev",
     "autoload": {
