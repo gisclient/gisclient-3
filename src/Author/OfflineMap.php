@@ -227,7 +227,7 @@ class OfflineMap
     /*
      * Se lo zip è pronto restituisce la risorsa da scaricare
      */
-    public function get()
+    public function get($mbtiles = true, $sqlite = true)
     {
         $logDir = DEBUG_DIR;
 
@@ -239,34 +239,52 @@ class OfflineMap
             throw new \Exception("Failed to create zip file '{$zipFile}'", 1);
         }
 
-        require_once ADMIN_PATH . "lib/gcSymbol.class.php";
-
         $themes = $this->map->getThemes();
         foreach ($themes as $theme) {
-            $taskName = $mapName . '_' . $theme->getName();
-            $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
-            $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+            $themeStatus = $this->status($theme);
 
-            $symbol = $theme->getSymbolName();
-            if ($symbol) {
-                $smb=new \Symbol('symbol');
-
-                $smb->filter = "symbol.symbol_name='{$symbol}'";
-
-                $img = $smb->createIcon();
+            if ($mbtiles && count($themeStatus[$theme->getName()]['mbtiles'])) {
+                $img = $this->getLegendForTheme($theme);
                 if ($img) {
                     $zip->addFromString($theme->getName() . '.png', $img);
                 }
+
+                $taskName = $mapName . '_' . $theme->getName();
+                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+                $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
             }
 
-            $layerGroups = $theme->getLayerGroups();
-            foreach ($layerGroups as $layerGroup) {
-                if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                    $layers = $layerGroup->getLayers();
-                    foreach ($layers as $layer) {
-                        $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
-                        $task = new SQLiteTask($layer, $taskName, $logDir);
-                        $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+            if ($sqlite && count($themeStatus[$theme->getName()]['sqlite'])) {
+                $img = $this->getLegendForTheme($theme);
+                if ($img) {
+                    $zip->addFromString($theme->getName() . '.png', $img);
+                }
+
+                $layerGroups = $theme->getLayerGroups();
+                foreach ($layerGroups as $layerGroup) {
+                    if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
+                        $layers = $layerGroup->getLayers();
+                        foreach ($layers as $layer) {
+                            $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                            $task = new SQLiteTask($layer, $taskName, $logDir);
+                            $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+
+                            $catalogId = $layer->getCatalogId();
+                            foreach ($layer->getFields() as $field) {
+                                $lookupTable = $field->getLookupTable();
+                                $lookupId = $field->getLookupId();
+                                $lookupName = $field->getLookupName();
+                                if ($catalogId && $lookupTable && $lookupId && $lookupName) {
+                                    $json = $this->getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName);
+                                    if ($json) {
+                                        $zip->addFromString(
+                                            "{$catalogId}{$lookupTable}.json",
+                                            $json
+                                        );
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -274,11 +292,80 @@ class OfflineMap
 
         $zip->addFromString(
             'config.json',
-            file_get_contents(PUBLIC_URL . "services/gcmapconfig.php?mapset={$mapName}&legend=1")
+            $this->getMapConfig($mapName)
         );
 
         $zip->close();
 
         return $zipFile;
+    }
+
+    protected function getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName)
+    {
+        $url = PUBLIC_URL . "services/lookup.php";
+        $params = array(
+            'catalog' => $catalogId,
+            'table' => $lookupTable,
+            'id' => $lookupId,
+            'name' => $lookupName
+        );
+
+        return $this->getFile($url, $params);
+    }
+
+    protected function getMapConfig($mapName)
+    {
+        $url = PUBLIC_URL . "services/gcmapconfig.php";
+        $params = array(
+            'mapset' => $mapName,
+            'legend' => 1
+        );
+
+        return $this->getFile($url, $params);
+    }
+
+    protected function getFile($url, array $params)
+    {
+        if (count($params)) {
+            $stringParams = array();
+
+            foreach ($params as $key => $value) {
+                $stringParams[] = $key . '=' . $value;
+            }
+            $url .= substr($url, -1) !== '?'? '?' : '';
+            $url .= implode("&", $stringParams);
+        }
+
+        /*using CURL*/
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        $data = curl_exec($curl);
+        curl_close($curl);
+
+        return $data;
+    }
+
+    protected function getLegendForTheme($theme)
+    {
+        $img = null;
+        $symbol = $theme->getSymbolName();
+        if ($symbol) {
+            $img = $this->getSymbolImage($symbol);
+        }
+        return $img;
+    }
+
+    private function getSymbolImage($symbolName)
+    {
+        /* TODO: migrate Symbol class to src (namespaces) */
+        require_once ADMIN_PATH . "lib/gcSymbol.class.php";
+
+        $smb = new \Symbol('symbol');
+        $smb->filter = "symbol.symbol_name='{$symbolName}'";
+        $img = $smb->createIcon();
+
+        return $img;
     }
 }
