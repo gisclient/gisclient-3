@@ -70,6 +70,11 @@ class Layer
         return $this->get('data_geom');
     }
 
+    public function getGeomSrid()
+    {
+        return $this->get('data_srid');
+    }
+
     public function getId()
     {
         return $this->get('layer_id');
