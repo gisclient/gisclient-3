@@ -4,6 +4,7 @@ namespace GisClient\GDAL\Export\SQLite;
 
 use GisClient\Author\Layer;
 use GisClient\Author\Catalog;
+use GisClient\Author\Db;
 
 class Task implements \GisClient\GDAL\Export\Task
 {
@@ -107,28 +108,19 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getSource()
     {
-        $catalog = $this->layer->getCatalog();
-        if ($catalog->getConnectionType() == Catalog::POSTGIS_CONNECTION) {
-            $dbParams = \GCApp::getDataDBParams($catalog->getPath());
+        $db = new Db($this->layer->getCatalog());
+        $dbParams = $db->getParams();
 
-            $dbParams['db_host'] = DB_HOST;
-            $dbParams['db_port'] = DB_PORT;
-            $dbParams['db_user'] = defined('MAP_USER') ? MAP_USER : DB_USER;
-            $dbParams['db_pass'] = defined('MAP_USER') ? MAP_PWD : DB_PWD;
-
-            $connectionTpl = "PG:'host=%s port=%s user=%s password=%s dbname=%s schemas=%s'";
-            $connection = sprintf(
-                $connectionTpl,
-                $dbParams['db_host'],
-                $dbParams['db_port'],
-                $dbParams['db_user'],
-                $dbParams['db_pass'],
-                $dbParams['db_name'],
-                $dbParams['schema']
-            );
-        } else {
-            throw new \Exception("Connection type not supported", 1);
-        }
+        $connectionTpl = "PG:'host=%s port=%s user=%s password=%s dbname=%s schemas=%s'";
+        $connection = sprintf(
+            $connectionTpl,
+            $dbParams['db_host'],
+            $dbParams['db_port'],
+            $dbParams['db_user'],
+            $dbParams['db_pass'],
+            $dbParams['db_name'],
+            $dbParams['schema']
+        );
 
         $table = $this->layer->getTable();
         $fields = $this->layer->getFields();

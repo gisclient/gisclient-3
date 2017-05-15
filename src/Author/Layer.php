@@ -10,11 +10,10 @@ class Layer
     public function __construct($id = null)
     {
         if ($id) {
-            $this->db = \GCApp::getDB();
+            $this->db = new Db();
 
-            $schema = DB_SCHEMA;
-            $sql = "SELECT * FROM {$schema}.layer WHERE layer_id = ?";
-            $stmt = $this->db->prepare($sql);
+            $sql = "SELECT * FROM {$this->db->getParams()['schema']}.layer WHERE layer_id = ?";
+            $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($id));
             $data = $stmt->fetch();
             if (!empty($data)) {
@@ -55,9 +54,8 @@ class Layer
         if (!empty($this->data)) {
             $fields = array();
 
-            $schema = DB_SCHEMA;
-            $sql = "SELECT field_id FROM {$schema}.field WHERE layer_id = ?";
-            $stmt = $this->db->prepare($sql);
+            $sql = "SELECT field_id FROM {$this->db->getParams()['schema']}.field WHERE layer_id = ?";
+            $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($this->get('layer_id')));
             while ($field_id = $stmt->fetchColumn(0)) {
                 $fields[] = new Field($field_id);
@@ -85,10 +83,9 @@ class Layer
     public function getLinks()
     {
         $links = array();
-        $schema = DB_SCHEMA;
-        $sql = "SELECT link_id FROM {$schema}.layer_link WHERE layer_id = ?";
+        $sql = "SELECT link_id FROM {$this->db->getParams()['schema']}.layer_link WHERE layer_id = ?";
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($this->data['layer_id']));
         while ($link_id = $stmt->fetchColumn(0)) {
             $links[] = new Link($link_id);
@@ -100,5 +97,10 @@ class Layer
     public function getName()
     {
         return $this->get('layer_name');
+    }
+
+    public function getPrimaryColumn()
+    {
+        return $this->get('data_unique');
     }
 }

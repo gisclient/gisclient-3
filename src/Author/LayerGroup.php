@@ -22,11 +22,10 @@ class LayerGroup
     public function __construct($id = null)
     {
         if ($id) {
-            $this->db = \GCApp::getDB();
+            $this->db = new Db();
 
-            $schema = DB_SCHEMA;
-            $sql = "SELECT * FROM {$schema}.layergroup WHERE layergroup_id = ?";
-            $stmt = $this->db->prepare($sql);
+            $sql = "SELECT * FROM {$this->db->getParams()['schema']}.layergroup WHERE layergroup_id = ?";
+            $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($id));
             $data = $stmt->fetch();
             if (!empty($data)) {
@@ -61,9 +60,8 @@ class LayerGroup
         if (!empty($this->data)) {
             $layers = array();
 
-            $schema = DB_SCHEMA;
-            $sql = "SELECT layer_id FROM {$schema}.layer WHERE layergroup_id = ?";
-            $stmt = $this->db->prepare($sql);
+            $sql = "SELECT layer_id FROM {$this->db->getParams()['schema']}.layer WHERE layergroup_id = ?";
+            $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($this->data['layergroup_id']));
             while ($layer_id = $stmt->fetchColumn(0)) {
                 $layers[] = new Layer($layer_id);

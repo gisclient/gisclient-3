@@ -10,11 +10,10 @@ class Field
     public function __construct($id = null)
     {
         if ($id) {
-            $this->db = \GCApp::getDB();
-
-            $schema = DB_SCHEMA;
-            $sql = "SELECT * FROM {$schema}.field WHERE field_id = ?";
-            $stmt = $this->db->prepare($sql);
+            $this->db = new Db();
+            
+            $sql = "SELECT * FROM {$this->db->getParams()['schema']}.field WHERE field_id = ?";
+            $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($id));
             $data = $stmt->fetch();
             if (!empty($data)) {

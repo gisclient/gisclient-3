@@ -9,18 +9,17 @@ class Map
 
     public function __construct($projectName, $mapName)
     {
-        $this->db = \GCApp::getDB();
+        $this->db = new Db();
 
-        $schema = DB_SCHEMA;
-        $sql = "SELECT COUNT(*) FROM {$schema}.project WHERE project_name = ?";
-        $stmt = $this->db->prepare($sql);
+        $sql = "SELECT COUNT(*) FROM {$this->db->getParams()['schema']}.project WHERE project_name = ?";
+        $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($projectName));
         if ($stmt->fetchColumn(0) !== 1) {
             throw new \Exception("Error: project '$projectName' not found", 1);
         }
 
-        $sql = "SELECT * FROM {$schema}.mapset WHERE project_name = ? AND mapset_name = ?";
-        $stmt = $this->db->prepare($sql);
+        $sql = "SELECT * FROM {$this->db->getParams()['schema']}.mapset WHERE project_name = ? AND mapset_name = ?";
+        $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($projectName, $mapName));
         $data = $stmt->fetch();
         if (!empty($data)) {
@@ -57,9 +56,8 @@ class Map
     {
         $layerGroups = array();
 
-        $schema = DB_SCHEMA;
-        $sql = "SELECT layergroup_id FROM {$schema}.mapset_layergroup WHERE mapset_name = ?";
-        $stmt = $this->db->prepare($sql);
+        $sql = "SELECT layergroup_id FROM {$this->db->getParams()['schema']}.mapset_layergroup WHERE mapset_name = ?";
+        $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($this->data['mapset_name']));
         while ($layergroup_id = $stmt->fetchColumn(0)) {
             $layerGroups[] = new LayerGroup($layergroup_id);
@@ -72,17 +70,16 @@ class Map
     {
         $themes = array();
 
-        $schema = DB_SCHEMA;
         $sql = "SELECT DISTINCT theme_id "
-            . " FROM {$schema}.theme "
-            . " INNER JOIN {$schema}.layergroup USING(theme_id) "
+            . " FROM {$this->db->getParams()['schema']}.theme "
+            . " INNER JOIN {$this->db->getParams()['schema']}.layergroup USING(theme_id) "
             . " WHERE layergroup_id IN ("
             . "     SELECT layergroup_id "
-            . "     FROM {$schema}.mapset_layergroup "
+            . "     FROM {$this->db->getParams()['schema']}.mapset_layergroup "
             . "     WHERE mapset_name = ? "
             . ") "
             . " AND project_name = ?";
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($this->data['mapset_name'], $this->data['project_name']));
         while ($theme_id = $stmt->fetchColumn(0)) {
             $themes[] = new Theme($theme_id, $this->data['mapset_name']);
