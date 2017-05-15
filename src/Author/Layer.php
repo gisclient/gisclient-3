@@ -43,11 +43,6 @@ class Layer
         return $this->get('catalog_id');
     }
 
-    public function getTable()
-    {
-        return $this->get('data');
-    }
-
     public function getFields()
     {
         $fields = null;
@@ -102,5 +97,10 @@ class Layer
     public function getPrimaryColumn()
     {
         return $this->get('data_unique');
+    }
+
+    public function getTable()
+    {
+        return $this->get('data');
     }
 }

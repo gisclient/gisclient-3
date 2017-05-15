@@ -33,6 +33,11 @@ class Field
         }
     }
 
+    public function getDataTypeId()
+    {
+        return $this->get('datatype_id');
+    }
+
     public function getFormat()
     {
         return $this->get('field_format');
