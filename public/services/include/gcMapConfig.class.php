@@ -852,7 +852,7 @@ class gcMap
             if (!empty($this->i18n)) {
                 $rowset[$i]['class_title'] = $this->i18n->translate($rowset[$i]['class_title'], 'class', $rowset[$i]['class_id'], 'class_title');
             }
-            $sqlStyle = "SELECT color, outlinecolor, bgcolor, size FROM " . DB_SCHEMA . ".style WHERE class_id = ?";
+            $sqlStyle = "SELECT color, outlinecolor, bgcolor, size, pattern_name FROM " . DB_SCHEMA . ".style LEFT JOIN  " . DB_SCHEMA . ".e_pattern USING (pattern_id) WHERE class_id = ?";
             $stmt = $this->db->prepare($sqlStyle);
             $stmt->execute(array($rowset[$i]['class_id']));
             $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -870,6 +870,9 @@ class gcMap
                 }
                 if (!empty($row[$j]['size'])) {
                     $style['size'] = $row[$j]['size'];
+                }
+                if (!empty($row[$j]['pattern_name'])) {
+                    $style['pattern'] = $row[$j]['pattern_name'];
                 }
                 $styles[] = $style;
             }
