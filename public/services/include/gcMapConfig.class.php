@@ -462,18 +462,18 @@ class gcMap
                         //$node = array("layer"=>$layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1);
                         //Layergroup singola immagine: passo solo il layergroupname
                         if ($row["layergroup_single"] == 1) {
-                            if ($row["status"] == 1) {
+                            //if ($row["status"] == 1) {
                                 array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
-                            }
+                            //}
                             $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder);
                         } else {
                             //Layergroup con singoli layer distinti (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
                             $nodes = array();
                             $layers = array();
                             foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
-                                if ($row["status"] == 1) {
+                                //if ($row["status"] == 1) {
                                     array_push($this->mapLayers[$idx]["parameters"]["layers"], $userLayer["name"]);
-                                }
+                                //}
                                 $arr = array("layer" => $userLayer["name"], "title" => $userLayer["title"]);
                                 if ($userLayer["minScale"]) {
                                     $arr["minScale"] = floatval($userLayer["minScale"]);
