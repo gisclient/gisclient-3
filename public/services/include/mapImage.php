@@ -131,7 +131,12 @@ class mapImage {
                 //if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
             }
             
-            if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
+            if (!empty($tile['opacity'])) {
+                $parameters['OPACITY'] = $tile['opacity'];
+            }
+            if (!empty($tile['labelrequires'])) {
+                $parameters['LABELREQUIRES'] = $tile['labelrequires'];
+            }
             
             $request = array('URL'=>$url, 'SERVICE'=>$service, 'PARAMETERS'=>$parameters);
             if ($service === 'WMTS') {
