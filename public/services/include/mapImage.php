@@ -131,10 +131,10 @@ class mapImage {
                 //if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
             }
             
-            if (!empty($tile['opacity'])) {
+            if (isset($tile['opacity'])) {
                 $parameters['OPACITY'] = $tile['opacity'];
             }
-            if (!empty($tile['labelrequires'])) {
+            if (isset($tile['labelrequires'])) {
                 $parameters['LABELREQUIRES'] = $tile['labelrequires'];
             }
             

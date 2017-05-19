@@ -245,6 +245,12 @@ if (!empty($layersParameter)) {
     $layersToRemove = array();
     $layersToInclude = array();
     foreach ($layersArray as $layer) {
+        //espressione per le label (0 le rimuove)
+        $labelrequires = $objRequest->getvaluebyname('labelrequires');
+        if (isset($labelrequires)) {
+            $layer->set('labelrequires', $labelrequires);
+        }
+
         //layer aggiunto x highlight
         $highlight = $objRequest->getvaluebyname('highlight');
         if (strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) {
@@ -319,7 +325,6 @@ $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
 $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
 if ((isset($_REQUEST['REQUEST']) && strtolower($_REQUEST['REQUEST']) == 'getmap')
     || (isset($_REQUEST['request']) && strtolower($_REQUEST['request']) == 'getmap')) {
-    
     if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && time() - strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < $owsCacheTTL) {
         header('HTTP/1.1 304 Not Modified');
         die(); // Dont' return image
