@@ -182,7 +182,7 @@ class printDocument {
         return $this->options['TMP_URL'].$filename;
     }
     
-    public function printMapPDF() {
+    public function printMapPDF() { 
         $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map';//DEFAULT PDF TEMPLATE
         $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";;
         if(!file_exists($xslFile)) {
@@ -193,6 +193,7 @@ class printDocument {
 
         $pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
         $pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
+		//echo "[$xslFile|$xml|$pdfFile]"; die;
         $this->deleteOldTmpFiles();
         return $pdfFile;
     }
@@ -362,7 +363,9 @@ class printDocument {
             CURLOPT_FILE => $fp,
             CURLOPT_HEADER => 0,
             CURLOPT_FOLLOWLOCATION => 1,
-            CURLOPT_TIMEOUT => 60
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0,
             );
         curl_setopt_array($ch, $options);
 
@@ -400,6 +403,8 @@ class printDocument {
         
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         $this->wmsList = $mapImage->getWmsList();
+		//print_r($_SERVER);
+		//print_r($this->wmsList); die;
         $this->imageFileName = $mapImage->getImageFileName();
     }
     
@@ -511,6 +516,9 @@ class printDocument {
         } else if (!preg_match("/^(http|https):\/\//", $url, $matches)) {
             throw new Exception('Undefined PRINT_RELATIVE_URL_PREFIX, cannot add to '.$url);
         }
+		if (defined('PRINT_FORCE_HTTP') && PRINT_FORCE_HTTP == true) {
+		    $url = str_replace('https://', 'http://', $url);
+		}
         return $url;
     }
     
