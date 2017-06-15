@@ -18,6 +18,8 @@ class OwsHandler {
         ));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $return = curl_exec($ch);
         if ($return === false) {
             throw new RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
@@ -152,6 +154,8 @@ class OwsHandler {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $content = curl_exec($ch);
         if ($content === false) {
             throw new RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
@@ -216,7 +220,9 @@ class OwsHandler {
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-		curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+		curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); 
 		$sldContent = curl_exec($ch);
 		
 		if($sldContent === false) {

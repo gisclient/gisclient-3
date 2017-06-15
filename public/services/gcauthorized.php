@@ -91,7 +91,8 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_POST, true);
-	
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);	
 	curl_setopt($curl, CURLOPT_POSTFIELDS, array('file' => '@/tmp/postrequest.xml'));
 	$return = curl_exec($curl);
 	if(!$return) var_export(curl_error($curl));
@@ -141,6 +142,8 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
     curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     $sldContent = curl_exec($ch);
     curl_close($ch);
     
