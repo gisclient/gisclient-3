@@ -182,7 +182,7 @@ class printDocument {
         return $this->options['TMP_URL'].$filename;
     }
     
-    public function printMapPDF() { 
+    public function printMapPDF() {
         $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map';//DEFAULT PDF TEMPLATE
         $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";;
         if(!file_exists($xslFile)) {
@@ -193,8 +193,8 @@ class printDocument {
 
         $pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
         $pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
-		//echo "[$xslFile|$xml|$pdfFile]"; die;
-        $this->deleteOldTmpFiles();
+
+		$this->deleteOldTmpFiles();
         return $pdfFile;
     }
 
@@ -403,9 +403,8 @@ class printDocument {
         
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         $this->wmsList = $mapImage->getWmsList();
-		//print_r($_SERVER);
-		//print_r($this->wmsList); die;
-        $this->imageFileName = $mapImage->getImageFileName();
+
+		$this->imageFileName = $mapImage->getImageFileName();
     }
     
     private function buildDOM($absoluteUrls = false) {

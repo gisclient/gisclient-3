@@ -754,6 +754,8 @@ class gcMap{
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 $sldContent = curl_exec($ch);
                 curl_close($ch);
                 
