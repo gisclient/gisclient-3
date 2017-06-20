@@ -133,6 +133,7 @@ class gcMap
         if (count($this->projDefs)>0) {
             $mapConfig['projdefs'] = $this->projDefs;
         }
+        $mapConfig['mapsetNote'] = $row['mapset_note'];
 
         $mapOptions=array();
         $mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
@@ -173,7 +174,7 @@ class gcMap
         $this->getLegend = $getLegend;
         
         //$this->_getLayers();
-        
+
         $this->_getSelgroup();
         $this->_getLayers();
         $this->_getFeatureTypes();
@@ -224,6 +225,14 @@ class gcMap
         $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $mapConfig['default_layers'] = $this->defaultLayers;
+
+        $sql = 'SELECT user_group.*, edit FROM '.DB_SCHEMA.'.mapset_groups INNER JOIN '.DB_SCHEMA.'.user_group USING (groupname) WHERE mapset_name = :mapset_name';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array('mapset_name'=>$this->mapsetName));
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($users)) {
+            $mapConfig['mapsetUsers'] = $users;
+        }
 
         //$this->maxRes = $maxRes;
         //$this->minRes = $minRes;
