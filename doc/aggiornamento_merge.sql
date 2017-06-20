@@ -1111,3 +1111,30 @@ ALTER TABLE theme
 ALTER TABLE gisclient_34.theme
   ADD COLUMN theme_description character varying;
 
+CREATE TABLE gisclient_34.mapset_groups
+(
+  mapset_name character varying NOT NULL,
+  groupname character varying NOT NULL,
+  edit smallint NOT NULL DEFAULT 0,
+  CONSTRAINT mapset_gruops_pkey PRIMARY KEY (mapset_name, groupname)
+)
+
+ALTER TABLE gisclient_34.mapset_groups
+  OWNER TO gisclient;
+
+INSERT INTO gisclient_34.e_level
+  (id, name, parent_name, "order", parent_id, depth, leaf, export, struct_parent_id, "table")
+VALUES
+  (53, 'mapset_groups', 'mapset', 20, 8, 2, 1, 1, 8, 'mapset_groups');
+
+INSERT INTO gisclient_34.e_form
+  (id, name, config_file, tab_type, level_destination, save_data, parent_level)
+VALUES
+  (215, 'mapset_groups', 'mapset_groups', 4, 53, 'mapset_groups', 8),
+  (216, 'mapset_groups', 'mapset_groups', 5, 53, 'mapset_groups', 8);
+
+INSERT INTO gisclient_34.form_level
+  (id, level, mode, form, order_fld, visible)
+VALUES
+  (522, 8, 0, 215, 10, 0),
+  (523, 53, 1, 216, 1, 1);
