@@ -48,6 +48,12 @@
 		<pkey>mapset_name</pkey>
 		<parent>mapset</parent>
 	</mapset_layergroup>
+	<mapset_groups>
+		<table>mapset_groups</table>
+		<pkey>mapset_name</pkey>
+		<pkey>groupname</pkey>
+		<parent>mapset</parent>
+	</mapset_groups>
 	<mapset>
 		<table>mapset</table>
 		<pkey>mapset_name</pkey>

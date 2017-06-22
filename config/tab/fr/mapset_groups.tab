@@ -1,0 +1,24 @@
+[standard]
+table = "mapset_groups"
+save_table = "mapset_groups"
+pkey = "mapset_name;groupname"
+order_fld = "groupname"
+dato[] = ";presente;1%;idriga"
+dato[] = "Presente;groupname;9%#groupname#presente;check1"
+dato[] = "Gruppo di Utenti;groupname;75%;text"
+dato[] = "Editor della Mappa;edit;#groupname#edit;check1"
+[list]
+table = "mapset_groups"
+pkey = "mapset_name;groupname"
+order_fld = "groupname"
+dato[] = "Gruppo di Utenti;groupname;85%;text"
+dato[] = "Editor della Mappa;edit;;yesno"
+
+[title]
+edit = "Gruppi di Utenti del Mapset"
+view = "Gruppi di Utenti del Mapset"
+new = "Gruppi di Utenti del Mapset"
+list = "Gruppi di Utenti del Mapset"
+
+[message]
+nodata = ""
