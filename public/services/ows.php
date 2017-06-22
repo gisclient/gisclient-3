@@ -245,6 +245,11 @@ if (!empty($layersParameter)) {
     $layersToRemove = array();
     $layersToInclude = array();
     foreach ($layersArray as $layer) {
+        $labelrequires = $objRequest->getvaluebyname('labelrequires');
+        if (isset($labelrequires)) {
+            $layer->set('labelrequires', $labelrequires);
+	}
+
         //layer aggiunto x highlight
         $highlight = $objRequest->getvaluebyname('highlight');
         if (strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) {
@@ -280,6 +285,7 @@ if (!empty($layersParameter)) {
                 $layer->setFilter($filter);
             }
         }
+
         
         if (!in_array($layer->name, $layersToRemove)) {
             $filter = $layer->getFilterString();
@@ -341,6 +347,7 @@ if (substr($sapi_type, 0, 3) != 'cgi') {
 /* Enable output buffer */
 ms_ioinstallstdouttobuffer();
 
+header('Access-Control-Allow-Origin: *');
 /* Execute request */
 $oMap->owsdispatch($objRequest);
 $contenttype = ms_iostripstdoutbuffercontenttype();

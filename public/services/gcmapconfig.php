@@ -53,6 +53,8 @@ header ("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header ("Pragma: no-cache"); // HTTP/1.0
 header ("Content-Type: application/json; Charset=UTF-8");
 
+header('Access-Control-Allow-Origin: *');
+
 if(empty($_REQUEST['mapset'])) die(json_encode(array('error' => 200, 'message' => 'No mapset name')));
 
 if(empty($_REQUEST["jsonformat"])) {

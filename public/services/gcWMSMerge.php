@@ -21,6 +21,7 @@ function getWmsParameters(array $layerParameters) {
 	if(!empty($layerParameters['PREV_TIME'])) $query .= '&PREV_TIME='.$layerParameters['PREV_TIME'];
 	if(!empty($layerParameters['REDLINEID'])) $query .= '&REDLINEID='.$layerParameters['REDLINEID'];
 	if(!empty($layerParameters['LANG'])) $query .= '&LANG='.$layerParameters['LANG'];
+        if(isset($layerParameters['LABELREQUIRES'])) $query .= '&LABELREQUIRES='.$layerParameters['LABELREQUIRES'];
 	
 	return $query;
 }
@@ -167,13 +168,9 @@ foreach($mapConfig['layers'] as $key => $layer) {
 				
 				$oLay->setConnectionType(MS_WMS);
 				$oLay->set('connection', cleanWMSRequest($url.$query));
-				if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
+				if(isset($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
 					$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
 					$oLay->setMetaData("wms_force_separate_request", 1);
-				}
-				if(!empty($layer['PARAMETERS']['LABELREQUIRES'])) {
-					$oLay->set('labelrequires', $layer['PARAMETERS']['LABELREQUIRES']);
-					//$oLay->setMetaData("wms_force_separate_request", 1);
 				}
 				if(!empty($layer['PARAMETERS']['SLD'])) {
 					$oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);

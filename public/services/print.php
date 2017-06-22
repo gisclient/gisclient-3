@@ -5,6 +5,11 @@ require_once 'include/printDocument.php';
 require_once 'include/mapImage.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 
+
+header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+
 $gcService = GCService::instance();
 $gcService->startSession();
 
