@@ -9,9 +9,8 @@ class Field
 
     public function __construct($id = null)
     {
+        $this->db = new Db();
         if ($id) {
-            $this->db = new Db();
-            
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.field WHERE field_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($id));
@@ -72,7 +71,7 @@ class Field
 
     public function save(array $values)
     {
-        if ($values['field_id']) {
+        if (array_key_exists('field_id', $values)) {
             //todo update
             throw new Exception("not implemented", 1);
         } else {
