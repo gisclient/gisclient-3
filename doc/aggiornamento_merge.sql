@@ -1117,7 +1117,7 @@ CREATE TABLE gisclient_34.mapset_groups
   groupname character varying NOT NULL,
   edit smallint NOT NULL DEFAULT 0,
   CONSTRAINT mapset_gruops_pkey PRIMARY KEY (mapset_name, groupname)
-)
+);
 
 ALTER TABLE gisclient_34.mapset_groups
   OWNER TO gisclient;
