@@ -77,7 +77,7 @@ class Field
         } else {
             //insert
             $fields = implode(array_keys($values), ',');
-            $params = implode(array_values(array_fill(0, count($fields), '?')), ',');
+            $params = implode(array_values(array_fill(0, count($values), '?')), ',');
             $values = array_values($values);
 
             $insertSql = "INSERT INTO {$this->db->getParams()['schema']}.field (field_id, $fields)"
