@@ -124,17 +124,17 @@ abstract class AbstractUser {
                     array_push($in, ':group_param_'.$k);
                     $sqlValues[':group_param_'.$k] = $groupId;
                 }
-                $groupFilter = ' and groupname in ('.implode(',',$in).') ';
+                $groupFilter = ' and COALESCE (groupname, \'**NOGROUP**\') in (\'**NOGROUP**\' ,'.implode(',',$in).') ';
             } else {
                 $groupFilter = ' and 1=2 ';
             }
         }
         
 		if (empty($filter['show_as_public'])) {
-			$authClause = '(layer.private=1 '.$groupFilter.' ) OR (coalesce(layer.private,0)=0)';
+			$authClause = '(private=1 '.$groupFilter.' ) OR (coalesce(private,0)=0)';
 		} else {
 			//$authClause = '(coalesce(layer.private,0)=0 AND mapset.private=0)';
-            $authClause = '(coalesce(layer.private,0)=0)';
+            $authClause = '(coalesce(private,0)=0)';
 		}
 		
         /*$sql = ' SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
@@ -152,7 +152,7 @@ abstract class AbstractUser {
             WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order DESC;';*/
             
             
-        $sql = ' SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
+        /*$sql = ' SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
                         layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wms').' else 1 end as wms,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'wfs').' else 1 end as wfs,
@@ -163,7 +163,32 @@ abstract class AbstractUser {
             INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
-            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order DESC;';
+            WHERE ('.$sqlFilter.') AND ('.$authClause.') ORDER BY layer.layer_order DESC;';*/
+
+        $sql = 'SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
+                layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
+                case when coalesce(layer.private,1) = 1 then wms else 1 end as wms,
+                case when coalesce(layer.private,1) = 1 then wfs else 1 end as wfs,
+                case when coalesce(layer.private,1) = 1 then wfst else 1 end as wfst,
+                layer_order
+            FROM '.DB_SCHEMA.'.theme
+            INNER JOIN  '.DB_SCHEMA.'.layergroup USING (theme_id)
+            INNER JOIN '.DB_SCHEMA.'.mapset_layergroup USING (layergroup_id)
+            INNER JOIN (
+                SELECT *
+                FROM '.DB_SCHEMA.'.mapset
+                LEFT JOIN '.DB_SCHEMA.'.mapset_groups USING (mapset_name)
+                WHERE ' .
+                    $authClause
+                . ') AS mapset USING (mapset_name)
+            INNER JOIN (
+                SELECT *
+                FROM '.DB_SCHEMA.'.layer
+                LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id, layer_name) 
+                WHERE ' .
+                    $authClause
+                . ') as layer USING (layergroup_id)
+            WHERE ('.$sqlFilter.') ORDER BY layer.layer_order DESC;';
             
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
