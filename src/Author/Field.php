@@ -69,4 +69,31 @@ class Field
         
         return $fieldType->getName();
     }
+
+    public function save(array $values)
+    {
+        if ($values['field_id']) {
+            //todo update
+            throw new Exception("not implemented", 1);
+        } else {
+            //insert
+            $fields = implode(array_keys($values), ',');
+            $params = implode(array_values(array_fill(0, count($fields), '?')), ',');
+            $values = array_values($values);
+
+            $insertSql = "INSERT INTO {$this->db->getParams()['schema']}.field (field_id, $fields)"
+                . " VALUES ("
+                . " (SELECT MAX(field_id) + 1 FROM {$this->db->getParams()['schema']}.field as foo), $params"
+                . " ) RETURNING *;";
+
+            $stmt = $this->db->getDb()->prepare($insertSql);
+            $stmt->execute($values);
+            $data = $stmt->fetch();
+            if (!empty($data)) {
+                $this->data = $data;
+            } else {
+                throw new \Exception("Error: failed to insert", 1);
+            }
+        }
+    }
 }
