@@ -53,6 +53,16 @@ class GCExport {
             $dxfFile = $this->_getFileName($options['name']).'.dxf';
             $this->_exportDxf($gmlFile, $dxfFile);
             $files[$options['name'].'.dxf'] = $this->exportPath.$dxfFile;
+        } else if ($this->type == 'xls') {
+            $exportOptions = array();
+            if (!empty($tableSpec['name'])) {
+                $exportOptions['name'] = $tableSpec['name'];
+            }
+
+            $layer = $this->_exportXls($tableSpec['table'], $tableSpec['schema'], $exportOptions);
+            foreach($layer as $niceName => $realName) {
+                $files[$niceName] = $realName;
+            }
         }
         		
 		$zip = new ZipArchive;
@@ -126,6 +136,39 @@ class GCExport {
         if ($retval != 0){
         	throw new Exception("Could not convert GML to DXF: [return value: $retval]\n command was: [$cmd]\n".var_export($output, true));
         }
+    }
+
+    protected function _exportXls($table, $schema = null, array $options = array()) {
+        require_once('include/php-excel.class.php');
+
+        $defaultOptions = array(
+            'name'=>$table
+        );
+        $options = array_merge($defaultOptions, $options);
+        
+        $fileName = $this->_getFileName($options['name']);
+        $filePath = $this->exportPath.$fileName;
+
+        $excel = new Excel_XML();
+
+        $sql = "SELECT * FROM {$schema}.{$table}";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        
+        $fields = null;
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!isset($fields)) {
+                $fields = array_keys($row);
+                $excel->addRow($fields);
+            }
+            $excel->addRow($row);
+        }
+
+        $content = $excel->generateXML();
+
+        file_put_contents($filePath, $content);
+
+        return $filePath;
     }
     
     protected function _deleteOldFiles() {
