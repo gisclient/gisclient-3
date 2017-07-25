@@ -202,7 +202,7 @@ $(document).ready(function() {
                 success: function(response) {
                     $(activeLink).show();
                     $('img', activeLinkContainer).remove();
-
+                    
                     console.log(response);
                 }
             });
