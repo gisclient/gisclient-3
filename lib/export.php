@@ -54,14 +54,14 @@ class GCExport {
             $this->_exportDxf($gmlFile, $dxfFile);
             $files[$options['name'].'.dxf'] = $this->exportPath.$dxfFile;
         } else if ($this->type == 'xls') {
-            $exportOptions = array();
-            if (!empty($tableSpec['name'])) {
-                $exportOptions['name'] = $tableSpec['name'];
-            }
+            foreach($tables as $tableSpec) {
+                $exportOptions = array();
+                if (!empty($tableSpec['name'])) {
+                    $exportOptions['name'] = $tableSpec['name'];
+                }
 
-            $layer = $this->_exportXls($tableSpec['table'], $tableSpec['schema'], $exportOptions);
-            foreach($layer as $niceName => $realName) {
-                $files[$niceName] = $realName;
+                $file = $this->_exportXls($tableSpec['table'], $tableSpec['schema'], $exportOptions);
+                $files[$options['name'].'.xls'] = $file;
             }
         }
         		
@@ -75,8 +75,7 @@ class GCExport {
             $openZipFlag = ZIPARCHIVE::CREATE;
         }
         $zipPath = $this->exportPath.$zipName;
-        
-		if(!$zip->open($zipPath, $openZipFlag)) throw new Exception('Error creating zip file');
+        if($zip->open($zipPath, $openZipFlag) !== true) throw new Exception('Error creating zip file');
         foreach($files as $niceName => $realName) {
 			if(!$zip->addFile($realName, $niceName)) throw new Exception('Error adding file '.$realName.' to zip file');
 		}
