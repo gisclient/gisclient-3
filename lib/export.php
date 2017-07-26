@@ -69,12 +69,15 @@ class GCExport
         } else if ($this->type == 'xls') {
             foreach ($tables as $tableSpec) {
                 $exportOptions = array();
+                if (!empty($options['fields'])) {
+                    $exportOptions['fields'] = $options['fields'];
+                }
                 if (!empty($tableSpec['name'])) {
                     $exportOptions['name'] = $tableSpec['name'];
                 }
 
                 $file = $this->_exportXls($tableSpec, $exportOptions);
-                $files[$options['name'] . '.xls'] = $file;
+                $files[$exportOptions['name'] . '.xls'] = $file;
             }
         }
                 
@@ -87,6 +90,7 @@ class GCExport
             $zipName = $this->_getFileName($options['name']) . '.zip';
             $openZipFlag = ZIPARCHIVE::CREATE;
         }
+        $options['add_to_zip'] = $zipName;
         $zipPath = $this->exportPath.$zipName;
         if ($zip->open($zipPath, $openZipFlag) !== true) {
             throw new Exception('Error creating zip file');
@@ -125,7 +129,7 @@ class GCExport
             }
 
             foreach ($options['fields'] as $field) {
-                array_push($columns, "{$field['field_name']} AS {$fied['title']}");
+                array_push($columns, "{$field['field_name']} AS " . preg_replace('/[\W]/', '_', $field['title']));
             }
             $select = implode(', ', $columns);
         } else {
@@ -135,7 +139,7 @@ class GCExport
         $cmd = 'pgsql2shp -f ' . escapeshellarg($filePath . '.shp')
             . ' -h ' . DB_HOST . ' -p ' . DB_PORT . ' -u ' . DB_USER . ' -P ' . DB_PWD
             . ' '.escapeshellarg($config['db'])
-            . " \"SELECT {$select} FROM " . escapeshellarg($config['schema'] . '.' . $config['table']) . '"'
+            . " \"SELECT {$select} FROM {$config['schema']}.{$config['table']}\""
             . ' 2> ' . escapeshellarg($errorFile);
 
         $pgsql2shpOutput = array();
@@ -191,7 +195,7 @@ class GCExport
         }
     }
 
-    protected function _exportXls($table, array $options = array())
+    protected function _exportXls($config, array $options = array())
     {
         require_once('include/php-excel.class.php');
 
@@ -207,7 +211,8 @@ class GCExport
 
         $select = '';
         if (isset($options['fields'])) {
-            $select = implode(', ', array_column($options['fields'], 'field_name'));
+            $fieldsNames = array_map(function ($element) {return $element['field_name'];}, $options['fields']);
+            $select = implode(', ', $fieldsNames);
         } else {
             $select = '*';
         }
@@ -231,7 +236,7 @@ class GCExport
                     }
                 }
 
-                $excel->addRow($fields);
+                $excel->addRow($headers);
             }
             $excel->addRow($row);
         }

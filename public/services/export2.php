@@ -73,9 +73,11 @@ foreach ($data as $expConf) {
     }
 
     //Create view
+    $fieldsNames = array_map(function ($element) {return $element['field_name'];}, $fields);
+    array_push($fieldsNames, $layer->getGeomColumn());
     $viewName = 'export_' . $layer->getTable() . '_' . session_id() . '_' . rand(0, 999999);
     $sql = "CREATE VIEW public.{$viewName} AS "
-        . " SELECT " . implode(', ', array_column($fields, 'field_name')) . ", {$layer->getGeomColumn()}"
+        . " SELECT " . implode(', ', $fieldsNames)
         . " FROM {$layerDb->getParams()['schema']}.{$layer->getTable()}"
         . " WHERE {$where}";
 
@@ -103,9 +105,9 @@ if (isset($exports['shp'])) {
         $export = new \GCExport($exp['config']['db_instance'], 'shp');
         $url = $export->export(array($exp['config']), array(
             'name' => 'export_shp',
-            'add_to_zip' => $zipFile,
+            'add_to_zip' => &$zipFile,
             'return_url' => true,
-            'fields' => $exp['extra']['fields']
+            'fields' => $exp['extras']['fields']
         ));
     }
 }
@@ -115,10 +117,10 @@ if (isset($exports['dxf'])) {
         $export = new \GCExport($exp['config']['db_instance'], 'dxf');
         $url = $export->export(array($exp['config']), array(
             'name' => 'export_dxf',
-            'add_to_zip' => $zipFile,
+            'add_to_zip' => &$zipFile,
             'return_url' => true,
-            'extent' => $exp['extra']['extent'],
-            'srid' => $exp['extra']['srid']
+            'extent' => $exp['extras']['extent'],
+            'srid' => $exp['extras']['srid']
         ));
     }
 }
@@ -128,9 +130,9 @@ if (isset($exports['xls'])) {
         $export = new \GCExport($exp['config']['db_instance'], 'xls');
         $url = $export->export(array($exp['config']), array(
             'name' => 'export_xls',
-            'add_to_zip' => $zipFile,
+            'add_to_zip' => &$zipFile,
             'return_url' => true,
-            'fields' => $exp['extra']['fields']
+            'fields' => $exp['extras']['fields']
         ));
     }
 }
