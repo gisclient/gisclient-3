@@ -33,12 +33,17 @@ class GCExport {
         
         $files = array();
         
-        if($this->type == 'shp') {
+        if ($this->type == 'shp') {
             foreach($tables as $tableSpec) {
                 $exportOptions = array();
-                if(!empty($tableSpec['name'])) $exportOptions['name'] = $tableSpec['name'];
-                $layer = $this->_exportShp($tableSpec['db'], $tableSpec['table'], $tableSpec['schema'], $exportOptions);
-                foreach($layer as $niceName => $realName) {
+                if (!empty($options['fields'])) {
+                    $exportOptions['fields'] = $options['fields'];
+                }
+                if (!empty($tableSpec['name'])) {
+                    $exportOptions['name'] = $tableSpec['name'];
+                }
+                $layer = $this->_exportShp($tableSpec, $exportOptions);
+                foreach ($layer as $niceName => $realName) {
                     $files[$niceName] = $realName;
                 }
             }
@@ -46,8 +51,10 @@ class GCExport {
             $exportGml = new GCExportGml($this->db, $options['extent'], $options['srid']);
             $gmlFile = $this->_getFileName($options['name']).'.gml';
             foreach($tables as $tableSpec) {
-                if(empty($tableSpec['name'])) $tableSpec['name'] = $tableSpec['table'];
-                $exportGml->addLayer($tableSpec);
+                if (empty($tableSpec['name'])) {
+                    $tableSpec['name'] = $tableSpec['table'];
+                }
+                $exportGml->addLayer($tableSpec, $options['extra']['layer']->getPrimaryColumn(), $options['extra']['layer']->getGeomColumn());
             }
             $exportGml->export($this->exportPath.$gmlFile);
             $dxfFile = $this->_getFileName($options['name']).'.dxf';
@@ -60,7 +67,7 @@ class GCExport {
                     $exportOptions['name'] = $tableSpec['name'];
                 }
 
-                $file = $this->_exportXls($tableSpec['table'], $tableSpec['schema'], $exportOptions);
+                $file = $this->_exportXls($tableSpec, $exportOptions);
                 $files[$options['name'].'.xls'] = $file;
             }
         }
@@ -85,18 +92,36 @@ class GCExport {
         return $return;
     }
     
-    protected function _exportShp($dbName, $table, $schema = null, array $options = array()) {
+    protected function _exportShp(array $config, array $options = array()) {
         $defaultOptions = array(
-            'name'=>$table
+            'name'=>$config['table']
         );
         $options = array_merge($defaultOptions, $options);
         
         $fileName = $this->_getFileName($options['name']);
         $filePath = $this->exportPath.$fileName;
         $errorFile = $this->errorPath.$fileName.'.err';
+
+        $select = '';
+        if (isset($options['fields'])) {
+            $columns = array();
+            if (isset($options['layer'])) {
+                array_push($columns, $options['layer']->getGeomColumn());
+            } else {
+                array_push($columns, "the_geom");
+            }
+
+            foreach ($options['fields'] as $field) {
+                array_push($columns, "{$field['field_name']} AS {$fied['title']}");
+            }
+            $select = implode(', ', $columns);
+        } else {
+            $select = '*';
+        }
 		
 		$cmd = 'pgsql2shp -f '.escapeshellarg($filePath.'.shp').' -h '.DB_HOST.' -p '.DB_PORT.' -u '.DB_USER.' -P '.DB_PWD.
-			' '.escapeshellarg($dbName).' '.escapeshellarg($schema.'.'.$table).
+			' '.escapeshellarg($config['db']).
+            ' "SELECT {$select} FROM '.escapeshellarg($config['schema'].'.'.$config['table']). '"'.
 			' 2> '.escapeshellarg($errorFile);
 
 		$pgsql2shpOutput = array();
@@ -137,11 +162,12 @@ class GCExport {
         }
     }
 
-    protected function _exportXls($table, $schema = null, array $options = array()) {
+    protected function _exportXls($table, array $options = array())
+    {
         require_once('include/php-excel.class.php');
 
         $defaultOptions = array(
-            'name'=>$table
+            'name'=>$config['table']
         );
         $options = array_merge($defaultOptions, $options);
         
@@ -150,14 +176,32 @@ class GCExport {
 
         $excel = new Excel_XML();
 
-        $sql = "SELECT * FROM {$schema}.{$table}";
+        $select = '';
+        if (isset($options['fields'])) {
+            $select = implode(', ', array_column($options['fields'], 'field_name'));
+        } else {
+            $select = '*';
+        }
+
+        $sql = "SELECT {$select} FROM {$config['schema']}.{$config['table']}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         
-        $fields = null;
+        $headers = null;
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if (!isset($fields)) {
-                $fields = array_keys($row);
+            if (!isset($headers)) {
+                $headers = $row;
+
+                if (isset($options['fields'])) {
+                    foreach ($options['fields'] as $field) {
+                        $headers[$field['field_name']] = $field['title'];
+                    }
+                } else {
+                    foreach ($headers as $key => $value) {
+                        $headers[$key] = $key;
+                    }
+                }
+
                 $excel->addRow($fields);
             }
             $excel->addRow($row);
@@ -204,10 +248,10 @@ class GCExportGml {
         file_put_contents($file, $content);
     }
     
-    public function addLayer($layer) {
+    public function addLayer($layer, $gid = 'gid', $geom = 'the_geom') {
 		$gml = '<layer name="'.$layer['name'].'">';
-		$sql = 'select gid as gml_object_id, st_asgml(3, st_force_2d(the_geom)) as gml_geom from '.
-			$layer['schema'].'.'.$layer['table'];
+		$sql = "SELECT {$gid} as gml_object_id, st_asgml(3, st_force_2d({$geom})) as gml_geom "
+			. " FROM {$layer['schema']}.{$layer['table']}";
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute();
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

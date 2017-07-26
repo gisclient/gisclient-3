@@ -42,16 +42,17 @@ foreach ($data as $expConf) {
     $catalog = $layer->getCatalog();
     $layerDb = new Db($catalog);
 
-    $columns = array();
+    $fields = array();
     $layerFields = $layer->getFields();
     foreach ($expConf['fields'] as $eField) {
         foreach ($layerFields as $lField) {
             if ($lField->getName() == $eField['field_name']) {
-                array_push($columns, $eField['field_name'] . ' AS ' . $eField['title']);
+                array_push($fields, $eField);
                 break;
             }
         }
     }
+    $expConf['fields'] = $fields;
 
     $where = 'true';
     if (isset($expConf['data'])) {
@@ -74,7 +75,7 @@ foreach ($data as $expConf) {
     //Create view
     $viewName = 'export_' . $layer->getTable() . '_' . session_id() . '_' . rand(0, 999999);
     $sql = "CREATE VIEW public.{$viewName} AS "
-        . " SELECT " . implode(', ', $columns) . ", {$layer->getGeomColumn()}"
+        . " SELECT " . implode(', ', array_column($fields, 'field_name')) . ", {$layer->getGeomColumn()}"
         . " FROM {$layerDb->getParams()['schema']}.{$layer->getTable()}"
         . " WHERE {$where}";
 
@@ -88,7 +89,9 @@ foreach ($data as $expConf) {
             'db_instance' => $layerDb->getDb(),
             'table' => $viewName,
             'schema' => 'public',
-            'name' => $layer->getName()
+            'name' => $layer->getName(),
+            'pk' => $layer->getPrimaryColumn(),
+            'geom' => $layer->getGeomColumn()
         ),
         'extras' => $expConf
     ));
@@ -101,7 +104,8 @@ if (isset($exports['shp'])) {
         $url = $export->export(array($exp['config']), array(
             'name' => 'export_shp',
             'add_to_zip' => $zipFile,
-            'return_url' => true
+            'return_url' => true,
+            'fields' => $exp['extra']['fields']
         ));
     }
 }
@@ -125,10 +129,10 @@ if (isset($exports['xls'])) {
         $url = $export->export(array($exp['config']), array(
             'name' => 'export_xls',
             'add_to_zip' => $zipFile,
-            'return_url' => true
+            'return_url' => true,
+            'fields' => $exp['extra']['fields']
         ));
     }
 }
 
 $ajax->success(array('file'=> $url));
-
