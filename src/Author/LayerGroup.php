@@ -78,6 +78,6 @@ class LayerGroup
 
     public function getOpacity()
     {
-        return new Catalog($this->get('opacity'));
+        return $this->get('opacity');
     }
 }
