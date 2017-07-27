@@ -79,6 +79,29 @@ class GCExport
                 $file = $this->_exportXls($tableSpec, $exportOptions);
                 $files[$exportOptions['name'] . '.xls'] = $file;
             }
+        } else if ($this->type == 'kml') {
+            foreach ($tables as $tableSpec) {
+                $exportOptions = array();
+                if (!empty($options['fields'])) {
+                    $exportOptions['fields'] = $options['fields'];
+                }
+                if (!empty($tableSpec['name'])) {
+                    $exportOptions['name'] = $tableSpec['name'];
+                }
+
+                $kml = new GCExportKml($this->db, $options['extent'], $options['srid']);
+                foreach ($tables as $tableSpec) {
+                    if (empty($tableSpec['name'])) {
+                        $tableSpec['name'] = $tableSpec['table'];
+                    }
+                    $kml->addLayer($options['extras']['layer'], $tableSpec['schema'], $tableSpec['table']);
+                }
+
+                $kmlFile = $this->exportPath . $this->_getFileName($options['name']) . '.kml';
+                $kml->export($kmlFile);
+
+                $files[$exportOptions['name'] . '.kml'] = $kmlFile;
+            }
         }
                 
         $zip = new ZipArchive;
@@ -211,7 +234,9 @@ class GCExport
 
         $select = '';
         if (isset($options['fields'])) {
-            $fieldsNames = array_map(function ($element) {return $element['field_name'];}, $options['fields']);
+            $fieldsNames = array_map(function ($element) {
+                return $element['field_name'];
+            }, $options['fields']);
             $select = implode(', ', $fieldsNames);
         } else {
             $select = '*';
@@ -324,5 +349,186 @@ class GCExportGml
     protected function _getFooter()
     {
         return '</gml:featureMembers></r3sg:geometry></gml:FeatureCollection>';
+    }
+}
+
+class GCExportKml
+{
+    protected $db;
+    protected $extent;
+    protected $srid;
+    protected $layers = array();
+    protected $styles = array();
+
+    public function __construct($db, $extent, $srid)
+    {
+        $this->db = $db;
+        $this->extent = $extent;
+        $this->srid = $srid;
+    }
+
+    protected function _checkStyleExpression($exp, $values)
+    {
+        foreach ($values as $key => $value) {
+            str_replace("[$key]", $value, $exp);
+        }
+        str_ireplace("or", '||', $exp);
+        str_ireplace("eq", '==', $exp);
+
+        return eval($exp);
+    }
+
+    protected function _getCamera()
+    {
+        $centerX = ($extent[0] + $extent[2]) / 2;
+        $centerY = ($extent[1] + $extent[3]) / 2;
+
+        $sql = "SELECT ST_X(point) AS x, ST_Y(point) AS y"
+            . " FROM ("
+            . " SELECT ST_Transform(ST_SetSRID(ST_MakePoint({$centerX}, {$centerY}), {$this->srid}), 4326) AS point"
+            . " ) AS foo";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $camera = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return "<Camera>"
+            . "<longitude>{$camera['x']}</longitude>"
+            . "<latitude>{$camera['y']}</latitude>"
+            . "<altitude>10000</altitude><altitudeMode>relativeToGround</altitudeMode>"
+            . "<tilt>0</tilt>"
+            . "</Camera>";
+    }
+
+    protected function _getData()
+    {
+        foreach ($this->layers as $layerConf) {
+            $layer = $layerConf['layer'];
+
+            $headers = array();
+            if (isset($layerConf['options']['fields'])) {
+                foreach ($layerConf['options']['fields'] as $field) {
+                    $headers[$field['field_name']] = $field['title'];
+                }
+            } else {
+                $fields = $layer->getFields();
+                foreach ($fields as $field) {
+                    $headers[$field->getName()] = $field->getTitle();
+                }
+            }
+
+            $sql = "SELECT *,"
+                . " st_askml(st_affine(st_force_3d(st_geometryn({$layer->getGeomColumn()}, 1)), 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)) AS kml_geom"
+                . " FROM {$layerConf['schema']}.{$layerConf['table']}";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $kmlData .= "<Placemark>";
+                
+                if ($layer->getLabelItem()) {
+                    $label = $row[$layer->getLabelItem()];
+                    $kmlData .= "<name>{$label}</name>";
+                }
+                
+                $kmlData .= $row['kml_geom'];
+
+                foreach ($this->styles as $styleName => $exp) {
+                    if ($this->_checkStyleExpression($exp, $row)) {
+                        $kmlData .= "<styleUrl>{$styleName}</styleUrl>";
+                        break; //kml supports only one style
+                    }
+                }
+
+                $kmlData .= '<ExtendedData>';
+                foreach ($row as $key => $value) {
+                    if ($key == $layer->getGeomColumn()) {
+                        continue;
+                    }
+                    if (is_numeric($value)) {
+                        $value = round($value, 2);
+                    }
+                    
+                    $kmlData .= "<Data name=\"{$key}\">";
+                    if (isset($headers[$key])) {
+                        $kmlData .= "<displayName>{$headers[$key]}</displayName>";
+                    }
+                    $kmlData .= "<value>{$value}</value></Data>";
+                }
+                $kmlData .= '</ExtendedData>';
+                $kmlData .= '</Placemark>';
+            }
+        }
+    }
+
+    protected function _getHeader()
+    {
+        return '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document>';
+    }
+
+    protected function _getKMLColor($string)
+    {
+        $colorArr = array_reverse(
+            array_map(
+                'dechex',
+                explode(' ', '255 130 0')
+            )
+        );
+
+        foreach ($colorArr as $key => $hex) {
+            $colorArr[$key] = sprintf("%02s", $hex);
+        }
+
+        return implode($colorArr);
+    }
+
+    protected function _getStyles()
+    {
+        $kmlStyle = '';
+        foreach ($this->layers as $layerConf) {
+            $layer = $layerConf['layer'];
+            $opacity = 255 * $layer->getOpacity();
+            foreach ($layer->getStyleClasses as $class) {
+                $styleName = $layer->getName() . '.' . $class->getName();
+                foreach ($class->getStyles as $style) {
+                    $color = $this->_getKMLColor($style->getColor() . ' ' . $opacity);
+                    $backgroundColor = $this->_getKMLColor($style->getBackgroundColor() . ' ' . $opacity);
+                    $outlineColor = $this->_getKMLColor($style->getOutlineColor() . ' ' . $opacity);
+                    $size = $style->size();
+
+                    $bgColor = $backgroundColor? $backgroundColor : $color;
+                    $olColor = $outlinecolor? $outlinecolor : $color;
+
+                    $kmlStyle .= "<Style id=\"{$styleName}\">"
+                        . "<LineStyle><color>{$olColor}</color><width>{$size}</width></LineStyle>"
+                        . "<PolyStyle><color>{$bgColor}</color><fill>1</fill><outline>1</outline></PolyStyle>"
+                        . "</Style>";
+
+                    array_push($styles, array($styleName => $class->getExpression()));
+                    break; //Kml support only one style so take only first
+                }
+            }
+        }
+
+        return $kmlStyle;
+    }
+    
+    protected function _getFooter()
+    {
+        return '</Document></kml>';
+    }
+
+    public function addLayer($layer, $schema, $table, $options)
+    {
+        array_push($this->layers, array(
+            'layer' => $layer,
+            'schema' => $schema,
+            'table' => $table,
+            'options' => $options
+        ));
+    }
+
+    public function export($file)
+    {
+        $content = $this->_getHeader() . $this->_getCamera() . $this->_getStyles() . $this->_getData() . $this->_getFooter();
+        file_put_contents($file, $content);
     }
 }

@@ -80,6 +80,11 @@ class Layer
         return $this->get('layer_id');
     }
 
+    public function getLabelItem()
+    {
+        return $this->get('labelitem');
+    }
+
     public function getLinks()
     {
         $links = array();
@@ -99,9 +104,31 @@ class Layer
         return $this->get('layer_name');
     }
 
+    public function getOpacity()
+    {
+        return $this->get('opacity');
+    }
+
     public function getPrimaryColumn()
     {
         return $this->get('data_unique');
+    }
+
+    public function getStyleClasses()
+    {
+        $classes = null;
+        if (!empty($this->data)) {
+            $classes = array();
+
+            $sql = "SELECT class_id FROM {$this->db->getParams()['schema']}.class WHERE layer_id = ?";
+            $stmt = $this->db->getDb()->prepare($sql);
+            $stmt->execute(array($this->get('layer_id')));
+            while ($class_id = $stmt->fetchColumn(0)) {
+                $classes[] = new StyleClass($class_id);
+            }
+        }
+
+        return $classes;
     }
 
     public function getTable()

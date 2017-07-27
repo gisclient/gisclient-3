@@ -137,4 +137,16 @@ if (isset($exports['xls'])) {
     }
 }
 
+if (isset($exports['kml'])) {
+    foreach ($exports['kml'] as $exp) {
+        $export = new \GCExport($exp['config']['db_instance'], 'kml');
+        $url = $export->export(array($exp['config']), array(
+            'name' => 'export_kml',
+            'add_to_zip' => &$zipFile,
+            'return_url' => true,
+            'fields' => $exp['extras']['fields']
+        ));
+    }
+}
+
 $ajax->success(array('file'=> $url));
