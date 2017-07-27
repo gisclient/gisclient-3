@@ -59,7 +59,7 @@ class GCExport
                 if (empty($tableSpec['name'])) {
                     $tableSpec['name'] = $tableSpec['table'];
                 }
-                $exportGml->addLayer($tableSpec, $options['extra']['layer']->getPrimaryColumn(), $options['extra']['layer']->getGeomColumn());
+                $exportGml->addLayer($tableSpec, $options['extras']['layer']->getPrimaryColumn(), $options['extras']['layer']->getGeomColumn());
             }
 
             $exportGml->export($this->exportPath . $gmlFile);
