@@ -59,7 +59,7 @@ class GCExport
                 if (empty($tableSpec['name'])) {
                     $tableSpec['name'] = $tableSpec['table'];
                 }
-                $exportGml->addLayer($tableSpec, $options['extras']['layer']->getPrimaryColumn(), $options['extras']['layer']->getGeomColumn());
+                $exportGml->addLayer($tableSpec, $options['layer']->getPrimaryColumn(), $options['layer']->getGeomColumn());
             }
 
             $exportGml->export($this->exportPath . $gmlFile);
@@ -94,7 +94,7 @@ class GCExport
                     if (empty($tableSpec['name'])) {
                         $tableSpec['name'] = $tableSpec['table'];
                     }
-                    $kml->addLayer($options['extras']['layer'], $tableSpec['schema'], $tableSpec['table']);
+                    $kml->addLayer($options['layer'], $tableSpec['schema'], $tableSpec['table'], $exportOptions);
                 }
 
                 $kmlFile = $this->exportPath . $this->_getFileName($options['name']) . '.kml';
@@ -369,19 +369,21 @@ class GCExportKml
 
     protected function _checkStyleExpression($exp, $values)
     {
+	$res = null;
         foreach ($values as $key => $value) {
-            str_replace("[$key]", $value, $exp);
+            $exp = str_replace("[$key]", $value, $exp);
         }
-        str_ireplace("or", '||', $exp);
-        str_ireplace("eq", '==', $exp);
-
-        return eval($exp);
+        $exp = str_ireplace("or", '||', $exp);
+        $exp = str_ireplace("eq", '==', $exp);
+        
+        eval('$res = ' . $exp . ';');
+        return $res;
     }
 
     protected function _getCamera()
     {
-        $centerX = ($extent[0] + $extent[2]) / 2;
-        $centerY = ($extent[1] + $extent[3]) / 2;
+        $centerX = ($this->extent[0] + $this->extent[2]) / 2;
+        $centerY = ($this->extent[1] + $this->extent[3]) / 2;
 
         $sql = "SELECT ST_X(point) AS x, ST_Y(point) AS y"
             . " FROM ("
@@ -389,7 +391,7 @@ class GCExportKml
             . " ) AS foo";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
-        $camera = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $camera = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return "<Camera>"
             . "<longitude>{$camera['x']}</longitude>"
@@ -401,6 +403,7 @@ class GCExportKml
 
     protected function _getData()
     {
+        $kmlData = '';
         foreach ($this->layers as $layerConf) {
             $layer = $layerConf['layer'];
 
@@ -433,14 +436,14 @@ class GCExportKml
 
                 foreach ($this->styles as $styleName => $exp) {
                     if ($this->_checkStyleExpression($exp, $row)) {
-                        $kmlData .= "<styleUrl>{$styleName}</styleUrl>";
+                        $kmlData .= "<styleUrl>#{$styleName}</styleUrl>";
                         break; //kml supports only one style
                     }
                 }
 
                 $kmlData .= '<ExtendedData>';
                 foreach ($row as $key => $value) {
-                    if ($key == $layer->getGeomColumn()) {
+                    if ($key == $layer->getGeomColumn() || $key == 'kml_geom') {
                         continue;
                     }
                     if (is_numeric($value)) {
@@ -457,6 +460,7 @@ class GCExportKml
                 $kmlData .= '</Placemark>';
             }
         }
+        return $kmlData;
     }
 
     protected function _getHeader()
@@ -469,7 +473,7 @@ class GCExportKml
         $colorArr = array_reverse(
             array_map(
                 'dechex',
-                explode(' ', '255 130 0')
+                explode(' ', $string)
             )
         );
 
@@ -486,23 +490,23 @@ class GCExportKml
         foreach ($this->layers as $layerConf) {
             $layer = $layerConf['layer'];
             $opacity = 255 * $layer->getOpacity();
-            foreach ($layer->getStyleClasses as $class) {
+            foreach ($layer->getStyleClasses() as $class) {
                 $styleName = $layer->getName() . '.' . $class->getName();
-                foreach ($class->getStyles as $style) {
+                foreach ($class->getStyles() as $style) {
                     $color = $this->_getKMLColor($style->getColor() . ' ' . $opacity);
                     $backgroundColor = $this->_getKMLColor($style->getBackgroundColor() . ' ' . $opacity);
                     $outlineColor = $this->_getKMLColor($style->getOutlineColor() . ' ' . $opacity);
-                    $size = $style->size();
+                    $size = $style->getSize();
 
                     $bgColor = $backgroundColor? $backgroundColor : $color;
-                    $olColor = $outlinecolor? $outlinecolor : $color;
+                    $olColor = $outlineColor? $outlineColor : $color;
 
                     $kmlStyle .= "<Style id=\"{$styleName}\">"
                         . "<LineStyle><color>{$olColor}</color><width>{$size}</width></LineStyle>"
                         . "<PolyStyle><color>{$bgColor}</color><fill>1</fill><outline>1</outline></PolyStyle>"
                         . "</Style>";
 
-                    array_push($styles, array($styleName => $class->getExpression()));
+                    $this->styles[$styleName] = $class->getExpression();
                     break; //Kml support only one style so take only first
                 }
             }

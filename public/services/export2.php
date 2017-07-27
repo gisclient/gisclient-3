@@ -53,6 +53,7 @@ foreach ($data as $expConf) {
         }
     }
     $expConf['fields'] = $fields;
+    $expConf['layer'] = $layer;
 
     $where = 'true';
     if (isset($expConf['data'])) {
@@ -120,7 +121,8 @@ if (isset($exports['dxf'])) {
             'add_to_zip' => &$zipFile,
             'return_url' => true,
             'extent' => $exp['extras']['extent'],
-            'srid' => $exp['extras']['srid']
+            'srid' => $exp['extras']['srid'],
+            'layer' => $exp['extras']['layer']
         ));
     }
 }
@@ -144,7 +146,10 @@ if (isset($exports['kml'])) {
             'name' => 'export_kml',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
-            'fields' => $exp['extras']['fields']
+            'fields' => $exp['extras']['fields'],
+            'extent' => $exp['extras']['extent'],
+            'srid' => $exp['extras']['srid'],
+            'layer' => $exp['extras']['layer']
         ));
     }
 }
