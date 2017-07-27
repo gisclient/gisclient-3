@@ -432,7 +432,8 @@ class GCExportKml
                     $kmlData .= "<name>{$label}</name>";
                 }
                 
-                $kmlData .= $row['kml_geom'];
+                $geomExtraAttribute = '<altitudeMode>relativeToGround</altitudeMode>';
+                $kmlData .= preg_replace('/>/', '>' . $geomExtraAttribute, $row['kml_geom'], 1);
 
                 foreach ($this->styles as $styleName => $exp) {
                     if ($this->_checkStyleExpression($exp, $row)) {
@@ -489,14 +490,17 @@ class GCExportKml
         $kmlStyle = '';
         foreach ($this->layers as $layerConf) {
             $layer = $layerConf['layer'];
-            $opacity = 255 * $layer->getOpacity();
+            $opacity = 255;
+            if ($layer->getOpacity()) {
+                $opacity = ($opacity * $layer->getOpacity()) / 100;
+            }
             foreach ($layer->getStyleClasses() as $class) {
                 $styleName = $layer->getName() . '.' . $class->getName();
                 foreach ($class->getStyles() as $style) {
-                    $color = $this->_getKMLColor($style->getColor() . ' ' . $opacity);
-                    $backgroundColor = $this->_getKMLColor($style->getBackgroundColor() . ' ' . $opacity);
-                    $outlineColor = $this->_getKMLColor($style->getOutlineColor() . ' ' . $opacity);
-                    $size = $style->getSize();
+                    $color = $style->getColor()? $this->_getKMLColor($style->getColor() . ' ' . $opacity) : 'ff000000';
+                    $backgroundColor = $style->getBackgroundColor()? $this->_getKMLColor($style->getBackgroundColor() . ' ' . $opacity) : '';
+                    $outlineColor = $style->getOutlineColor()? $this->_getKMLColor($style->getOutlineColor() . ' ' . $opacity) : '';
+                    $size = $style->getSize()? $style->getSize() : 1;
 
                     $bgColor = $backgroundColor? $backgroundColor : $color;
                     $olColor = $outlineColor? $outlineColor : $color;
