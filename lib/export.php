@@ -369,7 +369,7 @@ class GCExportKml
 
     protected function _checkStyleExpression($exp, $values)
     {
-	$res = null;
+        $res = null;
         foreach ($values as $key => $value) {
             $exp = str_replace("[$key]", $value, $exp);
         }
@@ -493,6 +493,8 @@ class GCExportKml
             $opacity = 255;
             if ($layer->getOpacity()) {
                 $opacity = ($opacity * $layer->getOpacity()) / 100;
+            } else if ($layer->getLayerGroup()->getOpacity()) {
+                $opacity = ($opacity * $layer->getLayerGroup()->getOpacity()) / 100;
             }
             foreach ($layer->getStyleClasses() as $class) {
                 $styleName = $layer->getName() . '.' . $class->getName();

@@ -85,6 +85,11 @@ class Layer
         return $this->get('labelitem');
     }
 
+    public function getLayerGroup()
+    {
+        return new LayerGroup($this->get('layergroup_id'));
+    }
+
     public function getLinks()
     {
         $links = array();
