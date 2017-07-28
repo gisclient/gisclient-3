@@ -74,7 +74,9 @@ foreach ($data as $expConf) {
     }
 
     //Create view
-    $fieldsNames = array_map(function ($element) {return $element['field_name'];}, $fields);
+    $fieldsNames = array_map(function ($element) {
+        return $element['field_name'];
+    }, $fields);
     array_push($fieldsNames, $layer->getGeomColumn());
     $viewName = 'export_' . $layer->getTable() . '_' . session_id() . '_' . rand(0, 999999);
     $sql = "CREATE VIEW public.{$viewName} AS "
@@ -110,6 +112,8 @@ if (isset($exports['shp'])) {
             'return_url' => true,
             'fields' => $exp['extras']['fields']
         ));
+
+        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
@@ -124,6 +128,8 @@ if (isset($exports['dxf'])) {
             'srid' => $exp['extras']['srid'],
             'layer' => $exp['extras']['layer']
         ));
+
+        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
@@ -136,6 +142,8 @@ if (isset($exports['xls'])) {
             'return_url' => true,
             'fields' => $exp['extras']['fields']
         ));
+
+        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
@@ -151,7 +159,11 @@ if (isset($exports['kml'])) {
             'srid' => $exp['extras']['srid'],
             'layer' => $exp['extras']['layer']
         ));
+
+        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
+
+
 
 $ajax->success(array('file'=> $url));

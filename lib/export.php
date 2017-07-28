@@ -119,7 +119,9 @@ class GCExport
             throw new Exception('Error creating zip file');
         }
         foreach ($files as $niceName => $realName) {
-            if (!$zip->addFile($realName, $niceName)) {
+            if ($zip->addFile($realName, $niceName)) {
+                unlink($realName);
+            } else {
                 throw new Exception('Error adding file ' . $realName . ' to zip file');
             }
         }
