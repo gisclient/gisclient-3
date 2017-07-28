@@ -21,6 +21,7 @@ dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
 
 dato[] = "Edit via WFS-T<br><font size=1>E' necessario agire anche sui permessi del layer</font>"
 dato[] = "Campo editabile;editable;;noyes"
+dato[] = "Campo obbligatorio;mandatory;;noyes"
 dato[] = "Lookup per campo editabile<br><font size=1>Tabella</font>;lookup_table;15;text|<font size=1>Campo Chiave</font>;lookup_id;10;text|<font size=1>Campo visualizzato</font>;lookup_name;10;text|Configura;lookup_table;100#openList#layer#qtrelation_id;button"
 
 dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"

@@ -1138,3 +1138,6 @@ INSERT INTO gisclient_34.form_level
 VALUES
   (522, 8, 0, 215, 10, 0),
   (523, 53, 1, 216, 1, 1);
+
+ALTER TABLE gisclient_34.field
+  ADD COLUMN mandatory numeric(1,0) DEFAULT 0;

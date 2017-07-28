@@ -912,7 +912,7 @@ class gcMap
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
         
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_format, default_op, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field.mandatory as field_mandatory, field_format, default_op, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
                 FROM ".DB_SCHEMA.".theme 
                 INNER JOIN ".DB_SCHEMA.".layergroup using (theme_id) 
                 INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
@@ -1070,6 +1070,7 @@ class gcMap
                     "dataType"=>intval($row["datatype_id"]),
                     "searchType"=>intval($row["searchtype_id"]),
                     'editable'=>$userCanEdit ? intval($row['field_editable']) : 0,
+                    'mandatory'=>$userCanEdit ? intval($row['field_mandatory']) : 0,
                     "format"=>$row["field_format"],
                     "operator"=>$row["default_op"],
                     "resultType"=>intval($row["resultype_id"]),

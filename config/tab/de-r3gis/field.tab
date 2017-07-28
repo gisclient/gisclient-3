@@ -15,6 +15,7 @@ dato[] = "Suchen Typ<br><font size=1>Nichts=nicht durchsuchbar</font>;searchtype
 dato[] = "Filtern wegen..;filter_field_name;30;text|Feld auswählen;filter_field_name;100#openList#layer#relation_id;button"
 dato [] = "Edit mit WFS-T<br><font size=1>E' necessario agire anche sui permessi del layer</font>"
 dato[] = "Editierbare Feld;editable;;noyes"
+dato[] = "Pflichtfeld;mandatory;;noyes"
 dato[] = "Lookup für editierbare Feld<br><font size=1>Wertetabelle</font>;lookup_table;15;text|<font size=1>Schlüssel-Feld</font>;lookup_id;10;text|<font size=1>Sichtbar Feld</font>;lookup_name;10;text|Konfigurieren;lookup_table;100#openList#layer#relation_id;button"
 //dato[] = "Ordinamento;orderby_id;200#seldb_orderby;selectdb"
 //dato[] = "Op predefinito;default_op;5;text"
