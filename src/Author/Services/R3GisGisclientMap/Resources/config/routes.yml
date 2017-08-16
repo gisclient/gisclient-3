@@ -1,0 +1,4 @@
+r3gis_gcmap:
+    path: gcmap
+    defaults:  { _controller: GisClient\Author\Services\R3GisGisclientMap\Controller\ClientController::gcmapAction }
+    # add requirements mapset

@@ -7,9 +7,15 @@
     "license": "GPL-3.0",
     "require": {
         "php": ">=5.3.3",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "symfony/config": "^2.8",
+        "symfony/http-foundation": "^2.8",
+        "symfony/http-kernel": "^2.8",
+        "symfony/routing": "^2.8",
+        "symfony/yaml": "^2.8"
     },
     "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "GisClient\\": "src/"
