@@ -1,7 +1,7 @@
 <?php
 // FILE CHE PERMETTE DI RECUPERARE I GRUPPI ESISTENTI UN' ELENCO ESISTENTE (STANDARD GRUPPI PLONE)
 
-	require_once "../../config/config.php";
+	require_once __DIR__ . '/../../bootstrap.php';
 
 	if(!defined('USER_SCHEMA')){
 		$msg="<p>Amministratori Locali dei Progetti non previsti</p>";

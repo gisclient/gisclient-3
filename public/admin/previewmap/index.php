@@ -1,5 +1,6 @@
 <?php
-include '../../../config/config.php';
+
+require_once __DIR__ . '/../../../bootstrap.php';
 require_once ADMIN_PATH."lib/functions.php";
 require_once ADMIN_PATH.'lib/gcFeature.class.php';
 require_once ADMIN_PATH.'lib/gcMapfile.class.php';

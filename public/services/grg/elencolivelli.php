@@ -1,5 +1,6 @@
 <?php
-require_once "../../../config/config.php";
+
+require_once __DIR__ . '/../../../bootstrap.php';
 
 $dbSchema=DB_SCHEMA;
 $transform = defined('POSTGIS_TRANSFORM_GEOMETRY')?POSTGIS_TRANSFORM_GEOMETRY:'Transform_Geometry';

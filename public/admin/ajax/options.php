@@ -1,5 +1,6 @@
 <?php
-include_once "../../../config/config.php";
+
+require_once __DIR__ . '/../../../bootstrap.php';
 
 $user = new GCUser();
 foreach(array('auto_refresh_mapfiles', 'save_to_tmp_map') as $key) {

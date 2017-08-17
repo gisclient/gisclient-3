@@ -1,5 +1,5 @@
 <?php
-require_once "../../config/config.php";
+require_once __DIR__ . '/../../bootstrap.php';
 $qtfield=$this->parametri["field"];
 $project=$this->parametri["project"];
 $db = GCApp::getDB();

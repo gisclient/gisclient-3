@@ -5,7 +5,7 @@ header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Pragma: no-cache");
 
-include "../../config/config.php";
+require_once __DIR__ . '/../../bootstrap.php';
 include ADMIN_PATH."lib/tabella_v.class.php";
 error_reporting (E_ERROR | E_PARSE);
 

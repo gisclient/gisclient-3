@@ -1,5 +1,6 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
 
 	$username = (isset($this->parametri["users"]))?$this->parametri["users"]:null;
     if(!empty($username)) {

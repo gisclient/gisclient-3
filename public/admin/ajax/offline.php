@@ -1,5 +1,6 @@
 <?php
-include_once "../../../config/config.php";
+
+require_once __DIR__ . '/../../../bootstrap.php';
 include_once ROOT_PATH.'lib/ajax.class.php';
 
 require_once '../../../bootstrap.php';

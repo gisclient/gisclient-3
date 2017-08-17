@@ -1,5 +1,6 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
 $db = GCApp::getDB();
 $ris = null;
 $optCatalog = array();

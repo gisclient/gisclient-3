@@ -1,5 +1,6 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
 require_once ADMIN_PATH."lib/Font.php";
 
 $fontName = basename($_REQUEST['font']);

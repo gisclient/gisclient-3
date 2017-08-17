@@ -1,5 +1,6 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
 
     $groups = GCUser::getGroups();
     if(!isset($data) || !is_array($data)) $data = array();

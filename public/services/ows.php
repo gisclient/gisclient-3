@@ -1,7 +1,7 @@
 <?php
 
 define('SKIP_INCLUDE', true);
-require_once '../../config/config.php';
+require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';

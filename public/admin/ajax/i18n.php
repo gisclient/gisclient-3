@@ -1,5 +1,6 @@
 <?php
-include_once "../../../config/config.php";
+
+require_once __DIR__ . '/../../../bootstrap.php';
 include_once ADMIN_PATH."lib/ParseXml.class.php";
 include_once ADMIN_PATH."lib/export.php";
 include_once ROOT_PATH."lib/i18n.php";

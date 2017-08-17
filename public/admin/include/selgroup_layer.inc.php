@@ -1,5 +1,7 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
+
 $project=$this->parametri["project"];
 $selgroup=$this->parametri["selgroup"];
 $db = GCApp::getDB();

@@ -24,7 +24,8 @@
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 *
 ******************************************************************************/
-require_once '../../config/config.php';
+
+require_once __DIR__ . '/../../bootstrap.php';
 require_once ADMIN_PATH."lib/functions.php";
 require_once ROOT_PATH."lib/i18n.php";
 require_once ROOT_PATH . 'lib/GCService.php';

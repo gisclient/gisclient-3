@@ -1,7 +1,7 @@
 <?php
 //define('DEBUG', true);
 define('SKIP_INCLUDE', true);
-require_once '../../config/config.php';
+require_once __DIR__ . '/../../bootstrap.php';
 
 
 

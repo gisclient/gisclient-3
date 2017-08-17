@@ -1,5 +1,6 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
 
 	$group=isset($this->parametri["groups"])?$this->parametri["groups"]:array();
 	$usr=new userApps(null);

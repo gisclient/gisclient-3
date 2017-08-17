@@ -2,7 +2,7 @@
 
 //todo:  aggiungere anche la parte di codice delle formule!!!
 
-include('../../config/config.php');
+require_once __DIR__ . '/../../bootstrap.php';
 
 ini_set('display_errors', 'On');
 error_reporting(E_ALL);

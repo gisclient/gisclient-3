@@ -1,6 +1,6 @@
 <?php
 
-require_once "../../config/config.php";
+require_once __DIR__ . '/../../bootstrap.php';
 include_once ADMIN_PATH."lib/functions.php";
 include_once ADMIN_PATH."lib/gcFeature.class.php";
 $azione=$_REQUEST["azione"];

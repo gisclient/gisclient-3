@@ -1,5 +1,7 @@
 <?php
-require_once "../../config/config.php";
+
+require_once __DIR__ . '/../../bootstrap.php';
+
 $project=$this->parametri["project"];
 $mapset=$this->parametri["mapset"];
 $db = GCApp::getDB();

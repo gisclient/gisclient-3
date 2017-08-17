@@ -1,5 +1,6 @@
 <?php
-require_once('../../config/config.php');
+
+require_once __DIR__ . '/../../bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$filename = 'sld_' . (microtime(true)*10000).'.xml';
