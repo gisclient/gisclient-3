@@ -5,6 +5,7 @@ require_once ROOT_PATH.'lib/export.php';
 
 use GisClient\Author\Db;
 use GisClient\Author\Layer;
+use GisClient\Author\Security\User\GCUser;
 
 $ajax = new \GCAjax();
 $auth = new \GCUser();

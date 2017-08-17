@@ -6,6 +6,8 @@ require_once ADMIN_PATH.'lib/gcFeature.class.php';
 require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 require_once ROOT_PATH."lib/i18n.php";
 
+use GisClient\Author\Security\User\GCUser;
+
 $db = GCApp::getDB();
 
 // FIXME: generate decent error message and return code

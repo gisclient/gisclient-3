@@ -25,6 +25,8 @@
 *
 ******************************************************************************/
 
+use GisClient\Author\Security\User\GCUser;
+
 define('WMS_LAYER_TYPE',1);
 define('GMAP_LAYER_TYPE',7);
 define('VMAP_LAYER_TYPE',3);

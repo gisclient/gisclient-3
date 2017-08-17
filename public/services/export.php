@@ -4,6 +4,8 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
 require_once ROOT_PATH.'lib/export.php';
 
+use GisClient\Author\Security\User\GCUser;
+
 $ajax = new GCAjax();
 $auth = new GCUser();
 $db = GCApp::getDb();

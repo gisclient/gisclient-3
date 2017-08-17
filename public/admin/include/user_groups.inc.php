@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Security\User\GCUser;
+
     $groups = GCUser::getGroups();
     if(!isset($data) || !is_array($data)) $data = array();
 

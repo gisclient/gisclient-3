@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
+use GisClient\Author\Security\User\GCUser;
+
 $user = new GCUser();
 foreach(array('auto_refresh_mapfiles', 'save_to_tmp_map') as $key) {
 	$value = (isset($_POST[$key]) && $_POST[$key] == 'checked');

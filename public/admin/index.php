@@ -25,6 +25,8 @@ require_once __DIR__ . '/../../bootstrap.php';
 include_once ROOT_PATH."lib/i18n.php";
 include_once ADMIN_PATH."lib/gcSymbol.class.php";
 
+use GisClient\Author\Security\User\GCUser;
+
 header("Content-Type: text/html; Charset=".CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
 header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");

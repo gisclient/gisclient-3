@@ -3,6 +3,8 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Security\User\GCUser;
+
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
 	include ("./include/putrequest.php");

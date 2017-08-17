@@ -4,7 +4,8 @@
 	include_once ADMIN_PATH."lib/tabella_v.class.php";
 	include_once ADMIN_PATH."lib/savedata.class.php";
 	include_once ADMIN_PATH."lib/export.php";
-	
+        
+        use GisClient\Author\Security\User\GCUser;
 	
 	class page{
 		

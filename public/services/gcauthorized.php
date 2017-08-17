@@ -3,7 +3,7 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
-
+use GisClient\Author\Security\User\GCUser;
 
 $user = new GCUser();
 $user->setAuthorizedLayers(array('project_name'=>'geoweb_genova'));

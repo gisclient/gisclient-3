@@ -6,6 +6,8 @@ include_once ROOT_PATH.'lib/gclog.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
 include_once ROOT_PATH.'lib/export.php';
 
+use GisClient\Author\Security\User\GCUser;
+
 define('IMPORT_PATH', ROOT_PATH.'import/');
 
 $extensions = array(

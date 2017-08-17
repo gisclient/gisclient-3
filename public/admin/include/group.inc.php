@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Security\User\GCUser;
+
 	$groupname = (isset($this->parametri["groups"]))?$this->parametri["groups"]:array();
     
     if(!empty($groupname)) {

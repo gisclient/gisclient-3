@@ -25,6 +25,8 @@
 *
 ******************************************************************************/
 
+use GisClient\Author\Security\User\GCUser;
+
 define('WMS_LAYER_TYPE',1);
 define('WMTS_LAYER_TYPE',2);
 define('WMS_CACHE_LAYER_TYPE',3);
