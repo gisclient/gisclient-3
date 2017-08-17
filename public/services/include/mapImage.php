@@ -52,15 +52,15 @@ class mapImage {
             if(empty($this->options['center']) || empty($this->options['scale'])) {
                 throw new Exception('Missing center or scale');
             }
-            $this->extent = $this->calculateExtent($this->options['center'], $imageSize, $this->options['dpi'], $this->options['scale']);
+            $this->extent = $this->calculateExtent($this->options['center'], $this->imageSize, $this->options['dpi'], $this->options['scale']);
             $this->scale = $this->options['scale'];
         } else {
             if(empty($this->options['extent'])) {
                 throw new Exception('Missing extent');
             }
             $this->extent = $this->adaptExtentToSize($this->options['extent'], $this->imageSize);
-            $paperSize = $this->paperSize($imageSize, $this->options['dpi']);
-            $this->scale = $this->extent[0] / $paperSize[0];
+            $paperSize = $this->paperSize($this->imageSize, $this->options['dpi']);
+            $this->scale = intval(abs($this->extent[2] - $this->extent[0]) / $paperSize[0]);
         }
         
         if(!empty($this->options['vectors'])) {
