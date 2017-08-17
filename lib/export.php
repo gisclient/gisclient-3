@@ -434,7 +434,7 @@ class GCExportKml
                     $kmlData .= "<name>{$label}</name>";
                 }
                 
-                $geomExtraAttribute = '<altitudeMode>relativeToGround</altitudeMode>';
+                $geomExtraAttribute = '<altitudeMode>clampToGround</altitudeMode>';
                 $kmlData .= preg_replace('/>/', '>' . $geomExtraAttribute, $row['kml_geom'], 1);
 
                 foreach ($this->styles as $styleName => $exp) {
