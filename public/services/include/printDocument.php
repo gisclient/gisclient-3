@@ -133,8 +133,8 @@ class printDocument {
 
         if (!empty($_REQUEST['text']))
             $this->documentElements['map-text'] = $_REQUEST['text'];
-        if (!empty($_REQUEST['scale']))
-            $this->documentElements['map-scale'] = $_REQUEST['scale'];
+        if (!empty($options['scale']))
+            $this->documentElements['map-scale'] = $options['scale'];
         if (!empty($_REQUEST['date']))
             $this->documentElements['map-date'] = $_REQUEST['date'];
         if(!empty($_REQUEST['northArrow']) && $_REQUEST['northArrow'] != 'null') {
@@ -401,6 +401,7 @@ class printDocument {
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         $this->wmsList = $mapImage->getWmsList();
         $this->imageFileName = $mapImage->getImageFileName();
+            $this->documentElements['map-scale'] = $mapImage->getScale();
     }
     
     private function buildDOM($absoluteUrls = false) {
