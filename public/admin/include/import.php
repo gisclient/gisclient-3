@@ -8,7 +8,7 @@
     try {
         $ris = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     } catch(Exception $e) {
-        echo "<p>Impossibile eseguire la query : $sql</p>";
+        echo "<p>{GCAuthor::t('error_query')} : $sql</p>";
     }
 	
 	$opt[]="<option value=\"-1\">Seleziona ===></option>";
@@ -25,7 +25,7 @@
         try {
             $stmt->execute(array('theme_id'=>$this->parametri["theme"]));
         } catch(Exception $e) {
-            echo "<p>Impossibile eseguire la query : $sql</p>";
+            echo "<p>{GCAuthor::t('error_query')} : $sql</p>";
         }
         $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -53,7 +53,7 @@
             try {
                 $stmt->execute(array('project'=>$project));
             } catch(Exception $e) {
-                echo "<p>Impossibile eseguire la query : $sql</p>";
+                echo "<p>{GCAuthor::t('error_query')} : $sql</p>";
             }
             $projectName = $stmt->fetchColumn(0);
 		}
@@ -70,7 +70,7 @@
 			$error=import(ADMIN_PATH."export/$fName",$objId,$projectName,$newName,$layer);
 			
 			
-			if (!$error) echo "<p>Procedura di importazione Terminata Correttamente.</p>";
+			if (!$error) echo "<p>GCAuthor::t('import_done')</p>";
 			else{
 				$mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
 				echo $mex;
@@ -80,7 +80,7 @@
 ?>
 <div class="tableHeader ui-widget ui-widget-header ui-corner-top">
 	
-<b>Importa</b></div>
+<b><?php echo GCAuthor::t('button_import'); ?></b></div>
 <table cellPadding="2" border="0" class="stiletabella" width="90%">
 	<tr>
 		<!--<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>File dal Progetto</b></font></td>
@@ -92,7 +92,7 @@
 	</tr>-->
 <?php if($_POST["livello"]=="qt"){?>
 	<tr>
-		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Layer</b></font></td>
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b><?php echo GCAuthor::t('layer'); ?></b></font></td>
 		<td colspan="2">
 			<select name="layer" class="textbox">
 				<?php echo @implode('\n',$opt2)?>
@@ -101,24 +101,24 @@
 	</tr>
 <?php }?>
 	<tr>
-		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Nome File</b></font></td>
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b><?php echo GCAuthor::t('filename'); ?></b></font></td>
 		<td valign="middle" colspan="2">
 			<input type="text" class="textbox" size="50" value="<?php echo $fName?>" name="filename" id="filename">
 			<input type="button" class="hexfield ui-button ui-widget ui-state-default ui-corner-all" style="width:100px" value="Elenco File" onclick="javascript:openList('filename',['project','livello']);">
 		</td>
 	</tr>
 	<tr>
-		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Elimina File</b></font></td>
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b><?php echo GCAuthor::t('delete_file'); ?></b></font></td>
 		<td valign="middle" colspan="2">
 			<SELECT class="textbox" name="overwrite" >
-				<OPTION value="0" selected>No</OPTION>
-				<OPTION value="1">Si</OPTION>
+				<OPTION value="0" selected><?php echo GCAuthor::t('no'); ?></OPTION>
+				<OPTION value="1"><?php echo GCAuthor::t('yes'); ?></OPTION>
 			</SELECT>
 		</td>
 	</tr>
 
 	<tr>
-		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Nuovo Nome</b></font></td>
+		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b><?php echo GCAuthor::t('new_name'); ?></b></font></td>
 		<td valign="middle">
 			<input type="text" class="textbox" size="50" value="" name="name" id="name">
 		</td>
@@ -134,8 +134,8 @@
 			<input type="hidden" name="obj_id" value="<?php echo $objId;?>">
 			<input type="hidden" name="level" id="level" value="<?php echo $level;?>">
 			<input type="hidden" name="livello" id="livello" value="<?php echo $livello?>">
-			<input type="submit" class="hexfield" value="Importa" name="azione">
-			<input type="submit" class="hexfield" value="Annulla" name="azione" style="margin-left:5px;" onclick="javascript:annulla()">
+			<input type="submit" class="hexfield" value="<?php echo GCAuthor::t('button_import'); ?>" name="azione">
+			<input type="submit" class="hexfield" value="<?php echo GCAuthor::t('button_cancel'); ?>" name="azione" style="margin-left:5px;" onclick="javascript:annulla()">
 		</td>
 	</tr>
 </table>
