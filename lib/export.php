@@ -119,14 +119,15 @@ class GCExport
             throw new Exception('Error creating zip file');
         }
         foreach ($files as $niceName => $realName) {
-            if ($zip->addFile($realName, $niceName)) {
-                unlink($realName);
-            } else {
+            if (!$zip->addFile($realName, $niceName)) {
                 throw new Exception('Error adding file ' . $realName . ' to zip file');
             }
         }
         if (!$zip->close()) {
             throw new Exception('Error closing zip file');
+        }
+        foreach ($files as $niceName => $realName) {
+            unlink($realName);
         }
         
         $return = $options['return_url'] ? $this->exportUrl.$zipName : $zipName;
@@ -434,7 +435,7 @@ class GCExportKml
                     $kmlData .= "<name>{$label}</name>";
                 }
                 
-                $geomExtraAttribute = '<altitudeMode>relativeToGround</altitudeMode>';
+                $geomExtraAttribute = '<altitudeMode>clampToGround</altitudeMode>';
                 $kmlData .= preg_replace('/>/', '>' . $geomExtraAttribute, $row['kml_geom'], 1);
 
                 foreach ($this->styles as $styleName => $exp) {
