@@ -98,7 +98,7 @@ CREATE OR REPLACE FUNCTION delete_relation()
   RETURNS trigger AS
 $BODY$
 BEGIN
-	delete from gisclient_34.field where relation_id=old.relation_id;
+	delete from field where relation_id=old.relation_id;
 	return old;
 END
 $BODY$
@@ -881,7 +881,7 @@ CREATE OR REPLACE FUNCTION delete_relation()
   RETURNS trigger AS
 $BODY$
 BEGIN
-	delete from gisclient_34.field where relation_id=old.relation_id;
+	delete from field where relation_id=old.relation_id;
 	return old;
 END
 $BODY$
@@ -1092,15 +1092,15 @@ ALTER TABLE link ALTER COLUMN winh DROP DEFAULT;
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.7', 'author', '2017-01-16');
 
 --fix unique key per combinazione layer_id + relation_id + field_header anzichè  layer_id + field_header. Questa modifica consente alias
-ALTER TABLE gisclient_34.field DROP CONSTRAINT if exists qtfield_unique_key;
-ALTER TABLE gisclient_34.field
+ALTER TABLE field DROP CONSTRAINT if exists qtfield_unique_key;
+ALTER TABLE field
   ADD CONSTRAINT qtfield_unique_key UNIQUE(layer_id, relation_id, field_header);
 
 --version
 INSERT INTO version (version_name,version_key, version_date) values ('3.4.8', 'author', '2017-02-03');
 
 INSERT INTO e_owstype (owstype_id, owstype_name, owstype_order) values (10, 'WFS', 4);
-INSERT INTO (outputformat_id, outputformat_name, outputformat_driver, outputformat_mimetype, outputformat_imagemode, outputformat_extension, outputformat_option, outputformat_order)
+INSERT INTO e_outputformat (outputformat_id, outputformat_name, outputformat_driver, outputformat_mimetype, outputformat_imagemode, outputformat_extension, outputformat_option)
   values (10, 'GEOJSON', 'OGR/GEOJSON', 'application/json; subtype=geojson', 'JSON', 'json', 'FORMATOPTION "STORAGE=stream" FORMATOPTION "FORM=SIMPLE"');
 
 ALTER TABLE theme
@@ -1108,10 +1108,10 @@ ALTER TABLE theme
 ALTER TABLE theme
   ADD FOREIGN KEY (symbol_name) REFERENCES symbol (symbol_name) ON UPDATE CASCADE ON DELETE SET NULL;
 
-ALTER TABLE gisclient_34.theme
+ALTER TABLE theme
   ADD COLUMN theme_description character varying;
 
-CREATE TABLE gisclient_34.mapset_groups
+CREATE TABLE mapset_groups
 (
   mapset_name character varying NOT NULL,
   groupname character varying NOT NULL,
@@ -1119,25 +1119,25 @@ CREATE TABLE gisclient_34.mapset_groups
   CONSTRAINT mapset_gruops_pkey PRIMARY KEY (mapset_name, groupname)
 );
 
-ALTER TABLE gisclient_34.mapset_groups
+ALTER TABLE mapset_groups
   OWNER TO gisclient;
 
-INSERT INTO gisclient_34.e_level
+INSERT INTO e_level
   (id, name, parent_name, "order", parent_id, depth, leaf, export, struct_parent_id, "table")
 VALUES
   (53, 'mapset_groups', 'mapset', 20, 8, 2, 1, 1, 8, 'mapset_groups');
 
-INSERT INTO gisclient_34.e_form
+INSERT INTO e_form
   (id, name, config_file, tab_type, level_destination, save_data, parent_level)
 VALUES
   (215, 'mapset_groups', 'mapset_groups', 4, 53, 'mapset_groups', 8),
   (216, 'mapset_groups', 'mapset_groups', 5, 53, 'mapset_groups', 8);
 
-INSERT INTO gisclient_34.form_level
+INSERT INTO form_level
   (id, level, mode, form, order_fld, visible)
 VALUES
   (522, 8, 0, 215, 10, 0),
   (523, 53, 1, 216, 1, 1);
 
-ALTER TABLE gisclient_34.field
+ALTER TABLE field
   ADD COLUMN mandatory numeric(1,0) DEFAULT 0;
