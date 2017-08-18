@@ -113,7 +113,7 @@ if (isset($exports['shp'])) {
             'fields' => $exp['extras']['fields']
         ));
 
-        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
+        $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
@@ -129,7 +129,7 @@ if (isset($exports['dxf'])) {
             'layer' => $exp['extras']['layer']
         ));
 
-        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
+        $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
@@ -143,7 +143,7 @@ if (isset($exports['xls'])) {
             'fields' => $exp['extras']['fields']
         ));
 
-        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
+        $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
@@ -160,7 +160,7 @@ if (isset($exports['kml'])) {
             'layer' => $exp['extras']['layer']
         ));
 
-        $db->getDb()->query("DROP VIEW IF EXIST {$exp['config']['schema']}.{$exp['config']['table']}");
+        $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
 }
 
