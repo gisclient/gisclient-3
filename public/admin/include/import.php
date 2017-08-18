@@ -70,7 +70,7 @@
 			$error=import(ADMIN_PATH."export/$fName",$objId,$projectName,$newName,$layer);
 			
 			
-			if (!$error) echo "<p>GCAuthor::t('import_done')</p>";
+			if (!$error) echo "<p>{GCAuthor::t('import_done')}</p>";
 			else{
 				$mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
 				echo $mex;
@@ -134,8 +134,8 @@
 			<input type="hidden" name="obj_id" value="<?php echo $objId;?>">
 			<input type="hidden" name="level" id="level" value="<?php echo $level;?>">
 			<input type="hidden" name="livello" id="livello" value="<?php echo $livello?>">
-			<input type="submit" class="hexfield" value="<?php echo GCAuthor::t('button_import'); ?>" name="azione">
-			<input type="submit" class="hexfield" value="<?php echo GCAuthor::t('button_cancel'); ?>" name="azione" style="margin-left:5px;" onclick="javascript:annulla()">
+			<input type="submit" class="hexfield" value="Importa" name="azione">
+			<input type="submit" class="hexfield" value="Annulla" name="azione" style="margin-left:5px;" onclick="javascript:annulla()">
 		</td>
 	</tr>
 </table>
