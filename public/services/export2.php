@@ -8,7 +8,7 @@ use GisClient\Author\Layer;
 use GisClient\Author\Security\User\GCUser;
 
 $ajax = new \GCAjax();
-$auth = new \GCUser();
+$auth = new GCUser();
 $db = new Db();
 
 $inputJSONText = file_get_contents('php://input');
