@@ -60,7 +60,7 @@ class mapImage {
             }
             $this->extent = $this->adaptExtentToSize($this->options['extent'], $this->imageSize);
             $paperSize = $this->paperSize($imageSize, $this->options['dpi']);
-            $this->scale = $this->extent[0] / $paperSize[0];
+            $this->scale = intval(abs($this->extent[2] - $this->extent[0]) / $paperSize[0]);
         }
         
         if(!empty($this->options['vectors'])) {
