@@ -104,7 +104,7 @@
 		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b><?php echo GCAuthor::t('filename'); ?></b></font></td>
 		<td valign="middle" colspan="2">
 			<input type="text" class="textbox" size="50" value="<?php echo $fName?>" name="filename" id="filename">
-			<input type="button" class="hexfield ui-button ui-widget ui-state-default ui-corner-all" style="width:100px" value="Elenco File" onclick="javascript:openList('filename',['project','livello']);">
+			<input type="button" class="hexfield ui-button ui-widget ui-state-default ui-corner-all" style="width:100px" value="<?php echo GCAuthor::t('file_list'); ?>" onclick="javascript:openList('filename',['project','livello']);">
 		</td>
 	</tr>
 	<tr>
