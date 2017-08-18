@@ -2,6 +2,10 @@
 //define('DEBUG', true);
 define('SKIP_INCLUDE', true);
 require_once '../../config/config.php';
+require_once ROOT_PATH . 'lib/GCService.php';
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
@@ -131,15 +135,6 @@ if($objRequest->getValueByName('service') == 'WMS') {
 } else if($objRequest->getValueByName('service') == 'WFS') {
 	$parameterName = 'TYPENAME';
 	$layersParameter = $objRequest->getValueByName('typename');
-}
-
-// avvio la sessione
-if(!isset($_SESSION)) {
-	if(isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
-		session_id($_REQUEST['GC_SESSION_ID']);
-	}
-	if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
-	session_start();
 }
 
 $cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;

@@ -29,14 +29,6 @@ if($debugTinyOWS) {
 	file_put_contents(DEBUG_DIR.'tinyows-logs.txt', "body:\n".file_get_contents('php://input')."\n\n", FILE_APPEND);
 }
 
-// try to start session
-if(!isset($_SESSION)) {
-	if(defined('GC_SESSION_NAME') && isset($_COOKIE[GC_SESSION_NAME])) {
-		session_name(GC_SESSION_NAME);
-	}
-	session_start();
-}
-
 $autoUpdateUser = (defined('LAST_EDIT_USER_COL_NAME') && LAST_EDIT_USER_COL_NAME);
 if($autoUpdateUser) {
     $xml = simplexml_load_file($configFile);
