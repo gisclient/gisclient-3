@@ -1,8 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 use GisClient\Author\Security\User\GCUser;
+
+echo "A";
 
 	$username = (isset($this->parametri["users"]))?$this->parametri["users"]:null;
     if(!empty($username)) {

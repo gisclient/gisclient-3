@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 $qtfield=$this->parametri["field"];
 $project=$this->parametri["project"];
 $db = GCApp::getDB();
@@ -34,4 +34,3 @@ try {
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
 $button="modifica";
-?>

@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 	$group=isset($this->parametri["groups"])?$this->parametri["groups"]:array();
 	$usr=new userApps(null);
@@ -20,4 +20,3 @@ require_once __DIR__ . '/../../bootstrap.php';
 	$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
 	
 	if($usr->editGroup==1) $button="modifica";
-?>

@@ -1,7 +1,7 @@
 <?php
 // FILE CHE PERMETTE DI RECUPERARE I GRUPPI ESISTENTI UN' ELENCO ESISTENTE (STANDARD GRUPPI PLONE)
 
-	require_once __DIR__ . '/../../bootstrap.php';
+	require_once __DIR__ . '/../../../bootstrap.php';
 
 	if(!defined('USER_SCHEMA')){
 		$msg="<p>Amministratori Locali dei Progetti non previsti</p>";
@@ -33,4 +33,3 @@
 	$btn[]="<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Salva\">";
 	$btn[]="<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'username');\">\n";
 	$button="modifica";
-?>

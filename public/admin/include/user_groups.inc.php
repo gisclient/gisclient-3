@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 use GisClient\Author\Security\User\GCUser;
 
@@ -29,4 +29,3 @@ use GisClient\Author\Security\User\GCUser;
 	$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
 	
 	$button="modifica";
-?>
