@@ -60,8 +60,7 @@ $arr_noaction=Array("chiudi","annulla","avvia importazione");
 if (!empty($_REQUEST["parametri"]))
     $param=$_REQUEST["parametri"];
 
-//FIXME: 2nd parameter not in constructor signature, thus useless
-$p=new page($_REQUEST,1);
+$p=new page($_REQUEST);
 
 $p->get_conf();
 

@@ -30,8 +30,13 @@
 		private $primary_keys;
 		private $navTreeValues;
 		
-		// Costruttore della classe
-		function page($param=Array()){
+		/**
+                 * Constructor
+                 * 
+                 * @param array $param
+                 */
+		public function __construct(array $param = array())
+                {
             $user = new GCUser();
 			//Recupero Le Chiavi Primarie
 			$pk=_getPKeys();
