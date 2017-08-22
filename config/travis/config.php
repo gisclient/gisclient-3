@@ -85,8 +85,6 @@ define('ADMIN_PATH',ROOT_PATH.'public/admin/');
 if(!defined('DEBUG_DIR')) define('DEBUG_DIR',ROOT_PATH.'config/debug/');
 if(!defined('DEBUG')) define('DEBUG', 1); // Debugging 0 off 1 on
 
-require_once (ROOT_PATH."config/login.php");
-
 //COSTANTI DEI REPORT
 define('MAX_REPORT_ROWS',5000);
 define('REPORT_PROJECT_NAME','REPORT');
