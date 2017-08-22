@@ -6,7 +6,7 @@ class SenchaTouchUtils
 {
     /**
      * Convert the standard mapOptions to SenchaTouch format
-     * 
+     *
      * @param array $mapOptions   the $mapOptions
      * @return array              the converted mapOptions
      * @throws Exception
@@ -30,10 +30,12 @@ class SenchaTouchUtils
         foreach ($themes as $themeName => $theme) {
             $lastThemeType = null;
             foreach ($theme as $key => $val) {
-                if (in_array($key, array('title', 'radio'))) continue;
+                if (in_array($key, array('title', 'radio'))) {
+                    continue;
+                }
                 if ($lastThemeType === null) {
                     $lastThemeType = $val['type'];
-                } else if ($lastThemeType <> $val['type']) {
+                } elseif ($lastThemeType <> $val['type']) {
                     throw new Exception("Mixed layer types not allowed in mobile theme \"{$key}\" [From type {$lastThemeType} to type {$val['type']}]");
                 }
             }
@@ -48,7 +50,9 @@ class SenchaTouchUtils
 
                     $layerNames = array();
                     foreach ($theme as $key => $val) {
-                        if (in_array($key, array('title', 'radio'))) continue;
+                        if (in_array($key, array('title', 'radio'))) {
+                            continue;
+                        }
                         $layer['parameters'] = array_merge($layer['parameters'],
                             $val['parameters']);
                         unset($val['options']['featureTypes']);
@@ -56,8 +60,9 @@ class SenchaTouchUtils
                             $val['options']);
                         $layer['url']        = $val['url'];
                         if (!empty($val['parameters']['layers'])) {
-                            foreach ($val['parameters']['layers'] as $layerName)
+                            foreach ($val['parameters']['layers'] as $layerName) {
                                 array_push($layerNames, $layerName);
+                            }
                         } else {
                             continue;
                         }

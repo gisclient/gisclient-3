@@ -1,8 +1,8 @@
 <?php
 /******************************************************************************
 *
-* Purpose: Inizializzazione dei parametri per la creazione della mappa 
-     
+* Purpose: Inizializzazione dei parametri per la creazione della mappa
+
 * Author:  Roberto Starnini, Gis & Web Srl, roberto.starnini@gisweb.it
 *
 ******************************************************************************
@@ -53,8 +53,8 @@ class GCMap
     
     /**
      * Layer authorization checker
-     * 
-     * @var LayerAuthorizationChecker 
+     *
+     * @var LayerAuthorizationChecker
      */
     private $layerAuthChecker;
     
@@ -1193,13 +1193,13 @@ class GCMap
                 " X(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as x1, ".
                 " Y(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as y1;";
             $ext = $this->db->query($sqlExt)->fetch(PDO::FETCH_ASSOC);
-            $extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));       
+            $extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));
         }
         else
             $extent = array(floatval($x0),floatval($y0),floatval($x1),floatval($y1));
-            
+
         return $extent;
-    }   
+    }
 
 */
     //Elenco delle librerie per i providers usati
@@ -1307,7 +1307,7 @@ class GCMap
         print_debug($sql, null, 'mapoptions');
         if ($row['mapset_scales'] !='') {
             $ret = explode(',', $row['mapset_scales']);
-        } else if (defined('SCALE')) {
+        } elseif (defined('SCALE')) {
             $ret = explode(',', SCALE);
         } else {
             $ret = \GCAuthor::$defaultScaleList;
@@ -1343,7 +1343,7 @@ class GCMap
         $precision = $this->mapsetUM == "dd" ? 10 : 2;
         $aRes = array();
 
-        if (isset($mapsetScales)) { //TODO 
+        if (isset($mapsetScales)) { //TODO
             $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
             foreach ($v as $key => $value) {
                 $aRes[$key] = round((real) $value, $precision);
@@ -1448,7 +1448,7 @@ class GCMap
             return array();
         }
     }
-/*    
+/*
     function _getMaxExtents() {
         $extents = array();
         $userGroupFilter = '';
@@ -1457,14 +1457,14 @@ class GCMap
             if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
-        
+
         $sql = "SELECT layergroup_id, layer_id, data_extent
-                FROM ".DB_SCHEMA.".layer 
-                INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id) 
+                FROM ".DB_SCHEMA.".layer
+                INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id)
                 INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
-                WHERE mapset_layergroup.mapset_name=:mapset_name 
+                WHERE mapset_layergroup.mapset_name=:mapset_name
                 order BY layergroup_id ";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1498,9 +1498,9 @@ class GCMap
         //var_export($extents);
         return $extents;
     }
-    
-    
-    
+
+
+
     function _array_limit($aList,$maxVal=false,$minVal=false){
         $ar=array();
         foreach($aList as $val){
@@ -1509,7 +1509,7 @@ class GCMap
         }
         return array_values(array_diff($aList,$ar));
     }
-    
+
     function _array_index($aList, $value){
         $retval=0;
         for($i=0;$i<count($aList);$i++){
