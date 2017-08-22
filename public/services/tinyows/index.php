@@ -3,10 +3,10 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 
-use GisClient\Author\Security\User\GCUser;
-
 $gcService = GCService::instance();
 $gcService->startSession();
+
+$authHandler = \GCApp::getAuthenticationHandler();
 
 $debugTinyOWS = defined('DEBUG') && DEBUG == 1;
 
@@ -82,9 +82,10 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 		header('WWW-Authenticate: Basic realm="Gisclient"');
 		header('HTTP/1.0 401 Unauthorized');
 	} else {
-		$user = new GCUser();
-		if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-			$user->setAuthorizedLayers(array('project_name' => $projectName));
+		if ($authHandler->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+                    $authHandler->setAuthorizedLayers(array(
+                        'project_name' => $projectName
+                    ));
 		}
 	}
 }
@@ -143,10 +144,13 @@ if($autoUpdateUser) {
     }
     
     try {
+        $userName = $authHandler->getToken()->getUsername();
         $sql = 'insert into '.CURRENT_EDITING_USER_TABLE.' (id, username) values (1, :username)';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('username'=>$_SESSION['USERNAME']));
-		print_debug('inserted user '.$_SESSION['USERNAME'], null, 'tinyows');
+        $stmt->execute(array(
+            'username' => $userName
+        ));
+		print_debug('inserted user '.$userName, null, 'tinyows');
     } catch(Exception $e) {
 		print_debug('cannot insert into '.CURRENT_EDITING_USER_TABLE.', maybe there is still an user there!', null, 'tinyows');
         die('Another user is currently editing, please try again');

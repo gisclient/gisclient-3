@@ -1,8 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../bootstrap.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 
-use GisClient\Author\Security\User\GCUser;
+use Symfony\Component\HttpFoundation\Request;
 
 header("Content-Type: text/html; Charset=".CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
@@ -10,14 +11,17 @@ header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Pragma: no-cache");
 
-$user = new GCUser();
+$gcService = GCService::instance();
+$gcService->startSession();
+
+$authHandler = GCApp::getAuthenticationHandler();
 
 if(!empty($_REQUEST["logout"])) {
-    $user->logout();
+    $authHandler->logout();
 }
 
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $user->login($_POST['username'], $_POST['password']);
+    $authHandler->login(Request::createFromGlobals());
 }
 
 $db = GCApp::getDB();
@@ -40,7 +44,7 @@ foreach($mapset as $key=>$map){
 			<div class="tableHeader ui-widget ui-widget-header ui-corner-top">'.GCAuthor::t('project').': '.$map[0]['project_title'].'</div>
 			<table class="stiletabella">';
 				for($j=0;$j<count($map);$j++){
-					if(!isset($_SESSION["USERNAME"]) && $map[$j]['private'] == 1) {
+					if (!$authHandler->isAuthenticated() && $map[$j]['private'] == 1) {
 						continue;
 					}
 					
@@ -67,8 +71,9 @@ foreach($mapset as $key=>$map){
 					} else {
 						$newTable .= '<td width="1"></td>';
 					}
-					if(!empty($_SESSION['USERNAME']) && defined('PRIVATE_MAP_URL')) $newTable .= '
-						<td width="1"><a href="'.$privateLink.'" class="private" target="_blank">Private map</a></td>';
+					if ($authHandler->isAuthenticated() && defined('PRIVATE_MAP_URL')) {
+                                            $newTable .= '<td width="1"><a href="'.$privateLink.'" class="private" target="_blank">Private map</a></td>';
+                                        }
 					$newTable .= '					
 							<td class="data">'.$map[$j]["title"].'</td>
 						</tr>';
@@ -79,7 +84,7 @@ foreach($mapset as $key=>$map){
 	';
 }
 
-if(!$user->isAuthenticated()){
+if(!$authHandler->isAuthenticated()){
 	$logTitle="Login";
 	$logJs="javascript:return encript_pwd('password','frm_enter');";
 	$logout=0;
@@ -127,7 +132,7 @@ else{
 			/* jquerylayout */
 			myLayout = $('#container').layout({
 				north: { size: 90, spacing_open: 10, closable: false, resizable: false },
-				east: { size: 250, maxSize: 500, spacing_open: 10, closable: true, resizable: false, initClosed: <?php echo $user->isAuthenticated() ? 'true' : 'false'; ?> },
+				east: { size: 250, maxSize: 500, spacing_open: 10, closable: true, resizable: false, initClosed: <?php echo $authHandler->isAuthenticated() ? 'true' : 'false'; ?> },
 				south: { size: 20, spacing_open: 10, closable: false, resizable: false }
 				//useStateCookie: true,
 				//cookie: { name: "GisClientAuthor", expires: 10, keys: "west.size" }

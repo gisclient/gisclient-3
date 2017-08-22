@@ -3,8 +3,6 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
-use GisClient\Author\Security\User\GCUser;
-
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
 	include ("./include/putrequest.php");
@@ -154,25 +152,30 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 		}
 	}
 	if($hasPrivateLayers) {
+            $authHandler = \GCApp::getAuthenticationHandler();
             if(!empty($_REQUEST['PRINTSERVICE'])) {
-                $user = new GCUser();
-                $user->login('printservice', md5('printservice$'));
+                $authHandler->login('printservice', md5('printservice$'));
             } else {
                 if (!isset($_SERVER['PHP_AUTH_USER'])) {
                         header('WWW-Authenticate: Basic realm="Gisclient"');
                         header('HTTP/1.0 401 Unauthorized');
                 } else {
-                     $user = new GCUser();
-                     $user->login($_SERVER['PHP_AUTH_USER'], md5($_SERVER['PHP_AUTH_PW']));
+                     $authHandler->login($_SERVER['PHP_AUTH_USER'], md5($_SERVER['PHP_AUTH_PW']));
                 }
 
             }
 
-            if($user->isAuthenticated()) {
+            if($authHandler->isAuthenticated()) {
                 if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
-                    $user->setAuthorizedLayers(array('project_name'=>$objRequest->getValueByName('map')));
+                    // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+                    GCApp::getLayerAuthorizationChecker()->getLayers(array(
+                        'project_name' => $objRequest->getValueByName('map')
+                    ));
                 } else {
-                    $user->setAuthorizedLayers(array('mapset_name'=>$objRequest->getValueByName('map')));
+                    // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+                    GCApp::getLayerAuthorizationChecker()->getLayers(array(
+                        'mapset_name' => $objRequest->getValueByName('map')
+                    ));
                 }
             }
 	}

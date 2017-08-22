@@ -1,13 +1,14 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
 require_once ROOT_PATH.'lib/export.php';
 
-use GisClient\Author\Security\User\GCUser;
+$gcService = GCService::instance();
+$gcService->startSession();
 
 $ajax = new GCAjax();
-$auth = new GCUser();
 $db = GCApp::getDb();
 
 $inputJSONText = file_get_contents('php://input');
@@ -39,7 +40,10 @@ switch($data['export_format']) {
                     'db'=>$dataDb
                 ));
             } else if(isset($table['layer'])) {
-                $authorizedLayers = $auth->getAuthorizedLayers(array('mapset_name'=>$data['mapset']));
+                $layerAuthChecker = GCApp::getLayerAuthorizationChecker();
+                $layers = $layerAuthChecker->getLayers(array(
+                    'mapset_name'=>$data['mapset']
+                ));
                 
                 $sql = 'select catalog_path, layer.data as tablename, layer_id from '.DB_SCHEMA.'.catalog 
                     inner join '.DB_SCHEMA.'.layer using(catalog_id)
@@ -53,7 +57,7 @@ switch($data['export_format']) {
                 ));
                 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
                 
-                if(empty($layer) || !in_array($layer['layer_id'], $authorizedLayers)) continue;
+                if(empty($layer) || !in_array($layer['layer_id'], $layers['authorized_layers'])) continue;
                 
                 $dbParams = GCApp::getDataDBParams($layer['catalog_path']);
                 $dataDb = GCApp::getDataDB($layer['catalog_path']);
@@ -71,7 +75,7 @@ switch($data['export_format']) {
             if(!defined('GC_EXPORT_TMP_SCHEMA')) $ajax->error('Undefined export tmp schema');
             if(!is_array($data['extent']) || count($data['extent']) != 4) $ajax->error('Wrong extent type');
             if(empty($data['srid'])) $ajax->error('Empty srid');
-            if(strpos($data['srid'], ':') !== false) list($auth, $srid) = explode(':', $data['srid']);
+            if(strpos($data['srid'], ':') !== false) list($sridPrefix, $srid) = explode(':', $data['srid']);
             else $srid = $data['srid'];
             
             $sql = 'select st_setsrid(st_makebox2d(st_point(:p0, :p1), st_point(:p2, :p3)), :srid)';

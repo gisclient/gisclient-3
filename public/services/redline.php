@@ -3,10 +3,10 @@
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 
-use GisClient\Author\Security\User\GCUser;
-
 $gcService = GCService::instance();
 $gcService->startSession();
+
+$authHandler = \GCApp::getAuthenticationHandler();
 
 if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayers', 'PrintMap'))) {
 	die("REQUEST unknown");
@@ -29,7 +29,6 @@ if ($_REQUEST["REQUEST"] == "PrintMap") {
 }
 
 $db = GCApp::getDB();
-$user = new GCUser();
 
 //elenco dei layer di redline per l'utente corrente
 if($_REQUEST["REQUEST"] == "GetLayers"){
@@ -37,7 +36,7 @@ if($_REQUEST["REQUEST"] == "GetLayers"){
 	$params = array(
 		':project'=>$_REQUEST['PROJECT'],
 		':mapset'=>$_REQUEST['MAPSET'],
-		':username'=>$user->isAuthenticated() ? $user->getUsername() : 'GUEST'
+		':username'=>$authHandler->isAuthenticated() ? $authHandler->getToken()->getUsername() : 'GUEST'
 	);
 	$stmt = $db->prepare($sql);
 	try {
@@ -116,7 +115,7 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 		$params = array(
 			':project'=>$_REQUEST['PROJECT'],
 			':mapset'=>$_REQUEST['MAPSET'],
-			':username'=>$user->isAuthenticated() ? $user->getUsername() : 'GUEST',
+			':username'=>$authHandler->isAuthenticated() ? $authHandler->getToken()->getUsername() : 'GUEST',
 			':redline_id'=>$redlineId,
 			':redline_title'=>$redlineTitle,
 			':note'=>!empty($feature['properties']['note']) ? $feature['properties']['note'] : null,

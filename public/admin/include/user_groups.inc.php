@@ -2,14 +2,24 @@
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
-use GisClient\Author\Security\User\GCUser;
-
-    $groups = GCUser::getGroups();
+$db = \GCApp::getDB();
+        
+    $sql = 'SELECT groupname, description FROM '.DB_SCHEMA.'.groups';
+    $groups = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     if(!isset($data) || !is_array($data)) $data = array();
 
 	$username = isset($this->parametri["users"])?$this->parametri["users"]:null;
     if(!empty($username)) {
-        $userGroups = GCUser::getUserGroups($username);
+        $sql = '
+            SELECT groupname FROM '.DB_SCHEMA.'.user_group
+            WHERE username=:user
+        ';
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(
+            'user'=>$username
+        ));
+        
+        $userGroups = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
     }
     if(empty($userGroups)) $userGroups = array();
     

@@ -22,10 +22,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 require_once __DIR__ . '/../../bootstrap.php';
-include_once ROOT_PATH."lib/i18n.php";
-include_once ADMIN_PATH."lib/gcSymbol.class.php";
+require_once ROOT_PATH . 'lib/GCService.php';
+include_once ROOT_PATH . "lib/i18n.php";
+include_once ADMIN_PATH . "lib/gcSymbol.class.php";
 
-use GisClient\Author\Security\User\GCUser;
+use Symfony\Component\HttpFoundation\Request;
 
 header("Content-Type: text/html; Charset=".CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
@@ -36,18 +37,22 @@ header("Pragma: no-cache");
 $Errors=array();
 $Notice=array();
 
-$user = new GCUser();
+$gcService = GCService::instance();
+$gcService->startSession();
+
+$authHandler = GCApp::getAuthenticationHandler();
+
 if(!empty($_REQUEST['logout'])) {
-    $user->logout();
+    $authHandler->logout();
     header('Location: ../');
+    exit;
 }
 
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $user->login($_POST['username'], $_POST['password']);
+    $authHandler->login(Request::createFromGlobals());
 }
 
-
-if (!$user->isAuthenticated()) {
+if (!$authHandler->isAuthenticated()) {
     include_once ADMIN_PATH."enter.php";
     exit;
 }
@@ -60,7 +65,7 @@ $arr_noaction=Array("chiudi","annulla","avvia importazione");
 if (!empty($_REQUEST["parametri"]))
     $param=$_REQUEST["parametri"];
 
-$p=new page($_REQUEST);
+$p=new page($authHandler, $_REQUEST);
 
 $p->get_conf();
 

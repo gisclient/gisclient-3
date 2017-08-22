@@ -1,19 +1,24 @@
 <?php
 
 require_once __DIR__ . '/../bootstrap.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 include_once ROOT_PATH.'lib/ajax.class.php';
 
-use GisClient\Author\Security\User\GCUser;
+$gcService = GCService::instance();
+$gcService->startSession();
+
+$authHandler = GCApp::getAuthenticationHandler();
 
 $ajax = new GCAjax();
-
-$user = new GCUser();
 
 if(empty($_POST['username']) || empty($_POST['password'])) {
     $ajax->error();
 }
 
-$success = $user->login($_POST['username'], $_POST['password']);
+$authHandler->login($_POST['username'], $_POST['password']);
 
-if($success) $ajax->success();
-else $ajax->error();
+if ($authHandler->isAuthenticated()) {
+    $ajax->success();
+} else {
+    $ajax->error();
+}

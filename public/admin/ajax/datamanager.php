@@ -1,12 +1,11 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 include_once ROOT_PATH.'lib/ajax.class.php';
 include_once ROOT_PATH.'lib/gclog.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
 include_once ROOT_PATH.'lib/export.php';
-
-use GisClient\Author\Security\User\GCUser;
 
 define('IMPORT_PATH', ROOT_PATH.'import/');
 
@@ -26,10 +25,14 @@ $autoUpdaters = array(
     'pointy'=> defined('COORDINATE_Y_COL_NAME') ? COORDINATE_Y_COL_NAME : false
 );
 
+$gcService = GCService::instance();
+$gcService->startSession();
+
+$authHandler = GCApp::getAuthenticationHandler();
+
 // real path per browsing
 $ajax = new GCAjax();
 $db = GCApp::getDB();
-$user = new GCUser();
 $log = new GCLog($db);
 
 if (empty($_REQUEST['action'])) {
@@ -95,7 +98,7 @@ switch ($_REQUEST['action']) {
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 
-        $log->log($user->getUsername(), 'UPLOAD', 'file: ' . $_REQUEST['filename']);
+        $log->log($authHandler->getToken()->getUserName(), 'UPLOAD', 'file: ' . $_REQUEST['filename']);
         break;
 
     case 'upload-raster':
@@ -126,7 +129,7 @@ switch ($_REQUEST['action']) {
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 
-        $log->log($user->getUsername(), 'UPLOAD', 'raster: ' . $targetFile);
+        $log->log($authHandler->getToken()->getUserName(), 'UPLOAD', 'raster: ' . $targetFile);
         break;
 
     case 'upload-doc':
@@ -175,7 +178,7 @@ switch ($_REQUEST['action']) {
 
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
-        $log->log($user->getUsername(), 'UPLOAD', 'doc -> doc_id: ' . $row['doc_id'] . ' doc_name: ' . $name);
+        $log->log($authHandler->getToken()->getUserName(), 'UPLOAD', 'doc -> doc_id: ' . $row['doc_id'] . ' doc_name: ' . $name);
         break;
 
     case 'get-uploaded-files':
@@ -323,7 +326,7 @@ switch ($_REQUEST['action']) {
         $stmt->execute(array($parent_id, $folder_name));
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $log->log($user->getUsername(), 'CREATE', 'new folder: ' . $folder_name . '  in parent_id: ' . $parent_id);
+        $log->log($authHandler->getToken()->getUserName(), 'CREATE', 'new folder: ' . $folder_name . '  in parent_id: ' . $parent_id);
 
         $ajax->success($row);
         break;
@@ -352,7 +355,7 @@ switch ($_REQUEST['action']) {
         if (!$result) {
             $ajax->error("Error public document");
         } else {
-            $log->log($user->getUsername(), 'PUBLIC', 'doc_id: ' . $_REQUEST['doc_id']);
+            $log->log($authHandler->getToken()->getUserName(), 'PUBLIC', 'doc_id: ' . $_REQUEST['doc_id']);
             $ajax->success();
         }
 
@@ -369,7 +372,7 @@ switch ($_REQUEST['action']) {
         if (!$result) {
             $ajax->error("Error private document");
         } else {
-            $log->log($user->getUsername(), 'PRIVATE', 'doc_id: ' . $_REQUEST['doc_id']);
+            $log->log($authHandler->getToken()->getUserName(), 'PRIVATE', 'doc_id: ' . $_REQUEST['doc_id']);
             $ajax->success();
         }
 
@@ -1106,7 +1109,7 @@ switch ($_REQUEST['action']) {
 function deleteRecursive($doc_id)
 {
     $db = GCApp::getDB();
-    $user = new GCUser();
+    $authHandler = GCApp::getAuthenticationHandler();
     $log = new GCLog($db);
 
     $sql = 'SELECT doc_id FROM ' . DB_SCHEMA . '.document WHERE doc_parent_id = ?';
@@ -1139,7 +1142,7 @@ function deleteRecursive($doc_id)
     $stmt = $db->prepare($deleteSql);
     $result = $stmt->execute(array($doc_id));
     if ($result) {
-        $log->log($user->getUsername(), 'DELETE', 'doc_id: ' . $doc['doc_id'] . ' doc_name: ' . $doc['doc_name']);
+        $log->log($authHandler->getToken()->getUserName(), 'DELETE', 'doc_id: ' . $doc['doc_id'] . ' doc_name: ' . $doc['doc_name']);
     }
 
     return $result;

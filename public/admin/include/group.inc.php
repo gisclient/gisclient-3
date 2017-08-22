@@ -2,13 +2,23 @@
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
-use GisClient\Author\Security\User\GCUser;
+$db = \GCApp::getDB();
 
 	$groupname = (isset($this->parametri["groups"]))?$this->parametri["groups"]:array();
     
     if(!empty($groupname)) {
         if(!isset($data) || !is_array($data)) $data = array();
-        array_push($data, GCUser::getGroupData($groupname));
+        
+        $sql = '
+            SELECT groupname, description FROM '.DB_SCHEMA.'.groups
+            WHERE groupname=:group
+        ';
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(
+            'group' => $groupname
+        ));
+        
+        array_push($data, $stmt->fetch(\PDO::FETCH_ASSOC));
     }
     if(empty($data)) $msg = "Nessun Utente definito";
     

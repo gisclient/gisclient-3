@@ -1,9 +1,44 @@
 <?php
 
-class GCApp {
+use GisClient\Author\Security\AuthenticationHandler;
+use GisClient\Author\Security\LayerAuthorizationChecker;
+use GisClient\Author\Security\User\User;
+use GisClient\Author\Security\User\UserProvider;
+use GisClient\Author\Security\User\UserProviderInterface;
+
+class GCApp
+{
+    
+    
+    /**
+     * User provider
+     * 
+     * @var UserProviderInterface 
+     */
+    private static $userProvider;
+    
+    /**
+     * Authentication handler
+     * 
+     * @var AuthenticationHandler 
+     */
+    private static $authenticationHandler;
+    
+    /**
+     * Authentication handler
+     * 
+     * @var LayerAuthorizationChecker 
+     */
+    private static $layerAuthorizationChecker;
+    
 	static private $db;
 	static private $dataDBs = array();
 
+        /**
+         * Get database instance
+         * 
+         * @return \PDO
+         */
 	public static function getDB() {
 		if(empty(self::$db)) {
 			$dsn = 'pgsql:dbname='.DB_NAME.';host='.DB_HOST;
@@ -18,6 +53,53 @@ class GCApp {
 		}
 		return self::$db;
 	}
+        
+        /**
+         * Get user provider
+         * 
+         * @return UserProviderInterface
+         */
+        public static function getUserProvider()
+        {
+            if(empty(self::$userProvider)) {
+                self::$userProvider = new UserProvider(self::getDB());
+            }
+            return self::$userProvider;
+        }
+        
+        /**
+         * Get authentication handler
+         * 
+         * @return AuthenticationHandler
+         */
+        public static function getAuthenticationHandler()
+        {
+            if(empty(self::$authenticationHandler)) {
+                $service = GCService::instance();
+                self::$authenticationHandler = new AuthenticationHandler($service->getSession(), self::getUserProvider());
+            }
+            return self::$authenticationHandler;
+        }
+        
+        /**
+         * Get authentication handler
+         * 
+         * @return LayerAuthorizationChecker
+         */
+        public static function getLayerAuthorizationChecker()
+        {
+            if(empty(self::$layerAuthorizationChecker)) {
+                $authHandler = self::getAuthenticationHandler();
+                if ($authHandler->isAuthenticated()) {
+                    $user = $authHandler->getToken()->getUser();
+                } else {
+                    $user = new User();
+                }
+                
+                self::$layerAuthorizationChecker = new LayerAuthorizationChecker(self::getDB(), $user);
+            }
+            return self::$layerAuthorizationChecker;
+        }
 	
 	public static function getDataDB($path) {
 		if(empty(self::$dataDBs[$path])) {

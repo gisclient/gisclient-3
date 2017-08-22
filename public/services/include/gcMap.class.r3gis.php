@@ -25,7 +25,7 @@
 *
 ******************************************************************************/
 
-use GisClient\Author\Security\User\GCUser;
+use GisClient\Author\Security\LayerAuthorizationChecker;
 
 define('WMS_LAYER_TYPE',1);
 define('GMAP_LAYER_TYPE',7);
@@ -51,6 +51,14 @@ class gcMap{
 	const SCALE_TYPE_USER = 0;
 	const SCALE_TYPE_POWEROF2 = 1;
 	var $db;
+        
+        /**
+         * Layer authorization checker
+         * 
+         * @var LayerAuthorizationChecker 
+         */
+        private $layerAuthChecker;
+        
 	var $authorizedLayers;
 	var $authorizedGroups = array();
 	var $selgroupList = array();
@@ -90,6 +98,7 @@ class gcMap{
 		$this->onlyPublicLayers = $onlyPublicLayers;
 
 		$this->db = GCApp::getDB();
+                $this->layerAuthChecker = GCApp::getLayerAuthorizationChecker();
 		
 		$sql = "SELECT mapset.*, ".
 			" st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
@@ -173,19 +182,24 @@ class gcMap{
 			$mapOptions["restrictedExtent"] = array(floatval($ext[0]),floatval($ext[1]),floatval($ext[2]),floatval($ext[3]));
 		}
 		
-        $user = new GCUser();
 		if ($this->onlyPublicLayers) {
-			// force a recolulation of the visible layers
-			$user->setAuthorizedLayers(array('mapset_name'=>$mapsetName, 'show_as_public' => 1));
-			$this->authorizedLayers = array();
+                    // force a recolulation of the visible layers
+                    $allUserLayers = $this->layerAuthChecker->getLayers(array(
+                        'mapset_name' => $mapsetName,
+                        'show_as_public' => 1
+                    ));
+                    $this->authorizedLayers = array();
 		} else {
-			$this->authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$mapsetName));
+                    $allUserLayers = $this->layerAuthChecker->getLayers(array(
+                        'mapset_name' => $mapsetName,
+                    ));
+                    $this->authorizedLayers = $allUserLayers['authorized_layers'];
 		}
-        //print_r($user);
         //unset($_SESSION['GISCLIENT_USER_LAYER']);
 		//die;
 
-		$this->mapLayers = $user->getMapLayers(array('mapset_name'=>$mapsetName, 'show_as_public' => !$user->isAuthenticated()));
+                
+		$this->mapLayers = $allUserLayers['map_layers'];
         
 		
 		$mapOptions["theme"] = $this->_getLayers();
@@ -217,12 +231,6 @@ class gcMap{
 		
 		$featureTypes = $this->_getFeatureTypes();
         $extents = $this->_getMaxExtents();
-
-
-        $user = new GCUser();
-        $user->setAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
-
-        $userLayers = $user->getMapLayers(array('mapset_name'=>$this->mapsetName));
 
         $sqlParams = array();
         $sqlAuthorizedLayers = "FALSE";
@@ -587,8 +595,7 @@ class gcMap{
 		
 		//Restituisce le features e i range di scala
 		$userGroupFilter = '';
-        $user = new GCUser();
-		if(!$user->isAdmin($this->projectName)) {
+		if(!\GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
 			$userGroup = '';
 			if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
@@ -669,7 +676,7 @@ class gcMap{
 			}
 			
 			$userCanEdit = false;
-			if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || $user->isAdmin($this->projectName)) $userCanEdit = true;
+			if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) $userCanEdit = true;
 			
 			if(!empty($row["selection_color"]) && !empty($row["selection_width"])){
 				$color = "RGB(".str_replace(" ",",",$row["selection_color"]).")";$size = intval($row["selection_width"]);
@@ -679,7 +686,7 @@ class gcMap{
 			
 	
 			//TODO DA VERIFICARE DA VEDERE ANCHE L'OPZIONE PER IL CAMPO EDITABILE CHE SOVRASCRIVE QUELLO DI DEFAULT
-			if(($fieldName = $row["field_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
+			if(($fieldName = $row["field_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
 				/*
 				if(!empty($row["relation_name"])){
 					$fieldName = $row["relation_name"] . "_" . NameReplace($row["field_header"]);
@@ -956,22 +963,26 @@ class gcMap{
 	}
 	
 	function _getUsercontext($contextId) {
-        $user = new GCUser();
-        if(!$user->isAuthenticated()) return array();
-		//if(empty($_SESSION) || empty($_SESSION['USERNAME'])) return array();
-		$sql = "SELECT context FROM ".DB_SCHEMA.".usercontext WHERE username=:username AND mapset_name=:mapset_name AND id=:id";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array(':username'=>$user->getUsername(), ':mapset_name'=>$this->mapsetName, ':id'=>$contextId));
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		if(!empty($row)) return json_decode($row["context"], true);
-		else return array();
+            if(!\GCApp::getAuthenticationHandler()->isAuthenticated()) {
+                return array();
+            }
+            
+            $sql = "SELECT context FROM ".DB_SCHEMA.".usercontext WHERE username=:username AND mapset_name=:mapset_name AND id=:id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array(
+                ':username'=>\GCApp::getAuthenticationHandler()->getToken()->getUserName(),
+                ':mapset_name'=>$this->mapsetName,
+                ':id'=>$contextId
+            ));
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if(!empty($row)) return json_decode($row["context"], true);
+            else return array();
 	}
     
     function _getMaxExtents() {
-        $user = new GCUser();
         $extents = array();
 		$userGroupFilter = '';
-        if(!$user->isAdmin($this->projectName)) {
+        if(!\GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
 			$userGroup = '';
 			if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
 			$userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';

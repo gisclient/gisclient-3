@@ -6,8 +6,6 @@ require_once ADMIN_PATH.'lib/gcFeature.class.php';
 require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 require_once ROOT_PATH."lib/i18n.php";
 
-use GisClient\Author\Security\User\GCUser;
-
 $db = GCApp::getDB();
 
 // FIXME: generate decent error message and return code
@@ -36,8 +34,6 @@ $layerTitle = $mapConfig['layergroup_title'];
 $layerName = $mapConfig['layergroup_name'];
 //$user = new userApps(array());
 //$user->status = true;
-$user = new GCUser();
-$user->setAuthorizedLayers(array('theme_name'=>$mapConfig['theme_name']));
 
 $scales = explode(',',SCALE);
 $resolutions = array();

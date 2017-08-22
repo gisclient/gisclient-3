@@ -6,8 +6,6 @@ require_once ROOT_PATH . 'lib/GCService.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
-use GisClient\Author\Security\User\GCUser;
-
 $gcService = GCService::instance();
 $gcService->startSession(true);
 
@@ -216,16 +214,19 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && emp
     }
     
     if ($hasPrivateLayers) {
-        $user = new GCUser();
-        $isAuthenticated = $user->isAuthenticated();
+        $authHandler = \GCApp::getAuthenticationHandler();
+        $isAuthenticated = $authHandler->isAuthenticated();
 
         // user does not have an open session, try to log in
         if (!$isAuthenticated &&
             isset($_SERVER['PHP_AUTH_USER']) &&
             isset($_SERVER['PHP_AUTH_PW'])) {
-            if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-                $user->setAuthorizedLayers(array('mapset_name' => $objRequest->getValueByName('map')));
+            if ($authHandler->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
                 $isAuthenticated = true;
+                // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+                GCApp::getLayerAuthorizationChecker()->getLayers(array(
+                    'mapset_name' => $objRequest->getValueByName('map')
+                ));
             }
         }
 
@@ -267,9 +268,7 @@ if (!empty($layersParameter)) {
                 continue;
             }
             
-            $user = new GCUser();
-            $isAuthenticated = $user->isAuthenticated();
-            if (!$isAuthenticated) {
+            if (!\GCApp::getAuthenticationHandler()->isAuthenticated()) {
                 array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
                 continue;
             }

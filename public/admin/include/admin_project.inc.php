@@ -1,14 +1,16 @@
 <?php
 // FILE CHE PERMETTE DI RECUPERARE I GRUPPI ESISTENTI UN' ELENCO ESISTENTE (STANDARD GRUPPI PLONE)
 
-	require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
-	if(!defined('USER_SCHEMA')){
+$authHandler = \GCApp::getAuthenticationHandler();
+
+	if (!defined('USER_SCHEMA')){
 		$msg="<p>Amministratori Locali dei Progetti non previsti</p>";
 		$btn[]="\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Annulla\">";
 		return;
 	}
-	if($_SESSION["USERNAME"]!=SUPER_USER){
+	if (!$authHandler->isAdmin()) {
 		$msg="<p>Impossibile modificare gli amministratori del progetto.<br>Non si dispone dei diritti necessari.</p>";
 		$btn[]="\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Annulla\">";
 		return;
