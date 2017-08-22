@@ -25,6 +25,8 @@
 *
 ******************************************************************************/
 
+namespace GisClient\Author\Utils;
+
 use GisClient\Author\Security\LayerAuthorizationChecker;
 
 define('WMS_LAYER_TYPE',1);
@@ -42,7 +44,7 @@ define('GOOGLE_MAX_RESOLUTION',156543.03390625);
 define('GOOGLE_MIN_ZOOM_LEVEL',0);
 define('GOOGLE_MAX_ZOOM_LEVEL',21);
 
-class gcMap{
+class GWGCMap{
 
     var $db;
     
@@ -92,8 +94,8 @@ class gcMap{
     
     function __construct ($mapsetName, $getLegend = false, $languageId = null){
 
-        $this->db = GCApp::getDB();
-        $this->layerAuthChecker = GCApp::getLayerAuthorizationChecker();
+        $this->db = \GCApp::getDB();
+        $this->layerAuthChecker = \GCApp::getLayerAuthorizationChecker();
 
         $sql = "SELECT mapset.*, ".
             "project.project_name,project.project_title,project.max_extent_scale, ".
@@ -114,10 +116,10 @@ class gcMap{
         }
 
         
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if(!empty($languageId)) {
-            $this->i18n = new GCi18n($row['project_name'], $languageId);
+            $this->i18n = new \GCi18n($row['project_name'], $languageId);
             $row['mapset_title'] = $this->i18n->translate($row['mapset_title'], 'mapset', $row['mapset_name'], 'mapset_title');
             $row['project_title'] = $this->i18n->translate($row['project_title'], 'project', $row['project_name'], 'project_title');
         }
@@ -217,7 +219,7 @@ class gcMap{
         $sql = 'select mapset_name, mapset_title from '.DB_SCHEMA.'.mapset where project_name = :project';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
-        $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $mapConfig['mapsets'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         
         $mapConfig['default_layers'] = $this->defaultLayers;
 
@@ -251,7 +253,7 @@ class gcMap{
 
         // **** Retrieve Layer names/mapserver ID hash 
         // Modifica Giraudi per usare l'id al posto del layer name
-        $mapTmp = ms_newMapobj(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map");
+        $mapTmp = \ms_newMapobj(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map");
         $layersHash = $mapTmp->getAllLayerNames();
         $mapTmp->free();
 
@@ -287,7 +289,7 @@ class gcMap{
                 $mapproxy_url = $mapproxy_url."/".$this->mapsetName;
         }
     
-        $rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $themeMinScale = false; 
         $themeMaxScale = false;
@@ -560,7 +562,7 @@ class gcMap{
                 case YMAP_LAYER_TYPE:
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
-                    $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
+                    $convFact = \GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
                     $layerOptions["type"] = empty($row["layers"]) ? "null" : $row["layers"];
                     $layerOptions["minZoomLevel"] = $this->levelOffset;
                     if ($layerOptions["type"] == "terrain")
@@ -744,14 +746,14 @@ class gcMap{
         $sql = "SELECT theme_name, layergroup_id, layergroup_name, sld FROM " . DB_SCHEMA . ".layergroup INNER JOIN " . DB_SCHEMA . ".theme USING(theme_id) WHERE layergroup_id=? ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($layergroupId));
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         if(!empty($this->i18n)) 
             $row['sld'] = $this->i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
         
         if (trim($row['sld']) != '') {
             if (is_null($this->oMap)) {
-                $this->oMap = ms_newMapobj("../../map/{$this->mapsetName}.map");
+                $this->oMap = \ms_newMapobj("../../map/{$this->mapsetName}.map");
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
                 $ch = curl_init($row['sld']);
@@ -771,7 +773,7 @@ class gcMap{
                 print_debug($sql,null,'maplegend');
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute(array($layergroupId));
-                while($row2 = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                while($row2 = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                     $oLayer = $this->oMap->getLayerByName("{$row['layergroup_name']}.{$row2['layer_name']}");
                     $numClasses = $oLayer->numclasses;
                     for($classIndex=0; $classIndex<$numClasses; $classIndex++) {
@@ -793,7 +795,7 @@ class gcMap{
         print_debug($sqlLegend,null,'maplegend');
         $stmt = $this->db->prepare($sqlLegend);
         $stmt->execute(array($layergroupId));
-        $rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $legendArray = array();
         for($i=0; $i < count($rowset); $i++) {
             if(!empty($this->i18n)) $rowset[$i]['class_title'] = $this->i18n->translate($rowset[$i]['class_title'], 'class', $rowset[$i]['class_id'], 'class_title');
@@ -833,7 +835,7 @@ class gcMap{
         $featureTypes = array();
         $layersWith1n = array();
 
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        while($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if(!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
                 $row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name','field_header'));
@@ -1016,7 +1018,7 @@ class gcMap{
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array(':mapset_name'=>$this->mapsetName));
         $links = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        while($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if(strtoupper(CHAR_SET) != 'UTF-8') 
                 $row["link_name"] = utf8_encode($row["link_name"]);
             $links[$row['layer_id']][] = array('name'=>$row["link_name"],'url'=>$row['link_def'],'width'=>$row['winw'],'height'=>$row['winh']);
@@ -1031,7 +1033,7 @@ class gcMap{
         WHERE layer.queryable=1 AND mapset_name=:mapset_name ORDER BY selgroup_order;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array(':mapset_name'=>$this->mapsetName));
-        $rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $selgroupArray = array();
         for($i=0; $i < count($rowset); $i++) {
             if(!empty($this->i18n)) $rowset[$i]['selgroup_title'] = $this->i18n->translate($rowset[$i]['selgroup_title'], 'selgroup', $rowset[$i]['selgroup_id'], 'selgroup_title');
@@ -1136,14 +1138,14 @@ class gcMap{
         $sql = "SELECT mapset_scales FROM " . DB_SCHEMA . ".mapset WHERE mapset_name=?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         print_debug($sql, null, 'mapoptions');
         if ($row['mapset_scales'] != '') {
             $ret = preg_split("/[" . $this->coordSep . "]+/", $row['mapset_scales']);
         } else if (defined('SCALE')) {
             $ret = preg_split("/[" . $this->coordSep . "]+/", SCALE);
         } else {
-            $ret = GCAuthor::$defaultScaleList;
+            $ret = \GCAuthor::$defaultScaleList;
         }
         return $ret;
     }
@@ -1152,7 +1154,7 @@ class gcMap{
 
         //Fattore di conversione tra dpi e unità della mappa
 
-        $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
+        $convFact = \GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
         $precision = $this->mapsetUM == "dd" ? 10 : 2;
         $aRes = array();
 
@@ -1179,7 +1181,7 @@ class gcMap{
                 } elseif (defined('DEFAULT_SCALE_LIST')) {
                     $scaleList = preg_split("/[" . $this->coordSep . "]+/", DEFAULT_SCALE_LIST);
                 } else {
-                    $scaleList = GCAuthor::$defaultScaleList;
+                    $scaleList = \GCAuthor::$defaultScaleList;
                 }
                 foreach ($scaleList as $scaleValue)
                     $aRes[] = round((float) $scaleValue / $convFact, $precision);
@@ -1214,7 +1216,7 @@ class gcMap{
                 "FROM " . DB_SCHEMA . ".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array(':project_name' => $this->projectName));
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             //me ne faccio qualcosa del nome????
             //$parts = preg_split("/[,]+/",$row['srtext']);
             //$name = trim(substr($parts[0], strpos($parts[0], '[')+1), '"');//VEDERE CON MARCO
@@ -1249,7 +1251,7 @@ class gcMap{
             ':mapset_name' => $this->mapsetName,
             ':id' => $contextId
         ));
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!empty($row)) {
             return json_decode($row["context"], true);
         } else {
