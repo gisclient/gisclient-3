@@ -19,10 +19,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
-define('WMS_LAYER_TYPE', 1);
-define('WMTS_LAYER_TYPE', 2);
-define('WMS_CACHE_LAYER_TYPE', 3);
-define('TMS_LAYER_TYPE', 6);
+
+use GisClient\Author\LayerGroup;
 
 class gcMapfile
 {
@@ -298,7 +296,7 @@ class gcMapfile
                 //LAYER ACCESI DI DEFAULT PER LA CACHE DEL MAPSET INTERO
                 //$defaulMapsetLayers = array();
                 if (!empty($aLayer["layer_name"])) {
-                    if ($aLayer["owstype_id"] == WMS_LAYER_TYPE) {
+                    if ($aLayer["owstype_id"] == LayerGroup::WMS_LAYER_TYPE) {
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array(
                                 "name"=>$aLayer["theme_name"],
@@ -329,7 +327,11 @@ class gcMapfile
                         if (!in_array($aLayer["layergroup_name"], $defaultLayers[$mapName]) && ($aLayer["isbaselayer"]  == 0) && ($aLayer["layergroup_status"] == 1)) {
                             array_push($defaultLayers[$mapName], $aLayer["layergroup_name"]);
                         }
-                    } elseif ($aLayer["owstype_id"] == WMS_CACHE_LAYER_TYPE || $aLayer["owstype_id"] == WMTS_LAYER_TYPE || $aLayer["owstype_id"] == TMS_LAYER_TYPE) {
+                    } elseif (in_array($aLayer["owstype_id"], array(
+                        LayerGroup::WMS_CACHE_LAYER_TYPE,
+                        LayerGroup::WMTS_LAYER_TYPE,
+                        LayerGroup::TMS_LAYER_TYPE
+                    ))) {
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]] = array("name"=>$aLayer["theme_name"], "title"=>$aLayer["theme_title"],"layers"=>array());
                         }

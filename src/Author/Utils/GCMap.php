@@ -28,18 +28,8 @@
 namespace GisClient\Author\Utils;
 
 use GisClient\Author\Security\LayerAuthorizationChecker;
+use GisClient\Author\LayerGroup;
 
-define('WMS_LAYER_TYPE', 1);
-define('WMTS_LAYER_TYPE', 2);
-define('WMS_CACHE_LAYER_TYPE', 3);
-define('VMAP_LAYER_TYPE', 3);
-define('YMAP_LAYER_TYPE', 4);
-define('OSM_LAYER_TYPE', 5);
-define('TMS_LAYER_TYPE', 6);
-define('GMAP_LAYER_TYPE', 7);
-define('BING_LAYER_TYPE', 8);
-define('XYZ_LAYER_TYPE', 9);
-define('WFS_LAYER_TYPE', 10);
 define('GOOGLESRID', 3857);
 define('GOOGLE_MAX_RESOLUTION', 156543.03390625);
 define('GOOGLE_MIN_ZOOM_LEVEL', 0);
@@ -86,10 +76,10 @@ class GCMap
     public $getLegend = false;
 
     public $mapProviders = array(
-        VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
-        YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
-        OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-        GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
+        LayerGroup::VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
+        LayerGroup::YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
+        LayerGroup::OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
+        LayerGroup::GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
 
     public $i18n;
     protected $oMap;
@@ -409,8 +399,8 @@ class GCMap
             }
 
             switch ($layerType) {
-                case WMS_LAYER_TYPE:
-                case WFS_LAYER_TYPE:
+                case LayerGroup::WMS_LAYER_TYPE:
+                case LayerGroup::WFS_LAYER_TYPE:
                     //TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
                     $layerParameters = array();
 
@@ -419,9 +409,9 @@ class GCMap
                     $layerParameters["project"] = $this->projectName;
                     $layerParameters["map"] = $mapsetName; // AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
                     $layerParameters["exceptions"] = (defined('DEBUG') && DEBUG == 1) ? 'xml' : 'blank';
-                    if ($layerType == WMS_LAYER_TYPE) {
+                    if ($layerType == LayerGroup::WMS_LAYER_TYPE) {
                         $layerParameters["format"] = $row["outputformat_mimetype"];
-                    } elseif ($layerType == WFS_LAYER_TYPE) {
+                    } elseif ($layerType == LayerGroup::WFS_LAYER_TYPE) {
                         $layerParameters["outputformat"] = $row["outputformat_mimetype"];
                     }
                     $layerParameters["transparent"] = true;
@@ -567,7 +557,7 @@ class GCMap
                     array_push($this->mapLayers, $aLayer);
                     break;
 
-                case WMS_CACHE_LAYER_TYPE:
+                case LayerGroup::WMS_CACHE_LAYER_TYPE:
                     //TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
                     $layerParameters = array();
 
@@ -614,10 +604,10 @@ class GCMap
                     array_push($this->mapLayers, $aLayer);
                     break;
                     
-                case GMAP_LAYER_TYPE:
-                case BING_LAYER_TYPE:
-                case VMAP_LAYER_TYPE:
-                case YMAP_LAYER_TYPE:
+                case LayerGroup::GMAP_LAYER_TYPE:
+                case LayerGroup::BING_LAYER_TYPE:
+                case LayerGroup::VMAP_LAYER_TYPE:
+                case LayerGroup::YMAP_LAYER_TYPE:
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
                     $convFact = \GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
@@ -640,11 +630,11 @@ class GCMap
                       //$layerOptions["maxRes"] = $maxRes;
                       }
                      */
-                    if (!in_array($layerType, $this->listProviders) && $layerType != BING_LAYER_TYPE) {
+                    if (!in_array($layerType, $this->listProviders) && $layerType != LayerGroup::BING_LAYER_TYPE) {
                         $this->listProviders[] = $layerType;
                     }
                     $layerOptions["type"] = empty($row["layers"]) ? "null" : $row["layers"];
-                    if ($layerType == BING_LAYER_TYPE) {
+                    if ($layerType == LayerGroup::BING_LAYER_TYPE) {
                         $layerOptions["name"] = $aLayer["name"];
                         $layerOptions["key"] = BINGKEY;
                     }
@@ -659,7 +649,7 @@ class GCMap
                     array_push($this->mapLayers, $aLayer);
                     break;
                     
-                case OSM_LAYER_TYPE:
+                case LayerGroup::OSM_LAYER_TYPE:
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
                     if (!in_array($layerType, $this->listProviders)) {
@@ -680,7 +670,7 @@ class GCMap
                     array_push($this->mapLayers, $aLayer);
                     break;
                     
-                case WMTS_LAYER_TYPE:
+                case LayerGroup::WMTS_LAYER_TYPE:
                     $layerParameters = array();
                     $layerParameters["name"] = $aLayer["name"];
                     if (isset($row["url"])) {
@@ -734,7 +724,7 @@ class GCMap
                     array_push($this->mapLayers, $aLayer);
                     break;
                     
-                case TMS_LAYER_TYPE:
+                case LayerGroup::TMS_LAYER_TYPE:
                     if (isset($row["url"])) {
                         $aLayer["url"] = $row["url"];
                         $layerOptions["layername"] = empty($row["layers"]) ? '' : $row["layers"];
@@ -773,7 +763,7 @@ class GCMap
                     array_push($this->mapLayers, $aLayer);
                     break;
                     
-                case XYZ_LAYER_TYPE:
+                case LayerGroup::XYZ_LAYER_TYPE:
                     if ($row["url"]) {
                         $v = preg_split("/[\r\n,]+/", $row["url"]);
                         //$aLayer["url"] = implode ("FFF",$v);
@@ -1222,7 +1212,7 @@ class GCMap
     public function OLMap()
     {
         //FIX PER VERSIONE XJTJS DELLE MAPPE
-        $this->mapProviders[GMAP_LAYER_TYPE].="&callback=GisClient.initMapset";
+        $this->mapProviders[LayerGroup::GMAP_LAYER_TYPE].="&callback=GisClient.initMapset";
         //CONFIGURAZIONE OPENLAYERS MAP
         $aLayerText = array();
         foreach ($this->mapConfig["layers"] as $layer) {
@@ -1241,7 +1231,7 @@ class GCMap
         //$this->mapConfig["mapOptions"]["resolutions"] = array_slice($this->mapConfig["mapOptions"]["mapResolutions"],$this->mapConfig["mapOptions"]["minZoomLevel"],$this->mapConfig["mapOptions"]["numZoomLevels"]);
         $jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
         $jsText .= 'GisClient.mapset.push({' . $mapsetOptions . ',"map":' . json_encode($this->mapConfig["mapOptions"]) . ',"layers":[' . implode(',', $aLayerText) . '],"featureTypes":' . json_encode($this->mapConfig["featureTypes"]) . '});';
-        if ($this->mapProviders[GMAP_LAYER_TYPE] && $loader) {
+        if ($this->mapProviders[LayerGroup::GMAP_LAYER_TYPE] && $loader) {
             $jsText .= 'GisClient.loader=true;';
         }
         return $jsText;

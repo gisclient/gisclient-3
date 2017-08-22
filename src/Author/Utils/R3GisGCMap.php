@@ -28,15 +28,8 @@
 namespace GisClient\Author\Utils;
 
 use GisClient\Author\Security\LayerAuthorizationChecker;
+use GisClient\Author\LayerGroup;
 
-define('WMS_LAYER_TYPE', 1);
-define('GMAP_LAYER_TYPE', 7);
-define('VMAP_LAYER_TYPE', 3);
-define('YMAP_LAYER_TYPE', 4);
-define('OSM_LAYER_TYPE', 5);
-define('TMS_LAYER_TYPE', 6);
-define('BING_LAYER_TYPE', 8);
-define('WMTS_LAYER_TYPE', 9);
 define('GOOGLESRID', 3857);
 
 if (!defined('SERVICE_MAX_RESOLUTION')) {
@@ -85,10 +78,10 @@ class R3GisGCMap
     private $onlyPublicLayers;
 
     public $mapProviders = array(
-            VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
-            YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
-            OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-            GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?callback=GisClient.initMapset&sensor=false");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
+            LayerGroup::VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
+            LayerGroup::YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
+            LayerGroup::OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
+            LayerGroup::GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?callback=GisClient.initMapset&sensor=false");//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
     
     private $i18n;
     protected $oMap;
@@ -341,7 +334,7 @@ class R3GisGCMap
                 //if($row['hide'] == 1) $aLayers[$themeName]['hide'] = 1;
             }
 
-            if ($layerType == WMS_LAYER_TYPE) {
+            if ($layerType == LayerGroup::WMS_LAYER_TYPE) {
                 $layerUrl = isset($row["url"])?$row["url"]:$ows_url;
                 $layerParameters=array();
                 $layerParameters["project"] = $this->projectName;
@@ -439,17 +432,21 @@ class R3GisGCMap
                     
                     $aLayers[$themeName][$layergroupName]["options"] = $layerOptions;
                 }
-            } elseif ($layerType == GMAP_LAYER_TYPE || $layerType == BING_LAYER_TYPE || $layerType == VMAP_LAYER_TYPE || $layerType == YMAP_LAYER_TYPE) {//Google VE Yahoo
+            } elseif (in_array($layerType, array(
+                LayerGroup::GMAP_LAYER_TYPE,
+                LayerGroup::BING_LAYER_TYPE,
+                LayerGroup::VMAP_LAYER_TYPE,
+                LayerGroup::YMAP_LAYER_TYPE))) {//Google VE Yahoo
                 $this->allOverlays = 0;
                 $this->fractionalZoom = 0;
                 
-                if (!in_array($layerType, $this->listProviders) && $layerType!=BING_LAYER_TYPE) {
+                if (!in_array($layerType, $this->listProviders) && $layerType!=LayerGroup::BING_LAYER_TYPE) {
                     $this->listProviders[] = $layerType;
                 }
 
                 $layerOptions["type"] = empty($row["layers"])?"null":$row["layers"];
-                $layerOptions["minZoomLevel"] = SERVICE_MIN_ZOOM_LEVEL;//($layerType == VMAP_LAYER_TYPE)?1:0;//max($this->serviceProviderMinZoomLevel, $this->_array_index($this->serviceProviderResolutions,$this->maxResolution));
-                $layerOptions["maxZoomLevel"] = SERVICE_MAX_ZOOM_LEVEL;//($layerType == VMAP_LAYER_TYPE)?22:23;//min(isset($this->serviceProviderMaxZoomLevel[$row["layers"]])?$this->serviceProviderMaxZoomLevel[$row["layers"]]:22, $this->_array_index($this->serviceProviderResolutions,$this->minResolution)); //Aggiungo 2 per usare le scale
+                $layerOptions["minZoomLevel"] = SERVICE_MIN_ZOOM_LEVEL;//($layerType == LayerGroup::VMAP_LAYER_TYPE)?1:0;//max($this->serviceProviderMinZoomLevel, $this->_array_index($this->serviceProviderResolutions,$this->maxResolution));
+                $layerOptions["maxZoomLevel"] = SERVICE_MAX_ZOOM_LEVEL;//($layerType == LayerGroup::VMAP_LAYER_TYPE)?22:23;//min(isset($this->serviceProviderMaxZoomLevel[$row["layers"]])?$this->serviceProviderMaxZoomLevel[$row["layers"]]:22, $this->_array_index($this->serviceProviderResolutions,$this->minResolution)); //Aggiungo 2 per usare le scale
                 $layerOptions["gc_id"] = $layerId;
                 $layerOptions["group"] = $layerTreeGroup;
                 $aLayers[$themeName]["title"] = $themeTitle;
@@ -459,7 +456,7 @@ class R3GisGCMap
                 if ($row["status"] == 1) {
                     $this->activeBaseLayer = $layerId;
                 }
-            } elseif ($layerType==OSM_LAYER_TYPE) {//OSM
+            } elseif ($layerType==LayerGroup::OSM_LAYER_TYPE) {//OSM
                 $this->allOverlays = 0;
                 $this->fractionalZoom = 0;
                 if (!in_array($layerType, $this->listProviders)) {
@@ -477,7 +474,7 @@ class R3GisGCMap
                 if ($row["status"] == 1) {
                     $this->activeBaseLayer = $layerId;
                 }
-            } elseif ($layerType==TMS_LAYER_TYPE) {//TMS
+            } elseif ($layerType==LayerGroup::TMS_LAYER_TYPE) {//TMS
                             $layerOptions["layers"] = $row['layers'];
 
                             
@@ -515,7 +512,7 @@ class R3GisGCMap
                 $aLayers[$themeName][$layergroupName]["title"] = $layergroupTitle;
                 $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
                 $aLayers[$themeName][$layergroupName]["options"]= $layerOptions;
-            } elseif ($layerType==WMTS_LAYER_TYPE) {//TMS
+            } elseif ($layerType==LayerGroup::WMTS_LAYER_TYPE) {//TMS
                             $layerOptions["layers"] = $row['layers'];
 
                             
@@ -995,7 +992,7 @@ class R3GisGCMap
         }
         $jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
         $jsText .= 'GisClient.mapset.push({'.$mapsetOptions.',"map":{'.implode(',', $mapOptions).',layers:['.implode(',', $aLayerText).']}});';
-        if ($this->mapProviders[GMAP_LAYER_TYPE] && $loader) {
+        if ($this->mapProviders[LayerGroup::GMAP_LAYER_TYPE] && $loader) {
             $jsText .= 'GisClient.loader=true;';
         }
         return $jsText;
@@ -1005,42 +1002,42 @@ class R3GisGCMap
     {
         switch ($aLayer["type"]) {
         
-            case WMS_LAYER_TYPE:
+            case LayerGroup::WMS_LAYER_TYPE:
                 return 'new OpenLayers.Layer.WMS("'.$aLayer["title"].'","'.$aLayer["url"].'",'.json_encode($aLayer["parameters"]).','.json_encode($aLayer["options"]).')';
-            case GMAP_LAYER_TYPE:
+            case LayerGroup::GMAP_LAYER_TYPE:
                 if ($this->mapsetSRID == GOOGLESRID) {
                     //return 'new OpenLayers.Layer.Google("'.$aLayer["title"].'",{type:'.$aLayer["options"]["type"].',sphericalMercator:true,group:"'.$aLayer["options"]["group"].'"})';
                     return 'new OpenLayers.Layer.Google("'.$aLayer["title"].'",{"type":"'.$aLayer["options"]["type"].'","sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
                 }
                 break;
-            case VMAP_LAYER_TYPE:
+            case LayerGroup::VMAP_LAYER_TYPE:
                 if ($this->mapsetSRID == GOOGLESRID) {
                     //return 'new OpenLayers.Layer.VirtualEarth("'.$aLayer["title"].'",{type:'.$aLayer["options"]["type"].',sphericalMercator:true,group:"'.$aLayer["options"]["group"].'"})';
                     return 'new OpenLayers.Layer.VirtualEarth("'.$aLayer["title"].'",{"type":'.$aLayer["options"]["type"].',"sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
                 }
                 break;
-            case BING_LAYER_TYPE:
+            case LayerGroup::BING_LAYER_TYPE:
                 if ($this->mapsetSRID == GOOGLESRID) {
                     //return 'new OpenLayers.Layer.Bing({"name":"'.$aLayer["title"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
                     return 'new OpenLayers.Layer.Bing({"name":"'.$aLayer["title"].'","type":"'.$aLayer["options"]["type"].'","key":"'.BINGKEY.'","sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
                 }
 
                 break;
-            case YMAP_LAYER_TYPE:
+            case LayerGroup::YMAP_LAYER_TYPE:
                 if ($this->mapsetSRID == GOOGLESRID) {
                     //return 'new OpenLayers.Layer.Yahoo("'.$aLayer["title"].'",{type:'.$aLayer["options"]["type"].',sphericalMercator:true,group:"'.$aLayer["options"]["group"].'"})';
                     return 'new OpenLayers.Layer.Yahoo("'.$aLayer["title"].'",{"type":'.$aLayer["options"]["type"].',"sphericalMercator":true,"minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"gc_id":"'.$aLayer["options"]["gc_id"].'","group":"'.$aLayer["options"]["group"].'"})';
                 }
                 break;
-            case OSM_LAYER_TYPE:
+            case LayerGroup::OSM_LAYER_TYPE:
                 if ($this->mapsetSRID == GOOGLESRID) {
                     return 'new OpenLayers.Layer.OSM("'.$aLayer["title"].'",null,'.json_encode($aLayer["options"]).')';
                 }
                 break;
-            case TMS_LAYER_TYPE:
+            case LayerGroup::TMS_LAYER_TYPE:
                 return 'new OpenLayers.Layer.TMS("'.$aLayer["title"].'","'.$aLayer["url"].'/",{"visibility":'.(!empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.(empty($aLayer["options"]["isBaseLayer"])?'false':'true').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"serviceVersion":"'.$aLayer["options"]["serviceVersion"].'","owsurl":"'.$aLayer["options"]["owsurl"].'","type":"'.$aLayer["options"]["type"].'","zoomOffset":'.$aLayer["options"]["zoomOffset"].',"maxExtent":new OpenLayers.Bounds('.implode(",", $aLayer["options"]["maxExtent"]).'),"tileOrigin":new OpenLayers.LonLat('.$aLayer["options"]["maxExtent"][0].','.$aLayer["options"]["maxExtent"][1].'),"gc_id":"'.$aLayer["options"]["gc_id"].'","minZoomLevel":'.$aLayer["options"]["minZoomLevel"].',"maxZoomLevel":'.$aLayer["options"]["maxZoomLevel"].',"group":"'.$aLayer["options"]["group"].'"})';
-            case WMTS_LAYER_TYPE:
-                throw new Exception("wmts layer not supported");
+            case LayerGroup::WMTS_LAYER_TYPE:
+                throw new \Exception("wmts layer not supported");
         }
     }
     
