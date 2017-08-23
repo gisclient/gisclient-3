@@ -7,12 +7,11 @@ function print_debug($t="",$db=NULL,$file=NULL){
 		else{
 			if(!is_dir(DEBUG_DIR))	mkdir(DEBUG_DIR);
 		}
-			$uid=(empty($_SESSION["USER_ID"]))?"":($_SESSION["USER_ID"]."_");
 			$data=date('j-m-y'); 
 			$ora=date("H:i:s");
-			if (!$file) $nomefile=DEBUG_DIR.$uid."standard.debug";
+			if (!$file) $nomefile=DEBUG_DIR."standard.debug";
 			else
-				$nomefile=DEBUG_DIR.$uid.$file.".debug";
+				$nomefile=DEBUG_DIR.$file.".debug";
 			$size=(file_exists($nomefile))?filesize($nomefile):0;
 			
 			$f=($size>100000)?(fopen($nomefile,"w+")):(fopen($nomefile,"a+"));
