@@ -14,10 +14,7 @@ if(!$save->hasErrors && $save->action=="salva"){
 	$xml = new ParseXml();
 	// Fare il controllo se è un URL ben formata.
 	$pageurl=$ris["catalog_path"]."?SERVICE=WMS&REQUEST=GetCapabilities";
-	if($_SESSION["AUTHOR"]["WMS"]){
-		$data=$_SESSION["AUTHOR"]["WMS"];
-	}
-	elseif($xml->LoadRemote($pageurl, 3)){
+	if($xml->LoadRemote($pageurl, 3)){
 		$data = $xml->ToArray();
 	}
 	else{
@@ -69,7 +66,5 @@ if(!$save->hasErrors && $save->action=="salva"){
 			}
 		}
 	}
-	$_SESSION["AUTHOR"]["WMS"]=null;
 	
 }
-?>
