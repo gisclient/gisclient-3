@@ -3,10 +3,13 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 
+use Symfony\Component\HttpFoundation\Request;
+use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+
 $gcService = GCService::instance();
 $gcService->startSession();
 
-$authHandler = \GCApp::getAuthenticationHandler();
+$authHandler = \GCApp::getAuthenticationHandler(null, new BasicAuthAuthenticator());
 
 $debugTinyOWS = defined('DEBUG') && DEBUG == 1;
 
@@ -82,7 +85,8 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 		header('WWW-Authenticate: Basic realm="Gisclient"');
 		header('HTTP/1.0 401 Unauthorized');
 	} else {
-		if ($authHandler->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+            $authHandler->login(Request::createFromGlobals());
+		if ($authHandler->isAuthenticated()) {
                     $authHandler->setAuthorizedLayers(array(
                         'project_name' => $projectName
                     ));

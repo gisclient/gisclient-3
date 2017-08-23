@@ -6,6 +6,9 @@ require_once ROOT_PATH . 'lib/GCService.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
+use Symfony\Component\HttpFoundation\Request;
+use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+
 $gcService = GCService::instance();
 $gcService->startSession(true);
 
@@ -214,20 +217,13 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && emp
     }
     
     if ($hasPrivateLayers) {
-        $authHandler = \GCApp::getAuthenticationHandler();
+        $authHandler = \GCApp::getAuthenticationHandler(null, new BasicAuthAuthenticator());
         $isAuthenticated = $authHandler->isAuthenticated();
 
         // user does not have an open session, try to log in
-        if (!$isAuthenticated &&
-            isset($_SERVER['PHP_AUTH_USER']) &&
-            isset($_SERVER['PHP_AUTH_PW'])) {
-            if ($authHandler->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-                $isAuthenticated = true;
-                // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
-                GCApp::getLayerAuthorizationChecker()->getLayers(array(
-                    'mapset_name' => $objRequest->getValueByName('map')
-                ));
-            }
+        if (!$isAuthenticated) {
+            $authHandler->login(Request::createFromGlobals());
+            $isAuthenticated = $authHandler->isAuthenticated();
         }
 
         // user could not even log in, send correct headers and exit
@@ -238,6 +234,11 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && emp
             echo "<h1>Authorization required</h1>";
             exit(0);
         }
+        
+        // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+        GCApp::getLayerAuthorizationChecker()->getLayers(array(
+            'mapset_name' => $objRequest->getValueByName('map')
+        ));
     }
 }
 

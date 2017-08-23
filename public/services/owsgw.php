@@ -3,6 +3,10 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+use GisClient\Author\Security\Guard\TrustedAuthenticator;
+use Symfony\Component\HttpFoundation\Request;
+
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
 	include ("./include/putrequest.php");
@@ -152,15 +156,18 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 		}
 	}
 	if($hasPrivateLayers) {
-            $authHandler = \GCApp::getAuthenticationHandler();
             if(!empty($_REQUEST['PRINTSERVICE'])) {
-                $authHandler->login('printservice', md5('printservice$'));
+                $guard = new TrustedAuthenticator('printservice', 'printservice$');
+                $authHandler = \GCApp::getAuthenticationHandler(null, $guard);
+                $authHandler->login(Request::createFromGlobals());
             } else {
                 if (!isset($_SERVER['PHP_AUTH_USER'])) {
                         header('WWW-Authenticate: Basic realm="Gisclient"');
                         header('HTTP/1.0 401 Unauthorized');
                 } else {
-                     $authHandler->login($_SERVER['PHP_AUTH_USER'], md5($_SERVER['PHP_AUTH_PW']));
+                    $guard = new BasicAuthAuthenticator();
+                    $authHandler = \GCApp::getAuthenticationHandler(null, $guard);
+                    $authHandler->login(Request::createFromGlobals());
                 }
 
             }
