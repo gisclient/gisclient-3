@@ -66,7 +66,7 @@ class LayerAuthorizationChecker
         
         $groupFilter = '';
         if (empty($filter['show_as_public'])) {
-            $isAdmin = ($this->user->isAdmin || $this->user->isAdmin($projectName));
+            $isAdmin = ($this->user->isAdmin() || $this->user->isAdmin($projectName));
         } else {
             $isAdmin = false;
         }
