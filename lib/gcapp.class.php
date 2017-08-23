@@ -2,6 +2,8 @@
 
 use GisClient\Author\Security\AuthenticationHandler;
 use GisClient\Author\Security\LayerAuthorizationChecker;
+use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
+use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
 use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
 use GisClient\Author\Security\User\UserProviderInterface;
@@ -72,11 +74,17 @@ class GCApp
          * 
          * @return AuthenticationHandler
          */
-        public static function getAuthenticationHandler()
+        public static function getAuthenticationHandler(UserProviderInterface $userProvider = null, GuardAuthenticatorInterface $guard = null)
         {
             if(empty(self::$authenticationHandler)) {
                 $service = GCService::instance();
-                self::$authenticationHandler = new AuthenticationHandler($service->getSession(), self::getUserProvider());
+                if (is_null($userProvider)) {
+                    $userProvider = self::getUserProvider();
+                }
+                if (is_null($guard)) {
+                    $guard = new UsernamePasswordAuthenticator();
+                }
+                self::$authenticationHandler = new AuthenticationHandler($service->getSession(), $userProvider, $guard);
             }
             return self::$authenticationHandler;
         }

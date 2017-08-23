@@ -4,7 +4,7 @@ namespace GisClient\Author\Security;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
+use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Token\PreAuthenticationToken;
 use GisClient\Author\Security\Token\SessionTokenStorage;
 use GisClient\Author\Security\Token\TokenInterface;
@@ -29,15 +29,23 @@ class AuthenticationHandler
     private $userProvider;
     
     /**
+     * Guard
+     * 
+     * @var GuardAuthenticatorInterface 
+     */
+    private $guard;
+    
+    /**
      * Constructor
      * 
      * @param SessionInterface $session
      * @param UserProviderInterface $userProvider
      */
-    public function __construct(SessionInterface $session, UserProviderInterface $userProvider)
+    public function __construct(SessionInterface $session, UserProviderInterface $userProvider, GuardAuthenticatorInterface $guard)
     {
         $this->tokenStorage = new SessionTokenStorage($session);
         $this->userProvider = $userProvider;
+        $this->guard = $guard;
     }
     
     /**
@@ -47,18 +55,17 @@ class AuthenticationHandler
      */
     public function login(Request $request)
     {
-        $guard = new UsernamePasswordAuthenticator($this->tokenStorage);
-        $token = $guard->getToken($request);
+        $token = $this->guard->getToken($request);
         
         if (null !== $token) {
-            $user = $guard->getUser($token, $this->userProvider);
+            $user = $this->guard->getUser($token, $this->userProvider);
             
             // check credentials
-            if (!$guard->checkCredentials($token, $user)) {
+            if (!$this->guard->checkCredentials($token, $user)) {
                 throw new \Exception('Invalid user username/password');
             }
             
-            $authToken = $guard->createAuthenticatedToken($user);
+            $authToken = $this->guard->createAuthenticatedToken($user);
             $this->tokenStorage->setToken($authToken);
         }
     }
