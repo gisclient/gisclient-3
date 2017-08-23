@@ -114,24 +114,20 @@ class Tabella{
 		
 		//pulsante di menù
 		$mode = null;	
-		if (!isset($_SESSION["PERMESSI"]) || $_SESSION["PERMESSI"]<4){
+		
 			if ($this->button_menu=="modifica"){
-				if (!isset($_SESSION["PERMESSI"]) || $_SESSION["PERMESSI"]<=3 ){
 					$mode = "edit";		
 					$butt = GCAuthor::t('button_edit');
-				}
 			}
 			elseif ($this->button_menu=="nuovo"){
-				if (!isset($_SESSION["PERMESSI"]) || $_SESSION["PERMESSI"]<=3){
 					$mode="new";
 					$butt = GCAuthor::t('button_new');
-				}
 			}
 			elseif($this->button_menu=="valida"){
 				$mode="edit";
 				$butt = GCAuthor::t('button_edit');
 			}
-		}
+		
 		
 		$riga_titolo="<b>$titolo</b>";
 		if (isset($butt))

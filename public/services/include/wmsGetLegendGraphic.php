@@ -105,7 +105,9 @@ if($objRequest->getvaluebyname('layer')){
                 CURLOPT_URL => $urlWmsRequest, 
                 CURLOPT_HEADER => 0, 
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_BINARYTRANSFER => true
+                CURLOPT_BINARYTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_SSL_VERIFYHOST => 0
             ); 
             $ch = curl_init(); 
             curl_setopt_array($ch, $options);

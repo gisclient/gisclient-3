@@ -167,10 +167,6 @@ class GCEditFeature {
 	
 	private function _checkPermission($project, $map, $featureType) {
 		return true;
-		if(!isset($_SESSION)) {
-            if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
-            session_start();
-        }
 		if(empty($_SESSION['GISCLIENT_USER_LAYER'])) return false;
 		$layers = $_SESSION['GISCLIENT_USER_LAYER'];
 		if(!isset($layers[$project]) || !isset($layers[$project][$map]) || !isset($layers[$project][$map][$featureType])) return false;

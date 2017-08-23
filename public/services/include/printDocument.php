@@ -193,7 +193,8 @@ class printDocument {
 
         $pdfFile = runFOP($dom, $xslFile, array('tmp_path'=>$this->options['TMP_PATH'], 'prefix'=>'GCPrintMap-', 'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'));
         $pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
-        $this->deleteOldTmpFiles();
+
+		$this->deleteOldTmpFiles();
         return $pdfFile;
     }
 
@@ -362,7 +363,9 @@ class printDocument {
             CURLOPT_FILE => $fp,
             CURLOPT_HEADER => 0,
             CURLOPT_FOLLOWLOCATION => 1,
-            CURLOPT_TIMEOUT => 60
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0,
             );
         curl_setopt_array($ch, $options);
 
@@ -400,7 +403,8 @@ class printDocument {
         
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         $this->wmsList = $mapImage->getWmsList();
-        $this->imageFileName = $mapImage->getImageFileName();
+
+		$this->imageFileName = $mapImage->getImageFileName();
     }
     
     private function buildDOM($absoluteUrls = false) {
@@ -511,6 +515,9 @@ class printDocument {
         } else if (!preg_match("/^(http|https):\/\//", $url, $matches)) {
             throw new Exception('Undefined PRINT_RELATIVE_URL_PREFIX, cannot add to '.$url);
         }
+		if (defined('PRINT_FORCE_HTTP') && PRINT_FORCE_HTTP == true) {
+		    $url = str_replace('https://', 'http://', $url);
+		}
         return $url;
     }
     

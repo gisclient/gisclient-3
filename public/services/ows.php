@@ -200,7 +200,6 @@ if (!empty($_REQUEST['GCFILTERS'])) {
     }
 }
 
-$cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;
 if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
     $hasPrivateLayers = false;
     $layersArray = array();
@@ -375,16 +374,7 @@ if (substr($contenttype, 0, 6) == 'image/') {
     }
 
     // Cache part 2
-    if (!$hasDynamicLayer && $cacheExpireTimeout > 0 && $cacheExpireTimeout > time()) {
-        $cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTLOpen) . " GMT";
-        $serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";
-        header("Cache-Control: public, max-age={$owsCacheTTLOpen}, pre-check={$owsCacheTTLOpen} ");
-        header("Pragma: public");
-        header("Date: {$serverTime}");
-        header("Cache-Control: max-age={$owsCacheTTLOpen}");
-        header("Last-Modified: {$serverTime}");
-        header("Expires: {$cacheTime}");
-    } else if ($owsCacheTTL > 0) {
+    if ($owsCacheTTL > 0) {
         // OL FIX: Prevent multiple request for the same layer. Fixed setting cache to 60 sec
         $cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTL) . " GMT";
         $serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";

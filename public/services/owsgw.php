@@ -2,10 +2,14 @@
 //define('DEBUG', true);
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
+require_once ROOT_PATH . 'lib/GCService.php';
 
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Security\Guard\TrustedAuthenticator;
 use Symfony\Component\HttpFoundation\Request;
+
+$gcService = GCService::instance();
+$gcService->startSession();
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
 if(($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'],'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE'){
@@ -24,6 +28,8 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 	
 	curl_setopt($curl, CURLOPT_POSTFIELDS, array('file' => '@/tmp/postrequest.xml'));
 	$return = curl_exec($curl);
@@ -76,7 +82,9 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-    curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+    curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); 
     $sldContent = curl_exec($ch);
     curl_close($ch);
     
@@ -133,16 +141,6 @@ if($objRequest->getValueByName('service') == 'WMS') {
 	$layersParameter = $objRequest->getValueByName('typename');
 }
 
-// avvio la sessione
-if(!isset($_SESSION)) {
-	if(isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
-		session_id($_REQUEST['GC_SESSION_ID']);
-	}
-	if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
-	session_start();
-}
-
-$cacheExpireTimeout = isset($_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT']) ? $_SESSION['GC_SESSION_CACHE_EXPIRE_TIMEOUT'] : null;
 if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
 	$hasPrivateLayers = false;
 	if(!empty($layersParameter)) {
@@ -212,32 +210,6 @@ if(!empty($layersParameter)) {
 			if(!checkLayer($projectName, $objRequest->getvaluebyname('service'), $layer->name)) {
 				array_push($layersToRemove, $layer->name); // al quale l'utente non ha accesso
 				continue;
-			}
-		}
-		$n = 0;
-		// se ci sono filtri definiti per il layer, li ciclo
-		while($authFilter = $layer->getMetaData('gc_authfilter_'.$n)) {
-			if(empty($authFilter)) break; // se l'ennesimo filtro +1 non è definito, interrompo il ciclo
-			$required = $layer->getMetaData('gc_authfilter_'.$n.'_required');
-			$n++;
-			// se il filtro è obbligatorio
-			if(!empty($required)) {
-				if(!isset($_SESSION['AUTHFILTERS'][$authFilter])) { // e se l'utente non ha quel filtro definito
-					array_push($layersToRemove, $layer->name); // rimuovo il layer
-					break;
-				}
-			}
-			// se ci sono filtri definiti
-			if(isset($_SESSION['AUTHFILTERS'][$authFilter])) {
-				$filter = $layer->getFilterString();
-				$filter = trim($filter, '"');
-				if(!empty($filter)) { // se esiste già un filtro lo aggiungo
-					$filter = $filter.' AND '.$_SESSION['AUTHFILTERS'][$authFilter];
-				} else {
-					$filter = $_SESSION['AUTHFILTERS'][$authFilter];
-				}
-				// aggiorno il FILTER del layer
-				$layer->setFilter($filter);
 			}
 		}
 		
@@ -334,16 +306,7 @@ if ($ctt[0] == 'image') {
 	header('Content-type: image/'. $ctt[1]); 
     
     // Cache part 2
-	if (!$hasDynamicLayer && $cacheExpireTimeout > 0 && $cacheExpireTimeout > time()) {
-		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTLOpen) . " GMT";
-		$serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";
-		header("Cache-Control: public, max-age={$owsCacheTTLOpen}, pre-check={$owsCacheTTLOpen}	");
-		header("Pragma: public");
-        header("Date: {$serverTime}");
-		header("Cache-Control: max-age={$owsCacheTTLOpen}");
-		header("Last-Modified: {$serverTime}");
-		header("Expires: {$cacheTime}");
-	} else if ($owsCacheTTL > 0) {
+	if ($owsCacheTTL > 0) {
 		// OL FIX: Prevent multiple request for the same layer. Fixed setting cache to 60 sec
 		$cacheTime = gmdate("D, d M Y H:i:s", time() + $owsCacheTTL) . " GMT";
 		$serverTime = gmdate("D, d M Y H:i:s", time()) . " GMT";

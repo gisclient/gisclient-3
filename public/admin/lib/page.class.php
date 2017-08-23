@@ -349,19 +349,6 @@
 			foreach($this->array_levels as $key=>$val) if($val["parent"]==$this->livello) $out[]=$val;
 			return $out;
 		}
-		function writeAction($mode){
-			$lev=$this->livello;
-			require_once ADMIN_PATH."lib/filesystem.php";
-			$dir=ADMIN_PATH."export/";
-			$tmp=elenco_file($dir,"sql");
-			for($i=0;$i<count($tmp);$i++){
-				$list=file($dir.$tmp[$i]);
-				if (strtolower(trim($list[1]))=="--type:$lev"){
-					$rows[]="<tr><td><input type=\radio\"></td><td></td><td></td></tr>";
-				}
-			}
-			include ADMIN_PATH."inc/import.php";
-		}
 		function setErrors($err){
 			foreach($err as $key=>$val){
 				$this->errors[$key]=$val;

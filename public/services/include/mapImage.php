@@ -47,20 +47,19 @@ class mapImage {
         $this->db = GCApp::getDB();
         $this->srid = $srid;
         $this->wmsMergeUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->wmsMergeUrl);
-        
         if($this->options['scale_mode'] == 'user') {
             if(empty($this->options['center']) || empty($this->options['scale'])) {
                 throw new Exception('Missing center or scale');
             }
-            $this->extent = $this->calculateExtent($this->options['center'], $imageSize, $this->options['dpi'], $this->options['scale']);
+            $this->extent = $this->calculateExtent($this->options['center'], $this->imageSize, $this->options['dpi'], $this->options['scale']);
             $this->scale = $this->options['scale'];
         } else {
             if(empty($this->options['extent'])) {
                 throw new Exception('Missing extent');
             }
             $this->extent = $this->adaptExtentToSize($this->options['extent'], $this->imageSize);
-            $paperSize = $this->paperSize($imageSize, $this->options['dpi']);
-            $this->scale = $this->extent[0] / $paperSize[0];
+            $paperSize = $this->paperSize($this->imageSize, $this->options['dpi']);
+            $this->scale = intval(abs($this->extent[2] - $this->extent[0]) / $paperSize[0]);
         }
         
         if(!empty($this->options['vectors'])) {
@@ -215,13 +214,17 @@ class mapImage {
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
 
+        // SS: 2017-16-15: Don't check SSL certificate
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         if (false === ($mapImage = curl_exec($ch))) {
-            throw new Exception("Could not curl_exec" . curl_error($ch));
+            throw new Exception("Could not curl_exec [POST on {$this->wmsMergeUrl}]: " . curl_error($ch));
         }
 
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
             throw new RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
         }
+
         if(!$saveImage) {
             $filename = $this->options['TMP_PATH'].$this->imageFileName;
             if (false === file_put_contents($filename, $mapImage)) {
