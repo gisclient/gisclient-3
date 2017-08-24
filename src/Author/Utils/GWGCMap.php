@@ -428,9 +428,8 @@ class GWGCMap
                     // Layer impostati sul layergroup
                     if (!empty($row['layers'])) {
                         $aLayer["parameters"]["layers"] = preg_split("/[,]+/", $row['layers']);
-                    }
-                    //Tema singola immagine: passo tutti i layergroupname come layer e prendo le impostazioni di base dal primo wms
-                    elseif ($row["theme_single"] == 1) {
+                    } elseif ($row["theme_single"] == 1) {
+                        //Tema singola immagine: passo tutti i layergroupname come layer e prendo le impostazioni di base dal primo wms
                         $idx = $this->_getThemeLayerIndex($themeName);
                         $newFlag = false;
 
@@ -458,10 +457,8 @@ class GWGCMap
                                 array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
                             }
                             $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder);
-                        }
-
-                        //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
-                        else {
+                        } else {
+                            //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
                             $nodes = array();
                             $layers = array();
                             foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
@@ -508,16 +505,11 @@ class GWGCMap
                         array_push($this->mapLayers[$idx]["nodes"], $node);
 
                         continue;
-                    }
-
-
-                    //Layergroup singola immagine: passo solo il layergroupname
-                    elseif ($row["layergroup_single"] == 1) {
+                    } elseif ($row["layergroup_single"] == 1) {
+                        //Layergroup singola immagine: passo solo il layergroupname
                         $aLayer["parameters"]["layers"] = array($layergroupName);
-                    }
-
-                    //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
-                    else {
+                    } else {
+                        //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
                         $aLayer["parameters"]["layers"] = array();
                         $aLayer["nodes"] = array();
                         $hidden = true;
@@ -811,7 +803,7 @@ class GWGCMap
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-                curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 $sldContent = curl_exec($ch);
@@ -990,11 +982,11 @@ class GWGCMap
                 //AGGIUNGO IL CAMPO GEOMETRIA COME PRIMO CAMPO
                 if (empty($featureTypes[$index][$typeName]["properties"])) {
                     $featureTypes[$index][$typeName]["properties"] = array(
-                    array(
-                        "name"=>$row['data_geom'],
-                        "type"=>$wfsGeometryType[$row['data_type']]
-                    )
-                );
+                        array(
+                            "name"=>$row['data_geom'],
+                            "type"=>$wfsGeometryType[$row['data_type']]
+                        )
+                    );
                 }
 
                 if ($row['data_unique'] == $fieldName) {
@@ -1221,7 +1213,7 @@ class GWGCMap
             case "TMS":
                 $aLayer["options"]["group"] = $aLayer["options"]["theme"];
                 return 'new OpenLayers.Layer.TMS("'.$aLayer["name"].'","'.$aLayer["url"].'/",{"visibility":'.(empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.($aLayer["options"]["isBaseLayer"]?'true':'false').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"type":"'.$aLayer["options"]["type"].'","tileOrigin":new OpenLayers.LonLat('.implode(",", $aLayer["options"]["tileOrigin"]).'),"zoomOffset":'.$aLayer["options"]["zoomOffset"].',"group":"'.$aLayer["options"]["group"].'"})';
-            }
+        }
     }
     
     public function _getScaleList()

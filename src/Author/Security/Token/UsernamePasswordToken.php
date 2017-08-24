@@ -8,28 +8,28 @@ class UsernamePasswordToken implements TokenInterface
 {
     /**
      * User
-     * 
-     * @var mixed 
+     *
+     * @var mixed
      */
     private $user;
     
     /**
      * Credentials
-     * 
-     * @var mixed 
+     *
+     * @var mixed
      */
     private $credentials;
     
     /**
      * Flag to indicated if the token is authenticated
-     * 
-     * @var boolean 
+     *
+     * @var boolean
      */
     private $authenticated = false;
     
     /**
      * Constructor
-     * 
+     *
      * @param string $user
      * @param string $credentials
      */

@@ -13,15 +13,15 @@ class TrustedAuthenticator implements GuardAuthenticatorInterface
 {
     /**
      * Username
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private $username;
     
     /**
      * Password
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private $password;
     

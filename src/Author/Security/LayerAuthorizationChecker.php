@@ -8,21 +8,21 @@ class LayerAuthorizationChecker
 {
     /**
      * Database
-     * 
-     * @var \PDO 
+     *
+     * @var \PDO
      */
     private $db;
     
     /**
      * User
-     * 
-     * @var UserInterface 
+     *
+     * @var UserInterface
      */
     private $user;
     
     /**
      * Constructor
-     * 
+     *
      * @param \PDO $db
      * @param UserInterface $user
      */
@@ -34,7 +34,7 @@ class LayerAuthorizationChecker
     
     /**
      * Get map and authorized layers
-     * 
+     *
      * @param array $filter
      * @return boolean
      */

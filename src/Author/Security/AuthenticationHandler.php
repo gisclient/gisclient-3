@@ -16,28 +16,28 @@ class AuthenticationHandler
 {
     /**
      * Token storage
-     * 
-     * @var TokenStorageInterface 
+     *
+     * @var TokenStorageInterface
      */
     private $tokenStorage;
     
     /**
      * User provider
-     * 
-     * @var UserProviderInterface 
+     *
+     * @var UserProviderInterface
      */
     private $userProvider;
     
     /**
      * Guard
-     * 
-     * @var GuardAuthenticatorInterface 
+     *
+     * @var GuardAuthenticatorInterface
      */
     private $guard;
     
     /**
      * Constructor
-     * 
+     *
      * @param SessionInterface $session
      * @param UserProviderInterface $userProvider
      */
@@ -50,7 +50,7 @@ class AuthenticationHandler
     
     /**
      * Execute login
-     * 
+     *
      * @param Request $request
      */
     public function login(Request $request)
@@ -72,7 +72,7 @@ class AuthenticationHandler
     
     /**
      * Get token
-     * 
+     *
      * @return TokenInterface
      */
     public function getToken()
@@ -86,7 +86,7 @@ class AuthenticationHandler
     
     /**
      * Check if the user is authenticated
-     * 
+     *
      * @return boolean
      */
     public function isAuthenticated()
@@ -96,7 +96,7 @@ class AuthenticationHandler
     
     /**
      * Check if user is a administrator or optional the administrator of the project
-     * 
+     *
      * @param string $project
      * @return boolean
      */

@@ -53,11 +53,15 @@ class SenchaTouchUtils
                         if (in_array($key, array('title', 'radio'))) {
                             continue;
                         }
-                        $layer['parameters'] = array_merge($layer['parameters'],
-                            $val['parameters']);
+                        $layer['parameters'] = array_merge(
+                            $layer['parameters'],
+                            $val['parameters']
+                        );
                         unset($val['options']['featureTypes']);
-                        $layer['options']    = array_merge($layer['options'],
-                            $val['options']);
+                        $layer['options'] = array_merge(
+                            $layer['options'],
+                            $val['options']
+                        );
                         $layer['url']        = $val['url'];
                         if (!empty($val['parameters']['layers'])) {
                             foreach ($val['parameters']['layers'] as $layerName) {

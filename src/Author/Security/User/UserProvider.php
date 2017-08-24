@@ -6,14 +6,14 @@ class UserProvider implements UserProviderInterface
 {
     /**
      * Database
-     * 
+     *
      * @var \PDO
      */
     private $db;
     
     /**
      * Constructor
-     * 
+     *
      * @param \PDO $db
      */
     public function __construct(\PDO $db)
@@ -23,7 +23,7 @@ class UserProvider implements UserProviderInterface
     
     /**
      * Get list of roles
-     * 
+     *
      * @param string $userName
      * @return array
      */
@@ -38,7 +38,7 @@ class UserProvider implements UserProviderInterface
     
     /**
      * Get list of projects
-     * 
+     *
      * @param string $userName
      * @return array
      */
@@ -54,7 +54,7 @@ class UserProvider implements UserProviderInterface
         $stmt->execute(array(
             'username'=>$userName,
         ));
-        foreach($stmt as $project) {
+        foreach ($stmt as $project) {
             $projects[] = $project['project_name'];
         }
         
@@ -63,7 +63,7 @@ class UserProvider implements UserProviderInterface
     
     /**
      * Get list of projects
-     * 
+     *
      * @param string $userName
      * @return array
      */
@@ -79,7 +79,7 @@ class UserProvider implements UserProviderInterface
         $stmt->execute(array(
             'username'=>$userName,
         ));
-        foreach($stmt as $group) {
+        foreach ($stmt as $group) {
             $groups[] = $group['groupname'];
         }
         

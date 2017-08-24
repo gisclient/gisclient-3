@@ -11,7 +11,7 @@ interface GuardAuthenticatorInterface
 {
     /**
      * Get the authentication credentials from the request
-     * 
+     *
      * @param Request $request
      * @return TokenInterface|null
      */
@@ -19,7 +19,7 @@ interface GuardAuthenticatorInterface
     
     /**
      * Get user based on authentication credentials
-     * 
+     *
      * @param mixed $token
      * @param UserProviderInterface $userProvider
      * @return UserInterface
@@ -28,7 +28,7 @@ interface GuardAuthenticatorInterface
     
     /**
      * Return true if the authentication credentials are valid
-     * 
+     *
      * @param mixed $token
      * @param UserInterface $user
      * @return boolean
@@ -37,7 +37,7 @@ interface GuardAuthenticatorInterface
     
     /**
      * Create an authenticated token for the given user
-     * 
+     *
      * @param UserInterface $user
      * @return TokenInterface
      */

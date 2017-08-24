@@ -10,7 +10,6 @@ use GisClient\Author\Utils\GWGCMap;
 use GisClient\Author\Utils\R3GisGCMap;
 use GisClient\Author\Utils\SenchaTouchUtils;
 
-
 class ClientController
 {
     private function getOutputHeaders()
@@ -27,9 +26,9 @@ class ClientController
     
     /**
      * Get the initialization object to create the map
-     * 
+     *
      * @deprecated change to gcmapConfigAction
-     * 
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -60,7 +59,7 @@ class ClientController
         } else {
             $output = $objMapset->mapOptions;
             
-            if($request->query->get('jsonformat') == 'senchatouch') {
+            if ($request->query->get('jsonformat') == 'senchatouch') {
                 $output = SenchaTouchUtils::toSenchaTouch($output);
             }
         }
@@ -75,7 +74,7 @@ class ClientController
     
     /**
      * Get the initialization object to create the map
-     * 
+     *
      * @param Request $request
      * @return JsonResponse
      */

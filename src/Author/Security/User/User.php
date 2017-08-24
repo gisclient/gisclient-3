@@ -6,63 +6,63 @@ class User implements UserInterface
 {
     /**
      * Username
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private $username;
     
     /**
      * Password
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private $password;
     
     /**
      * Nome
-     * 
+     *
      * @var string
      */
     private $nome;
     
     /**
      * Cognome
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private $cognome;
     
     /**
      * List of user roles
-     * 
-     * @var array 
+     *
+     * @var array
      */
     private $roles;
     
     /**
      * List of user projects
-     * 
-     * @var array 
+     *
+     * @var array
      */
     private $projects;
     
     /**
      * List of user groups
-     * 
-     * @var array 
+     *
+     * @var array
      */
     private $groups;
     
     /**
      * Constructor
-     * 
+     *
      * @param string $username
      * @param string $password
      * @param string $nome
      * @param string $cognome
      * @param array $roles
      * @param array $projects
-     * @param array $groups 
+     * @param array $groups
      */
     public function __construct($username = null, $password = null, $nome = null, $cognome = null, array $roles = array(), array $projects = array(), array $groups = array())
     {

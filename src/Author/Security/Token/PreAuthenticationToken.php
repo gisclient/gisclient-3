@@ -6,8 +6,8 @@ class PreAuthenticationToken implements TokenInterface
 {
     /**
      * Flag to indicated if the token is authenticated
-     * 
-     * @var boolean 
+     *
+     * @var boolean
      */
     private $authenticated = false;
     

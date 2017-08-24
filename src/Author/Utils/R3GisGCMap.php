@@ -48,12 +48,12 @@ class R3GisGCMap
     const SCALE_TYPE_POWEROF2 = 1;
     public $db;
         
-        /**
-         * Layer authorization checker
-         *
-         * @var LayerAuthorizationChecker
-         */
-        private $layerAuthChecker;
+    /**
+     * Layer authorization checker
+     *
+     * @var LayerAuthorizationChecker
+     */
+    private $layerAuthChecker;
         
     public $authorizedLayers;
     public $authorizedGroups = array();
@@ -169,7 +169,7 @@ class R3GisGCMap
         
         //Normalizzo rispetto all'array delle risoluzioni
         $mapOptions["resolutions"] = $this->_getResolutions($this->mapsetScaleType);
-        $mapOptions["minZoomLevel"] = $this->_array_index($mapOptions["resolutions"], $maxRes);
+        $mapOptions["minZoomLevel"] = $this->arrayIndex($mapOptions["resolutions"], $maxRes);
         $mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
         $this->maxResolution = $mapOptions["maxResolution"];
         $mapOptions["minResolution"] = $mapOptions["resolutions"][count($mapOptions["resolutions"])-1];
@@ -443,8 +443,8 @@ class R3GisGCMap
                 }
 
                 $layerOptions["type"] = empty($row["layers"])?"null":$row["layers"];
-                $layerOptions["minZoomLevel"] = SERVICE_MIN_ZOOM_LEVEL;//($layerType == LayerGroup::VMAP_LAYER_TYPE)?1:0;//max($this->serviceProviderMinZoomLevel, $this->_array_index($this->serviceProviderResolutions,$this->maxResolution));
-                $layerOptions["maxZoomLevel"] = SERVICE_MAX_ZOOM_LEVEL;//($layerType == LayerGroup::VMAP_LAYER_TYPE)?22:23;//min(isset($this->serviceProviderMaxZoomLevel[$row["layers"]])?$this->serviceProviderMaxZoomLevel[$row["layers"]]:22, $this->_array_index($this->serviceProviderResolutions,$this->minResolution)); //Aggiungo 2 per usare le scale
+                $layerOptions["minZoomLevel"] = SERVICE_MIN_ZOOM_LEVEL;//($layerType == LayerGroup::VMAP_LAYER_TYPE)?1:0;//max($this->serviceProviderMinZoomLevel, $this->arrayIndex($this->serviceProviderResolutions,$this->maxResolution));
+                $layerOptions["maxZoomLevel"] = SERVICE_MAX_ZOOM_LEVEL;//($layerType == LayerGroup::VMAP_LAYER_TYPE)?22:23;//min(isset($this->serviceProviderMaxZoomLevel[$row["layers"]])?$this->serviceProviderMaxZoomLevel[$row["layers"]]:22, $this->arrayIndex($this->serviceProviderResolutions,$this->minResolution)); //Aggiungo 2 per usare le scale
                 $layerOptions["gc_id"] = $layerId;
                 $layerOptions["group"] = $layerTreeGroup;
                 $aLayers[$themeName]["title"] = $themeTitle;
@@ -487,7 +487,7 @@ class R3GisGCMap
                     $layerOptions["isBaseLayer"] = true;
                 }
                 //$layerOptions["getURL"] = "OpenLayers.Util.GisClient.TMSurl";
-                $layerOptions["zoomOffset"] = $this->_array_index($this->_getResolutions($this->mapsetScaleType), $this->maxResolution);
+                $layerOptions["zoomOffset"] = $this->arrayIndex($this->_getResolutions($this->mapsetScaleType), $this->maxResolution);
                 $layerOptions["buffer"] = intval($row["buffer"]);
                 if (!empty($row["tile_origin"])) {
                     $layerOptions["tileOrigin"] = $row["tile_origin"];
@@ -707,7 +707,6 @@ class R3GisGCMap
                     continue;
                 }
             } else {
-                
                 //echo "[$typeName] ";
                 if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFS'] != 1) {
                     continue;
@@ -795,11 +794,11 @@ class R3GisGCMap
                 //AGGIUNGO IL CAMPO GEOMETRIA COME PRIMO CAMPO
                 if (empty($featureTypes[$index][$typeName]["properties"])) {
                     $featureTypes[$index][$typeName]["properties"] = array(
-                    array(
-                        "name"=>$row['data_geom'],
-                        "type"=>$wfsGeometryType[$row['data_type']]
-                    )
-                );
+                        array(
+                            "name"=>$row['data_geom'],
+                            "type"=>$wfsGeometryType[$row['data_type']]
+                        )
+                    );
                 }
 
                 if ($row['data_unique'] == $fieldName) {
@@ -1001,7 +1000,6 @@ class R3GisGCMap
     public function _layerText($aLayer)
     {
         switch ($aLayer["type"]) {
-        
             case LayerGroup::WMS_LAYER_TYPE:
                 return 'new OpenLayers.Layer.WMS("'.$aLayer["title"].'","'.$aLayer["url"].'",'.json_encode($aLayer["parameters"]).','.json_encode($aLayer["options"]).')';
             case LayerGroup::GMAP_LAYER_TYPE:
@@ -1181,22 +1179,6 @@ class R3GisGCMap
         return $extents;
     }
     
-    
-    
-    public function _array_limit($aList, $maxVal=false, $minVal=false)
-    {
-        $ar=array();
-        foreach ($aList as $val) {
-            if ($maxVal && $val>=$maxVal) {
-                $ar[]=$val;
-            }
-            if ($minVal && $val<$minVal) {
-                $ar[]=$val;
-            }
-        }
-        return array_values(array_diff($aList, $ar));
-    }
-    
     /**
      * Return key of first value, such that $aList[$retval] <= $value
      *
@@ -1204,10 +1186,10 @@ class R3GisGCMap
      * @param type $value
      * @return type
      */
-    private function _array_index(array $aList, $value)
+    private function arrayIndex(array $aList, $value)
     {
         $retval=false;
-        for ($i=0;$i<count($aList);$i++) {
+        for ($i=0; $i<count($aList); $i++) {
             if ($value<=$aList[$i]) {
                 $retval=$i;
                 break;
