@@ -120,6 +120,6 @@ class AuthenticationHandler
     public function logout()
     {
         $this->tokenStorage->removeToken();
-        // TODO: how about other session entries
+        \GCService::instance()->getSession()->invalidate();
     }
 }

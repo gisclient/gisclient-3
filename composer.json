@@ -8,7 +8,11 @@
     "require": {
         "php": ">=5.3.3",
         "ext-curl": "*",
-        "symfony/http-foundation": "^2.8"
+        "symfony/config": "^2.8",
+        "symfony/http-foundation": "^2.8",
+        "symfony/http-kernel": "^2.8",
+        "symfony/routing": "^2.8",
+        "symfony/yaml": "^2.8"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

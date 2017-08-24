@@ -1,0 +1,13 @@
+## Available routes in public/services/...
+gcmap:
+    path: gcmap.php
+    defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
+    
+gcmapConfig:
+    path: gcmapconfig.php
+    defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapConfigAction }
+    
+## Custom routes, protected by special r3gis firewall (defined in security.yml)
+r3gis_gcmap:
+    path: /r3gis_apps/gcmap.php
+    defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
