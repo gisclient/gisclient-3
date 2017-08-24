@@ -258,7 +258,7 @@ class OwsHandler {
      * Remove the layers not present in the request
      * Speed improvement (eg SLD)
      */
-    public function removeLayersNotInRequest($oMap, $objRequest, $requestLayers) {
+    public static function removeLayersNotInRequest($oMap, $objRequest, $requestLayers) {
         $layersArray = self::getRequestedLayers($oMap, $objRequest, $requestLayers);
         $layersFromRequest = array();
         foreach($layersArray as $l) {
