@@ -891,6 +891,7 @@ class GWGCMap
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
         $layersWith1n = array();
+        $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
 
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if (!empty($this->i18n)) {
@@ -905,7 +906,7 @@ class GWGCMap
                     continue;
                 }
             } else {
-                if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) {
+                if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFS'] != 1) {
                     continue;
                 }
             }
@@ -963,7 +964,7 @@ class GWGCMap
             }
             
             $userCanEdit = false;
-            if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
+            if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
                 $userCanEdit = true;
             }
             
@@ -1358,75 +1359,4 @@ class GWGCMap
             return array();
         }
     }
-/*
-    function _getMaxExtents() {
-        $extents = array();
-        $userGroupFilter = '';
-        if(empty($_SESSION['USERNAME'])) {
-            $userGroup = '';
-            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
-            $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
-        }
-
-        $sql = "SELECT layergroup_id, layer_id, data_extent
-                FROM ".DB_SCHEMA.".layer
-                INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id)
-                INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
-                WHERE mapset_layergroup.mapset_name=:mapset_name
-                order BY layergroup_id ";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(array($this->mapsetName));
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        array_push($rows, array('layergroup_id'=>-1));
-        //var_export($rows);
-        $lgId = 0;
-        $complete = true;
-        $groupExtents = array();
-        foreach($rows as $row) {
-            if($lgId != $row['layergroup_id']) {
-                if($complete && !empty($groupExtents)) {
-                    $extent = array(null, null, null, null);
-                    foreach($groupExtents as $ext) {
-                        list($x1, $y1, $x2, $y2) = preg_split("/[".$this->coordSep."]+/", $ext);
-                        if(empty($extent[0]) || $x1 < $extent[0]) $extent[0] = $x1;
-                        if(empty($extent[1]) || $y1 < $extent[1]) $extent[1] = $y1;
-                        if(empty($extent[2]) || $x2 > $extent[2]) $extent[2] = $x2;
-                        if(empty($extent[3]) || $y2 > $extent[3]) $extent[3] = $y2;
-                    }
-                    $extents[$lgId] = $extent;
-                }
-                $complete = true;
-                $groupExtents = array();
-            }
-            $lgId = $row['layergroup_id'];
-            if(empty($row['data_extent'])) $complete = false;
-            else {
-                array_push($groupExtents, $row['data_extent']);
-            }
-        }
-        //var_export($extents);
-        return $extents;
-    }
-
-
-
-    function _array_limit($aList,$maxVal=false,$minVal=false){
-        $ar=array();
-        foreach($aList as $val){
-            if($maxVal && $val>=$maxVal) $ar[]=$val;
-            if($minVal && $val<$minVal) $ar[]=$val;
-        }
-        return array_values(array_diff($aList,$ar));
-    }
-
-    function _array_index($aList, $value){
-        $retval=0;
-        for($i=0;$i<count($aList);$i++){
-            if($value<$aList[$i]) $retval=$i-1;
-        }
-        return $retval;
-    }
-
-*/
 }

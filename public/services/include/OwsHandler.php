@@ -50,13 +50,16 @@ class OwsHandler {
 
     static function checkLayer($project, $service, $layerName) {
         $check = false;
-        if (!empty($_SESSION['GISCLIENT_USER_LAYER']) && !empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName])) {
-            $layerAuth = $_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName];
-            // There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
-            if (strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS'] == 1)) {
-                $check = true;
-            } else if (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1 )) {
-                $check = true;
+        if (null !== ($layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER'))) {
+            if (!empty($layerAuthorizations[$project][$layerName])) {
+                $layerAuth = $layerAuthorizations[$project][$layerName];
+                
+                // There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
+                if (strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS'] == 1)) {
+                    $check = true;
+                } else if (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1 )) {
+                    $check = true;
+                }
             }
         }
         return $check;

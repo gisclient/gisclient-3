@@ -200,7 +200,7 @@ if (!empty($_REQUEST['GCFILTERS'])) {
     }
 }
 
-if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
+if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
     $hasPrivateLayers = false;
     $layersArray = array();
     if (!empty($layersParameter)) {
@@ -234,7 +234,7 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && emp
             exit(0);
         }
         
-        // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+        // get layers to populate session with GISCLIENT_USER_LAYER
         GCApp::getLayerAuthorizationChecker()->getLayers(array(
             'mapset_name' => $objRequest->getValueByName('map')
         ));
@@ -275,14 +275,14 @@ if (!empty($layersParameter)) {
         }
         $n = 0;
 
-        if (!empty($_SESSION['GC_LAYER_FILTERS'])) {
-            if (!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
+        if (null !== ($layerAuthorizations = $gcService->get('GISCLIENT_USER_LAYER'))) {
+            if (!empty($layerAuthorizations[$layer->name])) {
                 $filter = $layer->getFilterString();
                 $filter = trim($filter, '"');
                 if (!empty($filter)) {
-                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
+                    $filter = $filter.' AND ('.$layerAuthorizations[$layer->name].')';
                 } else {
-                    $filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
+                    $filter = $layerAuthorizations[$layer->name];
                 }
                 $layer->setFilter($filter);
             }

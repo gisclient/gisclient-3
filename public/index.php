@@ -13,6 +13,7 @@ header("Pragma: no-cache");
 
 $gcService = GCService::instance();
 $gcService->startSession();
+$session = $gcService->getSession();
 
 $authHandler = GCApp::getAuthenticationHandler();
 

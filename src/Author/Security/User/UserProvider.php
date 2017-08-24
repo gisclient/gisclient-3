@@ -87,18 +87,6 @@ class UserProvider implements UserProviderInterface
     }
     
     /**
-     * Put some data into $_SESSION for legacy
-     * 
-     * @deprecated
-     * @param \GisClient\Author\Security\User\UserInterface $user
-     */
-    private function setSessionVars(UserInterface $user)
-    {
-        $_SESSION['USERNAME'] = $user->getUsername();
-        $_SESSION['GROUPS'] = $user->getGroups();
-    }
-    
-    /**
      * {@inheritdoc}
      */
     public function loadUserByUsername($username)
@@ -122,11 +110,7 @@ class UserProvider implements UserProviderInterface
             $projects = $this->getProjects($userData['username']);
             $groups = $this->getGroups($userData['username']);
             
-            $user = new User($userData['username'], $userData['password'], $userData['nome'], $userData['cognome'], $roles, $projects, $groups);
-            
-            $this->setSessionVars($user);
-            
-            return $user;
+            return new User($userData['username'], $userData['password'], $userData['nome'], $userData['cognome'], $roles, $projects, $groups);
         }
 
         throw new \Exception(

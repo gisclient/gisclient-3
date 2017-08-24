@@ -528,14 +528,14 @@ class GCAuthor {
 				$langs=array('it', 'en', 'de');
 			}
 			
-			if(!empty($_SESSION['AUTHOR_LANGUAGE'])) {
-				self::$lang = $_SESSION['AUTHOR_LANGUAGE'];
+			if (\GCService::instance()->has('AUTHOR_LANGUAGE')) {
+				self::$lang = \GCService::instance()->get('AUTHOR_LANGUAGE');
 			} else if(defined('FORCE_LANGUAGE')) {
 				self::$lang = FORCE_LANGUAGE;
 			} else {
 				self::$lang = (!empty($_REQUEST["language"])) ? $_REQUEST["language"] : substr($langs[0],0,2);
 			}
-			$_SESSION['AUHTOR_LANGUAGE'] = self::$lang;
+                        \GCService::instance()->set('AUTHOR_LANGUAGE', self::$lang);
 		}
 		return self::$lang;
 	}

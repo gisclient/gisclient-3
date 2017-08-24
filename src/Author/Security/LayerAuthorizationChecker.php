@@ -91,6 +91,7 @@ class LayerAuthorizationChecker
             $authClause = '(coalesce(private,0)=0)';
         }
         
+        $layerAuthorizations = array();
         $sql = 'SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
                 layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
                 case when coalesce(layer.private,1) = 1 then wms else 1 end as wms,
@@ -121,7 +122,14 @@ class LayerAuthorizationChecker
 //echo nl2br($sql) . "<br>" . print_r($sqlValues, true) . "<br>";
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $featureType = $row['layergroup_name'].".".$row['layer_name'];
-            $_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$featureType] = array('WMS'=>$row['wms'],'WFS'=>$row['wfs'],'WFST'=>$row['wfst']);
+            if (!isset($layerAuthorizations[$row['project_name']])) {
+                $layerAuthorizations[$row['project_name']] = [];
+            }
+            $layerAuthorizations[$row['project_name']][$featureType] = [
+                'WMS' => $row['wms'],
+                'WFS'=>$row['wfs'],
+                'WFST'=>$row['wfst']
+            ];
 
             if (!empty($row['layer_id'])) {
                 $result['authorized_layers'][] = $row['layer_id'];
@@ -141,8 +149,9 @@ class LayerAuthorizationChecker
             }
         };
         //echo "<br><br>\n";
-        //print_r($_SESSION['GISCLIENT_USER_LAYER']);
+        //print_r($layerAuthorizations);
         //echo "<br><br>\n";
+        \GCService::instance()->set('GISCLIENT_USER_LAYER', $layerAuthorizations);
         
         return $result;
     }

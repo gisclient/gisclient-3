@@ -71,7 +71,7 @@ if(empty($projectName)) {
 		throw new Exception("Missing project name for layergroup $layergroupName and layer $layerName");
 }
 
-if (!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
+if (!$gcService->has('GISCLIENT_USER_LAYER')) {
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
 		file_put_contents(DEBUG_DIR . 'tinyows-logs.txt', "PHP_AUTH_USER not set, request authentication\n", FILE_APPEND);
 		header('WWW-Authenticate: Basic realm="Gisclient"');
@@ -87,13 +87,11 @@ if (!isset($_SESSION['GISCLIENT_USER_LAYER'])) {
 }
 
 $authorized = false;
-//if(!empty($_SESSION['USERNAME']) && $_SESSION['USERNAME'] == SUPER_USER) $authorized = true; non serve piu
-if(!empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$typeName]['WFST'])) {
+$layerAuthorizations = $gcService->get('GISCLIENT_USER_LAYER');
+if(!empty($layerAuthorizations[$project][$typeName]['WFST'])) {
 	$authorized = true;
 } else {
-    if (isset($_SESSION['GISCLIENT_USER_LAYER'])) {
-        print_debug(var_export($_SESSION['GISCLIENT_USER_LAYER'], true), null, 'tinyows');
-    }
+        print_debug(var_export($layerAuthorizations, true), null, 'tinyows');
 }
 
 if(!$authorized) {

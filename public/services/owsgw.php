@@ -141,7 +141,7 @@ if($objRequest->getValueByName('service') == 'WMS') {
 	$layersParameter = $objRequest->getValueByName('typename');
 }
 
-if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
+if(!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
 	$hasPrivateLayers = false;
 	if(!empty($layersParameter)) {
 		$layersArray = getRequestedLayers($layersParameter);
@@ -172,12 +172,12 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 
             if($authHandler->isAuthenticated()) {
                 if(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
-                    // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+                    // get layers to populate session with GISCLIENT_USER_LAYER
                     GCApp::getLayerAuthorizationChecker()->getLayers(array(
                         'project_name' => $objRequest->getValueByName('map')
                     ));
                 } else {
-                    // get layers to populate $_SESSION['GISCLIENT_USER_LAYER']
+                    // get layers to populate session with GISCLIENT_USER_LAYER
                     GCApp::getLayerAuthorizationChecker()->getLayers(array(
                         'mapset_name' => $objRequest->getValueByName('map')
                     ));
@@ -213,14 +213,14 @@ if(!empty($layersParameter)) {
 			}
 		}
 		
-		if(!empty($_SESSION['GC_LAYER_FILTERS'])) {
-            if(!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
+		if (null !== ($layerAuthorizations = $gcService->get('GISCLIENT_USER_LAYER'))) {
+            if(!empty($layerAuthorizations[$layer->name])) {
                 $filter = $layer->getFilterString();
                 $filter = trim($filter, '"');
                 if(!empty($filter)) {
-                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
+                    $filter = $filter.' AND ('.$layerAuthorizations[$layer->name].')';
                 } else {
-                    $filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
+                    $filter = $layerAuthorizations[$layer->name];
                 }
                 $layer->setFilter($filter);
             }
@@ -350,9 +350,11 @@ function applyGCFilter(&$oLayer,$layerFilter){
 
 function checkLayer($project, $service, $layerName){
 	$check = false;
-	if(!empty($_SESSION['GISCLIENT_USER_LAYER']) && !empty($_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName])) {
-		$layerAuth = $_SESSION['GISCLIENT_USER_LAYER'][$project][$layerName];
+        if (null !== ($layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER'))) {
+            if (!empty($layerAuthorizations[$project][$layerName])) {
+		$layerAuth = $layerAuthorizations[$project][$layerName];
 		if((strtoupper($service) == 'WMS' && ($layerAuth['WMS']==1)) || (strtoupper($service) == 'WFS' && ($layerAuth['WFS']==1 ))) $check = true;
+            }
 	}
 	return $check;
 }

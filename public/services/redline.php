@@ -78,11 +78,11 @@ if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
 $parts = explode(':', $_REQUEST["SRS"]);
 $mapSRID = $parts[1];
 $SRS_params = array();
-//unset($_SESSION[$_REQUEST['PROJECT']]["PROJPARAMS"]);
 if($mapSRID != REDLINE_SRID){
-	if(!isset($_SESSION[$_REQUEST['PROJECT']]["PROJPARAMS"][$mapSRID]))  getProjParams($mapSRID);
-	if(!isset($_SESSION[$_REQUEST['PROJECT']]["PROJPARAMS"][REDLINE_SRID])) getProjParams(REDLINE_SRID);
-	$SRS_params = $_SESSION[$_REQUEST['PROJECT']]["PROJPARAMS"];
+    $projectInfo = $gcService->get('PROJECT');
+	if(!isset($projectInfo[$_REQUEST['PROJECT']]["PROJPARAMS"][$mapSRID]))  getProjParams($mapSRID);
+	if(!isset($projectInfo[$_REQUEST['PROJECT']]["PROJPARAMS"][REDLINE_SRID])) getProjParams(REDLINE_SRID);
+	$SRS_params = $projectInfo[$_REQUEST['PROJECT']]["PROJPARAMS"];
 };
 
 
@@ -306,5 +306,12 @@ function getProjParams($srid){
 	$projparams = $stmt->fetch(PDO::FETCH_ASSOC);
 	$projString = $projparams["proj4text"];
 	if(strpos($projString,"towgs84") === false && !empty($projparams["projparam"])) $projString .="+towgs84=".$projparams["projparam"];
-	$_SESSION[$_REQUEST['PROJECT']]["PROJPARAMS"][$srid] = $projString;
+	$projectInfo = [
+            $_REQUEST['PROJECT'] => [
+                "PROJPARAMS" => [
+                    $srid => $projString
+                ]
+            ]
+        ];
+        \GCService::instance()->set('PROJECT', $projectInfo);
 }

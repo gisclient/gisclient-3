@@ -7,7 +7,9 @@ use Symfony\Component\HttpFoundation\Session\Storage\PhpBridgeSessionStorage;
  * GCService initialized correctly the pages used as a service within GisClient
  * Technically it is implemented as a Singleton.
  */
-class GCService {
+class GCService 
+{
+    const SESSION_KEY_PREFIX = 'GISCLIENT/';
     
     /**
      * Session instance
@@ -47,6 +49,26 @@ class GCService {
 		set_exception_handler($handler);
 	}
         
+        public function has($name)
+        {
+            return $this->session->has(self::SESSION_KEY_PREFIX.$name);
+        }
+        
+        public function get($name, $default = null)
+        {
+            return $this->session->get(self::SESSION_KEY_PREFIX.$name, $default);
+        }
+        
+        public function set($name, $value)
+        {
+            $this->session->set(self::SESSION_KEY_PREFIX.$name, $value);
+        }
+        
+        public function remove($name)
+        {
+            $this->session->remove(self::SESSION_KEY_PREFIX.$name);
+        }
+        
         /**
          * Get session instance
          * 
@@ -54,6 +76,9 @@ class GCService {
          */
         public function getSession()
         {
+            if (null === $this->session) {
+                throw new \LogicException('Session has not been started yet.');
+            }
             return $this->session;
         }
 	

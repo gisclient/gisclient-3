@@ -57,7 +57,7 @@ class gcMapfile
         $this->db = GCApp::getDB();
         $this->languageId = $languageId;
         $this->msVersion = substr(ms_GetVersionInt(), 0, 1);
-        if (isset($_SESSION['save_to_tmp_map']) && $_SESSION['save_to_tmp_map'] === true) {
+        if (\GCService::instance()->get('save_to_tmp_map') === true) {
             $this->target = 'tmp';
         }
     }

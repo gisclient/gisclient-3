@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 
-$gcService = GCService::instance();
+$gcService = \GCService::instance();
 $gcService->startSession();
 
 $authHandler = GCApp::getAuthenticationHandler();
@@ -22,7 +22,7 @@ $stmtInsert = $db->prepare('
 $userName = $authHandler->getToken()->getUserName();
 foreach(array('auto_refresh_mapfiles', 'save_to_tmp_map') as $key) {
 	$value = (isset($_POST[$key]) && $_POST[$key] == 'checked');
-	$_SESSION[$key] = $value;
+        $gcService->set($key, $value);
 	$stmtDelete->execute(array(
             'key' => $key,
             'username' => $userName

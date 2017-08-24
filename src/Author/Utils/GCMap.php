@@ -931,6 +931,7 @@ class GCMap
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
         $layersWith1n = array();
+        $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
 
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if (!empty($this->i18n)) {
@@ -945,7 +946,7 @@ class GCMap
                     continue;
                 }
             } else {
-                if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) {
+                if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFS'] != 1) {
                     continue;
                 }
             }
@@ -1003,7 +1004,7 @@ class GCMap
             }
             
             $userCanEdit = false;
-            if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
+            if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
                 $userCanEdit = true;
             }
             
@@ -1103,28 +1104,6 @@ class GCMap
                 $featureTypes[$index][$typeName]["properties"][] = $fieldSpecs;
             }
         }
-/*         foreach($layersWith1n as $index => $arr) {
-            foreach($arr as $typeName => $Relations) {
-                foreach($Relations as $Relation) {
-                    $featureTypes[$index][$typeName]['relation1n'] = $Relation;
-                    array_push($featureTypes[$index][$typeName]['properties'], array(
-                        'name'=>'num_'.$Relation['relation_id'],
-                        'header'=>'Num',
-                        'type'=>'String',
-                        'fieldId'=>9999999,
-                        'fieldType'=>1,
-                        'dataType'=>2,
-                        'searchType'=>0,
-                        'editable'=>0,
-                        'relationType'=>null,
-                        'resultType'=>1,
-                        'filterFieldName'=>null,
-                        'isPrimaryKey'=>false,
-                        'is1nCountField'=>true
-                    ));
-                }
-            }
-        } */
         
         foreach ($featureTypes as $index => $arr) {
             foreach ($arr as $typeName => $ftype) {
@@ -1173,27 +1152,6 @@ class GCMap
         $this->selgroupList = $selgroupArray;
     }
 
-/*
-    function _getTMSExtent($tilesExtent, $tilesExtentSRID){
-        list($x0,$y0,$x1,$y1) = preg_split("/[".$this->coordSep."]+/",$tilesExtent);
-        //RIPROIETTO SE SRID DIVERSO DAL MAPSET
-        if($tilesExtentSRID!=$this->mapsetSRID){
-            $p1 = "SRID=$tilesExtentSRID;POINT($x0 $y0)";
-            $p2 = "SRID=$tilesExtentSRID;POINT($x1 $y1)";
-            $sqlExt = "SELECT X(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as x0, ".
-                " Y(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as y0, ".
-                " X(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as x1, ".
-                " Y(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as y1;";
-            $ext = $this->db->query($sqlExt)->fetch(PDO::FETCH_ASSOC);
-            $extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));
-        }
-        else
-            $extent = array(floatval($x0),floatval($y0),floatval($x1),floatval($y1));
-
-        return $extent;
-    }
-
-*/
     //Elenco delle librerie per i providers usati
     public function _setMapProviders()
     {
@@ -1273,22 +1231,6 @@ class GCMap
                 return 'new OpenLayers.Layer.TMS("'.$aLayer["name"].'","'.$aLayer["url"].'/",{"visibility":'.(empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.($aLayer["options"]["isBaseLayer"]?'true':'false').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"type":"'.$aLayer["options"]["type"].'","tileOrigin":new OpenLayers.LonLat('.implode(",", $aLayer["options"]["tileOrigin"]).'),"zoomOffset":'.$aLayer["options"]["zoomOffset"].',"group":"'.$aLayer["options"]["group"].'"})';
         }
     }
-    
-   /* function _getScaleList() {
-        $sql = "SELECT mapset_scales FROM " . DB_SCHEMA . ".mapset WHERE mapset_name=?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(array($this->mapsetName));
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        print_debug($sql, null, 'mapoptions');
-        if ($row['mapset_scales'] != '') {
-            $ret = preg_split("/[" . $this->coordSep . "]+/", $row['mapset_scales']);
-        } else if (defined('SCALE')) {
-            $ret = preg_split("/[" . $this->coordSep . "]+/", SCALE);
-        } else {
-            $ret = GCAuthor::$defaultScaleList;
-        }
-        return $ret;
-    }*/
 
     public function _getScaleList()
     {
@@ -1326,63 +1268,6 @@ class GCMap
         }
         return $aRes;
     }
-
- /*   function _getResolutions($minScale, $maxScale, $mapsetScales) {
-
-        //Fattore di conversione tra dpi e unità della mappa
-
-        $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
-        $precision = $this->mapsetUM == "dd" ? 10 : 2;
-        $aRes = array();
-
-        if (isset($mapsetScales)) { //TODO
-            $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
-            foreach ($v as $key => $value) {
-                $aRes[$key] = round((real) $value, $precision);
-            }
-            if (isset($tilesExtent)) {
-                $v = preg_split("/[" . $this->coordSep . "]+/", $tilesExtent);
-                foreach ($v as $key => $value) {
-                    $this->tilesExtent[$key] = round((float) $value, $precision);
-                }
-            }
-        } else {
-            //se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
-            if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
-                $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
-                for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev)
-                    $aRes[] = GOOGLE_MAX_RESOLUTION / pow(2, $lev);
-            } else {
-                if (isset($mapsetScales)) {
-                    $scaleList = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
-                } elseif (defined('DEFAULT_SCALE_LIST')) {
-                    $scaleList = preg_split("/[" . $this->coordSep . "]+/", DEFAULT_SCALE_LIST);
-                } else {
-                    $scaleList = GCAuthor::$defaultScaleList;
-                }
-                foreach ($scaleList as $scaleValue)
-                    $aRes[] = round((float) $scaleValue / $convFact, $precision);
-                //print($convFact);
-                //print_array(GCAuthor::$aInchesPerUnit);
-            }
-        }
-
-        $maxIndex = count($aRes);
-        $minIndex = 0;
-        if ($minScale) {
-            $res = (string) (floatval($minScale) / $convFact);
-            if (array_index($aRes, $res) !== false)
-                $maxIndex = array_index($aRes, $res);
-        }
-        if ($maxScale) {
-            $res = (string) (floatval($maxScale) / $convFact);
-            if (array_index($aRes, $res) !== false)
-                $minIndex = array_index($aRes, $res);
-        }
-        $this->levelOffset = $minIndex;
-        $this->scaleListResolutions = $aRes;
-        $this->mapResolutions = array_slice($aRes, $minIndex, $maxIndex);
-    }*/
 
     public function _getProjInfo()
     {
@@ -1440,75 +1325,4 @@ class GCMap
             return array();
         }
     }
-/*
-    function _getMaxExtents() {
-        $extents = array();
-        $userGroupFilter = '';
-        if(empty($_SESSION['USERNAME'])) {
-            $userGroup = '';
-            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
-            $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
-        }
-
-        $sql = "SELECT layergroup_id, layer_id, data_extent
-                FROM ".DB_SCHEMA.".layer
-                INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id)
-                INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
-                WHERE mapset_layergroup.mapset_name=:mapset_name
-                order BY layergroup_id ";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(array($this->mapsetName));
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        array_push($rows, array('layergroup_id'=>-1));
-        //var_export($rows);
-        $lgId = 0;
-        $complete = true;
-        $groupExtents = array();
-        foreach($rows as $row) {
-            if($lgId != $row['layergroup_id']) {
-                if($complete && !empty($groupExtents)) {
-                    $extent = array(null, null, null, null);
-                    foreach($groupExtents as $ext) {
-                        list($x1, $y1, $x2, $y2) = preg_split("/[".$this->coordSep."]+/", $ext);
-                        if(empty($extent[0]) || $x1 < $extent[0]) $extent[0] = $x1;
-                        if(empty($extent[1]) || $y1 < $extent[1]) $extent[1] = $y1;
-                        if(empty($extent[2]) || $x2 > $extent[2]) $extent[2] = $x2;
-                        if(empty($extent[3]) || $y2 > $extent[3]) $extent[3] = $y2;
-                    }
-                    $extents[$lgId] = $extent;
-                }
-                $complete = true;
-                $groupExtents = array();
-            }
-            $lgId = $row['layergroup_id'];
-            if(empty($row['data_extent'])) $complete = false;
-            else {
-                array_push($groupExtents, $row['data_extent']);
-            }
-        }
-        //var_export($extents);
-        return $extents;
-    }
-
-
-
-    function _array_limit($aList,$maxVal=false,$minVal=false){
-        $ar=array();
-        foreach($aList as $val){
-            if($maxVal && $val>=$maxVal) $ar[]=$val;
-            if($minVal && $val<$minVal) $ar[]=$val;
-        }
-        return array_values(array_diff($aList,$ar));
-    }
-
-    function _array_index($aList, $value){
-        $retval=0;
-        for($i=0;$i<count($aList);$i++){
-            if($value<$aList[$i]) $retval=$i-1;
-        }
-        return $retval;
-    }
-
-*/
 }

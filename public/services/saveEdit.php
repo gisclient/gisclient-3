@@ -166,11 +166,16 @@ class GCEditFeature {
 	}
 	
 	private function _checkPermission($project, $map, $featureType) {
-		return true;
-		if(empty($_SESSION['GISCLIENT_USER_LAYER'])) return false;
-		$layers = $_SESSION['GISCLIENT_USER_LAYER'];
-		if(!isset($layers[$project]) || !isset($layers[$project][$map]) || !isset($layers[$project][$map][$featureType])) return false;
-		if(empty($layers[$project][$map][$featureType]['WFST'])) return false;
+            $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
+		if(empty($layerAuthorizations)) {
+                    return false;
+                }
+		if(!isset($layerAuthorizations[$project]) || !isset($layerAuthorizations[$project][$map]) || !isset($layerAuthorizations[$project][$map][$featureType])) {
+                    return false;
+                }
+		if(empty($layerAuthorizations[$project][$map][$featureType]['WFST'])) {
+                    return false;
+                }
 		return true;
 	}
 }

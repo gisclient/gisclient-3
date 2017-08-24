@@ -40,8 +40,8 @@
             <div id="preview_map_dialog" style="display:none;"></div>
             <div id="options_dialog" style="display:none;">
                 <form id="user_options">
-                <input type="checkbox" name="save_to_tmp_map" <?php if (isset($_SESSION['save_to_tmp_map']) && $_SESSION['save_to_tmp_map']) echo 'checked="checked"'; ?> value="1"> <?php echo GCAuthor::t('save_to_temp') ?><br />
-                <input type="checkbox" name="auto_refresh_mapfiles" <?php if (isset($_SESSION['auto_refresh_mapfiles']) && $_SESSION['auto_refresh_mapfiles']) echo 'checked="checked"'; ?> value="1"> <?php echo GCAuthor::t('auto_refresh_mapfiles') ?><br />
+                <input type="checkbox" name="save_to_tmp_map" <?php if ($gcService->get('save_to_tmp_map') === true) echo 'checked="checked"'; ?> value="1"> <?php echo GCAuthor::t('save_to_temp') ?><br />
+                <input type="checkbox" name="auto_refresh_mapfiles" <?php if ($gcService->get('auto_refresh_mapfiles') === true) echo 'checked="checked"'; ?> value="1"> <?php echo GCAuthor::t('auto_refresh_mapfiles') ?><br />
                 <button name="save"><?php echo GCAuthor::t('save'); ?></button>
                 <div class="logs" style="color:red;"></div>
                 </form>

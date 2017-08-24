@@ -218,8 +218,8 @@ Class saveData{
 					$p->get_conf();
 					return $p;
 				}
-				if (isset($_SESSION["ADD_NEW"]) && $_SESSION["ADD_NEW"]){
-					echo "Il record è già stato inserito ".$_SESSION["ADD_NEW"];
+				if (\GCService::instance()->get('ADD_NEW')){
+					echo "Il record è già stato inserito ".\GCService::instance()->get('ADD_NEW');
 					$this->hasErrors=true;
 					$p->livello=$p->get_livello();	
 					$p->get_conf();
@@ -410,7 +410,7 @@ Class saveData{
 				    }
 				}
 				if(isset($newid) && $this->mode=="new"){
-					$_SESSION["ADD_NEW"]=$newid;
+					\GCService::instance()->set('ADD_NEW', $newid);
 					$p->parametri[$p->get_livello()]=$newid;	
 				}
 				if ($p->array_levels[$p->get_idLivello()]["leaf"] && $this->delete){
@@ -429,8 +429,9 @@ Class saveData{
 		$p->get_conf();
 		$this->hasErrors = false;
 		
-		if($this->refreshMapfiles && !empty($_SESSION['auto_refresh_mapfiles'])) {
-            $publish = !empty($_SESSION['save_to_tmp_map']) ? false : true;
+		if($this->refreshMapfiles && \GCService::instance()->get('auto_refresh_mapfiles') === true) {
+                    
+                    $publish = !(\GCService::instance()->get('save_to_tmp_map') === true);
 			if(!empty($p->parametri['project']) && !empty($p->parametri['mapset'])){
 				GCAuthor::refreshMapfile($p->parametri['project'],$p->parametri['mapset'], $publish);
 			}

@@ -195,8 +195,6 @@ class R3GisGCMap
                     ));
             $this->authorizedLayers = $allUserLayers['authorized_layers'];
         }
-        //unset($_SESSION['GISCLIENT_USER_LAYER']);
-        //die;
 
                 
         $this->mapLayers = $allUserLayers['map_layers'];
@@ -693,7 +691,9 @@ class R3GisGCMap
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
         $layersWith1n = array();
-//print_r($_SESSION['GISCLIENT_USER_LAYER']);
+        $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
+        //print_r($layerAuthorizations);
+        
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if (!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
@@ -709,7 +709,7 @@ class R3GisGCMap
             } else {
                 
                 //echo "[$typeName] ";
-                if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) {
+                if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFS'] != 1) {
                     continue;
                 }
                 //echo "KO";
@@ -769,7 +769,7 @@ class R3GisGCMap
             }
             
             $userCanEdit = false;
-            if (@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
+            if (isset($layerAuthorizations[$row['project_name']][$typeName]) && $layerAuthorizations[$row['project_name']][$typeName]['WFST'] == 1 || \GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
                 $userCanEdit = true;
             }
             
