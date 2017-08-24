@@ -40,7 +40,7 @@ class ClientController
             return new JsonResponse(array(
                 'error' => 200,
                 'message' => 'No mapset name',
-            ));
+            ), JsonResponse::HTTP_BAD_REQUEST);
         }
         
         $getLegend = $request->query->get('legend', 0) == 1;
@@ -86,7 +86,7 @@ class ClientController
             return new JsonResponse(array(
                 'error' => 200,
                 'message' => 'No mapset name',
-            ));
+            ), JsonResponse::HTTP_BAD_REQUEST);
         }
         
         $getLegend = $request->query->get('legend', 0) == 1;
