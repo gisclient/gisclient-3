@@ -1,8 +1,8 @@
 <?php
 /******************************************************************************
 *
-* Purpose: Inizializzazione dei parametri per la creazione della mappa 
-     
+* Purpose: Inizializzazione dei parametri per la creazione della mappa
+
 * Author:  Roberto Starnini, Gis & Web Srl, roberto.starnini@gisweb.it
 *
 ******************************************************************************
@@ -62,7 +62,7 @@ class gcMap{
     var $levelOffset = 0;
     var $tilesExtent;
     var $activeBaseLayer = '';
-    var $isPublicLayerQueryable = true; //FLAG CHE SETTA I LAYER PUBBLICI ANCHE INTERROGABILI 
+    var $isPublicLayerQueryable = true; //FLAG CHE SETTA I LAYER PUBBLICI ANCHE INTERROGABILI
     var $fractionalZoom = 0;
     var $allOverlays = 0;
     var $coordSep = ' ';
@@ -70,22 +70,22 @@ class gcMap{
     var $projDefs = array();
     var $getLegend = false;
     var $mapsetTiles = 0;
-    
+
     var $mapProviders;//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
 
     private $i18n;
     protected $oMap;
     protected $sldContents = array();
-    
+
     function __construct ($mapsetName, $getLegend = false, $languageId = null){
-        
+
         $gmapKey = defined('GMAPKEY')?"key=".GMAPKEY:'';
         $this->mapProviders = array(
                         VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
                         YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
                         OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
                         GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?$gmapKey");
-        
+
         $this->db = GCApp::getDB();
 
         $sql = "SELECT mapset.*, ".
@@ -106,7 +106,7 @@ class gcMap{
             die();
         }
 
-        
+
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if(!empty($languageId)) {
@@ -114,11 +114,11 @@ class gcMap{
             $row['mapset_title'] = $this->i18n->translate($row['mapset_title'], 'mapset', $row['mapset_name'], 'mapset_title');
             $row['project_title'] = $this->i18n->translate($row['project_title'], 'project', $row['project_name'], 'project_title');
         }
-        
+
         $this->projectName = $row["project_name"];
         $this->mapsetName = $row["mapset_name"];
         // **** TODO: read from db/config
-        $this->mapsetSinglelayer = 0;        
+        $this->mapsetSinglelayer = 0;
         $this->mapsetSRID = $row["mapset_srid"];
         $this->mapsetGRID = "epsg".$row["mapset_srid"];
         $this->_getProjInfo();
@@ -126,18 +126,18 @@ class gcMap{
         $mapConfig=array();
         $mapConfig["mapsetName"] = $row["mapset_name"];
         $mapConfig["mapsetTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
-        $mapConfig["projectName"] = $row["project_name"];   
+        $mapConfig["projectName"] = $row["project_name"];
         if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
-        $this->mapsetTiles = (int)$row["mapset_tiles"];       
+        $this->mapsetTiles = (int)$row["mapset_tiles"];
         $mapConfig["dpi"] = MAP_DPI;
-        if(count($this->projDefs)>0) 
+        if(count($this->projDefs)>0)
             $mapConfig['projdefs'] = $this->projDefs;
 
         $mapOptions=array();
         $mapOptions["center"] = array(floatval($row["xc"]),floatval($row["yc"]));
         $mapOptions["units"] = $this->mapsetUM;
         $mapOptions["projection"] = "EPSG:".$row["mapset_srid"];
-        if(!empty($row["displayprojection"])) 
+        if(!empty($row["displayprojection"]))
             $mapOptions["displayProjection"] = "EPSG:".$row["displayprojection"];
         $mapOptions["matrixSet"] = $this->mapsetGRID;
         $this->fractionalZoom = 1;
@@ -160,20 +160,20 @@ class gcMap{
 
         $mapConfig["mapOptions"] = $mapOptions;
         unset($mapOptions);
-        
-        
+
+
         // TODO AGGIUNGERE IL TESTO MAPPA, DIRECTORY PROGETTO .... ?????
-        
+
         $this->getLegend = $getLegend;
-        
+
         //$this->_getLayers();
-        
+
         $this->_getSelgroup();
         $this->_getLayers();
         $this->_getFeatureTypes();
-        
+
         $mapConfig["mapsetTiles"] = $this->mapsetTiles;
-        
+
         if(count($this->listProviders)>0){
             $mapConfig["mapProviders"] = array();
             foreach($this->listProviders as $key){
@@ -183,46 +183,46 @@ class gcMap{
 
         $mapConfig["layers"] = $this->mapLayers;
         $mapConfig["featureTypes"] = $this->featureTypes;
-        if($this->activeBaseLayer) 
+        if($this->activeBaseLayer)
             $mapConfig["baseLayerName"] = $this->activeBaseLayer;
-        if($this->fractionalZoom == 1) 
+        if($this->fractionalZoom == 1)
             $mapConfig["mapOptions"]["fractionalZoom"] = true;
         if($this->selgroupList)
             $mapConfig["selgroup"] = $this->selgroupList;
 
-        //SE HO DEFINITO UN CONTESTO AGGIUNGO LE OPZIONI DI CONTESTO (PER ORA AGGIUNGO I LAYER DEL REDLINE) (TODO FRANCESCO) 
+        //SE HO DEFINITO UN CONTESTO AGGIUNGO LE OPZIONI DI CONTESTO (PER ORA AGGIUNGO I LAYER DEL REDLINE) (TODO FRANCESCO)
         //SOVRASCRIVO GLI ATTRIBUTI DI mapConfig E AGGIUNGO I LAYER DEL CONTEXT
         //LASCEREI IL DOPPIO PASSAGGIO JSONENCODE JSONDECODE PER IL CONTROLLO DEGLI ERRORI ..... DA VEDERE
-        
+
         if(!empty($_REQUEST['context'])) {
             $userContext = $this->_getUserContext($_REQUEST['context']);
-            if(!empty($userContext) && !empty($userContext['layers'])) 
+            if(!empty($userContext) && !empty($userContext['layers']))
                 $mapConfig["context_layers"] = $userContext['layers'];
         }
-        
+
         // background diverso da bianco/trasparente
         if(!empty($row['bg_color']) && $row['bg_color'] != '255 255 255') {
             $mapConfig['bg_color'] = $row['bg_color'];
         }
-        
+
         $user = new GCUser();
         if($user->isAuthenticated()) {
             $mapConfig['logged_username'] = $user->getUsername();
         }
-        
+
         $sql = 'select mapset_name, mapset_title from '.DB_SCHEMA.'.mapset where project_name = :project';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
         $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $mapConfig['default_layers'] = $this->defaultLayers;
 
         //$this->maxRes = $maxRes;
         //$this->minRes = $minRes;
         $this->mapConfig = $mapConfig;
-        
+
     }
-    
+
     function __destruct (){
         unset($this->db);
     }
@@ -234,7 +234,7 @@ class gcMap{
         $s = str_replace(".", "", $val);
         //echo "--$s--";
         for ($i = 0; $i < strlen($s); $i++) {
-            //if(substr($val,$i,1)!=".") 
+            //if(substr($val,$i,1)!=".")
             $value += (floatval(substr($s, $i, 1))) * pow(10, $dec - 1 - $i);
             //echo (substr($s,$i,1)*pow(10,$dec-1-$i))."\n" ;
         }
@@ -245,7 +245,7 @@ class gcMap{
 
     function _getLayers(){
 
-        // **** Retrieve Layer names/mapserver ID hash 
+        // **** Retrieve Layer names/mapserver ID hash
         // Modifica Giraudi per usare l'id al posto del layer name
         $mapTmp = ms_newMapobj(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map");
         $layersHash = $mapTmp->getAllLayerNames();
@@ -264,32 +264,32 @@ class gcMap{
         $sqlAuthorizedLayers = "";
         if (count($authorizedLayers)>0) {
             $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', $authorizedLayers).")";
-            
+
             // **** Old Snapo ****
             // **** Check if there are layergroups on by defautl but not authorized
             // **** if so, disable full mapset in WMS/WMTS layer
             // !!!! TODO: mapproxy auth !!!!
             $sqlAuthLayers = "SELECT count(layergroup_id) as layernum from ".DB_SCHEMA.".mapset_layergroup WHERE layergroup_id not in (SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
             $sqlAuthLayers .= " UNION SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL) AND status=1 AND mapset_name = :mapset_name";
-            
+
             $stmt = $this->db->prepare($sqlAuthLayers);
             $stmt->bindValue(':mapset_name', $this->mapsetName);
             $stmt->execute();
-            
+
             $ctRow = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($ctRow) {
                 if (intval($ctRow['layernum']) > 0)
                     $this->mapsetTiles = 0;
-            }    
-            
+            }
+
         }
-        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id) 
+        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
             WHERE layergroup_id IN (
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
         $sqlLayers .= " UNION
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL
             ) AND mapset_name = :mapset_name
-                        ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;"; 
+                        ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;";
 
         $stmt = $this->db->prepare($sqlLayers);
         $stmt->bindValue(':mapset_name', $this->mapsetName);
@@ -298,13 +298,13 @@ class gcMap{
         $ows_url = (defined('GISCLIENT_OWS_URL'))?GISCLIENT_OWS_URL:'../../services/ows.php';
         if(defined('MAPPROXY_PATH') && defined('MAPPROXY_URL') ){
             $mapproxy_url = MAPPROXY_URL.$this->projectName;
-            if(!(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE)) 
+            if(!(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE))
                 $mapproxy_url = $mapproxy_url."/".$this->mapsetName;
         }
-    
+
         $rowset = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $themeMinScale = false; 
+        $themeMinScale = false;
         $themeMaxScale = false;
 
         //Chiamata a layer singolo
@@ -315,13 +315,13 @@ class gcMap{
             $aLayer["typeId"] = 1;
             $aLayer["type"] = "WMS";
 
-            $aLayer["options"]['mapset_single'] = true; 
-            $aLayer["options"]["title"] = $this->mapsetTitle;   
+            $aLayer["options"]['mapset_single'] = true;
+            $aLayer["options"]["title"] = $this->mapsetTitle;
             $aLayer["options"]["visibility"] = true;
-            $aLayer["options"]["theme_id"] = NULL;  
+            $aLayer["options"]["theme_id"] = NULL;
             $aLayer["options"]["theme"] = NULL;
-            $aLayer["parameters"]["layers"] = array();  
-            $aLayer["parameters"]["indexes"] = array(); 
+            $aLayer["parameters"]["layers"] = array();
+            $aLayer["parameters"]["indexes"] = array();
             $aLayer["nodes"] = array();
             array_push($this->mapLayers, $aLayer);
         }
@@ -332,7 +332,7 @@ class gcMap{
                 $row = $this->i18n->translateRow($row, 'theme', $row['theme_id'], array('theme_title', 'copyright_string'));
                 $row = $this->i18n->translateRow($row, 'layergroup', $row['layergroup_id'], array('layergroup_title', 'sld'));
             }
-            
+
             if($row['status']) {
                 array_push($this->defaultLayers, $row['layergroup_name']);
             }
@@ -348,22 +348,22 @@ class gcMap{
             $aLayer = array();
             $aLayer["name"] = $layergroupName;
             //$aLayer["title"] = $layergroupTitle;
-            
+
             //$aLayer["typeId"] = $layerType;
             $aLayer["typeId"] = intval($row["owstype_id"]);
             $aLayer["type"] = $row["owstype_name"];
             $layerOptions = array();
-            if($row["status"] == 0) 
+            if($row["status"] == 0)
                 $layerOptions["visibility"] = false;
-            if($row["hidden"] == 1) 
+            if($row["hidden"] == 1)
                 $layerOptions["displayInLayerSwitcher"] = false;
-            if(!empty($row['copyright_string'])) 
+            if(!empty($row['copyright_string']))
                 $layerOptions["attribution"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["copyright_string"]):$row["copyright_string"];
-            if($row["isbaselayer"] == 1 && $row["status"] == 1) 
+            if($row["isbaselayer"] == 1 && $row["status"] == 1)
                 $this->activeBaseLayer = $layergroupName;
-            if($row['opacity'] != null && $row['opacity'] != 100) 
+            if($row['opacity'] != null && $row['opacity'] != 100)
                 $layerOptions['opacity'] = $row['opacity']/100;
-            if(!empty($row['metadata_url'])) 
+            if(!empty($row['metadata_url']))
                 $layerOptions['metadataUrl'] = $row['metadata_url'];
 
             //if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
@@ -373,15 +373,15 @@ class gcMap{
             $layerOptions["title"] = $layergroupTitle;
             $layerOptions["rootPath"] = $themeTitle;
             $layerOptions["order"] = $layerOrder;
-            
+
             if ($row["refmap"])
                 $aLayer["overview"] = true;
 
 
             //ALLA ROVESCIA RISPETTO A MAPSERVER
-            if($row["layergroup_maxscale"]>0) 
+            if($row["layergroup_maxscale"]>0)
                 $layerOptions["minScale"] = floatval($row["layergroup_maxscale"]);
-            if($row["layergroup_minscale"]>0) 
+            if($row["layergroup_minscale"]>0)
                 $layerOptions["maxScale"] = floatval($row["layergroup_minscale"]);
 
             switch ($layerType) {
@@ -416,7 +416,7 @@ class gcMap{
                     $aLayer["parameters"] = $layerParameters;
                     $aLayer["options"] = $layerOptions;
 
-                    //SETTO IL PARAMETRO LAYERS E LA STRUTTURA      
+                    //SETTO IL PARAMETRO LAYERS E LA STRUTTURA
                     //DA RIVEDRE!!!!!!!!!!!!!!!!!
                     // Layer impostati sul layergroup
                     if (!empty($row['layers'])) {
@@ -452,7 +452,7 @@ class gcMap{
                             $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder);
                         }
 
-                        //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)        
+                        //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
                         else {
                             $nodes = array();
                             $layers = array();
@@ -461,10 +461,11 @@ class gcMap{
                                 if ($row["status"] == 1)
                                     array_push($this->mapLayers[$idx]["parameters"]["layers"], $userLayer["name"]);
                                 $arr = array("layer" => $userLayer["name"], "title" => $userLayer["title"]);
+                                //ALLA ROVESCIA RISPETTO A MAPSERVER
                                 if ($userLayer["minScale"])
-                                    $arr["minScale"] = floatval($userLayer["minScale"]);
+                                    $arr["maxScale"] = floatval($userLayer["minScale"]);
                                 if ($userLayer["maxScale"])
-                                    $arr["maxScale"] = floatval(+$userLayer["maxScale"]);
+                                    $arr["minScale"] = floatval(+$userLayer["maxScale"]);
                                 $nodes[] = $arr;
                                 $layers[] = $userLayer["name"];
                             }
@@ -481,20 +482,20 @@ class gcMap{
                             $node["minScale"] = $layerOptions["minScale"];
                             if (isset($this->mapLayers[$idx]["options"]["minScale"]))
                                 $this->mapLayers[$idx]["options"]["minScale"] = max($this->mapLayers[$idx]["options"]["minScale"], $layerOptions["minScale"]);
-                        } 
-                        else {
-                            unset($this->mapLayers[$idx]["options"]["minScale"]); 
                         }
-                        
-                        if (!empty($layerOptions["maxScale"])) {                              
+                        else {
+                            unset($this->mapLayers[$idx]["options"]["minScale"]);
+                        }
+
+                        if (!empty($layerOptions["maxScale"])) {
                             $node["maxScale"] = $layerOptions["maxScale"];
                             if (isset($this->mapLayers[$idx]["options"]["maxScale"]))
                                 $this->mapLayers[$idx]["options"]["maxScale"] = min($this->mapLayers[$idx]["options"]["maxScale"], $layerOptions["maxScale"]);
-                        } 
-                        else {  
-                            unset($this->mapLayers[$idx]["options"]["maxScale"]);                             
                         }
-                        
+                        else {
+                            unset($this->mapLayers[$idx]["options"]["maxScale"]);
+                        }
+
                         array_push($this->mapLayers[$idx]["nodes"], $node);
 
                         continue;
@@ -506,7 +507,7 @@ class gcMap{
                         $aLayer["parameters"]["layers"] = array($layergroupName);
                     }
 
-                    //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)        
+                    //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
                     else {
                         $aLayer["parameters"]["layers"] = array();
                         $aLayer["nodes"] = array();
@@ -515,10 +516,11 @@ class gcMap{
                         foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
                             array_push($aLayer["parameters"]["layers"], $userLayer["name"]);
                             $arr = array("layer" => $userLayer["name"], "title" => $userLayer["title"]);
+                            //ALLA ROVESCIA RISPETTO A MAPSERVER
                             if ($userLayer["minScale"])
-                                $arr["minScale"] = floatval($userLayer["minScale"]);
+                                $arr["maxScale"] = floatval($userLayer["minScale"]);
                             if ($userLayer["maxScale"])
-                                $arr["maxScale"] = floatval(+$userLayer["maxScale"]);
+                                $arr["minScale"] = floatval(+$userLayer["maxScale"]);
                             array_push($aLayer["nodes"], $arr);
                             if ($userLayer["hidden"] == 0)
                                 $hidden = false;
@@ -563,12 +565,12 @@ class gcMap{
                     $aLayer["parameters"] = $layerParameters;
                     $aLayer["options"] = $layerOptions;
 
-                    //SETTO IL PARAMETRO LAYERS E LA STRUTTURA      
+                    //SETTO IL PARAMETRO LAYERS E LA STRUTTURA
                     $aLayer["parameters"]["layers"] = $layergroupName;
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case GMAP_LAYER_TYPE:
                 case BING_LAYER_TYPE:
                 case VMAP_LAYER_TYPE:
@@ -607,10 +609,10 @@ class gcMap{
                     unset($layerOptions["minScale"]);
                     unset($layerOptions["maxScale"]);
                     $aLayer["options"] = $layerOptions;
-                    
+
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case OSM_LAYER_TYPE:
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
@@ -628,7 +630,7 @@ class gcMap{
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case WMTS_LAYER_TYPE:
                     $layerParameters = array();
                     $layerParameters["name"] = $aLayer["name"];
@@ -676,7 +678,7 @@ class gcMap{
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case TMS_LAYER_TYPE:
                     if (isset($row["url"])) {
                         $aLayer["url"] = $row["url"];
@@ -707,13 +709,13 @@ class gcMap{
                     //$layerOptions["buffer"] = intval($row["buffer"]);
                     //$layerOptions["mapResolutions"] = $this->mapResolutions;
                     //$layerOptions["maxResolution"] = 78271.516964;
-                    //$layerOptions["maxExtent"] = $this->tilesExtent;  
+                    //$layerOptions["maxExtent"] = $this->tilesExtent;
                     $layerOptions["tileOrigin"] = array_slice($this->tilesExtent, 0, 2);
                     $aLayer["options"] = $layerOptions;
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case XYZ_LAYER_TYPE:
                     if ($row["url"]) {
 
@@ -726,7 +728,7 @@ class gcMap{
                         array_push($this->mapLayers, $aLayer);
                     }
                     break;
-                    
+
                 default:
                     // **** Error: Unknown layer type
             }
@@ -742,15 +744,15 @@ class gcMap{
                     $aLayers[$themeName][$layergroupName]['legend'] = $this->_getLegendArray($row['layergroup_id']);
                 }
             }*/
-        
+
         }
     }
-    
+
     function _getThemeLayerIndex($themeName){
         $index = -1;
-        foreach ($this->mapLayers as $key => $value){ 
-            if($value["name"] == $themeName) $index = $key; 
-        }  
+        foreach ($this->mapLayers as $key => $value){
+            if($value["name"] == $themeName) $index = $key;
+        }
         return $index;
     }
 
@@ -760,10 +762,10 @@ class gcMap{
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($layergroupId));
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if(!empty($this->i18n)) 
+
+        if(!empty($this->i18n))
             $row['sld'] = $this->i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
-        
+
         if (trim($row['sld']) != '') {
             if (is_null($this->oMap)) {
                 $this->oMap = ms_newMapobj("../../map/{$this->mapsetName}.map");
@@ -773,10 +775,10 @@ class gcMap{
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-                curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+                curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
                 $sldContent = curl_exec($ch);
                 curl_close($ch);
-                
+
                 $this->oMap->applySLD($sldContent);
                 $this->sldContents[$row['sld']] = true;
             }
@@ -802,7 +804,7 @@ class gcMap{
                 return $legendArray;
             }
         }
-        
+
         // default mode
         $sqlLegend = "SELECT class_id, class_name, class_title, legendtype_id FROM " . DB_SCHEMA . ".class INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) WHERE layer.layergroup_id=? ORDER BY layer_order, class_order";
         print_debug($sqlLegend,null,'maplegend');
@@ -816,14 +818,14 @@ class gcMap{
         }
         return $legendArray;
     }
-    
-    
+
+
     function _getFeatureTypes(){
 
         $wfsGeometryType = array("point" => "PointPropertyType","multipoint" => "MultiPointPropertyType","linestring" => "LineStringPropertyType","multilinestring" => "MultiLineStringPropertyType","polygon" => "PolygonPropertyType" ,"multipolygon" => "MultiPolygonPropertyType","geometry" => "GeometryPropertyType");
-        
+
         $featureTypesLinks = $this->_getFeatureTypesLinks();
-        
+
         //Restituisce le features e i range di scala
         $userGroupFilter = '';
         $user = new GCUser();
@@ -833,10 +835,10 @@ class gcMap{
             if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("',", $this->authorizedGroups)."')";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
-        
+
         $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, owstype_id, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
-				FROM " . DB_SCHEMA . ".theme 
-				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id) 
+				FROM " . DB_SCHEMA . ".theme
+				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id)
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
 				INNER JOIN " . DB_SCHEMA . ".layer using (layergroup_id)
 				INNER JOIN " . DB_SCHEMA . ".catalog using (catalog_id)
@@ -850,34 +852,34 @@ class gcMap{
         $featureTypes = array();
         $layersWith1n = array();
         $fieldID = 0;
-        
+
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             // **** Avoid duplicates
             if ($fieldID === $row['field_id'])
                 continue;
             $fieldID = $row['field_id'];
-            
+
             if(!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], array('layer_title','classitem','labelitem'));
                 $row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name','field_header'));
             }
-    
+
             //DETTAGLIO AUTORIZZAZIONI
             $typeName = $row["type_name"];
             if($row['private'] == 0) {
-                if(!$this->isPublicLayerQueryable) 
+                if(!$this->isPublicLayerQueryable)
                     continue;
             } else {
-                if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1) 
+                if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFS'] != 1)
                     continue;
             }
-        
+
             $typeTitle = $row["layer_title"];
             $groupTitle = empty($row["theme_title"]) ? $row["theme_name"] : $row["theme_title"];
             $index = ($row['theme_single'] == 1 && $row['owstype_id'] == WMS_LAYER_TYPE ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
             if (!isset($featureTypes[$index]))
                 $featureTypes[$index] = array();
-            if(!isset($featureTypes[$index][$typeName])) 
+            if(!isset($featureTypes[$index][$typeName]))
                 $featureTypes[$index][$typeName] = array();
 
 /*             if($row['relationtype_id'] == 2) {
@@ -886,11 +888,11 @@ class gcMap{
                 if(!in_array($row['relation_id'], $layersWith1n[$index][$typeName])) array_push($layersWith1n[$index][$typeName], $row);
                 continue;
             } */
-            
+
             $featureTypes[$index][$typeName]["WMSLayerName"] = $row['theme_single'] && $row['owstype_id'] == WMS_LAYER_TYPE ? $row['theme_name'] : $row['layergroup_name'];
-            $featureTypes[$index][$typeName]["typeName"] = $typeName;   
-            $featureTypes[$index][$typeName]["title"] = $typeTitle; 
-            $featureTypes[$index][$typeName]["group"] = $groupTitle;    
+            $featureTypes[$index][$typeName]["typeName"] = $typeName;
+            $featureTypes[$index][$typeName]["title"] = $typeTitle;
+            $featureTypes[$index][$typeName]["group"] = $groupTitle;
 
             if ($row['field_editable'] == 1 && !isset($featureTypes[$index][$typeName]['towsFeatureType'])) {
                 $featureTypes[$index][$typeName]['towsFeatureType'] = $row['data'];
@@ -914,11 +916,11 @@ class gcMap{
             if (isset($featureTypesLinks[$row['layer_id']])) {
                 $featureTypes[$index][$typeName]['link'] = $featureTypesLinks[$row['layer_id']];
             }
-            
+
             $userCanEdit = false;
-            if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || $user->isAdmin($this->projectName)) 
+            if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || $user->isAdmin($this->projectName))
                 $userCanEdit = true;
-            
+
             if (!empty($row["selection_color"]) && !empty($row["selection_width"])) {
                 $color = "RGB(" . str_replace(" ", ",", $row["selection_color"]) . ")";
                 $size = intval($row["selection_width"]);
@@ -927,8 +929,8 @@ class gcMap{
                 if ($row["layertype_id"] == 2 || $row["layertype_id"] == 3)
                     $featureTypes[$index][$typeName]["symbolizer"] = array("Line" => array("strokeColor" => "$color", "strokeWidth" => $size));
             }
-            
-    
+
+
             //TODO DA VERIFICARE DA VEDERE ANCHE L'OPZIONE PER IL CAMPO EDITABILE CHE SOVRASCRIVE QUELLO DI DEFAULT
             if(($fieldName = $row["field_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
                 /*
@@ -936,10 +938,10 @@ class gcMap{
                     $fieldName = $row["relation_name"] . "_" . NameReplace($row["field_header"]);
                 }
                 */
-                //AGGIUNGO IL CAMPO GEOMETRIA COME PRIMO CAMPO          
+                //AGGIUNGO IL CAMPO GEOMETRIA COME PRIMO CAMPO
                 if(empty($featureTypes[$index][$typeName]["properties"])) $featureTypes[$index][$typeName]["properties"] = array(
                     array(
-                        "name"=>$row['data_geom'], 
+                        "name"=>$row['data_geom'],
                         "type"=>$wfsGeometryType[$row['data_type']]
                     )
                 );
@@ -949,20 +951,20 @@ class gcMap{
                 } else {
                     $isPrimaryKey = 0;
                 }
-                
+
                 $aRel=array();
                 if($row["relation_name"]){
                     $aRel["relationName"] =  $row["relation_name"];
                     $aRel["relationType"] = intval($row["relationtype_id"]);
                     $aRel["relationTitle"] =  $row["relation_title"]?$row["relation_title"]:$row["relation_name"];
-                    if(!isset($featureTypes[$index][$typeName]["relations"])) 
+                    if(!isset($featureTypes[$index][$typeName]["relations"]))
                         $featureTypes[$index][$typeName]["relations"] = array();
                 }
                 if($aRel && (!in_array($aRel, $featureTypes[$index][$typeName]["relations"])))
                     $featureTypes[$index][$typeName]["relations"][] = $aRel;
 
                 $fieldSpecs = array(
-                    "name"=>$fieldName,     
+                    "name"=>$fieldName,
                     "header"=>(strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["field_header"]):$row["field_header"],
                     "type"=>"String",//TODO
                     "fieldId"=>intval($row["field_id"]),
@@ -1017,7 +1019,7 @@ class gcMap{
                 }
             }
         } */
-        
+
         foreach($featureTypes as $index => $arr) {
             foreach($arr as $typeName => $ftype) {
                 $this->featureTypes[] = $ftype;
@@ -1026,7 +1028,7 @@ class gcMap{
         unset($featureTypes);
 
     }
-    
+
     private function _getFeatureTypesLinks() {
         //FD: questi adesso sono qt_link oppure layer_link?!?!
         return array();
@@ -1039,17 +1041,17 @@ class gcMap{
         $stmt->execute(array(':mapset_name'=>$this->mapsetName));
         $links = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if(strtoupper(CHAR_SET) != 'UTF-8') 
+            if(strtoupper(CHAR_SET) != 'UTF-8')
                 $row["link_name"] = utf8_encode($row["link_name"]);
             $links[$row['layer_id']][] = array('name'=>$row["link_name"],'url'=>$row['link_def'],'width'=>$row['winw'],'height'=>$row['winh']);
         }
         return $links;
     }
-    
+
     function _getSelgroup(){
-        $sql = "SELECT selgroup.selgroup_id,selgroup_name,selgroup_title,layergroup_name||'.'||layer_name AS type_name 
-        FROM ".DB_SCHEMA.".layer INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id) INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING(layergroup_id) 
-        INNER JOIN ".DB_SCHEMA.".selgroup_layer USING (layer_id) INNER JOIN ".DB_SCHEMA.".selgroup USING (selgroup_id) 
+        $sql = "SELECT selgroup.selgroup_id,selgroup_name,selgroup_title,layergroup_name||'.'||layer_name AS type_name
+        FROM ".DB_SCHEMA.".layer INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id) INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING(layergroup_id)
+        INNER JOIN ".DB_SCHEMA.".selgroup_layer USING (layer_id) INNER JOIN ".DB_SCHEMA.".selgroup USING (selgroup_id)
         WHERE layer.queryable=1 AND mapset_name=:mapset_name ORDER BY selgroup_order;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array(':mapset_name'=>$this->mapsetName));
@@ -1075,15 +1077,15 @@ class gcMap{
                 " X(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as x1, ".
                 " Y(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as y1;";
             $ext = $this->db->query($sqlExt)->fetch(PDO::FETCH_ASSOC);
-            $extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));       
+            $extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));
         }
         else
             $extent = array(floatval($x0),floatval($y0),floatval($x1),floatval($y1));
-            
-        return $extent;
-    }   
 
-*/  
+        return $extent;
+    }
+
+*/
     //Elenco delle librerie per i providers usati
     function _setMapProviders(){
         $jsText = "";
@@ -1095,8 +1097,8 @@ class gcMap{
         if($jsText) $jsText = "var script;".$jsText;
         return $jsText;
     }
-    
-    
+
+
     //RESITUTISCO GIA LA MAPPA OL
     function OLMap(){
         //FIX PER VERSIONE XJTJS DELLE MAPPE
@@ -1109,7 +1111,7 @@ class gcMap{
 
         $loader=false;
         $jsText=$this->_setMapProviders();
-        if($jsText) 
+        if($jsText)
             $loader = true;
 
         $this->mapConfig["mapOptions"]["allOverlays"] = false;
@@ -1118,7 +1120,7 @@ class gcMap{
         //$this->mapConfig["mapOptions"]["resolutions"] = array_slice($this->mapConfig["mapOptions"]["mapResolutions"],$this->mapConfig["mapOptions"]["minZoomLevel"],$this->mapConfig["mapOptions"]["numZoomLevels"]);
         $jsText .= "var GisClient = GisClient || {}; GisClient.mapset = GisClient.mapset || [];\n";
         $jsText .= 'GisClient.mapset.push({'.$mapsetOptions.',"map":'.json_encode($this->mapConfig["mapOptions"]).',"layers":['.implode(',',$aLayerText).'],"featureTypes":'.json_encode($this->mapConfig["featureTypes"]).'});';
-        if($this->mapProviders[GMAP_LAYER_TYPE] && $loader) 
+        if($this->mapProviders[GMAP_LAYER_TYPE] && $loader)
             $jsText .= 'GisClient.loader=true;';
         return $jsText;
     }
@@ -1138,7 +1140,7 @@ class gcMap{
                 $aLayer["options"]["name"] = $aLayer["name"];
                 if(defined('BINGKEY') && ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913))
                     return 'new OpenLayers.Layer.Bing('.json_encode($aLayer["options"]).')';
-                break;  
+                break;
             case "OSM":
                 $aLayer["options"]["group"] = $aLayer["options"]["theme"];
                 if($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913)
@@ -1153,7 +1155,7 @@ class gcMap{
                 return 'new OpenLayers.Layer.TMS("'.$aLayer["name"].'","'.$aLayer["url"].'/",{"visibility":'.(empty($aLayer["options"]["visibility"])?'true':'false').',"isBaseLayer":'.($aLayer["options"]["isBaseLayer"]?'true':'false').',"layername":"'.$aLayer["options"]["layername"].'","buffer":'.$aLayer["options"]["buffer"].',"type":"'.$aLayer["options"]["type"].'","tileOrigin":new OpenLayers.LonLat('.implode(",",$aLayer["options"]["tileOrigin"]).'),"zoomOffset":'.$aLayer["options"]["zoomOffset"].',"group":"'.$aLayer["options"]["group"].'"})';
             }
     }
-    
+
     function _getScaleList() {
         $sql = "SELECT mapset_scales FROM " . DB_SCHEMA . ".mapset WHERE mapset_name=?";
         $stmt = $this->db->prepare($sql);
@@ -1178,7 +1180,7 @@ class gcMap{
         $precision = $this->mapsetUM == "dd" ? 10 : 2;
         $aRes = array();
 
-        if (isset($mapsetScales)) { //TODO 
+        if (isset($mapsetScales)) { //TODO
             $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
             foreach ($v as $key => $value) {
                 $aRes[$key] = round((real) $value, $precision);
@@ -1259,7 +1261,7 @@ class gcMap{
 
         return $aExtent;
     }
-    
+
     function _getUsercontext($contextId) {
         $user = new GCUser();
         if (!$user->isAuthenticated())
@@ -1274,7 +1276,7 @@ class gcMap{
         else
             return array();
     }
-/*    
+/*
     function _getMaxExtents() {
         $extents = array();
         $userGroupFilter = '';
@@ -1283,14 +1285,14 @@ class gcMap{
             if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
-        
+
         $sql = "SELECT layergroup_id, layer_id, data_extent
-                FROM ".DB_SCHEMA.".layer 
-                INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id) 
+                FROM ".DB_SCHEMA.".layer
+                INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id)
                 INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id)
-                WHERE mapset_layergroup.mapset_name=:mapset_name 
+                WHERE mapset_layergroup.mapset_name=:mapset_name
                 order BY layergroup_id ";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1324,9 +1326,9 @@ class gcMap{
         //var_export($extents);
         return $extents;
     }
-    
-    
-    
+
+
+
     function _array_limit($aList,$maxVal=false,$minVal=false){
         $ar=array();
         foreach($aList as $val){
@@ -1335,7 +1337,7 @@ class gcMap{
         }
         return array_values(array_diff($aList,$ar));
     }
-    
+
     function _array_index($aList, $value){
         $retval=0;
         for($i=0;$i<count($aList);$i++){
@@ -1345,5 +1347,5 @@ class gcMap{
     }
 
 */
-    
+
 }
