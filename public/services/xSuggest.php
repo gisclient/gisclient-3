@@ -29,7 +29,7 @@ $datalayerSchema = GCApp::getDataDBSchema($layer['catalog_path']);
 $datalayerTable = $layer["data"];
 $datalayerKey = $layer["data_unique"];
 $filters = array(); //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
-if(!empty($layer['data_filter'])) array_push($filters, $layer['data_filter']);
+if(!empty($layer['data_filter'])) array_push($filters, '('.$layer['data_filter'].')');
 $sTable = $datalayerSchema.".".$datalayerTable;
 
 
@@ -79,9 +79,9 @@ if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabel
     if(empty($field['formula'])) {
         $fieldName = $field['relation_name'] . '.' . $field["field_name"];
     }
-    
+
     $joinList = array();
-    
+
     if($field["data_field_1"] && $field["table_field_1"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_1"]."=\"".$field["relation_name"]."\".".$field["table_field_1"];
     if($field["data_field_2"] && $field["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_2"]."=\"".$field["relation_name"]."\".".$field["table_field_2"];
     if($field["data_field_3"] && $field["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_3"]."=\"".$field["relation_name"]."\".".$field["table_field_3"];
@@ -93,9 +93,9 @@ if(!empty($fieldFilter["relation_id"])) {//il campo oggetto di autosuggest è su
     if(empty($fieldFilter['formula'])) {
         $fieldFilterName = $fieldFilter['relation_name'] . '.' . $fieldFilterName;
     }
-    
+
     $joinList = array();
-    
+
     if($fieldFilter["data_field_1"] && $fieldFilter["table_field_1"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_1"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_1"];
     if($fieldFilter["data_field_2"] && $fieldFilter["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_2"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_2"];
     if($fieldFilter["data_field_3"] && $fieldFilter["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_3"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_3"];
