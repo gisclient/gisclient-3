@@ -98,7 +98,9 @@
 									<fo:table-cell padding="2px">
 										<fo:block>
 											<xsl:choose>
-												<xsl:when test="//map-lang='de'">Maßstab 1:</xsl:when>
+												<xsl:when test="//map-lang='en'">Scale 1:</xsl:when>
+                                                <xsl:when test="//map-lang='de'">Maßstab 1:</xsl:when>
+                                                <xsl:when test="//map-lang='pl'">Skala 1:</xsl:when>
 												<xsl:otherwise>Scala 1:</xsl:otherwise>
 											</xsl:choose>
 											<xsl:value-of select="map-scale" />
@@ -108,7 +110,9 @@
 										<fo:block>
 											<xsl:if test="map-date!=''">
 												<xsl:choose>
-													<xsl:when test="//map-lang='de'">Datum: </xsl:when>
+													<xsl:when test="//map-lang='en'">Date: </xsl:when>
+                                                    <xsl:when test="//map-lang='de'">Datum: </xsl:when>
+                                                    <xsl:when test="//map-lang='pl'">Data: </xsl:when>
 													<xsl:otherwise>Data: </xsl:otherwise>
 												</xsl:choose>
 												<xsl:value-of select="map-date" />
