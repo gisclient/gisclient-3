@@ -206,8 +206,10 @@ class gcMapfile{
 			$oFeatureData = $oFeature->getFeatureData();
 			if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
                                 if ($oFeatureData['data_srid'] !== $aLayer["mapset_srid"]) {
-                                     $sql = "SELECT st_xmin(foo.e) || ' ' || st_ymin(foo.e) || ' ' || st_xmax(foo.e) || ' ' || st_ymax(foo.e) FROM";
-                                     $sql .= "(SELECT ST_Extent(ST_Transform(ST_MakeEnvelope(:minx, :miny, :maxx, :maxy, :fromsrid), :tosrid::INTEGER)) as e) as foo";
+                                     $sql = "SELECT st_xmin(foo.e) || ' ' || st_ymin(foo.e) || ' ' || st_xmax(foo.e) || ' ' || st_ymax(foo.e) 
+                                             FROM (
+                                                 SELECT ST_Extent(ST_Transform(ST_MakeEnvelope(:minx, :miny, :maxx, :maxy, :fromsrid), :tosrid::INTEGER)) AS e
+                                                 ) AS foo";
                                      $stmt = $this->db->prepare($sql);
 
                                      $ext = explode(' ', $aLayer["mapset_extent"]);
