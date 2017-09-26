@@ -10,9 +10,13 @@ if(!empty($_REQUEST['suggest'])) {
     $inputString = '%' . $_REQUEST['suggest'] . '%';
     $params['input_string'] = $inputString;
 }
-if(!empty($_REQUEST["filtervalue"])) {
-    $inputString = '%' . $_REQUEST['filtervalue'] . '%';
-    $params['filter_string'] = $inputString;
+if(!empty($_REQUEST["filtervalue"]) && !empty($_REQUEST["filterfields"])) {
+    $filterFields = explode(',', $_REQUEST["filterfields"]);
+    $filterValue = explode(',', $_REQUEST["filtervalue"]);
+    for ($i = 0; $i < count($filterFields); $i++) {
+        $inputString = $filterValue[$i];
+        $params['field_' . $filterFields[$i]] = $inputString;
+    }
 }
 
 $db = GCApp::getDB();
@@ -55,29 +59,10 @@ if(!empty($field['formula'])) {
 $fromString = $sTable ." as " . DATALAYER_ALIAS_TABLE;
 
 // +++++++++++++++++ FILTRO AUTOSUGGEST ++++++++++++++++++++++++++++++++++//
-//Info campo che fa da filtro: ho passato una stringa di filtro a un campo che ha il campo filtro, devo cercare il campo di filtro stesso
-$fieldFilterId = $field["field_filter"];
-
-if(isset($fieldFilterId) && isset($_REQUEST["filtervalue"])){
-    /* Recupero i dati del campo filtro */
-    $sql = 'select field.field_id, field_name, field_filter, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.field left join '.DB_SCHEMA.'.relation using (relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where field.field_id=:field_id';
-    $stmt = $db->prepare($sql);
-    $stmt->execute(array('field_id'=>$fieldFilterId));
-    $fieldFilter = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if(!empty($fieldFilter['relation_id'])) {
-        $fieldFilter['schema'] = GCApp::getDataDBSchema($fieldFilter['catalog_path']);
-    }
-
-    $fieldFilterName = $fieldFilter["field_name"];
-    if(!empty($fieldFilter['formula'])) {
-        $fieldFilterName = $fieldFilter['formula'];
-}
-}
-
+// **** Query su campo principale
 if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
     if(empty($field['formula'])) {
-        $fieldName = $field['relation_name'] . '.' . $field["field_name"];
+        $fieldName = '"' . $field['relation_name'] . '"."' . $field["field_name"] . '"';
     }
 
     $joinList = array();
@@ -89,35 +74,58 @@ if(!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabel
     $fromString = "(" . $fromString . " inner join ". $field["schema"].".".$field["table_name"]." as ". $field["relation_name"]." on ($joinFields)) ";
 }
 
-if(!empty($fieldFilter["relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
-    if(empty($fieldFilter['formula'])) {
-        $fieldFilterName = $fieldFilter['relation_name'] . '.' . $fieldFilterName;
+if(!empty($params)) {
+    if (isset($params['input_string'])) {
+        array_push($filters, $fieldName . '::text ilike :input_string ');
+    }
+}
+
+//Info campo che fa da filtro: ho passato una stringa di filtro a un campo che ha il campo filtro, devo cercare il campo di filtro stesso
+if(isset($field["field_filter"]) && isset($filterFields)){
+    /* Recupero i dati del campo filtro */
+    $sql = 'select field.field_id, field_name, field_filter, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.field left join '.DB_SCHEMA.'.relation using (relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where field.field_id in (' . implode(',', $filterFields) . ')';
+    $stmt = $db->query($sql);
+
+    while ($fieldFilter = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+        if(!empty($fieldFilter['relation_id'])) {
+            $fieldFilter['schema'] = GCApp::getDataDBSchema($fieldFilter['catalog_path']);
+
+            $fieldFilterName = '"' . $fieldFilter['relation_name'] . '"."' . $fieldFilter["field_name"] . '"';
+            if(!empty($fieldFilter['formula'])) {
+                $fieldFilterName = $fieldFilter['formula'];
+            }
+
+            $joinList = array();
+
+            if($fieldFilter["data_field_1"] && $fieldFilter["table_field_1"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_1"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_1"];
+            if($fieldFilter["data_field_2"] && $fieldFilter["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_2"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_2"];
+            if($fieldFilter["data_field_3"] && $fieldFilter["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_3"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_3"];
+            $joinFields = implode(" AND ",$joinList);
+            $fromString = "(" . $fromString . " inner join ". $fieldFilter["schema"].".".$fieldFilter["table_name"]." as ". $fieldFilter["relation_name"]." on ($joinFields)) ";
+
+        }
+        else {
+            $fieldFilterName = $fieldFilter["field_name"];
+            if(!empty($fieldFilter['formula'])) {
+                $fieldFilterName = $fieldFilter['formula'];
+            }
+        }
+        array_push($filters, $fieldFilterName . '::text = :field_' . $fieldFilter['field_id'] . ' ');
     }
 
-    $joinList = array();
-
-    if($fieldFilter["data_field_1"] && $fieldFilter["table_field_1"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_1"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_1"];
-    if($fieldFilter["data_field_2"] && $fieldFilter["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_2"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_2"];
-    if($fieldFilter["data_field_3"] && $fieldFilter["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_3"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_3"];
-    $joinFields = implode(" AND ",$joinList);
-    $fromString = "(" . $fromString . " inner join ". $fieldFilter["schema"].".".$fieldFilter["table_name"]." as ". $fieldFilter["relation_name"]." on ($joinFields)) ";
 }
+
 
 $sqlQuery = "SELECT DISTINCT ". $fieldName ." as value FROM " . $fromString;
-
-
-if(!empty($params)) {
-    if (isset($params['input_string']))
-        array_push($filters, $fieldName . '::text ilike :input_string ');
-    if (isset($params['filter_string']))
-        array_push($filters, $fieldFilterName . '::text ilike :filter_string ');
-}
 
 if(!empty($filters)) {
     $sqlQuery .= ' where '.implode(' and ', $filters);
 }
 
 $sqlQuery .= " order by ".$fieldName." limit 25";
+
+print_debug($sqlQuery, null, 'xsuggest');
 
 try {
     $stmt = $dataDb->prepare($sqlQuery);
