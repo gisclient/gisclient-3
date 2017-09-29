@@ -101,6 +101,7 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
             "wms_feature_info_mime_type" "text/html"
             "wms_feature_info_mime_type" "text/xml"
             "wfs_namespace_prefix" "feature"
+            "wfs_namespace_uri" "http://www.mapserver.org/"
             "wms_srs" "EPSG:{$mapSRID}"
         END
         IMAGEPATH "/tmp/"
