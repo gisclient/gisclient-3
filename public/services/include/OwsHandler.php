@@ -69,7 +69,8 @@ class OwsHandler {
         if (empty($layersParameter)) {
             return $layersArray;
         }
-
+        
+        $wfsNamespace = $oMap->getMetaData('wfs_namespace_prefix');
         $layerNames = explode(',', $layersParameter);
         // ciclo i layers e costruisco un array di singoli layers
         foreach ($layerNames as $name) {
@@ -84,6 +85,11 @@ class OwsHandler {
                 }
                 // è un singolo layer
             } else {
+                // Remove namespace from requested layer name [QGIS 2.18]
+                $wfsNamespace = $oMap->getMetaData('wfs_namespace_prefix');
+                if (!empty($wfsNamespace)) {
+                    $name = str_replace("{$wfsNamespace}:", '', $name);
+                }
                 array_push($layersArray, $oMap->getLayerByName($name));
             }
         }
