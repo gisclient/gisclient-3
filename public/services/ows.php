@@ -93,6 +93,22 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
         $prunedFilter = $owsHandler->pruneSrsFromFilter($skippedParams['filter'], $invertedAxisOrderSrids);
         $objRequest->setParameter('filter', $prunedFilter);
     }
+} else if ($objRequest->getValueByName('request') == '') {
+    // WFS request is invalid. Missing or invalid service parameter
+    //   see http://cite.opengeospatial.org/teamengine/listings/srv_local_teamengine-prod_TE_BASE_scripts_wfs_1.1.0_ctl_main.html#wfs:wfs-1.1.0-Basic-GetCapabilities-tc7
+    print_debug('Invalid request: Request GetCapabilities without service parameter');
+    error_log("Empty request");
+    
+    header("Content-Type: application/xml");
+    echo <<<EOL
+<?xml version="1.0" encoding="UTF-8"?>
+<ows:ExceptionReport xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ows="http://www.opengis.net/ows" version="1.1.0" language="en-US" xsi:schemaLocation="http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsExceptionReport.xsd">
+  <ows:Exception exceptionCode="InvalidParameterValue" locator="request">
+    <ows:ExceptionText>msWFSDispatch(): WFS server error. WFS request not enabled. Check wfs/ows_enable_request settings.</ows:ExceptionText>
+  </ows:Exception>
+</ows:ExceptionReport>
+EOL;
+    die();
 }
 
 // sanitize project as part of the path
