@@ -86,7 +86,6 @@ class OwsHandler {
                 // Is a single layer
             } else {
                 // Remove namespace from requested layer name [QGIS 2.18]
-                $wfsNamespace = $oMap->getMetaData('wfs_namespace_prefix');
                 if (!empty($wfsNamespace)) {
                     $name = str_replace("{$wfsNamespace}:", '', $name);
                 }
