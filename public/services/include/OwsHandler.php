@@ -89,6 +89,9 @@ class OwsHandler {
                 if (!empty($wfsNamespace)) {
                     $name = str_replace("{$wfsNamespace}:", '', $name);
                 }
+                
+                $name = str_replace("app:", '', $name); // Test wfs:wfs-1.1.0-Basic-GetFeature-tc5 
+                
                 array_push($layersArray, $oMap->getLayerByName($name));
             }
         }
