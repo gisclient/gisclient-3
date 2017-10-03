@@ -6,8 +6,8 @@
 					<?php } else { ?>
 						<b class="shadow">GisClient</b><strong class="color">Author</strong>
 					<?php } ?>
-					
-					
+
+
 				</div>
 				<div id="clientLogo" class="shadow">
 					<?php if(defined('CLIENT_LOGO') && CLIENT_LOGO != null) { ?>
@@ -23,11 +23,11 @@
 						<a class="button" data-action="data_manager" style="display:none;">Data manager</a>
 						<a class="button" data-action="preview_map" style="display:none;">Preview Map</a>
 						<?php if($user->isAdmin()) { ?>
-						<a class="button" data-action="options">Options</a> 
+						<a class="button" data-action="options">Options</a>
 						<a class="button" data-action="symbology"><?php echo GCAuthor::t('symbology'); ?></a>
 						<?php } ?>
 						<a class="button" data-action="ogc_services" style="display:none;"><?php echo GCAuthor::t('ogc_services'); ?></a>
-                        <?php 
+                        <?php
                         if(!empty($p->parametri['project'])) {
                             echo '<a class="button" data-action="mapfiles_manager">'.GCAuthor::t('online_maps').'</a>';
                         }
@@ -85,7 +85,7 @@
 				</table>
 				<?php } ?>
 			</div>
-			
+
 			<div id="dialog_symbology" style="display:none;" data-title="<?php echo GCAuthor::t('symbology'); ?>">
 				<ul>
 					<li><a href="#raster">Pixmap</a></li>
@@ -118,7 +118,7 @@
 					<button onclick="saveFontSymbols()">Salva</button>
 				</div>
 			</div>
-			
+
 			<div id="mapfiles_manager" style="display:none;" data-title="<?php echo GCAuthor::t('online_maps') ?>">
 				<table border="1" cellpadding="3" class="stiletabella">
 				<tr class="ui-widget ui-state-default">
@@ -240,3 +240,9 @@
                 <div class="logs" style="color:red;" tabindex="100"></div>
             </div>
 		<!-- ### STANDARD  PAGE  HEADER  FINE ##################################################### -->
+		<?php
+		foreach (glob(ADMIN_PATH."inc/plugins/inc.admin.page_header*.php") as $filename)
+		{
+    		include $filename;
+		}
+		?>

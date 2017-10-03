@@ -18,21 +18,21 @@ class GCApp {
 		}
 		return self::$db;
 	}
-	
+
 	public static function getDataDB($path) {
 		if(empty(self::$dataDBs[$path])) {
 			self::$dataDBs[$path] = new GCDataDB($path);
 		}
 		return self::$dataDBs[$path]->db;
 	}
-	
+
 	public static function getDataDBSchema($path) {
 		if(empty(self::$dataDBs[$path])) {
 			self::$dataDBs[$path] = new GCDataDB($path);
 		}
 		return self::$dataDBs[$path]->schema;
 	}
-	
+
 	public static function getDataDBParams($path, $param = null) {
 		if(empty(self::$dataDBs[$path])) {
 			self::$dataDBs[$path] = new GCDataDB($path);
@@ -46,10 +46,10 @@ class GCApp {
 			);
 		}
 	}
-    
+
     public static function getCatalogPath($catalogName) {
         $db = GCApp::getDB();
-        
+
         $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:catalog_name';
         $stmt = $db->prepare($sql);
         $stmt->execute(array('catalog_name'=>$catalogName));
@@ -70,7 +70,7 @@ class GCApp {
 		return array('inQuery' => implode(',', $inArr), 'parameters' => $params);
 
 	}
-	
+
 	public static function getNewPKey($dbschema, $schema, $table, $pkey, $start=null) {
 
 	    $db = GCApp::getDB();
@@ -78,21 +78,21 @@ class GCApp {
 		if (is_null($start)) {
 		    $sql="select $dbschema.new_pkey(:scm, :tbl, :pkey);";
 		    $stmt = $db->prepare($sql);
-		    $stmt->execute(array('scm' => $schema, 'tbl' => $table, 'pkey' => $pkey));									
+		    $stmt->execute(array('scm' => $schema, 'tbl' => $table, 'pkey' => $pkey));
 		} else {
 		    $sql="select $dbschema.new_pkey(:scm, :tbl, :pkey, :start);";
 		    $stmt = $db->prepare($sql);
-		    $stmt->execute(array('scm' => $schema, 'tbl' => $table, 'pkey' => $pkey, 'start' => $start));							
+		    $stmt->execute(array('scm' => $schema, 'tbl' => $table, 'pkey' => $pkey, 'start' => $start));
 		}
 	    } catch (Exception $e) {
 		GCError::registerException($e);
-	    }	
+	    }
 	    print_debug($sql,null,"gcapp.class");
 	    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 	    return isset($row['new_pkey'])?$row['new_pkey']:null;
 	}
-	    
-	
+
+
     public static function getUniqueRandomTmpFilename($dir, $prefix = '', $extension = '') {
         $letters = '1234567890qwertyuiopasdfghjklzxcvbnm';
         $lettersLength = strlen($letters) - 1;
@@ -106,7 +106,7 @@ class GCApp {
         else
             return $filename;
     }
-    
+
     public static function schemaExists($dataDb, $schema) {
         $sql = 'select schema_name from information_schema.schemata '.
             ' where schema_name = :schema ';
@@ -114,7 +114,7 @@ class GCApp {
         $stmt->execute(array('schema'=>$schema));
         return ($stmt->rowCount() > 0);
     }
-    
+
     public static function tableExists($dataDb, $schema, $tableName) {
         $sql = "select table_name from information_schema.tables ".
             " where table_schema=:schema and table_name=:table ";
@@ -122,7 +122,7 @@ class GCApp {
         $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName));
         return ($stmt->rowCount() > 0);
     }
-    
+
     public static function columnExists($dataDb, $schema, $tableName, $columnName) {
         $sql = "SELECT column_name from information_schema.columns " .
                 "WHERE table_schema=:schema AND table_name=:table " .
@@ -132,7 +132,7 @@ class GCApp {
         $result = $stmt->fetchColumn(0);
         return !empty($result);
     }
-    
+
     public static function getColumns($dataDb, $schema, $tableName) {
         $sql = "SELECT column_name from information_schema.columns " .
                 "WHERE table_schema=:schema AND table_name=:table " .
@@ -141,9 +141,9 @@ class GCApp {
         $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName));
         return $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
     }
-    
+
     public static function getTablePKey($db, $schema, $tableName) {
-        $sql = "select column_name from 
+        $sql = "select column_name from
             information_schema.table_constraints c
             inner join information_schema.key_column_usage k on c.constraint_schema = k.constraint_schema and c.constraint_name = k.constraint_name
             where c.table_schema = :schema and c.table_name = :table and c.constraint_type = 'PRIMARY KEY'";
@@ -151,7 +151,7 @@ class GCApp {
         $stmt->execute(array('schema'=>$schema, 'table'=>$tableName));
         return $stmt->fetchColumn(0);
     }
-    
+
     //questa stessa funzione è anche in admin/lib/functions.php
     //TODO: trovare dove viene usata e sostituirla con questa
 	public static function nameReplace($name){
@@ -168,7 +168,7 @@ class GCApp {
 
 		return $name;
 		//return strtolower($name);
-		
+
 	}
 }
 
@@ -176,20 +176,41 @@ class GCDataDB {
 	public $schema;
 	public $db;
 	public $dbName;
-	
+
 	function __construct($path) { //TODO: vedere per path diversi
-		list($dbName, $schema) = explode('/', $path);
-		
-		$dsn = 'pgsql:dbname='.$dbName.';host='.DB_HOST;
-		if(defined('DB_PORT')) $dsn .= ';port='.DB_PORT;
-		try {
-			$this->db = new PDO($dsn, DB_USER, DB_PWD);
-			$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		} catch(Exception $e) {
-			throw $e;
-		}
-		$this->schema = $schema;
-		$this->dbName = $dbName;
+	    list($dbString, $schema) = explode('/', $path);
+	    if (preg_match('/dbname=([^ ]*)/', $dbString, $charMatches))
+	            $dbName = $charMatches[1];
+	    else
+	            $dbName = $dbString;
+	    if (preg_match('/host=([^ ]*)/', $dbString, $charMatches))
+	            $dbHost = $charMatches[1];
+	    else
+	            $dbHost = DB_HOST;
+	    if (preg_match('/port=([^ ]*)/', $dbString, $charMatches))
+	            $dbPort = $charMatches[1];
+	    else if(defined('DB_PORT'))
+	            $dbPort = DB_PORT;
+	    else
+	            $dbPort = '5432';
+	    if (preg_match('/user=([^ ]*)/', $dbString, $charMatches))
+	            $dbUser = $charMatches[1];
+	    else
+	            $dbUser = DB_USER;
+	    if (preg_match('/password=([^ ]*)/', $dbString, $charMatches))
+	            $dbPasswd = $charMatches[1];
+	    else
+	            $dbPasswd = DB_PWD;
+
+	    $dsn = 'pgsql:dbname=' . $dbName . ';host='.$dbHost . ';port=' . $dbPort;
+	    try {
+	            $this->db = new PDO($dsn, $dbUser, $dbPasswd);
+	            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	    } catch(Exception $e) {
+	            throw $e;
+	    }
+	    $this->schema = $schema;
+	    $this->dbName = $dbName;
 	}
 }
 
@@ -202,14 +223,14 @@ class GCAuthor {
 
 	static private $lang;
 	static private $errors = array();
-	
+
 	public static function registerError($msg) {
 		array_push(self::$errors, $msg);
 	}
-	
+
 	public static function getErrors() {
 		return self::$errors;
-	}	
+	}
 
 	public static function refreshProjectMapfile($project, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
@@ -217,14 +238,14 @@ class GCAuthor {
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
-		
+
 		$target = $publish ? 'public' : 'tmp';
 
 		$mapfile = new gcMapfile();
 		$mapfile->setTarget($target);
         $mapfile->writeProjectMapfile = true;
 		$mapfile->writeMap("project",$project);
-		
+
 		$localization = new GCLocalization($project);
 		$alternativeLanguages = $localization->getAlternativeLanguages();
 		if($alternativeLanguages){
@@ -235,20 +256,20 @@ class GCAuthor {
 			}
 		}
 	}
-	
+
 	public static function refreshMapfiles($project, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
-		require_once ADMIN_PATH.'lib/spyc.php';		
+		require_once ADMIN_PATH.'lib/spyc.php';
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
-		
+
 		$target = $publish ? 'public' : 'tmp';
 
 		$mapfile = new gcMapfile();
 		$mapfile->setTarget($target);
 		$mapfile->writeMap("project",$project);
-		
+
 		$localization = new GCLocalization($project);
 		$alternativeLanguages = $localization->getAlternativeLanguages();
 		if($alternativeLanguages){
@@ -259,14 +280,14 @@ class GCAuthor {
 			}
 		}
 	}
-	
+
 	public static function refreshMapfile($project, $mapset, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
-		require_once ADMIN_PATH.'lib/spyc.php';		
+		require_once ADMIN_PATH.'lib/spyc.php';
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
 		require_once ROOT_PATH."lib/i18n.php";
-		
+
 		$target = $publish ? 'public' : 'tmp';
 
 		$mapfile = new gcMapfile();
@@ -283,7 +304,7 @@ class GCAuthor {
 			}
 		}
 	}
-	
+
     public static function buildFeatureQuery($aFeature, array $options = array()) {
         $defaultOptions = array(
             'include_1n_relations'=>false, //se true, le relazioni 1-n vengono incluse nella query (se, per esempio, si vuole filtrare su un campo della secondaria)
@@ -293,14 +314,14 @@ class GCAuthor {
             'srid'=>null //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
         );
         $options = array_merge($defaultOptions, $options);
-        
+
 
 		//$aFeature = $this->aFeature;
 		$layerId=$aFeature["layer_id"];
-		$datalayerTable=$aFeature["data"];	
-		$datalayerGeom=$aFeature["data_geom"];			
-		$datalayerKey=$aFeature["data_unique"];	
-		$datalayerSRID=$aFeature["data_srid"];		
+		$datalayerTable=$aFeature["data"];
+		$datalayerGeom=$aFeature["data_geom"];
+		$datalayerKey=$aFeature["data_unique"];
+		$datalayerSRID=$aFeature["data_srid"];
 		$datalayerSchema = $aFeature["table_schema"];
 		$datalayerFilter = $aFeature["data_filter"];
 
@@ -311,19 +332,19 @@ class GCAuthor {
 			return "the_geom from ".$datalayerTable;
 		}
 		elseif(preg_match("|select (.+) from (.+)|i",$datalayerTable))//Definizione alias della tabella o vista pricipale (nel caso l'utente abbia definito una vista)  (da valutare se ha senso)
-			$datalayerTable="($datalayerTable) AS ".DATALAYER_ALIAS_TABLE; 
+			$datalayerTable="($datalayerTable) AS ".DATALAYER_ALIAS_TABLE;
 		else
-			$datalayerTable=$datalayerSchema.".".$datalayerTable . " AS ".DATALAYER_ALIAS_TABLE; 
-			
+			$datalayerTable=$datalayerSchema.".".$datalayerTable . " AS ".DATALAYER_ALIAS_TABLE;
+
 		$joinString = $datalayerTable;
 
 		//Elenco dei campi definiti
 		if($aFeature["fields"]){
 			$fieldList = array();
             $groupByFieldList = array();
-			
+
 			foreach($aFeature["fields"] as $idField=>$aField){
-            
+
                 //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
                 if(!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
                     if(!$options['include_1n_relations'] || $options['group_1n']) continue;
@@ -332,14 +353,14 @@ class GCAuthor {
                         if($options['show_relation'] != $aFeature['relation'][$aField['relation']]['name']) continue;
                     }
                 }
-            
+
                 //field su layer oppure su relazione 1-1
                 if(empty($aField['relation'])) {
                     $aliasTable = DATALAYER_ALIAS_TABLE;
                 } else {
                     $aliasTable = GCApp::nameReplace($aFeature["relation"][$aField["relation"]]["name"]);
                 }
-                
+
                 if(!empty($aField['formula'])) {
                     if (empty($aField['relation'])){
                         $fieldName = $aField["formula"] . " AS " . $aField["field_name"];
@@ -351,27 +372,27 @@ class GCAuthor {
                     $fieldName = $aliasTable . "." . $aField["field_name"];
                     $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
                 }
-                
+
                 $fieldList[] = $fieldName;
 			}
-			
+
 			//Elenco delle relazioni
 			if($aRelation=$aFeature["relation"]) {
 				foreach($aRelation as $idrel => $rel){
 					$relationAliasTable = GCApp::nameReplace($rel["name"]);
-					
+
 					//se relazione 1-n, salta se non vogliamo il join
                     //se vogliamo i dati della secondaria, elimina il groupBy
 					if($rel["relation_type"] == 2) {
                         if(!$options['include_1n_relations']) continue;
                         if(!empty($options['show_relation']) && $rel['name'] != $options['show_relation']) continue;
-                        
+
                         if(!$options['group_1n']) {
                             $groupByFieldList = null;
                         }
 					}
 
-						
+
                     $joinList = array();
                     foreach($rel['join_field'] as $joinField) {
                         $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
@@ -380,12 +401,12 @@ class GCAuthor {
                     $joinFields = implode(" AND ",$joinList);
                     $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
 				}
-				
+
 			}
-			
+
 			//$fieldString = implode(",",$fieldList);
 		}
-		
+
         $geomField = DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom;
         if($options['srid'] && $options['srid'] != 'EPSG:'.$aFeature['data_srid']) {
             $srid = (int)str_replace('EPSG:', '', $options['srid']);
@@ -402,9 +423,9 @@ class GCAuthor {
         if(!empty($groupByFieldList)) $datalayerTable .= ' group by '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.', '.DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom.', '. implode(', ', $groupByFieldList);
 		print_debug($datalayerTable,null,'datalayer');
 		return $datalayerTable;
-        
+
     }
-	
+
 	public static function GCTypeFromDbType($dbType) {
 		$typesMap = array(
 			1=>array('varchar','text','char','bool','bpchar'),
@@ -416,7 +437,7 @@ class GCAuthor {
 		}
 		return false;
 	}
-	
+
 	public static function getLang() {
 		if(empty(self::$lang)) {
 			if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
@@ -424,7 +445,7 @@ class GCAuthor {
 			} else {
 				$langs=array('it', 'en', 'de');
 			}
-			
+
 			if(!empty($_SESSION['AUTHOR_LANGUAGE'])) {
 				self::$lang = $_SESSION['AUTHOR_LANGUAGE'];
 			} else if(defined('FORCE_LANGUAGE')) {
@@ -436,7 +457,7 @@ class GCAuthor {
 		}
 		return self::$lang;
 	}
-	
+
 	public static function getTabDir() {
 		$lang = self::getLang();
 		$rel_dir="config/tab/$lang/";
@@ -444,10 +465,10 @@ class GCAuthor {
 		if(defined('TAB_DIR')) $rel_dir="config/tab/".TAB_DIR."/";
 		return $rel_dir;
 	}
-	
+
 	public static function getMapsets($project) {
 		$db = GCApp::getDB();
-		
+
 		$sql = "select mapset_name, mapset_title, template, project_name from ".DB_SCHEMA.".mapset where project_name=?";
 		$stmt = $db->prepare($sql);
 		$stmt->execute(array($project));
@@ -459,13 +480,13 @@ class GCAuthor {
 			$mapset['url'] = $url;
 		}
 		unset($mapset);
-		
+
 		return $mapsets;
 	}
-	
+
 	public static function getTowsFeatures($project) {
 		$db = GCApp::getDB();
-		
+
 		$sql = "select project_name, theme_title, layergroup_title, layer_title, layergroup_name || '.' || layer_name as feature_type from ".DB_SCHEMA.".layer ".
 			" inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
 			" inner join ".DB_SCHEMA.".theme using(theme_id) ".
@@ -477,11 +498,11 @@ class GCAuthor {
 		$stmt->execute(array($project));
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
-	
+
 	public static function t($key) {
 		return self::translate($key);
 	}
-	
+
 	public static function translate($key) {
 		$lang = self::getLang();
 		if (isset(self::$translations[$key])) {
@@ -499,7 +520,7 @@ class GCAuthor {
 			return $key;
 		}
 	}
-	
+
 	static private $translations = array(
 		'yes' => array('it'=>'Si','de'=>'Ja'),
 		'no' => array('it'=>'No', 'de'=>'Nein'),
@@ -553,15 +574,15 @@ class GCAuthor {
 
 class GCError {
 	static private $errors = array();
-	
+
 	public static function register($msg) {
 		array_push(self::$errors, $msg);
 	}
-	
+
 	public static function get() {
 		return self::$errors;
 	}
-	
+
 	public static function registerException($e) {
 	    array_push(self::$errors, $e->getMessage());
 	}
@@ -574,7 +595,7 @@ class GCUtils {
 		list($r, $t) = explode(' ', $split[1]);
 		return array($l, $b, $r, $t);
 	}
-    
+
     public static function deleteOldFiles($path) {
         $files = glob($path.'*');
 		foreach($files as $file) {

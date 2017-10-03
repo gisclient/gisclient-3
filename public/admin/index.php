@@ -67,20 +67,20 @@ $p->get_conf();
 if (in_array(strtolower($p->action),$arr_action) || in_array(strtolower($p->action),$arr_noaction)){
 
 	include_once ADMIN_PATH."lib/savedata.class.php";
-	if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH."db/db.".$_POST["savedata"].".php")) 
+	if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH."db/db.".$_POST["savedata"].".php"))
 		include_once ADMIN_PATH."db/db.save.php";
 	else
 		include_once ADMIN_PATH."db/db.".$_POST["savedata"].".php";
-	
+
 }
 else
 	unset($_SESSION["ADD_NEW"]);
-	
+
 if(!empty($_REQUEST['publish_tmp_mapfiles']) && $_REQUEST['publish_tmp_mapfiles'] == 1) {
 	GCAuthor::refreshMapfiles($p->parametri['project'], false); //refresh tmp mapfiles
 	GCAuthor::refreshMapfiles($p->parametri['project'], true); //refresh public mapfiles
 }
-	
+
 
 $initI18n = 'false';
 if($p->initI18n()) $initI18n = 'true';
@@ -134,7 +134,10 @@ if(isset($p->parametri['project'])) {
 	<?php if($initPreviewMap == 'true') { ?>
 	<script type="text/javascript" src="js/previewMap.js"></script>
 	<?php } ?>
-	
+    <?php foreach (glob("js/plugins/*.js") as $filename) { ?>
+    <script type="text/javascript" src="<?php echo $filename ?>"></script>
+	<?php } ?>
+
 	<script type="text/javascript">
 	var initI18n = <?php echo $initI18n ?>;
 	var initDataManager = <?php echo $initDataManager ?>;

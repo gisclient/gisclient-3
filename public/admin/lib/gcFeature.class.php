@@ -29,7 +29,7 @@
   5 - Data
   6 - SI/NO */
 
-// QUESTA SERVE SOLO PER LA COSTRUZIONE DEI MAPFILES	
+// QUESTA SERVE SOLO PER LA COSTRUZIONE DEI MAPFILES
 
 
 
@@ -48,10 +48,10 @@ class gcFeature {
     var $msVersion;
     var $forcePrivate = false;
     private $i18n;
-    
+
     /**
      * Container of feature information
-     * 
+     *
      * @var array
      */
     private $aFeature;
@@ -71,11 +71,11 @@ class gcFeature {
         $this->forcePrivate = false;
 
         $sqlField = "select field.*,
-			relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
-			catalog_path, catalog_url from " . DB_SCHEMA . ".field 
-			left join " . DB_SCHEMA . ".relation using (layer_id,relation_id) 
-			left join " . DB_SCHEMA . ".catalog using (catalog_id) 
-			where field.layer_id = ? 
+			relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name,
+			catalog_path, catalog_url from " . DB_SCHEMA . ".field
+			left join " . DB_SCHEMA . ".relation using (layer_id,relation_id)
+			left join " . DB_SCHEMA . ".catalog using (catalog_id)
+			where field.layer_id = ?
 			order by field_order;";
         print_debug($sqlField, null, 'template');
 
@@ -132,9 +132,9 @@ class gcFeature {
         }
 
         //Feature *******************
-        $sqlFeature = "select layer.*,connection_type,base_path,catalog_path,catalog_url 
-			from " . DB_SCHEMA . ".layer inner join " . DB_SCHEMA . ".catalog using (catalog_id) 
-			inner join " . DB_SCHEMA . ".project using(project_name) 
+        $sqlFeature = "select layer.*,connection_type,base_path,catalog_path,catalog_url
+			from " . DB_SCHEMA . ".layer inner join " . DB_SCHEMA . ".catalog using (catalog_id)
+			inner join " . DB_SCHEMA . ".project using(project_name)
 			where layer.layer_id = ?;";
 
         $stmt = $this->db->prepare($sqlFeature);
@@ -168,19 +168,19 @@ class gcFeature {
         print_debug($aFeature, null, 'template');
         $this->aFeature = $aFeature;
     }
-    
+
     /**
      * Return data of the current feature
-     * 
+     *
      * @return array
      */
     public function getFeatureData() {
         return $this->aFeature;
     }
-    
+
     /**
      * Set feature data
-     * 
+     *
      * @param array $aFeature
      */
     public function setFeatureData(array $aFeature) {
@@ -281,7 +281,7 @@ class gcFeature {
         if (!empty($this->aFeature["footer"]))
             $layText[] = "FOOTER \"" . $this->aFeature["footer"] . "\"";;
         if (!empty($this->aFeature["opacity"])) {
-            // **** Old Snapo - Mapserver 7 compatibility 
+            // **** Old Snapo - Mapserver 7 compatibility
             // **** OPACITY directive deperecated, use COMPOSITE block instead
             if ($this->msVersion >= 7) {
                 $layText[] = "COMPOSITE";
@@ -371,7 +371,7 @@ class gcFeature {
                         $sData .= " USING SRID=" . $this->aFeature["data_srid"];
                     $layText[] = "DATA \"$sData\"";
                     if (!empty($this->aFeature["data_filter"])){
-                        // **** Old Snapo - Mapserver 7 compatibility 
+                        // **** Old Snapo - Mapserver 7 compatibility
                         // **** Layer FILTERs must use MapServer expression syntax only.
                         // **** use NATIVE_FILTER processing key instead.
                         if ($this->msVersion >= 7) {
@@ -380,7 +380,7 @@ class gcFeature {
                         else {
                             $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
                         }
-                    }    
+                    }
                     $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
                     if ($this->aFeature["queryable"] == 1)
                         $layText[] = "DUMP TRUE";
@@ -466,7 +466,7 @@ class gcFeature {
      * Construct the DATA statement for the mapfile, http://mapserver.org/mapfile/layer.html
      * @return string
      */
-    private function _getLayerData() {
+    protected function _getLayerData() {
 
         $aFeature = $this->aFeature;
         $datalayerTable = $aFeature["data"];
@@ -501,7 +501,7 @@ class gcFeature {
 
                 if ($aField["relation"] == 0 || $aFeature["relation"][$aField["relation"]]["relation_type"] == 1) {
 
-                    if ($aField["relation"] != 0) {//Il campo appartiene alla relazione e non alla tabella del layer 
+                    if ($aField["relation"] != 0) {//Il campo appartiene alla relazione e non alla tabella del layer
                         $idRelation = $aField["relation"];
                         $aliasTable = $aFeature["relation"][$idRelation]["name"];
                     } else {
@@ -519,7 +519,7 @@ class gcFeature {
                     }
                     // **** Marco Giraudi (Old Snapo) 02/09/2013 - Correzione per group by con formule ****
                     $groupByFieldList[] = $aField['field_name'];
-                    
+
                     $fieldList[] = $fieldName;
 
                     /*
@@ -795,13 +795,13 @@ class gcFeature {
 
     /**
      * Funzione utilizzato ancora in rpc.php
-     * 
+     *
      * SERVE A MARCO??????
-     * 
+     *
      * @param type $layerId
      * @return type
      */
-    
+
     public function getFeatureField($layerId = null) {
         $result = Array();
         if ($layerId)
