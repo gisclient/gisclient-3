@@ -78,9 +78,10 @@ class LayerAuthorizationChecker
                     array_push($in, ':group_param_'.$k);
                     $sqlValues[':group_param_'.$k] = $groupId;
                 }
-                $groupFilter = ' and COALESCE (groupname, \'**NOGROUP**\') in (\'**NOGROUP**\' ,'.implode(',', $in).') ';
+                $groupFilter = ' AND COALESCE (groupname, \'**NOGROUP**\')
+                    IN (\'**NOGROUP**\' ,'.implode(',', $in).') ';
             } else {
-                $groupFilter = ' and 1=2 ';
+                $groupFilter = ' AND 1=2 ';
             }
         }
         
@@ -92,8 +93,11 @@ class LayerAuthorizationChecker
         }
         
         $layerAuthorizations = array();
-        $sql = 'SELECT theme.project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, 
-                layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
+        $sql = '
+            SELECT
+                theme.project_name, theme_name, layergroup_name, layergroup_single,
+                layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title,
+                layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
                 case when coalesce(layer.private,1) = 1 then wms else 1 end as wms,
                 case when coalesce(layer.private,1) = 1 then wfs else 1 end as wfs,
                 case when coalesce(layer.private,1) = 1 then wfst else 1 end as wfst,
@@ -143,9 +147,20 @@ class LayerAuthorizationChecker
                 $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = array();
             }
             if ($row['layergroup_single']==1) {
-                $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = array("name" => $row['layergroup_name'], "title" => $row['layergroup_title'], "grouptitle" => $row['layergroup_title']);
+                $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = array(
+                    "name" => $row['layergroup_name'],
+                    "title" => $row['layergroup_title'],
+                    "grouptitle" => $row['layergroup_title']
+                );
             } else {
-                array_push($result['map_layers'][$row['theme_name']][$row['layergroup_name']], array("name" => $featureType, "title" => $row['layer_title']?$row['layer_title']:$row['layer_name'], "grouptitle" => $row['layergroup_title'], "minScale" => $row['minscale'], "maxScale" => $row['maxscale'], "hidden" => $row['hidden']));
+                array_push($result['map_layers'][$row['theme_name']][$row['layergroup_name']], array(
+                    "name" => $featureType,
+                    "title" => $row['layer_title'] ? $row['layer_title'] : $row['layer_name'],
+                    "grouptitle" => $row['layergroup_title'],
+                    "minScale" => $row['minscale'],
+                    "maxScale" => $row['maxscale'],
+                    "hidden" => $row['hidden']
+                ));
             }
         };
         //echo "<br><br>\n";

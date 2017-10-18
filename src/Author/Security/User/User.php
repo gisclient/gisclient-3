@@ -64,8 +64,15 @@ class User implements UserInterface
      * @param array $projects
      * @param array $groups
      */
-    public function __construct($username = null, $password = null, $nome = null, $cognome = null, array $roles = array(), array $projects = array(), array $groups = array())
-    {
+    public function __construct(
+        $username = null,
+        $password = null,
+        $nome = null,
+        $cognome = null,
+        array $roles = array(),
+        array $projects = array(),
+        array $groups = array()
+    ) {
         $this->username = $username;
         $this->password = $password;
         $this->nome = $nome;

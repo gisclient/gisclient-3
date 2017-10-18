@@ -41,8 +41,11 @@ class AuthenticationHandler
      * @param SessionInterface $session
      * @param UserProviderInterface $userProvider
      */
-    public function __construct(SessionInterface $session, UserProviderInterface $userProvider, GuardAuthenticatorInterface $guard)
-    {
+    public function __construct(
+        SessionInterface $session,
+        UserProviderInterface $userProvider,
+        GuardAuthenticatorInterface $guard
+    ) {
         $this->tokenStorage = new SessionTokenStorage($session);
         $this->userProvider = $userProvider;
         $this->guard = $guard;

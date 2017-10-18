@@ -36,7 +36,12 @@ class SenchaTouchUtils
                 if ($lastThemeType === null) {
                     $lastThemeType = $val['type'];
                 } elseif ($lastThemeType <> $val['type']) {
-                    throw new Exception("Mixed layer types not allowed in mobile theme \"{$key}\" [From type {$lastThemeType} to type {$val['type']}]");
+                    throw new Exception(sprtinf(
+                        'Mixed layer types not allowed in mobile theme "%s" [From type %s to type %s]',
+                        $key,
+                        $lastThemeType,
+                        $val['type']
+                    ));
                 }
             }
             switch ($lastThemeType) {

@@ -18,7 +18,6 @@ class UsernamePasswordAuthenticator implements GuardAuthenticatorInterface
     {
         // TODO:
         if ($request->getMethod() === 'POST') { // TODO: could be limited to certain areas! pathinfo!!
-            // see https://de.slideshare.net/weaverryan/symfony-guard-authentication-fun-with-api-token-social-login-jwt-and-more, page 35
             $username = $request->request->get('username');
             $password = md5($request->request->get('password'));
             

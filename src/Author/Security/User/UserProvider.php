@@ -110,7 +110,15 @@ class UserProvider implements UserProviderInterface
             $projects = $this->getProjects($userData['username']);
             $groups = $this->getGroups($userData['username']);
             
-            return new User($userData['username'], $userData['password'], $userData['nome'], $userData['cognome'], $roles, $projects, $groups);
+            return new User(
+                $userData['username'],
+                $userData['password'],
+                $userData['nome'],
+                $userData['cognome'],
+                $roles,
+                $projects,
+                $groups
+            );
         }
 
         throw new \Exception(
