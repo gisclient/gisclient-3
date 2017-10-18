@@ -641,7 +641,8 @@ class GCAuthor {
 		'button_cancel' => array('it'=>'Annulla', 'de'=>'Abbrechen'),
 		'button_publish' => array('it'=>'Pubblica', 'de'=>'Herausgeben'),
 		'button_delete' => array('it'=>'Elimina', 'de'=>'Löschen'),
-		'button_export' => array('it'=>'Esporta', 'de'=>'Exportieren'),
+        'button_export' => array('it'=>'Esporta', 'de'=>'Exportieren'),
+		'button_import' => array('it'=>'Importa', 'de'=>'Importieren'),
 		'close' => array('it'=>'Chiudi', 'de'=>'Schließen'),
 		'title'=>array('it'=>'Titolo', 'de'=>'Titel'),
 		'name'=>array('it'=>'Nome', 'de'=>'Name'),
@@ -679,6 +680,12 @@ class GCAuthor {
 		'Password'=>array('it'=>'Password', 'de'=>'Kennwort'),
 		'project'=>array('it'=>'Progetto', 'de'=>'Projekt'),
 		'symbology'=>array('it'=>'Simbologia', 'de'=>'Symbole'),
+        'filename'=>array('it'=>'Nome File', 'de'=>'Datei Name'),
+        'delete_file'=>array('it'=>'Elimina File', 'de'=>'Datei Löschen'),
+        'new_name'=>array('it'=>'Nuovo Nome', 'de'=>'Neue Name'),
+        'file_list'=>array('it'=>'Elenco File', 'de'=>'Datei Liste'),
+        'error_query'=>array('it'=>'Impossibile eseguire la richiesta', 'de'=>'Abfrage kann nicht ausgeführt werden'),
+        'import_done'=>array('it'=>'Procedura di importazione Terminata Correttamente.', 'de'=>'Importvorgang korrekt abgeschlossen.')
 	);
 }
 

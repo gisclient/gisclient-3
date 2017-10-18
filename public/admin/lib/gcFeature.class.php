@@ -339,6 +339,7 @@ class gcFeature {
             $layText[] = "TILEINDEX \"" . $this->aFeature["layer_name"] . ".TILEINDEX\"";
             $layText[] = "TILEITEM \"location\"";
         } else {
+            $closedDefer = defined('LAYER_CLOSE_CONNECTION_DEFER') ? LAYER_CLOSE_CONNECTION_DEFER : false;
             switch ($this->aFeature["connection_type"]) {
                 case MS_SHAPEFILE: //Local folder shape and raster
                     $filePath = $this->aFeature["filePath"];
@@ -368,7 +369,7 @@ class gcFeature {
                     $layText[] = "DATA \"$sData\"";
                     if (!empty($this->aFeature["data_filter"]))
                         $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
-                    if (LAYER_CLOSE_CONNECTION_DEFER)
+                    if ($closedDefer)
                         $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
                     if ($this->aFeature["queryable"] == 1)
                         $layText[] = "DUMP TRUE";

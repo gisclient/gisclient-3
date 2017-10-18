@@ -207,7 +207,7 @@ class gcMapfile
             if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
                 if ($oFeatureData['data_srid'] !== $aLayer["mapset_srid"]) {
                     $sql = "SELECT st_xmin(foo.e) || ' ' || st_ymin(foo.e) || ' ' || st_xmax(foo.e) || ' ' || st_ymax(foo.e) FROM";
-                    $sql .= "(SELECT ST_Extent(ST_Transform(ST_MakeEnvelope(:minx, :miny, :maxx, :maxy, :fromsrid), :tosrid)) as e) as foo";
+                    $sql .= "(SELECT ST_Extent(ST_Transform(ST_MakeEnvelope(:minx, :miny, :maxx, :maxy, :fromsrid), :tosrid::INTEGER)) as e) as foo";
                     $stmt = $this->db->prepare($sql);
 
                     $ext = explode(' ', $aLayer["mapset_extent"]);
@@ -526,6 +526,7 @@ class gcMapfile
         $ows_wfs_encoding = $this->_getEncoding();
         $ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
         $wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
+        $wfs_namespace_uri = "\t\"wfs_namespace_uri\"\t\"http://www.mapserver.org/\"";
         $ows_srs = "\t\"wms_srs\"\t\"". implode(" ", array_values($this->epsgList)) ."\"";
         $ows_accessConstraints = '';
         if (!empty($this->layersWithAccessConstraints)) {
@@ -598,6 +599,7 @@ WEB
     $wfs_onlineresource
     $wms_mime_type
     $wfs_namespace_prefix
+    $wfs_namespace_uri
     $ows_srs
     $ows_accessConstraints
     $metadata_inc
