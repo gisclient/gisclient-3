@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./vendor/autoload.php" colors="true">
+    <!-- $GLOBALS configuration -->
+    <testsuites>
+        <testsuite name="GisClient Test Suite">
+            <directory suffix="Test.php">./tests/App/</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

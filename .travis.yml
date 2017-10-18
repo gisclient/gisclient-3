@@ -10,7 +10,6 @@ before_install:
 #  - sudo apt-get install apache2 libapache2-mod-fastcgi
 
 before_script:
-  - pear install PHP_CodeSniffer
   - phpenv rehash
   - psql -U postgres -c "CREATE USER gisclient PASSWORD 'gisclient' SUPERUSER"
   - psql -U postgres -c "CREATE DATABASE gisclient_ci OWNER gisclient;" 
@@ -35,6 +34,7 @@ before_script:
 #  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
 #  - sudo service apache2 restart
 
-script: 
-  - phpcs --standard="PSR2" src/
-  - phpunit --configuration tests/travis.xml
+script:
+  - composer install
+  - vendor/bin/phpcs --standard="PSR2" src/
+  - vendor/bin/phpunit --configuration phpunit.xml.dist
