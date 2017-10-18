@@ -18,6 +18,8 @@ class OwsHandler {
         ));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $return = curl_exec($ch);
         if ($return === false) {
             throw new RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
@@ -67,21 +69,29 @@ class OwsHandler {
         if (empty($layersParameter)) {
             return $layersArray;
         }
-
+        
+        $wfsNamespace = $oMap->getMetaData('wfs_namespace_prefix');
         $layerNames = explode(',', $layersParameter);
-        // ciclo i layers e costruisco un array di singoli layers
+        // Lopp layers to create an array of single layers
         foreach ($layerNames as $name) {
             $layerIndexes = $oMap->getLayersIndexByGroup($name);
             if (!$layerIndexes && count($layerNames) == 1 && $name == $objRequest->getvaluebyname('map')) {
                 $layerIndexes = array_keys($oMap->getAllLayerNames());
             }
-            // è un layergroup
+            // Is a layergroup
             if (is_array($layerIndexes) && count($layerIndexes) > 0) {
                 foreach ($layerIndexes as $index) {
                     array_push($layersArray, $oMap->getLayer($index));
                 }
-                // è un singolo layer
+                // Is a single layer
             } else {
+                // Remove namespace from requested layer name [QGIS 2.18]
+                if (!empty($wfsNamespace)) {
+                    $name = str_replace("{$wfsNamespace}:", '', $name);
+                }
+                
+                $name = str_replace("app:", '', $name); // Test wfs:wfs-1.1.0-Basic-GetFeature-tc5 
+                
                 array_push($layersArray, $oMap->getLayerByName($name));
             }
         }
@@ -152,6 +162,8 @@ class OwsHandler {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $content = curl_exec($ch);
         if ($content === false) {
             throw new RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
@@ -216,7 +228,9 @@ class OwsHandler {
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-		curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+		curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); 
 		$sldContent = curl_exec($ch);
 		
 		if($sldContent === false) {
@@ -249,7 +263,7 @@ class OwsHandler {
      * Remove the layers not present in the request
      * Speed improvement (eg SLD)
      */
-    public function removeLayersNotInRequest($oMap, $objRequest, $requestLayers) {
+    public static function removeLayersNotInRequest($oMap, $objRequest, $requestLayers) {
         $layersArray = self::getRequestedLayers($oMap, $objRequest, $requestLayers);
         $layersFromRequest = array();
         foreach($layersArray as $l) {

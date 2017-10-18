@@ -89,23 +89,24 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 	}
 	$onlineUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
 	$mapfileBase = <<<EOMAP
-WEB
-	METADATA
-        # for mapserver 6.0
-        "ows_enable_request" "*"
-		"ows_title"	"print-vector-layers"
-		"wfs_encoding"	"UTF-8"
-		"wms_encoding"	"UTF-8"
-    	"wms_onlineresource" "$onlineUrl"
-    	"wfs_onlineresource" "$onlineUrl"
-		"wms_feature_info_mime_type"	"text/html"
-		"wms_feature_info_mime_type"	"text/xml"
-		"wfs_namespace_prefix"	"feature"
-		"wms_srs"	"EPSG:$mapSRID"
-	END
-	IMAGEPATH "/tmp/"
-	IMAGEURL "/tmp/"	
-END
+    WEB
+        METADATA
+            # for mapserver 6.0
+            "ows_enable_request" "*"
+            "ows_title" "print-vector-layers"
+            "wfs_encoding" "UTF-8"
+            "wms_encoding" "UTF-8"
+            "wms_onlineresource" "{$onlineUrl}"
+            "wfs_onlineresource" "{$onlineUrl}"
+            "wms_feature_info_mime_type" "text/html"
+            "wms_feature_info_mime_type" "text/xml"
+            "wfs_namespace_prefix" "feature"
+            "wfs_namespace_uri" "http://www.mapserver.org/"
+            "wms_srs" "EPSG:{$mapSRID}"
+        END
+        IMAGEPATH "/tmp/"
+        IMAGEURL "/tmp/"
+    END
 
 EOMAP;
     $oMap->web->updateFromString($mapfileBase);

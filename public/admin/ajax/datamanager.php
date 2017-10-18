@@ -1398,11 +1398,16 @@ function setAutoUpdateUserTrigger($dataDb, $schema, $table, $column)
         createAutoUpdateUserFunction($dataDb, CURRENT_EDITING_USER_TABLE);
     }
 
+    $column = $dataDb->quote($column);
+    
     $triggerName = "trigger_{$table}_last_edit_user_auto_updater";
-    $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
+    $sql = "DROP TRIGGER IF EXISTS {$triggerName} ON {$schema}.{$table};";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
-    $sql = "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_user({$column});";
+    $sql = "CREATE TRIGGER {$triggerName}
+            BEFORE INSERT OR UPDATE ON {$schema}.{$table}
+            FOR EACH ROW 
+            EXECUTE PROCEDURE public.gc_auto_update_user({$column});";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
 }
@@ -1413,11 +1418,16 @@ function setAutoUpdateDateTrigger($dataDb, $schema, $table, $column)
         createAutoUpdateDateFunction($dataDb);
     }
 
+    $column = $dataDb->quote($column);
+
     $triggerName = "trigger_{$table}_last_edit_date_auto_updater";
-    $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
+    $sql = "DROP TRIGGER IF EXISTS {$triggerName} ON {$schema}.{$table};";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
-    $sql = "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_date({$column});";
+    $sql = "CREATE TRIGGER {$triggerName}
+            BEFORE INSERT OR UPDATE ON {$schema}.{$table}
+            FOR EACH ROW 
+            EXECUTE PROCEDURE public.gc_auto_update_date({$column});";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
 }
@@ -1428,11 +1438,18 @@ function setAutoUpdateMeasureTrigger($dataDb, $schema, $table, $column, $functio
         createAutoUpdateMeasureFunction($dataDb);
     }
 
+    $column = $dataDb->quote($column);
+    $function = $dataDb->quote($function);
+    $geomColumn = $dataDb->quote($geomColumn);
+    
     $triggerName = "trigger_{$table}_measure_auto_updater";
-    $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
+    $sql = "DROP TRIGGER IF EXISTS {$triggerName} ON {$schema}.{$table};";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
-    $sql = "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_measure({$column}, {$function}, {$geomColumn});";
+    $sql = "CREATE TRIGGER {$triggerName}
+            BEFORE INSERT OR UPDATE ON {$schema}.{$table}
+            FOR EACH ROW 
+            EXECUTE PROCEDURE public.gc_auto_update_measure({$column}, {$function}, {$geomColumn});";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
 }
@@ -1443,11 +1460,18 @@ function setAutoUpdateCoordinatesTrigger($dataDb, $schema, $table, $columnX, $co
         createAutoUpdateCoordinatesFunction($dataDb);
     }
 
+    $columnX = $dataDb->quote($columnX);
+    $columnY = $dataDb->quote($columnY);
+    $geomColumn = $dataDb->quote($geomColumn);
+    
     $triggerName = "trigger_{$table}_coordinates_auto_updater";
-    $sql = "DROP TRIGGER IF EXISTS {$triggerName} on {$schema}.{$table};";
+    $sql = "DROP TRIGGER IF EXISTS {$triggerName} ON {$schema}.{$table};";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
-    $sql = "CREATE TRIGGER {$triggerName} BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE public.gc_auto_update_coordinates({columnX}, {$columnY}, {$geomColumn});";
+    $sql = "CREATE TRIGGER {$triggerName}
+            BEFORE INSERT OR UPDATE ON {$schema}.{$table}
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.gc_auto_update_coordinates({$columnX}, {$columnY}, {$geomColumn});";
     $stmt = $dataDb->prepare($sql);
     $stmt->execute();
 }
