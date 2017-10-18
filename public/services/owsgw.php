@@ -4,6 +4,7 @@ define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/GCService.php';
 
+use GisClient\MapServer\MsMapObjFactory;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Security\Guard\TrustedAuthenticator;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,22 +46,17 @@ if(defined('DEBUG') && DEBUG == true) {
 $objRequest = ms_newOwsrequestObj();
 foreach ($_REQUEST as $k => $v) if (is_string($v)) $objRequest->setParameter($k, stripslashes($v));
 
-//OGGETTO MAP MAPSCRIPT
-$mapfile = $objRequest->getvaluebyname('map');
-$mapPath = ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/';
+$project = $objRequest->getvaluebyname('project');
+$map = $objRequest->getvaluebyname('map');
+$useTemporaryMapfile = !empty($objRequest->getvaluebyname('tmp'));
+$lang = $objRequest->getvaluebyname('lang');
 
-// se è definita una lingua, apro il relativo mapfile
+$mapObjFactory = new MsMapObjFactory();
+$oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
-if($objRequest->getvaluebyname('lang') && file_exists($mapPath.$mapfile.'_'.$objRequest->getvaluebyname('lang').'.map')) {
-	$mapfile = $mapfile.'_'.$objRequest->getvaluebyname('lang');
-}
-//Files temporanei
-$showTmpMapfile = $objRequest->getvaluebyname('tmp');
-if(!empty($showTmpMapfile)) {
-	$mapfile = "tmp.".$mapfile;
-}
-
-$oMap = ms_newMapobj($mapPath.$mapfile.".map");
+$url = currentPageURL();
+$onlineResource = $url.'?project='.$project.'&map='.$map.'&tmp='.$objRequest->getvaluebyname('tmp').'&lang='.$lang;
+$oMap->setMetaData("ows_onlineresource",$onlineResource);
 
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
@@ -99,12 +95,6 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 if($objRequest->getvaluebyname('srsname')) $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
 if($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getvaluebyname('srs'))) $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
 if($objRequest->getvaluebyname('srs')) $oMap->setProjection($projString="+init=".strtolower($objRequest->getvaluebyname('srs')));
-
-
-$url = currentPageURL();
-$onlineResource = $url.'?map='.$mapfile;
-$oMap->setMetaData("ows_onlineresource",$onlineResource);
-
 
 if(!empty($_REQUEST['GCFILTERS'])){
 

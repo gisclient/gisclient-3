@@ -7,6 +7,7 @@ require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
 use Symfony\Component\HttpFoundation\Request;
+use GisClient\MapServer\MsMapObjFactory;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 
 $gcService = GCService::instance();
@@ -98,56 +99,13 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
     }
 }
 
-// sanitize project as part of the path
-$mapfileDir = ROOT_PATH.'map/';
-
 $project = $objRequest->getvaluebyname('project');
-$projectDirectory = $mapfileDir.$objRequest->getvaluebyname('project')."/";
-if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
-    // if the the project directory is not a subdir of map/, something
-    // bad is happening
-    print_debug('project map files dir "'.$projectDirectory.'" is not in '.$mapfileDir, null, 'system');
-    header('HTTP/1.0 400 Bad Request');
-    echo "invalid PROJECT name";
-    exit(1);
-}
+$map = $objRequest->getvaluebyname('map');
+$useTemporaryMapfile = !empty($objRequest->getvaluebyname('tmp'));
+$lang = $objRequest->getvaluebyname('lang');
 
-// se è definita una lingua, apro il relativo mapfile
-$mapfileBasename = $objRequest->getvaluebyname('map');
-if ($objRequest->getvaluebyname('lang')) {
-    $maplang = $objRequest->getvaluebyname('map').'_'.$objRequest->getvaluebyname('lang');
-    if (file_exists($projectDirectory.$maplang.'.map')) {
-        $mapfileBasename = $maplang;
-    } else {
-        print_debug('mapfile not found for lang '.$objRequest->getvaluebyname('lang'), null, 'system');
-    }
-}
-
-//Files temporanei
-$showTmpMapfile = $objRequest->getvaluebyname('tmp');
-if (!empty($showTmpMapfile)) {
-    $mapfileBasename = "tmp.".$mapfileBasename;
-}
-
-$mapfile = $projectDirectory.$mapfileBasename.".map";
-if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
-    // if the the map is not in the project dir, something
-    // bad is happening
-    print_debug('mapfile "' .realpath($mapfile). '" is not in project dir "'. realpath($projectDirectory).'"', null, 'system');
-    header('HTTP/1.0 400 Bad Request');
-    echo "invalid MAP name";
-    exit(1);
-}
-if (!is_readable($mapfile)) {
-    // map file not found
-    print_debug('mapfile ' .$mapfile. ' not readable', null, 'system');
-    header('HTTP/1.0 400 Bad Request');
-    echo "invalid MAP name";
-    exit(1);
-}
-
-$oMap = ms_newMapobj($mapfile);
-print_debug('opened mapfile "' .realpath($mapfile). '": '.get_class($oMap), null, 'system');
+$mapObjFactory = new MsMapObjFactory();
+$oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
 $resolution = $objRequest->getvaluebyname('resolution');
 if (!empty($resolution) && $resolution != 72) {
