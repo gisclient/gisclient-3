@@ -54,6 +54,13 @@ class User implements UserInterface
     private $groups;
     
     /**
+     * Extra attributes
+     *
+     * @var array
+     */
+    private $extras;
+    
+    /**
      * Constructor
      *
      * @param string $username
@@ -63,6 +70,7 @@ class User implements UserInterface
      * @param array $roles
      * @param array $projects
      * @param array $groups
+     * @param array $extras
      */
     public function __construct(
         $username = null,
@@ -71,7 +79,8 @@ class User implements UserInterface
         $cognome = null,
         array $roles = array(),
         array $projects = array(),
-        array $groups = array()
+        array $groups = array(),
+        array $extras = array()
     ) {
         $this->username = $username;
         $this->password = $password;
@@ -80,6 +89,7 @@ class User implements UserInterface
         $this->roles = $roles;
         $this->projects = $projects;
         $this->groups = $groups;
+        $this->extras = $extras;
     }
     
     /**
@@ -136,6 +146,16 @@ class User implements UserInterface
     public function getGroups()
     {
         return $this->groups;
+    }
+    
+    /**
+     * Get extra attributes
+     * 
+     * @return array
+     */
+    public function getExtras()
+    {
+        return $this->extras;
     }
     
     /**
