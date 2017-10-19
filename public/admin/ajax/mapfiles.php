@@ -3,7 +3,16 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 include_once ROOT_PATH . 'lib/ajax.class.php';
 
+$gcService = \GCService::instance();
+$gcService->startSession();
+
 $ajax = new GCAjax();
+
+$authHandler = GCApp::getAuthenticationHandler();
+if (!$authHandler->isAuthenticated()) {
+    http_response_code(401);
+    $ajax->error('Unauthorized');
+}
 
 if (empty($_REQUEST['action'])) {
     http_response_code(400);
