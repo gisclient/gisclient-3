@@ -2,7 +2,6 @@
 //define('DEBUG', true);
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
-require_once ROOT_PATH . 'lib/GCService.php';
 
 use GisClient\MapServer\MsMapObjFactory;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;

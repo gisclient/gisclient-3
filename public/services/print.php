@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
 require_once 'include/printDocument.php';
 require_once 'include/mapImage.php';
-require_once ROOT_PATH . 'lib/GCService.php';
 
 
 header('Access-Control-Allow-Origin: *');

@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
-require_once ROOT_PATH . 'lib/GCService.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();

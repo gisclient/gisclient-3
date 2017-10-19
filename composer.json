@@ -23,7 +23,10 @@
     "autoload": {
         "psr-4": {
             "GisClient\\": "src/"
-        }
+        },
+        "classmap": [
+            "lib/GCService.php"
+        ]
     },
     "scripts": {
         "post-install-cmd": [
