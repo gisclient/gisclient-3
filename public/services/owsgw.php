@@ -3,7 +3,6 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
-use GisClient\MapServer\MsMapObjFactory;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Security\Guard\TrustedAuthenticator;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,7 +49,7 @@ $map = $objRequest->getvaluebyname('map');
 $useTemporaryMapfile = !empty($objRequest->getvaluebyname('tmp'));
 $lang = $objRequest->getvaluebyname('lang');
 
-$mapObjFactory = new MsMapObjFactory();
+$mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
 $url = currentPageURL();

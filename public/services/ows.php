@@ -6,7 +6,6 @@ require_once ROOT_PATH . 'lib/i18n.php';
 require_once __DIR__.'/include/OwsHandler.php';
 
 use Symfony\Component\HttpFoundation\Request;
-use GisClient\MapServer\MsMapObjFactory;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 
 $gcService = GCService::instance();
@@ -119,7 +118,7 @@ $map = $objRequest->getvaluebyname('map');
 $useTemporaryMapfile = !empty($objRequest->getvaluebyname('tmp'));
 $lang = $objRequest->getvaluebyname('lang');
 
-$mapObjFactory = new MsMapObjFactory();
+$mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
 $resolution = $objRequest->getvaluebyname('resolution');

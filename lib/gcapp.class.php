@@ -7,6 +7,7 @@ use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
 use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
 use GisClient\Author\Security\User\UserProviderInterface;
+use GisClient\MapServer\MsMapObjFactory;
 
 class GCApp
 {
@@ -55,6 +56,25 @@ class GCApp
 		}
 		return self::$db;
 	}
+        
+        /**
+         * Get msMapObj factory
+         * 
+         * @return MsMapObjFactory
+         */
+        public static function getMsMapObjFactory()
+        {
+            $factory = new MsMapObjFactory();
+            if (defined('MS_MAP_OBJ_FACTORY_DECORATOR')) {
+                $className = MS_MAP_OBJ_FACTORY_DECORATOR;
+                if (class_exists($className)) {
+                    $factory = new $className($factory);
+                } else {
+                    throw new \Exception(sprintf("The class '%s' does not exists.", $className));
+                }
+            }
+            return $factory;
+        }
         
         /**
          * Get user provider

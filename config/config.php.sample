@@ -38,6 +38,9 @@ define('LONG_EXECUTION_MEMORY','512M');
 
 define('LAYER_CLOSE_CONNECTION_DEFER', true);
 
+// decorator for msMapObjFactory
+// define('MS_MAP_OBJ_FACTORY_DECORATOR', 'GisClient\MapServer\MsMapObjFactoryDecorator');
+
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 define('PUBLIC_URL', 'http://localhost/author/');
