@@ -150,7 +150,7 @@ class User implements UserInterface
     
     /**
      * Get extra attributes
-     * 
+     *
      * @return array
      */
     public function getExtras()
