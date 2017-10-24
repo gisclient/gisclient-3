@@ -2,6 +2,8 @@
 
 namespace GisClient\MapServer;
 
+use GisClient\Author\Utils\OwsHandler;
+
 class MsMapObjFactory
 {
     /**
@@ -38,7 +40,7 @@ class MsMapObjFactory
             if (strpos(realpath($mapFileWithLang), realpath($projectDir)) !== 0) {
                 print_debug(sprintf(
                     'mapfile "%s" is not in project dir "%s"',
-                    realpath($mapFileWithLang),
+                    $mapFileWithLang,
                     realpath($projectDir)
                 ), null, 'system');
             } else {
@@ -58,7 +60,7 @@ class MsMapObjFactory
             // bad is happening
             print_debug(sprintf(
                 'mapfile "%s" is not in project dir "%s"',
-                realpath($mapFile),
+                $mapFile,
                 realpath($projectDir)
             ), null, 'system');
             throw new \Exception("Invalid MAP name");
@@ -73,6 +75,11 @@ class MsMapObjFactory
 
         $oMap = ms_newMapobj($mapFile);
         print_debug('opened mapfile "' .realpath($mapFile). '": '.get_class($oMap), null, 'system');
+        
+        // update metadata
+        $url = OwsHandler::currentPageURL();
+        $onlineResource = $url.'?project='.$project.'&map='.$map.'&tmp='.$temporary.'&lang='.$lang;
+        $oMap->setMetaData("ows_onlineresource",$onlineResource);
         
         return $oMap;
     }

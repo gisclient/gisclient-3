@@ -3,10 +3,10 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
-require_once __DIR__.'/include/OwsHandler.php';
 
 use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+use GisClient\Author\Utils\OwsHandler;
 
 $gcService = GCService::instance();
 $gcService->startSession(true);
@@ -156,9 +156,6 @@ if ($objRequest->getvaluebyname('srs')) {
     }
     $oMap->setProjection("+init=".strtolower($srs));
 }
-
-$url = OwsHandler::currentPageURL();
-$oMap->setMetaData("ows_onlineresource", $url.'?project='.$objRequest->getvaluebyname('project')."&map=".$objRequest->getvaluebyname('map'));
 
 if (!empty($_REQUEST['GCFILTERS'])) {
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));

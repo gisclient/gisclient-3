@@ -3,9 +3,10 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
+use Symfony\Component\HttpFoundation\Request;
+use GisClient\Author\Utils\OwsHandler;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Security\Guard\TrustedAuthenticator;
-use Symfony\Component\HttpFoundation\Request;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -52,10 +53,6 @@ $lang = $objRequest->getvaluebyname('lang');
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
-$url = currentPageURL();
-$onlineResource = $url.'?project='.$project.'&map='.$map.'&tmp='.$objRequest->getvaluebyname('tmp').'&lang='.$lang;
-$oMap->setMetaData("ows_onlineresource",$onlineResource);
-
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
@@ -101,7 +98,9 @@ if(!empty($_REQUEST['GCFILTERS'])){
 		list($layerName,$gcFilter)=explode('@',$v[$i]);
 
 		@$oLayer = $oMap->getLayerByName($layerName);
-		if($oLayer) applyGCFilter($oLayer,$gcFilter);
+		if($oLayer) {
+                    OwsHandler::applyGCFilter($oLayer,$gcFilter);
+                }
 		//print_debug($oLayer->getFilterString());
 	}
 
@@ -132,7 +131,7 @@ if($objRequest->getValueByName('service') == 'WMS') {
 if(!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
 	$hasPrivateLayers = false;
 	if(!empty($layersParameter)) {
-		$layersArray = getRequestedLayers($layersParameter);
+		$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	}
 	foreach($layersArray as $layer) {
 		$privateLayer = $layer->getMetaData('gc_private_layer');
@@ -175,7 +174,7 @@ if(!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty
 }
 
 if(!empty($layersParameter)) {
-	$layersArray = getRequestedLayers($layersParameter);
+	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();
@@ -321,21 +320,6 @@ ms_ioresethandlers();
 
 
 
-
-function currentPageURL() {
-	$pageURL = 'http';
-	if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') $pageURL .= 's';
-	$pageURL .= '://';
-	if($_SERVER["SERVER_PORT"] != "80") $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["PHP_SELF"];
-	else $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"];
-	return $pageURL;
-}
-
-function applyGCFilter(&$oLayer,$layerFilter){
-	if($oLayer->getFilterString()) $layerFilter = str_replace("\"","",$oLayer->getFilterString())." AND " .$layerFilter;
-	$oLayer->setFilter($layerFilter);
-}
-
 function checkLayer($project, $service, $layerName){
 	$check = false;
         if (null !== ($layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER'))) {
@@ -347,25 +331,3 @@ function checkLayer($project, $service, $layerName){
 	return $check;
 }
 
-function getRequestedLayers($layersParameter) {
-	global $oMap, $objRequest;
-	$layersArray = array();
-	$layerNames = explode(',', $layersParameter);
-	// ciclo i layers e costruisco un array di singoli layers
-	foreach($layerNames as $name) {
-		$layerIndexes = $oMap->getLayersIndexByGroup($name);
-        if(!$layerIndexes && count($layerNames) == 1 && $name == $mapfile) {
-            $layerIndexes = array_keys($oMap->getAllLayerNames());
-        }
-		// è un layergroup (mapserver 6 restituisce sempre un array)
-		if(is_array($layerIndexes) && count($layerIndexes)>0) {
-			foreach($layerIndexes as $index) {
-				array_push($layersArray, $oMap->getLayer($index));
-			}
-		// è un singolo layer
-		} else {
-			array_push($layersArray, $oMap->getLayerByName($name));
-		}
-	}
-	return $layersArray;
-}
