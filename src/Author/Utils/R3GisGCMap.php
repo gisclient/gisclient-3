@@ -645,7 +645,9 @@ class R3GisGCMap
         
         if (trim($row['sld']) != '') {
             if (is_null($this->oMap)) {
-                $this->oMap = \ms_newMapObjFromString(file_get_contents("../../map/{$this->projectName}/{$this->mapsetName}.map"));
+                $this->oMap = \ms_newMapObjFromString(
+                    file_get_contents("../../map/{$this->projectName}/{$this->mapsetName}.map")
+                );
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
                 $ch = curl_init($row['sld']);

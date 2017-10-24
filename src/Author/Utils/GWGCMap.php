@@ -285,7 +285,9 @@ class GWGCMap
 
         // **** Retrieve Layer names/mapserver ID hash
         // Modifica Giraudi per usare l'id al posto del layer name
-        $mapTmp = \ms_newMapObjFromString(file_get_contents(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map"));
+        $mapTmp = \ms_newMapObjFromString(
+            file_get_contents(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map")
+        );
         $layersHash = $mapTmp->getAllLayerNames();
         $mapTmp->free();
 
