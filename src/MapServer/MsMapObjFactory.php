@@ -73,7 +73,7 @@ class MsMapObjFactory
             throw new \Exception('Invalid MAP name');
         }
 
-        $oMap = ms_newMapobj($mapFile);
+        $oMap = ms_newMapObjFromString(file_get_contents($mapFile));
         print_debug('opened mapfile "' .realpath($mapFile). '": '.get_class($oMap), null, 'system');
         
         // update metadata

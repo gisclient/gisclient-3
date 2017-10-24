@@ -689,7 +689,7 @@ END #MAP";
         //test sintassi mapfile
         ms_ResetErrorList();
         try {
-            @ms_newMapobj($mapFilePath);
+            @ms_newMapObjFromString(file_get_contents($mapFilePath));
         } catch (Exception $e) {
             $error = ms_GetErrorObj();
             if ($error->code != MS_NOERR) {

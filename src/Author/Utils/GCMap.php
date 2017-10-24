@@ -295,7 +295,7 @@ class GCMap
     {
         // **** Retrieve Layer names/mapserver ID hash
         // Modifica Giraudi per usare l'id al posto del layer name
-        $mapTmp = \ms_newMapobj(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map");
+        $mapTmp = \ms_newMapObjFromString(file_get_contents(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map"));
         $layersHash = $mapTmp->getAllLayerNames();
         $mapTmp->free();
 
@@ -910,7 +910,7 @@ class GCMap
         
         if (trim($row['sld']) != '') {
             if (is_null($this->oMap)) {
-                $this->oMap = \ms_newMapobj(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map");
+                $this->oMap = \ms_newMapObjFromString(file_get_contents(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map"));
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
                 $ch = curl_init($row['sld']);

@@ -262,7 +262,7 @@ class printDocument {
         }
 
         if(!empty($project) && !empty($mapset)) {
-            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+            $oMap = ms_newMapObjFromString(file_get_contents(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map'));
             foreach($themes as &$theme) {
                 $theme['groups'] = array();
                 foreach($theme['layers'] as $layergroupName) {
