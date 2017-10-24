@@ -1,16 +1,18 @@
 <?php
 
-class OwsHandler {
+namespace GisClient\Author\Utils;
 
+class OwsHandler
+{
     /**
      * Send a POST request
-     * 
+     *
      * @param string $url
      * @param string $postFields (xml)
      * @throws RuntimeException
      */
-    function post($url, $postFields) {
-
+    public function post($url, $postFields)
+    {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -22,33 +24,39 @@ class OwsHandler {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $return = curl_exec($ch);
         if ($return === false) {
-            throw new RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
+            throw new \RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new RuntimeException("Call to $url return HTTP code $httpCode");
+            throw new \RuntimeException("Call to $url return HTTP code $httpCode");
         }
         curl_close($ch);
     }
 
-    static function currentPageURL() {
+    public static function currentPageURL()
+    {
         $pageURL = 'http';
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
             $pageURL .= 's';
+        }
         $pageURL .= '://';
-        if ($_SERVER["SERVER_PORT"] != "80")
+        if ($_SERVER["SERVER_PORT"] != "80") {
             $pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["PHP_SELF"];
-        else
+        } else {
             $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["PHP_SELF"];
+        }
         return $pageURL;
     }
 
-    static function applyGCFilter(&$oLayer, $layerFilter) {
-        if ($oLayer->getFilterString())
+    public static function applyGCFilter(&$oLayer, $layerFilter)
+    {
+        if ($oLayer->getFilterString()) {
             $layerFilter = str_replace("\"", "", $oLayer->getFilterString()) . " AND " . $layerFilter;
+        }
         $oLayer->setFilter($layerFilter);
     }
 
-    static function checkLayer($project, $service, $layerName) {
+    public static function checkLayer($project, $service, $layerName)
+    {
         $check = false;
         if (null !== ($layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER'))) {
             if (!empty($layerAuthorizations[$project][$layerName])) {
@@ -57,7 +65,7 @@ class OwsHandler {
                 // There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
                 if (strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS'] == 1)) {
                     $check = true;
-                } else if (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1 )) {
+                } elseif (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1 )) {
                     $check = true;
                 }
             }
@@ -65,8 +73,8 @@ class OwsHandler {
         return $check;
     }
 
-    static function getRequestedLayers($oMap, $objRequest, $layersParameter) {
-
+    public static function getRequestedLayers($oMap, $objRequest, $layersParameter)
+    {
         $layersArray = array();
 
         if (empty($layersParameter)) {
@@ -93,7 +101,7 @@ class OwsHandler {
                     $name = str_replace("{$wfsNamespace}:", '', $name);
                 }
                 
-                $name = str_replace("app:", '', $name); // Test wfs:wfs-1.1.0-Basic-GetFeature-tc5 
+                $name = str_replace("app:", '', $name); // Test wfs:wfs-1.1.0-Basic-GetFeature-tc5
                 
                 array_push($layersArray, $oMap->getLayerByName($name));
             }
@@ -101,8 +109,8 @@ class OwsHandler {
         return $layersArray;
     }
 
-    static function getRequestedLayersById($oMap, $objRequest, $layersIdList) {
-        
+    public static function getRequestedLayersById($oMap, $objRequest, $layersIdList)
+    {
         $layersArray = array();
         
         if (empty($layersIdList)) {
@@ -113,7 +121,7 @@ class OwsHandler {
         foreach ($layerIds as $index) {
             try {
                 $layer = @$oMap->getLayer($index);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $layer = false;
             }
 
@@ -128,17 +136,18 @@ class OwsHandler {
      * Remove the srsName Attribute from the filter, when the SRID is in the
      * list of inverted axis SRIDs. This is a temporarily hack, since some
      * operations depend on axis order, while others don't
-     * 
+     *
      * @param type $filter
      * @param array $invertedAxisOrderSrids
      * @return string
      */
-    function pruneSrsFromFilter($filter, array $invertedAxisOrderSrids) {
+    public function pruneSrsFromFilter($filter, array $invertedAxisOrderSrids)
+    {
         $filterHasChanged = false;
         if (!empty($filter)) {
-            $filterDoc = new DOMDocument();
+            $filterDoc = new \DOMDocument();
             $filterDoc->loadXML($filter);
-            $xpath = new DOMXPath($filterDoc);
+            $xpath = new \DOMXPath($filterDoc);
             // find all elements with an attribute srsName
             $bboxes = $xpath->query("//*[@srsName]");
             foreach ($bboxes as $bbox) {
@@ -159,8 +168,9 @@ class OwsHandler {
         return $filter;
     }
 
-    function getHttp($url) {
-        $ch = curl_init($_url);
+    public function getHttp($url)
+    {
+        $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
@@ -169,10 +179,10 @@ class OwsHandler {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $content = curl_exec($ch);
         if ($content === false) {
-            throw new RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
+            throw new \RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new RuntimeException("Call to $url return HTTP code $httpCode and body " . $content);
+            throw new \RuntimeException("Call to $url return HTTP code $httpCode and body " . $content);
         }
         curl_close($ch);
         return $content;
@@ -183,14 +193,15 @@ class OwsHandler {
      * Download the symbol images, bundle them into the KMZ file and adapt
      * the href nodes in the KML file.
      */
-    function assembleKmz($kmlString) {
-        $kmlDoc = new DOMDocument();
+    public function assembleKmz($kmlString)
+    {
+        $kmlDoc = new \DOMDocument();
         $kmlDoc->loadXML($kmlString);
 
         $kmzFilename = tempnam(sys_get_temp_dir(), 'kmz_');
-        $kmzArchive = new ZipArchive();
-        if ($kmzArchive->open($kmzFilename, ZipArchive::CREATE) !== TRUE) {
-            throw new Exception("cannot open <$kmzFilename>");
+        $kmzArchive = new \ZipArchive();
+        if ($kmzArchive->open($kmzFilename, \ZipArchive::CREATE) !== true) {
+            throw new \Exception("cannot open <$kmzFilename>");
         }
         $hrefNodes = $kmlDoc->getElementsByTagName('href');
         // find all href elements
@@ -199,16 +210,16 @@ class OwsHandler {
             $kmzArchive->addFromString('exportdata.kml', $kmlString);
             $kmzArchive->close();
             if (false === ($kmzContent = file_get_contents($kmzFilename))) {
-                throw new Exception("Could not read $kmzFilename");
+                throw new \Exception("Could not read $kmzFilename");
             }
             if (false === unlink($kmzFilename)) {
-                throw new Exception("Could not unlink($kmzFilename)");
+                throw new \Exception("Could not unlink($kmzFilename)");
             }
             return $kmzContent;
         }
         foreach ($hrefNodes as $hrefNode) {
             if (false === ($iconString = file_get_contents($hrefNode->textContent))) {
-                throw new Exception("Could not get icon from " . $hrefNode->textContent);
+                throw new \Exception("Could not get icon from " . $hrefNode->textContent);
             }
             $urlParts = parse_url($hrefNode->textContent);
             $localname = basename($urlParts['path']);
@@ -218,42 +229,44 @@ class OwsHandler {
         $kmzArchive->addFromString('exportdata.kml', $kmlDoc->saveXML());
         $kmzArchive->close();
         if (false === ($kmzContent = file_get_contents($kmzFilename))) {
-            throw new Exception("Could not read $kmzFilename");
+            throw new \Exception("Could not read $kmzFilename");
         }
         if (false === unlink($kmzFilename)) {
-            throw new Exception("Could not unlink($kmzFilename)");
+            throw new \Exception("Could not unlink($kmzFilename)");
         }
         return $kmzContent;
     }
 
-	public  static function getSldContent($sldUrl) {
-		$ch = curl_init($sldUrl);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-		curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); 
-		$sldContent = curl_exec($ch);
-		
-		if($sldContent === false) {
-			throw new RuntimeException("Call to {$sldUrl} return with error:". var_export(curl_error($ch), true));
-		}
-		if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-			throw new RuntimeException("Call to {$sldUrl} return HTTP code $httpCode and body ".$sldContent);
-		}
-		curl_close($ch);
+    public static function getSldContent($sldUrl)
+    {
+        $ch = curl_init($sldUrl);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        $sldContent = curl_exec($ch);
 
-		return $sldContent;
-	}
+        if ($sldContent === false) {
+            throw new \RuntimeException("Call to {$sldUrl} return with error:". var_export(curl_error($ch), true));
+        }
+        if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
+            throw new \RuntimeException("Call to {$sldUrl} return HTTP code $httpCode and body ".$sldContent);
+        }
+        curl_close($ch);
+
+        return $sldContent;
+    }
     
     /**
      * Return the SLD url from request (using php $_REQUEST to prevent applying sld to mapserver and performance issue)
      * Return null if no parameter found
      */
-    public static function getParameterFromRequest(array $keys) {
+    public static function getParameterFromRequest(array $keys)
+    {
         $sldUrl = null;
-        foreach($keys as $param) {
+        foreach ($keys as $param) {
             if (!empty($_REQUEST[$param])) {
                 $sldUrl = $_REQUEST[$param];
                 break;
@@ -266,10 +279,11 @@ class OwsHandler {
      * Remove the layers not present in the request
      * Speed improvement (eg SLD)
      */
-    public static function removeLayersNotInRequest($oMap, $objRequest, $requestLayers) {
+    public static function removeLayersNotInRequest($oMap, $objRequest, $requestLayers)
+    {
         $layersArray = self::getRequestedLayers($oMap, $objRequest, $requestLayers);
         $layersFromRequest = array();
-        foreach($layersArray as $l) {
+        foreach ($layersArray as $l) {
             $layersFromRequest[] = $l->name;
         }
         for ($i = $oMap->numlayers - 1; $i >= 0; $i--) {
@@ -281,9 +295,10 @@ class OwsHandler {
     }
     
     /**
-     * Apply sld to the current request (GetMap, GetLegendGraphic, form request parameter SLD, SDL_BODY or author) 
+     * Apply sld to the current request (GetMap, GetLegendGraphic, form request parameter SLD, SDL_BODY or author)
      */
-    public static function applyWmsSld(\PDO $db, \GCi18n $i18n, $oMap, $objRequest) {
+    public static function applyWmsSld(\PDO $db, \GCi18n $i18n, $oMap, $objRequest)
+    {
         $requestService = strtolower($objRequest->getValueByName('service'));
         $requestRequest = strtolower($objRequest->getValueByName('request'));
         $requestSldUrl = self::getParameterFromRequest(array('SLD', 'sld'));
@@ -295,10 +310,13 @@ class OwsHandler {
         
         if ($requestRequest == 'getlegendgraphic') {
             $requestLayers = $objRequest->getValueByName('layer');
-        } else if ($requestRequest == 'getmap') {
+        } elseif ($requestRequest == 'getmap') {
             $requestLayers = $objRequest->getValueByName('layers');
         } else {
-            throw new \Exception("Can't apply SLD to WMS/{$objRequest->getValueByName('request')} request. Only GetLegendGraphic and GetMap allowed");
+            throw new \Exception(
+                "Can't apply SLD to WMS/{$objRequest->getValueByName('request')} request. " .
+                "Only GetLegendGraphic and GetMap allowed"
+            );
         }
         
         if (empty($requestLayers)) {
@@ -308,7 +326,7 @@ class OwsHandler {
         
         $layerList = explode(',', $requestLayers);
         if (empty($requestSldUrl) && empty($requestSldBody)) {
-            // No SLD from request. 
+            // No SLD from request.
             // Apply SLD from author database
             $dbSchema = DB_SCHEMA;
             $sql = "SELECT layergroup_id, sld 
@@ -321,9 +339,9 @@ class OwsHandler {
             foreach ($layerList as $layerGroup) {
                 list($layerGroup) = explode('.', $layerGroup, 1);  // Extract layer group
                 $stmt->execute(array(
-                    'mapset_name'=>$objRequest->getValueByName('map'), 
+                    'mapset_name'=>$objRequest->getValueByName('map'),
                     'layergroup_name'=>$layerGroup));
-                if (($row = $stmt->fetch(PDO::FETCH_ASSOC)) !== false) {
+                if (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
                     $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
                     if (!in_array($sld, $layersWithSld)) {
                         $layersWithSld[] = $sld;
@@ -332,16 +350,15 @@ class OwsHandler {
             }
             if (count($layersWithSld) > 0) {
                 self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
-                foreach($layersWithSld as $sld) {
+                foreach ($layersWithSld as $sld) {
                     $sldContent = self::getSldContent($sld);
                     $oMap->applySLD($sldContent);
                 }
             }
-        } else if (!empty($requestSldUrl)) {
+        } elseif (!empty($requestSldUrl)) {
             self::removeLayersNotInRequest($oMap, $objRequest, $requestLayers);
             $sldContent = self::getSldContent($requestSldUrl);
             $oMap->applySLD($sldContent); // for getlegendgraphic
         }
     }
-    
 }
