@@ -26,7 +26,7 @@ ini_set('max_execution_time',90);
 ini_set('memory_limit','512M');
 error_reporting  (E_ALL);
 
-define('LONG_EXECUTIONE_TIME',300);
+define('LONG_EXECUTION_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
 /*******************Installation path *************************/

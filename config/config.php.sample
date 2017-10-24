@@ -27,7 +27,7 @@ ini_set('memory_limit','512M');
 //error_reporting (E_ERROR | E_PARSE);
 error_reporting  (E_ALL & ~E_STRICT);
 
-define('LONG_EXECUTIONE_TIME',300);
+define('LONG_EXECUTION_TIME',300);
 define('LONG_EXECUTION_MEMORY','512M');
 
 //custom tab files
