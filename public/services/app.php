@@ -36,7 +36,9 @@ try {
     
     $requestMatch = $router->match($request->getPathInfo());
     
-    $security = Yaml::parse(ROOT_PATH . 'config/security.yml');
+    $security = Yaml::parse(
+        file_get_contents(ROOT_PATH . 'config/security.yml')
+    );
     $firewalls = $security['security']['firewalls'];
     foreach($firewalls as $firewall) {
         if (isset($firewall['pattern'])) {
