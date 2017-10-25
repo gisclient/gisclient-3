@@ -322,13 +322,18 @@ function get_dato($tipo,$w,$campo){
 				$retval = GCAuthor::t('undefined');
 			break;
 		case "image":
-			$size=explode("#",$w);
-			$dim=explode("x",$size[0]);
-			$v=$dati[$size[1]];
-			if ($dati[$campo])
-				$retval="$dati[$campo] <img src=\"getImage.php?id=$dati[$campo]&table=symbol\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\">";
-			else
+			if ($dati[$campo]) {
+                                $size=explode("#",$w);
+                                if (strpos($size[0], 'x') !== false) {
+                                    $dim=explode("x",$size[0]);
+                                    $style = "style=\"width:".$dim[0]."px;height:".$dim[1]."px;\"";
+                                } else {
+                                    $style = "";
+                                }
+				$retval="$dati[$campo] <img src=\"getImage.php?id=$dati[$campo]&table=symbol\" {$style}>";
+                        } else {
 				$retval="Nessuna immagine salvata";
+                        }
 			break;
 	}
 	return $retval;
