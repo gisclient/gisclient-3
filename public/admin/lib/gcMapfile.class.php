@@ -575,8 +575,8 @@ class gcMapfile
         } else {
             $maxSize = '4096';
         }
-        $fontList = '../../fonts/'.$fontList.'.list';
-
+        $fontList = ROOT_PATH.'fonts/'.$fontList.'.list';
+        
         $fileContent="
 MAP
 NAME \"$mapFile\"
@@ -669,6 +669,12 @@ END #MAP";
             return;
         }
         fclose($f);
+        
+        if (!realpath($fontList)) {
+            $errorMsg = sprintf("The fontset '%s' does not exists", $fontList);
+            GCError::register($errorMsg);
+            return;
+        }
 
         if (!$this->printMap && empty($this->i18n) && !empty($this->tinyOWSLayers)) {
             foreach ($this->tinyOWSLayers as $layer) {
