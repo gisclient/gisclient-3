@@ -104,8 +104,9 @@ if(isset($field["field_filter"]) && isset($filterFields)){
             if($fieldFilter["data_field_2"] && $fieldFilter["table_field_2"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_2"]."=\"".$fieldFilter["qtrelation_name"]."\".".$fieldFilter["table_field_2"];
             if($fieldFilter["data_field_3"] && $fieldFilter["table_field_3"]) $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_3"]."=\"".$fieldFilter["qtrelation_name"]."\".".$fieldFilter["table_field_3"];
             $joinFields = implode(" AND ",$joinList);
-            $fromString = "(" . $fromString . " inner join ". $fieldFilter["schema"].".".$fieldFilter["table_name"]." as ". $fieldFilter["qtrelation_name"]." on ($joinFields)) ";
-
+            $strFromAdd =  " inner join ". $fieldFilter["schema"].".".$fieldFilter["table_name"]." as ". $fieldFilter["relation_name"]." on ($joinFields)";
+            if (strpos($fromString, $strFromAdd) === false)
+                $fromString = "(" . $fromString . $strFromAdd . ") ";
         }
         else {
             $fieldFilterName = $fieldFilter["qtfield_name"];
