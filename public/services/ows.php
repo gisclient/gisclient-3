@@ -122,6 +122,24 @@ $lang = $objRequest->getvaluebyname('lang');
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
+$format = $objRequest->getvaluebyname('format');
+if (!empty($format)) {
+    if ($oMap->selectOutputFormat($format) !== MS_SUCCESS) {
+        header('HTTP/1.1 400 Bad Request');
+        echo "<h1>Unsupported format</h1>";
+        $numOutputFormats = $oMap->numoutputformats;
+        if ($numOutputFormats > 0) {
+            echo "<strong>List of available formats</strong>:";
+            echo "<ul>";
+            for ($fidx=0; $fidx<$numOutputFormats; $fidx++) {
+                echo sprintf('<li>%s</li>', $oMap->getOutputFormat($fidx)->name);
+            }
+            echo "</ul>";
+        }
+        exit(0);
+    }
+}
+
 $resolution = $objRequest->getvaluebyname('resolution');
 if (!empty($resolution) && $resolution != 72) {
     $oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
