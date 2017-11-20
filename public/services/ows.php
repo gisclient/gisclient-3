@@ -115,7 +115,8 @@ EOL;
 
 $project = $objRequest->getvaluebyname('project');
 $map = $objRequest->getvaluebyname('map');
-$useTemporaryMapfile = !empty($objRequest->getvaluebyname('tmp'));
+$temporary = $objRequest->getvaluebyname('tmp');
+$useTemporaryMapfile = !empty($temporary);
 $lang = $objRequest->getvaluebyname('lang');
 
 $mapObjFactory = \GCApp::getMsMapObjFactory();
