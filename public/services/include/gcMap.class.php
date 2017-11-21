@@ -283,7 +283,7 @@ class gcMap{
             }
 
         }
-        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
+        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
             WHERE layergroup_id IN (
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
         $sqlLayers .= " UNION
@@ -344,6 +344,8 @@ class gcMap{
             $layergroupTitle = empty($row['layergroup_title'])?$layergroupName:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["layergroup_title"]):$row["layergroup_title"]);
             $layerType = intval($row["owstype_id"]);
             $layerOrder = empty($row['layergroup_order']) ? 0 : $row['layergroup_order'];
+            $themeZCorr = empty($row['theme_zindex_correction']) ? 0 : $row['theme_zindex_correction'];
+            $layerZCorr = empty($row['zindex_correction']) ? 0 : $row['zindex_correction'];
 
             $aLayer = array();
             $aLayer["name"] = $layergroupName;
@@ -411,6 +413,7 @@ class gcMap{
                         $layerOptions["gutter"] = intval($row["gutter"]);
                     if ($row["tiletype_id"] == 0)
                         $layerOptions["singleTile"] = true;
+                    $layerOptions["zindex_correction"] = $layerZCorr?$layerZCorr:$themeZCorr;
                     //$aLayer["singleImage"] = intval($row["layergroup_single"]);
 
                     $aLayer["parameters"] = $layerParameters;
@@ -434,6 +437,7 @@ class gcMap{
                             $aLayer["options"]["title"] = $themeTitle;
                             $aLayer["options"]["visibility"] = false;
                             $aLayer["options"]["rootPath"] = "";
+                            $aLayer["options"]["zindex_correction"] = $themeZCorr;
                             unset($aLayer["options"]["order"]);
                             $aLayer["parameters"]["layers"] = array();
                             array_push($this->mapLayers, $aLayer);
