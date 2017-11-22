@@ -836,7 +836,7 @@ class gcMap{
         if(!$user->isAdmin($this->projectName)) {
             $this->authorizedGroups = $user->getUserGroups($user->getUsername());
             $userGroup = '';
-            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("',", $this->authorizedGroups)."')";
+            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("','", $this->authorizedGroups)."')";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
 
