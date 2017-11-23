@@ -80,16 +80,17 @@ class gcMap{
     function __construct ($mapsetName, $getLegend = false, $languageId = null){
 
         $gmapKey = defined('GMAPKEY')?"key=".GMAPKEY:'';
+        $protocol = empty($_SERVER['HTTPS'])?'http':'https';
         $this->mapProviders = array(
-                        VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
-                        YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
-                        OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-                        GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?$gmapKey");
+                        VMAP_LAYER_TYPE => "$protocol://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
+                        YMAP_LAYER_TYPE => "$protocol://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
+                        OSM_LAYER_TYPE => "$protocol://openstreetmap.org/openlayers/OpenStreetMap.js",
+                        GMAP_LAYER_TYPE => "$protocol://maps.google.com/maps/api/js?$gmapKey");
 
         $this->db = GCApp::getDB();
 
         $sql = "SELECT mapset.*, ".
-            "project.project_name,project.project_title,project.max_extent_scale, ".
+            "project.project_name,project.project_title,project.max_extent_scale,project.base_url, ".
             "st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
             "st_y(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as yc ".
             "FROM ".DB_SCHEMA.".mapset INNER JOIN ".DB_SCHEMA.".project USING (project_name) ".
@@ -161,8 +162,10 @@ class gcMap{
         $mapConfig["mapOptions"] = $mapOptions;
         unset($mapOptions);
 
+        if (isset($row["base_url"]))
+            $mapConfig["baseDocUrl"] = $protocol . '://' . $_SERVER['SERVER_NAME'] . '/' . $row["base_url"];
 
-        // TODO AGGIUNGERE IL TESTO MAPPA, DIRECTORY PROGETTO .... ?????
+        // TODO AGGIUNGERE IL TESTO MAPPA.... ?????
 
         $this->getLegend = $getLegend;
 
@@ -840,7 +843,7 @@ class gcMap{
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
 
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, owstype_id, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, owstype_id, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, field_format, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
 				FROM " . DB_SCHEMA . ".theme
 				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id)
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
@@ -987,6 +990,10 @@ class gcMap{
                 if(intval($row["field_filter"]) > 0){
                     //$fieldSpecs["filterFieldName"] = $row["filter_field_name"];
                     $fieldSpecs["fieldFilter"] =  intval($row["field_filter"]);
+                }
+
+                if (!empty($row['field_format'])) {
+                    $fieldSpecs['fieldFormat'] = $row["field_format"];
                 }
 
                 if(!empty($row['lookup_table']) && !empty($row['lookup_id']) && !empty($row['lookup_name'])) {
