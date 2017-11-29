@@ -457,6 +457,8 @@ class gcMap{
                             if ($row["status"] == 1)
                                 array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
                             $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder);
+                            if ($row["refmap"])
+                                $node["overview"] = true;
                         }
 
                         //Layergroup con singoli layer distinti             (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
@@ -477,6 +479,8 @@ class gcMap{
                                 $layers[] = $userLayer["name"];
                             }
                             $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder, "nodes" => $nodes);
+                            if ($row["refmap"])
+                                $node["overview"] = true;
                         }
 
                         //INIZIALIZZO IL VALORE PER VERIFICARE CHE SIANO SETTATI MAXSCALE E MINSCALE PER TUTTI I LAYER DEL TEMA ALTRIMENTI NON SETTO IL VALORE NEL TEMA LAYER
