@@ -1268,9 +1268,12 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         ALTER TABLE vista_layer
           OWNER TO gisclient;
 
+        --update keyimage for class
+        UPDATE class SET keyimage = replace(keyimage,'../images/','../../map/images/');
+
         --version
-        v_author_version = '3.4.9';
-        INSERT INTO version (version_name,version_key, version_date) values ('3.4.9', 'author', '2017-11-27');
+        v_author_version = '3.5.0';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.0', 'author', '2017-11-27');
 
     END IF;
 
