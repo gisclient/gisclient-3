@@ -10,6 +10,7 @@ use GisClient\Author\Utils\OwsHandler;
 
 $gcService = GCService::instance();
 $gcService->startSession(true);
+$gcService->getSession()->save();
 
 if (!defined('GC_SESSION_NAME')) {
     throw new Exception('Undefined GC_SESSION_NAME in config');
