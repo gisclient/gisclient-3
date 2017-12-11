@@ -39,7 +39,7 @@
 					<?php } ?>
 				</div>
 			</div>
-			<div id="list_dialog" style="display:none;"><table></table></div>
+			<div id="list_dialog" style="display:none;"><table></table><div></div></div>
 			<div id="copy_dialog" style="display:none;"></div>
 			<div id="preview_map_dialog" style="display:none;"></div>
 			<div id="options_dialog" style="display:none;">
