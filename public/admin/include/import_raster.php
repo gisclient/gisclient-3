@@ -28,28 +28,28 @@ foreach($ext as $e){
 }
 
 if(isset($_POST["importa"])){
-  include_once ADMIN_PATH."lib/export.php";
-  extract($_POST);
-  if(!$srid) $srid=-1;
-  if(!empty($data)) {
-    if($delete)
-      $error= deleteRasterLayer($objId);
-    if (!$error) {
-      $files = explode(" ", $data);
-      foreach($files as $currentFile) {
-        $error=import_raster($currentFile,$extension,$objId,$catalog_id,$srid)/*,$filtro)*/;
-        if (!$error)
-          echo "<p>Procedura di importazione per ".$currentFile." terminata correttamente.</p>";
-	    else{
-          $mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
-          echo $mex;
-        }
+    include_once ADMIN_PATH."lib/export.php";
+	extract($_POST);
+	if(!$srid) $srid=-1;
+	if(!empty($data)) {
+	  if($delete)
+        $error= deleteRasterLayer($objId);
+      if (!$error) {
+        $files = explode(" ", $data);
+        foreach($files as $currentFile) {
+          $error=import_raster($currentFile,$extension,$objId,$catalog_id,$srid)/*,$filtro)*/;
+	      if (!$error)
+            echo "<p>Procedura di importazione per ".$currentFile." terminata correttamente.</p>";
+	      else{
+		    $mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
+		    echo $mex;
+          }
+	    }
+      } else {
+        $mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
+		echo $mex;
       }
-    } else {
-      $mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
-      echo $mex;
     }
-  }
 }
 ?>
 <script>
@@ -79,12 +79,6 @@ function annulla(){
 		<td width="200px" class="label ui-widget ui-state-default"><b>EPSG</font></td>
 		<td valign="middle">
 			<input type="text" class="textbox" size="6" value="" name="srid" id="srid">
-		</td>
-	</tr>
-	<tr>
-		<td width="200px" class="label"><b>Filtro Nome File</b></font></td>
-		<td valign="middle">
-			<input type="text" class="textbox" size="15" value="" name="filtro" id="filtro" disabled>
 		</td>
 	</tr>
 	<tr>
