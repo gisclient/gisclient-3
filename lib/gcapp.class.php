@@ -420,6 +420,7 @@ class GCAuthor {
 		$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid, '.$geomField.' as gc_geom';
         if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
         $datalayerTable .= ' FROM '.$joinString;
+		if (!empty($datalayerFilter)) $datalayerTable .= ' WHERE ' . $datalayerFilter;
         if(!empty($groupByFieldList)) $datalayerTable .= ' group by '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.', '.DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom.', '. implode(', ', $groupByFieldList);
 		print_debug($datalayerTable,null,'datalayer');
 		return $datalayerTable;

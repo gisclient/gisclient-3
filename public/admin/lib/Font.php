@@ -1,7 +1,7 @@
 <?php
 /**
  * Handle user definable user font
- * 
+ *
  */
 class Font {
 	private $db;
@@ -34,6 +34,9 @@ class Font {
 		if(false === $result) {
 			throw new Exception("Impossible create file '$filePath'", 1);
 		}
+
+		$fontName = basename($filename, '.ttf');
+		$this->updateFontList($fontName, $filename);
 	}
 
 	public function newSymbol($fontName, $symbolCode, $symbolName){
@@ -55,7 +58,7 @@ class Font {
 
 		$symbolName = strtoupper($symbolName);
 		$fontName = basename($fontName, '.ttf');
-		
+
 		// check if symbol already exist
 		$selectSymbolName = "SELECT symbol_name FROM {$this->dbSchema}.symbol WHERE symbol_def LIKE :like";
 		$like = '%FONT "' . $fontName . '"%CHARACTER "&#'. $symbolCode .';"';
@@ -118,5 +121,19 @@ class Font {
 			}
 		}
 		return true;
+	}
+
+	public function updateFontList($fontName, $fontFile) {
+		try {
+			$fontList = ROOT_PATH . 'fonts/fonts.list';
+			$contents = file_get_contents($fontList);
+			$pattern = '/^' . $fontName. '[ \t]*' . $fontFile . '[ \t]*$/m';
+			if(!preg_match_all($pattern, $contents, $matches)){
+				file_put_contents($fontList, PHP_EOL . "$fontName $fontFile", FILE_APPEND);
+			}
+		}
+		catch (Exception $e) {
+			throw new Exception("Cannot update font list file, details: " + $e->getMessage());
+		}
 	}
 }
