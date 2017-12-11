@@ -171,68 +171,64 @@
 		}
 		
 		function writeMenuNav(){
-			$rel_dir = GCAuthor::getTabDir();
-			
-			$tmp=parse_ini_file(ROOT_PATH.$rel_dir.'menu.tab',true);
-			$this->navTreeValues=$tmp;
-			//print_array($this->navTreeValues);
-			$lbl="<a class=\"link_label\" href=\"#\" onclick=\"javascript:navigate([],[])\">Admin</a>";
-			$n_elem=count($this->parametri);
-			if ($n_elem>0){
-				$lvl=Array();
-				$val=Array();
-				foreach($this->parametri as $key=>$value){
-					$sqlParam = array();
-					array_push($lvl,$key);
-					array_push($val,$value);
-					$pk=$this->_get_pkey($key);
-					//echo '<pre>'; var_export($this->navTreeValues);
-					if(($this->mode==2 || !isset($this->navTreeValues[$key]["standard"])) && $key==$this->livello){
-						$navTreeTitle=trim($this->navTreeValues[$key]["constant"], "'");
-					}
-					else{
-						$filter=Array();
-						$i=0;
-						foreach($pk as $v){
-							$value=$this->_get_pkey_value($v); 
-							if($value) {
-								$filter[]=sprintf("%s=:VALUE%d", $v, $i);
-								$sqlParam[sprintf(":VALUE%d", $i)] = $value;
-								$i++;
-							}
-						}
-						$xml = new ParseXml();
-						$xml->LoadFile(PK_FILE);
-						$struct=$xml->ToArray();
-						$table=$struct[$key]["table"];
-						$schema=(in_array($key,Array("users","groups","user_group")))?(USER_SCHEMA):(DB_SCHEMA);						
-						$sql = "SELECT coalesce(CAST(".$this->navTreeValues[$key]["standard"]." AS varchar),'') as val 
-							FROM ".$schema.".".$table;
-						if(!empty($filter)) {
-							$sql .= " WHERE ".implode(' AND ',$filter);
-						}
-
-						$stmt = $this->db->prepare($sql);
-						$success = $stmt->execute($sqlParam);
-						if(!$success){
-							print_debug($sql,null,"navtree");
-						}
-						$_row=$stmt->fetch(PDO::FETCH_ASSOC);
-						$navTreeTitle = $_row['val'];
-					}
-
-					if ((is_numeric($value) && $value>0) || (!is_numeric($value) && strlen($value)>0))
-						$lbl.="<a class=\"link_label next\" href=\"#\" onclick=\"javascript:navigate(['".@implode("','",$lvl)."'],['".@implode("','",$val)."'])\"> $navTreeTitle</a>";
-					else
-						$lbl.="<a class=\"link_label next\" href=\"#\"> $navTreeTitle</a>";
-				}
+		  $rel_dir = GCAuthor::getTabDir();
+		  $tmp=parse_ini_file(ROOT_PATH.$rel_dir.'menu.tab',true);
+		  $this->navTreeValues=$tmp;
+		  //print_array($this->navTreeValues);
+		  $lbl="<a class=\"link_label\" href=\"#\" onclick=\"javascript:navigate([],[])\">Admin</a>";
+		  $n_elem=count($this->parametri);
+		  if ($n_elem>0){
+		    $lvl=Array();
+		    $val=Array();
+		    foreach($this->parametri as $key=>$value){
+                      $sqlParam = array();
+		      array_push($lvl,$key);
+		      array_push($val,$value);
+		      $pk=$this->_get_pkey($key);
+                      //echo '<pre>'; var_export($this->navTreeValues);
+		      if(($this->mode==2 || !isset($this->navTreeValues[$key]["standard"])) && $key==$this->livello){
+                        $navTreeTitle=trim($this->navTreeValues[$key]["constant"], "'");
+		      } else {
+                        $filter=Array();
+		        $i=0;
+		        foreach($pk as $v){
+		          $value=$this->_get_pkey_value($v); 
+		          if($value) {
+			    $filter[]=sprintf("%s=:VALUE%d", $v, $i);
+			    $sqlParam[sprintf(":VALUE%d", $i)] = $value;
+			    $i++;
+			  }
 			}
-			echo "
-			<form name=\"frm_label\" id=\"frm_label\" method=\"POST\">
-				".$lbl."
-			</form>";
+			$xml = new ParseXml();
+			$xml->LoadFile(PK_FILE);
+			$struct=$xml->ToArray();
+			$table=$struct[$key]["table"];
+			$schema=(in_array($key,Array("users","groups","user_group")))?(USER_SCHEMA):(DB_SCHEMA);						
+			$sql = "SELECT coalesce(CAST(".$this->navTreeValues[$key]["standard"]." AS varchar),'') as val FROM ".$schema.".".$table;
+			if(!empty($filter)) {
+			  $sql .= " WHERE ".implode(' AND ',$filter);
+			}
+			$stmt = $this->db->prepare($sql);
+			$success = $stmt->execute($sqlParam);
+			if(!$success){
+			  print_debug($sql,null,"navtree");
+			}
+			$_row=$stmt->fetch(PDO::FETCH_ASSOC);
+			$navTreeTitle = $_row['val'];
+		      }
+                      if(!empty($navTreeTitle)) {
+		        if ((is_numeric($value) && $value>0) || (!is_numeric($value) && strlen($value)>0))
+		          $lbl.="<a class=\"link_label next\" href=\"#\" onclick=\"javascript:navigate(['".@implode("','",$lvl)."'],['".@implode("','",$val)."'])\"> $navTreeTitle</a>";
+		        else
+		          $lbl.="<a class=\"link_label next\" href=\"#\"> $navTreeTitle</a>";
+		      } 
+		    }
+		    echo "
+		    <form name=\"frm_label\" id=\"frm_label\" method=\"POST\">
+		    ".$lbl."
+		    </form>";
+	          }
 		}
-		
 		// Metodo privato che setta i parametri della classe
 		function _get_parameter(array $p){
 			$m=(!empty($p["mode"]))?($p["mode"]):('view');
@@ -375,7 +371,7 @@
 		
 		private function writeListForm(array $tab,$el,&$prm){
             $user = new GCUser();
-			switch ($tab["tab_type"]){
+            switch ($tab["tab_type"]){
 				case 0:	//elenco con molteplici valori (TABELLA H)
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="";
@@ -803,43 +799,43 @@
 					break;
 				case 5:		//CON FILE DI INCLUSIONE (TABELLA H)
 					foreach($prm as $key=>$val){
-						if(preg_match("|parametri[\[]([\d]+)[\]][\[]([A-z]+)[\]]|i",$key,$ris)){
-							$prm[$ris[2]]=$val;
-						}
+					  if(preg_match("|parametri[\[]([\d]+)[\]][\[]([A-z]+)[\]]|i",$key,$ris)){
+					    $prm[$ris[2]]=$val;
+					  }
 					}
 					$prm["livello"]=$tab["level"];
 					$prm["config_file"]=$tab["config_file"].".tab";
 					$prm["savedata"]=$tab["save_data"];
 					$tb=new Tabella_h($tab["config_file"].".tab","edit");
-					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
+					for($j=0;$j<count($tb->function_param);$j++)
+                                          $tb->function_param[$j] = $this->parametri[$tb->function_param[$j]];
 					$msg="";
 					
 					// do some basic checks!
 					if (!isset($tab["save_data"])) {
-						throw new RuntimeException("save_data not set in tab");
+					  throw new RuntimeException("save_data not set in tab");
 					}
 					
 					$includeFile = ADMIN_PATH."include/".$tab["save_data"].".inc.php";
-					if (!file_exists($includeFile)) {
-						throw new RuntimeException("can not find include file for '{$tab["save_data"]}': $includeFile not found");
+                                        if (!file_exists($includeFile)) {
+					  throw new RuntimeException("can not find include file for '{$tab["save_data"]}': $includeFile not found");
 					}
-					
 					include_once $includeFile;
-					
 					for($j=0;$j<count($tb->pkeys);$j++){
-						$prm["pkey[$j]"]=isset($tb->pkeys[$j])?$tb->pkeys[$j]:null;
-						$prm["pkey_value[$j]"]=isset($tb->pkeys[$j])?$this->_get_pkey_value($tb->pkeys[$j]):null;
+					  $prm["pkey[$j]"]= isset($tb->pkeys[$j]) ? $tb->pkeys[$j] : null;
+					  $prm["pkey_value[$j]"]= isset($tb->pkeys[$j]) ? $this->_get_pkey_value($tb->pkeys[$j]) : null;
 					}
 					$filter=$tab["parent_name"]."_id = ".$this->db->quote($el["value"]);
 					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
 					//$tb->set_titolo($tab["title"],"",$prm);
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->get_titolo();
-					if (is_array($data) && !$data && !$msg) $data=$filter;
-					
+					if (is_array($data) && !$data && !$msg)
+                                          $data=$filter;
 					$tb->set_multiple_data($data);
 					$tb->elenco($msg);
-					if(count($btn)) $button=implode("\n\t",$btn);
+					if(count($btn))
+                                          $button=implode("\n\t",$btn);
 					echo "<hr>$button";
 					echo "<input type=\"hidden\" name=\"save_type\" value=\"multiple\">";
 					echo "</form>";

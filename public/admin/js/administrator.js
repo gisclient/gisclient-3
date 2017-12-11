@@ -180,13 +180,12 @@ function selectAll(btn,name){
         flag=1;
         v=0;
         btn.value=btn.value.replace('Seleziona','Deseleziona');
-    }
-    else{
+    } else {
         flag=0;
         v=1;
         btn.value=btn.value.replace('Deseleziona','Seleziona');
     }
-    var frm=$('#frm_data');
+    var frmElements=$('#frm_data :input');
     
     switch(name){
         /*case "qt":
@@ -213,13 +212,12 @@ function selectAll(btn,name){
             reg=new RegExp(name+'_id');
             typeobj='check';
             break;
-            
     }
-    if (frm.elements.length>300){
+    if (frmElements.length>300){
         xShowImg('wait');
     }
-    for (i=0;i<frm.elements.length;i++){
-        var obj=frm.elements[i];
+    for (i=0;i<frmElements.length;i++){
+        var obj=frmElements[i];
         if (reg.test(obj.name)){
             switch(typeobj){
                 case "check":

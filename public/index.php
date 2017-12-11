@@ -12,12 +12,14 @@ $user = new GCUser();
 
 if(!empty($_REQUEST["logout"])) {
     $user->logout();
+    header("HTTP/1.1 401 Unauthorized");
+    echo '<html><meta http-equiv="refresh" content="0;url=/gisclient3/session.php"></html>';
+    die();
 }
 
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
     $user->login($_POST['username'], md5($_POST['password']));
 }
-
 $db = GCApp::getDB();
 $dbSchema=DB_SCHEMA;
 $sql="SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title,private FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";

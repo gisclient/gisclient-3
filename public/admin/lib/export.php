@@ -164,50 +164,44 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	ini_set('memory_limit',$standardMem);	
 	return $err;
 }
-function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1,$filtro="",$delete=0){
+
+function deleteRasterLayer($layergroup_id) {
+  $db = GCApp::getDB();
+  $sql="DELETE FROM ".DB_SCHEMA.".layer WHERE layergroup_id=:layergroup_id";
+  try {
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array('layergroup_id'=>$layergroup_id));
+  } catch(Exception $e) {
+    array_push($err, $e->getMessage()."\n<p>$sql</>");
+  }
+}
+
+function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1)/*,$filtro="")*/{
 	$shapeDir="";
 	$db = GCApp::getDB();
     $err = array();
-    
-	$sql="select coalesce(base_path,'')||coalesce(catalog_path,'')||'/".$d."' as dir from ".DB_SCHEMA.".catalog inner join ".DB_SCHEMA.".project using (project_name) where catalog_id=$catalog_id";
+	$sql="select coalesce(base_path,'')||coalesce(catalog_path,'')||'/".substr($d,0,strrpos($d,"/"))."' as dir from ".DB_SCHEMA.".catalog inner join ".DB_SCHEMA.".project using (project_name) where catalog_id=$catalog_id";
     try {
         $result = $db->query($sql)->fetchColumn(0);
     } catch(Exception $e) {
         return -1;
     }
-    
-	$dir=str_replace("//","/",$result);
+    $dir=str_replace("//","/",$result);
 	require_once "filesystem.php";
-	$fileList=Array();
-	foreach($ext as $e){
-		$tmpF=elenco_file($dir,$e,$filtro);
-		for($i=0;$i<count($tmpF);$i++) $fileList[]=$tmpF[$i];
-	}
-	if($delete) {
-		$sql="DELETE FROM ".DB_SCHEMA.".layer WHERE layergroup_id=:layergroup_id";
-        try {
-            $stmt = $db->prepare($sql);
-            $stmt->execute(array('layergroup_id'=>$layergroup_id));
-        } catch(Exception $e) {
-            array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
-        }
-	}
-	foreach($fileList as $f){
-		$tmp=explode(".",$f);
-		array_pop($tmp);
-		$fname=@implode("",$tmp);
-		$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name,catalog_id,layertype_id,data,data_srid,layer_order) VALUES(".DB_SCHEMA.".new_pkey('layer','layer_id'),$layergroup_id,'".$fname."',$catalog_id,4,'".str_replace("//","/",$d."/".$f)."',$srid,-1)";
-        try {
-            $stmt = $db->prepare($sql);
-            $stmt->execute();
-        } catch(Exception $e) {
-            array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
-        }
-
-	}
-	return $err;
-	
+    $f = (strrpos($d, "/") !== false) ? substr($d, strrpos($d,"/")+1) : $d;
+	$tmp=explode(".",$f);
+    array_pop($tmp);
+	$fname=@implode("",$tmp);
+	$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name,catalog_id,layertype_id,data,data_srid,layer_order) VALUES(".DB_SCHEMA.".new_pkey('layer','layer_id'),$layergroup_id,'".$fname."',$catalog_id,4,'".str_replace("//","/",$dir."/".$f)."',$srid,-1)";
+    try {
+      $stmt = $db->prepare($sql);
+      $stmt->execute();
+    } catch(Exception $e) {
+      array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
+    }
+    return $err;
 }
+
 function _getPKeys_orig(){
 	require_once ADMIN_PATH.'lib/ParseXml.class.php';
 	$xml = new ParseXml();

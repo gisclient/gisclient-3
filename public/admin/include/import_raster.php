@@ -3,11 +3,11 @@ require_once "../../config/config.php";
 $db = GCApp::getDB();
 $ris = null;
 $optCatalog = array();
-
-$sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name=:project order by catalog_name;";
+$connectionType = 1;
+$sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name=:project and connection_type=:connection order by catalog_name;";
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('project'=>$project));
+    $stmt->execute(array('project'=>$project, 'connection'=>$connectionType));
     if($stmt->rowCount() > 0) {
         $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
@@ -28,15 +28,28 @@ foreach($ext as $e){
 }
 
 if(isset($_POST["importa"])){
-	include_once ADMIN_PATH."lib/export.php";
+    include_once ADMIN_PATH."lib/export.php";
 	extract($_POST);
 	if(!$srid) $srid=-1;
-	$error=import_raster($rasterdir,$extension,$objId,$catalog_id,$srid,$filtro,$delete);
-	if (!$error) echo "<p>Procedura di importazione Terminata Correttamente.</p>";
-	else{
-		$mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
+	if(!empty($data)) {
+	  if($delete)
+        $error= deleteRasterLayer($objId);
+      if (!$error) {
+        $files = explode(" ", $data);
+        foreach($files as $currentFile) {
+          $error=import_raster($currentFile,$extension,$objId,$catalog_id,$srid)/*,$filtro)*/;
+	      if (!$error)
+            echo "<p>Procedura di importazione per ".$currentFile." terminata correttamente.</p>";
+	      else{
+		    $mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
+		    echo $mex;
+          }
+	    }
+      } else {
+        $mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
 		echo $mex;
-	}
+      }
+    }
 }
 ?>
 <script>
@@ -55,7 +68,7 @@ function annulla(){
 </script>
 <table cellPadding="2" border="0" class="stiletabella" width="90%">
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Catalogo</b></font></td>
+		<td width="200px" class="label ui-widget ui-state-default"><b>Catalogo</b></font></td>
 		<td valign="middle">
 			<SELECT class="textbox" name="catalog_id" id="catalog_id">
 				<?php echo @implode('\n',$optCatalog);?>
@@ -63,27 +76,21 @@ function annulla(){
 		</td>
 	</tr>
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>EPSG</font></td>
+		<td width="200px" class="label ui-widget ui-state-default"><b>EPSG</font></td>
 		<td valign="middle">
 			<input type="text" class="textbox" size="6" value="" name="srid" id="srid">
 		</td>
 	</tr>
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Filtro Nome File</b></font></td>
+		<td width="200px" class="label ui-widget ui-state-default"><b>Lista File</b></font></td>
 		<td valign="middle">
-			<input type="text" class="textbox" size="15" value="" name="filtro" id="filtro">
-		</td>
-	</tr>
-	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Directory</b></font></td>
-		<td valign="middle">
-			<input type="text" class="textbox" size="50" value="" name="rasterdir" id="rasterdir">
-			<input type="button" class="hexfield" value="Elenco File" onclick="javascript:get_elenco('rasterdir',['catalog_id','filtro']);">
+			<input type="text" class="textbox" size="50" value="" name="data" id="data" readonly>
+			<input type="button" class="hexfield" value="Elenco File" onclick="javascript:openListRaster('data',['catalog_id','layertype_id','layergroup','project']);">
 		</td>
 	</tr>
 
 	<tr>
-		<td width="200px" bgColor="#728bb8"><font color="#FFFFFF"><b>Modalità</b></font></td>
+		<td width="200px" class="label ui-widget ui-state-default"><b>Modalità</b></font></td>
 		<td valign="middle">
 			<SELECT class="textbox" name="delete" >
 				<option value="0" selected>Accoda</option>
@@ -98,7 +105,7 @@ function annulla(){
 			<input type="hidden" name="project" value="<?php echo $project;?>">
 			<input type="hidden" name="level" id="level" value="<?php echo $level;?>">
 			<input type="hidden" name="livello" value="<?php echo $livello?>">
-			<input type="submit"  class="hexfield" style="width:120px;" value="Importa Raster" name="azione">
+            <input type="submit"  class="hexfield" style="width:120px;" value="Importa Raster" name="azione">
 			<input type="submit" class="hexfield" value="Annulla" name="azione" style="margin-left:5px;" onclick="javascript:annulla()">
 		</td>
 	</tr>

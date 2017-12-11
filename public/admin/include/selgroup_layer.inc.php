@@ -5,8 +5,8 @@ $selgroup=$this->parametri["selgroup"];
 $db = GCApp::getDB();
 $data = Array();
 
-$JOIN=($this->mode==0)?(" INNER JOIN "):(" , ");
-$JOINFIELD=($this->mode==0)?(" USING (layer_id) "):("");
+$JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN  ");
+$JOINFIELD=/*($this->mode==0)?*/(" USING (layer_id) ")/*:("")*/;
 
 $sql="SELECT DISTINCT 
 selgroup_id,A.layer_id,A.layer_name,
@@ -48,6 +48,7 @@ try {
 
 $btn[]="\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Annulla\">";
 $btn[]="<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Salva\">";
-$btn[]="<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'qt');\">\n";
+//sostituito qt con layer per compatibilità con administrator.js
+$btn[]="<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'layer');\">\n";
 $button="modifica";
 ?>
