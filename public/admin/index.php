@@ -38,7 +38,9 @@ $Notice=array();
 $user = new GCUser();
 if(!empty($_REQUEST['logout'])) {
     $user->logout();
-    header('Location: ../');
+    header("HTTP/1.1 401 Unauthorized");
+    echo '<html><meta http-equiv="refresh" content="0;url=/gisclient3/session.php"></html>';
+    die();
 }
 
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
@@ -63,18 +65,15 @@ if (!empty($_REQUEST["parametri"]))
 $p=new page($_REQUEST,1);
 
 $p->get_conf();
-
 if (in_array(strtolower($p->action),$arr_action) || in_array(strtolower($p->action),$arr_noaction)){
-
-	include_once ADMIN_PATH."lib/savedata.class.php";
-	if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH."db/db.".$_POST["savedata"].".php"))
-		include_once ADMIN_PATH."db/db.save.php";
-	else
-		include_once ADMIN_PATH."db/db.".$_POST["savedata"].".php";
-
+  include_once ADMIN_PATH."lib/savedata.class.php";
+  if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH."db/db.".$_POST["savedata"].".php"))
+    include_once ADMIN_PATH."db/db.save.php";
+  else
+    include_once ADMIN_PATH."db/db.".$_POST["savedata"].".php";
 }
-else
-	unset($_SESSION["ADD_NEW"]);
+else 
+  unset($_SESSION["ADD_NEW"]);
 
 if(!empty($_REQUEST['publish_tmp_mapfiles']) && $_REQUEST['publish_tmp_mapfiles'] == 1) {
 	GCAuthor::refreshMapfiles($p->parametri['project'], false); //refresh tmp mapfiles
@@ -115,6 +114,8 @@ if(isset($p->parametri['project'])) {
 	<LINK media="screen" href="css/styles.css" type="text/css" rel="stylesheet">
 	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=<?php echo CHAR_SET ?>">
 	<link type="text/css" href="css/jquery-ui/start/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    <link type="text/css" href="css/jquery.treeview.css" rel="stylesheet" />
+    <link type="text/css" href="css/treeMenu.css" rel="stylesheet" />
 	<script type="text/javascript" src="js/jquery/jquery.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery-ui.js"></script>
 	<script type="text/javascript" src="js/jquery/layout.js"></script>

@@ -30,10 +30,10 @@ function GCList(field) {
         }
         return requestUrl;
     };
-    
+
     this.getParams = function(data) {
         var params = {};
-        
+
         if (!$.isArray(data)) {
             if (data.length > 0) {
                 data = data.split('@');
@@ -41,16 +41,16 @@ function GCList(field) {
                 data = new Array();
             }
         }
-        
+
         $.each(data, function (e, field) {
             if ($('#' + field).length > 0 && $('#' + field).val()) {
                 params[field] = $('#' + field).val();
             }
         });
-        
+
         return params;
     };
-    
+
     this.checkResponse = function(response) {
         var errorMsg = null;
         if (typeof response !== 'object') {
@@ -73,10 +73,21 @@ function GCList(field) {
                 errorMsg = response.error;
             }
         }
-        
+
         return errorMsg;
     };
-    
+
+    this.loadListRaster = function (params) {
+      $.extend(this.selectedData, params);
+      params.selectedField = this.field;
+      var component = $('#' + this.dialogId).find('div');
+      component.empty();
+      component.append(ajaxBuildSelector(this, params, "main"));
+      component.addClass("treeMenuDiv");
+      $('#main').treeview();
+      createListRasterBehaviour(params['selectedField']);
+    }
+
     this.loadList = function (params) {
         var self = this;
         var dialogId = this.dialogId;
@@ -84,12 +95,12 @@ function GCList(field) {
         var dialogElement = $('#' + dialogId);
         var resultTable = dialogElement.find('table');
         var requestUrl = self.getUrl();
-        
+
         self.listData = {};
-        
+
         $.extend(self.selectedData, params);
         params.selectedField = self.field;
-        
+
         $.ajax({
             url: requestUrl,
             type: 'POST',
@@ -157,7 +168,7 @@ function GCList(field) {
                         }
                     });
                 }
-                
+
                 if (typeof options.events !== 'undefined' && typeof options.events.list_loaded !== 'undefined') {
                     options.events.list_loaded();
                 }
@@ -167,13 +178,13 @@ function GCList(field) {
             }
         });
     };
-    
+
     this.loadData = function(params, callback) {
         var self = this;
         var requestUrl = self.getUrl();
-        
+
         params.selectedField = self.field;
-        
+
         $.ajax({
             url: requestUrl,
             type: 'POST',
@@ -186,11 +197,11 @@ function GCList(field) {
                     return;
                 }
                 callback(response);
-            },          
+            },
             error: function () {
                 alert('AJAX request returned with error');
             }
-        });     
+        });
     };
 }
 
@@ -207,7 +218,7 @@ function getSelectedField(txt_field) {
 
 function openList(txt_field, data) {
     var selectedField = getSelectedField(txt_field);
-    
+
     $('#list_dialog').dialog({
         width: 500,
         height: 350,
@@ -219,18 +230,122 @@ function openList(txt_field, data) {
     });
 }
 
+function openListRaster(txt_field, data) {
+    var selectedField = getSelectedField(txt_field);
+
+    $('#list_dialog').dialog({
+        width: 500,
+        height: 350,
+        title: '',
+        open: function () {
+            var list = new GCList(selectedField);
+            list.loadListRaster(list.getParams(data));
+        }
+    });
+}
+
+function buildSelector(response, obj, directory, id) {
+  if(response.fields['file'] != undefined && response.fields['file'] != null)
+    $('#' + obj.dialogId ).dialog("option", "title", response.fields['file']);
+  var html = "";
+  if(response.data_objects.length > 0) {
+    if(id != undefined) {
+      html += "<ul id=\""+id+"\" class=\"filetree treeview-famfamfam\">";
+      html += "<li><span class='folder'><input type=\"checkbox\" id=\"p_ckb_\">root-folder</span>";
+    }
+    html += "<ul>";
+    $.each(response.data_objects, function(rowId, rowData) {
+      obj.listData[rowId] = rowData;
+      if(rowData['directory'] != undefined && rowData['directory']!= null && !rowData['directory'].endsWith("../")){
+        html += "<li><span class='folder'><input type=\"checkbox\" id=\"p_ckb_"+directoryForCheckbox(rowData['directory'])+"\">"+directoryForTreeOutput(rowData['directory'])+"</span>";
+        html += ajaxBuildSelector(obj, $.extend({}, obj.selectedData, obj.listData[rowId]));
+        html += "</li>";
+      } else if(rowData['data'] != undefined && rowData['data']!= null) {
+        var check = fieldContainsString($("#"+obj.field).val(), directory+rowData['data']);
+        html += "<li><span class='file'><input type=\"checkbox\" "+(check ? "checked" : "")+" id=\"ckb_"+directoryForCheckbox(directory)+rowData['data']+"\" value=\""+directory+rowData['data']+"\"/>"+rowData['data']+"</span></li>";
+        if(!directory)
+          checkTreeConsistency("ckb_"+directoryForCheckbox(directory), check);
+      }
+
+    });
+    html += '</ul>';
+    if(id != undefined) {
+      html += "</li></ul>";
+    }
+  } else {
+    html += "<ul id=\""+id+"\" class=\"filetree treeview-famfamfam\">";
+    html += "<li><span class='folder'>- no files -</span>";
+    html += "</li></ul>";
+  }
+  return html;
+}
+
+function fieldContainsString(fieldVal, searchKey) {
+  var arr = fieldVal.split(' ');
+  var result = false
+  $.each(arr, function(index, val) {
+    if(val == searchKey) {
+      result = true;
+      return false;
+    }
+  });
+  return result;
+}
+
+function directoryForTreeOutput(inputDir) {
+  var output = inputDir.substring(0, inputDir.length-1);
+  return output.lastIndexOf("/")!=-1 ? output.substring(output.lastIndexOf("/")+1) : output;
+}
+
+function directoryForCheckbox(inputDir) {
+  return inputDir.replace(/\//g,"_");
+}
+
+function ajaxBuildSelector(obj, params, id){
+  var result = "";
+  $.ajax({
+    url: obj.getUrl(),
+    type: 'POST',
+    async: false,
+    dataType: 'json',
+    data: params,
+    success: function (response) {
+      var errorMsg = obj.checkResponse(response);
+      if (errorMsg !== null) {
+        alert('Error: ' + errorMsg);
+        $('#' + obj.dialogId ).dialog('close');
+        return;
+      }
+      var directory = params['directory']!=undefined ? params['directory'] : "";
+      // create table header
+      result = buildSelector(response, obj, directory, id);
+    },
+    error: function () {
+      alert('AJAX request returned with error');
+    }
+  });
+  return result;
+}
+
+function populateTextField(field, checked, value) {
+  //circondo stringa con spazi in modo da poter essere sicuro di beccare esattamente la stringa che mi interessa in caso di "eliminazione"
+  var fieldText = checked ? $('#' + field).val() : " "+$('#' + field).val()+" ";
+  fieldText = $.trim(checked ? fieldText.concat(" " + value) : fieldText.replace(new RegExp("[ ]{1}"+value+"[ ]{1}"), " "));
+  $('#' + field).val(fieldText.replace(/\s+/g, " "));
+}
+
 function updateExtent(txt_field) {
     var selectedField = getSelectedField(txt_field);
     var data = ["catalog_id", "layertype_id", "layergroup", "project", "data", "data_geom", "data_type", "data_srid"];
     var list = new GCList(selectedField);
     var params = list.getParams(data);
-    
+
     // skip step
     params.step = 1;
-    
+
     // force request for data_extent
     params.data_extent = null;
-    
+
     list.loadData(params, function(response) {
         $.each(response.data_objects, function (rowId, rowData) {
             if (rowData.data_unique === $('#data_unique').val()) {
@@ -238,4 +353,32 @@ function updateExtent(txt_field) {
             }
         });
     });
+}
+
+function createListRasterBehaviour(field) {
+  $('[id^=p_ckb_]').change(function() {
+    var newstate = $(this).is(":checked") ? ":not(:checked)" : ":checked";
+    var id_leaf = $(this).attr("id").substring(2);
+    $('[id^='+$(this).attr("id")+']'+newstate).click();
+    $('[id^='+id_leaf+']'+newstate).click();
+  });
+  $('[id^=ckb_]').change(function() {
+    var checked = $(this).is(":checked");
+    var currentId = $(this).attr("id");
+    var currentFile = $(this).val().substring($(this).val().lastIndexOf("/")+1)
+    populateTextField(field, checked, $(this).val());
+    var recId = currentId.replace(currentFile, "");
+    checkTreeConsistency(recId, checked);
+  });
+}
+
+function checkTreeConsistency(parentDir, check) {
+  var workingDir = parentDir;
+  var allSelected = ($('[id^='+workingDir+']').length == $('[id^='+workingDir+']:checked').length);
+  if((check && allSelected) || !check) {
+    $("#p_"+workingDir).attr("checked", check);
+    workingDir = workingDir.substring(0, workingDir.length -1);
+    if (workingDir.indexOf("_") != -1)
+      checkTreeConsistency(workingDir.substring(0, workingDir.lastIndexOf("_") + 1), check);
+  }
 }
