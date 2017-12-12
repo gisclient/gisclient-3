@@ -392,8 +392,8 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 					$values[$key]="'@OBJECTNAME@'";
 			}
 			else{
-                                $aux =str_replace("'","''",(trim(str_replace(chr(13), "\\n", $val))));
-				$values[$key]=($val)?("'".$aux."'::".$fldType[$key]):((!isset($val))?("null::".$fldType[$key]):(($val==='')?(''''''):("0::".$fldType[$key])));
+                                $aux =pg_escape_string(trim(str_replace(chr(13), "\\n", $val)));
+				$values[$key]=($val)?("'".$aux."'::".$fldType[$key]):((!isset($val))?("null::".$fldType[$key]):(($val==='')?pg_escape_string("''"):("0::".$fldType[$key])));
 				//echo "<p>".$values[$key]."</p>";
 			}
 			$j++;
