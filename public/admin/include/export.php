@@ -29,30 +29,18 @@ error_reporting (E_ERROR | E_PARSE);
                 }
 				$r=_export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId));
 				
-				$message="$overwrite_message <br> FILE <a href=\"#\" onclick=\"javascript:openFile('".ADMIN_PATH."export/$fName')\">$fName<a/> ESPORTATO CORRETTAMENTE";
+				$message="$overwrite_message <br> FILE <a href=\"export/$fName\" download>$fName</a> ESPORTATO CORRETTAMENTE";
 			}
-		}
+		} else {
+		  $message = "Il File $fName è già presente. Utilizzare un nome differente o procedere alla sovrascrizione.";
+                }
 	
 			$resultForm="<DIV id=\"result\">
 		<p style=\"color:red;\"><b>$message</b></p>
-	<form name=\"file\" id=\"file\" target=\"_new\" method=\"POST\">
-		
-	</form>
 </DIV>";
 	}
 	
 ?>
-	<script>
-		function openFile(f){
-			var frm=$('file');
-			frm.action='download.php'
-			frm.appendChild(new Element('input',{'type':'hidden','name':'file','value':f})); 
-			frm.appendChild(new Element('input',{'type':'hidden','name':'action','value':'view'})); 
-			frm.appendChild(new Element('input',{'type':'hidden','name':'type','value':'text'}));
-			frm.submit();
-		}
-
-	</script>
 <div class="tableHeader ui-widget ui-widget-header ui-corner-top">
 	
 <b>Esporta</b></div>
