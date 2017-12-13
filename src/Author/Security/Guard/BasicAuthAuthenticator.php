@@ -18,7 +18,7 @@ class BasicAuthAuthenticator implements GuardAuthenticatorInterface
     {
         $username = $request->server->get('PHP_AUTH_USER');
         $password = $request->server->get('PHP_AUTH_PW');
-        if (!empty($username)) && !empty($password)) {
+        if (!empty($username) && !empty($password)) {
             $token = new UsernamePasswordToken($username, md5($password));
             
             return $token;
