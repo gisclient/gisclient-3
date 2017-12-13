@@ -16,7 +16,7 @@ function GCCopy(level, project, parentId, mode) {
       dataType: 'json',
       data: {level:self.level,action:'get-form',mode:self.mode},
       success: function(response) {
-        if(typeof(response) == 'undefined' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+        if(checkResponse(response)) {
           alert('Error');
           return;
         }
@@ -64,12 +64,16 @@ function GCCopy(level, project, parentId, mode) {
           }
         });
         return;
-      }
+      }/* else if($('#copy_dialog select[data-parent_level="'+level+'"]').length == 0) {
+        $copy
+      }*/
       var childLevel = $('#copy_dialog select[data-parent_level="'+level+'"]').attr('name');
-      self.emptySelect(childLevel);
-      
-      if($(this).val() != 'Select')
-        self.getData(childLevel, $(this).val());
+      if(childLevel != undefined) {
+        self.emptySelect(childLevel);
+        if($(this).val() != 'Select')
+          self.getData(childLevel, $(this).val());
+      }
+      $(".divButton").css("display", $('#copy_dialog select option:selected:contains("Select")').length == 0 ? "" : "none");
     });
   };
 	
@@ -82,7 +86,7 @@ function GCCopy(level, project, parentId, mode) {
       dataType: 'json',
       data: {action:'get-data', level: level, parent_id: parentId},
       success: function(response) {
-        if(typeof(response) == 'undefined' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok') {
+        if(checkResponse(response)) {
 	  alert('Error');
           return;
         }
@@ -137,4 +141,8 @@ function open(parentLevel, operation) {
       copy.loadForm();
     }
   });
+}
+
+function checkResponse(response) {
+ return (typeof(response) == 'undefined' || response == null || typeof(response.result) == 'undefined' || response.result != 'ok');
 }
