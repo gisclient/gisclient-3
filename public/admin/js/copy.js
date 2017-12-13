@@ -56,8 +56,12 @@ function GCCopy(level, project, parentId, mode) {
         $('#copy_dialog').append('<div class="divButton"><button name="copy">'+text+'</button></div>');
         $('#copy_dialog button[name="copy"]').click(function(event) {
           event.preventDefault();
-          var newId = (self.mode == 'move') ? $('#copy_dialog select[name="'+self.lastLevel+'"]').val() : $('#copy_dialog select[name="'+self.level+'"]').val(); 
-          self.copy(newId);
+          if($.trim($('[name=newname]').val())=='') {
+            $('#copy_dialog').append("<div class=\"divErrorMessage\">Specificare campo name per proseguire.</div>");
+          } else {
+            var newId = (self.mode == 'move') ? $('#copy_dialog select[name="'+self.lastLevel+'"]').val() : $('#copy_dialog select[name="'+self.level+'"]').val(); 
+            self.copy(newId);
+          }
         });
         return;
       }

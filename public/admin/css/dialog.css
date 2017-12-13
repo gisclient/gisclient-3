@@ -19,3 +19,10 @@
   margin-top: 10px;
   padding-top: 5px;
 }
+
+.divErrorMessage {
+  font-weight: bold;
+  color: red;
+  text-align: justify;
+  margin-top: 15px;
+}
