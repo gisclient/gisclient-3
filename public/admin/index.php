@@ -116,6 +116,7 @@ if(isset($p->parametri['project'])) {
 	<link type="text/css" href="css/jquery-ui/start/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
     <link type="text/css" href="css/jquery.treeview.css" rel="stylesheet" />
     <link type="text/css" href="css/treeMenu.css" rel="stylesheet" />
+    <link type="text/css" href="css/dialog.css" rel="stylesheet" />
 	<script type="text/javascript" src="js/jquery/jquery.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery-ui.js"></script>
 	<script type="text/javascript" src="js/jquery/layout.js"></script>

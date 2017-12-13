@@ -1,0 +1,21 @@
+.copyDivLeft {
+  min-width: 25%;
+  float: left;
+  padding: 4px;
+  border: 1px outset #4297d7;
+  text-align: right;
+  background: #2191c0;
+  color: #ffffff;
+}
+
+.copyDivRight {
+  padding: 4px;
+  margin-left: 5px;
+  float:left;
+}
+
+.divButton {
+  border-top: 1px dashed #2191c0;
+  margin-top: 10px;
+  padding-top: 5px;
+}
