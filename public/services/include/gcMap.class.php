@@ -550,6 +550,7 @@ class gcMap{
                         continue;
                     $aLayer["url"] = $mapproxy_url . "/service";
                     $layerOptions["owsurl"] = $ows_url . "?PROJECT=" . $this->projectName . "&MAP=" . $mapsetName;
+                    $layerOptions["zindex_correction"] = $layerZCorr?$layerZCorr:$themeZCorr;
 
                     $layerParameters["project"] = $this->projectName;
                     $layerParameters["map"] = $mapsetName; // AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
@@ -682,6 +683,7 @@ class gcMap{
                     $layerParameters["theme_id"] = $row['theme_name'];
                     $layerParameters["rootPath"] = $themeTitle;
                     $layerParameters["order"] = $layerOrder;
+                    $layerParameters["zindex_correction"] = $layerZCorr?$layerZCorr:$themeZCorr;
                     //$layerParameters["displayInLayerSwitcher"] = true;
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
@@ -716,6 +718,7 @@ class gcMap{
                     $this->fractionalZoom = 0;
                     $layerOptions["type"] = $row['outputformat_extension'];
                     $layerOptions["isBaseLayer"] = $row["isbaselayer"] == 1;
+                    $layerOptions["zindex_correction"] = $layerZCorr?$layerZCorr:$themeZCorr;
 
                     //$layerOptions["buffer"] = intval($row["buffer"]);
                     //$layerOptions["mapResolutions"] = $this->mapResolutions;
