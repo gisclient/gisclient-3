@@ -35,7 +35,8 @@ class ClientController
     public function gcmapAction(Request $request)
     {
         // check for required queryString parameter
-        if (empty($request->query->get('mapset'))) {
+        $mapset = $request->query->get('mapset');
+        if (empty($mapset)) {
             return new JsonResponse(array(
                 'error' => 200,
                 'message' => 'No mapset name',
@@ -47,19 +48,20 @@ class ClientController
         $showAsPublic = $request->query->get('show_as_public') == 1;
         
         // choose customer gcmap
-        if (empty($request->query->get('jsonformat'))) {
-            $objMapset = new GWGCMap($request->query->get('mapset'), $getLegend, $languageId, $showAsPublic);
+        $jsonformat = $request->query->get('jsonformat');
+        if (empty($jsonformat)) {
+            $objMapset = new GWGCMap($mapset, $getLegend, $languageId, $showAsPublic);
         } else {
-            $objMapset = new R3GisGCMap($request->query->get('mapset'), $getLegend, $languageId, $showAsPublic);
+            $objMapset = new R3GisGCMap($mapset, $getLegend, $languageId, $showAsPublic);
         }
         
         // get output
-        if (empty($request->query->get('jsonformat'))) {
+        if (empty($jsonformat)) {
             $output = $objMapset->mapConfig;
         } else {
             $output = $objMapset->mapOptions;
             
-            if ($request->query->get('jsonformat') == 'senchatouch') {
+            if ($jsonformat == 'senchatouch') {
                 $output = SenchaTouchUtils::toSenchaTouch($output);
             }
         }
@@ -81,7 +83,8 @@ class ClientController
     public function gcmapConfigAction(Request $request)
     {
         // check for required queryString parameter
-        if (empty($request->query->get('mapset'))) {
+        $mapset = $request->query->get('mapset');
+        if (empty($mapset)) {
             return new JsonResponse(array(
                 'error' => 200,
                 'message' => 'No mapset name',
@@ -92,10 +95,11 @@ class ClientController
         $languageId = $request->query->get('lang');
         $showAsPublic = $request->query->get('show_as_public') == 1;
         
-        $objMapset = new GCMap($request->query->get('mapset'), $getLegend, $languageId, $showAsPublic);
+        $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
         
         // get output
-        if (empty($request->query->get('jsonformat'))) {
+        $jsonformat = $request->query->get('jsonformat');
+        if (empty($jsonformat)) {
             $output = $objMapset->mapConfig;
         } else {
             $output = $objMapset->mapOptions;
