@@ -135,7 +135,7 @@ function open(parentLevel, operation) {
   $('#copy_dialog').empty().dialog({
     width:500,
     height:350,
-    title:'Copy',
+    title: (operation=='copy' ? 'Copia ' : 'Sposta ') + parentLevel,
     open: function() {
       var copy = new GCCopy(level, project, parentId, operation);
       copy.loadForm();
