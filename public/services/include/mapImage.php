@@ -15,7 +15,7 @@ class mapImage {
     protected $imageFileName = null;
     protected $srid = null;
     protected $scale;
-    
+
     public static $vectorTypes = array(
         'MultiPolygon'=>array('db_type'=>'MULTIPOLYGON', 'db_field'=>'multipolygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
         'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON),
@@ -24,8 +24,8 @@ class mapImage {
         'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'linestring_geom', 'ms_type'=>MS_LAYER_LINE),
         'MultiLineString'=>array('db_type'=>'MULTILINESTRING', 'db_field'=>'multilinestring_geom', 'ms_type'=>MS_LAYER_LINE),
     );
-    
-    
+
+
     function __construct($tiles, array $imageSize, $srid, array $options) {
         $defaultOptions = array(
             'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale
@@ -41,13 +41,13 @@ class mapImage {
             'dpi' => 72
         );
         $this->options = array_merge($defaultOptions, $options);
-        
+
         $this->tiles = $tiles;
         $this->imageSize = $imageSize;
         $this->db = GCApp::getDB();
         $this->srid = $srid;
         $this->wmsMergeUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->wmsMergeUrl);
-        
+
         if($this->options['scale_mode'] == 'user') {
             if(empty($this->options['center']) || empty($this->options['scale'])) {
                 throw new Exception('Missing center or scale');
@@ -62,42 +62,42 @@ class mapImage {
             $paperSize = $this->paperSize($imageSize, $this->options['dpi']);
             $this->scale = $this->extent[0] / $paperSize[0];
         }
-        
+
         if(!empty($this->options['vectors'])) {
             $this->vectorId = $this->importVectors();
         }
-        
+
         if($this->options['request_type'] == 'get-map') {
             $this->buildWmsList();
         }
     }
-    
+
     public function getWmsList() {
         return $this->wmsList;
     }
-    
+
     public function getExtent() {
         return $this->extent;
     }
-    
+
     public function getImageUrl() {
         if(empty($this->imageFileName)) {
             $this->getMapImage();
         }
         return $this->options['TMP_URL'].$this->imageFileName;
     }
-    
+
     public function getImageFileName() {
         if(empty($this->imageFileName)) {
             $this->getMapImage();
         }
         return $this->imageFileName;
     }
-    
+
     public function getScale() {
         return $this->scale;
     }
-    
+
     protected function buildWmsList() {
         foreach($this->tiles as $key => $tile) {
             if(is_array($tile['url']))
@@ -109,14 +109,14 @@ class mapImage {
             } else {
                 $service = 'WMS';
             }
-            
+
             $parameters = array();
             if (isset($tile['parameters'])) {
                 foreach($tile['parameters'] as $key => $val) {
                     $parameters[strtoupper($key)] = $val;
                 }
             }
-            
+
             // nell'url può esserci un PROJECT e MAP diverso da quello dei parametri, vince quello dell'url
             // ???????????????????????????? MAH ???????????????????
             $parsedUrl = parse_url($url);
@@ -130,9 +130,9 @@ class mapImage {
                 //if(!empty($urlParams['PROJECT']) && !empty($parameters['PROJECT'])) unset($parameters['PROJECT']);
                 //if(!empty($urlParams['MAP']) && !empty($parameters['MAP'])) unset($parameters['MAP']);
             }
-            
+
             if(!empty($tile['opacity'])) $parameters['OPACITY'] = $tile['opacity'];
-            
+
             $request = array('URL'=>$url, 'SERVICE'=>$service, 'PARAMETERS'=>$parameters);
             if ($service === 'WMTS') {
                 if (isset($tile['layer'])) {
@@ -146,10 +146,10 @@ class mapImage {
                     throw new Exception("project name is required to print WMTS layer");
                 }
             }
-            
+
             array_push($this->wmsList, $request);
         }
-        
+
         if(!empty($this->vectorId)) {
             $url = PUBLIC_URL.'services/vectors.php';
             $url = printDocument::addPrefixToRelativeUrl($url);
@@ -162,14 +162,14 @@ class mapImage {
         }
 
     }
-    
+
     protected function getMapImage() {
 
 
         $extension = 'png';
-        if($this->options['image_format'] == 'gtiff') 
+        if($this->options['image_format'] == 'gtiff')
             $extension = 'tif';
-        if($this->options['image_format'] == 'jpeg') 
+        if($this->options['image_format'] == 'jpeg')
             $extension = 'jpg';
     //    if(empty($this->options["rotation"]))
     //        $this->options["rotation"] = 0;
@@ -205,6 +205,7 @@ class mapImage {
         }
         curl_setopt($ch, CURLOPT_URL, $this->wmsMergeUrl);
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -225,47 +226,47 @@ class mapImage {
         }
         curl_close($ch);
     }
-    
+
     protected function adaptExtentToSize(array $extent, array $imageSize) {
         $extentCenter = array(
             0.5 * ($extent[0] + $extent[2]),
             0.5 * ($extent[1] + $extent[3]),
         );
-        
+
         $extentSize = array(
             $extent[2] - $extent[0],
             $extent[3] - $extent[1],
         );
-        
+
         $widthRatio = $extentSize[0] / $imageSize[0];
         $heightRatio = $extentSize[1] / $imageSize[1];
-        
+
         if($widthRatio >= $heightRatio) {
             $extentSize[1] *= ($widthRatio/$heightRatio);
         } else {
             $extentSize[0] *= ($heightRatio/$widthRatio);
         }
-        
+
         $adaptedExtend = array(
             $extentCenter[0] - 0.5 * $extentSize[0],
             $extentCenter[1] - 0.5 * $extentSize[1],
             $extentCenter[0] + 0.5 * $extentSize[0],
             $extentCenter[1] + 0.5 * $extentSize[1],
         );
-        
+
         return $adaptedExtend;
     }
-    
+
     protected function paperSize(array $imageSize, $dpi) {
         return array(
             $imageSize[0] / ($dpi * 100/2.54),
             $imageSize[1] / ($dpi * 100/2.54),
         );
     }
-    
+
     protected function calculateExtent(array $center, array $imageSize, $dpi, $scale) {
         $paperSize = $this->paperSize($imageSize, $dpi);
-        
+
         $extentWidth = $scale *  $paperSize[0];
         $extentHeight = $scale * $paperSize[1];
 
@@ -277,17 +278,17 @@ class mapImage {
         );
         return $extent;
     }
-    
+
 
     protected function importVectors() {
         if(!defined('PRINT_VECTORS_TABLE')) throw new Exception('Undefined PRINT_VECTORS_TABLE');
         if(!defined('PRINT_VECTORS_SRID')) throw new Exception('Undefined PRINT_VECTORS_SRID');
-        
+
         $tableName = PRINT_VECTORS_TABLE;
         $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
-        
+
         $db = GCApp::getDB();
-        
+
         if(!GCApp::tableExists($db, $schema, $tableName)) {
             $sql = 'create sequence '.$schema.'.'.$tableName.'_print_id_seq ';
             $db->exec($sql);
@@ -307,10 +308,10 @@ class mapImage {
             $sql = 'GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER;
             $db->exec($sql);
         }
-        
+
         $sql = "select nextval('".$schema.".".$tableName."_print_id_seq')";
         $printId = $db->query($sql)->fetchColumn(0);
-        
+
         $vectors = array();
         foreach($this->options['vectors'] as $vector) {
             $type = $vector['type'];
@@ -318,7 +319,7 @@ class mapImage {
             if(!isset($vectors[$type])) $vectors[$type] = array();
             array_push($vectors[$type], $vector);
         }
-        
+
         foreach($vectors as $type => $features) {
             $field = self::$vectorTypes[$type]['db_field'];
             $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$field.') values (:print_id, st_geomfromtext(:geom, :srid))';
@@ -331,21 +332,21 @@ class mapImage {
                 ));
             }
         }
-        
+
         $this->cleanVectors();
-        
+
         return $printId;
     }
-    
+
     protected function cleanVectors() {
         if(!defined('PRINT_VECTORS_TABLE')) throw new Exception('Undefined PRINT_VECTORS_TABLE');
         if(!defined('PRINT_VECTORS_SRID')) throw new Exception('Undefined PRINT_VECTORS_SRID');
-        
+
         $tableName = PRINT_VECTORS_TABLE;
         $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
-        
+
         $db = GCApp::getDB();
-        
+
         $sql = 'delete from '.$schema.'.'.$tableName." where (insert_time + interval '1 day') < NOW()";
         $db->exec($sql);
     }

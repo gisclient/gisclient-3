@@ -787,6 +787,7 @@ class gcMap{
             if (!array_key_exists($row['sld'], $this->sldContents)) {
                 $ch = curl_init($row['sld']);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch ,CURLOPT_TIMEOUT, 10);

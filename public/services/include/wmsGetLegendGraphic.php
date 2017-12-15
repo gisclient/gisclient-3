@@ -55,7 +55,7 @@ if($objRequest->getvaluebyname('layer')){
 			$legend = false;
 		}
 	}
-    
+
     $gcLegendText = true;
     if (isset($_REQUEST['GCLEGENDTEXT']) && $_REQUEST['GCLEGENDTEXT'] == 0) {
         $gcLegendText = false;
@@ -76,7 +76,7 @@ if($objRequest->getvaluebyname('layer')){
 				continue;
 			}
         }
-		
+
         if($oLayer->connectiontype == MS_WMS) {
             $url = $oLayer->connection;
             if(strpos($url, '?') === false) $url .= '?';
@@ -90,20 +90,21 @@ if($objRequest->getvaluebyname('layer')){
                 'layer'=>$oLayer->getMetaData('wms_name'),
                 'version'=>$oLayer->getMetaData('wms_server_version')
             );
-			
+
             if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
 
                 $params['GC_SESSION_ID'] = session_id();
             }
             $urlWmsRequest = $url. http_build_query($params);
-			
+
             $options = array(
-                CURLOPT_URL => $urlWmsRequest, 
-                CURLOPT_HEADER => 0, 
+                CURLOPT_URL => $urlWmsRequest,
+                CURLOPT_HEADER => 0,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_BINARYTRANSFER => true
-            ); 
-            $ch = curl_init(); 
+                CURLOPT_BINARYTRANSFER => true,
+				CURLOPT_SSL_VERIFYHOST => 0
+            );
+            $ch = curl_init();
             curl_setopt_array($ch, $options);
             $result = curl_exec($ch);
             if($result === false) {
@@ -111,10 +112,10 @@ if($objRequest->getvaluebyname('layer')){
             } else if($result) {
 				array_push($iconsArray, $result);
             }
-            curl_close($ch); 
+            curl_close($ch);
             continue;
         }
-        
+
         $oLayer->set('sizeunits',MS_PIXELS);
         if(!$ruleLayerName || $ruleLayerName == $oLayer->name){
             $numCls = $oLayer->numclasses;
@@ -129,16 +130,16 @@ if($objRequest->getvaluebyname('layer')){
                 $oClass = $oLayer->getClass($clno);
                 $className = $oClass->name;
                 if($oClass->title) $oClass->set('name',$oClass->title);
-                
+
                 //VORREI TOGLIERE LA CLASSE DALLA LEGENDA MA NON TROVO UN MODO MIGLIORE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 //if($oClass->getMetaData("gc_no_image")) $oClass->set('maxscaledenom',1);
                 if($oClass->getMetaData("gc_no_image") == 1)
                     $classToRemove[] = $oClass->title;
                 elseif(!$ruleClassName || $ruleClassName == $className){
-                    //RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ... 
+                    //RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ...
                     //if(($oClass->getMetaData("gc_no_image")!='1') && (!$ruleClassName || $ruleClassName == $className)){
                     //if((($oClass->maxscale == -1) || ($scale <= $oClass->maxscale)) && (($oClass->minscale == -1) || ($scale >= $oClass->minscale))){
-                    
+
                     $char=$oClass->getTextString();
                     //SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
                     if(strlen($char)==3){//USARE REGEXP, non � detto che questa stringa sia lunga 3 !!!!
@@ -180,15 +181,15 @@ if($objRequest->getvaluebyname('layer')){
                 };
                 //print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
                 if($oLayer->numclasses>0){
-                    ms_ioinstallstdouttobuffer(); 
+                    ms_ioinstallstdouttobuffer();
                     $objRequest->setParameter('LAYER', $oLayer->name);
                     $objRequest->setParameter('WIDTH', $totWidth);
                     if(!empty($_REQUEST['SCALE'])) {
                         //$objRequest->setParameter('SCALE', intval($_REQUEST["SCALE"]-10));
                     }
-                    
+
                     $oMap->owsdispatch($objRequest);
-                    $contenttype = ms_iostripstdoutbuffercontenttype(); 
+                    $contenttype = ms_iostripstdoutbuffercontenttype();
 
                     ob_start();
                     ms_iogetStdoutBufferBytes();
@@ -200,7 +201,7 @@ if($objRequest->getvaluebyname('layer')){
                     //die($imageContent);
                     array_push($iconsArray, $imageContent);
                 }
-                
+
             } else {
                 $numCls = $oLayer->numclasses;
                 for ($clno=0; $clno < $numCls; $clno++) {
@@ -225,7 +226,7 @@ if($objRequest->getvaluebyname('layer')){
 if(!$legend) {
 	$w = $totWidth;
 	$h = 1;
-	
+
 	foreach($iconsArray as $icon) {
 		$gdImage = @imagecreatefromstring($icon);
         if(!$gdImage) continue;
@@ -235,7 +236,7 @@ if(!$legend) {
 	$white = imagecolorallocate($legendImage, 255, 255, 255);
 	imagefill($legendImage, 0, 0, $white);
 	$offset = 1;
-	
+
 	foreach($iconsArray as $key => $icon) {
 		$img = @imagecreatefromstring($icon);
         if(!$img) continue;

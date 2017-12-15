@@ -4,7 +4,7 @@ class OwsHandler {
 
     /**
      * Send a POST request
-     * 
+     *
      * @param string $url
      * @param string $postFields (xml)
      * @throws RuntimeException
@@ -16,6 +16,7 @@ class OwsHandler {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             "Content-Type: application/xml",
         ));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
         $return = curl_exec($ch);
@@ -89,9 +90,9 @@ class OwsHandler {
     }
 
     static function getRequestedLayersById($oMap, $objRequest, $layersIdList) {
-        
+
         $layersArray = array();
-        
+
         if (empty($layersIdList)) {
             return $layersArray;
         }
@@ -115,7 +116,7 @@ class OwsHandler {
      * Remove the srsName Attribute from the filter, when the SRID is in the
      * list of inverted axis SRIDs. This is a temporarily hack, since some
      * operations depend on axis order, while others don't
-     * 
+     *
      * @param type $filter
      * @param array $invertedAxisOrderSrids
      * @return string
@@ -149,6 +150,7 @@ class OwsHandler {
     function getHttp($url) {
         $ch = curl_init($_url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);

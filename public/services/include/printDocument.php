@@ -33,9 +33,9 @@ class printDocument {
     private $getLegendGraphicWmsList = array();
     private $nullLogo = 'null.png';
     private $getLegendGraphicRequest;
-    
+
     public function __construct() {
-    
+
         $defaultOptions = array(
             'format' => 'A4',
             'dpi' => 72,
@@ -48,7 +48,7 @@ class printDocument {
             'srid' => null,
             'auth_name'=>'EPSG',
         );
-        
+
         $options = array();
 
         if(!empty($_REQUEST['tiles']) && is_array($_REQUEST['tiles'])) {
@@ -99,20 +99,20 @@ class printDocument {
         }
 
         $this->options = array_merge($defaultOptions, $options);
-        
+
         if(substr($this->options['TMP_PATH'], -1) != '/') $this->options['TMP_PATH'] .= '/';
         if(!is_dir($this->options['TMP_PATH']) || !is_writeable($this->options['TMP_PATH'])) {
             throw new RuntimeException('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
         }
         if(substr($this->options['TMP_URL'], -1) != '/') $this->options['TMP_URL'] .= '/';
-        
+
         if(defined('GC_PRINT_IMAGE_SIZE_INI') && file_exists(GC_PRINT_IMAGE_SIZE_INI)) {
             $this->dimensions = parse_ini_file(GC_PRINT_IMAGE_SIZE_INI, true);
         }
-        
+
         if(!isset($this->dimensions[$this->options['direction']])) throw new Exception('Invalid direction');
         if(!isset($this->dimensions[$this->options['direction']][$this->options['format']])) throw new Exception('Invalid print format');
-        
+
         if (!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] != 'table') {
             if(isset($options['scale_mode']) && $options['scale_mode'] == 'user') {
                 if(empty($options['scale']))
@@ -125,9 +125,9 @@ class printDocument {
             }
         }
         $this->wmsMergeUrl = PUBLIC_URL.$this->wmsMergeUrl;
-        
+
         $this->db = GCApp::getDB();
-        
+
 
 
         if(!empty($_REQUEST["template"]))
@@ -145,27 +145,27 @@ class printDocument {
         if(!empty($_REQUEST['copyrightString']) && $_REQUEST['copyrightString'] != 'null') {
             $this->documentElements['copyright-string'] = $_REQUEST['copyrightString'];
         }
-        
+
         $this->documentElements['gisclient-folder'] = GC_PRINT_TPL_URL;
         $this->documentElements['map-logo-sx'] = GC_PRINT_TPL_URL.$this->nullLogo;
         $this->documentElements['map-logo-dx'] = GC_PRINT_TPL_URL.$this->nullLogo;
         $this->documentElements['map-box'] = $_REQUEST['extent'];
- 
+
     }
-    
+
     public function setLang($lang) {
         $this->documentElements['map-lang'] = $lang;
     }
-    
+
     public function setLogo($logo, $position = 'sx') {
         $this->documentElements['map-logo-'.$position] = $logo;
     }
-    
+
     public function printMapHTML() {
         $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map_html';//DEFAULT HTML TEMPLATE
         $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";
         if(!file_exists($xslFile)) throw new RuntimeException('XSL file ('.$xslFile.') not found');
-        
+
 
         $dom = $this->buildDOM();
         $tmpdoc = new DOMDocument();
@@ -183,7 +183,7 @@ class printDocument {
         $this->deleteOldTmpFiles();
         return $this->options['TMP_URL'].$filename;
     }
-    
+
     public function printMapPDF() {
         $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map';//DEFAULT PDF TEMPLATE
         $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";;
@@ -220,7 +220,7 @@ class printDocument {
 
     public function getBox() {
         $this->calculateSizes();
-        
+
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         return $mapImage->getExtent();
     }
@@ -260,7 +260,7 @@ class printDocument {
         foreach($this->tiles as $wms) {
             if(!empty($wms['parameters']['PROJECT']) && empty($project)) $project = $wms['parameters']['PROJECT'];
             if(!empty($wms['parameters']['MAP']) && empty($mapset)) $mapset = $wms['parameters']['MAP'];
-            
+
             //print_array($wms);
             if (isset($wms['parameters']['LAYERS'])){
                 foreach($wms['parameters']['LAYERS'] as $layerName) {
@@ -308,7 +308,7 @@ class printDocument {
             unset($theme);
         }
         return array('themes'=>$themes);
-    }    
+    }
 
     protected function buildLegendArray() {
 
@@ -358,7 +358,7 @@ class printDocument {
             throw $e;
         }
     }
-    
+
     private function getLegendImageWMS($layer, $group, $tmpFileId, $sld = null) {
         $request = $this->getLegendGraphicRequest;
         $request['LAYER'] = $group;
@@ -368,7 +368,7 @@ class printDocument {
         if(!empty($sld)) $queryString .= '&SLD='.$sld;
         return $this->getLegendImage($url.'?'.$queryString, $tmpFileId);
     }
-    
+
     private function getLegendImage($url, $tmpFileId) {
         $dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
         $finalUrl = printDocument::addPrefixToRelativeUrl($url);
@@ -380,7 +380,8 @@ class printDocument {
             CURLOPT_FILE => $fp,
             CURLOPT_HEADER => 0,
             CURLOPT_FOLLOWLOCATION => 1,
-            CURLOPT_TIMEOUT => 60
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_SSL_VERIFYHOST => 0
             );
         curl_setopt_array($ch, $options);
 
@@ -390,37 +391,38 @@ class printDocument {
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
             throw new RuntimeException("Call to $finalUrl return HTTP code $httpCode");
+            //return PUBLIC_URL . 'images/blank.gif';
         }
         curl_close($ch);
         fclose($fp);
         return $dest;
     }
-    
+
     private function calculateSizes() {
         $dimension = array(
-            'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'], 
+            'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'],
             'h'=>$this->dimensions[$this->options['direction']][$this->options['format']]['h']
         );
 
         $this->imageSize = array(
-            (int)round($dimension['w'] * ($this->options['dpi'] / 2.54)), 
+            (int)round($dimension['w'] * ($this->options['dpi'] / 2.54)),
             (int)round($dimension['h'] * ($this->options['dpi'] / 2.54)),
         );
         $this->documentSize = $dimension;
     }
-    
+
     private function getMapImage() {
         $this->calculateSizes();
 
         if(!empty($this->vectors)) {
             $this->options['vectors'] = $this->vectors;
         }
-        
+
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         $this->wmsList = $mapImage->getWmsList();
         $this->imageFileName = $mapImage->getImageFileName();
     }
-    
+
     private function buildDOM($absoluteUrls = false) {
         $this->getMapImage();
         $this->buildLegendArray();
@@ -430,10 +432,10 @@ class printDocument {
         $dom_map = $dom->appendChild(new DOMElement('map'));
 
         $dom_layout = $dom_map->appendChild(new DOMElement('page-layout'));
-        
+
         $direction = ($this->options['direction'] == 'vertical') ? 'P' : 'L';
         $layout = $this->options['format'].$direction;
-        
+
         $dom_layout->appendChild(new DOMText($layout));
 
         $dom_width = $dom_map->appendChild(new DOMElement('map-width'));
@@ -460,8 +462,8 @@ class printDocument {
 
         if(!empty($this->legendArray)) {
             $dom_legend = $dom_map->appendChild(new DOMElement('map-legend'));
-            
-            $i = 0;            
+
+            $i = 0;
             foreach($this->legendArray as $theme) {
                 if(empty($theme['groups'])) continue;
                 $continue = true;
@@ -475,7 +477,7 @@ class printDocument {
 
                 $dom_icon = $dom_group->appendChild(new DOMElement('group-icon'));
                 $dom_icon->appendChild(new DOMText(''));
-                
+
                 foreach($theme['groups'] as $group) {
                     foreach($group['layers'] as $layer) {
                         if ($i % 3 == 0) $dom_grp_block = $dom_group->appendChild(new DOMElement('group-block'));
@@ -486,7 +488,7 @@ class printDocument {
                         $dom_item_attr = $dom_item->appendChild(new DOMElement('icon'));
                         if($absoluteUrls) $layer['img'] = printDocument::addPrefixToRelativeUrl($layer['img']);
                         $dom_item_attr->appendChild(new DOMText($layer['img']));
-                    }        
+                    }
                 }
                 while($i % 3 != 0) {
                     $dom_item = $dom_grp_block->appendChild(new DOMElement('group-item'));
@@ -494,25 +496,25 @@ class printDocument {
                 }
             }
         }
-        
+
         $xmlContent = $dom->saveXML();
         $xmlFile = $this->options['TMP_PATH'].'print.xml';
         if (false === file_put_contents($xmlFile, $xmlContent)) {
             throw new RuntimeException("Could not write to $xmlFile");
         }
-        
+
         return $dom;
     }
-    
+
     private function buildTableDOM($tableData, $absoluteUrls = false) {
-        
+
         $dom = new DOMDocument('1.0', 'utf-8');
         $dom->formatOutput = true;
-        
+
         $dom_report = $dom->appendChild(new DOMElement('Report'));
-        
+
         $dom_table = $dom_report->appendChild(new DOMElement('ReportData'));
-        
+
         if(empty($tableData['data']) || !is_array($tableData['data'])) {
             return $dom;
         }
@@ -528,7 +530,7 @@ class printDocument {
             $dom_col_header = $dom_col_headers->appendChild(new DOMElement('ColumnHeader'));
             $dom_col_name = $dom_col_header->appendChild(new DOMElement('Name'));
             $dom_col_name->appendChild(new DOMText($field['title']));
-            
+
             $col_width=0;
             if (isset($field['width']) && $field['width'] > 0) {
                 $col_width = $field['width'];
@@ -539,7 +541,7 @@ class printDocument {
             }
             $tot_col_width += $col_width;
             $dom_col_width = $dom_col_header->appendChild(new DOMElement('Width'));
-            $dom_col_width->appendChild(new DOMText($col_width));         
+            $dom_col_width->appendChild(new DOMText($col_width));
         }
 
         // **** Set table rows
@@ -552,13 +554,13 @@ class printDocument {
                     $dom_col->appendChild(new DOMText($row[$field['field_name']]));
                 }
             }
-        } 
- 
+        }
+
         $dom_total_width = $dom_report->appendChild(new DOMElement('total-width'));
         $dom_total_width->appendChild(new DOMText($tot_col_width));
-        
+
         $dom_layout = $dom_report->appendChild(new DOMElement('page-layout'));
-        
+
         $layout = '';
         if ($this->dimensions[$this->options['direction']][$this->options['format']]['w'] >= $tot_col_width ) {
             $direction = ($this->options['direction'] == 'vertical') ? 'P' : 'L';
@@ -575,9 +577,9 @@ class printDocument {
         }
         if (strlen($layout) == 0)
             $layout = 'A0L';
-        
-        
-            
+
+
+
         $dom_layout->appendChild(new DOMText($layout));
 
         foreach($this->documentElements as $key => $val) {
@@ -591,10 +593,10 @@ class printDocument {
         if (false === file_put_contents($xmlFile, $xmlContent)) {
             throw new RuntimeException("Could not write to $xmlFile");
         }
-        
+
         return $dom;
     }
-    
+
     private function deleteOldTmpFiles() {
         if($this->options['TMP_PATH'] == '/tmp/') return;
         if ($handle = opendir($this->options['TMP_PATH'])) {
@@ -613,7 +615,7 @@ class printDocument {
             closedir($handle);
         }
     }
-    
+
     public static function addPrefixToRelativeUrl($url) {
         if (defined('PRINT_RELATIVE_URL_PREFIX') && !preg_match("/^(http|https):\/\//", $url, $matches)) {
             return PRINT_RELATIVE_URL_PREFIX.$url;
@@ -622,5 +624,5 @@ class printDocument {
         }
         return $url;
     }
-    
+
 }

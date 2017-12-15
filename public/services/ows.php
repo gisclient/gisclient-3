@@ -39,16 +39,16 @@ $invertedAxisOrderSrids = array(31466,31467,31468,31254,31255,31256,31257,31258,
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
     // skipping this parameter does avoid a second request made by mapserver
-	// 
+	//
 	// filter handling is delayed, for issues with axis ordering
-	// 
+	//
 	// transparent handling is delayed in order to check, if the target format
 	// really supports tranparent pixels
     if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
 		$skippedParams[strtolower($k)] = $v;
         continue;
     }
-	
+
     if (is_string($v)) {
         $objRequest->setParameter($k, stripslashes($v));
     }
@@ -108,7 +108,7 @@ if (strpos(realpath($projectDirectory), realpath($mapfileDir)) !== 0) {
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid PROJECT name";
 	exit(1);
-} 
+}
 
 // se è definita una lingua, apro il relativo mapfile
 $mapfileBasename = $objRequest->getvaluebyname('map');
@@ -135,14 +135,14 @@ if (strpos(realpath($mapfile), realpath($projectDirectory)) !== 0) {
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid MAP name";
 	exit(1);
-} 
+}
 if (!is_readable($mapfile)) {
 	// map file not found
 	print_debug('mapfile ' .$mapfile. ' not readable', null, 'system');
 	header('HTTP/1.0 400 Bad Request');
 	echo "invalid MAP name";
 	exit(1);
-} 
+}
 
 $oMap = ms_newMapobj($mapfile);
 print_debug('opened mapfile "' .realpath($mapfile). '": '.get_class($oMap), null, 'system');
@@ -163,9 +163,10 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 } else if(!empty($_REQUEST['SLD'])) {
 	$ch = curl_init($_REQUEST['SLD']);
 	curl_setopt($ch, CURLOPT_HEADER, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-	curl_setopt($ch ,CURLOPT_TIMEOUT, 10); 
+	curl_setopt($ch ,CURLOPT_TIMEOUT, 10);
 	$sldContent = curl_exec($ch);
 	if($sldContent === false) {
 		throw new RuntimeException("Call to $url return with error:". var_export(curl_error($ch), true));
@@ -174,13 +175,13 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
 		throw new RuntimeException("Call to $url return HTTP code $httpCode and body ".$sldContent);
 	}
 	curl_close($ch);
-    
+
 	$objRequest->setParameter('SLD_BODY', $sldContent);
 	$oMap->applySLD($sldContent); // for getlegendgraphic
 }
 
 
-//CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
+//CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE
 if($objRequest->getvaluebyname('srsname')) {
 	$objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
 }
@@ -223,7 +224,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 	if(!empty($layersParameter)) {
 		$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	}
-	
+
 	foreach($layersArray as $layer) {
 		$privateLayer = $layer->getMetaData('gc_private_layer');
 		if(!empty($privateLayer)) {
@@ -231,7 +232,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 			break;
 		}
 	}
-	
+
 	if ($hasPrivateLayers) {
 		$user = new GCUser();
 		$isAuthenticated = $user->isAuthenticated();
@@ -259,16 +260,16 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 if(!empty($layersParameter) || !empty($layerIndexList)) {
 	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	$layersArray = array_merge($layersArray, OwsHandler::getRequestedLayersById($oMap, $objRequest, $layerIndexList));
-        
+
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();
 	$layersToInclude = array();
 	foreach($layersArray as $layer) {
-	
+
 		//layer aggiunto x highlight
 		$highlight = $objRequest->getvaluebyname('highlight');
 		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($highlight)) $layer->set('sizeunits',MS_PIXELS);
-	
+
 		// layer nascosto
 		$hideLayer = $layer->getMetaData("gc_hide_layer");
 		if(strtoupper($objRequest->getvaluebyname('request')) == 'GETMAP' && !empty($hideLayer)) {
@@ -309,7 +310,7 @@ if(!empty($layersParameter) || !empty($layerIndexList)) {
 				$layer->setFilter($filter);
 			}
 		}
-		
+
 		if(!empty($_SESSION['GC_LAYER_FILTERS'])) {
             if(!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
                 $filter = $layer->getFilterString();
@@ -322,30 +323,30 @@ if(!empty($layersParameter) || !empty($layerIndexList)) {
                 $layer->setFilter($filter);
             }
         }
-		
+
 		if(!in_array($layer->name, $layersToRemove)) {
 			array_push($layersToInclude, $layer->name);
 		}
 	}
-	
+
 	// rimuovo i layer che l'utente non può visualizzare
 	foreach($layersToRemove as $layerName) {
 		$layer = $oMap->getLayerByName($layerName);
 		$oMap->removeLayer($layer->index);
 	}
-	// aggiorno il parametro layers con i soli layers che l'utente può vedere 
-	$objRequest->setParameter($parameterName, implode(",",$layersToInclude));		
+	// aggiorno il parametro layers con i soli layers che l'utente può vedere
+	$objRequest->setParameter($parameterName, implode(",",$layersToInclude));
 }
 session_write_close();
 
 // Cache part 1
 $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
 $owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
-if ((isset($_REQUEST['REQUEST']) && 
-     strtolower($_REQUEST['REQUEST']) == 'getmap') || 
-	(isset($_REQUEST['request']) && 
+if ((isset($_REQUEST['REQUEST']) &&
+     strtolower($_REQUEST['REQUEST']) == 'getmap') ||
+	(isset($_REQUEST['request']) &&
      strtolower($_REQUEST['request']) == 'getmap')) {
-	
+
 	if ($owsCacheTTL > 0 && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER["HTTP_IF_MODIFIED_SINCE"]) < time() - $owsCacheTTL) {
 		header('HTTP/1.1 304 Not Modified');
 		die(); // Dont' return image
@@ -364,14 +365,14 @@ if (substr($sapi_type, 0, 3) != 'cgi') {
 	}
 }
 
-/* Enable output buffer */ 
-ms_ioinstallstdouttobuffer(); 
+/* Enable output buffer */
+ms_ioinstallstdouttobuffer();
 
-/* Execute request */ 
+/* Execute request */
 $oMap->owsdispatch($objRequest);
-$contenttype = ms_iostripstdoutbuffercontenttype(); 
+$contenttype = ms_iostripstdoutbuffercontenttype();
 
-/* Send response with appropriate header */ 
+/* Send response with appropriate header */
 if (substr($contenttype, 0, 6) == 'image/') {
 
 	header('Content-Type: '. $contenttype);
@@ -410,9 +411,9 @@ if (substr($contenttype, 0, 6) == 'image/') {
 		header("Last-Modified: {$serverTime}");
 		header("Expires: {$cacheTime}");
 	}
-	ms_iogetStdoutBufferBytes(); 
+	ms_iogetStdoutBufferBytes();
 } elseif (strstr($contenttype, 'google-earth')) {
-	
+
 	if ($requestedFormat == 'kmz' &&
 		strtolower($objRequest->getValueByName('format')) == 'kml') {
 		header("Content-Type: application/vnd.google-earth.kmz");
@@ -424,11 +425,11 @@ if (substr($contenttype, 0, 6) == 'image/') {
 	} else {
 		header("Content-Type: $contenttype");
 		header('Content-Disposition: attachment; filename="layerdata.kml"');
-		ms_iogetStdoutBufferBytes(); 
-	}	
-} else { 
-	header("Content-Type: application/xml"); 
-	ms_iogetStdoutBufferBytes(); 
+		ms_iogetStdoutBufferBytes();
+	}
+} else {
+	header("Content-Type: application/xml");
+	ms_iogetStdoutBufferBytes();
 }
 
 ms_ioresethandlers();
