@@ -5,6 +5,9 @@ include_once ROOT_PATH.'lib/ajax.class.php';
 include_once ADMIN_PATH.'lib/gcSymbol.class.php';
 include_once ADMIN_PATH.'lib/PixmapSymbol.php';
 
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $ajax = new GCAjax();
 
 if(empty($_REQUEST['action'])) {

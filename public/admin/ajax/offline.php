@@ -8,6 +8,9 @@ use GisClient\Author\Map;
 use GisClient\Author\LayerGroup;
 use GisClient\Author\OfflineMap;
 
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $ajax = new GCAjax();
 
 if (empty($_REQUEST['action'])) {
