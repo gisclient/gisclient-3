@@ -127,15 +127,23 @@
 					<th><?php echo GCAuthor::t('temporary') ?></th>
 					<th><?php echo GCAuthor::t('public') ?></th>
 				</tr>
-				<tr><td><b><?php echo GCAuthor::t('all') ?></b></td><td></td><td style="text-align:center;"><a href="#" data-action="refresh" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('update') ?></a></td><td style="text-align:center;"><a href="#" data-action="refresh" data-target="public" data-mapset=""><?php echo GCAuthor::t('update'); ?></a></td></tr>
+				<tr><td><b><?php echo GCAuthor::t('all') ?></b></td>
+                                    <td></td>
+                                    <td style="text-align:center;"><a href="#" data-action="refresh" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('update') ?></a>
+                                    <a href="#" data-action="compile" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('compile'); ?></a> 
+                                    </td>
+                                    <td style="text-align:center;"><a href="#" data-action="refresh" data-target="public" data-mapset=""><?php echo GCAuthor::t('update'); ?></a>
+                                    <a href="#" data-action="compile" data-target="public" data-mapset=""><?php echo GCAuthor::t('compile'); ?></a>
+                                    </td>
+                                </tr>
 				<?php
 				if(isset($mapsets)) {
 					foreach($mapsets as $mapset) {
 						echo '<tr>
 							<td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
 							<td></td>
-							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
-							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
+							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a><a href="#" data-action="compile" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('compile').'</a></td>
+							<td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a><a href="#" data-action="compile" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('compile').'</a></td>
 						</tr>';
 					}
 				}

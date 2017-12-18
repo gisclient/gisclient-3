@@ -257,6 +257,9 @@ class GCAuthor {
 		}
 	}
 
+    public static function compileProjectMapfile($project, $publicTarget = false) {
+    }
+
 	public static function refreshMapfiles($project, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
 		require_once ADMIN_PATH.'lib/spyc.php';
@@ -281,6 +284,15 @@ class GCAuthor {
 		}
 	}
 
+    public static function compileMapfiles($project, $publicTarget = false) {
+      //recuperare tutti i mapset del progetto
+      //mandare in esecuzione lo script per ciascuno utilizzando il metodo specifico
+      $maps = GCAuthor::getMapsets($project);
+      foreach($maps as $singleMap) {
+        GCAuthor::compileMapfile($project, $singleMap["mapset_name"], $publicTarget);
+      }
+    }
+
 	public static function refreshMapfile($project, $mapset, $publish = false) {
 		require_once ADMIN_PATH."lib/functions.php";
 		require_once ADMIN_PATH.'lib/spyc.php';
@@ -304,6 +316,47 @@ class GCAuthor {
 			}
 		}
 	}
+
+    public static function compileMapfile($project, $mapset, $publicTarget = false) {
+      $fileName = ROOT_PATH."map/".$project."/".($publicTarget ? "" : "tmp.").$mapset.".map";
+      if(file_exists($fileName)) {
+        $contents = file_get_contents($fileName);
+        $pattern = preg_quote("EXTENT", '/');
+        $pattern = "/$pattern.*\$/m";
+        preg_match_all($pattern, $contents, $matches);
+        $choordsArray = explode(" ", trim(str_replace("EXTENT", "", implode("\n", $matches[0]))));
+        for($index = 0; $index<20; $index++) {
+          $command = "shp2img -m ".$fileName." -o /tmp/test.png -all_debug 5 -e ".implode(" ", $choordsArray);
+          exec($command." 2>&1", $result, $retVal);
+          $error = GCAuthor::searchErrorOnResult($result, $project, $mapset);
+          if($error)
+            break;
+          $choordsArray = GCAuthor::getNextChoords($choordsArray);
+        }
+      } else {
+        GCError::register("$project.$mapset: Mapfile inesistente. Creare il file prima di procedere.");
+      }
+    }
+    
+    private static function searchErrorOnResult($cmdResult, $project, $mapset) {
+      $errFound = FALSE;
+      foreach($cmdResult as $logRow) {
+        $error = stripos($logRow, "error");
+        if($error != FALSE) {
+          GCError::register("$project.$mapset: $logRow");
+          $errFound = TRUE;
+        }
+      }
+      return $errFound;
+    }
+    
+    private static function getNextChoords($choordsArray) {
+      $xmin = $choordsArray[0] + (($choordsArray[2] - $choordsArray[0])/4);
+      $xmax = $choordsArray[2] - (($choordsArray[2] - $choordsArray[0])/4);
+      $ymin = $choordsArray[1] + (($choordsArray[3] - $choordsArray[1])/4);
+      $ymax = $choordsArray[3] - (($choordsArray[3] - $choordsArray[1])/4);
+      return [$xmin, $ymin, $xmax, $ymax];
+    }
 
     public static function buildFeatureQuery($aFeature, array $options = array()) {
         $defaultOptions = array(
@@ -556,6 +609,7 @@ class GCAuthor {
 		'online_maps'=>array('it'=>'Mappe online', 'de'=>'Online-Karten'),
 		'ogc_services'=>array('it'=>'Servizi OGC', 'de'=>'OGC Dienste'),
 		'update'=>array('it'=>'Aggiorna', 'de'=>'Aktualisieren'),
+		'compile'=>array('it'=>'Verifica', 'de'=>''),
 		'temporary'=>array('it'=>'temp.', 'de'=>'temporär'),
 		'public'=>array('it'=>'pubblici', 'de'=>'öffentlich'),
 		'theme'=>array('it'=>'Tema', 'de'=>'Thema'),
