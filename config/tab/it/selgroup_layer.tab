@@ -4,7 +4,7 @@ pkey = "selgroup_id;layer_id";
 order_fld = "theme_title"
 dato[] = ";presente;1%;idriga"
 dato[] = "Presente;layer_id;9%#layer_id#presente;check1"
-dato[] = "Layer;layer_name;30%;string"
+dato[] = "Layer;layer_name;30%;text"
 dato[] = "LayerGroup;layergroup_name;30%;text"
 dato[] = "Tema;theme_title;30%;text"
 [list]
