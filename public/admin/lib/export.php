@@ -189,10 +189,10 @@ function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1)/*,$filtro=""
     $dir=str_replace("//","/",$result);
 	require_once "filesystem.php";
     $f = (strrpos($d, "/") !== false) ? substr($d, strrpos($d,"/")+1) : $d;
-	$tmp=explode(".",$f);
+    $tmp=explode(".",$f);
     array_pop($tmp);
 	$fname=@implode("",$tmp);
-	$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name,catalog_id,layertype_id,data,data_srid,layer_order) VALUES(".DB_SCHEMA.".new_pkey('layer','layer_id'),$layergroup_id,'".$fname."',$catalog_id,4,'".str_replace("//","/",$dir."/".$f)."',$srid,-1)";
+	$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name, layer_title, catalog_id,layertype_id,data,data_srid,layer_order) VALUES(".DB_SCHEMA.".new_pkey('layer','layer_id'),$layergroup_id,'".$fname."','".$fname."',$catalog_id,4,'".str_replace("//","/","/".substr($d,0,strrpos($d,"/"))."/".$f)."',$srid,-1)";
     try {
       $stmt = $db->prepare($sql);
       $stmt->execute();
