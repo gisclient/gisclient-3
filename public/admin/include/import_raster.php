@@ -37,7 +37,7 @@ if(isset($_POST["importa"])){
       if (!$error) {
         $files = explode(" ", $data);
         foreach($files as $currentFile) {
-          $error=import_raster($currentFile,$extension,$objId,$catalog_id,$srid)/*,$filtro)*/;
+          $error=import_raster($currentFile,$extension,$objId,$catalog_id,$srid, $layerDef)/*,$filtro)*/;
 	      if (!$error)
             echo "<p>Procedura di importazione per ".$currentFile." terminata correttamente.</p>";
 	      else{
@@ -88,7 +88,12 @@ function annulla(){
 			<input type="button" class="hexfield" value="Elenco File" onclick="javascript:openListRaster('data',['catalog_id','layertype_id','layergroup','project']);">
 		</td>
 	</tr>
-
+    <tr>
+		<td width="200px" class="label ui-widget ui-state-default"><b>Definizione</b></font></td>
+        <td valign="middle">
+            <textarea name="layerDef" id="layerDef" cols="50" rows="5"></textarea>
+		</td>
+	</tr>
 	<tr>
 		<td width="200px" class="label ui-widget ui-state-default"><b>Modalità</b></font></td>
 		<td valign="middle">
