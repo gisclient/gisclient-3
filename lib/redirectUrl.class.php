@@ -12,7 +12,7 @@ class RedirectUrl {
     $handle = fopen(self::$sharedKeyFile, "r");
     $contents = fread($handle, filesize(self::$sharedKeyFile ));
     fclose($handle);
-    return $contents;
+    return hash("sha256", $contents);
   }
 
   private function getFormattedUrl($queryArr) {
@@ -57,7 +57,7 @@ class RedirectUrl {
       $hmacValue = str_replace(self::$hmacRequestParam."=", "", $params[$hmacRequestIndex]);
       array_splice($params, $hmacRequestIndex, 1);
       $exploitedQueryString = self::getFormattedUrl($params);
-      $this->sessionKey = hash_hmac('sha256', $exploitedQueryString, self::readSharedKey());
+      $this->sessionKey = base64_encode(hash_hmac('sha256', $exploitedQueryString, self::readSharedKey()));
       return strcmp($this->sessionKey, $hmacValue);
     }
     return -1;
