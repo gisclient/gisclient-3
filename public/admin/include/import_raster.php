@@ -2,9 +2,12 @@
 require_once "../../config/config.php";
 $db = GCApp::getDB();
 $ris = null;
+$defaultSrid = "";
 $optCatalog = array();
 $connectionType = 1;
-$sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name=:project and connection_type=:connection order by catalog_name;";
+$sql="SELECT DISTINCT catalog_id,catalog_name as name,project_srid as srid FROM "
+  .DB_SCHEMA.".catalog natural join ".DB_SCHEMA.".project WHERE project_name=:project "
+  ."and connection_type=:connection order by catalog_name;";
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute(array('project'=>$project, 'connection'=>$connectionType));
@@ -19,7 +22,11 @@ try {
 
 if($ris) {
 	$optCatalog[]="<option value=\"0\">Seleziona ===></option>";
-	foreach($ris as $val) $optCatalog[]="<option value=\"$val[catalog_id]\">$val[name]</option>";
+	foreach($ris as $val) {
+      $optCatalog[]="<option value=\"$val[catalog_id]\">$val[name]</option>";
+      $defaultSrid = $val["srid"];
+    }
+    
 }
 
 $ext=explode(",",CATALOG_EXT);
@@ -30,7 +37,7 @@ foreach($ext as $e){
 if(isset($_POST["importa"])){
     include_once ADMIN_PATH."lib/export.php";
 	extract($_POST);
-	if(!$srid) $srid=-1;
+	if(!$srid) $srid=$defaultSrid;
 	if(!empty($data)) {
 	  if($delete)
         $error= deleteRasterLayer($objId);
@@ -79,6 +86,7 @@ function annulla(){
 		<td width="200px" class="label ui-widget ui-state-default"><b>EPSG</font></td>
 		<td valign="middle">
 			<input type="text" class="textbox" size="6" value="" name="srid" id="srid">
+            <label for="srid">(default: <?php echo $defaultSrid; ?>)</label>
 		</td>
 	</tr>
 	<tr>
