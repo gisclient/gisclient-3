@@ -44,11 +44,27 @@ error_reporting (E_ERROR | E_PARSE);
 ?>
 	<script>
 		function openFile(f){
-			var frm=$('file');
+			var frm=document.getElementById('file');
+			var inputFile = document.createElement("input");
+			var inputAction = document.createElement("input");
+			var inputType = document.createElement("input");
+			
+			inputFile.type = 'hidden';
+			inputFile.name = 'file';
+			inputFile.value = f;
+
+			inputAction.type = 'hidden';
+			inputAction.name = 'action';
+			inputAction.value = 'view';
+			
+			inputType.type = 'hidden';
+			inputType.name = 'type';
+			inputType.value = 'text';
+
 			frm.action='download.php'
-			frm.appendChild(new Element('input',{'type':'hidden','name':'file','value':f})); 
-			frm.appendChild(new Element('input',{'type':'hidden','name':'action','value':'view'})); 
-			frm.appendChild(new Element('input',{'type':'hidden','name':'type','value':'text'}));
+			frm.appendChild(inputFile); 
+			frm.appendChild(inputAction); 
+			frm.appendChild(inputType);
 			frm.submit();
 		}
 
