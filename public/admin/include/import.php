@@ -8,7 +8,7 @@
     try {
         $ris = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     } catch(Exception $e) {
-        echo "<p>{GCAuthor::t('error_query')} : $sql</p>";
+        echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
     }
 	
 	$opt[]="<option value=\"-1\">Seleziona ===></option>";
@@ -25,7 +25,7 @@
         try {
             $stmt->execute(array('theme_id'=>$this->parametri["theme"]));
         } catch(Exception $e) {
-            echo "<p>{GCAuthor::t('error_query')} : $sql</p>";
+            echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
         }
         $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -53,7 +53,7 @@
             try {
                 $stmt->execute(array('project'=>$project));
             } catch(Exception $e) {
-                echo "<p>{GCAuthor::t('error_query')} : $sql</p>";
+                echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
             }
             $projectName = $stmt->fetchColumn(0);
 		}
@@ -70,7 +70,7 @@
 			$error=import(ADMIN_PATH."export/$fName",$objId,$projectName,$newName,$layer);
 			
 			
-			if (!$error) echo "<p>{GCAuthor::t('import_done')}</p>";
+			if (!$error) echo "<p>".GCAuthor::t('import_done')."</p>";
 			else{
 				$mex="<ul><li>".implode("</li><li>",$error)."</li></ul>";
 				echo $mex;
