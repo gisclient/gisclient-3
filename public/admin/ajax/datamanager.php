@@ -725,17 +725,22 @@ switch ($_REQUEST['action']) {
             break;
         }
 
-        $export = new GCExport($dataDb, 'shp');
-        $tables = array(
-            array(
-                'db'=>$dbParams['db_name'],
-                'schema'=>$dbParams['schema'],
-                'table'=>$_REQUEST['table_name']
-            )
-        );
-        $zipFile = $export->export($tables, array('name'=>$_REQUEST['table_name']));
+        try {
+            $export = new GCExport($dataDb, 'shp');
+            $tables = array(
+                array(
+                    'db'=>$dbParams['db_name'],
+                    'schema'=>$dbParams['schema'],
+                    'table'=>$_REQUEST['table_name']
+                )
+            );
+            $zipFile = $export->export($tables, array('name'=>$_REQUEST['table_name']));
 
-        $ajax->success(array('filename'=>$zipFile));
+            $ajax->success(array('filename'=>$zipFile));
+        } catch (\Exception $e) {
+            $ajax->error($e->getMessage());
+        }
+        
         break;
 
     case 'import-shp':

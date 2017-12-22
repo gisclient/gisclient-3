@@ -173,8 +173,9 @@ class GCExport
         
         exec($cmd, $pgsql2shpOutput, $retVal);
         if ($retVal != 0) {
+            $error = file_get_contents($errorFile);
             file_put_contents($errorFile, $cmd, FILE_APPEND);
-            throw new Exception('Postgres to SHP error: ');
+            throw new Exception('Postgres to SHP error: '.$error);
         }
         // charset related operations
         if (($dbfFile = fopen($filePath . '.dbf', "r+")) === false) {
