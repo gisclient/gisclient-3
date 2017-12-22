@@ -161,6 +161,15 @@ class GCExport
         } else {
             $select = '*';
         }
+
+        $exportDir = dirname($filePath);
+        if (!file_exists($exportDir)) {
+            throw new Exception(sprintf('The directory %s does not exists', $exportDir));
+        }
+
+        if (!is_writable($exportDir)) {
+            throw new Exception(sprintf('The directory %s is not writable', $exportDir));
+        }
         
         $cmd = 'pgsql2shp -f ' . escapeshellarg($filePath . '.shp')
             . ' -h ' . DB_HOST . ' -p ' . DB_PORT . ' -u ' . DB_USER . ' -P ' . DB_PWD
