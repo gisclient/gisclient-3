@@ -680,7 +680,6 @@ switch ($_REQUEST['action']) {
         $stmt->execute(array('schema'=>$dbParams['schema'], 'table'=>$_REQUEST['table_name']));
         $columns = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 
-        require_once ROOT_PATH.'lib/external/PHPExcel/IOFactory.php';
         $objPHPExcel = new PHPExcel();
         $objPHPExcel->getProperties()->setTitle("Export ".$_REQUEST['table_name']);
         $sheet = $objPHPExcel->setActiveSheetIndex(0);
@@ -860,8 +859,6 @@ switch ($_REQUEST['action']) {
         if ($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
             $ajax->error('Invalid table name '.$_REQUEST['table_name']);
         }
-
-        require_once ROOT_PATH.'lib/external/PHPExcel/IOFactory.php';
 
         $objPHPExcel = PHPExcel_IOFactory::load(IMPORT_PATH.$_REQUEST['file_name']);
 
