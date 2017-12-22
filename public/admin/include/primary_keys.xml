@@ -107,6 +107,12 @@
 		<pkey>selgroup_id</pkey>
 		<parent>project</parent>
 	</selgroup>
+	<selgroup_layer>
+		<table>selgroup_layer</table>
+		<pkey>layer_id</pkey>
+		<pkey>selgroup_id</pkey>
+		<parent>selgroup</parent>
+	</selgroup_layer>
 	<style>
 		<table>style</table>
 		<pkey>style_id</pkey>
