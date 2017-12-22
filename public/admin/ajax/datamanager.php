@@ -838,7 +838,7 @@ switch ($_REQUEST['action']) {
 
     case 'import-xls':
         checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'file_name', 'table_name'));
-        $_REQUEST['table_name'] = trim($_REQUEST['table_name']);
+        $tableName = trim($_REQUEST['table_name']);
 
         $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
@@ -848,16 +848,16 @@ switch ($_REQUEST['action']) {
         $dataDb = GCApp::getDataDB($catalogPath);
         $schema = GCApp::getDataDBSchema($catalogPath);
 
-        $tableExists = GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name']);
+        $tableExists = GCApp::tableExists($dataDb, $schema, $tableName);
         if ($_REQUEST['mode'] == 'create' && $tableExists) {
-            $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
+            $ajax->error('Table '.$tableName.' already exists');
         }
         if ($_REQUEST['mode'] != 'create' && !$tableExists) {
-            $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
+            $ajax->error('Table '.$tableName.' does not exist');
         }
 
-        if ($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
-            $ajax->error('Invalid table name '.$_REQUEST['table_name']);
+        if ($tableName != niceName($tableName)) {
+            $ajax->error('Invalid table name '.$tableName);
         }
 
         $objPHPExcel = PHPExcel_IOFactory::load(IMPORT_PATH.$_REQUEST['file_name']);
@@ -926,16 +926,16 @@ switch ($_REQUEST['action']) {
 
         $create = ($_REQUEST['mode'] == 'create' || $_REQUEST['mode'] == 'replace');
         if ($_REQUEST['mode'] == 'replace') {
-            $sql = 'drop table '.$schema.'.'.$_REQUEST['table_name'];
+            $sql = 'drop table '.$schema.'.'.$tableName;
             $dataDb->exec($sql);
         }
 
         try {
             if ($create) {
-                $sql = 'create table '.$schema.'.'.$_REQUEST['table_name'].' ('.implode(',', $sqlColumns).');';
+                $sql = 'create table '.$schema.'.'.$tableName.' ('.implode(',', $sqlColumns).');';
                 $dataDb->exec($sql);
             }
-            $sql = 'insert into '.$schema.'.'.$_REQUEST['table_name'].' ('.implode(',', $columns).') values ('.implode(',', $sqlParams).');';
+            $sql = 'insert into '.$schema.'.'.$tableName.' ('.implode(',', $columns).') values ('.implode(',', $sqlParams).');';
             $stmt = $dataDb->prepare($sql);
             foreach ($data as $rowIndex => $row) {
                 $params = array();
@@ -948,7 +948,7 @@ switch ($_REQUEST['action']) {
             $ajax->error($e->getMessage());
         }
 
-        $dataDb->exec('GRANT SELECT ON TABLE '.$schema.'.'.$_REQUEST['table_name'].' TO '.MAP_USER);
+        $dataDb->exec('GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER);
         checkAutoUpdatersColumns($dataDb, $schema, $tableName, $autoUpdaters);
         $dataDb->commit();
         $ajax->success();
