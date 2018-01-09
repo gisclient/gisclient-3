@@ -113,9 +113,12 @@ class LayerAuthorizationChecker
                     $authClause
                 . ') AS mapset USING (mapset_name)
             INNER JOIN (
-                SELECT *
+                SELECT
+                    layer.layer_id, layergroup_id, layer.layer_name, layer_title,
+                    layer.maxscale, layer.minscale, layer.hidden, layer.private, layer_order,
+                    wms, wfs, wfst
                 FROM '.DB_SCHEMA.'.layer
-                LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id, layer_name) 
+                LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id) 
                 WHERE ' .
                     $authClause
                 . ') as layer USING (layergroup_id)
