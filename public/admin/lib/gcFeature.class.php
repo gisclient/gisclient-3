@@ -224,7 +224,7 @@ class gcFeature {
         $this->forcePrivate = $private;
     }
 
-    public function getLayerText($layergroupName, $layergroup) {
+    public function getLayerText($layergroupName, $layergroup, $includeScaleDenom = TRUE) {
         if (!$this->aFeature)
             return false;
         $maxScale = $layergroup['layergroup_maxscale'];
@@ -252,20 +252,21 @@ class gcFeature {
                 $layText[] = "\t\"+towgs84=" . $this->srsParams[$this->aFeature["data_srid"]] . "\"";
             $layText[] = "END";
         }
-
         $this->_getLayerConnection($layText);
         if (!empty($this->aFeature["data_extent"]))
             $layText[] = "EXTENT " . $this->aFeature["data_extent"];
         if (!empty($this->aFeature["sizeunits_id"]))
             $layText[] = "SIZEUNITS " . $aMapservUnitDef[$this->aFeature["sizeunits_id"]];
-        if (!empty($this->aFeature['maxscale']))
-            $layText[] = 'MAXSCALEDENOM ' . $this->aFeature['maxscale'];
-        else if (!empty($maxScale))
-            $layText[] = 'MAXSCALEDENOM ' . $maxScale;
-        if (!empty($this->aFeature['minscale']))
-            $layText[] = 'MINSCALEDENOM ' . $this->aFeature['minscale'];
-        else if (!empty($minScale))
-            $layText[] = 'MINSCALEDENOM ' . $minScale;
+        if($includeScaleDenom) {
+          if (!empty($this->aFeature['maxscale']))
+              $layText[] = 'MAXSCALEDENOM ' . $this->aFeature['maxscale'];
+          else if (!empty($maxScale))
+              $layText[] = 'MAXSCALEDENOM ' . $maxScale;
+          if (!empty($this->aFeature['minscale']))
+              $layText[] = 'MINSCALEDENOM ' . $this->aFeature['minscale'];
+          else if (!empty($minScale))
+              $layText[] = 'MINSCALEDENOM ' . $minScale;
+        }
         //if(!empty($maxScale))$layText[]="MAXSCALEDENOM $maxScale"; elseif(!empty($this->aFeature["maxscale"])) $layText[]="MAXSCALEDENOM ". $this->aFeature["maxscale"];
         //if(!empty($minScale))$layText[]="MINSCALEDENOM $minScale"; elseif(!empty($this->aFeature["minscale"])) $layText[]="MINSCALEDENOM ". $this->aFeature["minscale"];
         if (!empty($this->aFeature["maxfeatures"]) && $this->aFeature["maxfeatures"] > 0)

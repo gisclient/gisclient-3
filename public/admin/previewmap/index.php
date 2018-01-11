@@ -38,6 +38,8 @@ if(!$closing) {
 	// handle like the above error check
 	throw new Exception ("constant OPENLAYERS not defined");
   }
+} else {
+  die();
 }
 
 function manageLayerGroupRequest(&$layerTitle, &$layerName, &$tmpMap, $db, $closing) {

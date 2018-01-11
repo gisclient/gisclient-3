@@ -203,7 +203,7 @@ class gcMapfile{
                 $oFeature->setPrivate(true);
             }
         
-            $layerText = $oFeature->getLayerText($layergroupName,$aLayer);
+            $layerText = $oFeature->getLayerText($layergroupName, $aLayer, (strcmp($keytype,"layergroup")!=0 && strcmp($keytype,"layer")!=0));
 			
             if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
 
