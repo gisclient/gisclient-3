@@ -10,13 +10,14 @@ require_once ROOT_PATH."lib/i18n.php";
 $layerTitle = "";
 $layerName = "";
 $tmpMap = "";
+$fileName = "";
 $closing = !empty($_REQUEST['closeWindow']);
 if(empty($_REQUEST['layergroup_id']) && empty($_REQUEST['layer_id']))
   die("Missing required parameter 'layergroup_id' or 'layer_id'");
 else if(!empty($_REQUEST['layergroup_id']))
-  $mapConfig = manageLayerGroupRequest($layerTitle,$layerName,$tmpMap, GCApp::getDB(), $closing);
+  $mapConfig = manageLayerGroupRequest($layerTitle,$layerName,$tmpMap, $fileName, GCApp::getDB(), $closing);
 else
-  $mapConfig = manageLayerRequest($layerTitle,$layerName,$tmpMap, GCApp::getDB(), $closing);
+  $mapConfig = manageLayerRequest($layerTitle,$layerName,$tmpMap, $fileName, GCApp::getDB(), $closing);
 if(!$closing) {
   $user = new GCUser();
   $user->setAuthorizedLayers(array('theme_name'=>$mapConfig['theme_name']));
@@ -43,7 +44,7 @@ if(!$closing) {
   die();
 }
 
-function manageLayerGroupRequest(&$layerTitle, &$layerName, &$tmpMap, $db, $closing) {
+function manageLayerGroupRequest(&$layerTitle, &$layerName, &$tmpMap, &$fileName, $db, $closing) {
   $layergroupId = (int)$_REQUEST['layergroup_id'];
   $mapfile = new gcMapfile();
   $mapfile->setTarget("tmp");
@@ -64,11 +65,12 @@ function manageLayerGroupRequest(&$layerTitle, &$layerName, &$tmpMap, $db, $clos
     if(empty($mapConfig['max_extent_scale'])) die('Missing project max extent');
     $layerTitle = $mapConfig['layergroup_title'];
     $layerName = $mapConfig['layergroup_name'];
+    $fileName = $mapConfig['layergroup_name'];
   }
   return $mapConfig;
 }
 
-function manageLayerRequest(&$layerTitle, &$layerName, &$tmpMap, $db) {
+function manageLayerRequest(&$layerTitle, &$layerName, &$tmpMap, &$fileName, $db, $closing) {
   $layerId = (int)$_REQUEST['layer_id'];
   $mapfile = new gcMapfile();
   $mapfile->setTarget("tmp");
@@ -87,6 +89,7 @@ function manageLayerRequest(&$layerTitle, &$layerName, &$tmpMap, $db) {
     $tmpMap = $mapfile->writeMap("layer",$layerId);
     $layerTitle = $mapConfig['layer_title'];
     $layerName = $mapConfig['layergroup_name'].".".$mapConfig['layer_name'];
+    $fileName = $mapConfig['layer_name'];
   }
   return $mapConfig;
 }
@@ -98,7 +101,7 @@ function manageLayerRequest(&$layerTitle, &$layerName, &$tmpMap, $db) {
 <script type="text/javascript">
 function init() {
 <?php
-  GCAuthor::compileMapfile($mapConfig['project_name'], $layerName);
+  GCAuthor::compileMapfile($mapConfig['project_name'], $fileName);
   $errors = GCError::get();
   if(empty($errors)) {
 ?>
