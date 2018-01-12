@@ -107,8 +107,11 @@ class gcMapfile{
                 $joinMapset="";
                 $fieldsMapset="1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";         
                 $sqlParams['keyvalue'] = $keyvalue;
-    
-        
+        } else if($keytype=="layer") {  //GENERO IL MAPFILE PER IL LAYER NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
+          $filter="layer.layer_id=:keyvalue";
+          $joinMapset="";
+          $fieldsMapset="1 as layergroup_status, layer_name as mapset_name,layer_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent,";
+          $sqlParams['keyvalue'] = $keyvalue;
         } elseif($keytype="print"){ //GENERO UN MAPFILE PER LA STAMPA
                 $_in = GCApp::prepareInStatement($keyvalue);
                 $sqlParams = $_in['parameters'];
@@ -200,7 +203,7 @@ class gcMapfile{
                 $oFeature->setPrivate(true);
             }
         
-            $layerText = $oFeature->getLayerText($layergroupName,$aLayer);
+            $layerText = $oFeature->getLayerText($layergroupName, $aLayer, (strcmp($keytype,"layergroup")!=0 && strcmp($keytype,"layer")!=0));
 			
             if($oFeature->isPrivate()) array_push($this->layersWithAccessConstraints, $oFeature->getLayerName());
 
@@ -1002,6 +1005,34 @@ END";
         file_put_contents($projectDir.$mapName.'.yaml', $content);
 
 
+    }
+    
+    function _deleteFile($projectName, $mapName) {
+      if (!is_dir(ROOT_PATH)) {
+        $errorMsg = ROOT_PATH . " is not a directory";
+        GCError::register($errorMsg);
+        return;
+      }
+      $mapfileDir = ROOT_PATH.'map/';
+      if($this->target == 'tmp') {
+        $mapFile = 'tmp.'.$mapName;
+      }
+      $projectDir = $mapfileDir.$projectName.'/';
+      if(!is_dir($projectDir)) {
+        $errorMsg = "Could not create directory $projectDir";
+        GCError::register($errorMsg);
+        return;
+      }
+      if(!empty($this->i18n)) {
+        $languageId = $this->i18n->getLanguageId();
+        $mapFile.= "_".$languageId;
+      }
+      $mapFilePath = $projectDir.$mapFile.".map";
+      if(FALSE == unlink($mapFilePath)) {
+        $errorMsg = "Could not remove $mapFilePath";
+        GCError::register($errorMsg);
+        return;
+      }
     }
     
 

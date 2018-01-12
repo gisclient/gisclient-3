@@ -1104,3 +1104,20 @@ function GetRGBColor($s, &$r, &$g, &$b) {
     }
     return $colors;
   }
+  
+function prepareOutputForError(&$errors) {
+  $currentMap = "";
+  $output = "";
+  foreach($errors as &$error) {
+    $error = str_replace(array('"', "\n"), array('\"', '<br>'), $error);
+    $index = strpos($error, ":");
+    $aux = substr($error, 0, $index);
+    if(strcmp($currentMap, $aux) != 0) {
+      $currentMap = $aux;
+      $output .= (empty($output) ? "" : "<br>")."<p style=\"weight: bold;\">".$currentMap."</p>";
+    }
+    $output .= "<p style=\"color: black;\">".substr($error, $index+1)."</p>";
+  }
+  unset($error);
+  return $output;
+}
