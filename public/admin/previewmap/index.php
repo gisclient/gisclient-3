@@ -3,6 +3,7 @@ include '../../../config/config.php';
 require_once ADMIN_PATH."lib/functions.php";
 require_once ADMIN_PATH.'lib/gcFeature.class.php';
 require_once ADMIN_PATH.'lib/gcMapfile.class.php';
+require_once ROOT_PATH.'lib/gcapp.class.php';
 require_once ROOT_PATH."lib/i18n.php";
 
 
@@ -96,6 +97,11 @@ function manageLayerRequest(&$layerTitle, &$layerName, &$tmpMap, $db) {
 <script type="text/javascript" src="<?php echo OPENLAYERS; ?>"></script>
 <script type="text/javascript">
 function init() {
+<?php
+  GCAuthor::compileMapfile($mapConfig['project_name'], $layerName);
+  $errors = GCError::get();
+  if(empty($errors)) {
+?>
 	var layerParameters = {
 		project: '<?php echo $mapConfig['project_name']; ?>',
 		map: '<?php echo $tmpMap; ?>',
@@ -124,6 +130,14 @@ function init() {
 		map.addLayer(layer);	
 		map.setCenter(new OpenLayers.LonLat(<?php echo $mapConfig['xc'] ?>, <?php echo $mapConfig['yc'] ?>));
 	}
+}
+<?php
+  } else {
+?>
+  document.getElementById("map").innerHTML += '<?php echo prepareOutputForError($errors); ?>';
+<?php
+  }
+?>
 }
 </script>
 <style>

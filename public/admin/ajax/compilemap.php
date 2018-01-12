@@ -1,6 +1,7 @@
 <?php
 include_once "../../../config/config.php";
 include_once ROOT_PATH.'lib/ajax.class.php';
+include_once ADMIN_PATH."lib/functions.php";
 
 $ajax = new GCAjax();
 
@@ -25,21 +26,4 @@ switch($_REQUEST['action']) {
     } else
       $ajax->success();
     break;
-}
-
-function prepareOutputForError(&$errors) {
-  $currentMap = "";
-  $output = "";
-  foreach($errors as &$error) {
-    $error = str_replace(array('"', "\n"), array('\"', '<br>'), $error);
-    $index = strpos($error, ":");
-    $aux = substr($error, 0, $index);
-    if(strcmp($currentMap, $aux) != 0) {
-      $currentMap = $aux;
-      $output .= (empty($output) ? "" : "<br>")."<p style=\"weight: bold;\">".$currentMap."</p>";
-    }
-    $output .= "<p style=\"color: black;\">".substr($error, $index+1)."</p>";
-  }
-  unset($error);
-  return $output;
 }
