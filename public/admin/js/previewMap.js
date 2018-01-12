@@ -9,6 +9,7 @@ $(document).ready(function() {
 		height: 735,
 		draggable: false,
 		autoOpen: false,
+		modal: true,
 		open: function() {
 			$(this).empty();
 			var url = previewMapUrl;
