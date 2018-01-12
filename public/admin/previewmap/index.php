@@ -130,7 +130,6 @@ function init() {
 		map.addLayer(layer);	
 		map.setCenter(new OpenLayers.LonLat(<?php echo $mapConfig['xc'] ?>, <?php echo $mapConfig['yc'] ?>));
 	}
-}
 <?php
   } else {
 ?>
