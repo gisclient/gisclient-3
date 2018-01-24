@@ -2,11 +2,6 @@
 security:
     
     firewalls:
-        r3gis_apps:
-            pattern: ^/r3gis_apps/
-            guard: R3Gis\GisClient\Author\Security\Guard\TokenAuthenticator
-            provider: R3Gis\GisClient\Author\Security\User\UserProvider
-
         default:
             # pattern: ^/regexp
             guard: GisClient\Author\Security\Guard\UsernamePasswordAuthenticator
