@@ -1214,8 +1214,9 @@ class gcMap{
             //se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
             if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                 $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
-                for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev)
-                    $aRes[] = GOOGLE_MAX_RESOLUTION / pow(2, $lev);
+                for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev) {
+                    $aRes[] = number_format((float)(GOOGLE_MAX_RESOLUTION / pow(2, $lev)), 17);
+                }
             } else {
                 if (isset($mapsetScales)) {
                     $scaleList = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
