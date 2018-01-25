@@ -236,9 +236,9 @@ class SavedFilterController
         $db = \GCApp::getDB();
         $sql = "
         SELECT saved_filter.*, layergroup_name||'.'||layer_name AS layer_id 
-            FROM gisclient_34.saved_filter 
-            INNER JOIN gisclient_34.layer USING(layer_id)
-            INNER JOIN gisclient_34.layergroup USING(layergroup_id)
+            FROM ".DB_SCHEMA.".saved_filter 
+            INNER JOIN ".DB_SCHEMA.".layer USING(layer_id)
+            INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id)
             WHERE mapset_name=? AND (username = ? OR saved_filter_scope = 'all')
         ";
         // TODO: support group scope!!
