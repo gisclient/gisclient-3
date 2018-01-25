@@ -39,7 +39,15 @@
 					<?php } ?>
 				</div>
 			</div>
-			<div id="list_dialog" style="display:none;"><table></table><div></div></div>
+			<div id="list_dialog" style="display:none;">
+              <table></table>
+              <div></div>
+              <form method="post" enctype="multipart/form-data">
+                <p class="uploadFile_listDialog">Upload file da importare:</p>
+                <input type="file" name="fileToUpload" id="fileToUpload" class="uploadFile_listDialog">
+                <input type="submit" value="Upload" id="submitFile" class="uploadFile_listDialog">
+              </form>
+            </div>
 			<div id="copy_dialog" style="display:none;"></div>
 			<div id="preview_map_dialog" style="display:none;"></div>
 			<div id="options_dialog" style="display:none;">

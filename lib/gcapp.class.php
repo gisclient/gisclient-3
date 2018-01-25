@@ -624,6 +624,7 @@ class GCAuthor {
 		'Password'=>array('it'=>'Password', 'de'=>'Kennwort'),
 		'project'=>array('it'=>'Progetto', 'de'=>'Projekt'),
 		'symbology'=>array('it'=>'Simbologia', 'de'=>'Symbole'),
+		'progress'=>array('it'=>'Operazione in corso')
 	);
 }
 
