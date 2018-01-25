@@ -106,7 +106,10 @@ function GCList(field, multipleSelection, uploadFile) {
 
         $.extend(self.selectedData, params);
         params.selectedField = self.field;
-
+        if(!this.uploadFile) {
+          dialogElement.css("max-height", "100%");
+          $(".uploadFile_listDialog").css("display","none");
+        }
         $.ajax({
             url: requestUrl,
             type: 'POST',
