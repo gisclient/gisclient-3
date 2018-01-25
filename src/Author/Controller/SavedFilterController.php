@@ -222,6 +222,42 @@ class SavedFilterController
     }
 
     /**
+     * Get saved filter
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getAllAction($mapset, Request $request)
+    {
+        $rows = [];
+        $authHandler = \GCApp::getAuthenticationHandler();
+        $username = $authHandler->getToken()->getUser()->getUsername();
+
+        $db = \GCApp::getDB();
+        $sql = "
+        SELECT saved_filter.*, layergroup_name||'.'||layer_name AS layer_id 
+            FROM gisclient_34.saved_filter 
+            INNER JOIN gisclient_34.layer USING(layer_id)
+            INNER JOIN gisclient_34.layergroup USING(layergroup_id)
+            WHERE mapset_name=? AND (username = ? OR saved_filter_scope = 'all')
+        ";
+        // TODO: support group scope!!
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$mapset, $username]);
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $rows[] = $row;
+        }
+
+        return new JsonResponse([
+            'status' => 'ok',
+            'data' => [
+                'rows' => $rows,
+                'totals' => count($rows)
+            ]
+        ]);
+    }
+
+    /**
      * Create a new saved filter
      *
      * @param Request $request

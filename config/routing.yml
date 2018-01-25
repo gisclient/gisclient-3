@@ -12,7 +12,12 @@ gcmapConfig:
     path: gcmapconfig.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapConfigAction }
 
-## Saved filter routes    
+## Saved filter routes
+getAllSavedFilter:
+    path: saved_filter/{mapset}
+    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::getAllAction }
+    methods:  [GET]
+
 createSavedFilter:
     path: saved_filter
     defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::createAction }
