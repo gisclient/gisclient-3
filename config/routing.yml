@@ -11,3 +11,23 @@ gcmap:
 gcmapConfig:
     path: gcmapconfig.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapConfigAction }
+
+## Saved filter routes    
+createSavedFilter:
+    path: saved_filter
+    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::createAction }
+    methods:  [POST]
+    
+modifySavedFilter:
+    path: saved_filter/{id}
+    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::modifyAction }
+    methods:  [PUT]
+    requirements:
+        id: \d+
+
+deleteSavedFilter:
+    path: saved_filter/{id}
+    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::deleteAction }
+    methods:  [DELETE]
+    requirements:
+        id: \d+

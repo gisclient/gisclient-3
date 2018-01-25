@@ -1277,4 +1277,25 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
 
     END IF;
 
+    IF v_author_version = '3.5.0' THEN
+        CREATE TABLE saved_filter (
+            saved_filter_id serial, 
+            username character varying NOT NULL, 
+            saved_filter_name character varying NOT NULL, 
+            mapset_name character varying NOT NULL, 
+            layer_id integer NOT NULL, 
+            saved_filter_scope character varying NOT NULL, 
+            saved_filter_data jsonb NOT NULL, 
+            PRIMARY KEY (saved_filter_id), 
+            FOREIGN KEY (username) REFERENCES users (username) ON UPDATE CASCADE ON DELETE CASCADE, 
+            FOREIGN KEY (mapset_name) REFERENCES mapset (mapset_name) ON UPDATE CASCADE ON DELETE CASCADE, 
+            FOREIGN KEY (layer_id) REFERENCES layer (layer_id) ON UPDATE CASCADE ON DELETE CASCADE
+        ) ;
+        COMMENT ON COLUMN saved_filter.username IS 'owner of the filter';
+
+         --version
+        v_author_version = '3.5.1';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.1', 'author', '2018-01-25');
+    END IF;
+
 END$$
