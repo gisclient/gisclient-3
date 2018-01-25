@@ -16,8 +16,9 @@ class UsernamePasswordAuthenticator implements GuardAuthenticatorInterface
      */
     public function getToken(Request $request)
     {
-        // TODO:
-        if ($request->getMethod() === 'POST') { // TODO: could be limited to certain areas! pathinfo!!
+        if ($request->getMethod() === 'POST' &&
+            $request->getPathInfo() === '/login'
+        ) {
             $username = $request->request->get('username');
             $password = md5($request->request->get('password'));
             

@@ -3,6 +3,10 @@ security:
     
     firewalls:
         default:
-            # pattern: ^/regexp
+            pattern: ^/
             guard: GisClient\Author\Security\Guard\UsernamePasswordAuthenticator
             provider: GisClient\Author\Security\User\UserProvider
+
+    access_control:
+        - { path: ^\/(gcmap.php|gcmapconfig.php|login).*, authenticated: false }
+        - { path: ^/, authenticated: true }

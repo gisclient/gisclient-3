@@ -1,4 +1,9 @@
 ## Available routes in public/services/...
+login:
+    path: login
+    defaults:  { _controller: GisClient\Author\Controller\LoginController::loginAction }
+    methods:  [POST]
+
 gcmap:
     path: gcmap.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
@@ -6,4 +11,3 @@ gcmap:
 gcmapConfig:
     path: gcmapconfig.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapConfigAction }
-    
