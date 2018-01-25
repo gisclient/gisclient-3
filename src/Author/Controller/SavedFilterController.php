@@ -299,7 +299,12 @@ class SavedFilterController
             saved_filter_id=?
         ";
         $stmt = $db->prepare($sql);
-        $stmt->execute([$values['saved_filter_name'], $values['saved_filter_scope'], $values['saved_filter_data'], $id]);
+        $stmt->execute([
+            $values['saved_filter_name'],
+            $values['saved_filter_scope'],
+            $values['saved_filter_data'],
+            $id
+        ]);
         
         return $this->createOkResponse($id);
     }
