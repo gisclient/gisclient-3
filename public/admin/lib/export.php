@@ -145,14 +145,11 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
                 $newid[$out[1]][$out[2]] = $db->query($sqlId)->fetchColumn(0);
 			}
 		}
-		//if($out){
-			//echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
-			$sql=str_replace($out[0],$newid[$out[1]][$out[2]],$sql);	
-		//}
-		fwrite($handle,str_replace("\'","\\''",$sql)."\n");
+		$sql=str_replace($out[0],$newid[$out[1]][$out[2]],$sql);
+		$sql = str_replace("\'","\\'",$sql);
+		fwrite($handle,$sql."\n");
 		$out=Array();
-		$sql = str_replace("\'","\\''",$sql);
-        try {
+		try {
             $db->exec($sql);
         } catch(Exception $e) {
             array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
@@ -306,7 +303,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
     $sqlType = 'select udt_name from information_schema.columns where table_schema = :schema
         and table_name = :table and column_name = :column';
     $getColType = $db->prepare($sqlType);
-	$sql="SELECT * FROM ".DB_SCHEMA.".".$structure["table"][$currentLevel];
+    $sql="SELECT * FROM ".DB_SCHEMA.".".$structure["table"][$currentLevel];
     if(!empty($filter)) {
         $sql .= ' WHERE '.implode(' AND ', $filter);
     }
