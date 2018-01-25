@@ -18,10 +18,10 @@ class GCUser extends AbstractUser {
         $this->groups = $_SESSION['GROUPS'];
       else
         $this->_setSessionData();
-    } else if(isset($_SERVER['PHP_AUTH_USER'])){
-      error_log("Silent Authentication for user:".$_SERVER['PHP_AUTH_USER']);
-      $limitIndex = strpos($_SERVER['PHP_AUTH_USER'], "@");
-      $this->username = !$limitIndex ? $_SERVER['PHP_AUTH_USER'] : substr($_SERVER['PHP_AUTH_USER'], 0, $limitIndex);
+    } else if(isset($_SERVER['REMOTE_USER'])){
+      error_log("Silent Authentication for user:".$_SERVER['REMOTE_USER']);
+      $limitIndex = strpos($_SERVER['REMOTE_USER'], "@");
+      $this->username = !$limitIndex ? $_SERVER['REMOTE_USER'] : substr($_SERVER['REMOTE_USER'], 0, $limitIndex);
       $this->groups = $this->_getUserGroups();
       $this->_setSessionData();
     }
