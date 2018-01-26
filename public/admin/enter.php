@@ -46,7 +46,7 @@
 	<div class="ui-layout-center">
 		<h2>Accesso consentito agli utenti autorizzati.</h2>
 		
-		<form action="<?php echo $_SERVER["PHP_SELF"]?>" method="post" class="riquadro" id="frm_enter" onsubmit="">
+		<form action="../services/login?redirect=<?php echo $_SERVER["PHP_SELF"]?>" method="post" class="riquadro" id="frm_enter" onsubmit="">
 			<div class="formRow">
 				<label>&nbsp;</label>
 				<?php if (isset($message)) echo "<span class=\"alert\">".$message."</span>";?>
