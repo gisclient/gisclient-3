@@ -3,12 +3,7 @@
 namespace GisClient\Author\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use GisClient\Author\Utils\GCMap;
-use GisClient\Author\Utils\GWGCMap;
-use GisClient\Author\Utils\R3GisGCMap;
-use GisClient\Author\Utils\SenchaTouchUtils;
 
 class LoginController
 {
@@ -20,6 +15,13 @@ class LoginController
      */
     public function loginAction(Request $request)
     {
-        return new JsonResponse([]);
+        if ($request->query->has('redirect')) {
+            header(sprintf("Location: %s", $request->query->get('redirect')));
+            exit();
+        } else {
+            return new JsonResponse([
+                'status' => 'ok'
+            ]);
+        }
     }
 }
