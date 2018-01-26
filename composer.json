@@ -28,6 +28,7 @@
             "GisClient\\": "src/"
         },
         "classmap": [
+            "lib/gcapp.class.php",
             "lib/GCService.php"
         ]
     },

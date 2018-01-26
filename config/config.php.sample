@@ -102,7 +102,6 @@ define('REDLINE_FONT', 'dejavu-sans-bold');     //FONT DELLE ANNOTAZIONI. DEVE E
 
 require_once (ROOT_PATH."lib/debug.php");
 require_once (ROOT_PATH."config/config.db.php");
-require_once (ROOT_PATH.'lib/gcapp.class.php');
 
 //Author
 define('ADMIN_PATH',ROOT_PATH.'public/admin/');
