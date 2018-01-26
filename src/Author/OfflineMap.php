@@ -295,9 +295,20 @@ class OfflineMap
             $this->getMapConfig($mapName)
         );
 
+        $zip->addFromString(
+            'saved_filter.json',
+            $this->getSavedFilter($mapName)
+        );
+
         $zip->close();
 
         return $zipFile;
+    }
+
+    protected function getSavedFilter($mapset)
+    {
+        $url = PUBLIC_URL . "services/saved_filter/".$mapset;
+        return $this->getFile($url);
     }
 
     protected function getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName)
@@ -324,9 +335,9 @@ class OfflineMap
         return $this->getFile($url, $params);
     }
 
-    protected function getFile($url, array $params)
+    protected function getFile($url, array $params = [])
     {
-        if (count($params)) {
+        if (count($params) > 0) {
             $stringParams = array();
 
             foreach ($params as $key => $value) {
