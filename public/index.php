@@ -20,10 +20,6 @@ if(!empty($_REQUEST["logout"])) {
     $authHandler->logout();
 }
 
-if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $authHandler->login(Request::createFromGlobals());
-}
-
 $db = GCApp::getDB();
 $dbSchema=DB_SCHEMA;
 $sql="SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title,private FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";

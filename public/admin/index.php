@@ -48,10 +48,6 @@ if(!empty($_REQUEST['logout'])) {
     exit;
 }
 
-if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $authHandler->login(Request::createFromGlobals());
-}
-
 if (!$authHandler->isAuthenticated()) {
     include_once ADMIN_PATH."enter.php";
     exit;

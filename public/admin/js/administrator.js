@@ -235,25 +235,6 @@ function selectAll(btn,name){
     }
     xHideImg('wait');
 }
-function enter(){
-    var usr=$('#username');
-    var pwd=$('#password');
-    alert('');
-    var enc_pwd='';
-    if (!usr.value){
-        alert('Inserire il Nome Utente');
-        return false;
-    }
-    if (!pwd.value){
-        alert('Inserire la PassWord');
-        return false;
-    }
-    enc_pwd=hex_md5(pwd.value);
-    var param='action=validate&username='+usr.value+'&enc_password='+enc_pwd;
-    //alert(param);
-    xRequest('login.php',param,'setIndex','POST');
-    return false;
-}
 function setIndex(obj){
     var code;
     if (typeof(obj.code)=='undefined'){
