@@ -307,13 +307,13 @@ class OfflineMap
 
     protected function getSavedFilter($mapset)
     {
-        $url = PUBLIC_URL . "services/saved_filter/".$mapset;
+        $url = INTERNAL_URL . "services/saved_filter/".$mapset;
         return $this->getFile($url);
     }
 
     protected function getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName)
     {
-        $url = PUBLIC_URL . "services/lookup.php";
+        $url = INTERNAL_URL . "services/lookup.php";
         $params = array(
             'catalog' => $catalogId,
             'table' => $lookupTable,
@@ -326,7 +326,7 @@ class OfflineMap
 
     protected function getMapConfig($mapName)
     {
-        $url = PUBLIC_URL . "services/gcmapconfig.php";
+        $url = INTERNAL_URL . "services/gcmapconfig.php";
         $params = array(
             'mapset' => $mapName,
             'legend' => 1

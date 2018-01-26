@@ -43,7 +43,8 @@ define('LAYER_CLOSE_CONNECTION_DEFER', true);
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
-define('PUBLIC_URL', 'http://localhost/author/');
+define('PUBLIC_URL', 'http://localhost/author/'); // url for external requests (like map client)
+define('INTERNAL_URL', 'http://localhost/author/'); // url for internal requests
 define('MAP_URL', 'http://localhost/map/'); //URL CLIENT DI MAPPA
 define('IMAGE_PATH','/tmp/');
 define('IMAGE_URL','/tmp/');
