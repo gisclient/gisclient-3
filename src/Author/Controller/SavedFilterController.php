@@ -289,7 +289,7 @@ class SavedFilterController
             $username,
             $values['saved_filter_name'],
             $values['mapset_name'],
-            17,
+            $values['layer_id'],
             $values['saved_filter_scope'],
             $values['saved_filter_data']
         ]);
