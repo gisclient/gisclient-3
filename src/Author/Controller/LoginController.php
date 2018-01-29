@@ -24,4 +24,20 @@ class LoginController
             ]);
         }
     }
+
+    /**
+     * Route to logout
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function logoutAction(Request $request)
+    {
+        $authHandler = \GCApp::getAuthenticationHandler();
+        $authHandler->logout();
+
+        return new JsonResponse([
+            'status' => 'ok'
+        ]);
+    }
 }
