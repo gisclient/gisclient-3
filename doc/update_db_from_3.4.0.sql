@@ -436,9 +436,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
            JOIN catalog c USING (catalog_id)
            JOIN layer l USING (layer_id)
            JOIN e_relationtype rt USING (relationtype_id);
-
-        ALTER TABLE vista_relation
-          OWNER TO gisclient;
           
         DROP VIEW vista_qtfield;
 
@@ -481,9 +478,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
            LEFT JOIN catalog cr ON cr.catalog_id = r.catalog_id
            LEFT JOIN information_schema.columns i ON field.field_name::text = i.column_name::text AND "substring"(c.catalog_path::text, "position"(c.catalog_path::text, '/'::text) + 1, length(c.catalog_path::text)) = i.table_schema::text AND (l.data::text = i.table_name::text OR r.table_name::text = i.table_name::text)
           ORDER BY field.field_id, x.relation_id, x.relationtype_id;
-
-        ALTER TABLE vista_field
-          OWNER TO gisclient;
           
           DROP VIEW vista_link;
 
@@ -501,9 +495,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
                     ELSE 'OK. In uso'::text
                 END AS link_control
            FROM link l;
-
-        ALTER TABLE vista_link
-          OWNER TO gisclient;
           
         DROP VIEW IF EXISTS vista_layer;
         CREATE OR REPLACE VIEW vista_layer AS 
@@ -569,8 +560,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         JOIN e_layertype using (layertype_id)
         JOIN layergroup lg using (layergroup_id)
         JOIN theme t using (theme_id);
-        ALTER TABLE vista_layer
-          OWNER TO gisclient;
           
         --da verificare. Ho problemi con pattern obbligatori su MS5
         CREATE OR REPLACE VIEW seldb_pattern AS 
@@ -578,8 +567,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
           --UNION ALL 
           SELECT pattern_id AS id, pattern_name AS opzione
           FROM e_pattern;
-        ALTER TABLE seldb_pattern
-          OWNER TO gisclient;
           
         -- RICREA E-lEVEL E FORM
         DROP TABLE e_level CASCADE;
@@ -932,9 +919,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
                     ELSE 'OK'::text
                 END AS mapset_control
            FROM mapset m;
-
-        ALTER TABLE vista_mapset
-          OWNER TO gisclient;
          
         -- da verificare -- 
         IF mapset_description NOT IN (select column_name from information_schema.columns where table_name = 'mapset') THEN
@@ -953,9 +937,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             ELSE 'OK'
           END as mapset_control
         from mapset m;
-
-        ALTER TABLE vista_mapset
-          OWNER TO gisclient;  
           
         -- CREO LA TABELLA export_i18n SE NON ESISTE per non far crashare lo script nel successivo UPDATE
         CREATE TABLE IF NOT EXISTS export_i18n
@@ -973,8 +954,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         WITH (
           OIDS=FALSE
         );
-        ALTER TABLE export_i18n
-          OWNER TO gisclient;
           
         UPDATE export_i18n SET table_name='field' WHERE table_name='qtfield';
         UPDATE export_i18n SET field_name='field_name' WHERE field_name='qtfield_name';
@@ -1038,7 +1017,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
           formula_order smallint,
           CONSTRAINT e_formula_pkey PRIMARY KEY (formula_id)
         );
-        ALTER TABLE e_form OWNER TO gisclient;
         INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (1, '0 decimali', 'to_char({{field_name}}, ''FM9999999990'')', 10);
         INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (2, '1 decimali', 'to_char({{field_name}}, ''FM9999999990.0'')', 20);
         INSERT INTO e_formula(formula_id, formula_name, formula_format, formula_order) values (3, '2 decimali', 'to_char({{field_name}}, ''FM9999999990.00'')', 30);
@@ -1067,7 +1045,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             doc_type character varying NOT NULL,
             doc_public boolean DEFAULT false
         );
-        ALTER TABLE document OWNER TO gisclient;
 
         CREATE SEQUENCE document_doc_id_seq
             START WITH 1
@@ -1075,7 +1052,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             NO MINVALUE
             NO MAXVALUE
             CACHE 1;
-        ALTER TABLE document_doc_id_seq OWNER TO gisclient;
         ALTER SEQUENCE document_doc_id_seq OWNED BY document.doc_id;
         ALTER TABLE ONLY document ALTER COLUMN doc_id SET DEFAULT nextval('document_doc_id_seq'::regclass);
         ALTER TABLE ONLY document ADD CONSTRAINT document_pkey PRIMARY KEY (doc_id);
@@ -1106,9 +1082,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             paths.doc_path
            FROM document
              JOIN paths USING (doc_id);
-
-        ALTER TABLE vista_document_paths
-          OWNER TO gisclient;
 
         --version
         v_author_version = '3.4.5';  
@@ -1173,9 +1146,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
           edit smallint NOT NULL DEFAULT 0,
           CONSTRAINT mapset_gruops_pkey PRIMARY KEY (mapset_name, groupname)
         );
-
-        ALTER TABLE mapset_groups
-          OWNER TO gisclient;
 
         INSERT INTO e_level
           (id, name, parent_name, "order", parent_id, depth, leaf, export, struct_parent_id, "table")
@@ -1265,8 +1235,6 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         JOIN e_layertype using (layertype_id)
         JOIN layergroup lg using (layergroup_id)
         JOIN theme t using (theme_id);
-        ALTER TABLE vista_layer
-          OWNER TO gisclient;
 
         --update keyimage for class
         UPDATE class SET keyimage = replace(keyimage,'../images/','../../map/images/');
@@ -1292,6 +1260,16 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             FOREIGN KEY (layer_id) REFERENCES layer (layer_id) ON UPDATE CASCADE ON DELETE CASCADE
         ) ;
         COMMENT ON COLUMN saved_filter.username IS 'owner of the filter';
+
+        ALTER TABLE gisclient_34.mapset_groups DROP CONSTRAINT mapset_gruops_pkey;
+        ALTER TABLE gisclient_34.mapset_groups
+          ADD CONSTRAINT mapset_groups_pkey PRIMARY KEY(mapset_name, groupname);
+        ALTER TABLE gisclient_34.mapset_groups
+          ADD FOREIGN KEY (mapset_name) REFERENCES gisclient_34.mapset (mapset_name)
+          ON UPDATE CASCADE ON DELETE CASCADE;
+        ALTER TABLE gisclient_34.mapset_groups
+          ADD FOREIGN KEY (groupname) REFERENCES gisclient_34.groups (groupname)
+          ON UPDATE CASCADE ON DELETE CASCADE;
 
          --version
         v_author_version = '3.5.1';
