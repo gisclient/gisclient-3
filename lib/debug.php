@@ -1,7 +1,7 @@
 <?php
 
 if(!defined('DEBUG_DIR')) {
-	define('DEBUG_DIR', ROOT_PATH.'config/debug/');
+	define('DEBUG_DIR', __DIR__.'/../config/debug/');
 }
 
 function print_debug($t="",$db=NULL,$file=NULL){
