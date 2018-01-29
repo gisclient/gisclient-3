@@ -30,6 +30,9 @@
         "classmap": [
             "lib/gcapp.class.php",
             "lib/GCService.php"
+        ],
+        "files": [
+            "lib/debug.php"
         ]
     },
     "scripts": {

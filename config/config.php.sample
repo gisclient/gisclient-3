@@ -100,14 +100,12 @@ define('REDLINE_TABLE', 'annotazioni');         //NOME DELLA TABELLA DB DELLE AN
 define('REDLINE_SRID', '4326');                 //SRID DELLA TABELLA DB DELLE ANNOTAZIONI
 define('REDLINE_FONT', 'dejavu-sans-bold');     //FONT DELLE ANNOTAZIONI. DEVE ESISTERE TRA I FONT AUTHOR
 
-require_once (ROOT_PATH."lib/debug.php");
 require_once (ROOT_PATH."config/config.db.php");
 
 //Author
 define('ADMIN_PATH',ROOT_PATH.'public/admin/');
 
 //debug
-if(!defined('DEBUG_DIR')) define('DEBUG_DIR',ROOT_PATH.'config/debug/');
 if(!defined('DEBUG')) define('DEBUG', 0); // Debugging 0 off 1 on
 
 /****************** QUERY REPORTS ***************+*/

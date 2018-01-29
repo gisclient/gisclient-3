@@ -1,4 +1,9 @@
 <?php
+
+if(!defined('DEBUG_DIR')) {
+	define('DEBUG_DIR', ROOT_PATH.'config/debug/');
+}
+
 function print_debug($t="",$db=NULL,$file=NULL){
 		if (DEBUG!=1) return;
 		if (!defined("DEBUG_DIR")) {
