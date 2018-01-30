@@ -51,7 +51,7 @@
 		<td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b>Nome File</b></font></td>
 		<td valign="middle" colspan="2">
 			<input type="text" class="textbox" size="50" name="filename" id="filename" readonly>
-			<input type="button" class="hexfield ui-button ui-widget ui-state-default ui-corner-all" style="width:100px" value="Seleziona" onclick="javascript:openListNew('filename',['project','livello'], false, true);">
+			<input type="button" class="hexfield ui-button ui-widget ui-state-default ui-corner-all" style="width:100px" value="Seleziona" onclick="javascript:openFileTree('filename',['project','livello'], false, true);">
 		</td>
 	</tr>
 	<tr>

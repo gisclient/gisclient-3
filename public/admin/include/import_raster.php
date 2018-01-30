@@ -93,7 +93,7 @@ function annulla(){
 		<td width="200px" class="label ui-widget ui-state-default"><b>Lista File</b></font></td>
 		<td valign="middle">
 			<input type="text" class="textbox" size="50" value="" name="data" id="data" readonly>
-			<input type="button" class="hexfield" value="Elenco File" onclick="javascript:openListNew('data',['catalog_id','layertype_id','layergroup','project'], true, false);">
+			<input type="button" class="hexfield" value="Elenco File" onclick="javascript:openFileTree('data',['catalog_id','layertype_id','layergroup','project'], true, false);">
 		</td>
 	</tr>
     <tr>
