@@ -483,8 +483,8 @@ class GCAuthor {
 	public static function GCTypeFromDbType($dbType) {
 		$typesMap = array(
 			1=>array('varchar','text','char','bool','bpchar'),
-			2=>array('int','int2','int4','int8','float','float4','float8','serial4','serial8'),
-			3=>array('date','timestamp','timestamptz')
+			2=>array('int','int2','int4','int8','float','float4','float8', 'serial2', 'serial4', 'serial8', 'decimal', 'numeric'),
+			3=>array('date', 'timetz' ,'timestamp','timestamptz')
 		);
 		foreach($typesMap as $typeId => $types) {
 			if(in_array($dbType, $types)) return $typeId;
