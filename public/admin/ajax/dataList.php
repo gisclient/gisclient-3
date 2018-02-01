@@ -45,11 +45,13 @@ switch($catalogData["connection_type"]){
 		}
 		$navDir = '';
 		if(!empty($_REQUEST['directory'])) { // siamo in una sottocartella, includi anche il back
-			$navDir = $_REQUEST['directory'];
-			$result['data'][$n] = array('file'=>'..');
-			$result['data_objects'][$n] = array('directory'=>$navDir.'../');
-			$n++;
-		}
+          $navDir = $_REQUEST['directory'];
+          $result['data'][$n] = array('file'=>'..');
+          $index = strrpos(substr($navDir, 0, strlen($navDir)-1 ), "/");
+          $back = ($index != FALSE) ? substr($navDir, 0, $index + 1) : "";
+		  $result['data_objects'][$n] = array('directory'=> $back);
+		  $n++;
+        }
 		$sourceDir = $baseDir . $navDir;
 		
 		$directories = elenco_dir($sourceDir);
