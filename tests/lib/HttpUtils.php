@@ -7,6 +7,8 @@ class HttpUtils {
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postParams);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		// curl_setopt($ch, CURLOPT_HEADER, true);
         if (!is_null($cookieFile)) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
@@ -21,6 +23,8 @@ class HttpUtils {
     static public function get($url, $cookieFile = NULL) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		
         if (!is_null($cookieFile)) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
@@ -38,6 +42,8 @@ class HttpUtils {
         rewind($fh);
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         if (!is_null($cookieFile)) {
             echo "get: CF\n";
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
