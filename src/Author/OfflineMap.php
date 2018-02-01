@@ -352,6 +352,13 @@ class OfflineMap
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        if (isset($_COOKIE['gisclient3'])) {
+            curl_setopt($curl, CURLOPT_COOKIE, 'gisclient3='.$_COOKIE['gisclient3']);
+        }
         $data = curl_exec($curl);
         curl_close($curl);
 
