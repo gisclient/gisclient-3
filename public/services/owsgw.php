@@ -173,6 +173,9 @@ if(!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty
 	}
 }
 
+// close the session, because all relevant data are already writte into it
+$gcService->getSession()->save();
+
 if(!empty($layersParameter)) {
 	$layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
 	

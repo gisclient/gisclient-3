@@ -33,4 +33,7 @@ foreach(array('auto_refresh_mapfiles', 'save_to_tmp_map') as $key) {
         ));
 }
 
+// close the session, because all relevant data are already writte into it
+$gcService->saveAndClose();
+
 echo json_encode(array('result'=>'ok'));

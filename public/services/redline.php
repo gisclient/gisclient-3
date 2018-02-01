@@ -84,6 +84,8 @@ if($mapSRID != REDLINE_SRID){
 	$SRS_params = $projectInfo[$_REQUEST['PROJECT']]["PROJPARAMS"];
 };
 
+// close the session, because all relevant data are already writte into it
+\GCService::instance()->saveAndClose();
 
 if($_REQUEST["REQUEST"] == "SaveLayer"){
 

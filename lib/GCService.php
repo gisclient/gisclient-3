@@ -68,6 +68,11 @@ class GCService
         {
             $this->session->remove(self::SESSION_KEY_PREFIX.$name);
         }
+
+        public function saveAndClose()
+        {
+            $this->session->save();
+        }
         
         /**
          * Get session instance

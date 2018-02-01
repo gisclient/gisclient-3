@@ -127,4 +127,7 @@ try {
     $response = new Response('An error occurred: ' . $e->getMessage(), 500);
 }
 
+// close the session, because all relevant data are already writte into it
+$gcService->saveAndClose();
+
 $response->send();

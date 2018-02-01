@@ -15,6 +15,15 @@ if (($data = json_decode($inputJSONText, true)) === null) {
     $data = $_REQUEST;
 }
 
+$layerAuthChecker = GCApp::getLayerAuthorizationChecker();
+if (isset($data['mapset'])) {
+    $layers = $layerAuthChecker->getLayers(array(
+        'mapset_name'=> $data['mapset']
+    ));
+}
+// close the session, because all relevant data are already writte into it
+$gcService->saveAndClose();
+
 switch($data['export_format']) {
     case 'dxf':
     case 'shp':
@@ -39,11 +48,6 @@ switch($data['export_format']) {
                     'db'=>$dataDb
                 ));
             } else if(isset($table['layer'])) {
-                $layerAuthChecker = GCApp::getLayerAuthorizationChecker();
-                $layers = $layerAuthChecker->getLayers(array(
-                    'mapset_name'=>$data['mapset']
-                ));
-                
                 $sql = 'select catalog_path, layer.data as tablename, layer_id from '.DB_SCHEMA.'.catalog 
                     inner join '.DB_SCHEMA.'.layer using(catalog_id)
                     inner join '.DB_SCHEMA.'.layergroup using(layergroup_id)

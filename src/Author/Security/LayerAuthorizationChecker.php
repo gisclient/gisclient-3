@@ -170,7 +170,6 @@ class LayerAuthorizationChecker
         //print_r($layerAuthorizations);
         //echo "<br><br>\n";
         \GCService::instance()->set('GISCLIENT_USER_LAYER', $layerAuthorizations);
-        \GCService::instance()->getSession()->save();
         
         return $result;
     }

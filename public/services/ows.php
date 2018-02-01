@@ -10,7 +10,6 @@ use GisClient\Author\Utils\OwsHandler;
 
 $gcService = GCService::instance();
 $gcService->startSession(true);
-$gcService->getSession()->save();
 
 if (!defined('GC_SESSION_NAME')) {
     throw new Exception('Undefined GC_SESSION_NAME in config');
@@ -229,6 +228,9 @@ if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empt
         ));
     }
 }
+
+// close the session, because all relevant data are already writte into it
+$gcService->getSession()->save();
 
 if (!empty($layersParameter)) {
     $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
