@@ -655,6 +655,8 @@ class R3GisGCMap
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 if (false === ($sldContent = curl_exec($ch))) {
                     $errMsg = sprintf(
                         "Error getting data from '%s': %s. Server return code %d",
