@@ -218,13 +218,6 @@ Class saveData{
 					$p->get_conf();
 					return $p;
 				}
-				if (\GCService::instance()->get('ADD_NEW')){
-					echo "Il record è già stato inserito ".\GCService::instance()->get('ADD_NEW');
-					$this->hasErrors=true;
-					$p->livello=$p->get_livello();	
-					$p->get_conf();
-					return $p;
-				}
 
 				if (count($_FILES)) {
 					if(!(defined('UPLOADED_FILES_PRIVATE_PATH') && defined('UPLOADED_FILES_PUBLIC_URL'))) {
@@ -410,7 +403,6 @@ Class saveData{
 				    }
 				}
 				if(isset($newid) && $this->mode=="new"){
-					\GCService::instance()->set('ADD_NEW', $newid);
 					$p->parametri[$p->get_livello()]=$newid;	
 				}
 				if ($p->array_levels[$p->get_idLivello()]["leaf"] && $this->delete){

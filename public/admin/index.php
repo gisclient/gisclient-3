@@ -74,9 +74,6 @@ if (in_array(strtolower($p->action),$arr_action) || in_array(strtolower($p->acti
         include ADMIN_PATH."db/db.".$_POST["savedata"].".php";
     
 }
-else {
-    $gcService->remove('ADD_NEW');
-}
     
 if(!empty($_REQUEST['publish_tmp_mapfiles']) && $_REQUEST['publish_tmp_mapfiles'] == 1) {
     GCAuthor::refreshMapfiles($p->parametri['project'], false); //refresh tmp mapfiles
