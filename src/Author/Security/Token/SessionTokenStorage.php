@@ -38,16 +38,10 @@ class SessionTokenStorage implements TokenStorageInterface
         }
 
         if (!$this->session->has(self::TOKEN_ID)) {
-            $this->session->save();
             throw new \Exception('The token with ID '.self::TOKEN_ID.' does not exist.');
         }
 
-        $token = unserialize($this->session->get(self::TOKEN_ID));
-
-        // save and close sesssion, to avoid blocking concurrency request
-        $this->session->save();
-
-        return $token;
+        return unserialize($this->session->get(self::TOKEN_ID));
     }
 
     /**
@@ -60,9 +54,6 @@ class SessionTokenStorage implements TokenStorageInterface
         }
 
         $this->session->set(self::TOKEN_ID, serialize($token));
-
-        // save and close sesssion, to avoid blocking concurrency request
-        $this->session->save();
     }
 
     /**
@@ -74,12 +65,7 @@ class SessionTokenStorage implements TokenStorageInterface
             $this->session->start();
         }
 
-        $hasToken = $this->session->has(self::TOKEN_ID);
-
-        // save and close sesssion, to avoid blocking concurrency request
-        $this->session->save();
-
-        return $this->$hasToken;
+        return $this->session->has(self::TOKEN_ID);
     }
 
     /**
@@ -91,11 +77,6 @@ class SessionTokenStorage implements TokenStorageInterface
             $this->session->start();
         }
 
-        $removed = $this->session->remove(self::TOKEN_ID);
-
-        // save and close sesssion, to avoid blocking concurrency request
-        $this->session->save();
-
-        return $removed;
+        return $this->session->remove(self::TOKEN_ID);
     }
 }
