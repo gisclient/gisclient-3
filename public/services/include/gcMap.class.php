@@ -1215,7 +1215,7 @@ class gcMap{
             if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                 $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
                 for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev) {
-                    $aRes[] = number_format((float)(GOOGLE_MAX_RESOLUTION / pow(2, $lev)), 17);
+                    $aRes[] = GOOGLE_MAX_RESOLUTION / pow(2, $lev);
                 }
             } else {
                 if (isset($mapsetScales)) {
