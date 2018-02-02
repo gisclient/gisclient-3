@@ -1195,10 +1195,11 @@ class gcMap{
     function _getResolutions($minScale, $maxScale, $mapsetScales) {
 
         //Fattore di conversione tra dpi e unità della mappa
-
+        ini_set('precision', 24); // your precision
         $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
         $precision = $this->mapsetUM == "dd" ? 10 : 2;
-        $aRes = array();
+        //$aRes = array();
+        //$aRes2 = array();
 
         if (isset($mapsetScales)) { //TODO
             $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
@@ -1215,9 +1216,14 @@ class gcMap{
             //se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
             if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                 $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
+                /*
                 for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev) {
                     $aRes[] = GOOGLE_MAX_RESOLUTION / pow(2, $lev);
+                    $aRes[] = number_format((float)(GOOGLE_MAX_RESOLUTION / pow(2, $lev)), 17);
                 }
+                */
+                $aRes=array(156543.03390625,78271.516953125,39135.7584765625,19567.87923828125,9783.939619140625,4891.9698095703125,2445.9849047851562,1222.9924523925781,611.4962261962891,305.74811309814453,152.87405654907226,76.43702827453613,38.218514137268066,19.109257068634033,9.554628534317017,4.777314267158508,2.388657133579254,1.194328566789627,0.5971642833948135,0.29858214169740677,0.14929107084870338,0.07464553542435169);
+
             } else {
                 if (isset($mapsetScales)) {
                     $scaleList = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
