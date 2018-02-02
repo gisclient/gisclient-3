@@ -81,6 +81,7 @@ class gcMap{
 
         $gmapKey = defined('GMAPKEY')?"key=".GMAPKEY:'';
         $protocol = empty($_SERVER['HTTPS'])?'http':'https';
+        $protocol = 'https';
         $this->mapProviders = array(
                         VMAP_LAYER_TYPE => "$protocol://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
                         YMAP_LAYER_TYPE => "$protocol://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
