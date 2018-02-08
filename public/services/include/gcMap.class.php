@@ -85,7 +85,7 @@ class gcMap{
                         VMAP_LAYER_TYPE => "$protocol://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
                         YMAP_LAYER_TYPE => "$protocol://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
                         OSM_LAYER_TYPE => "$protocol://openstreetmap.org/openlayers/OpenStreetMap.js",
-                        GMAP_LAYER_TYPE => "$protocol://maps.google.com/maps/api/js?$gmapKey");
+                        GMAP_LAYER_TYPE => "$protocol://maps.googleapis.com/maps/api/js?$gmapKey");
 
         $this->db = GCApp::getDB();
 
@@ -473,8 +473,12 @@ class gcMap{
                                 //ALLA ROVESCIA RISPETTO A MAPSERVER
                                 if ($userLayer["minScale"])
                                     $arr["maxScale"] = floatval($userLayer["minScale"]);
+                                else if (isset($layerOptions["maxScale"]))
+                                    $arr["maxScale"] = $layerOptions["maxScale"];
                                 if ($userLayer["maxScale"])
                                     $arr["minScale"] = floatval(+$userLayer["maxScale"]);
+                                else if (isset($layerOptions["minScale"]))
+                                    $arr["minScale"] = $layerOptions["minScale"];
                                 $nodes[] = $arr;
                                 $layers[] = $userLayer["name"];
                             }
@@ -530,8 +534,12 @@ class gcMap{
                             //ALLA ROVESCIA RISPETTO A MAPSERVER
                             if ($userLayer["minScale"])
                                 $arr["maxScale"] = floatval($userLayer["minScale"]);
+                            else if (isset($layerOptions["maxScale"]))
+                                $arr["maxScale"] = $layerOptions["maxScale"];
                             if ($userLayer["maxScale"])
                                 $arr["minScale"] = floatval(+$userLayer["maxScale"]);
+                            else if (isset($layerOptions["minScale"]))
+                                $arr["minScale"] = $layerOptions["minScale"];
                             array_push($aLayer["nodes"], $arr);
                             if ($userLayer["hidden"] == 0)
                                 $hidden = false;
