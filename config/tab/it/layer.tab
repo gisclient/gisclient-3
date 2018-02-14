@@ -34,8 +34,8 @@ dato[] = "Campo per la classificazione;classitem;30;text|Elenco;classitem;100#op
 dato[] = "Comportamento del layer"
 dato[] = "Privato<br><font size=1 >Visualizza il layer solo a utenti autenticati</font>;private;;noyes"
 dato[] = "Abilita WFS<br><font size=1 >Rende interrogabile il layer <br>(almeno un campo deve essere presente)</font>;queryable;;noyes"
-dato[] = "Nascondi geometria in interrogazione<br><font size=1 >Non verrà visualizzata la geometria WFS<br>dei risultati di ricerca/interogazione</font>;hide_vector_geom;;noyes"
-dato[] = "Nascondi in interrogazione<br><font size=1 >Non presente nello strumento di interrogazione<br>(Il WFS rimane attivo)</font>;hidden;;noyes"
+dato[] = "Nascondi in interrogazione<br><font size=1 >Non verrà visualizzato il layer<br>dei risultati di ricerca/interrogazione.<br>(Il WFS rimane attivo se abilitato)</font>;hide_vector_geom;;noyes"
+dato[] = "Nascondi layer<br><font size=1 >Il layer non sarà visualizzabile o interrogabile<br>(Il WFS rimane attivo se abilitato)</font>;hidden;;noyes"
 dato[] = "Ricercabile<br><font size=1 >Presente su mappa nel tab Ricerca</font>;searchable_id;200#seldb_searchable;selectdb"
 
 dato[] = "Altri parametri"
