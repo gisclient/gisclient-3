@@ -456,6 +456,7 @@ class gcMapfile{
         $ows_wfs_encoding = $this->_getEncoding();
         $ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
         $wfs_namespace_prefix = "\t\"wfs_namespace_prefix\"\t\"feature\"";//valore di default in OL
+        $wfs_getfeature_formatlist = "\t\"wfs_getfeature_formatlist\" \"geojson\"";// Output in geojson - per export dxf
         $ows_srs = "\t\"wms_srs\"\t\"". implode(" ",$this->epsgList) ."\"";
         $ows_accessConstraints = '';
         if(!empty($this->layersWithAccessConstraints)) {
@@ -516,6 +517,7 @@ WEB
     $wms_mime_type
     $wfs_namespace_prefix
     $ows_srs
+    $wfs_getfeature_formatlist
     $ows_accessConstraints
 $metadata_inc
     END
@@ -640,8 +642,11 @@ END";
 
     function _isDriverSupported($driverName) {
         $mapserverSupport = ms_GetVersion();
-
         list($driver, $format) = explode('/', $driverName);
+
+        // **** Allow GEOJSON format (not listed as output... ????)
+        if ($driver == 'OGR' && $format == 'GEOJSON')
+            return true;
 
         // check on support
         if (preg_match_all ("/SUPPORTS=([A-Z_]+)/", $mapserverSupport, $supports)) {
