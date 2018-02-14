@@ -26,7 +26,7 @@ dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elim
 [list]
 table = "vista_mapset"
 pkey = "mapset_name"
-order_fld = "mapset_title#mapset_name"
+order_fld = "mapset_order#mapset_title#mapset_name"
 dato[] = "Titolo;mapset_title;25%#mapset_name;goto"
 dato[] = "Nome;mapset_name;10%;text"
 dato[] = "SRID;mapset_srid;6%;text"
