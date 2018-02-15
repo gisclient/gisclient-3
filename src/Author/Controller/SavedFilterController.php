@@ -99,7 +99,8 @@ class SavedFilterController
                     if ($layerId !== null) {
                         $db = \GCApp::getDB();
                         $sql = "
-                            SELECT layergroup_name||'.'||layer_name FROM ".DB_SCHEMA.".layergroup
+                            SELECT project_name||'.'||layergroup_name||'.'||layer_name FROM ".DB_SCHEMA.".theme
+                            INNER JOIN ".DB_SCHEMA.".layergroup USING(theme_id)
                             INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id)
                             WHERE layer_id=?
                         ";
@@ -117,7 +118,7 @@ class SavedFilterController
                 },
                 function ($composedLayerName) {
                     if (strpos($composedLayerName, '.') !== false) {
-                        list($layergroupName, $layerName) = explode('.', $composedLayerName);
+                        list($projectName, $layergroupName, $layerName) = explode('.', $composedLayerName);
                     } else {
                         throw new TransformationFailedException(
                             'The layer_id must provied layergroup and layername separated by dot.'
@@ -126,12 +127,13 @@ class SavedFilterController
 
                     $db = \GCApp::getDB();
                     $sql = "
-                        SELECT layer_id FROM ".DB_SCHEMA.".layergroup
+                        SELECT layer_id FROM ".DB_SCHEMA.".theme
+                        INNER JOIN ".DB_SCHEMA.".layergroup USING(theme_id)
                         INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id)
-                        WHERE layergroup_name=? AND layer_name=?
+                        WHERE project_name=? AND layergroup_name=? AND layer_name=?
                     ";
                     $stmt = $db->prepare($sql);
-                    $stmt->execute([$layergroupName, $layerName]);
+                    $stmt->execute([$projectName, $layergroupName, $layerName]);
                     $layerId = $stmt->fetchColumn();
                     if ($layerId === false) {
                         throw new TransformationFailedException(sprintf(
