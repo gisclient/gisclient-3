@@ -13,7 +13,7 @@ dato[] = "Template;class_template;55;text"
 dato[] = "Configurazione etichette"
 dato[] = "Font;label_font;200#seldb_font##unsetFK('symbol_ttf_name');selectdb"
 dato[] = "Altezza font:<br><font size=1>Massima</font>;label_maxsize;3;intero|<font size=1>Minima</font>;label_minsize;3;intero|<font size=1>Ottimale</font>;label_size;20;text|Elenco;label_size;80#openList#layer;button"
-dato[] = "Testo fisso;class_text;65;text"
+dato[] = "Testo fisso;class_text;200;text"
 
 dato[] = "Configurazione etichette"
 dato[] = "Colore testo <font size=1>(RGB)</font>;label_color;25;color|Elenco;label_color;80#openList#layer;button"
