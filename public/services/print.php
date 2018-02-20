@@ -38,9 +38,9 @@ try {
 		$printMap->setLang($_REQUEST['lang']);
 	}
     if(!empty($_REQUEST['logoSx'])) $printMap->setLogo($_REQUEST['logoSx']);
-	else if(defined('GC_PRINT_LOGO_SX')) $printMap->setLogo(GC_PRINT_LOGO_SX);
+	else if(defined('GC_PRINT_LOGO_SX')) $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_SX));
     if(!empty($_REQUEST['logoDx'])) $printMap->setLogo($_REQUEST['logoDx'], 'dx');
-	else if(defined('GC_PRINT_LOGO_DX')) $printMap->setLogo(GC_PRINT_LOGO_DX, 'dx');
+	else if(defined('GC_PRINT_LOGO_DX')) $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_DX), 'dx');
 
     if ($_REQUEST['format'] == 'HTML') {
         $file = $printMap->printMapHTML();

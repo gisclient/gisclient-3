@@ -41,7 +41,7 @@ class printDocument {
             'dpi' => 72,
             'direction' => 'vertical',
             'TMP_PATH' => GC_WEB_TMP_DIR,
-            'TMP_URL' => GC_WEB_TMP_URL,
+            'TMP_URL' => str_replace(PUBLIC_URL, INTERNAL_URL, GC_WEB_TMP_URL),
             'legend' => null,
             'scale_mode' => 'auto',
             'image_format'=>'png',

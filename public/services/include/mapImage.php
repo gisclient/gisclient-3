@@ -103,6 +103,7 @@ class mapImage {
                 $tile['url']=$tile['url'][0];
             $url = trim($tile['url'], '?');
             $url = printDocument::addPrefixToRelativeUrl($url);
+            $url = str_replace(PUBLIC_URL, INTERNAL_URL, $url);
             if (!empty($tile['service'])) {
                 $service = $tile['service'];
             } else {
@@ -207,7 +208,7 @@ class mapImage {
         if (false === ($ch = curl_init())) {
             throw new Exception("Could not init curl");
         }
-        curl_setopt($ch, CURLOPT_URL, $this->wmsMergeUrl);
+        curl_setopt($ch, CURLOPT_URL, str_replace(PUBLIC_URL, INTERNAL_URL, $this->wmsMergeUrl));
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
