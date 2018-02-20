@@ -284,24 +284,46 @@ class printDocument {
                 $theme['groups'] = array();
                 foreach($theme['layers'] as $layergroupName) {
                     $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
-                    foreach($layerIndexes as $index) {
-                        $oLayer = $oMap->getLayer($index);
-                        $layerName = $oLayer->name;
-                        $group = array(
-                            'id'=>$layerName,
-                            'title'=>$oLayer->getMetaData('ows_title'),
-                            'layers'=>array()
-                        );
-                        for($n = 0; $n < $oLayer->numclasses; $n++) {
-                            $oClass = $oLayer->getClass($n);
-                            $exclude = $oClass->getMetaData('gc_no_image');
-                            if(!empty($exclude)) continue;
-                            array_push($group['layers'], array(
-                                'url'=>$layerName.'-'.$n,
-                                'title'=>$oClass->title
-                            ));
+                    if (count($layerIndexes) > 0) {
+                        foreach($layerIndexes as $index) {
+                            $oLayer = $oMap->getLayer($index);
+                            $layerName = $oLayer->name;
+                            $group = array(
+                                'id'=>$layerName,
+                                'title'=>$oLayer->getMetaData('ows_title'),
+                                'layers'=>array()
+                            );
+                            for($n = 0; $n < $oLayer->numclasses; $n++) {
+                                $oClass = $oLayer->getClass($n);
+                                $exclude = $oClass->getMetaData('gc_no_image');
+                                if(!empty($exclude)) continue;
+                                array_push($group['layers'], array(
+                                    'url'=>$layerName.'-'.$n,
+                                    'title'=>$oClass->title
+                                ));
+                            }
+                            array_push($theme['groups'], $group);
                         }
-                        array_push($theme['groups'], $group);
+                    }
+                    else {
+                        $oLayer = $oMap->getLayerByName($layergroupName);
+                        if ($oLayer !== NULL) {
+                            $group = array(
+                                'id'=>$layergroupName,
+                                'title'=>$oLayer->getMetaData('ows_title'),
+                                'layers'=>array()
+                            );
+                            for($n = 0; $n < $oLayer->numclasses; $n++) {
+                                $oClass = $oLayer->getClass($n);
+                                $exclude = $oClass->getMetaData('gc_no_image');
+                                if(!empty($exclude)) continue;
+                                array_push($group['layers'], array(
+                                    'url'=>$layergroupName.'-'.$n,
+                                    'title'=>$oClass->title
+                                ));
+                            }
+                            array_push($theme['groups'], $group);
+                        }
                     }
                 }
             }

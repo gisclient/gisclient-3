@@ -1,4 +1,4 @@
-<?php	
+<?php
 /*
 GisClient map browser
 
@@ -34,20 +34,20 @@ class Symbol{
 		$this->mapfile=ROOT_PATH.'map/tmp/tmp.map';
 		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 		$aClass=array();
-		
-		
+
+
 		if($this->table=='class'){
             $aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
-            
+
 			$sql="select class.class_id,layertype_ms,style_id,color,outlinecolor,bgcolor,angle,size,width,symbol.*
-			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
-			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name) 
+			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id)
+			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name)
 			inner join $dbSchema.e_layertype using (layertype_id)
 			left join $dbSchema.style using(class_id) left join $dbSchema.symbol using(symbol_name)";
 
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" order by style_order desc;";
-            
+
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
             while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -56,11 +56,11 @@ class Symbol{
 					$aStyle["color"]=explode(" ",$row["color"]);
 					$aStyle["outlinecolor"]=explode(" ",$row["outlinecolor"]);
 					$aStyle["bgcolor"]=explode(" ",$row["bgcolor"]);
-					$aStyle["angle"]=$row["angle"];	
-					$aStyle["width"]=$row["width"];	
-					$aStyle["size"]=$row["size"];			
-					$aStyle["symbol"]=$row["symbol_name"];	
-					$aClass[$row["class_id"]]["style"][]=$aStyle;				
+					$aStyle["angle"]=$row["angle"];
+					$aStyle["width"]=$row["width"];
+					$aStyle["size"]=$row["size"];
+					$aStyle["symbol"]=$row["symbol_name"];
+					$aClass[$row["class_id"]]["style"][]=$aStyle;
 				}
 				if($row["symbol_name"]){
 					$smbText=array();
@@ -74,11 +74,11 @@ class Symbol{
 					if($row["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$row["image"]."\"";
 					if($row["symbol_def"]) $smbText[]=$row["symbol_def"];
 					$smbText[]="END";
-					if(!in_array($smbText,$aSymbol)) $aSymbol[]=implode("\n",$smbText);				
-				}		
+					if(!in_array($smbText,$aSymbol)) $aSymbol[]=implode("\n",$smbText);
+				}
 			}
 
-			
+
 			$this->_createMapFile($aSymbol);
 
 			foreach($aClass as $classId=>$class){
@@ -90,14 +90,14 @@ class Symbol{
 					ob_end_clean();
 				}
 			}
-            
+
 		}
 
 		elseif($this->table=='symbol'){
 			$sql="select symbol.* from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.=" LIMIT 200;";
-            
+
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
             while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -106,7 +106,7 @@ class Symbol{
 				$aStyle["symbol"]=$row["symbol_name"];
 				$aStyle["color"]=array(0,0,0);
 				$aStyle["size"]=$this->symbolSize[$row["icontype"]];
-				$aClass[$row["symbol_name"]]["style"][]=$aStyle;	
+				$aClass[$row["symbol_name"]]["style"][]=$aStyle;
 				$smbText=array();
 				$smbText[]="SYMBOL";
 				$smbText[]="\tNAME \"".$row["symbol_name"]."\"";
@@ -118,16 +118,16 @@ class Symbol{
 				if($row["image"]) $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$row["image"]."\"";
 				if($row["symbol_def"]) $smbText[]=$row["symbol_def"];
 				$smbText[]="END";
-				
-				$aSymbol[]=implode("\n",$smbText);		
+
+				$aSymbol[]=implode("\n",$smbText);
 
 			}
 
 			$this->_createMapFile($aSymbol);
 			foreach($aClass as $symbolName=>$class){
-			
+
 				$oIcon = $this->_iconFromClass($class);
-				
+
 				if($oIcon){
 					ob_start();
 					$oIcon->saveImage();
@@ -145,18 +145,18 @@ class Symbol{
         //negli altri casi boh?
         if($this->filter) return $image_data;
 	}
-	
+
 
 	function _iconFromClass($class){
-		//creo la mappa 
+		//creo la mappa
 		$oMap = $this->oMap;
-		$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');		
+		$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
 		$oMap->outputformat->set('name','PNG');
 		$oMap->outputformat->set('driver','GD/PNG');
 		$oMap->outputformat->set('extension','png');
 		$oMap->outputformat->setOption("INTERLACE", "OFF");
 		$oLay=ms_newLayerObj($oMap);
-		$oLay->set('type', $class["icontype"]);	
+		$oLay->set('type', $class["icontype"]);
 		$oClass=ms_newClassObj($oLay);
 		if($this->symbolSize[$class["icontype"]])
 			$smbSize=$this->symbolSize[$class["icontype"]];
@@ -169,20 +169,27 @@ class Symbol{
 			if(!empty($style[$i]['symbol'])) $oStyle->set('symbolname',$style[$i]['symbol']);
 			if(!empty($style[$i]['angle']))	$oStyle->set('angle',$style[$i]['angle']);
 			if(isset($style[$i]['color']) && count($style[$i]['color'])==3)	$oStyle->color->setRGB($style[$i]['color'][0],$style[$i]['color'][1],$style[$i]['color'][2]);
-			if(isset($style[$i]['outlinecolor']) && count($style[$i]['outlinecolor'])==3) $oStyle->outlinecolor->setRGB($style[$i]['outlinecolor'][0],$style[$i]['outlinecolor'][1],$style[$i]['outlinecolor'][2]);	
+			if(isset($style[$i]['outlinecolor']) && count($style[$i]['outlinecolor'])==3) $oStyle->outlinecolor->setRGB($style[$i]['outlinecolor'][0],$style[$i]['outlinecolor'][1],$style[$i]['outlinecolor'][2]);
 			if(isset($style[$i]['bgcolor']) && count($style[$i]['bgcolor'])==3) $oStyle->backgroundcolor->setRGB($style[$i]['bgcolor'][0],$style[$i]['bgcolor'][1],$style[$i]['bgcolor'][2]);
 			$oStyle->set('width',1);
 			if(!empty($style[$i]['width'])) $oStyle->set('width',$style[$i]['width']);
 			if(!empty($style[$i]['size'])) $oStyle->set('size',$style[$i]['size']);
-			
+
 
 		}
-        
+
 //$oMap->save(ROOT_PATH.'config/debug/debug.map');
-		$icoImg = $oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
+		try {
+			$icoImg = $oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
+		}
+		catch (Exception $e) {
+			$oMap->setSize(LEGEND_ICON_W,LEGEND_ICON_H);
+			$icoImg =  $oMap->prepareImage();
+
+		}
 		return $icoImg;
 	}
-	
+
 	function _createMapFile($aSymbol){
 		//creazione del file di simboli
 		$mapText=array();
@@ -190,14 +197,14 @@ class Symbol{
 		$mapText[] = "EXTENT 0 0 180 180";
 		$mapText[] = implode("\n",$aSymbol);
 		$mapText[] = "END";
-	    //test sintassi mapfile		
+	    //test sintassi mapfile
 		ms_ResetErrorList();
 		try {
 			print_debug(implode("\n",$mapText),null,'symbolmap');
 			$this->oMap = @ms_newMapObjFromString(implode("\n",$mapText),ROOT_PATH.'map/tmp');
-		} 
+		}
 		catch (Exception $e) {
-			$error = ms_GetErrorObj();		
+			$error = ms_GetErrorObj();
 			if($error->code != MS_NOERR){
 				$this->mapError=150;
 				while(is_object($error) && $error->code != MS_NOERR) {
@@ -206,11 +213,11 @@ class Symbol{
 					$error = $error->next();
 				}
 				return;
-			}	
+			}
 			return;
 		}
 	}
-	
+
 	//RESTITUISCE UN ELENCO DI SIMBOLI FILTRATI
 	function getList($assoc = false){
 		$dbSchema=DB_SCHEMA;
@@ -218,13 +225,13 @@ class Symbol{
         $values=array();
 		if($table=='class'){
 			$sql="select project_name as project,theme_name as theme,layergroup_name as layergroup,layer_name as layer,class_name as class,class_id
-			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
-			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name)";	
+			from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id)
+			inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name)";
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.="  order by 1,2,3,4,5";
-			$headers = array("Image","Class","Layer","Layergroup","Theme","Project");	
+			$headers = array("Image","Class","Layer","Layergroup","Theme","Project");
 			$values=array();
-            
+
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
             while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -237,7 +244,7 @@ class Symbol{
 		}
 		elseif($table=='symbol'){
 			$sql="select symbol_name as symbol,symbolcategory_name as category from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
-			
+
 			if($this->filter) $sql.=" where ".$this->filter;
 			$sql.="  order by symbolcategory_name, symbol_name";
 			$headers = array("Image","Symbol","Category");
@@ -254,30 +261,30 @@ class Symbol{
 
 		return array("headers"=>$headers,"values"=>$values);
 	}
-	
-	
+
+
 	//METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
-		
+
 	function updateFileSmb(){
 		$smbfile = fopen ("smb.map","w");
 		for($i=0;$i<count($style);$i++){
 				fwrite($smbfile, "SYMBOL\n");
 				fwrite($smbfile, "NAME \"".$style[$i]["symbol_name"]."\"\n");
 				fwrite($smbfile, $style[$i]["def"]."\n");
-				fwrite($smbfile, "END\n");				
+				fwrite($smbfile, "END\n");
 			}
 			fclose($smbfile);
-	
+
 	}
-	
+
 	function removeByName($name) {
 		$dbSchema=DB_SCHEMA;
 		$sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->db->quote($name);
 		$rv = $this->db->exec($sql);
-		
+
 		$sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
 		$rv = $this->db->exec($sql);
-		return $rv; 
+		return $rv;
 	}
 
 	function importFilesmb($filename){
@@ -296,7 +303,7 @@ class Symbol{
 					$aSymbol[$nome]=implode("\n",$sSymbol);
 					$sSymbol=Array();
 					$nome="";
-				} 
+				}
 			}
 			preg_match('/NAME(.*)/',$line,$res);
 			if(!$sym_flag && !$res && trim($line)){	// CONTROLLO NON SIA UN NAME
@@ -318,7 +325,7 @@ class Symbol{
 			print($sql."\n");
 		}
 	}
-	
+
 	function updateFontList(){
 		$dbSchema=DB_SCHEMA;
 		$sql="select font_name,file from $dbSchema.font;";
@@ -333,4 +340,3 @@ class Symbol{
 	}
 
 }//END CLASS
-
