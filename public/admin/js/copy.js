@@ -7,7 +7,7 @@ function GCCopy(level, project, parentId, mode) {
   this.url = 'ajax/copy.php';
   this.filters = {};
   this.emptyOption = '<option value="Select">Select</option>';
-	
+
   this.loadForm = function() {
     var self = this;
     $.ajax({
@@ -26,12 +26,12 @@ function GCCopy(level, project, parentId, mode) {
           self.addSelect(filter.level);
           self.lastLevel = filter.level;
         });
-	
+
         parentId = null;
         if(response.has_project == 0) {
           parentId = self.project;
         }
-				
+
         self.getData(response.filters[0].level, parentId);
       },
       error: function() {
@@ -39,7 +39,7 @@ function GCCopy(level, project, parentId, mode) {
       }
     });
   };
-	
+
   this.addSelect = function(level) {
     var self = this;
 
@@ -47,7 +47,7 @@ function GCCopy(level, project, parentId, mode) {
     var levelData = self.filters[level];
     if(levelData.parent != '')
       parent = 'data-parent_level="'+levelData.parent+'"';
-		
+
     var html = '<div class="copyDivLeft">' + level + ':</div><div class="copyDivRight"><select name="'+level+'" '+parent+'>'+self.emptyOption+'</select></div><div style="clear: both;"></div>';
     $('#copy_dialog').append(html);
     $('#copy_dialog select[name="'+level+'"]').change(function() {
@@ -59,7 +59,7 @@ function GCCopy(level, project, parentId, mode) {
           if($.trim($('[name=newname]').val())=='') {
             $('#copy_dialog').append("<div class=\"divErrorMessage\">Specificare campo name per proseguire.</div>");
           } else {
-            var newId = (self.mode == 'move') ? $('#copy_dialog select[name="'+self.lastLevel+'"]').val() : $('#copy_dialog select[name="'+self.level+'"]').val(); 
+            var newId = (self.mode == 'move') ? $('#copy_dialog select[name="'+self.lastLevel+'"]').val() : $('#copy_dialog select[name="'+self.level+'"]').val();
             self.copy(newId);
           }
         });
@@ -76,7 +76,7 @@ function GCCopy(level, project, parentId, mode) {
       $(".divButton").css("display", $('#copy_dialog select option:selected:contains("Select")').length == 0 ? "" : "none");
     });
   };
-	
+
   this.getData = function(level, parentId) {
     var self = this;
     if(parentId == null) parentId = '';
@@ -99,14 +99,14 @@ function GCCopy(level, project, parentId, mode) {
       }
     });
   };
-	
+
   this.emptySelect = function(level) {
     var self = this;
     $('#copy_dialog select[name="'+level+'"]').find('option').remove().end()
       .append(self.emptyOption)
       .val('Select');
   };
-	
+
   this.copy = function(id) {
     var self = this;
     $('#'+self.level+'_name').val($('#copy_dialog input[name="newname"]').val());
@@ -120,15 +120,15 @@ function GCCopy(level, project, parentId, mode) {
 };
 
 function openCopy(parentLevel) {
-  open(parentLevel, 'copy');
+  gcOpen(parentLevel, 'copy');
 }
 
 function openMove(parentLevel) {
-  open(parentLevel, 'move');
+  gcOpen(parentLevel, 'move');
 }
 
-function open(parentLevel, operation) {
-  if($('#prm_livello').length == 0 || $('#project').length == 0 || $('input[name="'+parentLevel+'"]').length == 0) return;
+function gcOpen(parentLevel, operation) {
+  if(($('#prm_livello').length == 0 && operation != 'colorchoser')|| $('#project').length == 0 || $('input[name="'+parentLevel+'"]').length == 0) return;
   var level = $('#prm_livello').val();
   var project = $('#project').val();
   var parentId = $('input[name="'+parentLevel+'"]').val();

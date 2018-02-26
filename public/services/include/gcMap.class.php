@@ -85,7 +85,7 @@ class gcMap{
                         VMAP_LAYER_TYPE => "$protocol://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
                         YMAP_LAYER_TYPE => "$protocol://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
                         OSM_LAYER_TYPE => "$protocol://openstreetmap.org/openlayers/OpenStreetMap.js",
-                        GMAP_LAYER_TYPE => "$protocol://maps.google.com/maps/api/js?$gmapKey");
+                        GMAP_LAYER_TYPE => "$protocol://maps.googleapis.com/maps/api/js?$gmapKey");
 
         $this->db = GCApp::getDB();
 
@@ -473,8 +473,16 @@ class gcMap{
                                 //ALLA ROVESCIA RISPETTO A MAPSERVER
                                 if ($userLayer["minScale"])
                                     $arr["maxScale"] = floatval($userLayer["minScale"]);
+                                else if (isset($layerOptions["maxScale"]))
+                                    $arr["maxScale"] = $layerOptions["maxScale"];
                                 if ($userLayer["maxScale"])
                                     $arr["minScale"] = floatval(+$userLayer["maxScale"]);
+                                else if (isset($layerOptions["minScale"]))
+                                    $arr["minScale"] = $layerOptions["minScale"];
+                                if (isset($userLayer['hidden']) && $userLayer['hidden'] !== '0') {
+                                    $arr['hidden'] = $userLayer['hidden'];
+                                }
+
                                 $nodes[] = $arr;
                                 $layers[] = $userLayer["name"];
                             }
@@ -530,11 +538,21 @@ class gcMap{
                             //ALLA ROVESCIA RISPETTO A MAPSERVER
                             if ($userLayer["minScale"])
                                 $arr["maxScale"] = floatval($userLayer["minScale"]);
+                            else if (isset($layerOptions["maxScale"]))
+                                $arr["maxScale"] = $layerOptions["maxScale"];
                             if ($userLayer["maxScale"])
                                 $arr["minScale"] = floatval(+$userLayer["maxScale"]);
-                            array_push($aLayer["nodes"], $arr);
-                            if ($userLayer["hidden"] == 0)
+                            else if (isset($layerOptions["minScale"]))
+                                $arr["minScale"] = $layerOptions["minScale"];
+
+                            if (isset($userLayer['hidden']) && $userLayer['hidden'] !== '0') {
+                                $arr['hidden'] = $userLayer['hidden'];
+                            }
+                            else {
                                 $hidden = false;
+                            }
+
+                            array_push($aLayer["nodes"], $arr);
                         }
                         if ($hidden)
                             $aLayer["options"]["displayInLayerSwitcher"] = false;
@@ -851,7 +869,7 @@ class gcMap{
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
 
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, owstype_id, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, field_format, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, owstype_id, layer.layer_id, layer.searchable_id, coalesce(layer_title,layer_name) as layer_title, data_unique, data_geom, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, zoom_buffer, selection_color, selection_width, field_id, field_name, filter_field_name, field_header, field_format, fieldtype_id, relation_name, relation_title, relationtype_id, searchtype_id, resultype_id, datatype_id, field_filter, layer.hidden, layer.hide_vector_geom, field.editable as field_editable, field_groups.groupname as field_group,field_groups.editable as group_editable, layer.data_type, field.lookup_table, field.lookup_id, field.lookup_name,relation.relation_id, relation.data_field_1, relation.table_field_1
 				FROM " . DB_SCHEMA . ".theme
 				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id)
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
@@ -926,7 +944,7 @@ class gcMap{
                 $featureTypes[$index][$typeName]["maxvectfeatures"] = intval($row["maxvectfeatures"]);
             if (!empty($row["zoom_buffer"]))
                 $featureTypes[$index][$typeName]["zoomBuffer"] = intval($row["zoom_buffer"]);
-            $featureTypes[$index][$typeName]['hidden'] = intval($row['hidden']);
+            $featureTypes[$index][$typeName]['hidden'] = intval($row['hidden'] || $row['hide_vector_geom']);
             $featureTypes[$index][$typeName]['searchable'] = intval($row['searchable_id']);
             if (isset($featureTypesLinks[$row['layer_id']])) {
                 $featureTypes[$index][$typeName]['link'] = $featureTypesLinks[$row['layer_id']];
