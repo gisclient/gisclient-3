@@ -23,15 +23,18 @@ foreach ($data as $expConf) {
     if (!isset($exports[$expConf['export_format']])) {
         $exports[$expConf['export_format']] = array();
     }
+    $projectName = $expConf['project_name'];
     $featureType = $expConf['feature_type'];
     list($layergroupName, $layerName) = explode('.', $featureType);
 
     $sql = "SELECT layer_id "
         . " FROM {$db->getParams()['schema']}.layer "
         . " INNER JOIN {$db->getParams()['schema']}.layergroup using(layergroup_id) "
-        . " WHERE layergroup_name = :layergroup and layer_name = :layer ";
+        . " INNER JOIN {$db->getParams()['schema']}.theme USING(theme_id) "
+        . " WHERE project_name = :project AND layergroup_name = :layergroup and layer_name = :layer ";
     $stmt = $db->getDb()->prepare($sql);
     $stmt->execute(array(
+        'project'=>$projectName,
         'layergroup'=>$layergroupName,
         'layer'=>$layerName
     ));
