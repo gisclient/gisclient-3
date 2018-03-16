@@ -79,6 +79,11 @@ define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL
 /****** print vectors ********/
 define('PRINT_VECTORS_TABLE', 'print_vectors');
 define('PRINT_VECTORS_SRID', 4326);
+define('PRINT_VECTORS_USE_SLD', TRUE);
+define('PRINT_VECTORS_DEFAULT_COLOR', '#FF00FF');
+define('PRINT_VECTORS_DEFAULT_COLOR_OPACITY', 90);
+define('PRINT_VECTORS_DEFAULT_FILLCOLOR', '#FF00FF');
+define('PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY', 40);
 
 /******************* TINYOWS **************/
 define('TINYOWS_PATH', '/var/www/cgi-bin');
@@ -153,14 +158,14 @@ define('USE_DATA_IMPORT', false);
 define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');
 define('TRANSFORM_EDIT_GEOMETRY', false);
 //define('USE_PHP_EXCEL', true);
-//define('MEASURE_AREA_COL_NAME', 'gc_area'); 
-//define('MEASURE_LENGTH_COL_NAME', 'gc_length'); 
+//define('MEASURE_AREA_COL_NAME', 'gc_area');
+//define('MEASURE_LENGTH_COL_NAME', 'gc_length');
 //define('COORDINATE_X_COL_NAME', 'gc_coord_x');
-//define('COORDINATE_Y_COL_NAME', 'gc_coord_y'); 
-//define('LAST_EDIT_USER_COL_NAME', 'gc_user'); 
+//define('COORDINATE_Y_COL_NAME', 'gc_coord_y');
+//define('LAST_EDIT_USER_COL_NAME', 'gc_user');
 //define('LAST_EDIT_DATE_COL_NAME', 'gc_date');
-//define('UPLOADED_FILES_PRIVATE_PATH', ROOT_PATH.'files/'); 
-//define('UPLOADED_FILES_PUBLIC_PATH', ROOT_PATH.'public/services/files/'); 
+//define('UPLOADED_FILES_PRIVATE_PATH', ROOT_PATH.'files/');
+//define('UPLOADED_FILES_PUBLIC_PATH', ROOT_PATH.'public/services/files/');
 //define('UPLOADED_FILES_PUBLIC_URL', PUBLIC_URL.'services/files/');
 
 define('CLIENT_LOGO', null);
@@ -185,4 +190,3 @@ $GEOLOCATOR_CONFIG = array(
         'where'=>"lang_id='de'"
     )
 );
-
