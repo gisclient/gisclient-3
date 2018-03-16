@@ -69,9 +69,8 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 	$save->hasErrors = true;
 	$save->action="classify";
 } else {
-	$save=new saveData($_POST);
+    $save=new saveData($_POST);
 	$p=$save->performAction($p);
-	
 	$_db = GCApp::getDB();
 	if($save->action == "salva" && !$save->hasErrors){
 		require_once (ADMIN_PATH."lib/functions.php");
@@ -97,8 +96,20 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 	        }
 		}
 
-		if($save->mode == 'new' && $catalog['connection_type'] == 6) {
-			$sql = "SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_schema=:schema AND table_name=:table";
+		if($save->mode == 'new' || $save->mode == 'edit') {
+          $layer_id = $save->data['layer_id'];
+          if($save->mode == 'edit') {
+            $layer_id = $_POST['layer'];
+            $sql = "delete from ".DB_SCHEMA.".field where layer_id=:layer_id";
+            try {
+              $stmt = $_db->prepare($sql);
+              $stmt->execute(array(':layer_id' => $layer_id));
+            } catch(Exception $e) {
+              GCError::registerException($e);
+            }
+          }
+          if($catalog['connection_type'] == 6) {
+            $sql = "SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_schema=:schema AND table_name=:table";
 			try {
 			    $stmt = $dataDb->prepare($sql);
 			    $stmt->execute(array(':schema' => $schema, ':table' => $_POST["dati"]["data"]));
@@ -115,12 +126,12 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 						':field_id' => $newid,
 						':field_name' => $row['column_name'],
 						':field_header' => $row['column_name'],
-						':searchtype_id' => 1, //FD: soluzione migliore?
+						':searchtype_id' => 0, //FD: soluzione migliore? //20180228 MZ :cambiamento del default, concordato con Zio
 						':resultype_id' => 4, // nascosto di default
 						':datatype_id' => $dataType,
-						':layer_id' => $save->data['layer_id']
+						':layer_id' => $layer_id
 					);
-					$sql = "insert into ".DB_SCHEMA.".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
+					$sql = "insert into ".DB_SCHEMA.".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id)
 						values (:field_id, :field_name, :field_header, :searchtype_id, :resultype_id, :datatype_id, :layer_id)";
 					try {
 						$stmt = $_db->prepare($sql);
@@ -130,6 +141,8 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 					}
 			    }
 			}
-		}
+          }
+        }
+
 	}
 }

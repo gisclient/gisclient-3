@@ -79,27 +79,31 @@ function GCList(field, multipleSelection, uploadFile) {
         return errorMsg;
     };
 
-    this.loadListNew = function (params) {
+    this.loadStructuredList = function (params) {
       $.extend(this.selectedData, params);
       params.selectedField = this.field;
       var component = $('#' + this.dialogId).find('div');
+      $('#' + this.dialogId).find('table').css("display", "none");
+      component.css("display", "");
       component.empty();
       component.append(ajaxBuildSelector(this, params, "main"));
       component.addClass("treeMenuDiv");
       if(!this.uploadFile) {
-        component.css("max-height", "100%");
+        component.css("max-height", "95%");
         $(".uploadFile_listDialog").css("display","none");
       }
       $('#main').treeview();
-      createListNewBehaviour(params['selectedField'], this.multipleSelection);
+      createFileListBehaviour(params['selectedField'], this.multipleSelection);
     }
-
+    
     this.loadList = function (params) {
         var self = this;
         var dialogId = this.dialogId;
         var options = this.options;
         var dialogElement = $('#' + dialogId);
+        dialogElement.find('div').css("display", "none");
         var resultTable = dialogElement.find('table');
+        resultTable.css("display", "");
         var requestUrl = self.getUrl();
 
         self.listData = {};
@@ -118,7 +122,7 @@ function GCList(field, multipleSelection, uploadFile) {
             success: function (response) {
                 var errorMsg = self.checkResponse(response);
                 if (errorMsg !== null) {
-                    alert('Error');
+                    alert('Error: ' + errorMsg);
                     dialogElement.dialog('close');
                     return;
                 }
@@ -130,7 +134,7 @@ function GCList(field, multipleSelection, uploadFile) {
                 // create table header
                 var html = '<tr>';
                 $.each(response.fields, function (fieldName, fieldTitle) {
-                    html += '<th>' + fieldTitle + '</th>';
+                    html += '<th class="tableSelectorHeader">' + fieldTitle + '</th>';
                 });
                 html += '</tr>';
 
@@ -139,10 +143,10 @@ function GCList(field, multipleSelection, uploadFile) {
                     html += '<tr data-row_id=' + rowId + '>';
                     $.each(response.fields, function (fieldName, foo) {
                         if (typeof rowData[fieldName] === 'undefined' || rowData[fieldName] === null) {
-                            html += '<td class="data-' + fieldName + '"></td>';
+                            html += '<td class="data-' + fieldName + ' tableSelectorRow"></td>';
                             return;
                         }
-                        html += '<td class="data-' + fieldName + '">' + rowData[fieldName] + '</td>';
+                        html += '<td class="data-' + fieldName + ' tableSelectorRow">' + rowData[fieldName] + '</td>';
                     });
                     html += '</tr>';
                 });
@@ -239,7 +243,7 @@ function openList(txt_field, data) {
     });
 }
 
-function openListNew(txt_field, data, multipleSelection, uploadFile) {
+function openFileTree(txt_field, data, multipleSelection = false, uploadFile = false) {
   var selectedField = getSelectedField(txt_field);
   var list = new GCList(selectedField, multipleSelection, uploadFile);
   $('#list_dialog').dialog({
@@ -247,10 +251,9 @@ function openListNew(txt_field, data, multipleSelection, uploadFile) {
     height: 350,
     title: '',
     open: function () {
-      list.loadListNew(list.getParams(data));
+      list.loadStructuredList(list.getParams(data));
     }
   });
-    
   $('#submitFile').click(function(event) {
     event.preventDefault();
     var file_data = $('#fileToUpload').prop('files')[0];
@@ -268,7 +271,7 @@ function openListNew(txt_field, data, multipleSelection, uploadFile) {
         if(response!="")
           alert(response); // display response from the PHP script, if any
         else {
-          list.loadListNew(list.getParams(data));
+          list.loadFileList(list.getParams(data));
           $('#fileToUpload').val("");
         }
       }
@@ -285,7 +288,7 @@ function buildSelector(response, obj, directory, id) {
       html += "<ul id=\""+id+"\" class=\"filetree treeview-famfamfam\">";
       html += "<li><span class='folder'>"
       html += (obj.multipleSelection ? "<input type=\"checkbox\" id=\"p_ckb_\">" : "");
-      html += "root-folder</span>";
+      html += "</span>";
     }
     html += "<ul>";
     $.each(response.data_objects, function(rowId, rowData) {
@@ -294,11 +297,13 @@ function buildSelector(response, obj, directory, id) {
         html += "<li><span class='folder'>";
         html += (obj.multipleSelection ? "<input type=\"checkbox\" id=\"p_ckb_"+directoryForCheckbox(rowData['directory'])+"\">" : "");
         html += directoryForTreeOutput(rowData['directory'])+"</span>";
-        html += ajaxBuildSelector(obj, $.extend({}, obj.selectedData, obj.listData[rowId]));
+        html += ajaxBuildSelector(obj, $.extend({}, obj.selectedData, obj.listData[rowId]), buildSelector);
         html += "</li>";
       } else if(rowData[obj.field] != undefined && rowData[obj.field]!= null) {
         var check = fieldContainsString($("#"+obj.field).val(), directory+rowData[obj.field]);
-        html += "<li><span class='file'><input type=\"checkbox\" "+(check ? "checked" : "")+" id=\"ckb_"+directoryForCheckbox(directory)+rowData[obj.field]+"\" name=\"checkList\" value=\""+directory+rowData[obj.field]+"\"/>"+rowData[obj.field]+"</span></li>";
+        html += "<li><span class='file'><input type=\"checkbox\" "+(check ? "checked" : "")+" id=\"ckb_"
+             + directoryForCheckbox(directory)+rowData[obj.field]+"\" name=\"checkList\" value=\""+directory+rowData[obj.field]
+             + "\"/>"+rowData[obj.field]+"</span></li>";
         if(!directory)
           checkTreeConsistency("ckb_"+directoryForCheckbox(directory), check);
       }
@@ -391,7 +396,7 @@ function updateExtent(txt_field) {
     });
 }
 
-function createListNewBehaviour(field, multipleSelection) {
+function createFileListBehaviour(field, multipleSelection) {
   $('[id^=p_ckb_]').change(function() {
       var newstate = $(this).is(":checked") ? ":not(:checked)" : ":checked";
       var id_leaf = $(this).attr("id").substring(2);

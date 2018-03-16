@@ -118,7 +118,7 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 		
 		case "select"://elenco preso da file testo
 			$size=explode("#",$w);
-			$opzioni=$this->elenco_select($size[1],$size[2],$dati[$campo]);
+            $opzioni= $this->elenco_select($size[1],$size[2],$dati[$campo]);
 			$retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>$help";
 			break;
 		
@@ -495,6 +495,7 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 		}
 	}
 	if($filtro) $sql.=" where $filtro";
+	$sql .= " order by id";
 	print_debug($sql,NULL,"SELECTDB");
 
         $stmt = $this->db->prepare($sql);

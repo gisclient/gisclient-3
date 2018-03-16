@@ -26,3 +26,13 @@
   text-align: justify;
   margin-top: 15px;
 }
+
+.tableSelectorHeader {
+  border: 3px solid black;
+  padding: 3px;
+}
+
+.tableSelectorRow {
+  border: 1px solid black;
+  padding: 1px;
+}
