@@ -36,7 +36,7 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 		$class="class=\"errors\"";
 		$help="<image src=\"images/small_help.gif\" onclick=\"alert('$err')\" />";
 	}
-
+	
 	/*MODIFICA LOCK STATI SE IL CAMPO E' FROZEN AGGIUNGO disabled*/
 	if ($frozen) $disabilitato="disabled";
 	else
@@ -500,10 +500,8 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 		$sql = "SELECT" . $sql;
 	}
 
-	print_debug($sql,NULL,"SELECTDB");
-
-        $stmt = $this->db->prepare($sql);
-        $success = $stmt->execute();
+    $stmt = $this->db->prepare($sql);
+    $success = $stmt->execute();
 	if (!$success){
 		print_debug("Errore SelectDB\n".$sql,NULL,"error");
 		return;
@@ -514,7 +512,7 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 	$nrighe = $stmt->rowCount();
 	//echo $nrighe;
 	for  ($i=0;$i<$nrighe;$i++){
-		if (intval($elenco[$i]["id"]) <= 0){
+		if ((gettype($elenco[$i]["id"]) != 'string' && intval($elenco[$i]["id"]) <= 0) || (gettype($elenco[$i]["id"]) == 'string' && strlen($elenco[$i]["id"]) == 0)){
 			$headElem .= "\n<option value=\"".$elenco[$i]["id"]."\">".$elenco[$i]["opzione"]."</option>";
 		}
 		else {
