@@ -150,6 +150,7 @@ class GCMap
                 $row["project_title"];
         }
         $mapConfig["mapsetTiles"] = (int)$row["mapset_tiles"];
+        $mapConfig["authorUrl"] = PUBLIC_URL;
         $mapConfig["dpi"] = MAP_DPI;
         $mapConfig["inchesPerUnit"] = \GCAuthor::$aInchesPerUnit[$this->mapsetUM];
         if (count($this->projDefs)>0) {
