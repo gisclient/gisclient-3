@@ -1,0 +1,11 @@
+-- Le righe che iniziano con -- vengono skippate
+-- Il file viene strutturato nel modo seguente:
+
+-- data scadenza#id applicativo#chiave messaggio#messaggio#link
+
+-- Il link può essere omesso
+-- Nel caso di link all'interno del messaggio, si provvede a delimitare tra @ il testo relativo al link
+2018-04-20#gisclient-maps#streetview#Introdotta nuova funzione StreetView. Maggiori dettagli @cliccando qui@#https://www.google.it
+2018-04-01#gisclient-maps#doublehint#Metto questo messaggio per verificare la doppia visualizzazione
+2018-01-01#gisclient-maps#old#Questo messaggio non deve apparire in quanto superati i 30 giorni#
+2018-03-20#gisclient-3#other#Questo messaggio non deve apparire in quanto di gisclient3#

@@ -519,6 +519,13 @@ class GCAuthor {
 		if(defined('TAB_DIR')) $rel_dir="config/tab/".TAB_DIR."/";
 		return $rel_dir;
 	}
+	
+	public static function getHintsFileName() {
+      $lang = self::getLang();
+      $rel_dir="config/hints/$lang/";
+      if(!is_dir(ROOT_PATH.$rel_dir)) $rel_dir="config/hints/it/";
+      return $rel_dir."hints.txt";
+    }
 
 	public static function getMapsets($project) {
 		$db = GCApp::getDB();
