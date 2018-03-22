@@ -292,7 +292,7 @@ class mapImage {
         if(!GCApp::tableExists($db, $schema, $tableName)) {
             $sql = 'create sequence '.$schema.'.'.$tableName.'_print_id_seq ';
             $db->exec($sql);
-            $sql = 'create table '.$schema.'.'.$tableName.' (gid serial, print_id integer, insert_time timestamp without time zone not null default now()) WITH (OIDS=FALSE)';
+            $sql = "create table $schema.$tableName (gid serial, print_id integer, insert_time timestamp without time zone not null default now(), label varchar, color varchar(10), color_opacity smallint, fillcolor varchar(10), fillcolor_opacity smallint) WITH (OIDS=FALSE)";
             $db->exec($sql);
             $sql = 'select addgeometrycolumn(:schema, :table, :column, :srid, :type, 2)';
             $addGeometryColumn = $db->prepare($sql);
@@ -322,11 +322,23 @@ class mapImage {
 
         foreach($vectors as $type => $features) {
             $field = self::$vectorTypes[$type]['db_field'];
-            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$field.') values (:print_id, st_geomfromtext(:geom, :srid))';
+            // **** Add columns for color, fillcolor, label
+            // **** allowing upload from client
+            $defaultColor = (defined('PRINT_VECTORS_DEFAULT_COLOR'))?PRINT_VECTORS_DEFAULT_COLOR:null;
+            $defaultColorOpacity = (defined('PRINT_VECTORS_DEFAULT_COLOR_OPACITY'))?PRINT_VECTORS_DEFAULT_COLOR_OPACITY:null;
+            $defaultFillColor = (defined('PRINT_VECTORS_DEFAULT_FILLCOLOR'))?PRINT_VECTORS_DEFAULT_FILLCOLOR:null;
+            $defaultFillColorOpacity = (defined('PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY'))?PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY:null;
+
+            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, label, color, color_opacity, fillcolor, fillcolor_opacity, '.$field.') values (:print_id, :label, :color, :color_opacity, :fillcolor, :fillcolor_opacity, st_geomfromtext(:geom, :srid))';
             $stmt = $db->prepare($sql);
             foreach($features as $feature) {
                 $stmt->execute(array(
                     'print_id'=>$printId,
+                    'label'=>isset($feature['label'])?$feature['label']:'',
+                    'color'=>isset($feature['color'])?$feature['color']:$defaultColor,
+                    'color_opacity'=>(isset($feature['color_opacity']) && $feature['color_opacity'])?intval($feature['color_opacity']):$defaultColorOpacity,
+                    'fillcolor'=>isset($feature['fillcolor'])?$feature['fillcolor']:$defaultFillColor,
+                    'fillcolor_opacity'=>(isset($feature['fillcolor_opacity']) && $feature['fillcolor_opacity'])?intval($feature['fillcolor_opacity']):$defaultFillColorOpacity,
                     'geom'=>$feature['geometry'],
                     'srid'=>PRINT_VECTORS_SRID
                 ));

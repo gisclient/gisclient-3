@@ -386,8 +386,12 @@ class gcMap{
             //ALLA ROVESCIA RISPETTO A MAPSERVER
             if($row["layergroup_maxscale"]>0)
                 $layerOptions["minScale"] = floatval($row["layergroup_maxscale"]);
+            else if ($userLayers[$themeName][$layergroupName]['maxScale']>0)
+                $layerOptions["minScale"] = $userLayers[$themeName][$layergroupName]['maxScale'];
             if($row["layergroup_minscale"]>0)
                 $layerOptions["maxScale"] = floatval($row["layergroup_minscale"]);
+            else if ($userLayers[$themeName][$layergroupName]['minScale']>0)
+                $layerOptions["maxScale"] = $userLayers[$themeName][$layergroupName]['minScale'];
 
             switch ($layerType) {
                 case WMS_LAYER_TYPE:

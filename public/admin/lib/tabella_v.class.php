@@ -5,7 +5,7 @@ class Tabella_v extends Tabella{
 
 var $errors;
 var $error_flag=0;
-//var $rigagrigia="\t<tr>\n\t\t<td><img src=\"images/gray_light.gif\" height=\"1\" width=\"100%\"></td>\n\t</tr>\n";	
+//var $rigagrigia="\t<tr>\n\t\t<td><img src=\"images/gray_light.gif\" height=\"1\" width=\"100%\"></td>\n\t</tr>\n";
 var $rigagrigia="";
 var $tabella_elenco;//tabella dove prendo le opzioni per il tipo elenco
 
@@ -44,7 +44,7 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 	/*FINE MODIFICA*/
 
 	switch ($tipo) {
-		
+
 		case "idriga":
 		case "idkey":
 			$retval="<INPUT  type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\"  value=\"$dato\" />";
@@ -55,15 +55,15 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 		case "string":
 			$retval=stripslashes($dato);
 			break;
-		
-		case "ora":	
-			if ($dato) 	$dato=number_format($dato,2, ':', '');			
-		
+
+		case "ora":
+			if ($dato) 	$dato=number_format($dato,2, ':', '');
+
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dato\" $disabilitato />$help";
 			break;
 		case "numero":
-			if ($dato) 
-				$dato=number_format($dato,4, ',', '.');			
+			if ($dato)
+				$dato=number_format($dato,4, ',', '.');
 			else
 				$dato="0";
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dato\" $disabilitato />$help";
@@ -72,13 +72,13 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dato\" $disabilitato />$help";
 			break;
 		case "valuta":
-			if ($dato) 
+			if ($dato)
 				$dato="€ ".number_format($dato,2, ',','');
 			else
 				$dato="€ 0,00";
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"valuta\" value=\"$dato\" $disabilitato />$help";
 			break;
-		
+
 		case "superficie":
 			if ($dato)
 				$dato=number_format($dato,2, ',','.')." mq";
@@ -98,30 +98,30 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			$testo=stripslashes($dato);
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\"  id=\"locked_$campo\" value=\"$testo\" disabled /><input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" />$help";
 			break;
-		case "text":			
+		case "text":
 		case "textkey":
 			$size=intval($w+($w/5));
 			$testo=stripslashes(str_replace("\\","\\\\",$dato));
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" $disabilitato />$help";
 			break;
-			
+
 		case "data":
 			$data=$this->date_format(stripslashes($dato));
 			$retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$data\" $disabilitato />$help";
-			break;	
-			
+			break;
+
 		case "textarea":
 			$size=explode("x",$w);
 			$dato=str_replace('\"','"',str_replace("\'","'",$dato));
 			$retval="<textarea cols=\"$size[0]\" rows=\"$size[1]\" name=\"dati[$campo]\" id=\"$campo\" $disabilitato >$dato</textarea>";
 			break;
-		
+
 		case "select"://elenco preso da file testo
 			$size=explode("#",$w);
             $opzioni= $this->elenco_select($size[1],$size[2],$dati[$campo]);
 			$retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>$help";
 			break;
-		
+
 		case "selectdb"://elenco preso da query su db
 			$size=explode("#",$w);
 			$filter=array_slice($size,2);
@@ -139,15 +139,15 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			list($schema,$tb)=explode(".",$size[1]);
 			if (isset($size[3])) $onChange="onChange=\"javascript:".$size[3]."(this)\"";
 			$retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>$help";
-			break;	
-			
-		case "elenco"://elenco di opzioni da un campo di db valori separati da virgola
-			$size=explode("#",$w);	
-			if (isset($size[2])) $onChange="onChange=\"".$size[2]."()\"";			
-			$opzioni=$this->elenco_selectfield($campo,$dati[$campo],$size[1]);
-			$retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>";	
 			break;
-		
+
+		case "elenco"://elenco di opzioni da un campo di db valori separati da virgola
+			$size=explode("#",$w);
+			if (isset($size[2])) $onChange="onChange=\"".$size[2]."()\"";
+			$opzioni=$this->elenco_selectfield($campo,$dati[$campo],$size[1]);
+			$retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>";
+			break;
+
 		case "chiave_esterna":
 			$size=explode("#",$w);
 			$testo = '';
@@ -158,21 +158,21 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			//$retval="<INPUT $class maxLength=\"$size[0]\" size=\"$size[0]\"  class=\"textbox\" name=\"fk_$campo\" id=\"fk_".$campo."\" value=\"$dati[$campo]\" disabled><input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dati[$campo]\">$help";
 			$retval="<INPUT $class maxLength=\"$size[0]\" size=\"$size[0]\"  class=\"textbox\" name=\"fk_$campo\" id=\"fk_".$campo."\" value=\"$testo\" disabled>";
 			$retval.="<input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$val\">$help";
-			
+
 			break;
 		case "checkbox":
 			(($dati[$campo]=="t") or ($dati[$campo]=="on") or (abs($dati[$campo])==1))?($selezionato="checked"):($selezionato="");
 			$ch=strtoupper($campo);
-			
+
 			if($dati[$campo]==-1) $ch="<font color=\"FF0000\">EX $ch</font>";
 			$retval="<b>$ch</b><input type=\"checkbox\"  name=\"dati[$campo]\"  id=\"$campo\" $selezionato $disabilitato />&nbsp;&nbsp;";
 			break;
-		
+
 		case "radio":
 			(($dati[$campo]=="t") or ($dati[$campo]=="on") or ($dati[$campo]==1))?($selezionato="checked"):($selezionato="");
 			$retval="<input type=\"radio\" name=\"dati[opzioni]\"  id=\"$campo\" $selezionato $disabilitato />";
 			break;
-		
+
 		case "button":
 			$size=explode("#",$w);
 			$width=$size[0];
@@ -184,7 +184,7 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			if(!$mode || $mode=="all" || $this->mode==$mode)
 				$retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" />";
 			break;
-		
+
 		case "submit":
 			if (in_array(strtolower($label),Array("cancella","elimina")))
 				$js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
@@ -194,19 +194,19 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 				//$retval="\n\t\t\t<input  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:".$w."px;display:$display\" type=\"submit\" value=\"$label\" $js />";
 				$retval="\n\t\t\t<button  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:".$w."px;display:$display\" type=\"submit\" value=\"$action\" $js>$label</button>";
 			break;
-			
+
 		case "yesno":
 			((!isset($dati[$campo])) or ($dati[$campo]==="t") or ($dati[$campo]==="on") or ($dati[$campo]==1))?($yselected="selected"):($nselected="selected");
 			$opzioni="<option value=1 $yselected>".GCAuthor::t('yes')."</option><option value=0 $nselected>".GCAuthor::t('no')."</option>";
-			$retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";		  
+			$retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";
 			break;
-			
+
 		case "noyes":
 			((!isset($dati[$campo]) or ($dati[$campo]==="f") or ($dati[$campo]==="off") or ($dati[$campo]==0)))?($nselected="selected"):($yselected="selected");
 			$opzioni="<option value=1 $yselected>".GCAuthor::t('yes')."</option><option value=0 $nselected>".GCAuthor::t('no')."</option>";
-			$retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";		  
-			break;	
-			
+			$retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";
+			break;
+
 		case "pword":
             $size=intval($w+($w/5));
 			$testo=stripslashes($dato);
@@ -234,22 +234,22 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 		case "checklist":
 			$retval="<div style=\"overflown:auto;scroll:auto;height:400px;\">";
 			for($i=0;$i<count($dato);$i++){
-				
+
 			}
 			$retval.="</div>";
 			break;
-		
+
 	}
-		
+
 	return $retval;
 }
 
-function get_dato($tipo,$w,$campo){ 
+function get_dato($tipo,$w,$campo){
 //restituisce il dato come stringa
         $retval = '';
 	$dati=isset($this->array_dati[$this->curr_record])?$this->array_dati[$this->curr_record]:array();
 	switch ($tipo) {
-		
+
 		case "idriga":
 			$retval="";
 			break;
@@ -261,7 +261,7 @@ function get_dato($tipo,$w,$campo){
 			else
 				$retval='';//'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 			break;
-			
+
 		case "data":
 			$retval=$data=$this->date_format($dati[$campo]);
 			break;
@@ -281,35 +281,35 @@ function get_dato($tipo,$w,$campo){
 		//setto la valuta aggiungendo il metodo setvaluta alla classe tabella e poi la uso qui
 		//echo("<br>Formatto valuta : $dati[$campo]<br>");
 			$retval="€ ".number_format($dati[$campo],2, ',', '.');
-			break;		
-		case "superficie":	
+			break;
+		case "superficie":
 			$retval=number_format($dati[$campo],2, ',', '.')." mq";
 			break;
-		case "volume":	
+		case "volume":
 			$retval=number_format($dati[$campo],2, ',', '.')." mc";
 			break;
 		case "noyes":
 		case "yesno":
 			if ($dati[$campo]==0) $retval=GCAuthor::t('no');
 			if ($dati[$campo]==1) $retval=GCAuthor::t('yes');
-			break;			
-			
+			break;
+
 		case "textarea":
 			$retval="<div style=\"width:100%\"><pre>".$dati[$campo]."</pre></div>";
 			break;
-		case "selectdb":		//Restituisce il campo descrittivo di un elenco 
+		case "selectdb":		//Restituisce il campo descrittivo di un elenco
 			$size=explode("#",$w);
 			$retval=$this->get_chiave_esterna($dati[$campo],"id",$size[1],"opzione")	;
 			//$retval=$this->elenco_selectdb($dati[$campo],"id",$flt,"opzione");
 			break;
 		//case "selectdb":
-		case "chiave_esterna":		//Restituisce il campo descrittivo di un elenco 
+		case "chiave_esterna":		//Restituisce il campo descrittivo di un elenco
 			$size=explode("#",$w);
 			//$retval=$this->get_chiave_esterna($size[1],$dati[$campo],$size[2]);
-			
+
 			$retval=stripslashes($this->get_chiave_esterna($dati[$campo],$campo,$size[1],$size[2]));
-			
-			break;	
+
+			break;
 		case "elenco":
 			$retval=$this->get_dato_elenco($campo);
 		case "color":
@@ -348,7 +348,7 @@ function get_riga_edit($nriga,$frozen_cols=Array()){
 	$riga=$this->tab_config[$nriga];
 	$lbl="";
 	$ctr='';
-	
+
 	for ($i=0;$i<count($riga);$i++){
 		list($label,$campo,$w,$tipo,$mode,$action)=array_pad(explode(';',$riga[$i]), 6, null);
 		$tipo=trim($tipo);
@@ -360,7 +360,7 @@ function get_riga_edit($nriga,$frozen_cols=Array()){
 }
 
 function get_riga_view($nriga){
-// restituisce la riga in modalità view 
+// restituisce la riga in modalità view
 	$riga=$this->tab_config[$nriga];
 	$testo_riga = '';
 	for ($i=0;$i<count($riga);$i++){
@@ -368,23 +368,23 @@ function get_riga_view($nriga){
 			list($label,$campo,$w,$tipo) = array_pad(explode(';',trim($riga[$i])), 4, null);
 			if ($label)  $label="<b>".str_replace("<br>","&nbsp;&nbsp;",$label).":&nbsp;</b>";
 			$dato=$this->get_dato(trim($tipo),$w,$campo);
-			if ($label.$dato && !(in_array($tipo,Array("submit","button"))))  
+			if ($label.$dato && !(in_array($tipo,Array("submit","button"))))
 				$testo_riga.=$label.$dato."&nbsp;&nbsp;&nbsp;&nbsp;";
 		}
 	}
 	return $testo_riga;
 }
- 
+
 function edita($param=Array()){
 //if($this->error_flag==1)
 	//echo ("I campi evidenziati in rosso non sono validi");
 	//crea la tabella di editing
 	$nrighe=$this->num_col;
 	$tabella="<table class=\"stiletabella\">\n";
-	
-	
+
+
 	for ($i=0;$i<$nrighe;$i++){
-		
+
 		$riga=$this->get_riga_edit($i);
 		$tabella.="\t<tr>\n";
 		if ($riga[0]=="")
@@ -420,12 +420,12 @@ function tab($curr=0){
 		}else{
 			$tabella.="\t\t<td>$riga</td>\n";
 		}
-		$tabella.="\t</tr>\n";	
-		if ($i<$nrighe-1 && $riga) $tabella.=$this->rigagrigia;				
+		$tabella.="\t</tr>\n";
+		if ($i<$nrighe-1 && $riga) $tabella.=$this->rigagrigia;
 	}
 	$tabella.="</table>\n";
 	print $tabella;
-}	
+}
 
 function elenco($form){
 	if(!$form) $form=$_SERVER["PHP_SELF"];
@@ -441,8 +441,8 @@ function elenco($form){
 
 function elenco_select($tabella,$sep,$selezionato){
 // dal file tab crea la lista di opzioni per il controllo SELECT
-	
-	
+
+
 	if (!file_exists($tabella)){
 		$retval="\n<option value=\"\">File dei Fonts non Esistente</option>";
 		return $retval;
@@ -463,9 +463,9 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 // dalla tabella crea la lista di opzioni per il controllo SELECT
 
 	if (!isset($this->db)) $this->connettidb();
-	$sql='SELECT DISTINCT id,opzione FROM '.$this->schemadb.'.'.$tabella;
+	$sql=' id,opzione FROM '.$this->schemadb.'.'.$tabella;
 	if (is_array($filtro)){
-		
+
 		for($i=0;$i<count($filtro);$i++){
 			if (isset($this->array_dati[$this->curr_record][$filtro[$i]]) && $this->array_dati[$this->curr_record][$filtro[$i]]){
 				$value=$this->array_dati[$this->curr_record][$filtro[$i]];
@@ -483,7 +483,7 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 	}
 	elseif (trim($filtro)){
 		if (!ereg("=",$filtro)){
-			
+
 			if ($this->array_dati[$this->curr_record][$filtro]){
 				$value=$this->array_dati[$this->curr_record][$filtro];
 				$filtro="$filtro = '$value'";
@@ -494,24 +494,33 @@ function elenco_selectdb($tabella,$selezionato,$filtro){
 			}
 		}
 	}
-	if($filtro) $sql.=" where $filtro";
-	$sql .= " order by id";
-	print_debug($sql,NULL,"SELECTDB");
+	if($filtro)
+		$sql = "SELECT DISTINCT" . $sql . " where $filtro order by opzione";
+	else {
+		$sql = "SELECT" . $sql;
+	}
 
-        $stmt = $this->db->prepare($sql);
-        $success = $stmt->execute();
+    $stmt = $this->db->prepare($sql);
+    $success = $stmt->execute();
 	if (!$success){
 		print_debug("Errore SelectDB\n".$sql,NULL,"error");
 		return;
 	}
 	$retval="";
+	$headElem="";
 	$elenco = $stmt->fetchAll();
 	$nrighe = $stmt->rowCount();
 	//echo $nrighe;
 	for  ($i=0;$i<$nrighe;$i++){
-		($elenco[$i]["id"]==$selezionato)?($selected="selected"):($selected="");
-		$retval.="\n<option value=\"".$elenco[$i]["id"]."\" $selected>".$elenco[$i]["opzione"]."</option>";
+		if ((gettype($elenco[$i]["id"]) != 'string' && intval($elenco[$i]["id"]) <= 0) || (gettype($elenco[$i]["id"]) == 'string' && strlen($elenco[$i]["id"]) == 0)){
+			$headElem .= "\n<option value=\"".$elenco[$i]["id"]."\">".$elenco[$i]["opzione"]."</option>";
+		}
+		else {
+			($elenco[$i]["id"]==$selezionato)?($selected="selected"):($selected="");
+			$retval.="\n<option value=\"".$elenco[$i]["id"]."\" $selected>".$elenco[$i]["opzione"]."</option>";
+		}
   	}
+	$retval = $headElem . $retval;
 	return $retval;
 }
 
@@ -538,7 +547,7 @@ function elenco_selectfield($campo,$selezionato,$filtro){
 		return;
 	}
 	$ar_elenco=explode(";",$elenco);
-	
+
 	$nopt=count($ar_elenco)/2;
 	$i=0;
 	while  ($i<count($ar_elenco)){
@@ -608,9 +617,9 @@ function get_chiave_esterna($val,$fld,$tab,$campo){
                 $row=$stmt->fetch(PDO::FETCH_ASSOC);
                 return $row[$campo];
 	}
-	
+
 }
 }//end class
 
 
-?>	
+?>
