@@ -109,7 +109,7 @@ if(isset($field["field_filter"]) && isset($filterFields)){
                 $fromString = "(" . $fromString . $strFromAdd . ") ";
         }
         else {
-            $fieldFilterName = $fieldFilter["qtfield_name"];
+            $fieldFilterName = DATALAYER_ALIAS_TABLE.".".$fieldFilter["qtfield_name"];
             if(!empty($fieldFilter['formula'])) {
                 $fieldFilterName = $fieldFilter['formula'];
             }

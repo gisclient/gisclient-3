@@ -108,7 +108,7 @@ if(isset($field["field_filter"]) && isset($filterFields)){
 
         }
         else {
-            $fieldFilterName = $fieldFilter["field_name"];
+            $fieldFilterName = DATALAYER_ALIAS_TABLE.".".$fieldFilter["field_name"];
             if(!empty($fieldFilter['formula'])) {
                 $fieldFilterName = $fieldFilter['formula'];
             }
