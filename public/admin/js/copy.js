@@ -20,7 +20,7 @@ function GCCopy(level, project, parentId, mode) {
           alert('Error');
           return;
         }
-        $('#copy_dialog').append('<div class="copyDivLeft">name:</div><div class="copyDivRight"><input type="text" name="newname"></div><div style="clear: both;"></div>');
+        $('#copy_dialog').append('<div class="copyDivLeft">name:</div><div class="copyDivRight"><input type="text" name="newname" style="text-transform:lowercase"></div><div style="clear: both;"></div>');
         $.each(response.filters, function(e, filter) {
           self.filters[filter.level] = filter;
           self.addSelect(filter.level);
@@ -109,7 +109,7 @@ function GCCopy(level, project, parentId, mode) {
 
   this.copy = function(id) {
     var self = this;
-    $('#'+self.level+'_name').val($('#copy_dialog input[name="newname"]').val());
+    $('#'+self.level+'_name').val($('#copy_dialog input[name="newname"]').val().toLowerCase());
     $('#frm_data').append('<input type="hidden" name="dataction[old]" value="'+self.parentId+'" />');
     $('#frm_data').append('<input type="hidden" name="dataction[new]" value="'+id+'" />');
     var action = (self.mode == 'move') ? 'sposta' : 'copia';
