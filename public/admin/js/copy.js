@@ -136,6 +136,7 @@ function gcOpen(parentLevel, operation) {
     width:500,
     height:350,
     title: (operation=='copy' ? 'Copia ' : 'Sposta ') + parentLevel,
+    modal: true,
     open: function() {
       var copy = new GCCopy(level, project, parentId, operation);
       copy.loadForm();
