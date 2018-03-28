@@ -73,6 +73,8 @@ class gcMap{
 
     var $mapProviders;//Elenco dei provider di mappe OSM GMap VEMap YMap come mappati in tabelle e_owstype
 
+
+
     private $i18n;
     protected $oMap;
     protected $sldContents = array();
