@@ -29,7 +29,7 @@ function processAndWriteSingleLine($line, $expectedApp) {
 }
 
 function formatMessage($key, $str) {
- return "<div id=\"$key\"><input type=\"checkbox\" name=\"$key\" value=\"$key\" onclick=\"checkBoxManagement('$key');\" title=\"Letto\"/> $str</div><hr>";
+ return "<div id=\"$key\"><input type=\"checkbox\" name=\"$key\" value=\"$key\" onclick=\"checkBoxManagement('$key');\" title=\"Letto\"/> $str<hr></div>";
 }
 
 function formatMessageWithLink($key, $str, $link) {
