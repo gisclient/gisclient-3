@@ -317,7 +317,7 @@ class GCAuthor {
 		}
 	}
 
-    public static function compileMapfile($project, $mapset, $publicTarget = false) {
+    public static function compileMapfile($project, $mapset, $layers = "", $zoomLvls = 20, $publicTarget = false) {
       $fileName = ROOT_PATH."map/".$project."/".($publicTarget ? "" : "tmp.").$mapset.".map";
       if(file_exists($fileName)) {
         $contents = file_get_contents($fileName);
@@ -325,19 +325,28 @@ class GCAuthor {
         $pattern = "/$pattern.*\$/m";
         preg_match_all($pattern, $contents, $matches);
         $choordsArray = explode(" ", trim(str_replace("EXTENT", "", implode("\n", $matches[0]))));
-        for($index = 0; $index<20; $index++) {
-          $command = "shp2img -m ".$fileName." -o /tmp/test.png -all_debug 5 -e ".implode(" ", $choordsArray);
-          exec($command." 2>&1", $result, $retVal);
-          $error = GCAuthor::searchErrorOnResult($result, $project, $mapset);
-          if($error)
-            break;
+		$layerOpt = "";
+		if (!empty($layers)) {
+			$layerOpt = '-l "' . $layers . '"';
+		}
+        for($index = 0; $index<$zoomLvls; $index++) {
+          $command = "shp2img -m ".$fileName." -o /tmp/test.png -all_debug 5 $layerOpt -e ".implode(" ", $choordsArray);
+		  print_debug($command, NULL, 'cippa');
+		  $logFile = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, $project.'_'.$mapset.'_errors_', 'log');
+		  $logFile = GC_WEB_TMP_DIR . '/' . $logFile;
+          system($command.">$logFile 2>&1", $retVal);
+          if($retVal !== 0) {
+			  GCError::register(" Uno o più layers nel mapset $project.$mapset presentano errori;<br> cliccare <a href=" . str_replace(GC_WEB_TMP_DIR, GC_WEB_TMP_URL, $logFile) . " target=\"_blank\">qui</a> per visualizzare il log completo.");
+			  break;
+		  }
           $choordsArray = GCAuthor::getNextChoords($choordsArray);
+		  unlink($logFile);
         }
       } else {
         GCError::register("$project.$mapset: Mapfile inesistente. Creare il file prima di procedere.");
       }
     }
-    
+
     private static function searchErrorOnResult($cmdResult, $project, $mapset) {
       $errFound = FALSE;
       foreach($cmdResult as $logRow) {
@@ -349,7 +358,7 @@ class GCAuthor {
       }
       return $errFound;
     }
-    
+
     private static function getNextChoords($choordsArray) {
       $xmin = $choordsArray[0] + (($choordsArray[2] - $choordsArray[0])/4);
       $xmax = $choordsArray[2] - (($choordsArray[2] - $choordsArray[0])/4);
@@ -519,7 +528,7 @@ class GCAuthor {
 		if(defined('TAB_DIR')) $rel_dir="config/tab/".TAB_DIR."/";
 		return $rel_dir;
 	}
-	
+
 	public static function getHintsFileName() {
       $lang = self::getLang();
       $rel_dir="config/hints/$lang/";
@@ -543,6 +552,20 @@ class GCAuthor {
 		unset($mapset);
 
 		return $mapsets;
+	}
+
+	public static function getMapsetLayergroups($mapset) {
+		$db = GCApp::getDB();
+
+		$sql = "select layergroup_name from ".DB_SCHEMA.".mapset
+				inner join ".DB_SCHEMA.".mapset_layergroup using(mapset_name)
+				inner join ".DB_SCHEMA.".layergroup using(layergroup_id)
+				where owstype_id in (1,2,3,4)
+				and mapset_name=?";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array($mapset));
+		$layergroups= $stmt->fetchAll(PDO::FETCH_COLUMN, 'layergroup_name');
+		return $layergroups;
 	}
 
 	public static function getTowsFeatures($project) {

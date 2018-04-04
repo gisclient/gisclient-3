@@ -18,7 +18,8 @@ switch($_REQUEST['action']) {
     } else if(empty($_REQUEST['mapset'])) {
       GCAuthor::compileMapfiles($_REQUEST['project'], $publicTarget);
     } else {
-      GCAuthor::compileMapfile($_REQUEST['project'], $_REQUEST['mapset'], $publicTarget);
+      $layersArr = GCAuthor::getMapsetLayergroups($_REQUEST['mapset']);
+      GCAuthor::compileMapfile($_REQUEST['project'], $_REQUEST['mapset'], implode(' ', $layersArr), 20, $publicTarget);
     }
     $errors = GCError::get();
     if(!empty($errors)) {
