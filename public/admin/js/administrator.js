@@ -385,7 +385,11 @@ function unsetFK(obj){
     $('#'+obj).val('');
     $('#fk_'+obj).val('');
 }
-
+function clearLinkedFields(arg) {
+  arg.forEach(function(current) {
+    $('#'+current).val("");
+  });
+}
 function logout(){
     window.location="index.php?logout=1";
 }
