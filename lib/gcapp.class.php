@@ -331,7 +331,6 @@ class GCAuthor {
 		}
         for($index = 0; $index<$zoomLvls; $index++) {
           $command = "shp2img -m ".$fileName." -o /tmp/test.png -all_debug 5 $layerOpt -e ".implode(" ", $choordsArray);
-		  print_debug($command, NULL, 'cippa');
 		  $logFile = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, $project.'_'.$mapset.'_errors_', 'log');
 		  $logFile = GC_WEB_TMP_DIR . '/' . $logFile;
           system($command.">$logFile 2>&1", $retVal);
@@ -345,18 +344,6 @@ class GCAuthor {
       } else {
         GCError::register("$project.$mapset: Mapfile inesistente. Creare il file prima di procedere.");
       }
-    }
-
-    private static function searchErrorOnResult($cmdResult, $project, $mapset) {
-      $errFound = FALSE;
-      foreach($cmdResult as $logRow) {
-        $error = stripos($logRow, "error");
-        if($error != FALSE) {
-          GCError::register("$project.$mapset: $logRow");
-          $errFound = TRUE;
-        }
-      }
-      return $errFound;
     }
 
     private static function getNextChoords($choordsArray) {
