@@ -96,7 +96,7 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
 	        }
 		}
 
-		if($save->mode == 'new' || $save->mode == 'edit') {
+		if(($save->mode == 'new' || $save->mode == 'edit')  && isset($_POST["reloadFields"])) {
           $layer_id = $save->data['layer_id'];
           if($save->mode == 'edit') {
             $layer_id = $_POST['layer'];
@@ -108,7 +108,7 @@ if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
               GCError::registerException($e);
             }
           }
-          if($catalog['connection_type'] == 6) {
+          if($catalog['connection_type'] == 6 ) {
             $sql = "SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_schema=:schema AND table_name=:table";
 			try {
 			    $stmt = $dataDb->prepare($sql);

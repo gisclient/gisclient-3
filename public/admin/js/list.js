@@ -174,6 +174,10 @@ function GCList(field, multipleSelection, uploadFile) {
                                 $('#' + key).val(val);
                             });
                             dialogElement.dialog('close');
+                            //questa istruzione funziona solo nel caso in cui openList venga invocato
+                            //a livello di configurazione layer. Negli altri casi non fa danni. - MZ
+                            var input = $("<input>").attr("type", "hidden").attr("name", "reloadFields").val("true");
+                            $('#frm_data').append($(input));
                         } else {
                             self.currentStep += 1;
                             self.selectedData.step = self.currentStep;
