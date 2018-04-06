@@ -7,7 +7,12 @@ logout:
     path: logout
     defaults:  { _controller: GisClient\Author\Controller\LoginController::logoutAction }
     methods:  [GET]
-
+autocomplete:
+    path: autocomplete.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\AutocompleteController::autocompleteAction'
+    methods:
+        - GET
 gcmap:
     path: gcmap.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
