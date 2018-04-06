@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+// application.php
+
+require __DIR__.'/../bootstrap.php';
+
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+
+// registered commands
+$application->add(new GisClient\Author\Command\RefreshMapfileCommand());
+
+$application->run();
