@@ -324,7 +324,7 @@ class GCAuthor {
         $pattern = preg_quote("EXTENT", '/');
         $pattern = "/$pattern.*\$/m";
         preg_match_all($pattern, $contents, $matches);
-        $choordsArray = explode(" ", trim(str_replace("EXTENT", "", implode("\n", $matches[0]))));
+        $choordsArray = explode(" ", trim(str_replace("EXTENT", "", $matches[0][0])));
 		$layerOpt = "";
 		if (!empty($layers)) {
 			$layerOpt = '-l "' . $layers . '"';

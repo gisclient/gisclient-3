@@ -195,11 +195,15 @@ function init() {
             },
             displayClass: 'checkMapButton'
         })
-        var vpanel = new OpenLayers.Control.TextButtonPanel({
-            vertical: true,
-            additionalClass: "vpanel"
-        });
-        vpanel.addControls([
+        var vpanel = new OpenLayers.Control.Panel({
+            createControlMarkup: function(control) {
+                var button = document.createElement('button'),
+                    span = document.createElement('span');
+                button.className += 'button ui-button-text-only ui-widget ui-state-default ui-corner-all';
+                span.className += 'ui-button-text';
+                return button;
+            }});
+            vpanel.addControls([
             checkMapButton
         ]);
         map.addControl(vpanel);
@@ -234,7 +238,7 @@ body, html {
     z-index: 1500;
     display: none;
 }
-.olControlTextButtonPanel.vpanel {
+.olControlPanel {
     top: 8px;
     right: 8px;
     left: auto;
