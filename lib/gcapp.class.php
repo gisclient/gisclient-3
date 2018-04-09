@@ -318,6 +318,7 @@ class GCAuthor {
 	}
 
     public static function compileMapfile($project, $mapset, $layers = "", $zoomLvls = 20, $publicTarget = false) {
+	  GCUtils::deleteOldFiles(GC_WEB_TMP_DIR, $project.'_'.$mapset.'_errors_*.log');
       $fileName = ROOT_PATH."map/".$project."/".($publicTarget ? "" : "tmp.").$mapset.".map";
       if(file_exists($fileName)) {
         $contents = file_get_contents($fileName);
@@ -669,8 +670,8 @@ class GCUtils {
 		return array($l, $b, $r, $t);
 	}
 
-    public static function deleteOldFiles($path) {
-        $files = glob($path.'*');
+    public static function deleteOldFiles($path, $pattern = '*') {
+        $files = glob($path.'/'.$pattern);
 		foreach($files as $file) {
 			$isold = (time() - filectime($file)) > 5 * 60 * 60;
 			if (is_file($file) && $isold) {
