@@ -18,8 +18,17 @@ switch($_REQUEST['action']) {
     } else if(empty($_REQUEST['mapset'])) {
       GCAuthor::compileMapfiles($_REQUEST['project'], $publicTarget);
     } else {
-      $layersArr = GCAuthor::getMapsetLayergroups($_REQUEST['mapset']);
-      GCAuthor::compileMapfile($_REQUEST['project'], $_REQUEST['mapset'], implode(' ', $layersArr), 20, $publicTarget);
+        $layers = $_REQUEST['layers'];
+        $zoomLevs = $_REQUEST['zoomlevels'];
+        if(empty($_REQUEST['layers'])) {
+            $layersArr = GCAuthor::getMapsetLayergroups($_REQUEST['mapset']);
+            $layers = implode(' ', $layersArr);
+        }
+        if(empty($_REQUEST['zoomlevels'])) {
+            $zoomLevs = 20;
+        }
+
+      GCAuthor::compileMapfile($_REQUEST['project'], $_REQUEST['mapset'], $layers, $zoomLevs, $publicTarget);
     }
     $errors = GCError::get();
     if(!empty($errors)) {

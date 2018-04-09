@@ -14,7 +14,7 @@ $(document).ready(function() {
     var activeLinkContainer = $(this).parent();
     $(activeLink).hide();
     $(activeLinkContainer).append(loadingGif);
-    
+
     var params = {
       action: 'compile',
       target: $(this).attr('data-target'),
@@ -36,8 +36,8 @@ $(document).ready(function() {
             $('#error_dialog').html(response.error.text);
             $('#error_dialog').dialog({
               title: 'Errore di compilazione',
-              width: 600,
-              height: 450
+              width: 550,
+              height: 150
             });
             return;
           }
@@ -50,7 +50,7 @@ $(document).ready(function() {
       }
     });
   });
-  
+
   $('div#mapfiles_manager a[data-action="refresh"]').button({icons:{primary:'ui-icon-refresh'}, text:false}).click(function(event) {
     event.preventDefault();
     var activeLink = this;
@@ -63,7 +63,7 @@ $(document).ready(function() {
       project: $('input#project').val(),
       mapset: $(this).attr('data-mapset')
     }
-		
+
     $.ajax({
       url: 'ajax/mapfiles.php',
       type: 'POST',

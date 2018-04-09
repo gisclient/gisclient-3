@@ -97,11 +97,16 @@ function manageLayerRequest(&$layerTitle, &$layerName, &$tmpMap, &$fileName, $db
 ?><!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>Author - Preview Map</title>
+<LINK media="screen" href="../css/styles.css" type="text/css" rel="stylesheet">
+<link type="text/css" href="../css/jquery-ui/start/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="../css/dialog.css" rel="stylesheet" />
+<script type="text/javascript" src="../js/jquery/jquery.js"></script>
+<script type="text/javascript" src="../js/jquery/jquery-ui.js"></script>
 <script type="text/javascript" src="<?php echo OPENLAYERS; ?>"></script>
 <script type="text/javascript">
 function init() {
 <?php
-  GCAuthor::compileMapfile($mapConfig['project_name'], $fileName);
+  //GCAuthor::compileMapfile($mapConfig['project_name'], $fileName);
   $errors = GCError::get();
   if(empty($errors)) {
 ?>
@@ -115,7 +120,7 @@ function init() {
     <?php if(!empty($mapConfig['sld'])) { ?>
     layerParameters.sld = '<?php echo $mapConfig['sld']; ?>';
     <?php } ?>
-	
+
 	if (typeof OpenLayers === 'undefined') {
 		// OpenLayers could not be loaded
 		// alert user and avoid to work with that variable
@@ -127,11 +132,77 @@ function init() {
 			maxExtent: new OpenLayers.Bounds.fromArray([<?php echo implode(',', $maxExtent) ?>]),
 			resolutions: [<?php echo implode(',', $resolutions) ?>]
 		};
-
 		var map = new OpenLayers.Map('map', mapOptions);
 		var layer = new OpenLayers.Layer.WMS('<?php echo $layerName ?>', '<?php echo GISCLIENT_OWS_URL ?>', layerParameters, {singleTile:true});
-		map.addLayer(layer);	
+        layer.events.register("loadstart", layer, function() {
+            var loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = 'block';
+        });
+        layer.events.register("loadend", layer, function() {
+            var loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = 'none';
+        });
+        map.addLayer(layer);
 		map.setCenter(new OpenLayers.LonLat(<?php echo $mapConfig['xc'] ?>, <?php echo $mapConfig['yc'] ?>));
+
+        var checkMapButton = new OpenLayers.Control.Button({
+            trigger: function() {
+                var self = this;
+                if (!this.active) {
+                    this.activate();
+                    var loadingDiv = document.getElementById("loading");
+                    loadingDiv.style.display = 'block';
+                    var params = {
+                      action: 'compile',
+                      target: 'tmp',
+                      layers: '<?php echo($layerName)?>',
+                      project: '<?php echo($mapConfig['project_name'])?>',
+                      mapset:  '<?php echo($fileName)?>',
+                      zoomlevels: 1
+                    };
+                    $.ajax({
+                      url: '../ajax/compilemap.php',
+                      type: 'POST',
+                      dataType: 'json',
+                      data: params,
+                      success: function(response) {
+                        if(typeof(response) != 'object' || typeof(response.result) == 'undefined') {
+                            loadingDiv.style.display = 'none';
+                            self.deactivate();
+                            return alert('Nessun risultato restituito.');
+                        }
+                        if(response.result != 'ok') {
+                          if(response.result = 'error' && typeof(response.error) == 'object' && typeof(response.error.type)!='undefined' && response.error.type == 'mapfile_errors') {
+                            $('#error_dialog').html(response.error.text);
+                            $('#error_dialog').dialog({
+                              title: 'Errore di compilazione',
+                              width: 550,
+                              height: 150
+                            });
+                          }
+                        }
+                        loadingDiv.style.display = 'none';
+                        self.deactivate();
+                      },
+                      error: function(errResponse) {
+                        alert('Error');
+                        loadingDiv.style.display = 'none';
+                        self.deactivate();
+                      }
+                    });
+                }
+
+            },
+            displayClass: 'checkMapButton'
+        })
+        var vpanel = new OpenLayers.Control.TextButtonPanel({
+            vertical: true,
+            additionalClass: "vpanel"
+        });
+        vpanel.addControls([
+            checkMapButton
+        ]);
+        map.addControl(vpanel);
 	}
 <?php
   } else {
@@ -144,17 +215,44 @@ function init() {
 </script>
 <style>
 body, html {
-	margin: 0px; 
+	margin: 0px;
 	padding: 0px;
 }
 #map {
 	width: 745px;
 	height: 685px;
 }
+#loading {
+    position:fixed;
+    width:10%;
+    height:10%;
+    top:45%;
+    left:45%;
+    background-image:url('../../images/icons/loading.gif');
+    background-position:center;
+    background-repeat:no-repeat;
+    z-index: 1500;
+    display: none;
+}
+.olControlTextButtonPanel.vpanel {
+    top: 8px;
+    right: 8px;
+    left: auto;
+}
+.checkMapButtonItemInactive:after {
+    content: "Controlla <?php echo(empty($_REQUEST['layergroup_id'])?'layer':'layergroup') ?>";
+}
+.checkMapButtonItemActive:after {
+    content: "Controllo in corso";
+}
 </style>
 </head>
 <body onload="init();">
+<div id="loading">
+</div>
 <div id="map">
+</div>
+<div id="error_dialog" style="display:none;color:red;">
 </div>
 </body>
 </html>
