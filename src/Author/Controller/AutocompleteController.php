@@ -3,8 +3,9 @@
 namespace GisClient\Author\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class AutocompleteController
 {
@@ -17,26 +18,33 @@ class AutocompleteController
      */
     public function autocompleteAction(Request $request)
     {
-        $q = $this->getAutocompleteQuery($request);
-
         try {
+            $q = $this->getAutocompleteQuery($request);
             $dataDb = $q["db"];
             $stmt = $dataDb->prepare($q["query"]);
             $stmt->execute($q["params"]);
             $results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+            return new JsonResponse(array(
+                "result" => "ok",
+                "data" => $results
+            ));
+        } catch (HttpException $e) {
+            return new JsonResponse(
+                array(
+                    "result" => "error",
+                    "error" => $e->getMessage()
+                ),
+                $e->getStatusCode()
+            );
         } catch (Exception $e) {
             return new JsonResponse(
                 array(
                     "result" => "error",
                     "error" => $e->getMessage()
                 ),
-                500
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }
-        return new JsonResponse([
-            "result" => "ok",
-            "data" => $results
-        ]);
     }
 
     protected function getAutocompleteQuery(Request $request)
@@ -50,13 +58,7 @@ class AutocompleteController
         if (!$request->query->has("field_id") ||
             (int)$request->query->get("field_id") != $request->query->get("field_id")
         ) {
-            return new JsonResponse(
-                array(
-                    "result" => "error",
-                    "error" => "No or invalid data for field_id."
-                ),
-                400
-            );
+            throw new BadRequestHttpException("No or invalid data for field_id.");
         } else {
             $fieldId = (int)$request->query->get("field_id");
         }
@@ -70,13 +72,7 @@ class AutocompleteController
         $stmt->execute(array('id'=>$fieldId));
         $field = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (empty($field)) {
-            return new JsonResponse(
-                array(
-                    "result" => "error",
-                    "error" => "Field $fieldId does not exist."
-                ),
-                404
-            );
+            throw new \Exception("Field $fieldId does not exist.");
         }
         $isLayer = true;
 
@@ -98,13 +94,7 @@ class AutocompleteController
         $stmt->execute($params);
         $catalog = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (empty($catalog)) {
-            return new JsonResponse(
-                array(
-                    "result" => "error",
-                    "error" => "No catalog found for layer_id {$field["layer_id"]}."
-                ),
-                404
-            );
+            throw new \Exception("No catalog found for layer_id {$field["layer_id"]}.");
         }
 
         if ($lang) {
@@ -151,20 +141,6 @@ class AutocompleteController
             $constraints[] = ' '.$fieldName.' ilike :filter';
             $params['filter'] = '%'.$request->query->get('filter').'%';
         }
-        if ($request->query->has("do_id") && $request->query->get("do_id")) {
-            if ((int)$request->query->get("do_id") != $request->query->get("do_id")) {
-                return new JsonResponse(
-                    array(
-                        "result" => "error",
-                        "error" => "Invalid value for do_id."
-                    ),
-                    400
-                );
-            } else {
-                $constraints[] = ' do_id = :do_id ';
-                $params['do_id'] = (int) $request->query->get("do_id");
-            }
-        }
 
         $sql = 'select distinct '.$fieldName.' from '.$schema.'.'.$catalog['table'].' as '.$alias;
         if (!empty($constraints)) {
@@ -172,10 +148,10 @@ class AutocompleteController
         }
         $sql .= ' order by '.$fieldName . ' LIMIT '.$maxNumResults;
 
-        return [
+        return array(
             "db" => \GCApp::getDataDB($catalog['catalog_path']),
             "query"=> $sql,
             "params" => $params
-        ];
+        );
     }
 }
