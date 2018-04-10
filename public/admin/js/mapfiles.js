@@ -19,14 +19,13 @@ $(document).ready(function() {
 		$(activeLinkContainer).append(loadingGif);
 		
 		var params = {
-			action: 'refresh',
 			target: $(this).attr('data-target'),
 			project: $('input#project').val(),
 			mapset: $(this).attr('data-mapset')
 		}
 		
 		$.ajax({
-			url: 'ajax/mapfiles.php',
+			url: '../services/refresh_mapfile',
 			type: 'POST',
 			dataType: 'json',
 			data: params,
