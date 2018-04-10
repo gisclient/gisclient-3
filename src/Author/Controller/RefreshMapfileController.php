@@ -12,7 +12,8 @@ class RefreshMapfileController
     /**
      * Refresh Mapfile
      */
-    public function refreshMapfileAction(Request $request) {
+    public function refreshMapfileAction(Request $request)
+    {
         $target = $request->request->get("target", null);
         $project = $request->request->get("project", null);
         $mapset = $request->request->get("mapset", null);
