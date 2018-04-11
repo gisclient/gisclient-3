@@ -36,7 +36,7 @@ class AutocompleteController
                 ),
                 $e->getStatusCode()
             );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return new JsonResponse(
                 array(
                     "result" => "error",
