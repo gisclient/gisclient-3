@@ -208,7 +208,14 @@ if($objRequest->getvaluebyname('layer')){
                     $oClass = $oLayer->getClass($clno);
                     $check = $oClass->getMetaData('gc_no_image');
                     if(!empty($check)) continue;
-                    $icoImg = $oClass->createLegendIcon($iconW,$iconH);
+					try {
+                    	$icoImg = $oClass->createLegendIcon($iconW,$iconH);
+					}
+					catch (Exception $e) {
+						$oMapTmp = $oMap->clone();
+						$oMapTmp->setSize($iconW,$iconH);
+						$icoImg =  $oMapTmp->prepareImage();
+					}
                     ob_start();
                     $icoImg->saveImage('');
                     $imageContent = ob_get_contents();
