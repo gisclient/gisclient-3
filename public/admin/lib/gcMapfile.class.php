@@ -44,7 +44,7 @@ class gcMapfile
     private $yCenter;
     private $msVersion;
     private $grids = array();
-    private $target = 'public';
+    private $target;
     private $iconSize = array(16,10);
     private $tinyOWSLayers = array();
 
@@ -52,14 +52,12 @@ class gcMapfile
     private $i18n;
     private $languageId;
     
-    public function __construct($languageId = null)
+    public function __construct($languageId = null, $target = 'public')
     {
         $this->db = GCApp::getDB();
         $this->languageId = $languageId;
         $this->msVersion = substr(ms_GetVersionInt(), 0, 1);
-        if (\GCService::instance()->get('save_to_tmp_map') === true) {
-            $this->target = 'tmp';
-        }
+        $this->target = $target;
     }
     
     public function __destruct()
@@ -72,10 +70,6 @@ class gcMapfile
     public function setIconSize($size)
     {
         $this->iconSize = $size;
-    }
-    public function setTarget($target)
-    {
-        $this->target = $target;
     }
 
     public function writeMap($keytype, $keyvalue)
@@ -124,11 +118,6 @@ class gcMapfile
             $filter = "project_name||'.'||theme_name||'.'||layergroup_name in (".$inQuery.")";
         }
         
-        if (!empty($this->languageId)) {
-          // inizializzo l'oggetto i18n per le traduzioni
-            $this->i18n = new GCi18n($projectName, $this->languageId);
-        }
-        
         $sql = "SELECT project_name, {$fieldsMapset}, base_url, max_extent_scale, project_srid, xc, yc, 
                        outputformat_mimetype, theme_title, theme_name, theme_single, layergroup_name, layergroup_title,
                        layergroup_id, layergroup_description, layergroup_maxscale, layergroup_minscale, isbaselayer,
@@ -163,6 +152,11 @@ class gcMapfile
         $this->projectSrid = $aLayer["project_srid"];
         $this->xCenter = $aLayer['xc'];
         $this->yCenter = $aLayer['yc'];
+
+        if (!empty($this->languageId)) {
+            // inizializzo l'oggetto i18n per le traduzioni
+              $this->i18n = new GCi18n($aLayer["project_name"], $this->languageId);
+          }
 
         //SCALA MASSIMA DEL PROGETTO
         $projectMaxScale = floatval($aLayer["max_extent_scale"])?floatval($aLayer["max_extent_scale"]):100000000;

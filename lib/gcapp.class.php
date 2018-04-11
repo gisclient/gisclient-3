@@ -330,8 +330,7 @@ class GCAuthor {
 		
 		$target = $publish ? 'public' : 'tmp';
 
-		$mapfile = new gcMapfile();
-		$mapfile->setTarget($target);
+		$mapfile = new gcMapfile(null, $target);
 		$mapfile->writeProjectMapfile = true;
 		$mapfile->writeMap("project",$project);
         
@@ -339,8 +338,7 @@ class GCAuthor {
 		$alternativeLanguages = $localization->getAlternativeLanguages();
 		if($alternativeLanguages){
 			foreach($alternativeLanguages as $languageId => $foo) {
-				$mapfile = new gcMapfile($languageId);
-				$mapfile->setTarget($target);
+				$mapfile = new gcMapfile($languageId, $target);
 				$mapfile->writeMap('project', $project);
 			}
 		}
@@ -372,18 +370,24 @@ class GCAuthor {
 		require_once ADMIN_PATH.'lib/spyc.php';		
 		require_once ADMIN_PATH.'lib/gcFeature.class.php';
 		require_once ADMIN_PATH.'lib/gcMapfile.class.php';
-		require_once ROOT_PATH."lib/i18n.php";
-		
-		$target = $publish ? 'public' : 'tmp';
+        require_once ROOT_PATH."lib/i18n.php";
+        
+        $target = $publish ? 'public' : 'tmp';
+        
+        if (!GCAuthor::hasProject($project)) {
+            throw new Exception ("Project '$project' does not exist.");
+        }
 
-		$mapfile = new gcMapfile();
-		$mapfile->setTarget($target);
+        if (!GCAuthor::hasProjectWithMapset($project, $mapset)) {
+            throw new Exception ("Project '$project' does not have a mapset named '$mapset'.");
+        }
+
+		$mapfile = new gcMapfile(null, $target);
 		$mapfile->writeMap("mapset",$mapset);
         
         if ($refreshLayerMapfile) {
             foreach(GCAuthor::getLayerList($project, $mapset) as $mapsetData) {
-                $mapfile = new gcMapfile();
-                $mapfile->setTarget('layer');
+                $mapfile = new gcMapfile(null, "layer");
                 $mapfile->writeMap('layer', "{$mapset}.{$mapsetData['feature_type']}");
             }
         }
@@ -392,14 +396,12 @@ class GCAuthor {
 		$alternativeLanguages = $localization->getAlternativeLanguages();
 		if($alternativeLanguages){
 			foreach($alternativeLanguages as $languageId => $foo) {
-				$mapfile = new gcMapfile($languageId);
-				$mapfile->setTarget($target);
+				$mapfile = new gcMapfile($languageId, $target);
 				$mapfile->writeMap('mapset', $mapset);
                 
                 if ($refreshLayerMapfile) {
                     foreach(GCAuthor::getLayerList($project, $mapset) as $mapsetData) {
-                        $mapfile = new gcMapfile();
-                        $mapfile->setTarget('layer');
+                        $mapfile = new gcMapfile($languageId, "layer");
                         $mapfile->writeMap('layer', "{$mapset}.{$mapsetData['feature_type']}");
                     }
                 }
@@ -567,7 +569,16 @@ class GCAuthor {
 		if(defined('TAB_DIR')) $rel_dir="config/tab/".TAB_DIR."/";
 		return $rel_dir;
 	}
-	
+
+    public static function getProjects() {
+		$db = GCApp::getDB();
+		$sql = "select project_name, project_title from ".DB_SCHEMA.".project";
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
+		$projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $projects;
+    }
+
 	public static function getMapsets($project) {
 		$db = GCApp::getDB();
 		
@@ -584,7 +595,34 @@ class GCAuthor {
 		unset($mapset);
 		
 		return $mapsets;
-	}
+    }
+
+    public static function hasProject($project) {
+        $db = GCApp::getDB();
+
+        $sql = "SELECT true
+                FROM ".DB_SCHEMA.".project
+                WHERE project_name = :project";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array("project" => $project));
+
+        return $stmt->fetchColumn();
+    }
+    
+    public static function hasProjectWithMapset($project, $mapset) {
+        $db = GCApp::getDB();
+
+        $sql = "SELECT true
+                FROM ".DB_SCHEMA.".mapset
+                WHERE project_name = :project AND mapset_name = :mapset";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(
+            "project" => $project,
+            "mapset" => $mapset,
+        ));
+
+        return $stmt->fetchColumn();
+    }
 	
     /**
      * Return the list of layers fo the given project

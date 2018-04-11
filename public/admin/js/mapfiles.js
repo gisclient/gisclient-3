@@ -19,37 +19,31 @@ $(document).ready(function() {
 		$(activeLinkContainer).append(loadingGif);
 		
 		var params = {
-			action: 'refresh',
 			target: $(this).attr('data-target'),
 			project: $('input#project').val(),
 			mapset: $(this).attr('data-mapset')
 		}
 		
 		$.ajax({
-			url: 'ajax/mapfiles.php',
+			url: '../services/refresh_mapfile',
 			type: 'POST',
 			dataType: 'json',
 			data: params,
 			success: function(response) {
 				$(activeLink).show();
 				$('img', activeLinkContainer).remove();
-				if(typeof(response) != 'object' || typeof(response.result) == 'undefined') {
-					return alert('Error');
-				}
-				if(response.result != 'ok') {
-					if(response.result == 'error' && typeof(response.error) == 'object' && typeof(response.error.type) != 'undefined' && response.error.type == 'mapfile_errors') {
-						$('#error_dialog').html(response.error.text);
-						$('#error_dialog').dialog({
-							title: 'Error'
-						});
-						return;
-					}
-					return alert('Error');
+				if (typeof response !== 'object' || typeof response.result === 'undefined' || response.result !== 'ok') {
+					alert('Error');
 				}
 			},
-			error: function() {
+			error: function(response) {
 				$(activeLink).show();
-				$('img', activeLinkContainer).remove();
+                $('img', activeLinkContainer).remove();
+                if (response.result === 'error' && typeof response.error !== 'undefined') {
+                    $('#error_dialog').html(response.error.replace(/\n/g, "<br>"));
+                    $('#error_dialog').dialog({title: 'Error'});
+                    return;
+                }
 				alert('Error');
 			}
 		});

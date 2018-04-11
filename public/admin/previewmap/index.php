@@ -16,8 +16,7 @@ $db = GCApp::getDB();
 if(empty($_REQUEST['layergroup_id'])) die("Missing required parameter 'layergroup_id'");
 $layergroupId = (int)$_REQUEST['layergroup_id'];
 
-$mapfile = new gcMapfile();
-$mapfile->setTarget("tmp");
+$mapfile = new gcMapfile(null, "tmp");
 $tmpMap = $mapfile->writeMap("layergroup",$layergroupId);
 
 $sql = "select project_name, theme_name, project_srid, xc, yc, max_extent_scale, layergroup_name, layergroup_title, sld ".

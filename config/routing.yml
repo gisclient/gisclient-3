@@ -16,6 +16,11 @@ gcmapConfig:
     path: gcmapconfig.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapConfigAction }
 
+refreshMapfile:
+    path: refresh_mapfile
+    defaults: { _controller: GisClient\Author\Controller\RefreshMapfileController::refreshMapfileAction }
+    methods: [POST]
+
 ## Saved filter routes
 getAllSavedFilter:
     path: saved_filter/{mapset}
