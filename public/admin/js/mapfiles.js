@@ -32,23 +32,18 @@ $(document).ready(function() {
 			success: function(response) {
 				$(activeLink).show();
 				$('img', activeLinkContainer).remove();
-				if(typeof(response) != 'object' || typeof(response.result) == 'undefined') {
-					return alert('Error');
-				}
-				if(response.result != 'ok') {
-					if(response.result == 'error' && typeof(response.error) == 'object' && typeof(response.error.type) != 'undefined' && response.error.type == 'mapfile_errors') {
-						$('#error_dialog').html(response.error.text);
-						$('#error_dialog').dialog({
-							title: 'Error'
-						});
-						return;
-					}
-					return alert('Error');
+				if (typeof response !== 'object' || typeof response.result === 'undefined' || response.result !== 'ok') {
+					alert('Error');
 				}
 			},
-			error: function() {
+			error: function(response) {
 				$(activeLink).show();
-				$('img', activeLinkContainer).remove();
+                $('img', activeLinkContainer).remove();
+                if (response.result === 'error' && typeof response.error !== 'undefined') {
+                    $('#error_dialog').html(response.error);
+                    $('#error_dialog').dialog({title: 'Error'});
+                    return;
+                }
 				alert('Error');
 			}
 		});
