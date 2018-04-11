@@ -352,6 +352,9 @@ class GCAuthor {
      * @param bool $refreshLayerMapfile     If true, generate alse one mapfile for each layer (like layer.layer_group.layer)
      */
 	public static function refreshMapfiles($project, $publish = false, $refreshLayerMapfile = false) {
+        if (!GCAuthor::hasProject($project)) {
+            throw new Exception ("Project '$project' does not exist.");
+        }
         foreach(GCAuthor::getMapsets($project) as $mapset) {
             GCAuthor::refreshMapfile($project, $mapset['mapset_name'], $publish, $refreshLayerMapfile);
         }
