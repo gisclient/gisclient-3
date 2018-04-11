@@ -43,7 +43,7 @@ class RefreshMapfileController
             }
             $errors = \GCError::get();
             if (!empty($errors)) {
-                throw new \Exception("GCErrors: " . implode("\n", $errors));
+                throw new \Exception("GCErrors:\n" . implode("\n", $errors));
             }
             return new JsonResponse(array(
                 "result" => "ok",

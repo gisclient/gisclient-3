@@ -40,7 +40,7 @@ $(document).ready(function() {
 				$(activeLink).show();
                 $('img', activeLinkContainer).remove();
                 if (response.result === 'error' && typeof response.error !== 'undefined') {
-                    $('#error_dialog').html(response.error);
+                    $('#error_dialog').html(response.error.replace(/\n/g, "<br>"));
                     $('#error_dialog').dialog({title: 'Error'});
                     return;
                 }
