@@ -169,10 +169,10 @@ abstract class AbstractUser {
 			}
 			// create arrays if not exists
 			if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
-			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array();
+			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("minScale"=>null, "maxScale"=>null);
 			if($row['layergroup_single']==1) {
                 if (count($this->mapLayers[$row['theme_name']][$row['layergroup_name']]) === 0) {
-                    $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("name" => $row['layergroup_name'], "title" => $row['layergroup_title'], "grouptitle" => $row['layergroup_title']);
+                    $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("name" => $row['layergroup_name'], "title" => $row['layergroup_title'], "grouptitle" => $row['layergroup_title'], "minScale"=>null, "maxScale"=>null);
                     if ($row['minscale']) {
                         $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'] = floatval($row['minscale']);
                     }
