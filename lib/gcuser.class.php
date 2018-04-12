@@ -169,10 +169,10 @@ abstract class AbstractUser {
 			}
 			// create arrays if not exists
 			if(!isset($this->mapLayers[$row['theme_name']])) $this->mapLayers[$row['theme_name']] = array();
-			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("minScale"=>null, "maxScale"=>null);
+			if(!isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']])) $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array();
 			if($row['layergroup_single']==1) {
                 if (count($this->mapLayers[$row['theme_name']][$row['layergroup_name']]) === 0) {
-                    $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("name" => $row['layergroup_name'], "title" => $row['layergroup_title'], "grouptitle" => $row['layergroup_title'], "minScale"=>null, "maxScale"=>null);
+                    $this->mapLayers[$row['theme_name']][$row['layergroup_name']] = array("name" => $row['layergroup_name'], "title" => $row['layergroup_title'], "grouptitle" => $row['layergroup_title']);
                     if ($row['minscale']) {
                         $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'] = floatval($row['minscale']);
                     }
@@ -182,7 +182,7 @@ abstract class AbstractUser {
                 }
                 else {
                     if ($row['minscale']) {
-                        if ($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale']) {
+                        if (isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'])) {
                             $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'] = min(floatval($row['minscale']), $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale']);
                         }
                         else {
@@ -190,7 +190,7 @@ abstract class AbstractUser {
                         }
                     }
                     if ($row['maxscale']) {
-                        if ($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale']) {
+                        if (isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'])) {
                             $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'] = max(floatval($row['maxscale']), $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale']);
                         }
                         else {
