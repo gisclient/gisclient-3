@@ -352,7 +352,7 @@ class GCAuthor {
       $xmax = $choordsArray[2] - (($choordsArray[2] - $choordsArray[0])/4);
       $ymin = $choordsArray[1] + (($choordsArray[3] - $choordsArray[1])/4);
       $ymax = $choordsArray[3] - (($choordsArray[3] - $choordsArray[1])/4);
-      return [$xmin, $ymin, $xmax, $ymax];
+      return array($xmin, $ymin, $xmax, $ymax);
     }
 
     public static function buildFeatureQuery($aFeature, array $options = array()) {
