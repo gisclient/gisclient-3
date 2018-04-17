@@ -1205,8 +1205,8 @@ class gcMap{
         print_debug($sql, null, 'mapoptions');
         if ($row['mapset_scales'] != '') {
             $ret = preg_split("/[" . $this->coordSep . "]+/", $row['mapset_scales']);
-        } else if (defined('SCALE')) {
-            $ret = preg_split("/[" . $this->coordSep . "]+/", SCALE);
+        } else if (defined('DEFAULT_SCALE_LIST')) {
+            $ret = preg_split("/[" . $this->coordSep . "]+/", DEFAULT_SCALE_LIST);
         } else {
             $ret = GCAuthor::$defaultScaleList;
         }

@@ -21,7 +21,7 @@ else
 if(!$closing) {
   $user = new GCUser();
   $user->setAuthorizedLayers(array('theme_name'=>$mapConfig['theme_name']));
-  $scales = explode(',',SCALE);
+  $scales = preg_split('/[\s]+/',DEFAULT_SCALE_LIST);
   $resolutions = array();
   foreach($scales as $scale) {
     if($scale > $mapConfig['max_extent_scale']) continue;
