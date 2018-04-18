@@ -1224,7 +1224,7 @@ class gcMap{
         if (isset($mapsetScales)) { //TODO
             $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
             foreach ($v as $key => $value) {
-                $aRes[$key] = round((real) $value, $precision);
+                $aRes[$key] = round((float) $value / $convFact, $precision);
             }
             if (isset($tilesExtent)) {
                 $v = preg_split("/[" . $this->coordSep . "]+/", $tilesExtent);

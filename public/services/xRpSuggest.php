@@ -125,7 +125,7 @@ if(!empty($filters)) {
     $sqlQuery .= ' where '.implode(' and ', $filters);
 }
 
-$sqlQuery .= " order by ".$fieldName." limit 25";
+$sqlQuery .= " order by ".$fieldName." limit 50";
 
 print_debug($sqlQuery, null, 'xsuggest');
 
