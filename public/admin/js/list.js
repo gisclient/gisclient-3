@@ -1,7 +1,8 @@
-function GCList(field, multipleSelection, uploadFile) {
+function GCList(field, multipleSelection, uploadFile, refreshParent = false) {
     this.field = field;
     this.multipleSelection = multipleSelection;
     this.uploadFile = uploadFile;
+    this.refreshParent = refreshParent;
     this.dialogId = 'list_dialog';
     this.options = {};
     this.urls = {
@@ -174,10 +175,12 @@ function GCList(field, multipleSelection, uploadFile) {
                                 $('#' + key).val(val);
                             });
                             dialogElement.dialog('close');
-                            //questa istruzione funziona solo nel caso in cui openList venga invocato
-                            //a livello di configurazione layer. Negli altri casi non fa danni. - MZ
-                            var input = $("<input>").attr("type", "hidden").attr("name", "reloadFields").val("true");
-                            $('#frm_data').append($(input));
+                            //questa istruzione funziona solo nel caso openListAndRefreshEntity venga invocato
+                            //a livello di configurazione layer. Negli altri casi non ci entra... - MZ
+                            if(self.refreshParent) {
+                              var input = $("<input>").attr("type", "hidden").attr("name", "reloadFields").val("true");
+                              $('#frm_data').append($(input));
+                            }
                         } else {
                             self.currentStep += 1;
                             self.selectedData.step = self.currentStep;
@@ -233,18 +236,26 @@ function getSelectedField(txt_field) {
     return selectedField;
 }
 
-function openList(txt_field, data) {
-    var selectedField = getSelectedField(txt_field);
+function openListAndRefreshEntity(txt_field, data) {
+  genericOpenList(txt_field, data, true);
+}
 
+function openList(txt_field, data) {
+  genericOpenList(txt_field, data);
+}
+
+function genericOpenList(txt_field, data, refresh = false) {
+    var selectedField = getSelectedField(txt_field);
     $('#list_dialog').dialog({
         width: 500,
         height: 350,
         title: '',
         open: function () {
-            var list = new GCList(selectedField, false, false);
+            var list = new GCList(selectedField, false, false, refresh);
             list.loadList(list.getParams(data));
         }
     });
+
 }
 
 function openFileTree(txt_field, data, multipleSelection = false, uploadFile = false) {
