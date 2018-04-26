@@ -183,6 +183,12 @@ function GCList(field, multipleSelection, uploadFile, refreshParent = false) {
                             }
                         } else {
                             self.currentStep += 1;
+                            if(self.selectedData.directory != undefined && self.selectedData.directory.endsWith("../")) {
+                              var navDir = self.selectedData.directory.replace("../","");
+                              var index = (navDir.substr(0, navDir.length -1 )).lastIndexOf("/");
+                              var back = navDir.substr(0, index + 1);
+                              self.selectedData.directory = (back != "") ? back : undefined;
+                            }
                             self.selectedData.step = self.currentStep;
                             self.loadList(self.selectedData);
                         }
@@ -312,7 +318,7 @@ function buildSelector(response, obj, directory, id) {
         html += "<li><span class='folder'>";
         html += (obj.multipleSelection ? "<input type=\"checkbox\" id=\"p_ckb_"+directoryForCheckbox(rowData['directory'])+"\">" : "");
         html += directoryForTreeOutput(rowData['directory'])+"</span>";
-        html += ajaxBuildSelector(obj, $.extend({}, obj.selectedData, obj.listData[rowId]), buildSelector);
+        html += ajaxBuildSelector(obj, $.extend({}, obj.selectedData, obj.listData[rowId]));
         html += "</li>";
       } else if(rowData[obj.field] != undefined && rowData[obj.field]!= null) {
         var check = fieldContainsString($("#"+obj.field).val(), directory+rowData[obj.field]);

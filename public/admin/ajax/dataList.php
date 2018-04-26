@@ -44,12 +44,10 @@ switch($catalogData["connection_type"]){
 			$baseDir = $projectPath.$baseDir;
 		}
 		$navDir = '';
-		if(!empty($_REQUEST['directory'])) { // siamo in una sottocartella, includi anche il back
+        if(!empty($_REQUEST['directory'])) { // siamo in una sottocartella, includi anche il back
           $navDir = $_REQUEST['directory'];
           $result['data'][$n] = array('file'=>'..');
-          $index = strrpos(substr($navDir, 0, strlen($navDir)-1 ), "/");
-          $back = ($index != FALSE) ? substr($navDir, 0, $index + 1) : "";
-		  $result['data_objects'][$n] = array('directory'=> $back);
+		  $result['data_objects'][$n] = array('directory'=>$navDir.'../');
 		  $n++;
         }
 		$sourceDir = $baseDir . $navDir;
