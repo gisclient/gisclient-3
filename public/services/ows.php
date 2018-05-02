@@ -87,6 +87,17 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
         // in the ZIP archive
         $objRequest->setParameter('format', 'kml');
     }
+
+    if ($objRequest->getValueByName('version') === '1.3.0') {
+        $crs = $objRequest->getValueByName('crs');
+        $crsParts = explode(':', $crs);
+        if (in_array($crsParts[1], $invertedAxisOrderSrids)) {
+            // inverted bbox axis
+            $bbox = explode(',', $objRequest->getValueByName('bbox'));
+            $bboxString = "{$bbox[1]},{$bbox[0]},{$bbox[3]},{$bbox[2]}";
+            $objRequest->setParameter('bbox', $bboxString);
+        }
+    }
 } elseif (strtolower($objRequest->getValueByName('service')) == 'wfs') {
     $parameterName = 'TYPENAME';
     $layersParameter = $objRequest->getValueByName('typename');
