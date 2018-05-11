@@ -43,8 +43,10 @@ if(!empty($_REQUEST['logout'])) {
     die();
 }
 
+$message = "";
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $user->login($_POST['username'], md5($_POST['password']));
+    if(!$user->login($_POST['username'], md5($_POST['password'])))
+      $message =  GCAuthor::t('failed_login');;
 }
 
 

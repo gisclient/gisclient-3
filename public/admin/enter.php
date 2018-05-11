@@ -49,7 +49,7 @@
 		<form action="<?php echo $_SERVER["PHP_SELF"]?>" method="post" class="riquadro" id="frm_enter" onsubmit="">
 			<div class="formRow">
 				<label>&nbsp;</label>
-				<?php if (isset($message)) echo "<span class=\"alert\">".$message."</span>";?>
+				<?php if (!empty($message)) echo "<span class=\"alert\">".$message."</span>";?>
 			</div>
 			<div class="formRow">
 				<label>Utente:</label>

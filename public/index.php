@@ -16,9 +16,10 @@ if(!empty($_REQUEST["logout"])) {
     echo '<html><meta http-equiv="refresh" content="0;url=/gisclient3/session.php"></html>';
     die();
 }
-
+$message = "";
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    $user->login($_POST['username'], md5($_POST['password']));
+    if(!$user->login($_POST['username'], md5($_POST['password'])))
+      $message =  GCAuthor::t('failed_login');
 }
 $db = GCApp::getDB();
 $dbSchema=DB_SCHEMA;
@@ -157,15 +158,10 @@ else{
 	<div class="ui-layout-east" id="container_login2">
 		<h2><?php echo $logTitle;?></h2>
 		<form action="<?php echo $_SERVER["PHP_SELF"]?>" method="post" class="riquadro" id="frm_enter" onsubmit="">
-			<?php
-			/*
-			messaggio di errore login?
-			
 			<div class="formRow">
 				<label>&nbsp;</label>
-				<?php if (isset($message)) echo "<span class=\"alert\">".$message."</span>";?>
-			</div>*/
-			?>
+				<?php if (!empty($message)) echo "<span class=\"alert\">".$message."</span>";?>
+			</div>
 			<div class="formRow">
 				<label><?php echo GCAuthor::t('Username'); ?>:</label>
 				<input name="username" type="text" id="username" value="" tabindex=1 <?php echo $usrEnabled?>>

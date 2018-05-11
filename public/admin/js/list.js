@@ -256,6 +256,7 @@ function genericOpenList(txt_field, data, refresh = false) {
         width: 500,
         height: 350,
         title: '',
+        modal: true,
         open: function () {
             var list = new GCList(selectedField, false, false, refresh);
             list.loadList(list.getParams(data));
@@ -271,6 +272,7 @@ function openFileTree(txt_field, data, multipleSelection = false, uploadFile = f
     width: 500,
     height: 350,
     title: '',
+    modal: true,
     open: function () {
       list.loadStructuredList(list.getParams(data));
     }
