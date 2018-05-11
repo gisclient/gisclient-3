@@ -139,6 +139,8 @@ class printDocument {
             $this->documentElements['map-scale'] = $_REQUEST['scale'];
         if (!empty($_REQUEST['date']))
             $this->documentElements['map-date'] = $_REQUEST['date'];
+        else
+            $this->documentElements['map-date'] = date("Y/m/d");
         if(!empty($_REQUEST['northArrow']) && $_REQUEST['northArrow'] != 'null') {
             $this->documentElements['north-arrow'] = GC_PRINT_TPL_URL.$_REQUEST['northArrow'];
         }

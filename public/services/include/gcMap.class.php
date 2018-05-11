@@ -386,11 +386,11 @@ class gcMap{
             //ALLA ROVESCIA RISPETTO A MAPSERVER
             if($row["layergroup_maxscale"]>0)
                 $layerOptions["minScale"] = floatval($row["layergroup_maxscale"]);
-            else if ($userLayers[$themeName][$layergroupName]['maxScale']>0)
+            else if (isset($userLayers[$themeName][$layergroupName]['maxScale']) && $userLayers[$themeName][$layergroupName]['maxScale']>0)
                 $layerOptions["minScale"] = $userLayers[$themeName][$layergroupName]['maxScale'];
             if($row["layergroup_minscale"]>0)
                 $layerOptions["maxScale"] = floatval($row["layergroup_minscale"]);
-            else if ($userLayers[$themeName][$layergroupName]['minScale']>0)
+            else if (isset($userLayers[$themeName][$layergroupName]['minScale']) && $userLayers[$themeName][$layergroupName]['minScale']>0)
                 $layerOptions["maxScale"] = $userLayers[$themeName][$layergroupName]['minScale'];
 
             switch ($layerType) {
@@ -614,6 +614,7 @@ class gcMap{
                     $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
                     $layerOptions["type"] = empty($row["layers"]) ? "null" : $row["layers"];
                     $layerOptions["minZoomLevel"] = $this->levelOffset;
+                    $layerOptions["useTiltImages"] = false;
                     if ($layerOptions["type"] == "terrain")
                         $layerOptions["maxZoomLevel"] = 15;
 
@@ -1220,6 +1221,7 @@ class gcMap{
         $convFact = GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;
         $precision = $this->mapsetUM == "dd" ? 10 : 2;
         $aRes = array();
+        ini_set('precision', 24); // your precision
 
         if (isset($mapsetScales)) { //TODO
             $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
@@ -1237,7 +1239,7 @@ class gcMap{
             if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                 $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
                 for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev) {
-                    $aRes[] = number_format((float)(GOOGLE_MAX_RESOLUTION / pow(2, $lev)), 17);
+                    $aRes[] = (float)(GOOGLE_MAX_RESOLUTION / pow(2, $lev));
                 }
             } else {
                 if (isset($mapsetScales)) {
