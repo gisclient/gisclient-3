@@ -36,3 +36,12 @@
   border: 1px solid black;
   padding: 1px;
 }
+
+.radioDivDisabled {
+  color: darkgray;
+  font-style: italic;
+}
+
+#selEntityMassiveDiv {
+  height: 20px;
+}

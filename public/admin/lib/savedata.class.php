@@ -61,7 +61,7 @@ Class saveData{
 			return;
 		}
 		else{
-			$this->_getConfig($this->conf_dir.$config_file,$arr_dati["pkey"],(isset($arr_dati["pkey_value"]))?$arr_dati["pkey_value"]:null);
+            $this->_getConfig($this->conf_dir.$config_file,$arr_dati["pkey"],(isset($arr_dati["pkey_value"]))?$arr_dati["pkey_value"]:null);
 			$this->newId=(isset($arr_dati["dataction"]))?$arr_dati["dataction"]["new"]:null;
 			$this->oldId=(isset($arr_dati["dataction"]))?$arr_dati["dataction"]["old"]:null;
 			$this->parent_flds=((count($arr_dati["parametri"])-2)<0)?(Array()):($arr_dati["parametri"][count($arr_dati["parametri"])-2]);
@@ -94,7 +94,25 @@ Class saveData{
 		}
 		
 		switch($this->action){
-			case "classifica":
+            case "massive":
+              $sql = "UPDATE ".$this->schema.".".$this->data["entityName"]." SET ".$this->data["entityAttribute"]."='".$this->data["attributeValue"]."'";
+              $sql .= " WHERE ";
+              $currKey = $this->primary_keys[$this->data["searchName"]];
+              $flt = array();
+              $indexes = explode(" ", $this->data["searchIndex"]);
+              for($i = 0; $i < count($currKey); $i++)
+                $flt[] = $currKey[$i]."='".$indexes[$i]."'";
+              $sql .= implode(" AND ",$flt);
+              print_debug($sql,null,"save.class");
+			  try {
+			    $stmt = $this->db->prepare($sql);
+				$stmt->execute();
+			  } catch (Exception $e) {
+			    GCError::registerException($e);
+				$this->hasErrors=true;
+			  }
+              break;
+            case "classifica":
 				$p->mode=$p->arr_mode["list"];
 				return $p;
 				break;
