@@ -1238,7 +1238,11 @@ class gcMap{
             //se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
             if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                 $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
-                for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev) {
+                if(defined('SERVICE_MAX_ZOOM_LEVEL'))
+                    $maxZoomLevel = SERVICE_MAX_ZOOM_LEVEL;
+                else
+                    $maxZoomLevel = GOOGLE_MAX_ZOOM_LEVEL;
+                for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= $maxZoomLevel; ++$lev) {
                     $aRes[] = (float)(GOOGLE_MAX_RESOLUTION / pow(2, $lev));
                 }
             } else {
@@ -1270,7 +1274,7 @@ class gcMap{
         }
         $this->levelOffset = $minIndex;
         $this->scaleListResolutions = $aRes;
-        $this->mapResolutions = array_slice($aRes, $minIndex, $maxIndex);
+        $this->mapResolutions = array_slice($aRes, $minIndex, $maxIndex-$minIndex+1);
     }
 
     function _getProjInfo() {
