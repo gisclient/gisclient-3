@@ -94,6 +94,40 @@ $onlineResource = $url.'?map='.$mapfile;
 $oMap->setMetaData("ows_onlineresource",$onlineResource);
 
 
+/*
+	FILTRO SUL MAPSET PER LA VERSIONE 7 DI MAPSERVER
+	TODO AGGIUNGERE CODICE PER VERSIONE 6 USANDO SET FILTER
+	DEVE ESISTERE IL CAMPO METADATA NEL MAPSET E CONTENERE UNA STRINGA DI QUESTO TIPO:
+	"mapset_filter" "nomefile like 'E463_000100%'"
+*/
+$mapsetFilter = $oMap->getMetaData("mapset_filter");
+
+if ($mapsetFilter){
+
+	$allLayers=$oMap->getAllLayerNames();
+	for ($j=0;$j<count($allLayers);$j++){
+
+		$oLayer =$oMap->getLayerByName($allLayers[$j]);
+		$flag=1;
+		//Filtri per la versione 7
+		$pp = $oLayer->getProcessing();
+		for ($i=0;$i<count($pp);$i++){
+			if(strpos($pp[$i],"_FILTER")>0){
+				$flag=0;
+				$pp[$i]=$pp[$i] . " AND " . $mapsetFilter;
+			}
+		}
+		if ($flag) $pp[]="NATIVE_FILTER=" . $mapsetFilter;
+
+		$oLayer->clearProcessing();
+		for ($i=0;$i<count($pp);$i++){
+			$oLayer->setProcessing($pp[$i]);
+		}
+	}
+
+}
+
+
 if(!empty($_REQUEST['GCFILTERS'])){
 
 	$v = explode(',',stripslashes($_REQUEST['GCFILTERS']));

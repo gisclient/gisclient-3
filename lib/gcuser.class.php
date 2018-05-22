@@ -182,7 +182,7 @@ abstract class AbstractUser {
                 }
                 else {
                     if ($row['minscale']) {
-                        if ($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale']) {
+                        if (isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'])) {
                             $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'] = min(floatval($row['minscale']), $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale']);
                         }
                         else {
@@ -190,7 +190,7 @@ abstract class AbstractUser {
                         }
                     }
                     if ($row['maxscale']) {
-                        if ($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale']) {
+                        if (isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'])) {
                             $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'] = max(floatval($row['maxscale']), $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale']);
                         }
                         else {
