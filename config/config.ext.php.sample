@@ -1,0 +1,6 @@
+//sistemo qui tutte le variabili che hanno necessità di essere rese disponibili
+//anche a livello del client
+<?php
+define('GMAPURL',(empty($_SERVER['HTTPS']) ? 'http' : 'https').'://maps.googleapis.com/maps/api/js?key='.GMAPKEY);
+define('PAGE_TOOLS', "StreetViewControl");
+?>

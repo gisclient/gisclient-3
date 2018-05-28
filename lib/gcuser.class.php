@@ -7,6 +7,10 @@ abstract class AbstractUser {
     protected $adminUsername = SUPER_USER;
     protected $authorizedLayers = array();
     protected $mapLayers = array();
+    protected $defaultClientComponents = array("StreetViewControl:1:alone", "LayerTreeButton:1:data",
+                                               "QueryControl:2:data", "PrintControl:1:zprint", "ReferenceMapControl:2:zprint");
+    protected $loggedClientComponents = array("ReportControl:3:data", "MeasureControl:1:tools", "GeoNoteControl:2:tools",
+                                              "PipeSelectControl:3:tools");
 
 
     function __construct(array $options = array()) {
@@ -214,6 +218,27 @@ abstract class AbstractUser {
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->mapLayers;
 	}
+	
+    public function getClientConfiguration() {
+      if($this->isAdmin()) {
+        return array("CLIENT_COMPONENTS" => array_merge($this->defaultClientComponents, $this->loggedClientComponents));
+      } else if(!empty($this->groups)){
+        $db = GCApp::getDB();
+        /* Create a string for the parameter placeholders filled to the number of params */
+        $place_holders = implode(',', array_fill(0, count($this->groups), '?'));
+        $sql = "select key, value from ".DB_SCHEMA.".group_properties where groupname in($place_holders)";
+        $stmt = $db->prepare($sql);
+		$stmt->execute($this->groups);
+        $result = array();
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          if(!empty($row['value'])) {
+            $arrValue = explode(",",$row['value']);
+            $result[$row['key']] = array_unique(array_merge(array_key_exists($row['key'], $result) ? $result[$row['key']] : array(), $arrValue));
+          }
+        }
+        return $result;
+      }
+    }
 
 	public function saveUserOption($key, $value) {
 		$db = GCApp::getDB();

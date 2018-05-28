@@ -86,3 +86,6 @@ constant = "'Utenti del Progetto'"
 constant = "'Lingue del Progetto'"
 [field_groups]
 constant = "'Autorizzazioni sui campi del modello di ricerca'"
+[group_properties]
+standard = "key"
+constant = "'Nuova proprietà di gruppo'"

@@ -144,4 +144,9 @@
 		<pkey>groupname</pkey>
 		<parent>field</parent>
 	</field_groups>
+	<group_properties>
+      <table>group_properties</table>
+      <pkey>group_properties_id</pkey>
+      <parent>groups</parent>
+    </group_properties>
 </root>
