@@ -55,38 +55,58 @@ function GCMassive(level, currentId) {
     var html = "<hr>"
         + "<div class=\"copyDivLeft\">Oggetto Selezionato:</div><div id=\"selEntityMassiveDiv\" class=\"copyDivRight\">nessun oggetto selezionato</div><div style=\"clear: both;\"/>"
         + "<div class=\"copyDivLeft\">Campo Selezionato:</div><div class=\"copyDivRight\"><select id=\"workingField\">"+this.emptyOption+"</select></div><div style=\"clear: both;\"/>"
-        + "<div class=\"copyDivLeft\">Nuovo Valore:</div><div class=\"copyDivRight\"><input disabled type=\"text\" id=\"newVal\"/></div><div style=\"clear: both;\"/>"
-        + "<div class=\"divButton\"><button style=\"display: none;\" id=\"massiveUpdate\">Modifica</button></div>";
+        + "<div class=\"copyDivLeft\">Nuovo Valore:</div><div class=\"copyDivRight\"><input class=\"textInput\" disabled type=\"text\" id=\"newVal\"/></div><div style=\"clear: both;\"/>"
+        + "<div class=\"copyDivLeft\">Condizioni aggiuntive:</div><div class=\"copyDivRight\"><textarea class=\"textInput\" disabled id=\"clause\" rows=\"4\" cols=\"50\"/></div><div style=\"clear: both;\"/>"
+        + "<div id=\"mexDiv\" style=\"text-align: right;\"></div>"
+        + "<div class=\"divButton\"><button class=\"massiveBtn\" style=\"display: none;\" id=\"massiveUpdate\">Modifica</button><button class=\"massiveBtn\" style=\"display: none;\" id=\"massivePreview\">Preview</button></div>"
+        + "<div id=\"tableResult\" style=\"max-height: 120px; overflow-y: auto; margin-top: 10px;\"></div>"
+        + "<div id=\"queryResult\"></div>";
+        
     $('#massive_dialog').append(html);
     $('#massive_dialog button[id="massiveUpdate"]').click(function(event) {
       event.preventDefault();
-      //recuperare id da ultima select oltre alla sua etichetta tabellare
-      //recuperare valore da campo attributo
-      //inviare tutto al server che produrrà un update
-      //self.massiveUpdate();
       $('#frm_data').append('<input type="hidden" name="dati[searchName]" value="'+self.searchName+'" />');
       $('#frm_data').append('<input type="hidden" name="dati[searchIndex]" value="'+self.selectedIndex+'" />');
-
       $('#frm_data').append('<input type="hidden" name="dati[entityName]" value="'+self.selectedTable+'" />');
       $('#frm_data').append('<input type="hidden" name="dati[entityAttribute]" value="'+$("#workingField option:selected").text()+'" />');
       $('#frm_data').append('<input type="hidden" name="dati[attributeValue]" value="'+$("#newVal").val()+'" />');
       $('#frm_data').append('<input type="hidden" name="azione" value="massive" />');
       $('#frm_data').submit();
     });
+    $('#massive_dialog button[id="massivePreview"]').click(function(event) {
+      self.showPreview();
+    });
     $('#workingField').change(function(){
       var condition = ($(this).val() == "-2");
-      $("#newVal").attr("disabled", condition);
+      $(".textInput").attr("disabled", condition);
       if(condition)
-        $("#newVal").val("");
+        $(".textInput").val("");
+      self.simulateQuery();
+    });
+    $("#clause").change(function(){
+      self.simulateQuery();
     });
     $("#newVal").change(function(){
-      $("#massiveUpdate").css("display", ($(this).val() == "") ? "none" : "");
+      if(!$("#clause").hasClass("wrongCondition"))
+        $("#massiveUpdate").css("display", ($(this).val() == "") ? "none" : "");
     });
   };
+  this.retrieveLastSelectedIndex = function(val, level) {
+    if(val != undefined && val != "-1")
+      return [val, level];
+    else if(level == this.level)
+      return [this.currentId, this.level];
+    else {
+      var selector = $("#massive_dialog select[name=\""+level+"\"]");
+      var parent = selector.attr("parent");
+      return this.retrieveLastSelectedIndex($("#massive_dialog select[name=\""+parent+"\"]").val(), parent);
+    }
+  };
   this.getFieldsForSelectedEntity = function(parent, level, val) {
-    this.selectedTable = level;
-    this.selectedIndex = (val == "-1") ? (level == this.level ? currentId : $("#massive_dialog select[name=\""+parent+"\"]:visible").val()) : val;
-    this.searchName = (val == "-1") ? parent : level;
+    this.selectedTable = level;//cerco gli attributi per lei
+    var arr = this.retrieveLastSelectedIndex(val, level);
+    this.selectedIndex = arr[0];
+    this.searchName = arr[1];
     var form = this;
     $.ajax({
       type: 'GET',
@@ -103,9 +123,10 @@ function GCMassive(level, currentId) {
         response.data.forEach(function(item,index){
           $('#workingField').append("<option value='"+item.column_name+"'>"+item.column_name+"</option>");
         });
-        $("#newVal").attr("disabled", true);
-        $("#newVal").val("");
-        $("#massiveUpdate").css("display", "none");
+        $(".textInput").attr("disabled", true);
+        $(".textInput").val("");
+        $("#mexDiv").empty();
+        $(".massiveBtn").css("display", "none");
       },
       error: function() {
         window.alert("Errore nel popolamento della form");
@@ -140,7 +161,7 @@ function GCMassive(level, currentId) {
 	      alert('Error');
           return;
         }
-        if(!jQuery.isEmptyObject(response.data)) {
+        if(!jQuery.isEmptyObject(response.data) || parentId == '-1') {
           $('#massive_dialog input:radio[value="'+level+'"]').attr('disabled',false);
           $('#massive_dialog div[id="'+level+'Div"]').removeClass("radioDivDisabled");
           $('#massive_dialog select[name="'+level+'"]').empty();
@@ -207,6 +228,76 @@ function GCMassive(level, currentId) {
     }
     html = "";
   };
+  this.simulateQuery = function() {
+    var form = this;
+    $.ajax({
+      type: 'GET',
+      url: form.url,
+      dataType: 'json',
+      data: {action:'simulate', searchName: form.searchName, id: form.selectedIndex, level: form.selectedTable, clause: $("#clause").val()},
+      success: function(response) {
+        $("#mexDiv").empty();
+        if(checkResponse(response)) {
+          $("#mexDiv").css("color", "red");
+	      $("#mexDiv").append("Condizioni di query errate: "+ response.error);
+	      $("#clause").addClass("wrongCondition");
+	      $(".massiveBtn").css("display", "none");
+          return;
+        }
+        var result = response.data[0].count;
+        $("#clause").removeClass("wrongCondition");
+        $("#mexDiv").css("color", "black");
+        $("#mexDiv").append("Numero elementi identificati: " + result);
+        $("#massivePreview").css("display", "");
+        $("#massiveUpdate").css("display", ($("#newVal").val() == "") ? "none" : "");
+      },
+      error: function(e) {
+        alert('Error ');
+      }
+    });
+  };
+  this.showPreview = function() {
+    var form = this;
+    $.ajax({
+      type: 'GET',
+      url: form.url,
+      dataType: 'json',
+      data: {action: 'preview', searchName: form.searchName, id: form.selectedIndex, level: form.selectedTable, clause: $("#clause").val(), field: $("#workingField option:selected").text()},
+      success: function(response) {
+        if(checkResponse(response)) {
+          window.alert("Condizioni di query errate. Impossibile procedere alla preview ");
+	      return;
+        }
+        // create table header
+        $("#tableResult").empty();
+        var html = '<table><tr>';
+        $.each(response.fields, function (fieldName, fieldTitle) {
+          html += '<th class="tableSelectorHeader">' + fieldTitle + '</th>';
+        });
+        html += '</tr>';
+        // add rows with symbols to table
+        $.each(response.data, function (rowId, rowData) {
+          html += '<tr data-row_id=' + rowId + '>';
+          $.each(response.fields, function (foo, fieldName) {
+            var index = fieldName.indexOf(".");
+            fieldName = fieldName.substring(index + 1);
+            if (typeof rowData[fieldName] === 'undefined' || rowData[fieldName] === null) {
+              html += '<td class="data-' + fieldName + ' tableSelectorRow"></td>';
+              return;
+            }
+            html += '<td class="data-' + fieldName + ' tableSelectorRow">' + rowData[fieldName] + '</td>';
+          });
+          html += '</tr>';
+        });
+        html += '</table>';
+        $("#tableResult").append(html);
+        $("#queryResult").append(response.sql);
+      },
+      error: function(e) {
+        alert('Error ');
+      }
+    });
+  }
 };
 
 function recalculateString(level) {
@@ -216,8 +307,9 @@ function recalculateString(level) {
   var currentLevel = $("#massive_dialog select[parent='"+level+"']:visible").attr("name")
   switch(startingValue) {
     case "-1":
-      result += "(tutti "+currentLevel+") ";
-      return result;
+      result += "(tutti "+currentLevel+") > ";
+      //return result;
+      break;
     case undefined:
     case "-2":
       return "";
@@ -242,8 +334,8 @@ function openMassive(currentLevel) {
   var currentName = $('#'+currentLevel+'_name').val();
   var currentId = $('input[name="'+currentLevel+'"]').val();
   $('#massive_dialog').empty().dialog({
-    width:750,
-    height:500,
+    width:800,
+    height:760,
     title: 'Modifica massiva. ' + currentLevel + ': ' + currentName,
     modal: true,
     open: function() {
