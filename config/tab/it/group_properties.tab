@@ -1,0 +1,28 @@
+[standard]
+table="group_properties"
+pkey = "group_properties_id"
+dato[] = "Proprietà;key;40;text"
+dato[] = "Valore<br><font size=1>(, carattere separatore per valori array)</font>;value;60x10;textarea"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina"
+
+[list]
+table="group_properties"
+pkey = "group_properties_id"
+dato[] = "Proprietà;key;30%#group_properties_id;goto"
+dato[] = "Valore;value;67%;text"
+dato[] = ";group_properties_id;1%;info"
+dato[] = ";group_properties_id;1%;edit"
+dato[] = ";group_properties_id;1%;delete"
+
+[title]
+edit="Modifica proprietà gruppo"
+view="Visualizza proprietà gruppo"
+new="Inserisci proprietà gruppo"
+list="Elenco proprietà gruppo"
+
+[menu]
+new = "Inserisci proprietà gruppo"
+standard="group_properties_id"
+
+[message]
+nodata = "Nessuna proprietà definita"

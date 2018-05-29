@@ -58,7 +58,7 @@ if (!$user->isAuthenticated()) {
 include ADMIN_PATH."lib/page.class.php";
 
 $param=array();
-$arr_action=Array("salva","aggiungi","cancella","elimina","genera mappa","copia","sposta");
+$arr_action=Array("salva","aggiungi","massive","cancella","elimina","genera mappa","copia","sposta");
 $arr_noaction=Array("chiudi","annulla","avvia importazione");
 if (!empty($_REQUEST["parametri"]))
 	$param=$_REQUEST["parametri"];
@@ -125,6 +125,7 @@ if(isset($p->parametri['project'])) {
 	<script type="text/javascript" src="js/i18n.js"></script>
 	<script type="text/javascript" src="js/list.js"></script>
 	<script type="text/javascript" src="js/copy.js"></script>
+	<script type="text/javascript" src="js/massive.js"></script>
 	<script type="text/javascript" src="js/mapfiles.js"></script>
 	<script type="text/javascript" src="js/administrator.js"></script>
 	<script type="text/javascript" src="js/layout.js"></script>

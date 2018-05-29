@@ -49,6 +49,7 @@
               </form>
             </div>
 			<div id="copy_dialog" style="display:none;"></div>
+			<div id="massive_dialog" style="display:none;"></div>
 			<div id="preview_map_dialog" style="display:none;"></div>
 			<div id="options_dialog" style="display:none;">
 				<form id="user_options">
