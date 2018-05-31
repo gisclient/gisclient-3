@@ -2,6 +2,7 @@
 
 include_once ADMIN_PATH."lib/export.php";
 require_once ADMIN_PATH."lib/functions.php";
+include_once ADMIN_PATH.'lib/gcLevels.class.php';
 
 Class saveData{
 	private $db=null;
@@ -95,14 +96,37 @@ Class saveData{
 		
 		switch($this->action){
             case "massive":
-              $sql = "UPDATE ".$this->schema.".".$this->data["entityName"]." SET ".$this->data["entityAttribute"]."='".$this->data["attributeValue"]."'";
-              $sql .= " WHERE ";
               $currKey = $this->primary_keys[$this->data["searchName"]];
-              $flt = array();
-              $indexes = explode(" ", $this->data["searchIndex"]);
+              $levelConfig = GCLevels::getConfig($this->data["entityName"]);
+              $indexes = explode(" ", $this->data[searchIndex]);
+              $selectedElement = $levelConfig['pkey'];
+              $sql = "UPDATE ".$this->schema.".".$this->data["entityName"]." SET ".$this->data["entityAttribute"]."='".$this->data["attributeValue"]."' WHERE ";
+              $sql .= $selectedElement." in (select ".$this->data["entityName"].".".$selectedElement." from ";
+              if(strcmp($this->data["searchName"],$this->data["entityName"])==0)
+                $sql .= DB_SCHEMA.".".$this->data["entityName"];
+              else {
+                $sql .= DB_SCHEMA.".".$this->data["entityName"]." ".$this->data["entityName"];
+                $aux = $this->data["entityName"];
+                $parents = array_reverse(GCLevels::getParents($this->data["entityName"]));
+                $fromCondition = "";
+                foreach ($parents as $singleParent) {
+                  $auxKey = $this->primary_keys[$singleParent];
+                  $fromCondition .= " join ".DB_SCHEMA.".".$singleParent." ".$singleParent." on (";
+                  foreach($this->primary_keys[$singleParent] as $singleKey)
+                    $fromCondition .= "$aux.$singleKey=$singleParent.$singleKey AND";
+                  $fromCondition = substr_replace($fromCondition, "", strrpos($fromCondition, "AND"), strlen("AND")).")";
+                  $aux=$singleParent;
+                  if(strcmp($singleParent, $this->data['searchName']) == 0)
+                    break;
+                }
+              }
+              $sql.= $fromCondition." where ";
               for($i = 0; $i < count($currKey); $i++)
-                $flt[] = $currKey[$i]."='".$indexes[$i]."'";
+                $flt[] = $this->data["searchName"].".".$currKey[$i]."='".$indexes[$i]."'";
               $sql .= implode(" AND ",$flt);
+              if(!empty($this->data["externalClause"]))
+                $sql .= " AND ".$this->data["externalClause"];
+              $sql .=")";
               print_debug($sql,null,"save.class");
 			  try {
 			    $stmt = $this->db->prepare($sql);
@@ -111,6 +135,7 @@ Class saveData{
 			    GCError::registerException($e);
 				$this->hasErrors=true;
 			  }
+              //print_r($sql);
               break;
             case "classifica":
 				$p->mode=$p->arr_mode["list"];

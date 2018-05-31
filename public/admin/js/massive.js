@@ -70,6 +70,7 @@ function GCMassive(level, currentId) {
       $('#frm_data').append('<input type="hidden" name="dati[entityName]" value="'+self.selectedTable+'" />');
       $('#frm_data').append('<input type="hidden" name="dati[entityAttribute]" value="'+$("#workingField option:selected").text()+'" />');
       $('#frm_data').append('<input type="hidden" name="dati[attributeValue]" value="'+$("#newVal").val()+'" />');
+      $('#frm_data').append('<input type="hidden" name="dati[externalClause]" value="'+$("#clause").val()+'" />');
       $('#frm_data').append('<input type="hidden" name="azione" value="massive" />');
       $('#frm_data').submit();
     });
@@ -270,6 +271,7 @@ function GCMassive(level, currentId) {
         }
         // create table header
         $("#tableResult").empty();
+        $("#queryResult").empty();
         var html = '<table><tr>';
         $.each(response.fields, function (fieldName, fieldTitle) {
           html += '<th class="tableSelectorHeader">' + fieldTitle + '</th>';
