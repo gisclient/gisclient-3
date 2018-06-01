@@ -1,4 +1,4 @@
-<?
+<?php
 if(isset($_GET["variable"])) {
   include_once "../../config/config.ext.php";
   $reqVar = $_GET["variable"];
