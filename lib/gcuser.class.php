@@ -221,7 +221,7 @@ abstract class AbstractUser {
 	
     public function getClientConfiguration() {
       if($this->isAdmin()) {
-        return array("CLIENT_COMPONENTS" => array_merge($this->defaultClientComponents, $this->loggedClientComponents));
+        return array("CLIENT_COMPONENTS" => array_merge($this->defaultClientComponents, $this->loggedClientComponents), "CLIENT_ID" => $this->username);
       } else if(!empty($this->groups)){
         $db = GCApp::getDB();
         /* Create a string for the parameter placeholders filled to the number of params */
@@ -236,8 +236,10 @@ abstract class AbstractUser {
             $result[$row['key']] = array_unique(array_merge(array_key_exists($row['key'], $result) ? $result[$row['key']] : array(), $arrValue));
           }
         }
+        $result["CLIENT_ID"] = $this->username;
         return $result;
       }
+      return array("CLIENT_COMPONENTS" => $this->defaultClientComponents, "CLIENT_ID" => "-anonymous_".session_id()."-");
     }
 
 	public function saveUserOption($key, $value) {

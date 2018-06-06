@@ -6,6 +6,8 @@ if(isset($_GET["variable"])) {
 } else {
   include_once "../../config/config.php";
   $user = new GCUser();
-  echo json_encode($user->getClientConfiguration());
+  $result = $user->getClientConfiguration();
+  $result["SCRIPT_PLUGINS"] = $SCRIPT_PLUGINS;
+  echo json_encode($result);
 }
 ?>
