@@ -196,6 +196,6 @@ $SCRIPT_PLUGINS = array();
 
 foreach (glob(ROOT_PATH."config/plugins/*.php") as $filename)
 {
-    include $filename;
+    require_once($filename);
 }
 

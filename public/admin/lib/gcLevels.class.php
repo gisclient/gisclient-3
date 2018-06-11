@@ -1,5 +1,4 @@
 <?php
-include_once "../../../config/config.php";
 
 class GCLevels {
 	static private $levelsParent = array();
