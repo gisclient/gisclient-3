@@ -1,7 +1,7 @@
 $(document).ready(function() {
 	$('#options_dialog').dialog({
-		title: 'Options',
-		width: 300,
+        title: "Opzioni",
+        width: 300,
 		height: 200,
 		autoOpen: false,
 		open: function() {
@@ -29,7 +29,7 @@ $(document).ready(function() {
 				if(typeof(response) != 'object' || typeof(response.result) == 'undefined' || response.result != 'ok') {
 					alert('Error');
 				}
-				$('#options_dialog div.logs').html('Ok');
+                $('#options_dialog div.logs').html('Ok');
 			},
 			error: function() {
 				alert('Error');

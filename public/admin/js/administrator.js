@@ -435,7 +435,11 @@ function symbolsLoadList() {
 function fontLoadList() {
     
     var fontName = $('#font #loadFont').val();
-    if (fontName.length == 0) fontName = 'r3-map-symbols.ttf';
+    if (fontName.length == 0) {
+      window.alert("Specificare il file da caricare.");
+      $(".fontLoadLoaded").css("display", "none");
+      return;
+    }
     fontName = fontName.substring(fontName.lastIndexOf('\\')+1);
     
     var params = {type:'TRUETYPE', font_name: fontName};
@@ -448,6 +452,7 @@ function fontLoadList() {
         }
     };
     list.loadList(params);
+    $(".fontLoadLoaded").css("display", "");
 }
 
 function importSymbols() {
@@ -486,10 +491,18 @@ function importSymbols() {
 }
 
 function downloadFont() {
-   var fontName = $('#font #loadFont').val();
+   /*var fontName = $('#font #loadFont').val();
    if (fontName.length == 0) fontName = 'r3-map-symbols.ttf';
    fontName = fontName.substring(fontName.lastIndexOf('\\')+1);
-   window.location.assign("getFont.php?font="+fontName); 
+   window.location.assign("getFont.php?font="+fontName); */
+   var fontName = $('#selectFont').val();
+   if(fontName == -1)
+     fontName = 'r3-map-symbols_tpl.ttf';
+   else if(fontName == -2){
+     window.alert("Provvedere alla selezione di un font");
+     return;
+   }
+   window.location.assign("getFont.php?font="+fontName);
 }
 
 function importFont() {
@@ -674,13 +687,45 @@ $(document).ready(function() {
         height: 600,
         open: symbolsLoadList
     });
-        
+
     $('a[data-action="symbology"]').show().click(function(event) {
         event.preventDefault();
+        $("div#dialog_symbology" ).accordion({
+          fillSpace: "false"
+        });
+        $("[name='font_radio']").change(function(){
+          $(".fontDiv").hide();
+          $(".fontLoadLoaded").hide();
+          $("#"+$(this).val()+"Div").css("display","");
+          if($(this).val() == "save") {
+            $('#dialog_symbology select[id="selectFont"]').empty();
+            $('#dialog_symbology select[id="selectFont"]').append("<option value=\"-2\">Seleziona ====></option>");
+            $('#dialog_symbology select[id="selectFont"]').append("<option value=\"-1\">File template</option>");
+            $.ajax({
+              type: 'GET',
+              url: "getFont.php",
+              dataType: 'json',
+              data: {action:'load'},
+              success: function(response) {
+                if(typeof(response) == 'undefined' || response == null)
+                  alert('Errore nel recupero dei font disponibili');
+                else {
+                  Object.keys(response).map(function (key) {
+                    $('#dialog_symbology select[id="selectFont"]').append("<option value=\""+response[key]+"\">"+key+"</option>");
+                  });
+                }
+              },
+              error: function(er) {
+                alert('Errore nel recupero dei font disponibili');
+              }
+            });
+          }
+        });
+        $(".fontLoadLoaded").hide();
         $('div#dialog_symbology').dialog('open');
     });
 
-    $('div#dialog_symbology').tabs();
+    //$('div#dialog_symbology').tabs();
     
     if(typeof initOgcServices === 'undefined' || !initOgcServices) {
         return;

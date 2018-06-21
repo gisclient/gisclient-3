@@ -75,7 +75,7 @@ switch($_REQUEST['action']) {
     } catch(Exception $e) {
       $ajax->error($e->getMessage());
     }
-    print_r(json_encode($childrenLevels));
+    print_r(json_encode(array_merge(array('title'=>GCAuthor::t($_REQUEST['level'])),$childrenLevels)));
     break;
   case 'load-fields':
     $sql = "select column_name from information_schema.columns where table_schema='".DB_SCHEMA."' and table_name='".$_REQUEST['level']."' and is_updatable = 'YES' order by column_name";

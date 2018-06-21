@@ -9,7 +9,7 @@ abstract class AbstractUser {
     protected $mapLayers = array();
     protected $defaultClientComponents = array("StreetViewControl:1:alone", "LayerTreeButton:1:data",
                                                "QueryControl:2:data", "PrintControl:1:zprint", "ReferenceMapControl:2:zprint");
-    protected $loggedClientComponents = array("ReportControl:3:data", "MeasureControl:1:tools", "GeoNoteControl:2:tools",
+    protected $loggedClientComponents = array("UnRedoControl:3:alone", "ReportControl:3:data", "MeasureControl:1:tools", "GeoNoteControl:2:tools",
                                               "PipeSelectControl:3:tools");
 
 
