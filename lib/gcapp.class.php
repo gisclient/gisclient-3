@@ -655,7 +655,8 @@ class GCAuthor {
 		'qt_relation'=>array('it'=>'Relazione report', 'en'=>'QT Relation'),
 		'field_groups'=>array('it'=>'Autorizzazioni sul campo', 'en'=>'Field Groups'),
 		'mapset_list'=>array('it'=>'Lista mappe', 'en'=>'Mapset'),
-		'resetFieldMsg'=>array('it'=>'Modificare il valore comporta la reinizializzazione dei campi del layer. Sicuro di procedere?', 'en'=>'Any change on catalog will reinit layer fields. Are you sure about proceeding?')
+		'resetFieldMsg'=>array('it'=>'Modificare il valore comporta la reinizializzazione dei campi del layer. Sicuro di procedere?', 'en'=>'Any change on catalog will reinit layer fields. Are you sure about proceeding?'),
+		'check_fields'=>array('it'=>'Controllo Campi', 'en'=>'Check Fields'),
 	);
 }
 

@@ -1001,6 +1001,9 @@ class gcMap{
                 if($aRel && (!in_array($aRel, $featureTypes[$index][$typeName]["relations"])))
                     $featureTypes[$index][$typeName]["relations"][] = $aRel;
 
+                if (intval($row["resultype_id"]) === 5)
+                    continue;
+                    
                 $fieldSpecs = array(
                     "name"=>$fieldName,
                     "header"=>(strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["field_header"]):$row["field_header"],
