@@ -6,7 +6,7 @@ function GCCopy(level, project, parentId, mode) {
   this.lastLevel = null;
   this.url = 'ajax/copy.php';
   this.filters = {};
-  this.emptyOption = '<option value="Select">Select</option>';
+  this.emptyOption = '<option value="Select">Seleziona ====></option>';
 
   this.loadForm = function() {
     var self = this;
@@ -20,10 +20,11 @@ function GCCopy(level, project, parentId, mode) {
           alert('Error');
           return;
         }
-        $('#copy_dialog').append('<div class="copyDivLeft">name:</div><div class="copyDivRight"><input type="text" name="newname" style="text-transform:lowercase"></div><div style="clear: both;"></div>');
+        $('#copy_dialog').dialog( "option", "title", (self.mode=='copy' ? 'Copia ' : 'Sposta ') + response.title);
+        $('#copy_dialog').append('<div class="copyDivLeft">Nome:</div><div class="copyDivRight"><input type="text" name="newname" style="text-transform:lowercase"></div><div style="clear: both;"></div>');
         $.each(response.filters, function(e, filter) {
           self.filters[filter.level] = filter;
-          self.addSelect(filter.level);
+          self.addSelect(filter.label, filter.level);
           self.lastLevel = filter.level;
         });
 
@@ -40,7 +41,7 @@ function GCCopy(level, project, parentId, mode) {
     });
   };
 
-  this.addSelect = function(level) {
+  this.addSelect = function(label, level) {
     var self = this;
 
     var parent = '';
@@ -48,7 +49,7 @@ function GCCopy(level, project, parentId, mode) {
     if(levelData.parent != '')
       parent = 'data-parent_level="'+levelData.parent+'"';
 
-    var html = '<div class="copyDivLeft">' + level + ':</div><div class="copyDivRight"><select name="'+level+'" '+parent+'>'+self.emptyOption+'</select></div><div style="clear: both;"></div>';
+    var html = '<div class="copyDivLeft">' + label + ':</div><div class="copyDivRight"><select name="'+level+'" '+parent+'>'+self.emptyOption+'</select></div><div style="clear: both;"></div>';
     $('#copy_dialog').append(html);
     $('#copy_dialog select[name="'+level+'"]').change(function() {
       if($('#copy_dialog select[data-parent_level="'+level+'"]').length == 0 && $('#copy_dialog button[name="copy"]').length == 0) {
@@ -135,7 +136,7 @@ function gcOpen(parentLevel, operation) {
   $('#copy_dialog').empty().dialog({
     width:500,
     height:350,
-    title: (operation=='copy' ? 'Copia ' : 'Sposta ') + parentLevel,
+    //title: (operation=='copy' ? 'Copia ' : 'Sposta ') + level,
     modal: true,
     open: function() {
       var copy = new GCCopy(level, project, parentId, operation);

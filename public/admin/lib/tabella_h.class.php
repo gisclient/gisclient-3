@@ -250,18 +250,18 @@ function get_cella($row,$col){
 			else
 				$retval = "<td>".GCAuthor::t('undefined')."</td>"; 
 			break;
-		case "button":
-			$size=explode("#",$w);
-			$width=$size[0];
-			$jsfunction=$size[1];
-			$size=array_slice($size,2);
-			if (!count($size)) $param="[]";
-			else
-				$param="['".@implode("','",$size)."']";
-			//if(!$size[2]) $size[2]="[]";
-			if(!$mode || $mode=="all" || $this->mode==$mode)
-				$retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" >";
-			break;
+        case "button":
+        case "buttonTooltip":
+          $size=explode("#",$w);
+          $index = 0;
+          $tooltip = (strcmp($tipo,"buttonTooltip") == 0) ? "title=\"".GCAuthor::t($size[$index++])."\"" : "";
+          $width=$size[$index++];
+          $jsfunction=$size[$index++];
+          $size=array_slice($size,$index);
+          $param= (!count($size)) ? "[]":  "['".@implode("','",$size)."']";
+          if(!$mode || $mode=="all" || $this->mode==$mode)
+				$retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" $tooltip type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" />";
+		  break;
 		
 		case "submit":
 			if (in_array(strtolower($label),Array("cancella","elimina")))

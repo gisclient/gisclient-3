@@ -1,19 +1,27 @@
 function normalize(arr, form, parentLevel){
   var array = new Array();
+  var current = {
+    label: "",
+    parent: "",
+    title: ""
+  };
   for (var key in arr) {
     if(isNumeric(key)) {
       //qua sono all'interno del bivio numerico
       array.push(normalize(arr[key], form, parentLevel));
     } else {
-      //qua sto gestendo il chiave valore
-      var current = {
-        label: key,
-        parent: parentLevel
+      //qua sto gestendo i valori stringali
+      if(key == 'title') {
+        current.title = arr[key];
+      } else {
+        current.label = key;
+        current.parent = parentLevel;
+        current.children = normalize(arr[key], form, key);
       }
-      current.children = normalize(arr[key], form, key);
-      return current;
     }
   }
+  if(current.label != "")
+    return current;
   return array;
 }
 
@@ -29,7 +37,7 @@ function GCMassive(level, currentId) {
   this.currentId = currentId;
   this.url = 'ajax/massive.php';
   this.filters = {};
-  this.emptyOption = '<option value="-2">Select</option>';
+  this.emptyOption = '<option value="-2">Seleziona ====></option>';
 
   this.loadForm = function() {
     var form = this;
@@ -39,6 +47,7 @@ function GCMassive(level, currentId) {
       dataType: 'json',
       data: {action:'load', level:form.level, id: form.currentId},
       success: function(response) {
+        $('#massive_dialog').dialog("option", "title", "Modifica massiva. " + response.title + ': ' + $('#'+currentLevel+'_name').val());
         var windowStruct = response[form.level];
         windowStruct = normalize(windowStruct, form, form.level);
         form.buildWindow(windowStruct);
@@ -196,11 +205,11 @@ function GCMassive(level, currentId) {
     for(var i = 0; i < windowStruct.length; i++) {
       var levelData = windowStruct[i].label;
       if(multipleSolution) {
-        html = "<div id=\""+levelData+"Div\" "+(hide ? display : "" )+" key=\""+origDisclaimer+"\"><input key=\""+origDisclaimer+"\" type=\"radio\" name=\"children_"+windowStruct[i].parent+"\" value=\""+levelData+"\"/>"+levelData+"</div>"
+        html = "<div id=\""+levelData+"Div\" "+(hide ? display : "" )+" key=\""+origDisclaimer+"\"><input key=\""+origDisclaimer+"\" type=\"radio\" name=\"children_"+windowStruct[i].parent+"\" value=\""+levelData+"\"/>"+windowStruct[i].title+"</div>"
         $('#massive_dialog').append(html);
         disclaimer = origDisclaimer+"_"+levelData+"_";
       }
-      html = '<div '+display +' class="copyDivLeft" key="'+disclaimer+'">' + levelData + ':</div>'
+      html = '<div '+display +' class="copyDivLeft" key="'+disclaimer+'">' + windowStruct[i].title + ':</div>'
            + '<div '+display+' class="copyDivRight" key="'+disclaimer+'"><select parent="'+windowStruct[i].parent+'" name="'+levelData+'">'+self.emptyOption+'</select></div>'
            + '<div '+displayClear+' key="'+disclaimer+'"></div>';
       $('#massive_dialog').append(html);
@@ -338,7 +347,7 @@ function openMassive(currentLevel) {
   $('#massive_dialog').empty().dialog({
     width:800,
     height:760,
-    title: 'Modifica massiva. ' + currentLevel + ': ' + currentName,
+    //title: 'Modifica massiva. ' + currentLevel + ': ' + currentName,
     modal: true,
     open: function() {
       var massive = new GCMassive(currentLevel, currentId);

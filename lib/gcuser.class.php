@@ -9,7 +9,7 @@ abstract class AbstractUser {
     protected $mapLayers = array();
     protected $defaultClientComponents = array("StreetViewControl:1:alone", "LayerTreeButton:1:data",
                                                "QueryControl:2:data", "PrintControl:1:zprint", "ReferenceMapControl:2:zprint");
-    protected $loggedClientComponents = array("ReportControl:3:data", "MeasureControl:1:tools", "GeoNoteControl:2:tools",
+    protected $loggedClientComponents = array("UnRedoControl:3:alone", "ReportControl:3:data", "MeasureControl:1:tools", "GeoNoteControl:2:tools",
                                               "PipeSelectControl:3:tools");
 
 
@@ -221,7 +221,7 @@ abstract class AbstractUser {
 	
     public function getClientConfiguration() {
       if($this->isAdmin()) {
-        return array("CLIENT_COMPONENTS" => array_merge($this->defaultClientComponents, $this->loggedClientComponents));
+        return array("CLIENT_COMPONENTS" => array_merge($this->defaultClientComponents, $this->loggedClientComponents), "CLIENT_ID" => $this->username);
       } else if(!empty($this->groups)){
         $db = GCApp::getDB();
         /* Create a string for the parameter placeholders filled to the number of params */
@@ -236,8 +236,10 @@ abstract class AbstractUser {
             $result[$row['key']] = array_unique(array_merge(array_key_exists($row['key'], $result) ? $result[$row['key']] : array(), $arrValue));
           }
         }
+        $result["CLIENT_ID"] = $this->username;
         return $result;
       }
+      return array("CLIENT_COMPONENTS" => $this->defaultClientComponents, "CLIENT_ID" => "-anonymous_".session_id()."-");
     }
 
 	public function saveUserOption($key, $value) {

@@ -37,6 +37,7 @@ switch($_REQUEST['action']) {
 		foreach($parentLevels as $level) {
 			if($level == 'project') $hasProject = true;
 			$filter = array(
+                'label'=>GCAuthor::t($level),
 				'level'=>$level,
 				'parent'=>!empty($parent) ? $parent : ''
 			);
@@ -44,9 +45,9 @@ switch($_REQUEST['action']) {
 			$parent = $level;
 		}
 		if($_REQUEST['mode'] != 'move') {
-			array_push($filters, array('level'=>$_REQUEST['level'], 'parent'=>!empty($level) ? $level :  null));
+			array_push($filters, array('label'=>GCAuthor::t($_REQUEST['level']), 'level'=>$_REQUEST['level'], 'parent'=>!empty($level) ? $level :  null));
 		}
-		$ajax->success(array('filters'=>$filters, 'has_project'=>(int)$hasProject));
+		$ajax->success(array('title'=>GCAuthor::t($_REQUEST['level']), 'filters'=>$filters, 'has_project'=>(int)$hasProject));
 	break;
 	case 'get-data':
 		try {

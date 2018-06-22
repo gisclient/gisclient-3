@@ -8,7 +8,7 @@ dato[] = "Correzione ordine di disegno <br><font size=1>Inserire valori negativi
 dato[] = "Copyright su mappa;copyright_string;50x2;textarea"
 dato[] = "Livello unico;theme_single;3;noyes"
 dato[] = "Radio;radio;3;noyes"
-dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;project;#openCopy;button|Edit massivo;theme;#openMassive;button|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
+dato[] = "Salva;azione;;submit;all;salva|Annulla;azione;;submit;all;annulla|Elimina;azione;;submit;edit;elimina|Copia da;project;#openCopy;button|Edit massivo;theme;#openMassive;button;edit;|Esporta;azione;;submit;edit;esporta|Importa;azione;;submit;new;importa"
 [list]
 table = "theme"
 pkey = "theme_id"

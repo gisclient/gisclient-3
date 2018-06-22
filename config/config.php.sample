@@ -100,6 +100,7 @@ define('REDLINE_FONT', 'dejavu-sans-bold'); // non obbligatorio, default arial
 
 require_once (ROOT_PATH."lib/debug.php");
 require_once (ROOT_PATH."config/config.db.php");
+require_once (ROOT_PATH."config/config.ext.php");
 require_once (ROOT_PATH.'lib/gcapp.class.php');
 
 //Author
@@ -190,3 +191,11 @@ $GEOLOCATOR_CONFIG = array(
         'where'=>"lang_id='de'"
     )
 );
+
+$SCRIPT_PLUGINS = array();
+
+foreach (glob(ROOT_PATH."config/plugins/*.php") as $filename)
+{
+    require_once($filename);
+}
+

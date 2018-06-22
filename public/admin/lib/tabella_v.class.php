@@ -130,8 +130,10 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			$opzioni=$this->elenco_selectdb($size[1],(isset($dati[$campo]))?$dati[$campo]:null,$filter);
 			$class=($err)?($class):("class=\"textbox\"");
 			if (isset($size[3]))
-				$onChange=(preg_match("|([\w]+)[(](.+)[)]|i",$size[3]))?("onChange=\"javascript:".$size[3]."\""):("onChange=javascript:\"".$size[3]."()\"");
-			$retval="<select style=\"width:$size[0]px\" $class  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>$help";
+			  $onChange=(preg_match("|([\w]+)[(](.+)[)]|i",$size[3]))?("onChange=\"javascript:".$size[3]."\""):("onChange=javascript:\"".$size[3]."()\"");
+			if(isset($size[4]))
+              $title= "title=\"".(GcAuthor::t($size[4]))."\"";
+			$retval="<select $title style=\"width:$size[0]px\" $class  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>$help";
 			break;
 		case "selectRPC":
 			$size=explode("#",$w);
@@ -173,17 +175,18 @@ function get_controllo($label,$tipo,$w,$campo,$mode,$action='',$frozen=0){
 			$retval="<input type=\"radio\" name=\"dati[opzioni]\"  id=\"$campo\" $selezionato $disabilitato />";
 			break;
 
-		case "button":
-			$size=explode("#",$w);
-			$width=$size[0];
-			$jsfunction=$size[1];
-			$size=array_slice($size,2);
-			if (!count($size)) $param="[]";
-			else
-				$param="['".@implode("','",$size)."']";
-			if(!$mode || $mode=="all" || $this->mode==$mode)
-				$retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" />";
-			break;
+        case "button":
+        case "buttonTooltip":
+          $size=explode("#",$w);
+          $index = 0;
+          $tooltip = (strcmp($tipo,"buttonTooltip") == 0) ? "title=\"".GCAuthor::t($size[$index++])."\"" : "";
+          $width=$size[$index++];
+          $jsfunction=$size[$index++];
+          $size=array_slice($size,$index);
+          $param= (!count($size)) ? "[]":  "['".@implode("','",$size)."']";
+          if(!$mode || $mode=="all" || $this->mode==$mode)
+				$retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" $tooltip type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" />";
+		  break;
 
 		case "submit":
 			if (in_array(strtolower($label),Array("cancella","elimina")))

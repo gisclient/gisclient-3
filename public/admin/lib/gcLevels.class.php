@@ -1,5 +1,4 @@
 <?php
-include_once "../../../config/config.php";
 
 class GCLevels {
 	static private $levelsParent = array();
@@ -37,7 +36,8 @@ class GCLevels {
 	public static function getChildren($level) {
 		if(empty(self::$levels)) self::_getLevels();
 
-		$children = array($level => array());
+		$children = array($level => array(), "title" => GCAuthor::t($level));
+		//$children["title"] = GCAuthor::t($level);
 		foreach(self::$levelsChildren[$level] as $childLevel) {
 			array_push($children[$level], self::getChildren($childLevel));
 		}

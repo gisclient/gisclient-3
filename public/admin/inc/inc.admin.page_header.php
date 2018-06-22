@@ -23,7 +23,7 @@
 						<a class="button" data-action="data_manager" style="display:none;">Data manager</a>
 						<a class="button" data-action="preview_map" style="display:none;">Preview Map</a>
 						<?php if($user->isAdmin()) { ?>
-						<a class="button" data-action="options">Options</a>
+						<a class="button" data-action="options"><?php echo GCAuthor::t('button_options'); ?></a>
 						<a class="button" data-action="symbology"><?php echo GCAuthor::t('symbology'); ?></a>
 						<?php } ?>
 						<a class="button" data-action="ogc_services" style="display:none;"><?php echo GCAuthor::t('ogc_services'); ?></a>
@@ -94,44 +94,51 @@
 				</table>
 				<?php } ?>
 			</div>
-
 			<div id="dialog_symbology" style="display:none;" data-title="<?php echo GCAuthor::t('symbology'); ?>">
-				<ul>
-					<li><a href="#raster">Pixmap</a></li>
-					<li><a href="#font">Font</a></li>
-				</ul>
-				<div id="raster">
-					<ol>
-						<li>Cliccare sul pulsante Sfoglia e selezionare le immagini da importare. </li>
-						<li>Formati supportati: GIF, PNG.</li>
-						<li>Se un simbolo è associato ad uno stile e viene cancellato, lo stile rimarrà senza simbolo</li>
-						<li>La dimensione in pixel sarà quella rappresentata su mappa (dimensioni consigliate 10x10, 15x15, 20x20).</li>
-					</ol>
-					<input id="importSymbols" type="file" multiple><button onclick="importSymbols()">Importa</button>
-					<h2>Elenco dei simboli PIXMAP disponibili</h2>
-					<table border="1" cellpadding="3" class="stiletabella"></table>
-				</div>
-				<div id="font">
-					<ol>
-						<li>Scaricare il template o il font attuale.</li>
-						<li>Editare il font e ricaricarlo.</li>
-						<li>Al termine del caricamento, inserire il nome da dare al simbolo nell'apposito campo.</li>
-						<li>Se il campo nome è vuoto il carattere non verrà importato.</li>
-						<li>Se il campo nome è popolato il carattere verrà importato e sostituito.</li>
-					</ol>
+              <h3><a href="#">Pixmap</a></h3>
+              <div id="raster">
+                Cliccare sul pulsante Sfoglia e selezionare le immagini da importare. <br/>
+				Formati supportati: GIF, PNG. <br/>
+				Se un simbolo è associato ad uno stile e viene cancellato, lo stile rimarrà senza simbolo <br/>
+				La dimensione in pixel sarà quella rappresentata su mappa (dimensioni consigliate 10x10, 15x15, 20x20). <br/>
+                <input id="importSymbols" type="file" multiple><button onclick="importSymbols()">Importa</button>
+				<h2>Elenco dei simboli PIXMAP disponibili</h2>
+				<table border="1" cellpadding="3" class="stiletabella"></table>
+			  </div>
+			  <h3><a href="#">Font</a></h3>
+			  <div id="font">
+                <p style="position:relative; border: 2px solid lightsteelblue; padding: 10px; border-radius: 10px;">
+                  Selezionare l'operazione che si intende eseguire:<br/>
+                  <input type="radio" name="font_radio" value="load">Carica Font</input>
+			      <input type="radio" name="font_radio" value="save">Scarica Font</input>
+                </p>
+                <p class="fontDiv" id="loadDiv" style="display: none; top: 10px; text-align: right; position: relative;">
+                  <input id="loadFont" type="file" accept=".ttf"><button onclick="fontLoadList()">Carica</button>
+                  <h2 class="fontLoadLoaded">Simboli font (TTF)</h2>
+				  <table border="1" cellpadding="3" class="fontLoadLoaded stiletabella" id="glyfList"></table>
+				  <button class="fontLoadLoaded" onclick="saveFontSymbols()">Salva</button>
+                </p>
+                <p class="fontDiv" id="saveDiv" style="display: none; top: 10px; text-align: right; position: relative;">
+                  <select id="selectFont"></select>
+                  <button class="fontDownload" onclick="downloadFont()">Download</button>
+                </p>
+                	<!--	Scaricare il template o il font attuale. <br/>
+						Editare il font e ricaricarlo. <br/>
+						Al termine del caricamento, inserire il nome da dare al simbolo nell'apposito campo. <br/>
+						Se il campo nome è vuoto il carattere non verrà importato. <br/>
+						Se il campo nome è popolato il carattere verrà importato e sostituito. <br/>
 					<input id="loadFont" type="file" accept=".ttf"><button onclick="fontLoadList()">Carica</button>
 					<button onclick="downloadFont()">Scarica Attuale</button>
 					<a target="_blank" href="getFont.php?font=r3-map-symbols_tpl.ttf" class="button">Scarica Template</a>
 					<h2>Simboli font (TTF)</h2>
 					<table border="1" cellpadding="3" class="stiletabella" id="glyfList"></table>
-					<button onclick="saveFontSymbols()">Salva</button>
-				</div>
-			</div>
-
+					<button onclick="saveFontSymbols()">Salva</button>-->
+              </div>
+            </div>
 			<div id="mapfiles_manager" style="display:none;" data-title="<?php echo GCAuthor::t('online_maps') ?>">
 				<table border="1" cellpadding="3" class="stiletabella">
 				<tr class="ui-widget ui-state-default">
-					<th>Mapset</th>
+					<th><?php echo GCauthor::t('mapset_list') ?></th>
 					<th><?php echo GCauthor::t('update') ?>:</th>
 					<th><?php echo GCAuthor::t('temporary') ?></th>
 					<th><?php echo GCAuthor::t('public') ?></th>
@@ -139,10 +146,10 @@
 				<tr><td><b><?php echo GCAuthor::t('all') ?></b></td>
                                     <td></td>
                                     <td style="text-align:center;"><a href="#" data-action="refresh" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('update') ?></a>
-                                    <a href="#" data-action="compile" data-target="tmp" data-mapset=""><?php echo GCAuthor::t('compile'); ?></a> 
+                                    <!--<a href="#" data-action="compile" data-target="tmp" data-mapset=""><!--?php echo GCAuthor::t('compile'); ></a>-->
                                     </td>
                                     <td style="text-align:center;"><a href="#" data-action="refresh" data-target="public" data-mapset=""><?php echo GCAuthor::t('update'); ?></a>
-                                    <a href="#" data-action="compile" data-target="public" data-mapset=""><?php echo GCAuthor::t('compile'); ?></a>
+                                    <!--a href="#" data-action="compile" data-target="public" data-mapset=""><!--?php echo GCAuthor::t('compile'); ?></a-->
                                     </td>
                                 </tr>
 				<?php
