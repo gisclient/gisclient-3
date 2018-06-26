@@ -122,6 +122,54 @@ $lang = $objRequest->getvaluebyname('lang');
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
+if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
+    $hasPrivateLayers = false;
+    $layersArray = array();
+    if (!empty($layersParameter)) {
+        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
+    }
+    
+    foreach ($layersArray as $layer) {
+        $privateLayer = $layer->getMetaData('gc_private_layer');
+        if (!empty($privateLayer)) {
+            $hasPrivateLayers = true;
+            break;
+        }
+    }
+    
+    if ($hasPrivateLayers) {
+        // force recreation of authentication handler to use BasicAuthAuthenticator guard
+        $authHandler = \GCApp::getAuthenticationHandler(null, new BasicAuthAuthenticator(), true);
+        $isAuthenticated = $authHandler->isAuthenticated();
+
+        // user does not have an open session, try to log in
+        if (!$isAuthenticated) {
+            $authHandler->login(Request::createFromGlobals());
+            $isAuthenticated = $authHandler->isAuthenticated();
+        }
+
+        // user could not even log in, send correct headers and exit
+        if (!$isAuthenticated) {
+            print_debug('unauthorized access', null, 'system');
+            header('WWW-Authenticate: Basic realm="Gisclient"');
+            header('HTTP/1.0 401 Unauthorized');
+            echo "<h1>Authorization required</h1>";
+            exit(0);
+        }
+
+        // re-create mapobj to consider authenticated user
+        $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
+        
+        // get layers to populate session with GISCLIENT_USER_LAYER
+        GCApp::getLayerAuthorizationChecker()->getLayers(array(
+            'mapset_name' => $oMap->getMetaData('ows_title') // use ows_title to avoid mapset with language key
+        ));
+    }
+}
+
+// close the session, because all relevant data are already writte into it
+$gcService->getSession()->save();
+
 $format = $objRequest->getvaluebyname('format');
 if (!empty($format)) {
     if ($oMap->selectOutputFormat($format) !== MS_SUCCESS) {
@@ -187,50 +235,6 @@ if (!empty($_REQUEST['GCFILTERS'])) {
         }
     }
 }
-
-if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
-    $hasPrivateLayers = false;
-    $layersArray = array();
-    if (!empty($layersParameter)) {
-        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
-    }
-    
-    foreach ($layersArray as $layer) {
-        $privateLayer = $layer->getMetaData('gc_private_layer');
-        if (!empty($privateLayer)) {
-            $hasPrivateLayers = true;
-            break;
-        }
-    }
-    
-    if ($hasPrivateLayers) {
-        $authHandler = \GCApp::getAuthenticationHandler(null, new BasicAuthAuthenticator());
-        $isAuthenticated = $authHandler->isAuthenticated();
-
-        // user does not have an open session, try to log in
-        if (!$isAuthenticated) {
-            $authHandler->login(Request::createFromGlobals());
-            $isAuthenticated = $authHandler->isAuthenticated();
-        }
-
-        // user could not even log in, send correct headers and exit
-        if (!$isAuthenticated) {
-            print_debug('unauthorized access', null, 'system');
-            header('WWW-Authenticate: Basic realm="Gisclient"');
-            header('HTTP/1.0 401 Unauthorized');
-            echo "<h1>Authorization required</h1>";
-            exit(0);
-        }
-        
-        // get layers to populate session with GISCLIENT_USER_LAYER
-        GCApp::getLayerAuthorizationChecker()->getLayers(array(
-            'mapset_name' => $objRequest->getValueByName('map')
-        ));
-    }
-}
-
-// close the session, because all relevant data are already writte into it
-$gcService->getSession()->save();
 
 if (!empty($layersParameter)) {
     $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);

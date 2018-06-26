@@ -78,25 +78,39 @@ class GCApp
         
         /**
          * Get user provider
-         * 
+         *
          * @return UserProviderInterface
          */
         public static function getUserProvider()
         {
-            if(empty(self::$userProvider)) {
+            if (empty(self::$userProvider)) {
                 self::$userProvider = new UserProvider(self::getDB());
+                if (defined('GC_CUSTOM_USER_PROVIDER')) {
+                    $className = GC_CUSTOM_USER_PROVIDER;
+                    if (class_exists($className)) {
+                        self::$userProvider = new $className(self::getDB());
+                    } else {
+                        throw new \Exception(sprintf("The class '%s' does not exists.", $className));
+                    }
+                }
             }
             return self::$userProvider;
         }
         
         /**
          * Get authentication handler
-         * 
+         *
+		 * @param UserProviderInterface $userProvider
+		 * @param GuardAuthenticatorInterface $guard
+		 * @param boolean $force
          * @return AuthenticationHandler
          */
-        public static function getAuthenticationHandler(UserProviderInterface $userProvider = null, GuardAuthenticatorInterface $guard = null)
-        {
-            if(empty(self::$authenticationHandler)) {
+        public static function getAuthenticationHandler(
+			UserProviderInterface $userProvider = null,
+			GuardAuthenticatorInterface $guard = null,
+			$force = false
+		) {
+            if(empty(self::$authenticationHandler) || $force) {
                 $service = GCService::instance();
                 if (is_null($userProvider)) {
                     $userProvider = self::getUserProvider();

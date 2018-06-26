@@ -41,6 +41,9 @@ define('LAYER_CLOSE_CONNECTION_DEFER', true);
 // decorator for msMapObjFactory
 // define('MS_MAP_OBJ_FACTORY_DECORATOR', 'GisClient\MapServer\MsMapObjFactoryDecorator');
 
+// custom user provider, must implement GisClient\Author\Security\User\UserProviderInterface
+// define('GC_CUSTOM_USER_PROVIDER', 'GisClient\Author\Security\User\UserProvider');
+
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 define('PUBLIC_URL', 'http://localhost/author/'); // url for external requests (like map client)
