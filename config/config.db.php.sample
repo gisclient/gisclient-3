@@ -16,4 +16,4 @@ define('MAP_PWD','MY_DB_MAPSERVER_PASSWORD');
 
 // user with manager permission (can create new users and groups)
 define('SUPER_USER', 'admin');
-
+define('SUPER_USER_CLIENT_COMPONENTS',"StreetViewControl:1:alone,LayerTreeButton:1:data,QueryControl:2:data,PrintControl:1:zprint,ReferenceMapControl:2:zprint,UnRedoControl:3:alone,ReportControl:3:data,MeasureControl:1:tools,GeoNoteControl:2:tools,PipeSelectControl:3:tools");
