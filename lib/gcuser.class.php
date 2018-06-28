@@ -216,7 +216,10 @@ abstract class AbstractUser {
 	
     public function getClientConfiguration() {
       if($this->isAdmin()) {
-        return array("CLIENT_COMPONENTS" => explode(",", SUPER_USER_CLIENT_COMPONENTS), "CLIENT_ID" => $this->username);
+        $result = array("CLIENT_ID" => $this->username);
+        if(defined(SUPER_USER_CLIENT_COMPONENTS))
+          $result["CLIENT_COMPONENTS"] = explode(",",  SUPER_USER_CLIENT_COMPONENTS);
+        return $result;
       } else if(!empty($this->groups)){
         $db = GCApp::getDB();
         /* Create a string for the parameter placeholders filled to the number of params */
