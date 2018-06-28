@@ -74,7 +74,7 @@ if (in_array(strtolower($p->action),$arr_action) || in_array(strtolower($p->acti
   else
     include_once ADMIN_PATH."db/db.".$_POST["savedata"].".php";
 }
-else 
+else
   unset($_SESSION["ADD_NEW"]);
 
 if(!empty($_REQUEST['publish_tmp_mapfiles']) && $_REQUEST['publish_tmp_mapfiles'] == 1) {
@@ -100,6 +100,10 @@ $initPreviewMap = 'false';
 $previewMapUrl = 'previewmap/';
 if(in_array($p->livello, array('layer', 'layergroup')) && $p->mode == 0) {
 	$initPreviewMap = 'true';
+}
+$initCheckFields = 'false';
+if($p->livello == 'layer' && $p->mode == 0) {
+	$initCheckFields = 'true';
 }
 $isAuthor = true;
 
@@ -139,6 +143,9 @@ if(isset($p->parametri['project'])) {
 	<?php if($initPreviewMap == 'true') { ?>
 	<script type="text/javascript" src="js/previewMap.js"></script>
 	<?php } ?>
+    <?php if($initCheckFields == 'true') { ?>
+	<script type="text/javascript" src="js/checkFields.js"></script>
+	<?php } ?>
     <?php foreach (glob("js/plugins/*.js") as $filename) { ?>
     <script type="text/javascript" src="<?php echo $filename ?>"></script>
 	<?php } ?>
@@ -147,6 +154,7 @@ if(isset($p->parametri['project'])) {
 	var initI18n = <?php echo $initI18n ?>;
 	var initDataManager = <?php echo $initDataManager ?>;
 	var initPreviewMap = <?php echo $initPreviewMap ?>;
+    var initCheckFields = <?php echo $initCheckFields ?>;
 	var initOgcServices = <?php echo $initOgcServices ?>;
 	var previewMapUrl = '<?php echo $previewMapUrl ?>';
 	var currentLevel = '<?php echo $p->livello ?>';

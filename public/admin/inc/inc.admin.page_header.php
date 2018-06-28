@@ -22,6 +22,7 @@
 						<a class="button" href="../">Home</a>
 						<a class="button" data-action="data_manager" style="display:none;">Data manager</a>
 						<a class="button" data-action="preview_map" style="display:none;">Preview Map</a>
+						<a class="button" data-action="check_fields" style="display:none;"><?php echo GCAuthor::t('check_fields'); ?></a>
 						<?php if($user->isAdmin()) { ?>
 						<a class="button" data-action="options"><?php echo GCAuthor::t('button_options'); ?></a>
 						<a class="button" data-action="symbology"><?php echo GCAuthor::t('symbology'); ?></a>

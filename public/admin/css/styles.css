@@ -54,3 +54,6 @@ tr.ui-widget:hover { background-color: #2191c0; }
 .stiletabella tr.ui-state-default { border-color: #DDD; background-color: #DDD; color: #2191c0; background-image: none; }
 .stiletabella td.label { background-color: #2191c0; background-image: none; width: 300px; text-align: right; vertical-align: top; line-height: 18px; padding-right: 4px; }
 .stiletabella tr { border: 1px solid #DDD; }
+
+/* Other */
+.loading_div { position:fixed; width:10%; height:10%; top:45%; left:45%; background-image:url('../../images/icons/loading.gif'); background-position:center; background-repeat:no-repeat; z-index: 1500; display: none; }
