@@ -609,6 +609,106 @@ class R3GisGCMap
                 $aLayers[$themeName][$layergroupName]["title"] = $layergroupTitle;
                 $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
                 $aLayers[$themeName][$layergroupName]["options"]= $layerOptions;
+            } elseif ($layerType == LayerGroup::WFS_LAYER_TYPE) {
+                $layerUrl = isset($row["url"])?$row["url"]:$ows_url;
+                $layerParameters=array();
+                $layerParameters["project"] = $this->projectName;
+                $layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
+                $layerParameters["exceptions"] = (defined('DEBUG') && DEBUG==1)?'xml':'blank';
+                $layerParameters["format"] = $row["outputformat_mimetype"];
+                $layerParameters["transparent"] = true;
+                $layerParameters['gisclient_map'] = 1;
+                if (!empty($_REQUEST["tmp"])) {
+                    $layerParameters['tmp'] = 1;
+                }
+
+                if (!empty($row['url']) && (!empty($row['layers']) || $row['layers'] == '0')) {
+                    $layerParameters["layers"] = $row['layers'];
+                } elseif ($row["theme_single"] == 1) {
+                    $list=array();
+                    foreach ($this->mapLayers[$themeName] as $layergroupLayers) {
+                        $list = array_merge($list, $layergroupLayers);
+                    }
+                    $layerParameters["layers"] = $list;
+                } elseif ($row["layergroup_single"] == 1) {
+                    $layerParameters["layers"] = array($layergroupName);
+                } else {
+                    $layerParameters["layers"] = $this->mapLayers[$themeName][$layergroupName];
+                    $list=array();
+                    foreach ($this->mapLayers[$themeName][$layergroupName] as $layer) {
+                        if (isset($layer["name"])) {
+                            array_push($list, $layer["name"]);
+                        }
+                    }
+                    $layerParameters["layers"] = $list;
+                }
+
+                if (!empty($row['sld'])) {
+                    $layerParameters["sld"] = $row["sld"];
+                }
+
+                // TODO: check for layergroup.layername
+                $layerOptions["buffer"] = intval($row["buffer"]);
+                if ($row["isbaselayer"]==1) {
+                    $layerOptions["isBaseLayer"] = true;
+                }
+                if ($row["tiletype_id"]==0) {
+                    $layerOptions["singleTile"] = true;
+                }
+
+                if ($row["theme_single"]==1) {
+                    //setto tutti i parametri come da 1 layer
+                    if (empty($aLayers[$themeName]["type"])) {
+                        $aLayers[$themeName]["type"] = $layerType;
+                        $aLayers[$themeName]["title"] = $themeTitle;
+                        $aLayers[$themeName]["url"] = $layerUrl;
+
+                        if (empty($aLayers[$themeName]["options"])) {
+                            $aLayers[$themeName]["options"] = array("minScale"=>false,"maxScale"=>false);
+                        }
+                        //Conservo i range di scala più estesi
+                        if ($row["layergroup_maxscale"] > 0 ||
+                            $row["layergroup_maxscale"] < $aLayers[$themeName]["options"]["minScale"]
+                        ) {
+                            $layerOptions["minScale"] = intval($row["layergroup_maxscale"]);
+                        }
+                        if ($row["layergroup_minscale"] > 0 ||
+                            $row["layergroup_minscale"] > $aLayers[$themeName]["options"]["maxScale"]
+                        ) {
+                            $layerOptions["maxScale"] = intval($row["layergroup_minscale"]);
+                        }
+                        $aLayers[$themeName]["options"] = $layerOptions;
+                        $aLayers[$themeName]["options"]["gc_id"] = $themeName;
+                        if (!empty($row['tree_group'])) {
+                            $aLayers[$themeName]["options"]["group"] = $row['tree_group'];
+                        }
+                        $aLayers[$themeName]["parameters"] = $layerParameters;
+
+                        if (isset($featureTypes['theme_'.$row['theme_id']])) {
+                            $aLayers[$themeName]["options"]['featureTypes'] = array_values(
+                                $featureTypes['theme_'.$row['theme_id']]
+                            );
+                        }
+                    }
+                } else {
+                    if (empty($aLayers[$themeName][$layergroupName])) {
+                        $aLayers[$themeName][$layergroupName] = array();
+                    }
+                    $aLayers[$themeName][$layergroupName]["type"] = $layerType;
+                    $aLayers[$themeName][$layergroupName]["title"] = $layergroupTitle;
+                    $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
+                    $layerOptions["gc_id"] = $layerId;
+                    $layerOptions["group"] = $layerTreeGroup;
+                    $aLayers[$themeName][$layergroupName]["parameters"] = $layerParameters;
+
+                    if (isset($featureTypes['layergroup_'.$row['layergroup_id']])) {
+                        $layerOptions['featureTypes'] = array_values(
+                            $featureTypes['layergroup_'.$row['layergroup_id']]
+                        );
+                    }
+
+                    $aLayers[$themeName][$layergroupName]["options"] = $layerOptions;
+                }
             }
             
             //FD add overview and legend
