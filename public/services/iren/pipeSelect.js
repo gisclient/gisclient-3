@@ -323,7 +323,7 @@ OpenLayers.Control.PIPESelect = OpenLayers.Class(OpenLayers.Control, {
 					onSelect:function(feature){
 					//SULLA SELEZIONE DISATTIVO TUTTO (??)
                                             if(feature.fid.indexOf('genova.ratraccia_v')!=-1) return false
-                                            if (ctrl.map.popups.map( (el) => el.id ).indexOf("pipeselect-popup") < 0)
+                                            if (ctrl.map.popups.map(function (el) { return el.id; }).indexOf("pipeselect-popup") < 0)
                                                     ctrl.highlightCtrl.select(feature);
                                             ctrl.selectedPipeObject = feature;
                                             highlightCtrl.deactivate();

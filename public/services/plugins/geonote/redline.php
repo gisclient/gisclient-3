@@ -169,7 +169,6 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
                 
                 if ($rowId == null)
                     $rowId = $db->lastInsertId(REDLINE_SCHEMA.'.'.REDLINE_TABLE.'_id_seq');
-		
 		$wktGeom = parseGeoJSONGeomtry($feature['geometry'], $mapSRID);
 		
 		$sql = "update ".REDLINE_SCHEMA.".".REDLINE_TABLE." set ".$geomTypes[$geom['type']]['db_field']." = $wktGeom where id = :id";
@@ -211,12 +210,12 @@ if($_REQUEST["REQUEST"] == "GetLayer"){
         $geomField = $type['db_field'];
         if($mapSRID != REDLINE_SRID) {
             if(empty($SRS_params[REDLINE_SRID]) || empty($SRS_params[$mapSRID])){
-                    $geomField = "st_transform($geomField, ".REDLINE_SRID.")";
+                    $geomField = "st_transform($geomField, ".$mapSRID.")";
             }
             else{
                     $paramFrom = $SRS_params[REDLINE_SRID];
                     $paramTo = $SRS_params[$mapSRID];
-                    $geomField = POSTGIS_TRANSFORM_GEOMETRY."($geomField,'".$paramFrom."','".$paramTo."',".REDLINE_SRID.")";
+                    $geomField = POSTGIS_TRANSFORM_GEOMETRY."($geomField,'".$paramFrom."','".$paramTo."',".$mapSRID.")";
             }
 	}
         $geomField = "st_asgeojson(" . $geomField . ")";

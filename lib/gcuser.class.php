@@ -217,7 +217,7 @@ abstract class AbstractUser {
     public function getClientConfiguration() {
       if($this->isAdmin()) {
         $result = array("CLIENT_ID" => $this->username);
-        if(defined(SUPER_USER_CLIENT_COMPONENTS))
+        if(defined("SUPER_USER_CLIENT_COMPONENTS"))
           $result["CLIENT_COMPONENTS"] = explode(",",  SUPER_USER_CLIENT_COMPONENTS);
         return $result;
       } else if(!empty($this->groups)){
