@@ -29,6 +29,7 @@ class printDocument {
     private $imageFileName = '';
     private $legendArray = array();
     private $vectors = array();
+    private $vectors_srid = null;
     private $db = null;
     private $getLegendGraphicWmsList = array();
     private $nullLogo = 'null.png';
@@ -96,6 +97,7 @@ class printDocument {
             $options['center'] = $_REQUEST['center'];
         if(!empty($_REQUEST['vectors'])) {
             $this->vectors = $_REQUEST['vectors'];
+            $this->vectors_srid = $_REQUEST['vectors_srid'];
         }
 
         $this->options = array_merge($defaultOptions, $options);
@@ -440,6 +442,19 @@ class printDocument {
 
         if(!empty($this->vectors)) {
             $this->options['vectors'] = $this->vectors;
+            $this->options['vectors_srid'] = $this->vectors_srid;
+            if (strpos($this->vectors_srid, ':') !== false) {
+                $sridParts = explode(':', $this->vectors_srid);
+                if (count($sridParts) == 2) {
+                    // e.g.: EPSG:4306
+                    $this->options['vectors_srid'] = $sridParts[1];
+                } elseif (count($sridParts) == 7) {
+                    // e.g.: urn:ogc:def:crs:EPSG::4306
+                    $this->options['vectors_srid'] = $sridParts[6];
+                } else {
+                    throw new Exception("Could not parse ".$this->vectors_srid." as srid");
+                }
+            }
         }
 
         $mapImage = new mapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);

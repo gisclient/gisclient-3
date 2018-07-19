@@ -32,6 +32,7 @@ class mapImage {
             'extent'=>array(),
             'center'=>array(),
             'vectors'=>null,
+            'vectors_srid'=>null,
             'image_format'=>'png', // or gtiff
             'auth_name'=>'EPSG',
             'scalebar'=>true,
@@ -322,6 +323,14 @@ class mapImage {
 
         foreach($vectors as $type => $features) {
             $field = self::$vectorTypes[$type]['db_field'];
+
+            $vectorsSrid = $this->options['vectors_srid'];
+            if(isset($vectorsSrid) && $vectorsSrid != PRINT_VECTORS_SRID) {
+                $geomInsert = "st_transform(st_geomfromtext(:geom, $vectorsSrid), ".PRINT_VECTORS_SRID.")";
+            }
+            else {
+                $geomInsert = "st_geomfromtext(:geom, ".PRINT_VECTORS_SRID.")";
+            }
             // **** Add columns for color, fillcolor, label
             // **** allowing upload from client
             $defaultColor = (defined('PRINT_VECTORS_DEFAULT_COLOR'))?PRINT_VECTORS_DEFAULT_COLOR:null;
@@ -329,7 +338,7 @@ class mapImage {
             $defaultFillColor = (defined('PRINT_VECTORS_DEFAULT_FILLCOLOR'))?PRINT_VECTORS_DEFAULT_FILLCOLOR:null;
             $defaultFillColorOpacity = (defined('PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY'))?PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY:null;
 
-            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, label, color, color_opacity, fillcolor, fillcolor_opacity, '.$field.') values (:print_id, :label, :color, :color_opacity, :fillcolor, :fillcolor_opacity, st_geomfromtext(:geom, :srid))';
+            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, label, color, color_opacity, fillcolor, fillcolor_opacity, '.$field.') values (:print_id, :label, :color, :color_opacity, :fillcolor, :fillcolor_opacity,'.$geomInsert.' )';
             $stmt = $db->prepare($sql);
             foreach($features as $feature) {
                 $stmt->execute(array(
@@ -339,8 +348,7 @@ class mapImage {
                     'color_opacity'=>(isset($feature['color_opacity']) && $feature['color_opacity'])?intval($feature['color_opacity']):$defaultColorOpacity,
                     'fillcolor'=>isset($feature['fillcolor'])?$feature['fillcolor']:$defaultFillColor,
                     'fillcolor_opacity'=>(isset($feature['fillcolor_opacity']) && $feature['fillcolor_opacity'])?intval($feature['fillcolor_opacity']):$defaultFillColorOpacity,
-                    'geom'=>$feature['geometry'],
-                    'srid'=>PRINT_VECTORS_SRID
+                    'geom'=>$feature['geometry']
                 ));
             }
         }
