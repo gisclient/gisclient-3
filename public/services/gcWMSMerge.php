@@ -21,7 +21,7 @@ function getWmsParameters(array $layerParameters) {
 	if(!empty($layerParameters['PREV_TIME'])) $query .= '&PREV_TIME='.$layerParameters['PREV_TIME'];
 	if(!empty($layerParameters['REDLINEID'])) $query .= '&REDLINEID='.$layerParameters['REDLINEID'];
 	if(!empty($layerParameters['LANG'])) $query .= '&LANG='.$layerParameters['LANG'];
-	
+
 	return $query;
 }
 
@@ -77,7 +77,7 @@ $mapConfig = json_decode($_REQUEST['options'], true);
 
 ms_ResetErrorList();
 $oMap=ms_newMapObj('');
-if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB); 
+if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
 $oMap->setSize(intval($mapConfig['size'][0]), intval($mapConfig['size'][1]));
 
 print_debug($mapConfig,null,'mapconfig');
@@ -95,7 +95,7 @@ if (count($sridParts) == 2) {
 
 $oMap->setProjection("init={$srs}");
 $oMap->extent->setextent($mapConfig['extent'][0], $mapConfig['extent'][1], $mapConfig['extent'][2], $mapConfig['extent'][3]);
-if ($enableDebug) { 
+if ($enableDebug) {
 	$oMap->setConfigOption("MS_ERRORFILE", $logfile);
 	$oMap->set('debug', 5);
 }
@@ -143,20 +143,20 @@ foreach($mapConfig['layers'] as $key => $layer) {
 				else $url .= '&';
 			}
 		}
-		
+
 		$oLay = ms_newLayerObj($oMap);
 		$oLay->set('name', 'print_layer_'.$key);
 		$oLay->set('type', MS_LAYER_RASTER);
 		if ($enableDebug) {
 			$oLay->set('debug', 5);
 		}
-		
+
 		switch($layer['SERVICE']) {
 			case 'WMS':
 			case 'TMS':
-			
+
 				$query = getWmsParameters($layer['PARAMETERS']);
-				
+
 				if(!empty($sessionId)) $query .= '&GC_SESSION_ID='.$sessionId;
 				if(!empty($mapConfig['resolution'])) $query.= '&RESOLUTION='.$mapConfig['resolution'];
 				$layerNames = '';
@@ -164,11 +164,15 @@ foreach($mapConfig['layers'] as $key => $layer) {
 					if(is_array($layer['PARAMETERS']['LAYERS'])) $layerNames = implode(',', $layer['PARAMETERS']['LAYERS']);
 					else $layerNames = $layer['PARAMETERS']['LAYERS'];
 				}
-				
+
 				$oLay->setConnectionType(MS_WMS);
 				$oLay->set('connection', cleanWMSRequest($url.$query));
 				if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
-					$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
+					$version = substr(ms_GetVersionInt(),0,1);
+					if ($version >= 7)
+						$oLay->updateFromString("COMPOSITE OPACITY " . $layer['PARAMETERS']['OPACITY'] . " END");
+					else
+						$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
 					$oLay->setMetaData("wms_force_separate_request", 1);
 				}
 				if(!empty($layer['PARAMETERS']['SLD'])) {
@@ -180,23 +184,23 @@ foreach($mapConfig['layers'] as $key => $layer) {
 				$oLay->setMetaData("wms_name", $layerNames);
 				$oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);
 				$oLay->setMetaData("wms_format", $layer['PARAMETERS']['FORMAT']);
-				
+
 				break;
 			case 'WMTS':
 				$mapfileDir = ROOT_PATH.'map/';
 				$projectDir = $mapfileDir.$layer['PROJECT'].'/';
 				$gdalWms = $projectDir.$layer['LAYER'].'.gdal_wms.xml';
-				
+
 				if (!file_exists($gdalWms)) {
 					throw new Exception("configuration file for gdal_wms not found: {$gdalWms}");
 				}
-				
+
 				$oLay->set('data', $gdalWms);
 				break;
 			default:
 				throw new Exception("Unsupported SERVICE '{$layer['SERVICE']}'");
 		}
-		
+
 		$oLay->set('status',MS_ON);
 	}
 }
@@ -237,7 +241,7 @@ if(isset($mapConfig['rotation']))
 	$oMap->setRotation(intval($mapConfig['rotation']));
 
 
-if ($enableDebug) { 
+if ($enableDebug) {
 	$oMap->save(DEBUG_DIR . 'debug.map');
 }
 
@@ -263,7 +267,7 @@ if(!empty($mapConfig['save_image'])) {
     if (!is_writable($dirName)) {
 		throw new Exception("directory \"{$dirName}\" is not writable");
     }
-    
+
 	if ($oImage->saveImage($mapConfig['file_name'], $oMap) !== MS_SUCCESS) {
 		throw new Exception("failed to write {$mapConfig['file_name']}");
 	}
