@@ -479,7 +479,7 @@ class GCMap
                     }
                     $layerParameters["transparent"] = true;
                     if (!empty($row['sld'])) {
-                        $layerParameters["sld"] = PUBLIC_URL . "sld/" . $row["sld"];
+                        $layerParameters["sld"] = $row["sld"];
                     }
                     if (!empty($_REQUEST["tmp"])) {
                         $layerParameters['tmp'] = 1;
@@ -656,7 +656,7 @@ class GCMap
                     $layerParameters["format"] = $row["outputformat_mimetype"];
                     $layerParameters["transparent"] = true;
                     if (!empty($row['sld'])) {
-                        $layerParameters["sld"] = PUBLIC_URL . "sld/" . $row["sld"];
+                        $layerParameters["sld"] = $row["sld"];
                     }
                     if (!empty($_REQUEST["tmp"])) {
                         $layerParameters['tmp'] = 1;
