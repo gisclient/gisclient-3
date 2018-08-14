@@ -1286,4 +1286,15 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         INSERT INTO version (version_name,version_key, version_date) values ('3.5.2', 'author', '2018-05-22');
     END IF;
 
+    IF v_author_version = '3.5.2' THEN
+        ALTER TABLE gisclient_34.mapset
+          ADD COLUMN open_counter integer NOT NULL DEFAULT 0;
+        ALTER TABLE gisclient_34.mapset;
+        COMMENT ON COLUMN gisclient_34.mapset.open_counter IS 'counter of mapset requests';
+
+         --version
+        v_author_version = '3.5.3';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.2', 'author', '2018-08-14');
+    END IF;
+
 END$$

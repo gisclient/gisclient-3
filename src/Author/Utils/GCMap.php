@@ -92,6 +92,10 @@ class GCMap
         $this->db = \GCApp::getDB();
         $this->layerAuthChecker = \GCApp::getLayerAuthorizationChecker();
 
+        $sql = 'UPDATE '.DB_SCHEMA.'.mapset SET open_counter = open_counter + 1 WHERE mapset_name=?;';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($mapsetName));
+
         $sql = "SELECT mapset.*, ".
             "project.project_name,project.project_title,project.max_extent_scale, ".
             "st_x(st_transform(st_geometryfromtext('POINT('||xc||' '||yc||')',project_srid),mapset_srid)) as xc, ".
