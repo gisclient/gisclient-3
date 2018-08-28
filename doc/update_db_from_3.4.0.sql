@@ -1287,10 +1287,8 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
     END IF;
 
     IF v_author_version = '3.5.2' THEN
-        ALTER TABLE gisclient_34.mapset
-          ADD COLUMN open_counter integer NOT NULL DEFAULT 0;
-        ALTER TABLE gisclient_34.mapset;
-        COMMENT ON COLUMN gisclient_34.mapset.open_counter IS 'counter of mapset requests';
+        ALTER TABLE mapset ADD COLUMN open_counter integer NOT NULL DEFAULT 0;
+        COMMENT ON COLUMN mapset.open_counter IS 'counter of mapset requests';
 
          --version
         v_author_version = '3.5.3';
