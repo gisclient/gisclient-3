@@ -1292,7 +1292,7 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
 
          --version
         v_author_version = '3.5.3';
-        INSERT INTO version (version_name,version_key, version_date) values ('3.5.2', 'author', '2018-08-14');
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.3', 'author', '2018-08-14');
     END IF;
 
 END$$
