@@ -801,10 +801,23 @@ class gcFeature {
         return $result;
     }
 
-    private function _getMetadataFieldDataType($typeId) {
-        if ($typeId == 1 || $typeId == 3)
-            return 'Character';
+    /**
+     * Convert datatype into gml type
+     *
+     * @see https://mapserver.org/ogc/wfs_server.html (gml_[item name]_type)
+     * @param integer $typeId
+     * @return string
+     */
+    private function _getMetadataFieldDataType($typeId)
+    {
+        switch ($typeId) {
+            case 1:
+            case 3:
+                return 'Character';
+            case 2:
+                return 'Real';
+        }
+            
         return false;
     }
-
 }
