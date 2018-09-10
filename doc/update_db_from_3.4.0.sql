@@ -1059,7 +1059,7 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
 
         INSERT INTO document VALUES (1, NULL, 'documenti', 'folder', false);
 
-        SELECT pg_catalog.setval('document_doc_id_seq', max(doc_id), true)
+        PERFORM pg_catalog.setval('document_doc_id_seq', max(doc_id), true)
         FROM document;
 
         CREATE OR REPLACE VIEW vista_document_paths AS 
