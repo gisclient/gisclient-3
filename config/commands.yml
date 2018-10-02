@@ -1,0 +1,3 @@
+commands:
+    - GisClient\Author\Command\DbUpgradeCommand
+    - GisClient\Author\Command\RefreshMapfileCommand
