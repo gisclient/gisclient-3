@@ -157,7 +157,7 @@ else{
 	</div>
 	<div class="ui-layout-east" id="container_login2">
 		<h2><?php echo $logTitle;?></h2>
-		<form action="./services/login?redirect=<?php echo $_SERVER["PHP_SELF"]; ?>" method="post" class="riquadro" id="frm_enter" onsubmit="">
+		<form action="./services/login?redirect=../" method="post" class="riquadro" id="frm_enter" onsubmit="">
 			<?php
 			/*
 			messaggio di errore login?
