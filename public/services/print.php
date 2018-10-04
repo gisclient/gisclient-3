@@ -2,7 +2,8 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
-require_once 'include/printDocument.php';
+
+use GisClient\Author\Utils\PrintDocument;
 
 
 header('Access-Control-Allow-Origin: *');
@@ -25,7 +26,7 @@ if (isset($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
 }
 
 try {
-    $printMap = new printDocument();
+    $printMap = new PrintDocument();
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();

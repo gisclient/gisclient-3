@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../bootstrap.php';
 
 use GisClient\Author\Utils\MapImage;
+use GisClient\Author\Utils\PrintDocument;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -88,7 +89,7 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oMap->set('debug', 5);
 		$oMap->setconfigoption('MS_ERRORFILE', $logfile);
 	}
-	$onlineUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
+	$onlineUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
 	$mapfileBase = <<<EOMAP
     WEB
         METADATA
