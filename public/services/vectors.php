@@ -1,7 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once 'include/mapImage.php';
+
+use GisClient\Author\Utils\MapImage;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -30,7 +31,7 @@ if (defined('DEBUG') && DEBUG) {
 
 $db = GCApp::getDB();
 
-$geomTypes = mapImage::$vectorTypes;
+$geomTypes = MapImage::$vectorTypes;
 
 if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
 $parts = explode(':', $_REQUEST["SRS"]);

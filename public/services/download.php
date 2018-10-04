@@ -1,7 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once 'include/mapImage.php';
+
+use GisClient\Author\Utils\MapImage;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -87,7 +88,7 @@ if (isset($_REQUEST['scalebar'])) {
 }
 
 try {
-    $mapImage = new mapImage($tiles, $imageSize, $srid, $options);
+    $mapImage = new MapImage($tiles, $imageSize, $srid, $options);
     $imageUrl = $mapImage->getImageUrl();
 } catch (Exception $e) {
     print_debug($e->getTraceAsString(), null, 'download');
