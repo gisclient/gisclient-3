@@ -13,6 +13,12 @@ autocomplete:
         _controller: 'GisClient\Author\Controller\AutocompleteController::autocompleteAction'
     methods:
         - GET
+createImage:
+    path: download.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\DownloadController::createImageAction'
+    methods:
+        - POST
 gcmap:
     path: gcmap.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
