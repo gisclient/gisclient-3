@@ -19,6 +19,12 @@ createImage:
         _controller: 'GisClient\Author\Controller\DownloadController::createImageAction'
     methods:
         - POST
+downloadImage:
+    path: download.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\DownloadController::downloadImageAction'
+    methods:
+        - GET
 gcmap:
     path: gcmap.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }

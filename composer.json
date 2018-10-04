@@ -48,6 +48,7 @@
             "mkdir -p import",
             "mkdir -p files",
             "mkdir -p pixmap",
+            "mkdir -p tmp/files",
             "mkdir -p tmp/sess",
             "mkdir -p var/SQLite"
         ],

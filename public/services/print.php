@@ -45,7 +45,6 @@ try {
     if ($_REQUEST['format'] == 'HTML') {
         $file = $printMap->printMapHTML();
     } else if ($_REQUEST['format'] == 'PDF') {
-        $TmpPath = GC_WEB_TMP_DIR;
         $file = $printMap->printMapPDF();
     }
 } catch (Exception $e) {

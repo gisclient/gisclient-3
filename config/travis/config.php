@@ -50,8 +50,6 @@ define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATO
 define('GC_PRINT_TPL_DIR', ROOT_PATH.'public/services/print/');
 define('GC_PRINT_TPL_URL', PUBLIC_URL.'services/print/');
 define('GC_PRINT_IMAGE_SIZE_INI', ROOT_PATH.'config/print_image_size.ini');
-define('GC_WEB_TMP_DIR', ROOT_PATH.'public/services/tmp/');
-define('GC_WEB_TMP_URL', PUBLIC_URL.'services/tmp/');
 define('GC_PRINT_LOGO_SX', 'http://localhost/images/logo_sx.gif');
 define('GC_PRINT_LOGO_DX', 'http://localhost/images/logo_dx.gif');
 define('GC_FOP_LIB', '/lib/fop.php');

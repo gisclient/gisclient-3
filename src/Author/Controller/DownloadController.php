@@ -3,6 +3,8 @@
 namespace GisClient\Author\Controller;
 
 use GisClient\Author\Utils\MapImage;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,13 +61,9 @@ class DownloadController
         if ($format == 'png') {
             $options['image_format'] = 'png';
             $options['output_format'] = 'png';
-            $options['save_image'] = true;
-            $options['file_name'] = \GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'gc_mapimage', 'png');
         } elseif ($format == 'jpeg') {
             $options['image_format'] = 'jpeg';
             $options['output_format'] = 'jpeg';
-            $options['save_image'] = true;
-            $options['file_name'] = \GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'gc_mapimage', 'jpeg');
         }
 
         if (empty($tiles) || !is_array($tiles)) {
@@ -139,5 +137,26 @@ class DownloadController
             'format' => $options['output_format'],
         ];
         return new JsonResponse($data);
+    }
+
+    /**
+     * Download image
+     */
+    public function downloadImageAction(Request $request)
+    {
+        $filename = basename($request->query->get("filename", null));
+        if (empty($filename)) {
+            return $this->createErrorResponse('Missing parameter "filename"');
+        }
+
+        try {
+            $imagePath = ROOT_PATH.'tmp/files';
+            $response = new BinaryFileResponse($imagePath.'/'.$filename);
+            $response->setContentDisposition('attachment', $filename);
+            $response->deleteFileAfterSend(true);
+            return $response;
+        } catch (FileNotFoundException $e) {
+            return $this->createErrorResponse('File not found "'.$filename.'"', BinaryFileResponse::HTTP_NOT_FOUND);
+        }
     }
 }

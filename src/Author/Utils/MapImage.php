@@ -72,8 +72,8 @@ class MapImage
             'auth_name'=>'EPSG',
             'scalebar'=>true,
             'request_type'=>'get-map',
-            'TMP_PATH' => GC_WEB_TMP_DIR,
-            'TMP_URL' => GC_WEB_TMP_URL,
+            'TMP_PATH' => ROOT_PATH.'tmp/files/',
+            'TMP_URL' => PUBLIC_URL.'services/download.php',
             'dpi' => 72
         );
         $this->options = array_merge($defaultOptions, $options);
@@ -127,7 +127,7 @@ class MapImage
         if (empty($this->imageFileName)) {
             $this->getMapImage();
         }
-        return $this->options['TMP_URL'].$this->imageFileName;
+        return $this->options['TMP_URL'].'?filename='.$this->imageFileName;
     }
     
     public function getImageFileName()
@@ -222,7 +222,7 @@ class MapImage
             $extension = 'tif';
         }
         if ($this->options['image_format'] == 'jpeg') {
-            $extension = 'jpg';
+            $extension = 'jepg';
         }
     //    if(empty($this->options["rotation"]))
     //        $this->options["rotation"] = 0;

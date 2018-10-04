@@ -56,8 +56,8 @@ class PrintDocument
             'format' => 'A4',
             'dpi' => 72,
             'direction' => 'vertical',
-            'TMP_PATH' => GC_WEB_TMP_DIR,
-            'TMP_URL' => str_replace(PUBLIC_URL, INTERNAL_URL, GC_WEB_TMP_URL),
+            'TMP_PATH' => ROOT_PATH.'tmp/files/',
+            'TMP_URL' => PUBLIC_URL.'services/download.php',
             'legend' => null,
             'scale_mode' => 'auto',
             'image_format'=>'png',
@@ -221,7 +221,7 @@ class PrintDocument
             throw new \RuntimeException("Could not write to $mapHtmlFile");
         }
         $this->deleteOldTmpFiles();
-        return $this->options['TMP_URL'].$filename;
+        return $this->options['TMP_URL'].'?filename='.$filename;
     }
     
     public function printMapPDF()
