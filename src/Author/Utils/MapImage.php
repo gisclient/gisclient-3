@@ -80,12 +80,12 @@ class MapImage
         
         $this->tiles = $tiles;
         $this->imageSize = $imageSize;
-        $this->db = GCApp::getDB();
+        $this->db = \GCApp::getDB();
         $this->srid = $srid;
-        $this->wmsMergeUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->wmsMergeUrl);
+        $this->wmsMergeUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->wmsMergeUrl);
         if ($this->options['scale_mode'] == 'user') {
             if (empty($this->options['center']) || empty($this->options['scale'])) {
-                throw new Exception('Missing center or scale');
+                throw new \Exception('Missing center or scale');
             }
             $this->extent = $this->calculateExtent(
                 $this->options['center'],
@@ -96,7 +96,7 @@ class MapImage
             $this->scale = $this->options['scale'];
         } else {
             if (empty($this->options['extent'])) {
-                throw new Exception('Missing extent');
+                throw new \Exception('Missing extent');
             }
             $this->extent = $this->adaptExtentToSize($this->options['extent'], $this->imageSize);
             $paperSize = $this->paperSize($this->imageSize, $this->options['dpi']);
@@ -150,7 +150,7 @@ class MapImage
                 $tile['url']=$tile['url'][0];
             }
             $url = trim($tile['url'], '?');
-            $url = printDocument::addPrefixToRelativeUrl($url);
+            $url = PrintDocument::addPrefixToRelativeUrl($url);
             $url = str_replace(PUBLIC_URL, INTERNAL_URL, $url);
             if (!empty($tile['service'])) {
                 $service = $tile['service'];
@@ -191,12 +191,12 @@ class MapImage
                 if (isset($tile['layer'])) {
                     $request['LAYER'] = $tile['layer'];
                 } else {
-                    throw new Exception("layer name is required to print WMTS layer");
+                    throw new \Exception("layer name is required to print WMTS layer");
                 }
                 if (isset($tile['project'])) {
                     $request['PROJECT'] = $tile['project'];
                 } else {
-                    throw new Exception("project name is required to print WMTS layer");
+                    throw new \Exception("project name is required to print WMTS layer");
                 }
             }
             
@@ -205,7 +205,7 @@ class MapImage
         
         if (!empty($this->vectorId)) {
             $url = PUBLIC_URL.'services/vectors.php';
-            $url = printDocument::addPrefixToRelativeUrl($url);
+            $url = PrintDocument::addPrefixToRelativeUrl($url);
             $parameters = array(
                 'LAYERS'=>$this->vectorId,
                 'VERSION'=>'1.1.1',
@@ -226,7 +226,11 @@ class MapImage
         }
     //    if(empty($this->options["rotation"]))
     //        $this->options["rotation"] = 0;
-        $this->imageFileName = GCApp::getUniqueRandomTmpFilename($this->options['TMP_PATH'], 'gc_mapimage', $extension);
+        $this->imageFileName = \GCApp::getUniqueRandomTmpFilename(
+            $this->options['TMP_PATH'],
+            'gc_mapimage',
+            $extension
+        );
 
         if (isset($this->options['save_image'])) {
             $saveImage = $this->options['save_image'];
@@ -235,7 +239,6 @@ class MapImage
         } else {
             $saveImage = true;
         }
-
 
         $requestParameters = json_encode(array(
             'layers'=>$this->wmsList,
@@ -254,7 +257,7 @@ class MapImage
 
 
         if (false === ($ch = curl_init())) {
-            throw new Exception("Could not init curl");
+            throw new \Exception("Could not init curl");
         }
         curl_setopt($ch, CURLOPT_URL, str_replace(PUBLIC_URL, INTERNAL_URL, $this->wmsMergeUrl));
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -267,17 +270,17 @@ class MapImage
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         if (false === ($mapImage = curl_exec($ch))) {
-            throw new Exception("Could not curl_exec [POST on {$this->wmsMergeUrl}]: " . curl_error($ch));
+            throw new \Exception("Could not curl_exec [POST on {$this->wmsMergeUrl}]: " . curl_error($ch));
         }
 
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
+            throw new \RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
         }
 
         if (!$saveImage) {
             $filename = $this->options['TMP_PATH'].$this->imageFileName;
             if (false === file_put_contents($filename, $mapImage)) {
-                throw new Exception("Could not save map image to $filename");
+                throw new \Exception("Could not save map image to $filename");
             }
         }
         curl_close($ch);
@@ -342,18 +345,18 @@ class MapImage
     protected function importVectors()
     {
         if (!defined('PRINT_VECTORS_TABLE')) {
-            throw new Exception('Undefined PRINT_VECTORS_TABLE');
+            throw new \Exception('Undefined PRINT_VECTORS_TABLE');
         }
         if (!defined('PRINT_VECTORS_SRID')) {
-            throw new Exception('Undefined PRINT_VECTORS_SRID');
+            throw new \Exception('Undefined PRINT_VECTORS_SRID');
         }
         
         $tableName = PRINT_VECTORS_TABLE;
         $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
         
-        $db = GCApp::getDB();
+        $db = \GCApp::getDB();
         
-        if (!GCApp::tableExists($db, $schema, $tableName)) {
+        if (!\GCApp::tableExists($db, $schema, $tableName)) {
             $sql = 'create sequence '.$schema.'.'.$tableName.'_print_id_seq ';
             $db->exec($sql);
             $sql = 'create table '.$schema.'.'.$tableName.' (
@@ -416,16 +419,16 @@ class MapImage
     protected function cleanVectors()
     {
         if (!defined('PRINT_VECTORS_TABLE')) {
-            throw new Exception('Undefined PRINT_VECTORS_TABLE');
+            throw new \Exception('Undefined PRINT_VECTORS_TABLE');
         }
         if (!defined('PRINT_VECTORS_SRID')) {
-            throw new Exception('Undefined PRINT_VECTORS_SRID');
+            throw new \Exception('Undefined PRINT_VECTORS_SRID');
         }
         
         $tableName = PRINT_VECTORS_TABLE;
         $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
         
-        $db = GCApp::getDB();
+        $db = \GCApp::getDB();
         
         $sql = 'delete from '.$schema.'.'.$tableName." where (insert_time + interval '1 day') < NOW()";
         $db->exec($sql);
