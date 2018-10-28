@@ -47,7 +47,7 @@ class Theme
 
         $sql = "SELECT l.layergroup_id FROM {$this->db->getParams()['schema']}.layergroup l ";
         if (isset($this->mapName)) {
-            $sql .= "INNER JOIN gisclient_34.mapset_layergroup m ";
+            $sql .= "INNER JOIN {$this->db->getParams()['schema']}.mapset_layergroup m ";
             $sql .= "ON (l.layergroup_id = m.layergroup_id AND ";
             $sql .= "mapset_name = " . $this->db->getDb()->quote($this->mapName) . ") ";
         }
