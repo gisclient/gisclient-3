@@ -24,7 +24,7 @@ SET search_path = gisclient_34, pg_catalog;
 
 
 --
--- Name: tree; Type: TYPE; Schema: gisclient_34; Owner: -
+-- Name: tree; Type: TYPE
 --
 
 CREATE TYPE tree AS (
@@ -36,7 +36,7 @@ CREATE TYPE tree AS (
 
 
 --
--- Name: check_catalog(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: check_catalog(); Type: FUNCTION
 --
 
 CREATE FUNCTION check_catalog() RETURNS trigger
@@ -54,7 +54,7 @@ $_$;
 
 
 --
--- Name: check_class(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: check_class(); Type: FUNCTION
 --
 
 CREATE FUNCTION check_class() RETURNS trigger
@@ -79,7 +79,7 @@ $_$;
 
 
 --
--- Name: check_layer(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: check_layer(); Type: FUNCTION
 --
 
 CREATE FUNCTION check_layer() RETURNS trigger
@@ -111,7 +111,7 @@ $_$;
 
 
 --
--- Name: check_layergroup(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: check_layergroup(); Type: FUNCTION
 --
 
 CREATE FUNCTION check_layergroup() RETURNS trigger
@@ -138,7 +138,7 @@ $_$;
 
 
 --
--- Name: check_mapset(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: check_mapset(); Type: FUNCTION
 --
 
 CREATE FUNCTION check_mapset() RETURNS trigger
@@ -182,7 +182,7 @@ $_$;
 
 
 --
--- Name: check_project(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: check_project(); Type: FUNCTION
 --
 
 CREATE FUNCTION check_project() RETURNS trigger
@@ -191,12 +191,10 @@ CREATE FUNCTION check_project() RETURNS trigger
 DECLARE 
 	ok boolean;
 	presente integer;
-	sk varchar;
 	query text;
 	newid integer;
 BEGIN
 	ok:=false;
-	sk:='gisclient_34';	
 	-- AGGIUNGO AL BASE URL LO SLASH FINALE (UTILE PER I LINK)
 	if(coalesce(new.base_url,'')<>'') then
 		if (not new.base_url ~ '^(.+)/$') then
@@ -222,7 +220,7 @@ $_$;
 
 
 --
--- Name: delete_qt(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: delete_qt(); Type: FUNCTION
 --
 
 CREATE FUNCTION delete_qt() RETURNS trigger
@@ -236,7 +234,7 @@ $$;
 
 
 --
--- Name: delete_qtrelation(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: delete_qtrelation(); Type: FUNCTION
 --
 
 CREATE FUNCTION delete_qtrelation() RETURNS trigger
@@ -250,7 +248,7 @@ $$;
 
 
 --
--- Name: enc_pwd(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: enc_pwd(); Type: FUNCTION
 --
 
 CREATE FUNCTION enc_pwd() RETURNS trigger
@@ -267,7 +265,7 @@ $$;
 
 
 --
--- Name: gw_findtree(integer, character varying); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: gw_findtree(integer, character varying); Type: FUNCTION
 --
 
 CREATE FUNCTION gw_findtree(id integer, lvl character varying) RETURNS SETOF tree
@@ -292,7 +290,7 @@ $$;
 
 
 --
--- Name: move_layergroup(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: move_layergroup(); Type: FUNCTION
 --
 
 CREATE FUNCTION move_layergroup() RETURNS trigger
@@ -308,7 +306,7 @@ $$;
 
 
 --
--- Name: new_pkey(character varying, character varying); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: new_pkey(character varying, character varying); Type: FUNCTION
 --
 
 CREATE FUNCTION new_pkey(tab character varying, id_fld character varying) RETURNS integer
@@ -328,7 +326,7 @@ $$;
 
 
 --
--- Name: new_pkey(character varying, character varying, integer); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: new_pkey(character varying, character varying, integer); Type: FUNCTION
 --
 
 CREATE FUNCTION new_pkey(tab character varying, id_fld character varying, st integer) RETURNS integer
@@ -363,7 +361,7 @@ $$;
 
 
 --
--- Name: new_pkey(character varying, character varying, character varying); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: new_pkey(character varying, character varying, character varying); Type: FUNCTION
 --
 
 CREATE FUNCTION new_pkey(sk character varying, tab character varying, id_fld character varying) RETURNS integer
@@ -379,7 +377,7 @@ $$;
 
 
 --
--- Name: new_pkey(character varying, character varying, character varying, integer); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: new_pkey(character varying, character varying, character varying, integer); Type: FUNCTION
 --
 
 CREATE FUNCTION new_pkey(sk character varying, tab character varying, id_fld character varying, st integer) RETURNS integer
@@ -411,7 +409,7 @@ $$;
 
 
 --
--- Name: new_pkey_varchar(character varying, character varying, character varying); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: new_pkey_varchar(character varying, character varying, character varying); Type: FUNCTION
 --
 
 CREATE FUNCTION new_pkey_varchar(tb character varying, fld character varying, val character varying) RETURNS character varying
@@ -436,7 +434,7 @@ $_$;
 
 
 --
--- Name: rm_project_groups(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: rm_project_groups(); Type: FUNCTION
 --
 
 CREATE FUNCTION rm_project_groups() RETURNS trigger
@@ -452,7 +450,7 @@ $$;
 
 
 --
--- Name: set_depth(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: set_depth(); Type: FUNCTION
 --
 
 CREATE FUNCTION set_depth() RETURNS trigger
@@ -470,7 +468,7 @@ $$;
 
 
 --
--- Name: set_layer_name(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: set_layer_name(); Type: FUNCTION
 --
 
 CREATE FUNCTION set_layer_name() RETURNS trigger
@@ -484,7 +482,7 @@ $$;
 
 
 --
--- Name: set_leaf(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: set_leaf(); Type: FUNCTION
 --
 
 CREATE FUNCTION set_leaf() RETURNS trigger
@@ -502,7 +500,7 @@ $$;
 
 
 --
--- Name: set_map_extent(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: set_map_extent(); Type: FUNCTION
 --
 
 CREATE FUNCTION set_map_extent() RETURNS trigger
@@ -545,7 +543,7 @@ $_$;
 
 
 --
--- Name: style_name(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: style_name(); Type: FUNCTION
 --
 
 CREATE FUNCTION style_name() RETURNS trigger
@@ -582,7 +580,7 @@ $_$;
 
 
 --
--- Name: theme_version_tr(); Type: FUNCTION; Schema: gisclient_34; Owner: -
+-- Name: theme_version_tr(); Type: FUNCTION
 --
 
 CREATE FUNCTION theme_version_tr() RETURNS trigger
@@ -606,7 +604,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: access_log; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: access_log; Type: TABLE
 --
 
 CREATE TABLE access_log (
@@ -620,7 +618,7 @@ CREATE TABLE access_log (
 
 
 --
--- Name: access_log_al_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: access_log_al_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE access_log_al_id_seq
@@ -632,14 +630,14 @@ CREATE SEQUENCE access_log_al_id_seq
 
 
 --
--- Name: access_log_al_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: access_log_al_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE access_log_al_id_seq OWNED BY access_log.al_id;
 
 
 --
--- Name: authfilter; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: authfilter; Type: TABLE
 --
 
 CREATE TABLE authfilter (
@@ -651,7 +649,7 @@ CREATE TABLE authfilter (
 
 
 --
--- Name: catalog; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: catalog; Type: TABLE
 --
 
 CREATE TABLE catalog (
@@ -667,7 +665,7 @@ CREATE TABLE catalog (
 
 
 --
--- Name: catalog_import; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: catalog_import; Type: TABLE
 --
 
 CREATE TABLE catalog_import (
@@ -681,7 +679,7 @@ CREATE TABLE catalog_import (
 
 
 --
--- Name: class; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: class; Type: TABLE
 --
 
 CREATE TABLE class (
@@ -720,7 +718,7 @@ CREATE TABLE class (
 
 
 --
--- Name: classgroup; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: classgroup; Type: TABLE
 --
 
 CREATE TABLE classgroup (
@@ -749,7 +747,7 @@ CREATE TABLE classgroup (
 
 
 --
--- Name: e_charset_encodings; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_charset_encodings; Type: TABLE
 --
 
 CREATE TABLE e_charset_encodings (
@@ -760,7 +758,7 @@ CREATE TABLE e_charset_encodings (
 
 
 --
--- Name: e_conntype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_conntype; Type: TABLE
 --
 
 CREATE TABLE e_conntype (
@@ -771,14 +769,14 @@ CREATE TABLE e_conntype (
 
 
 --
--- Name: TABLE e_conntype; Type: COMMENT; Schema: gisclient_34; Owner: -
+-- Name: TABLE e_conntype; Type: COMMENT
 --
 
 COMMENT ON TABLE e_conntype IS 'Il tipo File Shape deve essere sempre uguale a 1!';
 
 
 --
--- Name: e_datatype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_datatype; Type: TABLE
 --
 
 CREATE TABLE e_datatype (
@@ -789,7 +787,7 @@ CREATE TABLE e_datatype (
 
 
 --
--- Name: e_fieldformat; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_fieldformat; Type: TABLE
 --
 
 CREATE TABLE e_fieldformat (
@@ -801,7 +799,7 @@ CREATE TABLE e_fieldformat (
 
 
 --
--- Name: e_fieldtype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_fieldtype; Type: TABLE
 --
 
 CREATE TABLE e_fieldtype (
@@ -812,7 +810,7 @@ CREATE TABLE e_fieldtype (
 
 
 --
--- Name: e_filetype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_filetype; Type: TABLE
 --
 
 CREATE TABLE e_filetype (
@@ -823,7 +821,7 @@ CREATE TABLE e_filetype (
 
 
 --
--- Name: e_form; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_form; Type: TABLE
 --
 
 CREATE TABLE e_form (
@@ -842,7 +840,7 @@ CREATE TABLE e_form (
 
 
 --
--- Name: e_language; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_language; Type: TABLE
 --
 
 CREATE TABLE e_language (
@@ -853,7 +851,7 @@ CREATE TABLE e_language (
 
 
 --
--- Name: e_layertype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_layertype; Type: TABLE
 --
 
 CREATE TABLE e_layertype (
@@ -865,7 +863,7 @@ CREATE TABLE e_layertype (
 
 
 --
--- Name: e_lblposition; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_lblposition; Type: TABLE
 --
 
 CREATE TABLE e_lblposition (
@@ -876,7 +874,7 @@ CREATE TABLE e_lblposition (
 
 
 --
--- Name: e_legendtype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_legendtype; Type: TABLE
 --
 
 CREATE TABLE e_legendtype (
@@ -887,7 +885,7 @@ CREATE TABLE e_legendtype (
 
 
 --
--- Name: e_level; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_level; Type: TABLE
 --
 
 CREATE TABLE e_level (
@@ -906,7 +904,7 @@ CREATE TABLE e_level (
 
 
 --
--- Name: e_orderby; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_orderby; Type: TABLE
 --
 
 CREATE TABLE e_orderby (
@@ -917,7 +915,7 @@ CREATE TABLE e_orderby (
 
 
 --
--- Name: e_outputformat; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_outputformat; Type: TABLE
 --
 
 CREATE TABLE e_outputformat (
@@ -933,7 +931,7 @@ CREATE TABLE e_outputformat (
 
 
 --
--- Name: e_owstype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_owstype; Type: TABLE
 --
 
 CREATE TABLE e_owstype (
@@ -944,7 +942,7 @@ CREATE TABLE e_owstype (
 
 
 --
--- Name: e_papersize; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_papersize; Type: TABLE
 --
 
 CREATE TABLE e_papersize (
@@ -957,7 +955,7 @@ CREATE TABLE e_papersize (
 
 
 --
--- Name: e_pattern; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_pattern; Type: TABLE
 --
 
 CREATE TABLE e_pattern (
@@ -969,7 +967,7 @@ CREATE TABLE e_pattern (
 
 
 --
--- Name: e_pattern_pattern_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: e_pattern_pattern_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE e_pattern_pattern_id_seq
@@ -981,14 +979,14 @@ CREATE SEQUENCE e_pattern_pattern_id_seq
 
 
 --
--- Name: e_pattern_pattern_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: e_pattern_pattern_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE e_pattern_pattern_id_seq OWNED BY e_pattern.pattern_id;
 
 
 --
--- Name: e_qtrelationtype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_qtrelationtype; Type: TABLE
 --
 
 CREATE TABLE e_qtrelationtype (
@@ -999,7 +997,7 @@ CREATE TABLE e_qtrelationtype (
 
 
 --
--- Name: e_resultype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_resultype; Type: TABLE
 --
 
 CREATE TABLE e_resultype (
@@ -1010,7 +1008,7 @@ CREATE TABLE e_resultype (
 
 
 --
--- Name: e_searchtype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_searchtype; Type: TABLE
 --
 
 CREATE TABLE e_searchtype (
@@ -1021,7 +1019,7 @@ CREATE TABLE e_searchtype (
 
 
 --
--- Name: e_sizeunits; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_sizeunits; Type: TABLE
 --
 
 CREATE TABLE e_sizeunits (
@@ -1032,7 +1030,7 @@ CREATE TABLE e_sizeunits (
 
 
 --
--- Name: e_symbolcategory; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_symbolcategory; Type: TABLE
 --
 
 CREATE TABLE e_symbolcategory (
@@ -1043,7 +1041,7 @@ CREATE TABLE e_symbolcategory (
 
 
 --
--- Name: e_tiletype; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_tiletype; Type: TABLE
 --
 
 CREATE TABLE e_tiletype (
@@ -1054,7 +1052,7 @@ CREATE TABLE e_tiletype (
 
 
 --
--- Name: form_level; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: form_level; Type: TABLE
 --
 
 CREATE TABLE form_level (
@@ -1068,7 +1066,7 @@ CREATE TABLE form_level (
 
 
 --
--- Name: elenco_form; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: elenco_form; Type: VIEW
 --
 
 CREATE VIEW elenco_form AS
@@ -1076,7 +1074,7 @@ CREATE VIEW elenco_form AS
 
 
 --
--- Name: font; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: font; Type: TABLE
 --
 
 CREATE TABLE font (
@@ -1086,7 +1084,7 @@ CREATE TABLE font (
 
 
 --
--- Name: group_authfilter; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: group_authfilter; Type: TABLE
 --
 
 CREATE TABLE group_authfilter (
@@ -1097,7 +1095,7 @@ CREATE TABLE group_authfilter (
 
 
 --
--- Name: groups; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: groups; Type: TABLE
 --
 
 CREATE TABLE groups (
@@ -1107,7 +1105,7 @@ CREATE TABLE groups (
 
 
 --
--- Name: i18n_field; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: i18n_field; Type: TABLE
 --
 
 CREATE TABLE i18n_field (
@@ -1118,7 +1116,7 @@ CREATE TABLE i18n_field (
 
 
 --
--- Name: i18n_field_i18nf_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: i18n_field_i18nf_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE i18n_field_i18nf_id_seq
@@ -1130,14 +1128,14 @@ CREATE SEQUENCE i18n_field_i18nf_id_seq
 
 
 --
--- Name: i18n_field_i18nf_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: i18n_field_i18nf_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE i18n_field_i18nf_id_seq OWNED BY i18n_field.i18nf_id;
 
 
 --
--- Name: layer; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer; Type: TABLE
 --
 
 CREATE TABLE layer (
@@ -1192,7 +1190,7 @@ CREATE TABLE layer (
 
 
 --
--- Name: layer_authfilter; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer_authfilter; Type: TABLE
 --
 
 CREATE TABLE layer_authfilter (
@@ -1203,7 +1201,7 @@ CREATE TABLE layer_authfilter (
 
 
 --
--- Name: layer_groups_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: layer_groups_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE layer_groups_seq
@@ -1215,7 +1213,7 @@ CREATE SEQUENCE layer_groups_seq
 
 
 --
--- Name: layer_groups; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer_groups; Type: TABLE
 --
 
 CREATE TABLE layer_groups (
@@ -1230,7 +1228,7 @@ CREATE TABLE layer_groups (
 
 
 --
--- Name: layergroup; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layergroup; Type: TABLE
 --
 
 CREATE TABLE layergroup (
@@ -1272,7 +1270,7 @@ CREATE TABLE layergroup (
 
 
 --
--- Name: link; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: link; Type: TABLE
 --
 
 CREATE TABLE link (
@@ -1287,7 +1285,7 @@ CREATE TABLE link (
 
 
 --
--- Name: localization; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: localization; Type: TABLE
 --
 
 CREATE TABLE localization (
@@ -1301,7 +1299,7 @@ CREATE TABLE localization (
 
 
 --
--- Name: localization_localization_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: localization_localization_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE localization_localization_id_seq
@@ -1313,14 +1311,14 @@ CREATE SEQUENCE localization_localization_id_seq
 
 
 --
--- Name: localization_localization_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: localization_localization_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE localization_localization_id_seq OWNED BY localization.localization_id;
 
 
 --
--- Name: mapset; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: mapset; Type: TABLE
 --
 
 CREATE TABLE mapset (
@@ -1354,14 +1352,14 @@ CREATE TABLE mapset (
 
 
 --
--- Name: COLUMN mapset.mapset_scales; Type: COMMENT; Schema: gisclient_34; Owner: -
+-- Name: COLUMN mapset.mapset_scales; Type: COMMENT
 --
 
 COMMENT ON COLUMN mapset.mapset_scales IS 'Possible scale list separated with comma';
 
 
 --
--- Name: mapset_layergroup; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: mapset_layergroup; Type: TABLE
 --
 
 CREATE TABLE mapset_layergroup (
@@ -1374,7 +1372,7 @@ CREATE TABLE mapset_layergroup (
 
 
 --
--- Name: project; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project; Type: TABLE
 --
 
 CREATE TABLE project (
@@ -1411,7 +1409,7 @@ CREATE TABLE project (
 
 
 --
--- Name: project_admin; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_admin; Type: TABLE
 --
 
 CREATE TABLE project_admin (
@@ -1421,7 +1419,7 @@ CREATE TABLE project_admin (
 
 
 --
--- Name: project_languages; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_languages; Type: TABLE
 --
 
 CREATE TABLE project_languages (
@@ -1431,7 +1429,7 @@ CREATE TABLE project_languages (
 
 
 --
--- Name: project_srs; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_srs; Type: TABLE
 --
 
 CREATE TABLE project_srs (
@@ -1443,7 +1441,7 @@ CREATE TABLE project_srs (
 
 
 --
--- Name: qt; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qt; Type: TABLE
 --
 
 CREATE TABLE qt (
@@ -1475,7 +1473,7 @@ CREATE TABLE qt (
 
 
 --
--- Name: qtfield; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield; Type: TABLE
 --
 
 CREATE TABLE qtfield (
@@ -1505,7 +1503,7 @@ CREATE TABLE qtfield (
 
 
 --
--- Name: qtfield_groups; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield_groups; Type: TABLE
 --
 
 CREATE TABLE qtfield_groups (
@@ -1516,7 +1514,7 @@ CREATE TABLE qtfield_groups (
 
 
 --
--- Name: qtlink; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtlink; Type: TABLE
 --
 
 CREATE TABLE qtlink (
@@ -1527,7 +1525,7 @@ CREATE TABLE qtlink (
 
 
 --
--- Name: qtrelation; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtrelation; Type: TABLE
 --
 
 CREATE TABLE qtrelation (
@@ -1550,7 +1548,7 @@ CREATE TABLE qtrelation (
 
 
 --
--- Name: seldb_catalog; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_catalog; Type: VIEW
 --
 
 CREATE VIEW seldb_catalog AS
@@ -1558,7 +1556,7 @@ CREATE VIEW seldb_catalog AS
 
 
 --
--- Name: seldb_catalog_wms; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_catalog_wms; Type: VIEW
 --
 
 CREATE VIEW seldb_catalog_wms AS
@@ -1566,7 +1564,7 @@ CREATE VIEW seldb_catalog_wms AS
 
 
 --
--- Name: seldb_charset_encodings; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_charset_encodings; Type: VIEW
 --
 
 CREATE VIEW seldb_charset_encodings AS
@@ -1574,7 +1572,7 @@ CREATE VIEW seldb_charset_encodings AS
 
 
 --
--- Name: seldb_conntype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_conntype; Type: VIEW
 --
 
 CREATE VIEW seldb_conntype AS
@@ -1582,7 +1580,7 @@ CREATE VIEW seldb_conntype AS
 
 
 --
--- Name: seldb_datatype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_datatype; Type: VIEW
 --
 
 CREATE VIEW seldb_datatype AS
@@ -1590,7 +1588,7 @@ CREATE VIEW seldb_datatype AS
 
 
 --
--- Name: seldb_field_filter; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_field_filter; Type: VIEW
 --
 
 CREATE VIEW seldb_field_filter AS
@@ -1598,7 +1596,7 @@ CREATE VIEW seldb_field_filter AS
 
 
 --
--- Name: seldb_fieldtype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_fieldtype; Type: VIEW
 --
 
 CREATE VIEW seldb_fieldtype AS
@@ -1606,7 +1604,7 @@ CREATE VIEW seldb_fieldtype AS
 
 
 --
--- Name: seldb_filetype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_filetype; Type: VIEW
 --
 
 CREATE VIEW seldb_filetype AS
@@ -1614,7 +1612,7 @@ CREATE VIEW seldb_filetype AS
 
 
 --
--- Name: seldb_font; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_font; Type: VIEW
 --
 
 CREATE VIEW seldb_font AS
@@ -1622,7 +1620,7 @@ CREATE VIEW seldb_font AS
 
 
 --
--- Name: seldb_group_authfilter; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_group_authfilter; Type: VIEW
 --
 
 CREATE VIEW seldb_group_authfilter AS
@@ -1630,7 +1628,7 @@ CREATE VIEW seldb_group_authfilter AS
 
 
 --
--- Name: seldb_language; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_language; Type: VIEW
 --
 
 CREATE VIEW seldb_language AS
@@ -1638,7 +1636,7 @@ CREATE VIEW seldb_language AS
 
 
 --
--- Name: seldb_layer_layergroup; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_layer_layergroup; Type: VIEW
 --
 
 CREATE VIEW seldb_layer_layergroup AS
@@ -1646,7 +1644,7 @@ CREATE VIEW seldb_layer_layergroup AS
 
 
 --
--- Name: seldb_layertype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_layertype; Type: VIEW
 --
 
 CREATE VIEW seldb_layertype AS
@@ -1654,7 +1652,7 @@ CREATE VIEW seldb_layertype AS
 
 
 --
--- Name: seldb_lblposition; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_lblposition; Type: VIEW
 --
 
 CREATE VIEW seldb_lblposition AS
@@ -1662,7 +1660,7 @@ CREATE VIEW seldb_lblposition AS
 
 
 --
--- Name: seldb_legendtype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_legendtype; Type: VIEW
 --
 
 CREATE VIEW seldb_legendtype AS
@@ -1670,7 +1668,7 @@ CREATE VIEW seldb_legendtype AS
 
 
 --
--- Name: seldb_link; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_link; Type: VIEW
 --
 
 CREATE VIEW seldb_link AS
@@ -1678,7 +1676,7 @@ CREATE VIEW seldb_link AS
 
 
 --
--- Name: seldb_mapset_srid; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_mapset_srid; Type: VIEW
 --
 
 CREATE VIEW seldb_mapset_srid AS
@@ -1686,7 +1684,7 @@ CREATE VIEW seldb_mapset_srid AS
 
 
 --
--- Name: seldb_orderby; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_orderby; Type: VIEW
 --
 
 CREATE VIEW seldb_orderby AS
@@ -1694,7 +1692,7 @@ CREATE VIEW seldb_orderby AS
 
 
 --
--- Name: seldb_outputformat; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_outputformat; Type: VIEW
 --
 
 CREATE VIEW seldb_outputformat AS
@@ -1702,7 +1700,7 @@ CREATE VIEW seldb_outputformat AS
 
 
 --
--- Name: seldb_owstype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_owstype; Type: VIEW
 --
 
 CREATE VIEW seldb_owstype AS
@@ -1710,7 +1708,7 @@ CREATE VIEW seldb_owstype AS
 
 
 --
--- Name: seldb_papersize; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_papersize; Type: VIEW
 --
 
 CREATE VIEW seldb_papersize AS
@@ -1718,7 +1716,7 @@ CREATE VIEW seldb_papersize AS
 
 
 --
--- Name: seldb_pattern; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_pattern; Type: VIEW
 --
 
 CREATE VIEW seldb_pattern AS
@@ -1726,7 +1724,7 @@ CREATE VIEW seldb_pattern AS
 
 
 --
--- Name: seldb_project; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_project; Type: VIEW
 --
 
 CREATE VIEW seldb_project AS
@@ -1734,7 +1732,7 @@ CREATE VIEW seldb_project AS
 
 
 --
--- Name: theme; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: theme; Type: TABLE
 --
 
 CREATE TABLE theme (
@@ -1752,7 +1750,7 @@ CREATE TABLE theme (
 
 
 --
--- Name: seldb_qt_theme; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_qt_theme; Type: VIEW
 --
 
 CREATE VIEW seldb_qt_theme AS
@@ -1760,7 +1758,7 @@ CREATE VIEW seldb_qt_theme AS
 
 
 --
--- Name: seldb_qtrelation; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_qtrelation; Type: VIEW
 --
 
 CREATE VIEW seldb_qtrelation AS
@@ -1768,7 +1766,7 @@ CREATE VIEW seldb_qtrelation AS
 
 
 --
--- Name: seldb_qtrelationtype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_qtrelationtype; Type: VIEW
 --
 
 CREATE VIEW seldb_qtrelationtype AS
@@ -1776,7 +1774,7 @@ CREATE VIEW seldb_qtrelationtype AS
 
 
 --
--- Name: seldb_resultype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_resultype; Type: VIEW
 --
 
 CREATE VIEW seldb_resultype AS
@@ -1784,7 +1782,7 @@ CREATE VIEW seldb_resultype AS
 
 
 --
--- Name: seldb_searchtype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_searchtype; Type: VIEW
 --
 
 CREATE VIEW seldb_searchtype AS
@@ -1792,7 +1790,7 @@ CREATE VIEW seldb_searchtype AS
 
 
 --
--- Name: seldb_sizeunits; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_sizeunits; Type: VIEW
 --
 
 CREATE VIEW seldb_sizeunits AS
@@ -1800,7 +1798,7 @@ CREATE VIEW seldb_sizeunits AS
 
 
 --
--- Name: seldb_theme; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_theme; Type: VIEW
 --
 
 CREATE VIEW seldb_theme AS
@@ -1808,7 +1806,7 @@ CREATE VIEW seldb_theme AS
 
 
 --
--- Name: seldb_tiletype; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: seldb_tiletype; Type: VIEW
 --
 
 CREATE VIEW seldb_tiletype AS
@@ -1816,7 +1814,7 @@ CREATE VIEW seldb_tiletype AS
 
 
 --
--- Name: selgroup; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: selgroup; Type: TABLE
 --
 
 CREATE TABLE selgroup (
@@ -1829,7 +1827,7 @@ CREATE TABLE selgroup (
 
 
 --
--- Name: selgroup_layer; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: selgroup_layer; Type: TABLE
 --
 
 CREATE TABLE selgroup_layer (
@@ -1839,7 +1837,7 @@ CREATE TABLE selgroup_layer (
 
 
 --
--- Name: style; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: style; Type: TABLE
 --
 
 CREATE TABLE style (
@@ -1865,7 +1863,7 @@ CREATE TABLE style (
 
 
 --
--- Name: symbol; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: symbol; Type: TABLE
 --
 
 CREATE TABLE symbol (
@@ -1884,7 +1882,7 @@ CREATE TABLE symbol (
 
 
 --
--- Name: symbol_ttf; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: symbol_ttf; Type: TABLE
 --
 
 CREATE TABLE symbol_ttf (
@@ -1898,7 +1896,7 @@ CREATE TABLE symbol_ttf (
 
 
 --
--- Name: tb_import; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: tb_import; Type: TABLE
 --
 
 CREATE TABLE tb_import (
@@ -1911,7 +1909,7 @@ CREATE TABLE tb_import (
 
 
 --
--- Name: tb_import_table; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: tb_import_table; Type: TABLE
 --
 
 CREATE TABLE tb_import_table (
@@ -1922,7 +1920,7 @@ CREATE TABLE tb_import_table (
 
 
 --
--- Name: tb_logs; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: tb_logs; Type: TABLE
 --
 
 CREATE TABLE tb_logs (
@@ -1935,7 +1933,7 @@ CREATE TABLE tb_logs (
 
 
 --
--- Name: theme_version; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: theme_version; Type: TABLE
 --
 
 CREATE TABLE theme_version (
@@ -1945,7 +1943,7 @@ CREATE TABLE theme_version (
 
 
 --
--- Name: theme_version_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: theme_version_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE theme_version_id_seq
@@ -1957,7 +1955,7 @@ CREATE SEQUENCE theme_version_id_seq
 
 
 --
--- Name: user_group; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: user_group; Type: TABLE
 --
 
 CREATE TABLE user_group (
@@ -1967,7 +1965,7 @@ CREATE TABLE user_group (
 
 
 --
--- Name: usercontext; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: usercontext; Type: TABLE
 --
 
 CREATE TABLE usercontext (
@@ -1980,7 +1978,7 @@ CREATE TABLE usercontext (
 
 
 --
--- Name: usercontext_usercontext_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: usercontext_usercontext_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE usercontext_usercontext_id_seq
@@ -1992,14 +1990,14 @@ CREATE SEQUENCE usercontext_usercontext_id_seq
 
 
 --
--- Name: usercontext_usercontext_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: usercontext_usercontext_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE usercontext_usercontext_id_seq OWNED BY usercontext.usercontext_id;
 
 
 --
--- Name: users; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: users; Type: TABLE
 --
 
 CREATE TABLE users (
@@ -2023,7 +2021,7 @@ CREATE TABLE users (
 
 
 --
--- Name: users_options; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: users_options; Type: TABLE
 --
 
 CREATE TABLE users_options (
@@ -2035,7 +2033,7 @@ CREATE TABLE users_options (
 
 
 --
--- Name: users_options_users_options_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: users_options_users_options_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE users_options_users_options_id_seq
@@ -2047,14 +2045,14 @@ CREATE SEQUENCE users_options_users_options_id_seq
 
 
 --
--- Name: users_options_users_options_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: users_options_users_options_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE users_options_users_options_id_seq OWNED BY users_options.users_options_id;
 
 
 --
--- Name: version; Type: TABLE; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: version; Type: TABLE
 --
 
 CREATE TABLE version (
@@ -2066,7 +2064,7 @@ CREATE TABLE version (
 
 
 --
--- Name: version_version_id_seq; Type: SEQUENCE; Schema: gisclient_34; Owner: -
+-- Name: version_version_id_seq; Type: SEQUENCE
 --
 
 CREATE SEQUENCE version_version_id_seq
@@ -2078,14 +2076,14 @@ CREATE SEQUENCE version_version_id_seq
 
 
 --
--- Name: version_version_id_seq; Type: SEQUENCE OWNED BY; Schema: gisclient_34; Owner: -
+-- Name: version_version_id_seq; Type: SEQUENCE OWNED BY
 --
 
 ALTER SEQUENCE version_version_id_seq OWNED BY version.version_id;
 
 
 --
--- Name: vista_catalog; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_catalog; Type: VIEW
 --
 
 CREATE VIEW vista_catalog AS
@@ -2093,7 +2091,7 @@ CREATE VIEW vista_catalog AS
 
 
 --
--- Name: vista_class; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_class; Type: VIEW
 --
 
 CREATE VIEW vista_class AS
@@ -2101,7 +2099,7 @@ CREATE VIEW vista_class AS
 
 
 --
--- Name: vista_group_authfilter; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_group_authfilter; Type: VIEW
 --
 
 CREATE VIEW vista_group_authfilter AS
@@ -2109,7 +2107,7 @@ CREATE VIEW vista_group_authfilter AS
 
 
 --
--- Name: vista_layer; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_layer; Type: VIEW
 --
 
 CREATE VIEW vista_layer AS
@@ -2117,7 +2115,7 @@ CREATE VIEW vista_layer AS
 
 
 --
--- Name: vista_layergroup; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_layergroup; Type: VIEW
 --
 
 CREATE VIEW vista_layergroup AS
@@ -2125,7 +2123,7 @@ CREATE VIEW vista_layergroup AS
 
 
 --
--- Name: vista_mapset; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_mapset; Type: VIEW
 --
 
 CREATE VIEW vista_mapset AS
@@ -2133,7 +2131,7 @@ CREATE VIEW vista_mapset AS
 
 
 --
--- Name: vista_project_languages; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_project_languages; Type: VIEW
 --
 
 CREATE VIEW vista_project_languages AS
@@ -2141,7 +2139,7 @@ CREATE VIEW vista_project_languages AS
 
 
 --
--- Name: vista_qtfield; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_qtfield; Type: VIEW
 --
 
 CREATE VIEW vista_qtfield AS
@@ -2149,7 +2147,7 @@ CREATE VIEW vista_qtfield AS
 
 
 --
--- Name: vista_qtrelation; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_qtrelation; Type: VIEW
 --
 
 CREATE VIEW vista_qtrelation AS
@@ -2157,7 +2155,7 @@ CREATE VIEW vista_qtrelation AS
 
 
 --
--- Name: vista_style; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_style; Type: VIEW
 --
 
 CREATE VIEW vista_style AS
@@ -2165,7 +2163,7 @@ CREATE VIEW vista_style AS
 
 
 --
--- Name: vista_version; Type: VIEW; Schema: gisclient_34; Owner: -
+-- Name: vista_version; Type: VIEW
 --
 
 CREATE VIEW vista_version AS
@@ -2173,56 +2171,56 @@ CREATE VIEW vista_version AS
 
 
 --
--- Name: al_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: al_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY access_log ALTER COLUMN al_id SET DEFAULT nextval('access_log_al_id_seq'::regclass);
 
 
 --
--- Name: pattern_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: pattern_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY e_pattern ALTER COLUMN pattern_id SET DEFAULT nextval('e_pattern_pattern_id_seq'::regclass);
 
 
 --
--- Name: i18nf_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: i18nf_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY i18n_field ALTER COLUMN i18nf_id SET DEFAULT nextval('i18n_field_i18nf_id_seq'::regclass);
 
 
 --
--- Name: localization_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: localization_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY localization ALTER COLUMN localization_id SET DEFAULT nextval('localization_localization_id_seq'::regclass);
 
 
 --
--- Name: usercontext_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: usercontext_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY usercontext ALTER COLUMN usercontext_id SET DEFAULT nextval('usercontext_usercontext_id_seq'::regclass);
 
 
 --
--- Name: users_options_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: users_options_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY users_options ALTER COLUMN users_options_id SET DEFAULT nextval('users_options_users_options_id_seq'::regclass);
 
 
 --
--- Name: version_id; Type: DEFAULT; Schema: gisclient_34; Owner: -
+-- Name: version_id; Type: DEFAULT
 --
 
 ALTER TABLE ONLY version ALTER COLUMN version_id SET DEFAULT nextval('version_version_id_seq'::regclass);
 
 
 --
--- Name: 18n_field_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: 18n_field_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY i18n_field
@@ -2230,7 +2228,7 @@ ALTER TABLE ONLY i18n_field
 
 
 --
--- Name: access_log_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: access_log_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY access_log
@@ -2238,7 +2236,7 @@ ALTER TABLE ONLY access_log
 
 
 --
--- Name: catalog_catalog_name_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: catalog_catalog_name_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog
@@ -2246,7 +2244,7 @@ ALTER TABLE ONLY catalog
 
 
 --
--- Name: catalog_import_catalog_import_name_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: catalog_import_catalog_import_name_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog_import
@@ -2254,7 +2252,7 @@ ALTER TABLE ONLY catalog_import
 
 
 --
--- Name: catalog_import_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: catalog_import_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog_import
@@ -2262,7 +2260,7 @@ ALTER TABLE ONLY catalog_import
 
 
 --
--- Name: catalog_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: catalog_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog
@@ -2270,7 +2268,7 @@ ALTER TABLE ONLY catalog
 
 
 --
--- Name: class_layer_id_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: class_layer_id_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY class
@@ -2278,7 +2276,7 @@ ALTER TABLE ONLY class
 
 
 --
--- Name: class_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: class_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY class
@@ -2286,7 +2284,7 @@ ALTER TABLE ONLY class
 
 
 --
--- Name: classgroup_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: classgroup_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY classgroup
@@ -2294,7 +2292,7 @@ ALTER TABLE ONLY classgroup
 
 
 --
--- Name: e_charset_encodings_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_charset_encodings_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_charset_encodings
@@ -2302,7 +2300,7 @@ ALTER TABLE ONLY e_charset_encodings
 
 
 --
--- Name: e_conntype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_conntype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_conntype
@@ -2310,7 +2308,7 @@ ALTER TABLE ONLY e_conntype
 
 
 --
--- Name: e_datatype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_datatype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_datatype
@@ -2318,7 +2316,7 @@ ALTER TABLE ONLY e_datatype
 
 
 --
--- Name: e_fieldformat_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_fieldformat_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_fieldformat
@@ -2326,7 +2324,7 @@ ALTER TABLE ONLY e_fieldformat
 
 
 --
--- Name: e_fieldtype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_fieldtype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_fieldtype
@@ -2334,7 +2332,7 @@ ALTER TABLE ONLY e_fieldtype
 
 
 --
--- Name: e_filetype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_filetype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_filetype
@@ -2342,7 +2340,7 @@ ALTER TABLE ONLY e_filetype
 
 
 --
--- Name: e_form_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_form_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_form
@@ -2350,7 +2348,7 @@ ALTER TABLE ONLY e_form
 
 
 --
--- Name: e_language_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_language_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_language
@@ -2358,7 +2356,7 @@ ALTER TABLE ONLY e_language
 
 
 --
--- Name: e_layertype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_layertype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_layertype
@@ -2366,7 +2364,7 @@ ALTER TABLE ONLY e_layertype
 
 
 --
--- Name: e_lblposition_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_lblposition_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_lblposition
@@ -2374,7 +2372,7 @@ ALTER TABLE ONLY e_lblposition
 
 
 --
--- Name: e_legendtype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_legendtype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_legendtype
@@ -2382,7 +2380,7 @@ ALTER TABLE ONLY e_legendtype
 
 
 --
--- Name: e_level_name_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_level_name_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_level
@@ -2390,7 +2388,7 @@ ALTER TABLE ONLY e_level
 
 
 --
--- Name: e_livelli_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_livelli_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_level
@@ -2398,7 +2396,7 @@ ALTER TABLE ONLY e_level
 
 
 --
--- Name: e_orderby_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_orderby_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_orderby
@@ -2406,7 +2404,7 @@ ALTER TABLE ONLY e_orderby
 
 
 --
--- Name: e_outputformat_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_outputformat_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_outputformat
@@ -2414,7 +2412,7 @@ ALTER TABLE ONLY e_outputformat
 
 
 --
--- Name: e_owstype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_owstype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_owstype
@@ -2422,7 +2420,7 @@ ALTER TABLE ONLY e_owstype
 
 
 --
--- Name: e_papersize_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_papersize_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_papersize
@@ -2430,7 +2428,7 @@ ALTER TABLE ONLY e_papersize
 
 
 --
--- Name: e_pattern_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_pattern_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_pattern
@@ -2438,7 +2436,7 @@ ALTER TABLE ONLY e_pattern
 
 
 --
--- Name: e_qtrelationtype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_qtrelationtype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_qtrelationtype
@@ -2446,7 +2444,7 @@ ALTER TABLE ONLY e_qtrelationtype
 
 
 --
--- Name: e_resultype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_resultype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_resultype
@@ -2454,7 +2452,7 @@ ALTER TABLE ONLY e_resultype
 
 
 --
--- Name: e_searchtype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_searchtype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_searchtype
@@ -2462,7 +2460,7 @@ ALTER TABLE ONLY e_searchtype
 
 
 --
--- Name: e_sizeunits_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_sizeunits_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_sizeunits
@@ -2470,7 +2468,7 @@ ALTER TABLE ONLY e_sizeunits
 
 
 --
--- Name: e_symbolcategory_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_symbolcategory_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_symbolcategory
@@ -2478,7 +2476,7 @@ ALTER TABLE ONLY e_symbolcategory
 
 
 --
--- Name: e_tiletype_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: e_tiletype_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY e_tiletype
@@ -2486,7 +2484,7 @@ ALTER TABLE ONLY e_tiletype
 
 
 --
--- Name: filter_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: filter_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY authfilter
@@ -2494,7 +2492,7 @@ ALTER TABLE ONLY authfilter
 
 
 --
--- Name: font_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: font_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY font
@@ -2502,7 +2500,7 @@ ALTER TABLE ONLY font
 
 
 --
--- Name: group_authfilter_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: group_authfilter_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY group_authfilter
@@ -2510,7 +2508,7 @@ ALTER TABLE ONLY group_authfilter
 
 
 --
--- Name: groups_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: groups_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY groups
@@ -2518,7 +2516,7 @@ ALTER TABLE ONLY groups
 
 
 --
--- Name: layer_authfilter_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer_authfilter_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY layer_authfilter
@@ -2526,7 +2524,7 @@ ALTER TABLE ONLY layer_authfilter
 
 
 --
--- Name: layer_groups_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer_groups_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY layer_groups
@@ -2534,7 +2532,7 @@ ALTER TABLE ONLY layer_groups
 
 
 --
--- Name: layer_layergroup_id_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer_layergroup_id_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY layer
@@ -2542,7 +2540,7 @@ ALTER TABLE ONLY layer
 
 
 --
--- Name: layer_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layer_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY layer
@@ -2550,7 +2548,7 @@ ALTER TABLE ONLY layer
 
 
 --
--- Name: layergroup_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layergroup_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY layergroup
@@ -2558,7 +2556,7 @@ ALTER TABLE ONLY layergroup
 
 
 --
--- Name: layergroup_theme_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: layergroup_theme_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY layergroup
@@ -2566,7 +2564,7 @@ ALTER TABLE ONLY layergroup
 
 
 --
--- Name: link_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: link_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY link
@@ -2574,7 +2572,7 @@ ALTER TABLE ONLY link
 
 
 --
--- Name: livelli_form_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: livelli_form_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY form_level
@@ -2582,7 +2580,7 @@ ALTER TABLE ONLY form_level
 
 
 --
--- Name: localization_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: localization_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY localization
@@ -2590,7 +2588,7 @@ ALTER TABLE ONLY localization
 
 
 --
--- Name: mapset_layergroup_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: mapset_layergroup_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY mapset_layergroup
@@ -2598,7 +2596,7 @@ ALTER TABLE ONLY mapset_layergroup
 
 
 --
--- Name: mapset_mapset_name_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: mapset_mapset_name_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY mapset
@@ -2606,7 +2604,7 @@ ALTER TABLE ONLY mapset
 
 
 --
--- Name: mapset_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: mapset_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY mapset
@@ -2614,7 +2612,7 @@ ALTER TABLE ONLY mapset
 
 
 --
--- Name: project_admin_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_admin_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY project_admin
@@ -2622,7 +2620,7 @@ ALTER TABLE ONLY project_admin
 
 
 --
--- Name: project_languages_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_languages_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY project_languages
@@ -2630,7 +2628,7 @@ ALTER TABLE ONLY project_languages
 
 
 --
--- Name: project_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY project
@@ -2638,7 +2636,7 @@ ALTER TABLE ONLY project
 
 
 --
--- Name: project_srs_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_srs_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY project_srs
@@ -2646,7 +2644,7 @@ ALTER TABLE ONLY project_srs
 
 
 --
--- Name: project_theme_id_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: project_theme_id_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY theme
@@ -2654,7 +2652,7 @@ ALTER TABLE ONLY theme
 
 
 --
--- Name: qt_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qt_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qt
@@ -2662,7 +2660,7 @@ ALTER TABLE ONLY qt
 
 
 --
--- Name: qt_theme_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qt_theme_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qt
@@ -2670,7 +2668,7 @@ ALTER TABLE ONLY qt
 
 
 --
--- Name: qtfield_groups_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield_groups_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield_groups
@@ -2678,7 +2676,7 @@ ALTER TABLE ONLY qtfield_groups
 
 
 --
--- Name: qtfield_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield
@@ -2686,7 +2684,7 @@ ALTER TABLE ONLY qtfield
 
 
 --
--- Name: qtfield_qtfield_name_layer_id_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield_qtfield_name_layer_id_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield
@@ -2694,7 +2692,7 @@ ALTER TABLE ONLY qtfield
 
 
 --
--- Name: qtfield_unique_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield_unique_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield
@@ -2702,7 +2700,7 @@ ALTER TABLE ONLY qtfield
 
 
 --
--- Name: qtlink_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtlink_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qtlink
@@ -2710,7 +2708,7 @@ ALTER TABLE ONLY qtlink
 
 
 --
--- Name: qtrelation_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtrelation_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY qtrelation
@@ -2718,7 +2716,7 @@ ALTER TABLE ONLY qtrelation
 
 
 --
--- Name: selgroup_layer_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: selgroup_layer_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY selgroup_layer
@@ -2726,7 +2724,7 @@ ALTER TABLE ONLY selgroup_layer
 
 
 --
--- Name: selgroup_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: selgroup_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY selgroup
@@ -2734,7 +2732,7 @@ ALTER TABLE ONLY selgroup
 
 
 --
--- Name: selgroup_selgroup_name_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: selgroup_selgroup_name_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY selgroup
@@ -2742,7 +2740,7 @@ ALTER TABLE ONLY selgroup
 
 
 --
--- Name: service_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: service_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY tb_logs
@@ -2750,7 +2748,7 @@ ALTER TABLE ONLY tb_logs
 
 
 --
--- Name: style_class_id_key; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: style_class_id_key; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY style
@@ -2758,7 +2756,7 @@ ALTER TABLE ONLY style
 
 
 --
--- Name: style_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: style_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY style
@@ -2766,7 +2764,7 @@ ALTER TABLE ONLY style
 
 
 --
--- Name: symbol_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: symbol_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY symbol
@@ -2774,7 +2772,7 @@ ALTER TABLE ONLY symbol
 
 
 --
--- Name: symbol_ttf_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: symbol_ttf_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY symbol_ttf
@@ -2782,7 +2780,7 @@ ALTER TABLE ONLY symbol_ttf
 
 
 --
--- Name: tb_import_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: tb_import_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY tb_import
@@ -2790,7 +2788,7 @@ ALTER TABLE ONLY tb_import
 
 
 --
--- Name: tb_import_table_id_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: tb_import_table_id_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY tb_import_table
@@ -2798,7 +2796,7 @@ ALTER TABLE ONLY tb_import_table
 
 
 --
--- Name: theme_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: theme_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY theme
@@ -2806,7 +2804,7 @@ ALTER TABLE ONLY theme
 
 
 --
--- Name: theme_version_idx; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: theme_version_idx; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY theme_version
@@ -2814,7 +2812,7 @@ ALTER TABLE ONLY theme_version
 
 
 --
--- Name: user_group_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: user_group_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY user_group
@@ -2822,7 +2820,7 @@ ALTER TABLE ONLY user_group
 
 
 --
--- Name: user_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: user_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY users
@@ -2830,7 +2828,7 @@ ALTER TABLE ONLY users
 
 
 --
--- Name: usercontext_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: usercontext_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY usercontext
@@ -2838,7 +2836,7 @@ ALTER TABLE ONLY usercontext
 
 
 --
--- Name: users_options_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: users_options_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY users_options
@@ -2846,7 +2844,7 @@ ALTER TABLE ONLY users_options
 
 
 --
--- Name: version_pkey; Type: CONSTRAINT; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: version_pkey; Type: CONSTRAINT
 --
 
 ALTER TABLE ONLY version
@@ -2854,287 +2852,287 @@ ALTER TABLE ONLY version
 
 
 --
--- Name: fki_; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_; Type: INDEX
 --
 
 CREATE INDEX fki_ ON qtrelation USING btree (layer_id);
 
 
 --
--- Name: fki_catalog_conntype_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_catalog_conntype_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_catalog_conntype_fkey ON catalog USING btree (connection_type);
 
 
 --
--- Name: fki_catalog_import_from_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_catalog_import_from_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_catalog_import_from_fkey ON catalog_import USING btree (catalog_from);
 
 
 --
--- Name: fki_catalog_import_project_name_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_catalog_import_project_name_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_catalog_import_project_name_fkey ON catalog_import USING btree (project_name);
 
 
 --
--- Name: fki_catalog_import_to_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_catalog_import_to_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_catalog_import_to_fkey ON catalog_import USING btree (catalog_to);
 
 
 --
--- Name: fki_catalog_project_name_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_catalog_project_name_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_catalog_project_name_fkey ON catalog USING btree (project_name);
 
 
 --
--- Name: fki_class_layer_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_class_layer_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_class_layer_id_fkey ON class USING btree (layer_id);
 
 
 --
--- Name: fki_layer_id; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_layer_id; Type: INDEX
 --
 
 CREATE INDEX fki_layer_id ON layer_groups USING btree (layer_id);
 
 
 --
--- Name: fki_layer_layergroup_id; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_layer_layergroup_id; Type: INDEX
 --
 
 CREATE INDEX fki_layer_layergroup_id ON layer USING btree (layergroup_id);
 
 
 --
--- Name: fki_layergroup_theme_id; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_layergroup_theme_id; Type: INDEX
 --
 
 CREATE INDEX fki_layergroup_theme_id ON layergroup USING btree (theme_id);
 
 
 --
--- Name: fki_link_project_name_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_link_project_name_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_link_project_name_fkey ON link USING btree (project_name);
 
 
 --
--- Name: fki_mapset_layergroup_layergroup_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_mapset_layergroup_layergroup_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_mapset_layergroup_layergroup_id_fkey ON mapset_layergroup USING btree (layergroup_id);
 
 
 --
--- Name: fki_mapset_layergroup_mapset_name_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_mapset_layergroup_mapset_name_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_mapset_layergroup_mapset_name_fkey ON mapset_layergroup USING btree (mapset_name);
 
 
 --
--- Name: fki_mapset_project_name_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_mapset_project_name_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_mapset_project_name_fkey ON mapset USING btree (project_name);
 
 
 --
--- Name: fki_pattern_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_pattern_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_pattern_id_fkey ON style USING btree (pattern_id);
 
 
 --
--- Name: fki_project_theme_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_project_theme_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_project_theme_fkey ON theme USING btree (project_name);
 
 
 --
--- Name: fki_qt_layer_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_qt_layer_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_qt_layer_id_fkey ON qt USING btree (layer_id);
 
 
 --
--- Name: fki_qt_link_link_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_qt_link_link_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_qt_link_link_id_fkey ON qtlink USING btree (link_id);
 
 
 --
--- Name: fki_qt_theme_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_qt_theme_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_qt_theme_id_fkey ON qt USING btree (theme_id);
 
 
 --
--- Name: fki_qtfield_fieldtype_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_qtfield_fieldtype_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_qtfield_fieldtype_id_fkey ON qtfield USING btree (fieldtype_id);
 
 
 --
--- Name: fki_qtfields_layer; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_qtfields_layer; Type: INDEX
 --
 
 CREATE INDEX fki_qtfields_layer ON qtfield USING btree (layer_id);
 
 
 --
--- Name: fki_qtrelation_catalog_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_qtrelation_catalog_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_qtrelation_catalog_id_fkey ON qtrelation USING btree (catalog_id);
 
 
 --
--- Name: fki_selgroup_project_name_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_selgroup_project_name_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_selgroup_project_name_fkey ON selgroup USING btree (project_name);
 
 
 --
--- Name: fki_style_class_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_style_class_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_style_class_id_fkey ON style USING btree (class_id);
 
 
 --
--- Name: fki_symbol_icontype_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_symbol_icontype_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_symbol_icontype_id_fkey ON symbol USING btree (icontype);
 
 
 --
--- Name: fki_symbol_symbolcategory_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_symbol_symbolcategory_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_symbol_symbolcategory_id_fkey ON symbol USING btree (symbolcategory_id);
 
 
 --
--- Name: fki_symbol_ttf_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_symbol_ttf_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_symbol_ttf_fkey ON class USING btree (symbol_ttf_name, label_font);
 
 
 --
--- Name: fki_symbol_ttf_font_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_symbol_ttf_font_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_symbol_ttf_font_fkey ON symbol_ttf USING btree (font_name);
 
 
 --
--- Name: fki_symbol_ttf_symbolcategory_id_fkey; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: fki_symbol_ttf_symbolcategory_id_fkey; Type: INDEX
 --
 
 CREATE INDEX fki_symbol_ttf_symbolcategory_id_fkey ON symbol_ttf USING btree (symbolcategory_id);
 
 
 --
--- Name: qtfield_name_unique; Type: INDEX; Schema: gisclient_34; Owner: -; Tablespace: 
+-- Name: qtfield_name_unique; Type: INDEX
 --
 
 CREATE UNIQUE INDEX qtfield_name_unique ON qtfield USING btree (layer_id, qtfield_name);
 
 
 --
--- Name: chk_catalog; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: chk_catalog; Type: TRIGGER
 --
 
 CREATE TRIGGER chk_catalog BEFORE INSERT OR UPDATE ON catalog FOR EACH ROW EXECUTE PROCEDURE check_catalog();
 
 
 --
--- Name: chk_class; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: chk_class; Type: TRIGGER
 --
 
 CREATE TRIGGER chk_class BEFORE INSERT OR UPDATE ON class FOR EACH ROW EXECUTE PROCEDURE check_class();
 
 
 --
--- Name: delete_qtfields_qt; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: delete_qtfields_qt; Type: TRIGGER
 --
 
 CREATE TRIGGER delete_qtfields_qt AFTER DELETE ON qt FOR EACH ROW EXECUTE PROCEDURE delete_qt();
 
 
 --
--- Name: delete_qtrelation; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: delete_qtrelation; Type: TRIGGER
 --
 
 CREATE TRIGGER delete_qtrelation AFTER DELETE ON qtrelation FOR EACH ROW EXECUTE PROCEDURE delete_qtrelation();
 
 
 --
--- Name: depth; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: depth; Type: TRIGGER
 --
 
 CREATE TRIGGER depth AFTER INSERT OR UPDATE ON e_level FOR EACH ROW EXECUTE PROCEDURE set_depth();
 
 
 --
--- Name: layername; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: layername; Type: TRIGGER
 --
 
 CREATE TRIGGER layername BEFORE INSERT OR UPDATE ON layer_groups FOR EACH ROW EXECUTE PROCEDURE set_layer_name();
 
 
 --
--- Name: leaf; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: leaf; Type: TRIGGER
 --
 
 CREATE TRIGGER leaf AFTER INSERT OR UPDATE ON e_level FOR EACH ROW EXECUTE PROCEDURE set_leaf();
 
 
 --
--- Name: move_layergroup; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: move_layergroup; Type: TRIGGER
 --
 
 CREATE TRIGGER move_layergroup AFTER UPDATE ON layergroup FOR EACH ROW EXECUTE PROCEDURE move_layergroup();
 
 
 --
--- Name: set_encpwd; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: set_encpwd; Type: TRIGGER
 --
 
 CREATE TRIGGER set_encpwd BEFORE INSERT OR UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE enc_pwd();
 
 
 --
--- Name: theme_tr; Type: TRIGGER; Schema: gisclient_34; Owner: -
+-- Name: theme_tr; Type: TRIGGER
 --
 
 CREATE TRIGGER theme_tr AFTER INSERT OR UPDATE ON theme FOR EACH ROW EXECUTE PROCEDURE theme_version_tr();
 
 
 --
--- Name: catalog_conntype_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: catalog_conntype_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog
@@ -3142,7 +3140,7 @@ ALTER TABLE ONLY catalog
 
 
 --
--- Name: catalog_import_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: catalog_import_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog_import
@@ -3150,7 +3148,7 @@ ALTER TABLE ONLY catalog_import
 
 
 --
--- Name: catalog_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: catalog_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY catalog
@@ -3158,7 +3156,7 @@ ALTER TABLE ONLY catalog
 
 
 --
--- Name: class_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: class_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY class
@@ -3166,7 +3164,7 @@ ALTER TABLE ONLY class
 
 
 --
--- Name: e_form_level_destination_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: e_form_level_destination_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY e_form
@@ -3174,7 +3172,7 @@ ALTER TABLE ONLY e_form
 
 
 --
--- Name: e_level_parent_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: e_level_parent_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY e_level
@@ -3182,7 +3180,7 @@ ALTER TABLE ONLY e_level
 
 
 --
--- Name: form_level_form_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: form_level_form_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY form_level
@@ -3190,7 +3188,7 @@ ALTER TABLE ONLY form_level
 
 
 --
--- Name: form_level_level_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: form_level_level_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY form_level
@@ -3198,7 +3196,7 @@ ALTER TABLE ONLY form_level
 
 
 --
--- Name: group_authfilter_filter_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: group_authfilter_filter_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY group_authfilter
@@ -3206,7 +3204,7 @@ ALTER TABLE ONLY group_authfilter
 
 
 --
--- Name: group_authfilter_gropuname_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: group_authfilter_gropuname_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY group_authfilter
@@ -3214,7 +3212,7 @@ ALTER TABLE ONLY group_authfilter
 
 
 --
--- Name: i18nfield_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: i18nfield_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY localization
@@ -3222,7 +3220,7 @@ ALTER TABLE ONLY localization
 
 
 --
--- Name: language_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: language_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY localization
@@ -3230,7 +3228,7 @@ ALTER TABLE ONLY localization
 
 
 --
--- Name: language_id_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: language_id_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY project_languages
@@ -3238,7 +3236,7 @@ ALTER TABLE ONLY project_languages
 
 
 --
--- Name: layer_authfilter_filter_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: layer_authfilter_filter_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY layer_authfilter
@@ -3246,7 +3244,7 @@ ALTER TABLE ONLY layer_authfilter
 
 
 --
--- Name: layer_authfilter_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: layer_authfilter_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY layer_authfilter
@@ -3254,7 +3252,7 @@ ALTER TABLE ONLY layer_authfilter
 
 
 --
--- Name: layer_groups_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: layer_groups_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY layer_groups
@@ -3262,7 +3260,7 @@ ALTER TABLE ONLY layer_groups
 
 
 --
--- Name: layer_layergroup_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: layer_layergroup_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY layer
@@ -3270,7 +3268,7 @@ ALTER TABLE ONLY layer
 
 
 --
--- Name: layergroup_theme_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: layergroup_theme_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY layergroup
@@ -3278,7 +3276,7 @@ ALTER TABLE ONLY layergroup
 
 
 --
--- Name: link_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: link_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY link
@@ -3286,7 +3284,7 @@ ALTER TABLE ONLY link
 
 
 --
--- Name: localization_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: localization_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY localization
@@ -3294,7 +3292,7 @@ ALTER TABLE ONLY localization
 
 
 --
--- Name: mapset_layergroup_layergroup_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: mapset_layergroup_layergroup_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY mapset_layergroup
@@ -3302,7 +3300,7 @@ ALTER TABLE ONLY mapset_layergroup
 
 
 --
--- Name: mapset_layergroup_mapset_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: mapset_layergroup_mapset_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY mapset_layergroup
@@ -3310,7 +3308,7 @@ ALTER TABLE ONLY mapset_layergroup
 
 
 --
--- Name: mapset_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: mapset_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY mapset
@@ -3318,7 +3316,7 @@ ALTER TABLE ONLY mapset
 
 
 --
--- Name: pattern_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: pattern_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY style
@@ -3326,7 +3324,7 @@ ALTER TABLE ONLY style
 
 
 --
--- Name: project_srs_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: project_srs_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY project_srs
@@ -3334,7 +3332,7 @@ ALTER TABLE ONLY project_srs
 
 
 --
--- Name: qt_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qt_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qt
@@ -3342,7 +3340,7 @@ ALTER TABLE ONLY qt
 
 
 --
--- Name: qt_link_link_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qt_link_link_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtlink
@@ -3350,7 +3348,7 @@ ALTER TABLE ONLY qtlink
 
 
 --
--- Name: qt_theme_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qt_theme_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qt
@@ -3358,7 +3356,7 @@ ALTER TABLE ONLY qt
 
 
 --
--- Name: qtfield_fieldtype_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtfield_fieldtype_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield
@@ -3366,7 +3364,7 @@ ALTER TABLE ONLY qtfield
 
 
 --
--- Name: qtfield_groups_qtfield_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtfield_groups_qtfield_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield_groups
@@ -3374,7 +3372,7 @@ ALTER TABLE ONLY qtfield_groups
 
 
 --
--- Name: qtfield_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtfield_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtfield
@@ -3382,7 +3380,7 @@ ALTER TABLE ONLY qtfield
 
 
 --
--- Name: qtlink_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtlink_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtlink
@@ -3390,7 +3388,7 @@ ALTER TABLE ONLY qtlink
 
 
 --
--- Name: qtlink_link_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtlink_link_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtlink
@@ -3398,7 +3396,7 @@ ALTER TABLE ONLY qtlink
 
 
 --
--- Name: qtrelation_catalog_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtrelation_catalog_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtrelation
@@ -3406,7 +3404,7 @@ ALTER TABLE ONLY qtrelation
 
 
 --
--- Name: qtrelation_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: qtrelation_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY qtrelation
@@ -3414,7 +3412,7 @@ ALTER TABLE ONLY qtrelation
 
 
 --
--- Name: selgroup_layer_layer_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: selgroup_layer_layer_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY selgroup_layer
@@ -3422,7 +3420,7 @@ ALTER TABLE ONLY selgroup_layer
 
 
 --
--- Name: selgroup_layer_selgroup_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: selgroup_layer_selgroup_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY selgroup_layer
@@ -3430,7 +3428,7 @@ ALTER TABLE ONLY selgroup_layer
 
 
 --
--- Name: selgroup_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: selgroup_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY selgroup
@@ -3438,7 +3436,7 @@ ALTER TABLE ONLY selgroup
 
 
 --
--- Name: style_class_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: style_class_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY style
@@ -3446,7 +3444,7 @@ ALTER TABLE ONLY style
 
 
 --
--- Name: symbol_symbolcategory_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: symbol_symbolcategory_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY symbol
@@ -3454,7 +3452,7 @@ ALTER TABLE ONLY symbol
 
 
 --
--- Name: symbol_ttf_font_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: symbol_ttf_font_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY symbol_ttf
@@ -3462,7 +3460,7 @@ ALTER TABLE ONLY symbol_ttf
 
 
 --
--- Name: symbol_ttf_symbolcategory_id_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: symbol_ttf_symbolcategory_id_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY symbol_ttf
@@ -3470,7 +3468,7 @@ ALTER TABLE ONLY symbol_ttf
 
 
 --
--- Name: theme_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: theme_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY theme
@@ -3478,7 +3476,7 @@ ALTER TABLE ONLY theme
 
 
 --
--- Name: theme_version_fk; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: theme_version_fk; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY theme_version
@@ -3486,7 +3484,7 @@ ALTER TABLE ONLY theme_version
 
 
 --
--- Name: user_group_groupname_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: user_group_groupname_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY user_group
@@ -3494,7 +3492,7 @@ ALTER TABLE ONLY user_group
 
 
 --
--- Name: user_group_username_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: user_group_username_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY user_group
@@ -3502,7 +3500,7 @@ ALTER TABLE ONLY user_group
 
 
 --
--- Name: username_project_name_fkey; Type: FK CONSTRAINT; Schema: gisclient_34; Owner: -
+-- Name: username_project_name_fkey; Type: FK CONSTRAINT
 --
 
 ALTER TABLE ONLY project_admin
