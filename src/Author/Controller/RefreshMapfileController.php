@@ -35,7 +35,7 @@ class RefreshMapfileController
             } else {
                 $refreshLayerMapfile = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
                 $publish = $target === "public";
-                if ($mapset === null) {
+                if (empty($mapset)) {
                     \GCAuthor::refreshMapfiles($project, $publish, $refreshLayerMapfile);
                 } else {
                     \GCAuthor::refreshMapfile($project, $mapset, $publish, $refreshLayerMapfile);
