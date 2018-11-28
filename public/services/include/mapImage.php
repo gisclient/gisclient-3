@@ -207,13 +207,14 @@ class mapImage {
         curl_setopt($ch, CURLOPT_URL, $this->wmsMergeUrl);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
 
         if (false === ($mapImage = curl_exec($ch))) {
-            throw new Exception("Could not curl_exec" . curl_error($ch));
+            throw new Exception("Could not curl_exec on " . $this->wmsMergeUrl . ' - ' .  curl_error($ch));
         }
 
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
