@@ -237,7 +237,7 @@ abstract class AbstractUser {
         $result["CLIENT_ID"] = $this->username;
         return $result;
       }
-      return array("CLIENT_ID" => "-anonymous_".session_id()."-");
+      return array("CLIENT_ID" => $this->isAuthenticated() ? $this->username : "-anonymous_".session_id()."-");
     }
 
 	public function saveUserOption($key, $value) {
