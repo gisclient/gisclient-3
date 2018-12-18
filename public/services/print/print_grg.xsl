@@ -72,7 +72,7 @@
                 <fo:flow flow-name="xsl-region-body">
 					
 					<!-- page -->
-					<fo:block font-family="sans-serif" font-size="10pt" border="1pt solid #000000">
+					<fo:block font-family="DejaVuSans, sans-serif" font-size="10pt" border="1pt solid #000000">
 
 						<!-- logos -->
 						<fo:table border-bottom="1pt solid #000000">
@@ -128,7 +128,7 @@
 
 					<fo:block break-after="page" />
 					<xsl:if test="map-legend!=''">
-					<fo:table font-family="sans-serif" font-size="10pt" border="1pt solid #000000">
+					<fo:table font-family="DejaVuSans, sans-serif" font-size="10pt" border="1pt solid #000000">
 						<fo:table-column column-width="33%" />
 						<fo:table-column column-width="33%" />
 						<fo:table-column column-width="34%" />
