@@ -50,7 +50,7 @@ class ClientController
         // choose customer gcmap
         $jsonformat = $request->query->get('jsonformat');
         if (empty($jsonformat)) {
-            $objMapset = new GWGCMap($mapset, $getLegend, $languageId, $showAsPublic);
+            $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
         } else {
             $objMapset = new R3GisGCMap($mapset, $getLegend, $languageId, $showAsPublic);
         }

@@ -12,6 +12,7 @@ use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\Exception\TransformationFailedException;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Callback;
@@ -41,10 +42,10 @@ class SavedFilterController
                 'allow_extra_fields' => true,
             ]
         )
-        ->add('saved_filter_name', 'text', [
+        ->add('saved_filter_name', TextType::class, [
             'constraints' => [new Required(), new NotBlank()],
         ])
-        ->add('mapset_name', 'text', [
+        ->add('mapset_name', TextType::class, [
             'constraints' => [new Required(), new NotBlank(), new Callback([
                 'callback' => function ($value, $context) {
                     $db = \GCApp::getDB();
@@ -58,7 +59,7 @@ class SavedFilterController
                 }
             ])],
         ])
-        ->add('layer_id', 'text', [
+        ->add('layer_id', TextType::class, [
             'constraints' => [new Required(), new NotBlank(), new Callback([
                 'callback' => function ($value, $context) {
                     $normData = $context->getRoot()->getNormData();
@@ -79,10 +80,10 @@ class SavedFilterController
                 }
             ])],
         ])
-        ->add('saved_filter_scope', 'text', [
+        ->add('saved_filter_scope', TextType::class, [
             'constraints' => [new Required(), new NotBlank()],
         ])
-        ->add('saved_filter_data', 'text', [
+        ->add('saved_filter_data', TextType::class, [
             'constraints' => [new Required(), new NotBlank(), new Callback([
                 'callback' => function ($value, $context) {
                     if (is_string($value) && json_decode($value) === null) {
