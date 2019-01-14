@@ -1297,7 +1297,7 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
     
      IF v_author_version = '3.5.3' THEN
     
-    INSERT INTO e_language (language_id,language_name,language_order) VALUES ('tw','台湾 (Taiwanese)',8);
+    INSERT INTO e_language (language_id,language_name,language_order) VALUES ('tw','正體中文 (Chinese [traditional])',8);
     INSERT INTO e_language (language_id,language_name,language_order) VALUES ('hu','Magyar (Hungarian)',9);
 
          --version
