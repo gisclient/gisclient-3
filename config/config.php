@@ -62,13 +62,13 @@ define('LAYER_CLOSE_CONNECTION_DEFER', true);
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 if (php_sapi_name() == "cli") {
-    if (!isset($_SERVER['AUTHOR_PUBLIC_URL'])) {
+    if (!getenv('AUTHOR_PUBLIC_URL')) {
         throw new \RuntimeException(
             'AUTHOR_PUBLIC_URL environment variable is not defined. ' .
             'You need to define environment variables for configuration.'
         );
     }
-    define('PUBLIC_URL', trim($_SERVER['AUTHOR_PUBLIC_URL'], '/').'/'); // url for external requests (like map client)
+    define('PUBLIC_URL', trim(getenv('AUTHOR_PUBLIC_URL'), '/').'/'); // url for external requests (like map client)
 } else {
     $requestContext = new RequestContext();
     $requestContext->fromRequest(Request::createFromGlobals());
