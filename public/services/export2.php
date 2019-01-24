@@ -6,6 +6,9 @@ require_once ROOT_PATH.'lib/export.php';
 use GisClient\Author\Db;
 use GisClient\Author\Layer;
 
+$gcService = GCService::instance();
+$gcService->startSession();
+
 $ajax = new \GCAjax();
 $db = new Db();
 
@@ -80,7 +83,7 @@ foreach ($data as $expConf) {
         return $element['field_name'];
     }, $fields);
     array_push($fieldsNames, $layer->getGeomColumn());
-    $viewName = 'export_' . $layer->getTable() . '_' . session_id() . '_' . rand(0, 999999);
+    $viewName = 'export_' . $layer->getTable() . '_' . $gcService->getSession()->getId() . '_' . rand(0, 999999);
     $sql = "CREATE VIEW public.{$viewName} AS "
         . " SELECT " . implode(', ', $fieldsNames)
         . " FROM {$layerDb->getParams()['schema']}.{$layer->getTable()}"

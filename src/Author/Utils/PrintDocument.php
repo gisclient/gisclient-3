@@ -278,7 +278,8 @@ class PrintDocument
                 'GCLEGENDTEXT' => 0
             ));
             if (defined("GC_SESSION_NAME")) {
-                $legendGraphicRequest['GC_SESSION_ID'] = session_id();
+                $gcService = \GCService::instance();
+                $legendGraphicRequest['GC_SESSION_ID'] = $gcService->getSession()->getId();
             }
             $this->getLegendGraphicWmsList[$wms['PARAMETERS']['MAP']] = $legendGraphicRequest;
             $this->getLegendGraphicRequest = $legendGraphicRequest;

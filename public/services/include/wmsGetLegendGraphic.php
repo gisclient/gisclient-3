@@ -96,10 +96,12 @@ if($objRequest->getvaluebyname('layer')){
                 'layer'=>$oLayer->getMetaData('wms_name'),
                 'version'=>$oLayer->getMetaData('wms_server_version')
             );
-			
-            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
+            
+            $gcService = \GCService::instance();
+            
+            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == $gcService->getSession()->getId()) {
 
-                $params['GC_SESSION_ID'] = session_id();
+                $params['GC_SESSION_ID'] = $gcService->getSession()->getId();
             }
             $urlWmsRequest = $url. http_build_query($params);
 			

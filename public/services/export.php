@@ -98,7 +98,7 @@ switch($data['export_format']) {
                 $geomColIndex = array_search('the_geom', $columns);
                 if($geomColIndex === false) continue;
                 unset($columns[$geomColIndex]);
-                $tmpTableName = 'export_'.$table['tablename'].'_'.session_id().'_'.rand(0,999999);
+                $tmpTableName = 'export_'.$table['tablename'].'_'.$gcService->getSession()->getId().'_'.rand(0,999999);
                 $sql = 'create table '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName.' as '.
                     ' select '.implode(', ', $columns).', st_intersection(the_geom, :geom) as the_geom '.
                     ' from '.$dbParams['schema'].'.'.$table['tablename'].

@@ -240,6 +240,7 @@ class MapImage
             $saveImage = true;
         }
 
+        $gcService = \GCService::instance();
         $requestParameters = json_encode(array(
             'layers'=>$this->wmsList,
             'size'=>$this->imageSize,
@@ -251,9 +252,9 @@ class MapImage
             'resolution'=>$this->options['dpi'],
             'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
             'format'=>$this->options['image_format'],
-            'GC_SESSION_ID' => session_id()
+            'GC_SESSION_ID' => $gcService->getSession()->getId()
         ));
-        session_write_close();
+        $gcService->saveAndClose();
 
 
         if (false === ($ch = curl_init())) {
