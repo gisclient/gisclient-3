@@ -1295,4 +1295,19 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         INSERT INTO version (version_name,version_key, version_date) values ('3.5.3', 'author', '2018-08-14');
     END IF;
 
+
+    IF v_author_version = '3.5.3' THEN
+        CREATE TABLE sessions (
+            sess_id VARCHAR(128) NOT NULL PRIMARY KEY,
+            sess_data BYTEA NOT NULL,
+            sess_time INTEGER NOT NULL,
+            sess_lifetime INTEGER NOT NULL
+        );
+
+        --version
+        v_author_version = '3.6.0';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.6.0', 'author', '2019-01-24');
+    END IF;
+    
+
 END$$

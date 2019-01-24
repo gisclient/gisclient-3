@@ -1,7 +1,8 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\Session\Storage\PhpBridgeSessionStorage;
+use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
 
 /**
  * GCService initialized correctly the pages used as a service within GisClient
@@ -90,26 +91,24 @@ class GCService
     
     public function startSession($allowTokenFromRequest = false)
     {
-        // for PHP >= 5.4, see http://php.net/manual/en/function.session-status.php
+        // start the sessione (if not started)
         if (null === $this->session || !$this->session->isStarted) {
-            ini_set('session.save_handler', 'files');
-            ini_set('session.save_path', ROOT_PATH . 'tmp/sess');
-                        
-            // start the sessione
+            print_debug('start new session', null, 'system');
+
+            // Get Symfony to interface with the existing session
+            $sessionHandler = new PdoSessionHandler(\GCApp::getDB(), [
+                'db_table' => 'gisclient_34.sessions'
+            ]);
+            $sessionStorage = new NativeSessionStorage([], $sessionHandler);
             if (defined('GC_SESSION_NAME')) {
                 print_debug('set session name to ' . GC_SESSION_NAME, null, 'system');
-                session_name(GC_SESSION_NAME);
+                $sessionStorage->setName(GC_SESSION_NAME);
             }
             if ($allowTokenFromRequest && isset($_REQUEST['GC_SESSION_ID']) && !empty($_REQUEST['GC_SESSION_ID'])) {
                 print_debug('set session id to ' . $_REQUEST['GC_SESSION_ID'], null, 'system');
-                session_id($_REQUEST['GC_SESSION_ID']);
+                $sessionStorage->setId($_REQUEST['GC_SESSION_ID']);
             }
-            print_debug('start new session', null, 'system');
-                        
-            session_start();
-            
-            // Get Symfony to interface with the existing session
-            $this->session = new Session(new PhpBridgeSessionStorage());
+            $this->session = new Session($sessionStorage);
             $this->session->start();
         } else {
             print_debug('session already started', null, 'system');
