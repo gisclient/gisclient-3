@@ -82,10 +82,10 @@ class Symbol
                 }
             }
             
-            $this->_createMapFile($aSymbol);
+            $this->createMapFile($aSymbol);
 
             foreach ($aClass as $classId => $class) {
-                $oIcon = $this->_iconFromClass($class);
+                $oIcon = $this->iconFromClass($class);
                 if ($oIcon) {
                     ob_start();
                     $oIcon->saveImage();
@@ -138,9 +138,9 @@ class Symbol
                 $aSymbol[]=implode("\n", $smbText);
             }
 
-            $this->_createMapFile($aSymbol);
+            $this->createMapFile($aSymbol);
             foreach ($aClass as $symbolName => $class) {
-                $oIcon = $this->_iconFromClass($class);
+                $oIcon = $this->iconFromClass($class);
                 if ($oIcon) {
                     ob_start();
                     $oIcon->saveImage();
@@ -161,7 +161,7 @@ class Symbol
         }
     }
 
-    public function _iconFromClass($class)
+    private function iconFromClass($class)
     {
         // creo la mappa
         $oMap = $this->oMap;
@@ -212,7 +212,7 @@ class Symbol
         return $icoImg;
     }
     
-    public function _createMapFile($aSymbol)
+    private function createMapFile($aSymbol)
     {
         //creazione del file di simboli
         $mapText=array();
@@ -290,18 +290,6 @@ class Symbol
     
     
     //METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
-
-    public function updateFileSmb()
-    {
-        $smbfile = fopen("smb.map", "w");
-        for ($i=0; $i<count($style); $i++) {
-            fwrite($smbfile, "SYMBOL\n");
-            fwrite($smbfile, "NAME \"".$style[$i]["symbol_name"]."\"\n");
-            fwrite($smbfile, $style[$i]["def"]."\n");
-            fwrite($smbfile, "END\n");
-        }
-        fclose($smbfile);
-    }
     
     public function removeByName($name)
     {
@@ -312,63 +300,5 @@ class Symbol
         $sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
         $rv = $this->db->exec($sql);
         return $rv;
-    }
-
-    public function importFilesmb($filename)
-    {
-        $handle = fopen($filename, 'r');
-        $content = trim(fread($handle, filesize($filename)));
-        $smbList = preg_split("/[\n\r]{1,2}/", $content);
-        $n_line=count($smbList);
-        //print('<pre>');
-        foreach ($smbList as $line_num => $line) {
-            $line = strtoupper(str_replace("'", '"', $line));
-            $sym_flag = preg_match('/SYMBOL(.*)/', $line, $res);
-            //Inizio simbolo
-            if ($res || ($n_line-1) == $line_num) {
-                if ($sSymbol) {
-                    if (($n_line-1)>$line_num) {
-                        array_pop($sSymbol);
-                    }
-                    //savesmb($nome,$sSymbol);
-                    $aSymbol[$nome] = implode("\n", $sSymbol);
-                    $sSymbol = array();
-                    $nome = "";
-                }
-            }
-            preg_match('/NAME(.*)/', $line, $res);
-            // CONTROLLO NON SIA UN NAME
-            if (!$sym_flag && !$res && trim($line)) {
-                $sSymbol[]=trim($line);
-            } elseif ($res) {
-                $nome = trim($res[1]);
-                $nome = str_replace("'", "", $nome);
-                $nome = str_replace('"', "", $nome);
-            }
-        }
-        
-        //Salvo su database
-        $dbSchema=DB_SCHEMA;
-        $table=$this->table;
-        $tableId=$table."_id";
-        foreach ($aSymbol as $smbName => $smbDef) {
-            $sql="insert into $dbSchema.symbol(symbol_id,symbol_name,def) values ((select $dbSchema.new_pkey('symbol','symbol_id')),'$smbName','$smbDef');";
-            $this->db->exec($sql);
-            print($sql."\n");
-        }
-    }
-
-    public function updateFontList()
-    {
-        $dbSchema=DB_SCHEMA;
-        $sql="select font_name,file from $dbSchema.font;";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        while ($row=$stmt->fetch(\PDO::FETCH_ASSOC)) {
-            $text[]=$row["font_name"]."\t".$row["file"];
-        }
-        $file = fopen(ROOT_PATH.'fonts/fonts.list', "w");
-        fwrite($file, implode("\n", $text));
-        fclose($file);
     }
 }
