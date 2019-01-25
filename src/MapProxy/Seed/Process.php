@@ -10,20 +10,21 @@ class Process
 
     public function __construct($path, $mapConfig, $seedConfig)
     {
-        if (file_exists($path . 'mapproxy-seed')) {
-            $this->bin = $path . 'mapproxy-seed';
-        } else {
-            throw new \Exception("Error: File not exists '{$path}mapproxy-seed'", 1);
+        $this->bin = $path . 'mapproxy-seed';
+        $this->mapConfig = $mapConfig;
+        $this->seedConfig = $seedConfig;
+    }
+
+    private function check()
+    {
+        if (!file_exists($this->bin)) {
+            throw new \RuntimeException("Error: File not exists '{$this->bin}'", 1);
         }
-        if (file_exists($mapConfig)) {
-            $this->mapConfig = $mapConfig;
-        } else {
-            throw new \Exception("Error: File not exists '{$mapConfig}'", 1);
+        if (!file_exists($this->mapConfig)) {
+            throw new \RuntimeException("Error: File not exists '{$this->mapConfig}'", 1);
         }
-        if (file_exists($seedConfig)) {
-            $this->seedConfig = $seedConfig;
-        } else {
-            throw new \Exception("Error: File not exists '{$seedConfig}'", 1);
+        if (!file_exists($this->seedConfig)) {
+            throw new \RuntimeException("Error: File not exists '{$this->seedConfig}'", 1);
         }
     }
 
@@ -69,6 +70,7 @@ class Process
 
     public function start(Task $task)
     {
+        $this->check();
         if (!$this->isRunning($task)) {
             $pid = shell_exec($this->getCommand($task));
         } else {

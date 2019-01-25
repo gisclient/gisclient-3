@@ -13,13 +13,8 @@ class Task
     {
         $this->project = $project;
         $this->task = $taskName;
-
-        if (is_writable($logDir)) {
-            $this->logFile = $logDir . $this->task . '-seed.log';
-            $this->errFile = $logDir . $this->task . '-seed.err';
-        } else {
-            throw new \Exception("Error: Directory not exists or not writable '$logDir'", 1);
-        }
+        $this->logFile = $logDir . $this->task . '-seed.log';
+        $this->errFile = $logDir . $this->task . '-seed.err';
     }
 
     public function getTaskName()
