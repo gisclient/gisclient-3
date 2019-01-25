@@ -101,10 +101,10 @@ define('ENABLE_OGC_SINGLE_LAYER_WMS', false);                   // true = ABILIT
 
 /********************* MAPPROXY ***************/
 define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv?');   //NON E' OBBLIGATORIO; ? finale è necessario (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
-define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
-define('MAPPROXY_PATH', '/opt/mapproxy/');
+define('MAPSERVER_BINARY_PATH', '/usr/libexec/mapserv');
+define('MAPPROXY_PATH', '/usr/local/mapproxy/');
 define('MAPPROXY_URL', '/');
-define('MAPPROXY_CACHE_PATH', '/data/tiles/');
+define('MAPPROXY_CACHE_PATH', ROOT_PATH.'tmp/tiles/');
 define('MAPPROXY_CACHE_TYPE', 'mbtiles');                       //SUPPORTED:file/mbtiles/sqlite
 define('MAPPROXY_DEMO', true);
 define('MAPPROXY_GRIDS_NUMLEVELS', 20);
