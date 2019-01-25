@@ -15,7 +15,7 @@ class Process
         $this->seedConfig = $seedConfig;
     }
 
-    private function check()
+    private function check(Task $task)
     {
         if (!file_exists($this->bin)) {
             throw new \RuntimeException("Error: File not exists '{$this->bin}'", 1);
@@ -25,6 +25,11 @@ class Process
         }
         if (!file_exists($this->seedConfig)) {
             throw new \RuntimeException("Error: File not exists '{$this->seedConfig}'", 1);
+        }
+
+        $logDir = dirname($task->getLogFile());
+        if (!is_writable($logDir)) {
+            throw new \RuntimeException("Error: Directory not exists or not writable '{$logDir}'", 1);
         }
     }
 
@@ -70,7 +75,7 @@ class Process
 
     public function start(Task $task)
     {
-        $this->check();
+        $this->check($task);
         if (!$this->isRunning($task)) {
             $pid = shell_exec($this->getCommand($task));
         } else {

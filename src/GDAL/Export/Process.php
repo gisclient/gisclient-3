@@ -11,6 +11,14 @@ class Process
         $this->driver = $driver->getName();
     }
 
+    private function check(Task $task)
+    {
+        $logDir = dirname($task->getLogFile());
+        if (!is_writable($logDir)) {
+            throw new \RuntimeException("Error: Directory not exists or not writable '{$logDir}'", 1);
+        }
+    }
+
     private function getCommand(Task $task)
     {
         //using gdal 1.X
@@ -47,6 +55,7 @@ class Process
 
     public function start(Task $task)
     {
+        $this->check($task);
         if (!$this->isRunning($task)) {
             $pid = shell_exec($this->getCommand($task));
         } else {

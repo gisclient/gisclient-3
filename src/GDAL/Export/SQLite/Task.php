@@ -19,13 +19,8 @@ class Task implements \GisClient\GDAL\Export\Task
         $this->path = 'var/SQLite/';
         $this->layer = $layer;
         $this->taskName = $taskName;
-
-        if (is_writable($logDir)) {
-            $this->logFile = $logDir . $this->getTaskName() . '.log';
-            $this->errFile = $logDir . $this->getTaskName() . '.err';
-        } else {
-            throw new \Exception("Error: Directory not exists or not writable '$logDir'", 1);
-        }
+        $this->logFile = $logDir . $this->getTaskName() . '.log';
+        $this->errFile = $logDir . $this->getTaskName() . '.err';
 
         if (!is_dir(ROOT_PATH . $this->path)) {
             if (!mkdir(ROOT_PATH . $this->path, 0700, true)) {
