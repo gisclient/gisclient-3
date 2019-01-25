@@ -200,7 +200,7 @@ function get_cella($row,$col){
 			$table=$size[2];
 			$v=$this->array_dati[$row][$size[1]];
 			if (true)
-				$retval="<td><a href=\"#\" onclick=\"javascript:window.open('getImage.php?id=$v&table=$table')\"><img src=\"getImage.php?id=$v&table=$table\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\"></a></td>";
+				$retval="<td><a href=\"#\" onclick=\"javascript:window.open('../services/symbol.php?id=$v&table=$table')\"><img src=\"../services/symbol.php?id=$v&table=$table\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\"></a></td>";
 			else
 				$retval="<td>Nessuna immagine salvata $v</td>";
 			break;	

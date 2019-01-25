@@ -330,7 +330,7 @@ function get_dato($tipo,$w,$campo){
                                 } else {
                                     $style = "";
                                 }
-				$retval="$dati[$campo] <img src=\"getImage.php?id=$dati[$campo]&table=symbol\" {$style}>";
+				$retval="$dati[$campo] <img src=\"../services/symbol.php?id=$dati[$campo]&table=symbol\" {$style}>";
                         } else {
 				$retval="Nessuna immagine salvata";
                         }

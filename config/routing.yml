@@ -25,6 +25,12 @@ downloadImage:
         _controller: 'GisClient\Author\Controller\DownloadController::downloadImageAction'
     methods:
         - GET
+getSymbol:
+    path: symbol.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\SymbolController::getSymbolAction'
+    methods:
+        - GET
 gcmap:
     path: gcmap.php
     defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
