@@ -4,12 +4,22 @@ namespace GisClient\Author;
 
 class Symbol
 {
+    private $database;
+
+    public $table;
+    
     public $filter;
+
+    private $symbolSize;
+
+    private $oMap;
+
+    private $mapError;
 
     public function __construct($table)
     {
-        $this->table=$table;
-        $this->db = \GCApp::getDB();
+        $this->table = $table;
+        $this->database = \GCApp::getDB();
     }
 
     public function createIcon()
@@ -18,8 +28,12 @@ class Symbol
         if (!is_dir(ROOT_PATH.'tmp')) {
             mkdir(ROOT_PATH.'tmp');
         }
-        $this->mapfile = ROOT_PATH.'map/tmp/tmp.map';
-        $this->symbolSize = array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
+        // $this->mapfile = ROOT_PATH.'map/tmp/tmp.map';
+        $this->symbolSize = [
+            LEGEND_POINT_SIZE,
+            LEGEND_LINE_WIDTH,
+            LEGEND_POLYGON_WIDTH,
+        ];
         $aClass = array();
         
         if ($this->table=='class') {
@@ -47,7 +61,7 @@ class Symbol
             }
             $sql.=" order by style_order desc;";
             
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
@@ -117,7 +131,7 @@ class Symbol
             }
             $sql.=" LIMIT 200;";
             
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $aClass[$row["symbol_name"]]["icontype"]=$row["icontype"];
@@ -167,7 +181,7 @@ class Symbol
                     ob_end_clean();
                     // $sql="UPDATE $dbSchema.symbol SET symbol_image='{$image_data}' where symbol_name='$symbolName';";
                     // echo ($sql."<br>");
-                    // $this->db->sql_query($sql);
+                    // $this->database->sql_query($sql);
                 }
             }
         }
@@ -291,7 +305,7 @@ class Symbol
             $headers = array("Image","Class","Layer","Layergroup","Theme","Project");
             $values=array();
             
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
@@ -320,7 +334,7 @@ class Symbol
             }
             $sql.="  order by symbolcategory_name, symbol_name";
             $headers = array("Image","Symbol","Category");
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
@@ -340,11 +354,11 @@ class Symbol
     public function removeByName($name)
     {
         $dbSchema=DB_SCHEMA;
-        $sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->db->quote($name);
-        $rv = $this->db->exec($sql);
+        $sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->database->quote($name);
+        $rv = $this->database->exec($sql);
         
-        $sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->db->quote($name);
-        $rv = $this->db->exec($sql);
+        $sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->database->quote($name);
+        $rv = $this->database->exec($sql);
         return $rv;
     }
 }
