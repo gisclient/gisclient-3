@@ -378,10 +378,9 @@ class OfflineMap
 
     private function getSymbolImage($symbolName)
     {
-        $smb = new Symbol('symbol');
-        $smb->filter = "symbol.symbol_name='{$symbolName}'";
-        $img = $smb->createIcon();
-
-        return $img;
+        return $this->getFile(INTERNAL_URL . "services/symbol.php", [
+            'table' => 'symbol',
+            'id' => $symbolName
+        ]);
     }
 }
