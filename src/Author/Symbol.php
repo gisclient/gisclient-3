@@ -23,13 +23,24 @@ class Symbol
         $aClass = array();
         
         if ($this->table=='class') {
-            $aSymbol = array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
+            //lettera A per le icone dei testi
+            $aSymbol = array(
+                "SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND"
+            );
             
-            $sql="select class.class_id,layertype_ms,style_id,color,outlinecolor,bgcolor,angle,size,width,symbol.*
-            from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
-            inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name) 
-            inner join $dbSchema.e_layertype using (layertype_id)
-            left join $dbSchema.style using(class_id) left join $dbSchema.symbol on symbol.symbol_name = style.symbol_name";
+            $sql="SELECT
+                    class.class_id, layertype_ms, style_id,
+                    color, outlinecolor, bgcolor, angle, size, width,
+                    symbol.*
+                FROM $dbSchema.class
+                INNER JOIN $dbSchema.layer USING(layer_id)
+                INNER JOIN $dbSchema.layergroup USING (layergroup_id) 
+                INNER JOIN $dbSchema.theme USING (theme_id)
+                INNER JOIN $dbSchema.project USING (project_name) 
+                INNER JOIN $dbSchema.e_layertype USING (layertype_id)
+                LEFT JOIN $dbSchema.style USING(class_id)
+                LEFT JOIN $dbSchema.symbol ON symbol.symbol_name = style.symbol_name
+            ";
 
             if ($this->filter) {
                 $sql.=" where ".$this->filter;
@@ -61,7 +72,9 @@ class Symbol
                         $smbText[]="\tFONT \"".$row["font_name"]."\"";
                     }
                     if ($row["ascii_code"]) {
-                        $smbText[]=($row["ascii_code"]==34)?"\tCHARACTER '".chr($row["ascii_code"])."'":"\tCHARACTER \"".($row["ascii_code"]==92?chr(92):'').chr($row["ascii_code"])."\"";
+                        $smbText[]=($row["ascii_code"]==34) ?
+                            "\tCHARACTER '".chr($row["ascii_code"])."'" :
+                            "\tCHARACTER \"".($row["ascii_code"] == 92 ? chr(92) : '').chr($row["ascii_code"])."\"";
                     }
                     if ($row["filled"]) {
                         $smbText[]="\tFILLED TRUE";
@@ -94,7 +107,11 @@ class Symbol
                 }
             }
         } elseif ($this->table == 'symbol') {
-            $sql="select symbol.* from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
+            $sql = "SELECT
+                        symbol.*
+                    FROM $dbSchema.symbol
+                    INNER JOIN $dbSchema.e_symbolcategory USING (symbolcategory_id)
+            ";
             if ($this->filter) {
                 $sql.=" where ".$this->filter;
             }
@@ -119,7 +136,9 @@ class Symbol
                     $smbText[]="\tFONT \"".$row["font_name"]."\"";
                 }
                 if ($row["ascii_code"]) {
-                    $smbText[]=($row["ascii_code"]==34)?"\tCHARACTER '".chr($row["ascii_code"])."'":"\tCHARACTER \"".($row["ascii_code"]==92?chr(92):'').chr($row["ascii_code"])."\"";
+                    $smbText[] = ($row["ascii_code"] == 34) ?
+                        "\tCHARACTER '".chr($row["ascii_code"])."'" :
+                        "\tCHARACTER \"".($row["ascii_code"] == 92 ? chr(92):'').chr($row["ascii_code"])."\"";
                 }
                 if ($row["filled"]) {
                     $smbText[]="\tFILLED TRUE";
@@ -146,16 +165,17 @@ class Symbol
                     $oIcon->saveImage();
                     $image_data = ob_get_contents();
                     ob_end_clean();
-                    //$sql="update $dbSchema.symbol set symbol_image='{$image_data}' where symbol_name='$symbolName';";
-                    //echo ($sql."<br>");
-                    //$this->db->sql_query($sql);
+                    // $sql="UPDATE $dbSchema.symbol SET symbol_image='{$image_data}' where symbol_name='$symbolName';";
+                    // echo ($sql."<br>");
+                    // $this->db->sql_query($sql);
                 }
             }
         }
 
-        //questo è un mezzo accrocchio... ma non ho capito dove altro serve sta cosa...
-        //quando viene renderizzata l'immaginetta preview della classe nell'author, abbiamo sempre una sola classe da visualizzare e bisogna ritornarla a chi chiama questa funzione
-        //negli altri casi boh?
+        // questo è un mezzo accrocchio... ma non ho capito dove altro serve sta cosa...
+        // quando viene renderizzata l'immaginetta preview della classe nell'author,
+        //  abbiamo sempre una sola classe da visualizzare e bisogna ritornarla a chi chiama questa funzione
+        // negli altri casi boh?
         if ($this->filter) {
             return $image_data;
         }
@@ -193,10 +213,18 @@ class Symbol
                 $oStyle->color->setRGB($style[$i]['color'][0], $style[$i]['color'][1], $style[$i]['color'][2]);
             }
             if (isset($style[$i]['outlinecolor']) && count($style[$i]['outlinecolor'])==3) {
-                $oStyle->outlinecolor->setRGB($style[$i]['outlinecolor'][0], $style[$i]['outlinecolor'][1], $style[$i]['outlinecolor'][2]);
+                $oStyle->outlinecolor->setRGB(
+                    $style[$i]['outlinecolor'][0],
+                    $style[$i]['outlinecolor'][1],
+                    $style[$i]['outlinecolor'][2]
+                );
             }
             if (isset($style[$i]['bgcolor']) && count($style[$i]['bgcolor'])==3) {
-                $oStyle->backgroundcolor->setRGB($style[$i]['bgcolor'][0], $style[$i]['bgcolor'][1], $style[$i]['bgcolor'][2]);
+                $oStyle->backgroundcolor->setRGB(
+                    $style[$i]['bgcolor'][0],
+                    $style[$i]['bgcolor'][1],
+                    $style[$i]['bgcolor'][2]
+                );
             }
             $oStyle->set('width', 1);
             if (!empty($style[$i]['width'])) {
@@ -247,9 +275,15 @@ class Symbol
         $table=$this->table;
         $values=array();
         if ($table=='class') {
-            $sql="select project_name as project,theme_name as theme,layergroup_name as layergroup,layer_name as layer,class_name as class,class_id
-            from $dbSchema.class inner join $dbSchema.layer using(layer_id) inner join $dbSchema.layergroup using (layergroup_id) 
-            inner join $dbSchema.theme using (theme_id) inner join $dbSchema.project using (project_name)";
+            $sql = "SELECT
+                        project_name as project, theme_name as theme, layergroup_name as layergroup,
+                        layer_name as layer, class_name as class, class_id
+                    FROM $dbSchema.class
+                    INNER JOIN $dbSchema.layer USING(layer_id)
+                    INNER JOIN $dbSchema.layergroup USING (layergroup_id) 
+                    INNER JOIN $dbSchema.theme USING (theme_id)
+                    INNER JOIN $dbSchema.project USING (project_name)
+            ";
             if ($this->filter) {
                 $sql.=" where ".$this->filter;
             }
@@ -261,13 +295,25 @@ class Symbol
             $stmt->execute();
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
-                    $values[]=array("table=class&id=".$row["class_id"],$row["class"],$row["layer"],$row["layergroup"],$row["theme"],$row["project"]);
+                    $values[] = array(
+                        "table=class&id=".$row["class_id"],
+                        $row["class"],
+                        $row["layer"],
+                        $row["layergroup"],
+                        $row["theme"],
+                        $row["project"]
+                    );
                 } else {
                     array_push($values, $row);
                 }
             }
         } elseif ($table=='symbol') {
-            $sql="select symbol_name as symbol,symbolcategory_name as category from $dbSchema.symbol inner join $dbSchema.e_symbolcategory using (symbolcategory_id)";
+            $sql = "SELECT
+                        symbol_name as symbol,
+                        symbolcategory_name as category
+                    FROM $dbSchema.symbol
+                    INNER JOIN $dbSchema.e_symbolcategory USING (symbolcategory_id)
+            ";
             
             if ($this->filter) {
                 $sql.=" where ".$this->filter;
@@ -289,7 +335,7 @@ class Symbol
     }
     
     
-    //METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
+    // METODI PER LA GESTIONE DELLE TABELLE DEI SIMBOLI DA RIVEDERE
     
     public function removeByName($name)
     {
