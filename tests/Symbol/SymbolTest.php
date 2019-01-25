@@ -1,7 +1,8 @@
 <?php
 
+use GisClient\Author\Symbol;
+
 include_once __DIR__."/../../config/config.php";
-include_once ADMIN_PATH."lib/gcSymbol.class.php";
 
 class SymbolTest extends PHPUnit_Framework_TestCase {
     public function testSymbolList() {

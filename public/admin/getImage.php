@@ -1,7 +1,8 @@
 <?php
 
+use GisClient\Author\Symbol;
+
 require_once __DIR__ . '/../../bootstrap.php';
-require_once ADMIN_PATH."lib/gcSymbol.class.php";
 
 $db = GCApp::getDB();
 $smb=new Symbol($_REQUEST['table']);

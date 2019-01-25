@@ -1,6 +1,8 @@
 <?php
+
+use GisClient\Author\Symbol;
+
 if (in_array('classify',array_keys($_REQUEST)) && $_REQUEST["classify"]==1 ){
-	require_once ADMIN_PATH."lib/gcSymbol.class.php";
 	require_once ADMIN_PATH."lib/functions.php";
 	$layerId=$_REQUEST["layer"];
 	$param=Array(

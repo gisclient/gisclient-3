@@ -2,6 +2,7 @@
 
 namespace GisClient\Author;
 
+use GisClient\Author\Symbol;
 use GisClient\MapProxy\Seed\Process as SeedProcess;
 use GisClient\MapProxy\Seed\Task as SeedTask;
 use GisClient\GDAL\Export\Process as GDALProcess;
@@ -377,10 +378,7 @@ class OfflineMap
 
     private function getSymbolImage($symbolName)
     {
-        /* TODO: migrate Symbol class to src (namespaces) */
-        require_once ADMIN_PATH . "lib/gcSymbol.class.php";
-
-        $smb = new \Symbol('symbol');
+        $smb = new Symbol('symbol');
         $smb->filter = "symbol.symbol_name='{$symbolName}'";
         $img = $smb->createIcon();
 
