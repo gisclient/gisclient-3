@@ -51,7 +51,7 @@
             "mkdir -p pixmap",
             "mkdir -p tmp/files",
             "mkdir -p tmp/sess",
-            "mkdir -p var/SQLite"
+            "mkdir -p var/offline"
         ],
         "post-install-cmd": [
             "@create-writable-directories"
