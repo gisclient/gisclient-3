@@ -102,6 +102,6 @@ class Task
 
     public function getFilePath()
     {
-        return $this->path . "{$this->project}/{$this->task}.mbtiles";
+        return $this->path . "/{$this->project}/{$this->task}.mbtiles";
     }
 }

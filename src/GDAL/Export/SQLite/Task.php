@@ -149,7 +149,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getFilePath()
     {
-        return $this->path . $this->getTaskName();
+        return $this->path . '/' . $this->getTaskName();
     }
 
     public function cleanup()
