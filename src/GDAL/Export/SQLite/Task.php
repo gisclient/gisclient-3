@@ -14,16 +14,16 @@ class Task implements \GisClient\GDAL\Export\Task
     private $taskName;
     private $path;
 
-    public function __construct(Layer $layer, $taskName, $logDir)
+    public function __construct(Layer $layer, $filename, $logDir)
     {
-        $this->path = 'var/SQLite/';
+        $this->path = dirname($filename);
         $this->layer = $layer;
-        $this->taskName = $taskName;
+        $this->taskName = basename($filename);
         $this->logFile = $logDir . $this->getTaskName() . '.log';
         $this->errFile = $logDir . $this->getTaskName() . '.err';
 
-        if (!is_dir(ROOT_PATH . $this->path)) {
-            if (!mkdir(ROOT_PATH . $this->path, 0700, true)) {
+        if (!is_dir($this->path)) {
+            if (!mkdir($this->path, 0700, true)) {
                 throw new \Exception("Error: Failed to create {$this->path}", 1);
             }
         }
@@ -149,7 +149,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getFilePath()
     {
-        return ROOT_PATH . "{$this->path}{$this->getTaskName()}.sqlite";
+        return $this->path . $this->getTaskName();
     }
 
     public function cleanup()

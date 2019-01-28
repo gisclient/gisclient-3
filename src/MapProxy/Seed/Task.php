@@ -7,12 +7,14 @@ class Task
     private $logFile;
     private $errFile;
     private $project;
+    private $path;
     private $task;
 
-    public function __construct($project, $taskName, $logDir)
+    public function __construct($project, $filename, $logDir)
     {
         $this->project = $project;
-        $this->task = $taskName;
+        $this->path = dirname($filename);
+        $this->task = basename($filename);
         $this->logFile = $logDir . $this->task . '-seed.log';
         $this->errFile = $logDir . $this->task . '-seed.err';
     }
@@ -100,6 +102,6 @@ class Task
 
     public function getFilePath()
     {
-        return MAPPROXY_CACHE_PATH . "{$this->project}/{$this->task}.mbtiles";
+        return $this->path . "{$this->project}/{$this->task}.mbtiles";
     }
 }

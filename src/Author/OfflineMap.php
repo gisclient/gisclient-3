@@ -11,6 +11,8 @@ use GisClient\GDAL\Export\SQLite\Driver as SQLiteDriver;
 
 class OfflineMap
 {
+    private $offlineDataPath;
+
     protected $map;
 
     public function __construct(Map $map)
@@ -31,7 +33,7 @@ class OfflineMap
         $mapConfig = ROOT_PATH . 'map/' . $mapFile;
         $seedConfig = ROOT_PATH . 'map/' . $seedFile;
 
-
+        $this->offlineDataPath = ROOT_PATH . 'var/offline/';
         $this->seedProcess = new SeedProcess($binPath, $mapConfig, $seedConfig);
         $this->gdalProcess = new GDALProcess(new SQLiteDriver());
     }
@@ -47,9 +49,9 @@ class OfflineMap
 
         if ($only == 'mbtiles' || empty($only)) {
             if (empty($theme)) {
-                $task = new SeedTask($this->map->getProject(), 'offline', $logDir);
+                $task = new SeedTask($this->map->getProject(), $this->offlineDataPath . 'offline.mbtiles', $logDir);
             } else {
-                $taskName = $this->map->getName() . '_' . $theme->getName();
+                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
                 $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
             }
             $this->seedProcess->start($task);
@@ -66,7 +68,13 @@ class OfflineMap
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
                     foreach ($layers as $layer) {
-                        $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                        $taskName = $this->offlineDataPath
+                            . $this->map->getName()
+                            . '_'
+                            . $layerGroup->getName()
+                            . '.'
+                            . $layer->getName()
+                            . '.sqlite';
                         $task = new SQLiteTask($layer, $taskName, $logDir);
                         $this->gdalProcess->start($task);
                     }
@@ -86,9 +94,9 @@ class OfflineMap
 
         if ($only == 'mbtiles' || empty($only)) {
             if (empty($theme)) {
-                $task = new SeedTask($this->map->getProject(), 'offline', $logDir);
+                $task = new SeedTask($this->map->getProject(), $this->offlineDataPath . 'offline.mbtiles', $logDir);
             } else {
-                $taskName = $this->map->getName() . '_' . $theme->getName();
+                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
                 $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
             }
 
@@ -106,7 +114,13 @@ class OfflineMap
                 if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                     $layers = $layerGroup->getLayers();
                     foreach ($layers as $layer) {
-                        $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                        $taskName = $this->offlineDataPath
+                            . $this->map->getName()
+                            . '_'
+                            . $layerGroup->getName()
+                            . '.'
+                            . $layer->getName()
+                            . '.sqlite';
                         $task = new SQLiteTask($layer, $taskName, $logDir);
                         $this->gdalProcess->stop($task);
                     }
@@ -131,7 +145,7 @@ class OfflineMap
 
         foreach ($themes as $theme) {
             if ($only == 'mbtiles' || empty($only)) {
-                $taskName = $this->map->getName() . '_' . $theme->getName();
+                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
                 $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
                 $task->cleanup();
             }
@@ -142,7 +156,13 @@ class OfflineMap
                     if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                         $layers = $layerGroup->getLayers();
                         foreach ($layers as $layer) {
-                            $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                            $taskName = $this->offlineDataPath
+                                . $this->map->getName()
+                                . '_'
+                                . $layerGroup->getName()
+                                . '.'
+                                . $layer->getName()
+                                . '.sqlite';
                             $task = new SQLiteTask($layer, $taskName, $logDir);
                             $task->cleanup();
                         }
@@ -175,7 +195,7 @@ class OfflineMap
             );
 
             if ($only == 'mbtiles' || empty($only)) {
-                $taskName = $this->map->getName() . '_' . $t->getName();
+                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $t->getName().'.mbtiles';
                 $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
                 if (!file_exists($task->getFilePath())) {
                     $mbTilesState = 'to-do';
@@ -203,7 +223,13 @@ class OfflineMap
                         $sqliteState = 'to-do';
                         $layers = $layerGroup->getLayers();
                         foreach ($layers as $layer) {
-                            $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                            $taskName = $this->offlineDataPath
+                                . $this->map->getName()
+                                . '_'
+                                . $layerGroup->getName()
+                                . '.'
+                                . $layer->getName()
+                                . '.sqlite';
                             $task = new SQLiteTask($layer, $taskName, $logDir);
                             if (file_exists($task->getFilePath())) {
                                 if ($this->gdalProcess->isRunning($task)) {
@@ -250,7 +276,7 @@ class OfflineMap
                     $zip->addFromString($theme->getName() . '.png', $img);
                 }
 
-                $taskName = $mapName . '_' . $theme->getName();
+                $taskName = $this->offlineDataPath . $mapName . '_' . $theme->getName().'.mbtiles';
                 $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
                 $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
             }
@@ -266,7 +292,13 @@ class OfflineMap
                     if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
                         $layers = $layerGroup->getLayers();
                         foreach ($layers as $layer) {
-                            $taskName = $this->map->getName() . '_' . $layerGroup->getName() . '.' . $layer->getName();
+                            $taskName = $this->offlineDataPath
+                                . $this->map->getName()
+                                . '_'
+                                . $layerGroup->getName()
+                                . '.'
+                                . $layer->getName()
+                                . '.sqlite';
                             $task = new SQLiteTask($layer, $taskName, $logDir);
                             $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
 
