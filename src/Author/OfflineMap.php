@@ -11,7 +11,13 @@ use GisClient\GDAL\Export\SQLite\Driver as SQLiteDriver;
 
 class OfflineMap
 {
-    private $offlineDataPath;
+    protected $offlineDataPath;
+
+    private $logDir;
+
+    private $seedProcess;
+
+    private $gdalProcess;
 
     protected $map;
 
@@ -33,7 +39,8 @@ class OfflineMap
         $mapConfig = ROOT_PATH . 'map/' . $mapFile;
         $seedConfig = ROOT_PATH . 'map/' . $seedFile;
 
-        $this->offlineDataPath = ROOT_PATH . 'var/offline/';
+        $this->offlineDataPath = ROOT_PATH . 'var/offline/'.$this->map->getProject().'/';
+        $this->logDir = DEBUG_DIR;
         $this->seedProcess = new SeedProcess($binPath, $mapConfig, $seedConfig);
         $this->gdalProcess = new GDALProcess(new SQLiteDriver());
     }
@@ -45,22 +52,18 @@ class OfflineMap
      */
     public function start(Theme $theme = null, $only = null)
     {
-        $logDir = DEBUG_DIR;
-
         if ($only == 'mbtiles' || empty($only)) {
-            if (empty($theme)) {
-                $task = new SeedTask($this->map->getProject(), $this->offlineDataPath . 'offline.mbtiles', $logDir);
-            } else {
-                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
-                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+            $mbtilesFile = $this->offlineDataPath . 'offline.mbtiles';
+            if (!empty($theme)) {
+                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
             }
+            $task = new SeedTask($mbtilesFile, $this->logDir);
             $this->seedProcess->start($task);
         }
 
         if ($only == 'sqlite' || empty($only)) {
-            if (empty($theme)) {
-                $layerGroups = $this->map->getLayerGroups();
-            } else {
+            $layerGroups = $this->map->getLayerGroups();
+            if (!empty($theme)) {
                 $layerGroups = $theme->getLayerGroups();
             }
 
@@ -75,7 +78,7 @@ class OfflineMap
                             . '.'
                             . $layer->getName()
                             . '.sqlite';
-                        $task = new SQLiteTask($layer, $taskName, $logDir);
+                        $task = new SQLiteTask($layer, $taskName, $this->logDir);
                         $this->gdalProcess->start($task);
                     }
                 }
@@ -90,23 +93,18 @@ class OfflineMap
      */
     public function stop(Theme $theme = null, $only = null)
     {
-        $logDir = DEBUG_DIR;
-
         if ($only == 'mbtiles' || empty($only)) {
-            if (empty($theme)) {
-                $task = new SeedTask($this->map->getProject(), $this->offlineDataPath . 'offline.mbtiles', $logDir);
-            } else {
-                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
-                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+            $mbtilesFile = $this->offlineDataPath . 'offline.mbtiles';
+            if (!empty($theme)) {
+                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
             }
-
+            $task = new SeedTask($mbtilesFile, $this->logDir);
             $this->seedProcess->stop($task);
         }
 
         if ($only == 'sqlite' || empty($only)) {
-            if (empty($theme)) {
-                $layerGroups = $this->map->getLayerGroups();
-            } else {
+            $layerGroups = $this->map->getLayerGroups();
+            if (!empty($theme)) {
                 $layerGroups = $theme->getLayerGroups();
             }
 
@@ -121,7 +119,7 @@ class OfflineMap
                             . '.'
                             . $layer->getName()
                             . '.sqlite';
-                        $task = new SQLiteTask($layer, $taskName, $logDir);
+                        $task = new SQLiteTask($layer, $taskName, $this->logDir);
                         $this->gdalProcess->stop($task);
                     }
                 }
@@ -135,18 +133,15 @@ class OfflineMap
      */
     public function clear(Theme $theme = null, $only = null)
     {
-        $logDir = DEBUG_DIR;
-
+        $themes = $this->map->getThemes();
         if (!empty($theme)) {
             $themes = array($theme);
-        } else {
-            $themes = $this->map->getThemes();
         }
 
         foreach ($themes as $theme) {
             if ($only == 'mbtiles' || empty($only)) {
-                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
-                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
+                $task = new SeedTask($mbtilesFile, $this->logDir);
                 $task->cleanup();
             }
 
@@ -163,7 +158,7 @@ class OfflineMap
                                 . '.'
                                 . $layer->getName()
                                 . '.sqlite';
-                            $task = new SQLiteTask($layer, $taskName, $logDir);
+                            $task = new SQLiteTask($layer, $taskName, $this->logDir);
                             $task->cleanup();
                         }
                     }
@@ -179,13 +174,11 @@ class OfflineMap
      */
     public function status(Theme $theme = null, $only = null)
     {
-        $logDir = DEBUG_DIR;
         $result = array();
 
+        $themes = $this->map->getThemes();
         if (!empty($theme)) {
             $themes = array($theme);
-        } else {
-            $themes = $this->map->getThemes();
         }
 
         foreach ($themes as $t) {
@@ -195,8 +188,8 @@ class OfflineMap
             );
 
             if ($only == 'mbtiles' || empty($only)) {
-                $taskName = $this->offlineDataPath . $this->map->getName() . '_' . $t->getName().'.mbtiles';
-                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $t->getName().'.mbtiles';
+                $task = new SeedTask($mbtilesFile, $this->logDir);
                 if (!file_exists($task->getFilePath())) {
                     $mbTilesState = 'to-do';
                 } else {
@@ -230,7 +223,7 @@ class OfflineMap
                                 . '.'
                                 . $layer->getName()
                                 . '.sqlite';
-                            $task = new SQLiteTask($layer, $taskName, $logDir);
+                            $task = new SQLiteTask($layer, $taskName, $this->logDir);
                             if (file_exists($task->getFilePath())) {
                                 if ($this->gdalProcess->isRunning($task)) {
                                     $sqliteState = 'running';
@@ -256,8 +249,6 @@ class OfflineMap
      */
     public function get($mbtiles = true, $sqlite = true)
     {
-        $logDir = DEBUG_DIR;
-
         $zip = new \ZipArchive();
         $mapName = $this->map->getName();
         $zipFile = ROOT_PATH . 'var/' . $mapName . '.zip';
@@ -276,8 +267,8 @@ class OfflineMap
                     $zip->addFromString($theme->getName() . '.png', $img);
                 }
 
-                $taskName = $this->offlineDataPath . $mapName . '_' . $theme->getName().'.mbtiles';
-                $task = new SeedTask($this->map->getProject(), $taskName, $logDir);
+                $mbtilesFile = $this->offlineDataPath . $mapName . '_' . $theme->getName().'.mbtiles';
+                $task = new SeedTask($mbtilesFile, $this->logDir);
                 $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
             }
 
@@ -299,7 +290,7 @@ class OfflineMap
                                 . '.'
                                 . $layer->getName()
                                 . '.sqlite';
-                            $task = new SQLiteTask($layer, $taskName, $logDir);
+                            $task = new SQLiteTask($layer, $taskName, $this->logDir);
                             $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
 
                             $catalogId = $layer->getCatalogId();

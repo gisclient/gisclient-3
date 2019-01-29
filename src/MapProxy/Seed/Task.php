@@ -6,22 +6,20 @@ class Task
 {
     private $logFile;
     private $errFile;
-    private $project;
     private $path;
     private $task;
 
-    public function __construct($project, $filename, $logDir)
+    public function __construct($filename, $logDir)
     {
-        $this->project = $project;
         $this->path = dirname($filename);
         $this->task = basename($filename);
-        $this->logFile = $logDir . $this->task . '-seed.log';
-        $this->errFile = $logDir . $this->task . '-seed.err';
+        $this->logFile = $logDir . $this->getTaskName() . '-seed.log';
+        $this->errFile = $logDir . $this->getTaskName() . '-seed.err';
     }
 
     public function getTaskName()
     {
-        return $this->task;
+        return basename($this->task, '.mbtiles');
     }
 
     public function getLogFile()
@@ -102,6 +100,6 @@ class Task
 
     public function getFilePath()
     {
-        return $this->path . "/{$this->project}/{$this->task}.mbtiles";
+        return $this->path . '/' . $this->task;
     }
 }

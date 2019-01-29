@@ -31,7 +31,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getTaskName()
     {
-        return $this->taskName;
+        return basename($this->taskName, '.sqlite');
     }
 
     public function getLogFile()
@@ -149,7 +149,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getFilePath()
     {
-        return $this->path . '/' . $this->getTaskName();
+        return $this->path . '/' . $this->taskName;
     }
 
     public function cleanup()
