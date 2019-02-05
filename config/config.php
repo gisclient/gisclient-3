@@ -70,19 +70,23 @@ if (php_sapi_name() == "cli") {
     }
     define('PUBLIC_URL', trim(getenv('AUTHOR_PUBLIC_URL'), '/').'/'); // url for external requests (like map client)
 } else {
-    $requestContext = new RequestContext();
-    $requestContext->fromRequest(Request::createFromGlobals());
-    $scheme = $requestContext->getScheme();
-    $httpPort = $requestContext->getHttpPort();
-    $httpsPort = $requestContext->getHttpsPort();
-    if ('http' == $scheme && 80 != $httpPort) {
-        $host = $requestContext->getHost().':'.$httpPort;
-    } elseif ('https' == $scheme && 443 != $httpsPort) {
-        $host = $requestContext->getHost().':'.$httpsPort;
+    if (getenv('AUTHOR_PUBLIC_URL') !== false) {
+        define('PUBLIC_URL', trim(getenv('AUTHOR_PUBLIC_URL'), '/').'/'); // url for external requests (like map client)
     } else {
-        $host = $requestContext->getHost();
+        $requestContext = new RequestContext();
+        $requestContext->fromRequest(Request::createFromGlobals());
+        $scheme = $requestContext->getScheme();
+        $httpPort = $requestContext->getHttpPort();
+        $httpsPort = $requestContext->getHttpsPort();
+        if ('http' == $scheme && 80 != $httpPort) {
+            $host = $requestContext->getHost().':'.$httpPort;
+        } elseif ('https' == $scheme && 443 != $httpsPort) {
+            $host = $requestContext->getHost().':'.$httpsPort;
+        } else {
+            $host = $requestContext->getHost();
+        }
+        define('PUBLIC_URL', sprintf('%s://%s/', $scheme, $host)); // url for external requests (like map client)
     }
-    define('PUBLIC_URL', sprintf('%s://%s/', $scheme, $host)); // url for external requests (like map client)
 }
 define('INTERNAL_URL', 'http://127.0.0.1/'); // url for internal requests
 define('MAP_URL', 'http://localhost/map/'); //URL CLIENT DI MAPPA
