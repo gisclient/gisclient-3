@@ -41,7 +41,7 @@ Class saveData{
 		}
 		else
 			$this->mode=isset($arr_dati["modo"])?(strtolower($arr_dati["modo"])):(strtolower($arr_dati["mode"]));
-		
+
 		if(!$arr_dati["azione"]){
 			GCError::register("Manca l'azione da eseguire, non è possibile continuare");
 			$this->hasErrors=true;
@@ -51,9 +51,9 @@ Class saveData{
 			if(isset($arr_dati["save_type"]) && $arr_dati["save_type"]=="multiple"){
 				$this->mode="multiple-save";
 			}
-			$this->action=strtolower($arr_dati["azione"]);	
+			$this->action=strtolower($arr_dati["azione"]);
 		}
-		
+
 		//Acquisizione dei dati dal file di configurazione
 		$config_file=$arr_dati["config_file"];
 		if((!$config_file || !is_file($this->conf_dir.$config_file)) && $this->action!="annulla"){
@@ -82,18 +82,18 @@ Class saveData{
 			else
 				$this->data=$arr_dati["dati"];
 		}
-		
+
 	}
 	function getPKeys($level,$sk){
 		return $this->primary_keys[$level];
 	}
 	function performAction($p=null){
 		if ($this->hasErrors==true){
-			$p->livello=$p->get_livello();	
+			$p->livello=$p->get_livello();
 			$p->get_conf();
 			return $p;
 		}
-		
+
 		switch($this->action){
             case "massive":
               $currKey = $this->primary_keys[$this->data["searchName"]];
@@ -146,7 +146,7 @@ Class saveData{
 			case "elimina":
 				array_pop($p->parametri);
 				$p->mode=$p->arr_mode["list"];
-				
+
 			case "cancella":
 				$flt = array();
 				$sqlParams = array();
@@ -167,9 +167,9 @@ Class saveData{
 
 				if($this->action=="cancella") $p->mode=$p->arr_mode["edit"];
 				$this->delete=1;
-				
+
 				$this->refreshMapfiles = true;
-				
+
 				break;
 			case "sposta":
 				$flt = array();
@@ -207,10 +207,10 @@ Class saveData{
 				if($this->newId && $this->oldId && $this->newId!=$this->oldId)
 					$tree=$this->_copy_object($p->array_levels,$idlevel,$idcopy,Array("key"=>$parent[0],"value"=>$p->parametri[$parent[0]]),$idlevel,1,$newName);
 				else{
-					
+
 					$tree=$this->_copy_object($p->array_levels,$idlevel,$idcopy,null,null,0,$newName);
 				}
-					
+
 				array_pop($p->parametri);
 				break;
 			case "aggiungi":
@@ -242,7 +242,7 @@ Class saveData{
 				$sql="insert into $this->schema.$this->table (".@implode(",",$sqlinsertfield).") values (".@implode(",",$sqlinsertplaceholders).");";
 				try {
 				    $stmt = $this->db->prepare($sql);
-				    $result = $stmt->execute($sqlinsertvalues);					
+				    $result = $stmt->execute($sqlinsertvalues);
 				    print_debug($sql,null,"save.class");
 				} catch (Exception $e) {
 				    GCError::registerException($e);
@@ -251,20 +251,20 @@ Class saveData{
 				$p->mode=$p->arr_mode["edit"];
 				$this->refreshMapfiles = true;
 				break;
-				
+
 			case "salva":
-				
+
 				$Dati=$this->_validaDati();
 				if ($this->hasErrors==true){
 					$p->mode=$p->arr_mode[$this->mode];
-					$p->livello=$p->get_livello();	
+					$p->livello=$p->get_livello();
 					$p->get_conf();
 					return $p;
 				}
 				if (isset($_SESSION["ADD_NEW"]) && $_SESSION["ADD_NEW"]){
 					echo "Il record è già stato inserito ".$_SESSION["ADD_NEW"];
 					$this->hasErrors=true;
-					$p->livello=$p->get_livello();	
+					$p->livello=$p->get_livello();
 					$p->get_conf();
 					return $p;
 				}
@@ -274,23 +274,23 @@ Class saveData{
 						if ($this->hasErrors){
 							$p->mode=$p->arr_mode[$this->mode];
 							$this->hasErrors=true;
-							$p->livello=$p->get_livello();	
+							$p->livello=$p->get_livello();
 							$p->get_conf();
 							return $p;
 						}
-						
+
 						$tmp=array_keys($this->pkeys);
-						
+
 						$pkey=$tmp[0];
 						$delete_filter = '';
 						$arr_del_filter = array();
 						$arr_del_values = array();
 						$_cnt = 0;
 						if($this->parent_flds){
-							
+
 							foreach($this->parent_flds as $key=>$value){
 								$parentKeys=$this->getPKeys($key,DB_SCHEMA);
-								
+
 								foreach($parentKeys as $pk)
 									for($i=0;$i<count($Dati);$i++) $Dati[$i][$pk]=$value;
 								$arr_del_filter[]="$pk = :ph".$_cnt;
@@ -307,12 +307,12 @@ Class saveData{
 						} catch (Exception $e) {
 						    GCError::registerException($e);
 						    $this->hasErrors=true;
-						}						    
+						}
 						print_debug($sql,null,"save.class");
 						for($i=0;$i<count($this->data);$i++){
 							if ($pkey) {
 								$newid = GCApp::getNewPKey(DB_SCHEMA, $this->schema, $this->table, $pkey, 1);
-								if ($newid) 
+								if ($newid)
 								    $Dati[$i][$pkey]=$newid;
 							}
 							$sqlinsertfield = array();
@@ -331,7 +331,7 @@ Class saveData{
 							$sql="insert into $this->schema.$this->table (".@implode(",",$sqlinsertfield).") values (".@implode(",",$sqlinsertplaceholders).");";
 							try {
 							    $stmt = $this->db->prepare($sql);
-							    $result = $stmt->execute($sqlinsertvalues);	
+							    $result = $stmt->execute($sqlinsertvalues);
 							} catch (Exception $e) {
 							    GCError::registerException($e);
 							    $this->hasErrors=true;
@@ -340,15 +340,15 @@ Class saveData{
 							print_debug($sql,null,"save.class");
 						}
 						array_pop($p->parametri);
-						$p->livello=$p->get_livello();	
+						$p->livello=$p->get_livello();
 						$p->get_conf();
 						$this->hasErrors=false;
 						return $p;
 						break;
 					case "new":
-						//CERCO IL VALORE DELLA NUOVA CHIAVE PRIMARIA   ---- AL MOMENTO FUNZIONA SOLO CON UNA CHIAVE PRIMARIA 
+						//CERCO IL VALORE DELLA NUOVA CHIAVE PRIMARIA   ---- AL MOMENTO FUNZIONA SOLO CON UNA CHIAVE PRIMARIA
 						$tmp=array_keys($this->pkeys);
-						
+
 						$pkey=$tmp[0];
 						switch($this->table){	// Starting point della tabella
 							default:
@@ -365,11 +365,11 @@ Class saveData{
 							}
 						}
 						else if (isset($this->data[$pkey])){
-							
+
 							$newid=$this->data[$pkey];
 						}
 						//INSERISCO I VALORI DEI GENITORI DELLA TABELLA
-						
+
 						if($this->parent_flds){
 							foreach($this->parent_flds as $key=>$value){
 								$pkeys=$this->getPKeys($key,$this->schema);
@@ -377,17 +377,17 @@ Class saveData{
 										$Dati[$pkeys[$i]]=$value;
 							}
 						}
-						//INSERISCO I VALORI DELLA TABELLA						
+						//INSERISCO I VALORI DELLA TABELLA
 						$sqlinsertfield = array();
 						$sqlinsertplaceholders = array();
 						$sqlparams = array();
 						$_cnt=0;
 						foreach ($Dati as $campo=>$valore){
-							
+
 							if ($campo && strlen($valore)>0) {
 								$sqlinsertfield[]=$campo;
 								$sqlinsertplaceholders[]=':ph'.$_cnt;
-								$sqlparams['ph'.$_cnt]=$valore;	
+								$sqlparams['ph'.$_cnt]=$valore;
 								$_cnt++;
 							}
 						}
@@ -397,7 +397,7 @@ Class saveData{
 						$flt = array();
 						$sqlupdate = array();
 						$sqlparams = array();
-						$_cnt=0;						
+						$_cnt=0;
 						foreach($this->pkeys as $key=>$value) {
 						    $flt[]="$key = ".':ph'.$_cnt;
 						    $sqlparams['ph'.$_cnt] = $value?$value:$this->data[$key];
@@ -428,14 +428,14 @@ Class saveData{
 						GCError::registerException($e);
 						$p->mode=$p->arr_mode[$this->mode];
 						$this->hasErrors=true;
-						$p->livello=$p->get_livello();	
+						$p->livello=$p->get_livello();
 						$p->get_conf();
 						return $p;
 				    }
 				}
 				if(isset($newid) && $this->mode=="new"){
 					$_SESSION["ADD_NEW"]=$newid;
-					$p->parametri[$p->get_livello()]=$newid;	
+					$p->parametri[$p->get_livello()]=$newid;
 				}
 				if ($p->array_levels[$p->get_idLivello()]["leaf"] && $this->delete){
 					array_pop($p->parametri);
@@ -452,7 +452,7 @@ Class saveData{
 		$p->livello = $p->get_livello();
 		$p->get_conf();
 		$this->hasErrors = false;
-		
+
 		if($this->refreshMapfiles && !empty($_SESSION['auto_refresh_mapfiles'])) {
             $publish = !empty($_SESSION['save_to_tmp_map']) ? false : true;
 			if(!empty($p->parametri['project']) && !empty($p->parametri['mapset'])){
@@ -462,10 +462,10 @@ Class saveData{
 				GCAuthor::refreshMapfiles($p->parametri['project'], $publish);
 			}
 		}
-		
+
 		return $p;
 	}
-	
+
 	private function _copy_object($arr,$lev,$arr_id=Array(),$parent_fld=Array(),$start_lev=0,$modal=0,$newname=""){
 		$struct["name"]=$arr[$lev]["name"];
 		$el=$arr[$lev];
@@ -479,24 +479,24 @@ Class saveData{
 			    GCError::registerException($e);
 			    $this->hasErrors=true;
 			}
-			    
+
 			$child = $stmt->fetchAll();
 			print_debug($sql);
 		}
 		else{
 			$child=Array();
-		}	
+		}
 		if(count($arr_id)){
 			$sqlparams = array('structName1' => $struct["name"], 'structName2' => $struct["name"]);
 			$sql="SELECT column_name FROM information_schema.columns WHERE table_name='"
 			    .$struct["name"]."' and table_schema='".DB_SCHEMA
-				."' AND NOT column_name IN 
-				    (SELECT Y.column_name FROM 
-					(select constraint_name FROM information_schema.table_constraints 
+				."' AND NOT column_name IN
+				    (SELECT Y.column_name FROM
+					(select constraint_name FROM information_schema.table_constraints
 					WHERE constraint_type='PRIMARY KEY' AND constraint_schema='".DB_SCHEMA
-					."' and table_name=:structName1)  as X 
-					left join 
-					    (SELECT constraint_name,column_name FROM information_schema.constraint_column_usage 
+					."' and table_name=:structName1)  as X
+					left join
+					    (SELECT constraint_name,column_name FROM information_schema.constraint_column_usage
 					    WHERE constraint_schema='".DB_SCHEMA
 					    ."' and table_name=:structName2) as Y using(constraint_name))";
 			print_debug($sql,null,"save.copy");
@@ -509,7 +509,7 @@ Class saveData{
 			    GCError::registerException($e);
 			    $this->hasErrors=true;
 			}
-			
+
 			foreach($tmp as $v) {
 				$flds[]=$v["column_name"];
 				if($parent_fld["value"] && ($v["column_name"]==$arr[$arr[$lev]["parent"]]["name"]."_id" || $v["column_name"]==$arr[$arr[$lev]["parent"]]["name"]."_name")){
@@ -521,11 +521,11 @@ Class saveData{
 				else
 					$value[]=$v["column_name"];
 			}
-			
- 			$list_flds=@implode(",",$flds);	
-			$list_value=@implode(",",$value);	
+
+ 			$list_flds=@implode(",",$flds);
+			$list_value=@implode(",",$value);
 		}
-		
+
 		// INSERISCO GLI ELEMENTI DI QUESTO LIVELLO
 		if ($arr_id)
 		foreach($arr_id as $id){
@@ -541,6 +541,30 @@ Class saveData{
 			    GCError::registerException($e);
 			    $this->hasErrors=true;
 			}
+			// **** Bugfix: fields on related tables retain original relation_id and generate errors into the mapfile
+			// **** WARNING: works if relations are copied AFTER fields!
+			$sql_cross_update = 'SELECT table_name FROM information_schema.columns WHERE table_schema=:gc_schema AND table_name IN (SELECT "table" FROM ' .DB_SCHEMA. '.e_level WHERE parent_id=:parent_id) and table_name<>:table_name and column_name=:field_id';
+			$cross_update_params = array('gc_schema' => DB_SCHEMA, 'parent_id' => $arr[$lev]['parent'], 'table_name' => $struct["name"], 'field_id' => $struct["name"] . '_id');
+			try {
+			    $stmt = $this->db->prepare($sql_cross_update);
+			    $stmt->execute($cross_update_params);
+			    $cross_update_tables = $stmt->fetchAll();
+				foreach($cross_update_tables as $tbl_upd_name){
+	   				$sql_fields = "UPDATE " .DB_SCHEMA."." . $tbl_upd_name['table_name'] . " set " . $struct["name"] . "_id=:new_relation_id WHERE " . $struct["name"] . "_id=:old_relation_id AND " . $arr[$arr[$lev]["parent"]]["name"] . "_id=:parent_id";
+	   				$sql_fields_params = array('new_relation_id' => $idx, 'old_relation_id' => $id,'parent_id' => $parent_fld["value"]);
+	   				print_debug($sql_fields,null,"save.copy");
+	   				try {
+	   				    $stmt = $this->db->prepare($sql_fields);
+	   				    $result = $stmt->execute($sql_fields_params);
+	   				} catch (Exception $e) {
+	   				    GCError::registerException($e);
+	   				    $this->hasErrors=true;
+	   				}
+	   			}
+			} catch (Exception $e) {
+			    GCError::registerException($e);
+			    $this->hasErrors=true;
+			}
 		}
 		foreach($child as $ch){
 			$tb=$ch["name"];
@@ -551,12 +575,12 @@ Class saveData{
 				$rows = array();
 				try {
 				    $stmt = $this->db->prepare($sql);
-				    $result = $stmt->execute(array('id' => $id));	
+				    $result = $stmt->execute(array('id' => $id));
 				    $rows = $stmt->fetchAll();
 				} catch (Exception $e) {
 				    GCError::registerException($e);
 				    $this->hasErrors=true;
-				}				    				    
+				}
 				$newArrId = array();
 				foreach ($rows as $r) {
 				    $newArrId[] = $r['id'];
@@ -571,7 +595,7 @@ Class saveData{
 		}
 		return $struct;
 	}
-	
+
 	private function _export_object($arr,$lev,$arr_id=Array()){
 		$struct["name"]=$arr[$lev]["name"];
 		$el=$arr[$lev];
@@ -581,13 +605,13 @@ Class saveData{
 			$child = array();
 			try {
 			    $stmt = $this->db->prepare($sql);
-			    $result = $stmt->execute(array('lev' => $lev));	
+			    $result = $stmt->execute(array('lev' => $lev));
 			    print_debug($sql);
-			    $child = $stmt->fetchAll();			
+			    $child = $stmt->fetchAll();
 			} catch (Exception $e) {
 			    GCError::registerException($e);
 			    $this->hasErrors=true;
-			}				    
+			}
 
 		}
 		else{
@@ -596,37 +620,37 @@ Class saveData{
 		if(count($arr_id)){
 			$sqlparams = array('structName1' => $struct["name"], 'structName2' => $struct["name"], 'structName3' => $struct["name"]);
 			$sql="SELECT column_name FROM information_schema.columns WHERE table_name=:structName1 and table_schema='".DB_SCHEMA
-				."' AND NOT column_name IN (SELECT Y.column_name FROM 
-					(select constraint_name FROM information_schema.table_constraints 
+				."' AND NOT column_name IN (SELECT Y.column_name FROM
+					(select constraint_name FROM information_schema.table_constraints
 					WHERE constraint_type='PRIMARY KEY' AND constraint_schema='".DB_SCHEMA
-					."' and table_name=:structName2)  as X left join 
-					    (SELECT constraint_name,column_name FROM information_schema.constraint_column_usage 
+					."' and table_name=:structName2)  as X left join
+					    (SELECT constraint_name,column_name FROM information_schema.constraint_column_usage
 					    WHERE constraint_schema='".DB_SCHEMA."' and table_name=:structName3) as Y using(constraint_name))";
 			print_debug($sql,null,"save.class.debug");
 			$tmp = array();
 			try {
 			    $stmt = $this->db->prepare($sql);
-			    $result = $stmt->execute($sqlparams);				
+			    $result = $stmt->execute($sqlparams);
 			    $tmp = $stmt->fetchAll();
 			} catch (Exception $e) {
 			    GCError::registerException($e);
 			    $this->hasErrors=true;
-			}				    			    
+			}
 			foreach($tmp as $v) {
 				$flds[]=$v["column_name"];
-				
+
 				if($parent_fld["value"] && $v["column_name"]==$arr[$arr[$lev]["parent"]]["name"]."_id"){
 					$value[]="(select ".$arr[$arr[$lev]["parent"]]["name"]."_id from ".DB_SCHEMA.".".$arr[$arr[$lev]["parent"]]["name"]." where ".$arr[$arr[$lev]["parent"]]["name"]."_name='')";
 				}
 				else
 					$value[]=$v["column_name"];
 			}
-			
-				
-			$list_flds=@implode(",",$flds);	
-			$list_value=@implode(",",$value);	
+
+
+			$list_flds=@implode(",",$flds);
+			$list_value=@implode(",",$value);
 		}
-		
+
 		// INSERISCO GLI ELEMENTI DI QUESTO LIVELLO
 		foreach($arr_id as $id){
 			$idx = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, $struct["name"], $struct["name"].'_id');
@@ -634,10 +658,10 @@ Class saveData{
 			// PDO: $list_values cannot be quoted/made into a bound parameter because it holds a list of column names
 			$sql="INSERT INTO ".DB_SCHEMA.".".$struct["name"]."(".$struct["name"]."_id,$list_flds) SELECT $idx,$list_value FROM ".DB_SCHEMA.".".$struct["name"]." WHERE ".$struct["name"]."_id=:id;";
 			print_debug($sql,null,"save.class.debug");
-			
+
 			// FIXME: Migrazione PDO: le seguenti righe sono commentate perchè anche nel sorgente originale
 			//        questo codice finiva "nel vuoto" (senza l'esecuzione effettiva della query INSERT)
-			// 
+			//
 			//$stmt = $this->db->prepare($sql);
 			//$result = $stmt->execute(array('id' => $id));
 			//if (!$result){
@@ -653,12 +677,12 @@ Class saveData{
 				$rows = array();
 				try {
 				    $stmt = $this->db->prepare($sql);
-				    $result = $stmt->execute(array('id' => $id));	
+				    $result = $stmt->execute(array('id' => $id));
 				    $rows = $stmt->fetchAll();
 				} catch (Exception $e) {
 				    GCError::registerException($e);
 				    $this->hasErrors=true;
-				}				    				    
+				}
 				$newArrId = array();
 				foreach ($rows as $r) {
 				    $newArrId[] = $r['id'];
@@ -673,12 +697,12 @@ Class saveData{
 		}
 		return $struct;
 	}
-	
+
 	private function _validaMultipleDati(){
 		$dati = array();
 		for($i=0;$i<count($this->data);$i++){
 			$OK_Save=1;
-			
+
 			$dati[$i]=$this->_validaDati($i);
 			$error=$this->error;
 			$this->error=Array();
@@ -698,7 +722,7 @@ Class saveData{
 		    GCError::registerException($e);
 		    $this->hasErrors=true;
 		    return;
-		}				    
+		}
 
 		$flds = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 		foreach($this->fields as $def){
@@ -714,14 +738,14 @@ Class saveData{
 			$present=(!in_array($campo,$flds))?(0):(1);
 			switch ($tipo) {
 				case "pword":
-				case "text":	
+				case "text":
 				case "textarea":
 					if (get_magic_quotes_runtime() or get_magic_quotes_gpc())
 						$val=stripslashes($val);
 					break;
 				case "select":
 					break;
-					
+
 				case "selectdb":
 				case "selectRPC":
 				case "elenco":
@@ -733,12 +757,12 @@ Class saveData{
 						$OK_Save=0;
 						GCError::register($campo.": Dato non numerico");
 					}
-					break;	
-					
+					break;
+
 				case "bool":
 					($val="SI")?($val="t"):($val="f");
 					break;
-					
+
 				case "checkbox":
 				case "radio":
 					$arvalue=$_POST[$campo];
@@ -755,17 +779,17 @@ Class saveData{
 				case "check1":
 					$val=(isset($this->data[$curr_rec][$campo]))?($this->data[$curr_rec][$campo]):(0);
 					break;
-					
+
 			}
 			if(($tipo!="button") && ($tipo!="submit") && $present)
 				$array_data[$campo]=$val;
-			
+
 		}
 		return $array_data;
 	}
 
 	private function _getConfig($file,$pk,$pk_val){
-		
+
 		$tmp=parse_ini_file($file,true);
 		$array_config=$tmp["standard"];
 		// ACQUISIZIONE DELLA TABELLA DEL DATABASE
@@ -779,9 +803,9 @@ Class saveData{
 			$this->schema=DB_SCHEMA;
 		}
 		// ACQUISIZIONE DELLE PRIMARY KEYS DELLA TABELLA (SI PUO' SOSTITUIRE PRENDENDO I DATI DALL?INFORMATION SCHEMA SU DB)
-		
+
 		if($array_config["pkey"]){
-			$datipkeys=explode(';',$array_config["pkey"]);	
+			$datipkeys=explode(';',$array_config["pkey"]);
 			//for($i=0;$i<count($datipkeys);$i++) $this->pkeys[trim($datipkeys[$i])]=$pk[str_replace("_name","",str_replace("_id","",trim($datipkeys[$i])))];
 			for($i=0;$i<count($pk);$i++) $this->pkeys[$pk[$i]]=stripslashes($pk_val[$i]);
 		}
@@ -791,7 +815,7 @@ Class saveData{
 		//ACQUISIZIONE DELLE DEFINIZIONI DEI CAMPI
 		for ($i=0;$i<count($array_config["dato"]);$i++){
 			$row_config=explode('|',$array_config["dato"][$i]);
-			
+
 			foreach($row_config as  $r){
 				$def=array_pad(explode(';',$r), 4, '');
 				$this->fields[]=array("field"=>trim($def[1]),"type"=>trim($def[3]));

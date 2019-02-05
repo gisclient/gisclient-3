@@ -170,7 +170,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 				if(!empty($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
 					$version = substr(ms_GetVersionInt(),0,1);
 					if ($version >= 7)
-						$oLay->updateFromString("COMPOSITE OPACITY " . $layer['PARAMETERS']['OPACITY'] . " END");
+						$oLay->updateFromString("LAYER COMPOSITE OPACITY " . $layer['PARAMETERS']['OPACITY'] . " END END");
 					else
 						$oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
 					$oLay->setMetaData("wms_force_separate_request", 1);
