@@ -13,17 +13,11 @@ $(document).ready(function() {
         dialog.empty();
         dialog.append($('#offline_theme').html());
         
-        var params = {
-            action: 'get-data',
-            project: $('input#project').val(),
-            map: map
-        };
-
+        var project = $('input#project').val();
         $.ajax({
-            url: 'ajax/offline.php',
+            url: '../services/offline/'+project+'/'+map+'/get-data.json',
             type: 'GET',
             dataType: 'json',
-            data: params,
             success: function(response) {
                 console.log(response);
 
@@ -98,60 +92,57 @@ $(document).ready(function() {
                         if (!confirm('Delete this?')) {
                             return;
                         }
+                        var project = $('input#project').val();
+                        var map = $(this).attr('data-map');
                         var params = {
-                            action: 'clear',
-                            project: $('input#project').val(),
-                            map: $(this).attr('data-map'),
                             target: $(this).attr('data-target'),
                             theme: $(this).attr('data-theme')
                         };
                         $.ajax({
-                            url: 'ajax/offline.php',
+                            url: '../services/offline/'+project+'/'+map+'/clear.json',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                loadMapView(params.map);
+                                loadMapView(map);
                             }
                         });
                     });
                     $('div#offline_manager a[data-action="stop"]').button(
                         {icons:{primary:'ui-icon-stop'}, text:false}
                     ).click(function () {
+                        var project = $('input#project').val();
+                        var map = $(this).attr('data-map');
                         var params = {
-                            action: 'stop',
-                            project: $('input#project').val(),
-                            map: $(this).attr('data-map'),
                             target: $(this).attr('data-target'),
                             theme: $(this).attr('data-theme')
                         };
                         $.ajax({
-                            url: 'ajax/offline.php',
+                            url: '../services/offline/'+project+'/'+map+'/stop.json',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                loadMapView(params.map);
+                                loadMapView(map);
                             }
                         });
                     });
                     $('div#offline_manager a[data-action="generate"]').button(
                         {icons:{primary:'ui-icon-play'}, text:false}
                     ).click(function () {
+                        var project = $('input#project').val();
+                        var map = $(this).attr('data-map');
                         var params = {
-                            action: 'start',
-                            project: $('input#project').val(),
-                            map: $(this).attr('data-map'),
                             target: $(this).attr('data-target'),
                             theme: $(this).attr('data-theme')
                         };
                         $.ajax({
-                            url: 'ajax/offline.php',
+                            url: '../services/offline/'+project+'/'+map+'/start.json',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                loadMapView(params.map);
+                                loadMapView(map);
                             }
                         });
                     });
@@ -189,16 +180,12 @@ $(document).ready(function() {
             $(activeLink).hide();
             $(activeLinkContainer).append(loadingGif);
 
-            var params = {
-                action: 'download',
-                project: $('input#project').val(),
-                map: $(this).attr('data-map')
-            };
+            var project = $('input#project').val();
+            var map = $(this).attr('data-map');
             $.ajax({
-                url: 'ajax/offline.php',
+                url: '../services/offline/'+project+'/'+map+'/download.json',
                 type: 'GET',
                 dataType: 'json',
-                data: params,
                 success: function(response) {
                     $(activeLink).show();
                     $('img', activeLinkContainer).remove();

@@ -25,6 +25,38 @@ downloadImage:
         _controller: 'GisClient\Author\Controller\DownloadController::downloadImageAction'
     methods:
         - GET
+
+offlineGetData:
+    path: offline/{project}/{map}/get-data.json
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::getDataAction'
+    methods:
+        - GET
+offlineStart:
+    path: offline/{project}/{map}/start.json
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::startAction'
+    methods:
+        - GET
+offlineStop:
+    path: offline/{project}/{map}/stop.json
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::stopAction'
+    methods:
+        - GET
+offlineClear:
+    path: offline/{project}/{map}/clear.json
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::clearAction'
+    methods:
+        - GET
+offlineDownload:
+    path: offline/{project}/{map}/download.json
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::downloadAction'
+    methods:
+        - GET
+
 getSymbol:
     path: symbol.php
     defaults:
