@@ -15,6 +15,7 @@
         "symfony/form": "^3.4",
         "symfony/http-foundation": "^3.4",
         "symfony/http-kernel": "^3.4",
+        "symfony/process": "^3.4",
         "symfony/routing": "^3.4",
         "symfony/validator": "^3.4",
         "symfony/yaml": "^3.4"
