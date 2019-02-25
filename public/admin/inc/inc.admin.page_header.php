@@ -195,6 +195,7 @@
                         <th><?php echo GCauthor::t('theme') ?></th>
                         <th><?php echo GCauthor::t('mbtiles') ?></th>
                         <th><?php echo GCAuthor::t('sqlite') ?></th>
+                        <th><?php echo GCAuthor::t('mvt') ?></th>
                     </tr>
                 </table>
                 <button id="offline_theme_back"><?php echo GCAuthor::t('back') ?></button>

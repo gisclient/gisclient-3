@@ -27,6 +27,7 @@ class OfflineMap
     {
         $this->map = $map;
 
+        $this->offlineDataFormats[] = new Offline\MVTData(DEBUG_DIR);
         $this->offlineDataFormats[] = new Offline\SqliteData(DEBUG_DIR);
         if (!defined('MAPPROXY_PATH')) {
             throw new \Exception('MapProxy is not configured', 1);

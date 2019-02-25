@@ -1304,6 +1304,9 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             sess_lifetime INTEGER NOT NULL
         );
 
+        INSERT INTO e_outputformat (outputformat_id, outputformat_name, outputformat_driver, outputformat_mimetype, outputformat_imagemode, outputformat_extension, outputformat_option)
+          values (20, 'MVT', 'OGR/MVT', 'application/vnd.mapbox-vector-tile', 'MVT', 'pbf', NULL);
+
         --version
         v_author_version = '3.6.0';
         INSERT INTO version (version_name,version_key, version_date) values ('3.6.0', 'author', '2019-01-24');

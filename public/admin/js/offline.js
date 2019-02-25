@@ -77,6 +77,25 @@ $(document).ready(function() {
                         } else {
                             html += '<td>no sqlite</td>';
                         }
+
+                        if (Object.keys(theme.mvt).length) {
+                            html += '<td>';
+                            switch (theme.mvt.state) {
+                                case 'running':
+                                    html += '<a href="#" data-action="check" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
+                                    html += '<a href="#" data-action="stop" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
+                                    break;
+
+                                case 'stopped':
+                                    html += '<a href="#" data-action="clear" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
+                                /* fall through */
+                                case 'to-do':
+                                    html += '<a href="#" data-action="generate" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                            }
+                            html += '</td>';
+                        } else {
+                            html += '<td>no mvt</td>';
+                        }
                         html += '</tr>';
                     }
                     dialog.find('table').append(html);
