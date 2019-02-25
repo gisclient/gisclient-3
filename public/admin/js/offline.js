@@ -105,6 +105,10 @@ $(document).ready(function() {
                             data: params,
                             success: function(response) {
                                 loadMapView(map);
+                            },
+                            error: function(responseObj) {
+                                var response = JSON.parse(responseObj.responseText);
+                                return alert(response.message);
                             }
                         });
                     });
@@ -124,6 +128,10 @@ $(document).ready(function() {
                             data: params,
                             success: function(response) {
                                 loadMapView(map);
+                            },
+                            error: function(responseObj) {
+                                var response = JSON.parse(responseObj.responseText);
+                                return alert(response.message);
                             }
                         });
                     });
@@ -143,6 +151,10 @@ $(document).ready(function() {
                             data: params,
                             success: function(response) {
                                 loadMapView(map);
+                            },
+                            error: function(responseObj) {
+                                var response = JSON.parse(responseObj.responseText);
+                                return alert(response.message);
                             }
                         });
                     });
