@@ -182,8 +182,9 @@ $(document).ready(function() {
 
             var project = $('input#project').val();
             var map = $(this).attr('data-map');
-            $.ajax({
-                url: '../services/offline/'+project+'/'+map+'/download.json',
+            location.href = '../services/offline/'+project+'/'+map+'/download.zip';
+            /*$.ajax({
+                url: ,
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
@@ -192,7 +193,7 @@ $(document).ready(function() {
                     
                     console.log(response);
                 }
-            });
+            });*/
         });
     }
 

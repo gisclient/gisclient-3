@@ -51,11 +51,13 @@ offlineClear:
     methods:
         - GET
 offlineDownload:
-    path: offline/{project}/{map}/download.json
+    path: offline/{project}/{map}/download.{format}
     defaults:
         _controller: 'GisClient\Author\Controller\OfflineController::downloadAction'
     methods:
         - GET
+    requirements:
+        format: json|zip
 
 getSymbol:
     path: symbol.php

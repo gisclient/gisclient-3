@@ -2,8 +2,10 @@
 
 namespace GisClient\Author\Controller;
 
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use GisClient\Author\Map;
 use GisClient\Author\OfflineMap;
 
@@ -150,17 +152,27 @@ class OfflineController
      * @param string $map
      * @return JsonResponse
      */
-    public function downloadAction($project, $map)
+    public function downloadAction($project, $map, $format)
     {
         $mapObj = $this->getMap($project, $map);
         $offlineMapObj = $this->getOfflineMap($mapObj);
 
-        $result = [
-            'result' => 'ok'
-        ];
+        $zipFile = ROOT_PATH . 'var/' . $map . '.zip';
 
-        $result['file'] = $offlineMapObj->get();
+        $offlineMapObj->createZip($zipFile);
 
-        return new JsonResponse($result);
+        if ($format === 'json') {
+            $result = [
+                'result' => 'ok',
+                'file' => $zipFile,
+            ];
+    
+            return new JsonResponse($result);
+        }
+
+        $response = new BinaryFileResponse($zipFile);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, basename($zipFile));
+
+        return $response;
     }
 }

@@ -2,47 +2,36 @@
 
 namespace GisClient\Author;
 
-use GisClient\Author\Symbol;
-use GisClient\MapProxy\Seed\Process as SeedProcess;
-use GisClient\MapProxy\Seed\Task as SeedTask;
-use GisClient\GDAL\Export\Process as GDALProcess;
-use GisClient\GDAL\Export\SQLite\Task as SQLiteTask;
-use GisClient\GDAL\Export\SQLite\Driver as SQLiteDriver;
-
 class OfflineMap
 {
-    protected $offlineDataPath;
-
-    private $logDir;
-
-    private $seedProcess;
-
-    private $gdalProcess;
-
+    /**
+     * Map
+     *
+     * @var Map
+     */
     protected $map;
 
+    /**
+     * List of available offline data formats
+     *
+     * @var Offline\OfflineDataInterface[]
+     */
+    private $offlineDataFormats = [];
+
+    /**
+     * Constructor
+     *
+     * @param Map $map
+     */
     public function __construct(Map $map)
     {
+        $this->map = $map;
+
+        $this->offlineDataFormats[] = new Offline\SqliteData(DEBUG_DIR);
         if (!defined('MAPPROXY_PATH')) {
             throw new \Exception('MapProxy is not configured', 1);
         }
-
-        $this->map = $map;
-
-        $name = $this->map->getName();
-        $project = $this->map->getProject();
-
-        $mapFile = "{$project}/{$name}.yaml";
-        $seedFile = "{$project}/{$name}.seed.yaml";
-
-        $binPath = MAPPROXY_PATH . 'bin/';
-        $mapConfig = ROOT_PATH . 'map/' . $mapFile;
-        $seedConfig = ROOT_PATH . 'map/' . $seedFile;
-
-        $this->offlineDataPath = ROOT_PATH . 'var/offline/'.$this->map->getProject().'/';
-        $this->logDir = DEBUG_DIR;
-        $this->seedProcess = new SeedProcess($binPath, $mapConfig, $seedConfig);
-        $this->gdalProcess = new GDALProcess(new SQLiteDriver());
+        $this->offlineDataFormats[] = new Offline\MbtilesData(MAPPROXY_PATH . 'bin/', ROOT_PATH . 'map/', DEBUG_DIR);
     }
 
     /*
@@ -52,36 +41,23 @@ class OfflineMap
      */
     public function start(Theme $theme = null, $only = null)
     {
-        if ($only == 'mbtiles' || empty($only)) {
-            $mbtilesFile = $this->offlineDataPath . 'offline.mbtiles';
-            if (!empty($theme)) {
-                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
-            }
-            $task = new SeedTask($mbtilesFile, $this->logDir);
-            $this->seedProcess->start($task);
+        $themes = $this->map->getThemes();
+        if (!empty($theme)) {
+            $themes = array($theme);
         }
 
-        if ($only == 'sqlite' || empty($only)) {
-            $layerGroups = $this->map->getLayerGroups();
-            if (!empty($theme)) {
-                $layerGroups = $theme->getLayerGroups();
-            }
+        foreach ($themes as $theme) {
+            foreach ($this->offlineDataFormats as $offlineDataFormat) {
+                $format = $offlineDataFormat->getName();
 
-            foreach ($layerGroups as $layerGroup) {
-                if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                    $layers = $layerGroup->getLayers();
-                    foreach ($layers as $layer) {
-                        $taskName = $this->offlineDataPath
-                            . $this->map->getName()
-                            . '_'
-                            . $layerGroup->getName()
-                            . '.'
-                            . $layer->getName()
-                            . '.sqlite';
-                        $task = new SQLiteTask($layer, $taskName, $this->logDir);
-                        $this->gdalProcess->start($task);
-                    }
+                // check the format has to be processed
+                if ((!empty($only) && $only !== $format)
+                    || !$offlineDataFormat->supports($theme)
+                ) {
+                    continue;
                 }
+
+                $offlineDataFormat->start($this->map, $theme);
             }
         }
     }
@@ -93,36 +69,23 @@ class OfflineMap
      */
     public function stop(Theme $theme = null, $only = null)
     {
-        if ($only == 'mbtiles' || empty($only)) {
-            $mbtilesFile = $this->offlineDataPath . 'offline.mbtiles';
-            if (!empty($theme)) {
-                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
-            }
-            $task = new SeedTask($mbtilesFile, $this->logDir);
-            $this->seedProcess->stop($task);
+        $themes = $this->map->getThemes();
+        if (!empty($theme)) {
+            $themes = array($theme);
         }
 
-        if ($only == 'sqlite' || empty($only)) {
-            $layerGroups = $this->map->getLayerGroups();
-            if (!empty($theme)) {
-                $layerGroups = $theme->getLayerGroups();
-            }
+        foreach ($themes as $theme) {
+            foreach ($this->offlineDataFormats as $offlineDataFormat) {
+                $format = $offlineDataFormat->getName();
 
-            foreach ($layerGroups as $layerGroup) {
-                if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                    $layers = $layerGroup->getLayers();
-                    foreach ($layers as $layer) {
-                        $taskName = $this->offlineDataPath
-                            . $this->map->getName()
-                            . '_'
-                            . $layerGroup->getName()
-                            . '.'
-                            . $layer->getName()
-                            . '.sqlite';
-                        $task = new SQLiteTask($layer, $taskName, $this->logDir);
-                        $this->gdalProcess->stop($task);
-                    }
+                // check the format has to be processed
+                if ((!empty($only) && $only !== $format)
+                    || !$offlineDataFormat->supports($theme)
+                ) {
+                    continue;
                 }
+
+                $offlineDataFormat->stop($this->map, $theme);
             }
         }
     }
@@ -139,30 +102,17 @@ class OfflineMap
         }
 
         foreach ($themes as $theme) {
-            if ($only == 'mbtiles' || empty($only)) {
-                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $theme->getName().'.mbtiles';
-                $task = new SeedTask($mbtilesFile, $this->logDir);
-                $task->cleanup();
-            }
+            foreach ($this->offlineDataFormats as $offlineDataFormat) {
+                $format = $offlineDataFormat->getName();
 
-            if ($only == 'sqlite' || empty($only)) {
-                $layerGroups = $theme->getLayerGroups();
-                foreach ($layerGroups as $layerGroup) {
-                    if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                        $layers = $layerGroup->getLayers();
-                        foreach ($layers as $layer) {
-                            $taskName = $this->offlineDataPath
-                                . $this->map->getName()
-                                . '_'
-                                . $layerGroup->getName()
-                                . '.'
-                                . $layer->getName()
-                                . '.sqlite';
-                            $task = new SQLiteTask($layer, $taskName, $this->logDir);
-                            $task->cleanup();
-                        }
-                    }
+                // check the format has to be processed
+                if ((!empty($only) && $only !== $format)
+                    || !$offlineDataFormat->supports($theme)
+                ) {
+                    continue;
                 }
+
+                $offlineDataFormat->clear($this->map, $theme);
             }
         }
     }
@@ -181,63 +131,25 @@ class OfflineMap
             $themes = array($theme);
         }
 
-        foreach ($themes as $t) {
-            $result[$t->getName()] = array(
-                'mbtiles' => array(),
-                'sqlite' => array()
-            );
+        foreach ($themes as $theme) {
+            $themeName = $theme->getName();
+            $result[$themeName] = [];
 
-            if ($only == 'mbtiles' || empty($only)) {
-                $mbtilesFile = $this->offlineDataPath . $this->map->getName() . '_' . $t->getName().'.mbtiles';
-                $task = new SeedTask($mbtilesFile, $this->logDir);
-                if (!file_exists($task->getFilePath())) {
-                    $mbTilesState = 'to-do';
-                } else {
-                    if ($this->seedProcess->isRunning($task)) {
-                        $mbTilesState = 'running';
-                    } else {
-                        $mbTilesState = 'stopped';
-                    }
-                }
-                
-                $result[$t->getName()]['mbtiles'] = array(
-                    'state' => $mbTilesState,
-                    'progress' => $task->getProgress()
-                );
-            }
+            foreach ($this->offlineDataFormats as $offlineDataFormat) {
+                $format = $offlineDataFormat->getName();
+                $result[$themeName][$format] = [];
 
-            if ($only == 'sqlite' || empty($only)) {
-                $sqliteState = null;
-                foreach ($t->getLayerGroups() as $layerGroup) {
-                    if ($sqliteState == 'running') {
-                        break;
-                    }
-                    if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                        $sqliteState = 'to-do';
-                        $layers = $layerGroup->getLayers();
-                        foreach ($layers as $layer) {
-                            $taskName = $this->offlineDataPath
-                                . $this->map->getName()
-                                . '_'
-                                . $layerGroup->getName()
-                                . '.'
-                                . $layer->getName()
-                                . '.sqlite';
-                            $task = new SQLiteTask($layer, $taskName, $this->logDir);
-                            if (file_exists($task->getFilePath())) {
-                                if ($this->gdalProcess->isRunning($task)) {
-                                    $sqliteState = 'running';
-                                    break;
-                                } else {
-                                    $sqliteState = 'stopped';
-                                }
-                            }
-                        }
-                        $result[$t->getName()]['sqlite'] = array(
-                            'state' => $sqliteState
-                        );
-                    }
+                // check the format has to be processed
+                if ((!empty($only) && $only !== $format)
+                    || !$offlineDataFormat->supports($theme)
+                ) {
+                    continue;
                 }
+
+                $result[$themeName][$format] = [
+                    'state' => $offlineDataFormat->getState($this->map, $theme),
+                    'progress' => $offlineDataFormat->getProgress($this->map, $theme),
+                ];
             }
         }
 
@@ -247,11 +159,16 @@ class OfflineMap
     /*
      * Se lo zip è pronto restituisce la risorsa da scaricare
      */
-    public function get($mbtiles = true, $sqlite = true)
+    public function createZip($zipFile, array $formats = [])
     {
+        $supportedFormats = [];
+        foreach ($this->offlineDataFormats as $offlineDataFormat) {
+            $supportedFormats[$offlineDataFormat->getName()] = true;
+        }
+        $requestFormats = array_merge($supportedFormats, $formats);
+
         $zip = new \ZipArchive();
         $mapName = $this->map->getName();
-        $zipFile = ROOT_PATH . 'var/' . $mapName . '.zip';
 
         if ($zip->open($zipFile, \ZipArchive::CREATE) !== true) {
             throw new \Exception("Failed to create zip file '{$zipFile}'", 1);
@@ -259,53 +176,51 @@ class OfflineMap
 
         $themes = $this->map->getThemes();
         foreach ($themes as $theme) {
-            $themeStatus = $this->status($theme);
-
-            if ($mbtiles && count($themeStatus[$theme->getName()]['mbtiles'])) {
-                $img = $this->getLegendForTheme($theme);
-                if ($img) {
-                    $zip->addFromString($theme->getName() . '.png', $img);
-                }
-
-                $mbtilesFile = $this->offlineDataPath . $mapName . '_' . $theme->getName().'.mbtiles';
-                $task = new SeedTask($mbtilesFile, $this->logDir);
-                $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+            // add legend
+            $img = $this->getLegendForTheme($theme);
+            if ($img) {
+                $zip->addFromString($theme->getName() . '.png', $img);
             }
 
-            if ($sqlite && count($themeStatus[$theme->getName()]['sqlite'])) {
-                $img = $this->getLegendForTheme($theme);
-                if ($img) {
-                    $zip->addFromString($theme->getName() . '.png', $img);
+            foreach ($this->offlineDataFormats as $offlineDataFormat) {
+                $format = $offlineDataFormat->getName();
+
+                // check the format has to be processed
+                if (!in_array($format, $requestFormats)
+                    || !$offlineDataFormat->supports($theme)
+                ) {
+                    continue;
                 }
 
-                $layerGroups = $theme->getLayerGroups();
-                foreach ($layerGroups as $layerGroup) {
-                    if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                        $layers = $layerGroup->getLayers();
-                        foreach ($layers as $layer) {
-                            $taskName = $this->offlineDataPath
-                                . $this->map->getName()
-                                . '_'
-                                . $layerGroup->getName()
-                                . '.'
-                                . $layer->getName()
-                                . '.sqlite';
-                            $task = new SQLiteTask($layer, $taskName, $this->logDir);
-                            $zip->addFile($task->getFilePath(), basename($task->getFilePath()));
+                // TODO: check if status is not running??
 
-                            $catalogId = $layer->getCatalogId();
-                            foreach ($layer->getFields() as $field) {
-                                $lookupTable = $field->getLookupTable();
-                                $lookupId = $field->getLookupId();
-                                $lookupName = $field->getLookupName();
-                                if ($catalogId && $lookupTable && $lookupId && $lookupName) {
-                                    $json = $this->getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName);
-                                    if ($json) {
-                                        $zip->addFromString(
-                                            "{$catalogId}{$lookupTable}.json",
-                                            $json
-                                        );
-                                    }
+                $files = $offlineDataFormat->getOfflineFiles($this->map, $theme);
+                foreach ($files as $file) {
+                    $zip->addFile($file, basename($file));
+                }
+            }
+
+            // add lookups
+            foreach ($theme->getLayerGroups() as $layerGroup) {
+                if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
+                    foreach ($layerGroup->getLayers() as $layer) {
+                        $catalogId = $layer->getCatalogId();
+                        foreach ($layer->getFields() as $field) {
+                            $lookupTable = $field->getLookupTable();
+                            $lookupId = $field->getLookupId();
+                            $lookupName = $field->getLookupName();
+                            if ($catalogId && $lookupTable && $lookupId && $lookupName) {
+                                $json = $this->getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName);
+                                if ($json) {
+                                    $zip->addFromString(
+                                        "{$catalogId}{$lookupTable}.json",
+                                        $json
+                                    );
+                                } else {
+                                    throw new \Exception(sprintf(
+                                        "Could not create json with lookup values for %s",
+                                        $field->getName()
+                                    ));
                                 }
                             }
                         }
@@ -325,8 +240,6 @@ class OfflineMap
         );
 
         $zip->close();
-
-        return $zipFile;
     }
 
     protected function getSavedFilter($mapset)
