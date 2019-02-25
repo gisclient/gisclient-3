@@ -113,7 +113,7 @@ try {
     
     $response = call_user_func_array($controller, $arguments);
 } catch (Routing\Exception\ResourceNotFoundException $e) {
-    $response = new Response('Not Found', 404);
+    $response = new Response('Not Found', Response::HTTP_NOT_FOUND);
 } catch (HttpException $e) {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
         $response = new JsonResponse([
@@ -124,7 +124,14 @@ try {
         $response = new Response($e->getMessage(), $e->getStatusCode(), $e->getHeaders());
     }
 } catch (Exception $e) {
-    $response = new Response('An error occurred: ' . $e->getMessage(), 500);
+    if (strpos($request->headers->get('accept'), 'application/json') !== false) {
+        $response = new JsonResponse([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+    } else {
+        $response = new Response('An error occurred: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
 }
 
 // close the session, because all relevant data are already writte into it
