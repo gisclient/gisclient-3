@@ -173,7 +173,7 @@ if(isset($p->parametri['project'])) {
         $version = $db->query($sql)->fetchColumn(0);
         echo $version;
         ?>
-        - 2009 - 2017
+        - 2009 - 2019
         <?php
         if (function_exists('ms_GetVersionInt')) {
             $msVersion = ms_GetVersionInt();

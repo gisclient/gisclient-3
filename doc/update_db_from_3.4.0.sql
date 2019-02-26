@@ -1261,14 +1261,14 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         ) ;
         COMMENT ON COLUMN saved_filter.username IS 'owner of the filter';
 
-        ALTER TABLE gisclient_34.mapset_groups DROP CONSTRAINT mapset_gruops_pkey;
-        ALTER TABLE gisclient_34.mapset_groups
+        ALTER TABLE mapset_groups DROP CONSTRAINT mapset_gruops_pkey;
+        ALTER TABLE mapset_groups
           ADD CONSTRAINT mapset_groups_pkey PRIMARY KEY(mapset_name, groupname);
-        ALTER TABLE gisclient_34.mapset_groups
-          ADD FOREIGN KEY (mapset_name) REFERENCES gisclient_34.mapset (mapset_name)
+        ALTER TABLE mapset_groups
+          ADD FOREIGN KEY (mapset_name) REFERENCES mapset (mapset_name)
           ON UPDATE CASCADE ON DELETE CASCADE;
-        ALTER TABLE gisclient_34.mapset_groups
-          ADD FOREIGN KEY (groupname) REFERENCES gisclient_34.groups (groupname)
+        ALTER TABLE mapset_groups
+          ADD FOREIGN KEY (groupname) REFERENCES groups (groupname)
           ON UPDATE CASCADE ON DELETE CASCADE;
 
          --version
@@ -1293,6 +1293,16 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
          --version
         v_author_version = '3.5.3';
         INSERT INTO version (version_name,version_key, version_date) values ('3.5.3', 'author', '2018-08-14');
+    END IF;
+    
+     IF v_author_version = '3.5.3' THEN
+    
+    INSERT INTO e_language (language_id,language_name,language_order) VALUES ('zh','正體中文 (Chinese [traditional])',8);
+    INSERT INTO e_language (language_id,language_name,language_order) VALUES ('hu','Magyar (Hungarian)',9);
+
+         --version
+        v_author_version = '3.5.4';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.4', 'author', '2019-08-01');
     END IF;
 
 

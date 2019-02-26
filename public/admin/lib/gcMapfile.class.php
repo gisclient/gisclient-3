@@ -844,7 +844,7 @@ END";
             if (trim($row['imagelabel_font']) != '') {
                 $legendFont = $row['imagelabel_font'];
             }
-            $iconW = $row['icon_w']?$row['icon_w']:16;
+            $iconW = $row['icon_w']?$row['icon_w']:20;
             $iconH = $row['icon_h']?$row['icon_h']:10;
             $fontSize = $row['legend_font_size']?$row['legend_font_size']:10;
         }
@@ -853,6 +853,7 @@ END";
         $formatText = "LEGEND\n" .
                       "    STATUS ON\n" .
                       "    KEYSIZE ".$iconW." ".$iconH."\n" .
+                      "    KEYSPACING 5 10\n" .
                       "    LABEL\n" .
                       "       TYPE TRUETYPE\n" .
                       "       FONT '{$legendFont}'\n" .

@@ -5,12 +5,16 @@
 require __DIR__.'/../bootstrap.php';
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Yaml\Yaml;
 
+// read command-list from /config/commands.yml
+$yamlString = file_get_contents(__DIR__."/../config/commands.yml");
+$commands = Yaml::parse($yamlString)["commands"];
+
+// register commands
 $application = new Application();
-
-// registered commands
-$application->add(new GisClient\Author\Command\CreateSqliteCommand());
-$application->add(new GisClient\Author\Command\DbUpgradeCommand());
-$application->add(new GisClient\Author\Command\RefreshMapfileCommand());
+foreach ($commands as $cmd) {
+    $application->add(new $cmd());
+}
 
 $application->run();
