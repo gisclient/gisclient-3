@@ -1,0 +1,13 @@
+services:
+  _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+  Symfony\Component\Config\FileLocator:
+    arguments: ['%project_dir%/config']
+  Symfony\Component\Routing\Loader\YamlFileLoader:
+    arguments: ['@Symfony\Component\Config\FileLocator']
+  Symfony\Component\Routing\Router:
+    arguments: ['@Symfony\Component\Routing\Loader\YamlFileLoader', 'routing.yml']
+    public: true

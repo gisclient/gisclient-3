@@ -4,17 +4,17 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once ADMIN_PATH . 'lib/functions.php';
 
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\Routing\Router;
 use Symfony\Component\Routing\RequestContext;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Yaml;
 use GisClient\Author\Security\AuthenticationHandler;
 
@@ -64,22 +64,14 @@ function checkAccessControl(Request $request, AuthenticationHandler $authHandler
 $gcService = \GCService::instance();
 $gcService->startSession();
 
-$locator = new FileLocator(array(
-    ROOT_PATH . 'config'
-));
-
 // create request & context
 $request = Request::createFromGlobals();
 $requestContext = new RequestContext();
 $requestContext->fromRequest($request);
 
 try {
-    $router = new Router(
-        new YamlFileLoader($locator),
-        'routing.yml',
-        array(),
-        $requestContext
-    );
+    $router = $container->get(Router::class);
+    $router->setContext($requestContext);
     
     $requestMatch = $router->match($request->getPathInfo());
     
@@ -107,9 +99,13 @@ try {
     
     $request->attributes->add($requestMatch);
 
-    $resolver = new ControllerResolver();
-    $controller = $resolver->getController($request);
-    $arguments = $resolver->getArguments($request, $controller);
+    $controllerResolver = new ControllerResolver();
+    $argumentResolver = new ArgumentResolver();
+    $controller = $controllerResolver->getController($request);
+    $arguments = $argumentResolver->getArguments($request, $controller);
+    if ($controller[0] instanceof ContainerAwareInterface) {
+        $controller[0]->setContainer($container);
+    }
     
     $response = call_user_func_array($controller, $arguments);
 } catch (Routing\Exception\ResourceNotFoundException $e) {

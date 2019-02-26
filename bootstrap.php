@@ -14,3 +14,4 @@ if (!class_exists(Dotenv::class)) {
 }
 
 require_once(__DIR__ . '/config/config.php');
+$container = require_once(__DIR__ . '/container.php');
