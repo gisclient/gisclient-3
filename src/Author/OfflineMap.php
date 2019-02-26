@@ -23,20 +23,17 @@ class OfflineMap
      *
      * @param Map $map
      */
-    public function __construct()
+    public function __construct(\Traversable $offlineDataFormats)
     {
-        $this->offlineDataFormats[] = new Offline\MVTData(DEBUG_DIR);
-        $this->offlineDataFormats[] = new Offline\SqliteData(DEBUG_DIR);
-        if (!defined('MAPPROXY_PATH')) {
-            throw new \Exception('MapProxy is not configured', 1);
-        }
-        $this->offlineDataFormats[] = new Offline\MbtilesData(MAPPROXY_PATH . 'bin/', ROOT_PATH . 'map/', DEBUG_DIR);
+        $this->offlineDataFormats = $offlineDataFormats;
     }
 
-    /*
-     * Fa partire il processo di seeding mapproxy per creare gli mbtiles
-     * Fa partire il processo di generezione dei db spatial
-     * Genera il file di configurazione del client
+    /**
+     * Start offline data generation
+     *
+     * @param Map $map
+     * @param Theme|null $theme
+     * @param string|null $only
      */
     public function start(Map $map, Theme $theme = null, $only = null)
     {
@@ -61,10 +58,12 @@ class OfflineMap
         }
     }
 
-    /*
-     * Interrompe il processo di seeding se attivo -> facendo un start riprende da dove interrotto
-     * Interrompe il processo di generazione spatial se attivo -> il db corrente va cancellato
-     * Pulisce i file temporanei
+    /**
+     * Stop offline data generation
+     *
+     * @param Map $map
+     * @param Theme|null $theme
+     * @param string|null $only
      */
     public function stop(Map $map, Theme $theme = null, $only = null)
     {
@@ -89,9 +88,12 @@ class OfflineMap
         }
     }
 
-    /*
-     * In base ai parametri cancella un mbtiles o uno spatial o il file di configurazione.
-     * Vengono cancellati anche i relativi file temporanei
+    /**
+     * Delete offline data
+     *
+     * @param Map $map
+     * @param Theme|null $theme
+     * @param string|null $only
      */
     public function clear(Map $map, Theme $theme = null, $only = null)
     {
@@ -116,10 +118,12 @@ class OfflineMap
         }
     }
 
-    /*
-     * Restituisce lo stato dell'intero processo
-     * se è già pronto lo zip
-     * o se ci sono dei processi ancora attivi (con percentuale)
+    /**
+     * Get current status of offline data
+     *
+     * @param Map $map
+     * @param Theme|null $theme
+     * @param string|null $only
      */
     public function status(Map $map, Theme $theme = null, $only = null)
     {
@@ -155,8 +159,12 @@ class OfflineMap
         return $result;
     }
 
-    /*
-     * Se lo zip è pronto restituisce la risorsa da scaricare
+    /**
+     * Create zip containing the offline data
+     *
+     * @param Map $map
+     * @param string $zipFile
+     * @param array $formats
      */
     public function createZip(Map $map, $zipFile, array $formats = [])
     {

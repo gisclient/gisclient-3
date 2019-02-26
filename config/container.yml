@@ -4,8 +4,18 @@ services:
         autoconfigure: true
         public: false
 
+  GisClient\Author\Offline\MbtilesData:
+    arguments: ['%mapproxy_dir%/bin', '%project_dir%/map', '%debug_dir%']
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\MVTData:
+    arguments: ['%debug_dir%']
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\SqliteData:
+    arguments: ['%debug_dir%']
+    tags: ['gisclient.offline_data_format']
   GisClient\Author\OfflineMap:
     public: true
+    arguments: [!tagged gisclient.offline_data_format]
 
   Symfony\Component\Config\FileLocator:
     arguments: ['%project_dir%/config']

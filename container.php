@@ -12,7 +12,9 @@ $containerConfigCache = new ConfigCache($file, DEBUG === 1);
 
 if (!$containerConfigCache->isFresh()) {
     $containerBuilder = new ContainerBuilder();
+    $containerBuilder->setParameter('debug_dir', DEBUG_DIR);
     $containerBuilder->setParameter('project_dir', ROOT_PATH);
+    $containerBuilder->setParameter('mapproxy_dir', MAPPROXY_PATH);
     $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/config'));
     $loader->load('container.yml');
     $containerBuilder->compile();
