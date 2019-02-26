@@ -1,10 +1,11 @@
 <?php
 
 use Symfony\Component\Config\ConfigCache;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Yaml\Yaml;
 
 $file = __DIR__ .'/var/container.php';
 
@@ -17,6 +18,20 @@ if (!$containerConfigCache->isFresh()) {
     $containerBuilder->setParameter('mapproxy_dir', MAPPROXY_PATH);
     $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/config'));
     $loader->load('container.yml');
+
+    // read command-list from /config/commands.yml
+    $yamlString = file_get_contents(__DIR__."/config/extensions.yml");
+    $extensions = Yaml::parse($yamlString)["extensions"];
+    if ($extensions !== null
+        && (is_array($extensions) || $extensions instanceof \Traversable)
+    ) {
+        foreach ($extensions as $extensionClassName) {
+            $extension = new $extensionClassName();
+            $extension->load([], $containerBuilder);
+            $containerBuilder->registerExtension($extension);
+        }
+    }
+
     $containerBuilder->compile();
 
     $dumper = new PhpDumper($containerBuilder);
