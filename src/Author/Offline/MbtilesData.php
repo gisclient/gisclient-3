@@ -51,8 +51,8 @@ class MbtilesData extends AbstractOfflineData
     {
         $project = $map->getProject();
         $mapset = $map->getName();
-        $mapConfig = $this->mapPath . "{$project}/{$mapset}.yaml";
-        $seedConfig = $this->mapPath . "{$project}/{$mapset}.seed.yaml";
+        $mapConfig = $this->mapPath . "/{$project}/{$mapset}.yaml";
+        $seedConfig = $this->mapPath . "/{$project}/{$mapset}.seed.yaml";
         return new SeedProcess($this->binPath, $mapConfig, $seedConfig);
     }
 

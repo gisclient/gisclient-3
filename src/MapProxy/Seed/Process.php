@@ -10,7 +10,7 @@ class Process
 
     public function __construct($path, $mapConfig, $seedConfig)
     {
-        $this->bin = $path . 'mapproxy-seed';
+        $this->bin = $path . '/mapproxy-seed';
         $this->mapConfig = $mapConfig;
         $this->seedConfig = $seedConfig;
     }
