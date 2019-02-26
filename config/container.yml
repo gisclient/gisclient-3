@@ -4,6 +4,9 @@ services:
         autoconfigure: true
         public: false
 
+  GisClient\Author\OfflineMap:
+    public: true
+
   Symfony\Component\Config\FileLocator:
     arguments: ['%project_dir%/config']
   Symfony\Component\Routing\Loader\YamlFileLoader:

@@ -2,6 +2,8 @@
 
 namespace GisClient\Author\Controller;
 
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -9,16 +11,23 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use GisClient\Author\Map;
 use GisClient\Author\OfflineMap;
 
-class OfflineController
+class OfflineController implements ContainerAwareInterface
 {
+    /**
+     * Offline maps handler
+     *
+     * @var OfflineMap
+     */
+    private $offlineMap;
+
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->offlineMap = $container->get(OfflineMap::class);
+    }
+
     private function getMap($project, $map)
     {
         return new Map($project, $map);
-    }
-
-    private function getOfflineMap(Map $map)
-    {
-        return new OfflineMap($map);
     }
     
     /**
@@ -31,7 +40,6 @@ class OfflineController
     public function getDataAction($project, $map)
     {
         $mapObj = $this->getMap($project, $map);
-        $offlineMapObj = $this->getOfflineMap($mapObj);
 
         $result = [
             'result' => 'ok'
@@ -40,7 +48,7 @@ class OfflineController
         $themes = $mapObj->getThemes();
         $result['themes'] = array();
         foreach ($themes as $theme) {
-            $themeStatus = $offlineMapObj->status($theme)[$theme->getName()];
+            $themeStatus = $this->offlineMap->status($mapObj, $theme)[$theme->getName()];
             $themeStatus['name'] = $theme->getName();
             $themeStatus['title'] = $theme->getTitle();
             $result['themes'][] = $themeStatus;
@@ -60,7 +68,6 @@ class OfflineController
     public function startAction($project, $map, Request $request)
     {
         $mapObj = $this->getMap($project, $map);
-        $offlineMapObj = $this->getOfflineMap($mapObj);
 
         $result = [
             'result' => 'ok'
@@ -76,7 +83,7 @@ class OfflineController
             }
         }
 
-        $offlineMapObj->start($theme, $target);
+        $this->offlineMap->start($mapObj, $theme, $target);
 
         return new JsonResponse($result);
     }
@@ -92,7 +99,6 @@ class OfflineController
     public function stopAction($project, $map, Request $request)
     {
         $mapObj = $this->getMap($project, $map);
-        $offlineMapObj = $this->getOfflineMap($mapObj);
 
         $result = [
             'result' => 'ok'
@@ -108,7 +114,7 @@ class OfflineController
             }
         }
 
-        $offlineMapObj->stop($theme, $target);
+        $this->offlineMap->stop($mapObj, $theme, $target);
 
         return new JsonResponse($result);
     }
@@ -124,7 +130,6 @@ class OfflineController
     public function clearAction($project, $map, Request $request)
     {
         $mapObj = $this->getMap($project, $map);
-        $offlineMapObj = $this->getOfflineMap($mapObj);
 
         $result = [
             'result' => 'ok'
@@ -140,7 +145,7 @@ class OfflineController
             }
         }
 
-        $offlineMapObj->clear($theme, $target);
+        $this->offlineMap->clear($mapObj, $theme, $target);
 
         return new JsonResponse($result);
     }
@@ -155,11 +160,10 @@ class OfflineController
     public function downloadAction($project, $map, $format)
     {
         $mapObj = $this->getMap($project, $map);
-        $offlineMapObj = $this->getOfflineMap($mapObj);
 
         $zipFile = ROOT_PATH . 'var/' . $map . '.zip';
 
-        $offlineMapObj->createZip($zipFile);
+        $this->offlineMap->createZip($mapObj, $zipFile);
 
         if ($format === 'json') {
             $result = [

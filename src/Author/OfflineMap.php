@@ -23,10 +23,8 @@ class OfflineMap
      *
      * @param Map $map
      */
-    public function __construct(Map $map)
+    public function __construct()
     {
-        $this->map = $map;
-
         $this->offlineDataFormats[] = new Offline\MVTData(DEBUG_DIR);
         $this->offlineDataFormats[] = new Offline\SqliteData(DEBUG_DIR);
         if (!defined('MAPPROXY_PATH')) {
@@ -40,9 +38,9 @@ class OfflineMap
      * Fa partire il processo di generezione dei db spatial
      * Genera il file di configurazione del client
      */
-    public function start(Theme $theme = null, $only = null)
+    public function start(Map $map, Theme $theme = null, $only = null)
     {
-        $themes = $this->map->getThemes();
+        $themes = $map->getThemes();
         if (!empty($theme)) {
             $themes = array($theme);
         }
@@ -58,7 +56,7 @@ class OfflineMap
                     continue;
                 }
 
-                $offlineDataFormat->start($this->map, $theme);
+                $offlineDataFormat->start($map, $theme);
             }
         }
     }
@@ -68,9 +66,9 @@ class OfflineMap
      * Interrompe il processo di generazione spatial se attivo -> il db corrente va cancellato
      * Pulisce i file temporanei
      */
-    public function stop(Theme $theme = null, $only = null)
+    public function stop(Map $map, Theme $theme = null, $only = null)
     {
-        $themes = $this->map->getThemes();
+        $themes = $map->getThemes();
         if (!empty($theme)) {
             $themes = array($theme);
         }
@@ -86,7 +84,7 @@ class OfflineMap
                     continue;
                 }
 
-                $offlineDataFormat->stop($this->map, $theme);
+                $offlineDataFormat->stop($map, $theme);
             }
         }
     }
@@ -95,9 +93,9 @@ class OfflineMap
      * In base ai parametri cancella un mbtiles o uno spatial o il file di configurazione.
      * Vengono cancellati anche i relativi file temporanei
      */
-    public function clear(Theme $theme = null, $only = null)
+    public function clear(Map $map, Theme $theme = null, $only = null)
     {
-        $themes = $this->map->getThemes();
+        $themes = $map->getThemes();
         if (!empty($theme)) {
             $themes = array($theme);
         }
@@ -113,7 +111,7 @@ class OfflineMap
                     continue;
                 }
 
-                $offlineDataFormat->clear($this->map, $theme);
+                $offlineDataFormat->clear($map, $theme);
             }
         }
     }
@@ -123,11 +121,11 @@ class OfflineMap
      * se è già pronto lo zip
      * o se ci sono dei processi ancora attivi (con percentuale)
      */
-    public function status(Theme $theme = null, $only = null)
+    public function status(Map $map, Theme $theme = null, $only = null)
     {
         $result = array();
 
-        $themes = $this->map->getThemes();
+        $themes = $map->getThemes();
         if (!empty($theme)) {
             $themes = array($theme);
         }
@@ -148,8 +146,8 @@ class OfflineMap
                 }
 
                 $result[$themeName][$format] = [
-                    'state' => $offlineDataFormat->getState($this->map, $theme),
-                    'progress' => $offlineDataFormat->getProgress($this->map, $theme),
+                    'state' => $offlineDataFormat->getState($map, $theme),
+                    'progress' => $offlineDataFormat->getProgress($map, $theme),
                 ];
             }
         }
@@ -160,7 +158,7 @@ class OfflineMap
     /*
      * Se lo zip è pronto restituisce la risorsa da scaricare
      */
-    public function createZip($zipFile, array $formats = [])
+    public function createZip(Map $map, $zipFile, array $formats = [])
     {
         $supportedFormats = [];
         foreach ($this->offlineDataFormats as $offlineDataFormat) {
@@ -169,13 +167,13 @@ class OfflineMap
         $requestFormats = array_merge($supportedFormats, $formats);
 
         $zip = new \ZipArchive();
-        $mapName = $this->map->getName();
+        $mapName = $map->getName();
 
         if ($zip->open($zipFile, \ZipArchive::CREATE) !== true) {
             throw new \Exception("Failed to create zip file '{$zipFile}'", 1);
         }
 
-        $themes = $this->map->getThemes();
+        $themes = $map->getThemes();
         foreach ($themes as $theme) {
             // add legend
             $img = $this->getLegendForTheme($theme);
@@ -195,7 +193,7 @@ class OfflineMap
 
                 // TODO: check if status is not running??
 
-                $files = $offlineDataFormat->getOfflineFiles($this->map, $theme);
+                $files = $offlineDataFormat->getOfflineFiles($map, $theme);
                 foreach ($files as $file) {
                     $zip->addFile($file, basename($file));
                 }
