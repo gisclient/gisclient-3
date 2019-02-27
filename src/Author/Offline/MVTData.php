@@ -3,9 +3,9 @@
 namespace GisClient\Author\Offline;
 
 use GisClient\Author\LayerGroup;
-use GisClient\Author\Layer;
 use GisClient\Author\Map;
-use GisClient\Author\Theme;
+use GisClient\Author\LayerLevelInterface;
+use GisClient\Author\Layer;
 use GisClient\GDAL\Export\Process as GDALProcess;
 use GisClient\GDAL\Export\MVT\Task as MVTTask;
 use GisClient\GDAL\Export\MVT\Driver as MVTDriver;
@@ -30,15 +30,13 @@ class MVTData extends AbstractOfflineData
     /**
      * {@inheritdoc}
      */
-    public function supports(Theme $theme)
+    public function supports(LayerLevelInterface $layer)
     {
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                return true;
-            }
+        if (!($layer instanceof Layer)) {
+            return false;
         }
-
-        return false;
+        $layerGroup = $layer->getLayerGroup();
+        return $layerGroup->getType() === LayerGroup::WFS_LAYER_TYPE;
     }
 
     private function getOfflineDataFile($mapName, Layer $layer)
@@ -63,21 +61,15 @@ class MVTData extends AbstractOfflineData
     /**
      * {@inheritdoc}
      */
-    public function getState(Map $map, Theme $theme)
+    public function getState(Map $map, LayerLevelInterface $layer)
     {
-        if (!$this->exists($map, $theme)) {
+        if (!$this->exists($map, $layer)) {
             return self::IS_TODO;
         }
-
+        
         $process = $this->getProcess();
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                foreach ($layerGroup->getLayers() as $layer) {
-                    if ($process->isRunning($this->getTask($map, $layer))) {
-                        return self::IS_RUNNING;
-                    }
-                }
-            }
+        if ($process->isRunning($this->getTask($map, $layer))) {
+            return self::IS_RUNNING;
         }
         
         return self::IS_STOPPED;
@@ -86,7 +78,7 @@ class MVTData extends AbstractOfflineData
     /**
      * {@inheritdoc}
      */
-    public function getProgress(Map $map, Theme $theme)
+    public function getProgress(Map $map, LayerLevelInterface $layer)
     {
         return null;
     }
@@ -94,81 +86,45 @@ class MVTData extends AbstractOfflineData
     /**
      * {@inheritdoc}
      */
-    public function start(Map $map, Theme $theme)
+    public function start(Map $map, LayerLevelInterface $layer)
     {
         $process = $this->getProcess($map);
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                foreach ($layerGroup->getLayers() as $layer) {
-                    $process->start($this->getTask($map, $layer));
-                }
-            }
-        }
+        $process->start($this->getTask($map, $layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function stop(Map $map, Theme $theme)
+    public function stop(Map $map, LayerLevelInterface $layer)
     {
         $process = $this->getProcess($map);
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                foreach ($layerGroup->getLayers() as $layer) {
-                    $process->stop($this->getTask($map, $layer));
-                }
-            }
-        }
+        $process->stop($this->getTask($map, $layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function clear(Map $map, Theme $theme)
+    public function clear(Map $map, LayerLevelInterface $layer)
     {
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                foreach ($layerGroup->getLayers() as $layer) {
-                    $task = $this->getTask($map, $layer);
-                    $task->cleanup();
-                }
-            }
-        }
+        $task = $this->getTask($map, $layer);
+        $task->cleanup();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function exists(Map $map, Theme $theme)
+    public function exists(Map $map, LayerLevelInterface $layer)
     {
-        $exists = true;
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                $layers = $layerGroup->getLayers();
-                foreach ($layers as $layer) {
-                    if (!file_exists($this->getOfflineDataFile($map->getName(), $layer))) {
-                        $exists = false;
-                        break;
-                    }
-                }
-            }
-        }
-        return $exists;
+        return file_exists($this->getOfflineDataFile($map->getName(), $layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOfflineFiles(Map $map, Theme $theme)
+    public function getOfflineFiles(Map $map, LayerLevelInterface $layer)
     {
-        $files = [];
-        foreach ($theme->getLayerGroups() as $layerGroup) {
-            if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                foreach ($layerGroup->getLayers() as $layer) {
-                    $files[] = $this->getOfflineDataFile($map->getName(), $layer);
-                }
-            }
-        }
-        return $files;
+        return [
+            $this->getOfflineDataFile($map->getName(), $layer)
+        ];
     }
 }

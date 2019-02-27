@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Theme
+class Theme implements LayerLevelInterface
 {
     private $db;
     private $mapName;
@@ -39,6 +39,14 @@ class Theme
             return null;
             //throw new \Exception("Error: property '$value' not found", 1);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChildren()
+    {
+        return $this->getLayerGroups();
     }
 
     public function getLayerGroups()

@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Layer
+class Layer implements LayerLevelInterface
 {
     private $db;
     private $data;
@@ -104,9 +104,22 @@ class Layer
         return $links;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getChildren()
+    {
+        return [];
+    }
+
     public function getName()
     {
         return $this->get('layer_name');
+    }
+
+    public function getTitle()
+    {
+        return $this->get('layer_title');
     }
 
     public function getOpacity()

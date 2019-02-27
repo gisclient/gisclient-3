@@ -3,6 +3,7 @@
 namespace GisClient\Author\Offline;
 
 use GisClient\Author\Map;
+use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Theme;
 use GisClient\MapProxy\Seed\Process as SeedProcess;
 use GisClient\MapProxy\Seed\Task as SeedTask;
@@ -33,16 +34,16 @@ class MbtilesData extends AbstractOfflineData
     /**
      * {@inheritdoc}
      */
-    public function supports(Theme $theme)
+    public function supports(LayerLevelInterface $layer)
     {
-        return true;
+        return ($layer instanceof Theme);
     }
 
-    private function getOfflineDataFile($mapName, Theme $theme)
+    private function getOfflineDataFile($mapName, LayerLevelInterface $layer)
     {
         $offlineDataFile = $this->getOfflineDataPath()
             . $mapName . '/'
-            . sprintf('%s_%s.mbtiles', $mapName, $theme->getName());
+            . sprintf('%s_%s.mbtiles', $mapName, $layer->getName());
 
         return $offlineDataFile;
     }
@@ -56,22 +57,22 @@ class MbtilesData extends AbstractOfflineData
         return new SeedProcess($this->binPath, $mapConfig, $seedConfig);
     }
 
-    private function getTask(Map $map, Theme $theme)
+    private function getTask(Map $map, LayerLevelInterface $layer)
     {
-        return new SeedTask($this->getOfflineDataFile($map->getName(), $theme), $this->logDir);
+        return new SeedTask($this->getOfflineDataFile($map->getName(), $layer), $this->logDir);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getState(Map $map, Theme $theme)
+    public function getState(Map $map, LayerLevelInterface $layer)
     {
-        if (!$this->exists($map, $theme)) {
+        if (!$this->exists($map, $layer)) {
             return self::IS_TODO;
         }
         
         $process = $this->getProcess($map);
-        if ($process->isRunning($this->getTask($map, $theme))) {
+        if ($process->isRunning($this->getTask($map, $layer))) {
             return self::IS_RUNNING;
         }
         
@@ -81,53 +82,53 @@ class MbtilesData extends AbstractOfflineData
     /**
      * {@inheritdoc}
      */
-    public function getProgress(Map $map, Theme $theme)
+    public function getProgress(Map $map, LayerLevelInterface $layer)
     {
-        return $this->getTask($map, $theme)->getProgress();
+        return $this->getTask($map, $layer)->getProgress();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function start(Map $map, Theme $theme)
+    public function start(Map $map, LayerLevelInterface $layer)
     {
         $process = $this->getProcess($map);
-        $process->start($this->getTask($map, $theme));
+        $process->start($this->getTask($map, $layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function stop(Map $map, Theme $theme)
+    public function stop(Map $map, LayerLevelInterface $layer)
     {
         $process = $this->getProcess($map);
-        $process->stop($this->getTask($map, $theme));
+        $process->stop($this->getTask($map, $layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function clear(Map $map, Theme $theme)
+    public function clear(Map $map, LayerLevelInterface $layer)
     {
-        $task = $this->getTask($map, $theme);
+        $task = $this->getTask($map, $layer);
         $task->cleanup();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function exists(Map $map, Theme $theme)
+    public function exists(Map $map, LayerLevelInterface $layer)
     {
-        return file_exists($this->getOfflineDataFile($map->getName(), $theme));
+        return file_exists($this->getOfflineDataFile($map->getName(), $layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOfflineFiles(Map $map, Theme $theme)
+    public function getOfflineFiles(Map $map, LayerLevelInterface $layer)
     {
         return [
-            $this->getOfflineDataFile($map->getName(), $theme)
+            $this->getOfflineDataFile($map->getName(), $layer)
         ];
     }
 }

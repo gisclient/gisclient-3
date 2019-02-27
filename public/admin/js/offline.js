@@ -31,74 +31,81 @@ $(document).ready(function() {
                     }
                     return alert('Error');
                 } else {
-                    var html = '';
+                    for (var layerType in response.data) {
+                        var html = '';
+                        for (var i = 0; i < response.data[layerType].length; i++) {
+                            var theme = response.data[layerType][i];
+                            html += '<tr>';
+                            html += '<td>' + theme.title + ' (' + theme.name + ')</td>';
+                            if (Object.keys(theme.mbtiles).length) {
+                                html += '<td id="td_' + theme.name + '">';
+                                switch (theme.mbtiles.state) {
+                                    case 'running':
+                                        html += '<a href="#" data-action="check" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
+                                        html += '<a href="#" data-action="stop" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
+                                        break;
 
-                    for (var i = 0; i < response.themes.length; i++) {
-                        var theme = response.themes[i];
-                        html += '<tr>';
-                        html += '<td>' + theme.title + ' (' + theme.name + ')</td>';
-                        if (Object.keys(theme.mbtiles).length) {
-                            html += '<td id="td_' + theme.name + '">';
-                            switch (theme.mbtiles.state) {
-                                case 'running':
-                                    html += '<a href="#" data-action="check" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                    html += '<a href="#" data-action="stop" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                    break;
+                                    case 'stopped':
+                                        html += '<a href="#" data-action="clear" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
+                                    /* fall through */
+                                    case 'to-do':
+                                        html += '<a href="#" data-action="generate" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                                }
 
-                                case 'stopped':
-                                    html += '<a href="#" data-action="clear" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                /* fall through */
-                                case 'to-do':
-                                    html += '<a href="#" data-action="generate" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                                if (theme.mbtiles.progress) {
+                                    html += theme.mbtiles.progress + '%';
+                                }
+                                html += '</td>';
+                            } else {
+                                html += '<td>no tiles</td>';
+                            }
+                            if (Object.keys(theme.sqlite).length) {
+                                html += '<td>';
+                                switch (theme.sqlite.state) {
+                                    case 'running':
+                                        html += '<a href="#" data-action="check" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
+                                        html += '<a href="#" data-action="stop" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
+                                        break;
+
+                                    case 'stopped':
+                                        html += '<a href="#" data-action="clear" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
+                                    /* fall through */
+                                    case 'to-do':
+                                        html += '<a href="#" data-action="generate" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                                }
+                                html += '</td>';
+                            } else {
+                                html += '<td>no sqlite</td>';
                             }
 
-                            if (theme.mbtiles.progress) {
-                                html += theme.mbtiles.progress + '%';
+                            if (Object.keys(theme.mvt).length) {
+                                html += '<td>';
+                                switch (theme.mvt.state) {
+                                    case 'running':
+                                        html += '<a href="#" data-action="check" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
+                                        html += '<a href="#" data-action="stop" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
+                                        break;
+
+                                    case 'stopped':
+                                        html += '<a href="#" data-action="clear" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
+                                    /* fall through */
+                                    case 'to-do':
+                                        html += '<a href="#" data-action="generate" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                                }
+                                html += '</td>';
+                            } else {
+                                html += '<td>no mvt</td>';
                             }
-                            html += '</td>';
-                        } else {
-                            html += '<td>no tiles</td>';
+                            html += '</tr>';
                         }
-                        if (Object.keys(theme.sqlite).length) {
-                            html += '<td>';
-                            switch (theme.sqlite.state) {
-                                case 'running':
-                                    html += '<a href="#" data-action="check" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                    html += '<a href="#" data-action="stop" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                    break;
-
-                                case 'stopped':
-                                    html += '<a href="#" data-action="clear" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                /* fall through */
-                                case 'to-do':
-                                    html += '<a href="#" data-action="generate" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
-                            }
-                            html += '</td>';
+                        var table = dialog.find('table[data-layer='+layerType+']')
+                        if (html != '') {
+                            $(table).append(html);
+                            $(table).show();
                         } else {
-                            html += '<td>no sqlite</td>';
+                            $(table).hide();
                         }
-
-                        if (Object.keys(theme.mvt).length) {
-                            html += '<td>';
-                            switch (theme.mvt.state) {
-                                case 'running':
-                                    html += '<a href="#" data-action="check" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                    html += '<a href="#" data-action="stop" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                    break;
-
-                                case 'stopped':
-                                    html += '<a href="#" data-action="clear" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                /* fall through */
-                                case 'to-do':
-                                    html += '<a href="#" data-action="generate" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
-                            }
-                            html += '</td>';
-                        } else {
-                            html += '<td>no mvt</td>';
-                        }
-                        html += '</tr>';
                     }
-                    dialog.find('table').append(html);
 
                     $('div#offline_manager a[data-action="check"]').button(
                         {icons:{primary:'ui-icon-refresh'}, text:false}

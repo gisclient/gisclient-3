@@ -190,9 +190,25 @@
                 </table>
             </script>
             <script type="text/template" id="offline_theme">
-                <table border="1" cellpadding="3" class="stiletabella">
+                <table border="1" cellpadding="3" class="stiletabella" data-layer="theme">
                     <tr class="ui-widget ui-state-default">
                         <th><?php echo GCauthor::t('theme') ?></th>
+                        <th><?php echo GCauthor::t('mbtiles') ?></th>
+                        <th><?php echo GCAuthor::t('sqlite') ?></th>
+                        <th><?php echo GCAuthor::t('mvt') ?></th>
+                    </tr>
+                </table>
+                <table border="1" cellpadding="3" class="stiletabella" data-layer="layergroup">
+                    <tr class="ui-widget ui-state-default">
+                        <th><?php echo GCauthor::t('layergroup') ?></th>
+                        <th><?php echo GCauthor::t('mbtiles') ?></th>
+                        <th><?php echo GCAuthor::t('sqlite') ?></th>
+                        <th><?php echo GCAuthor::t('mvt') ?></th>
+                    </tr>
+                </table>
+                <table border="1" cellpadding="3" class="stiletabella" data-layer="layer">
+                    <tr class="ui-widget ui-state-default">
+                        <th><?php echo GCauthor::t('layer') ?></th>
                         <th><?php echo GCauthor::t('mbtiles') ?></th>
                         <th><?php echo GCAuthor::t('sqlite') ?></th>
                         <th><?php echo GCAuthor::t('mvt') ?></th>

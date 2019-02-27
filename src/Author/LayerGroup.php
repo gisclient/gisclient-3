@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class LayerGroup
+class LayerGroup implements LayerLevelInterface
 {
     private $db;
     private $data;
@@ -54,6 +54,14 @@ class LayerGroup
         return $this->get('owstype_id');
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getChildren()
+    {
+        return $this->getLayers();
+    }
+
     public function getLayers()
     {
         $layers = null;
@@ -74,6 +82,11 @@ class LayerGroup
     public function getName()
     {
         return $this->get('layergroup_name');
+    }
+
+    public function getTitle()
+    {
+        return $this->get('layergroup_title');
     }
 
     public function getOpacity()

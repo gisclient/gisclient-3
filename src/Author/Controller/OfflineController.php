@@ -42,17 +42,9 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
+            'data' => $this->offlineMap->status($mapObj),
         ];
-
-        $themes = $mapObj->getThemes();
-        $result['themes'] = array();
-        foreach ($themes as $theme) {
-            $themeStatus = $this->offlineMap->status($mapObj, $theme)[$theme->getName()];
-            $themeStatus['name'] = $theme->getName();
-            $themeStatus['title'] = $theme->getTitle();
-            $result['themes'][] = $themeStatus;
-        }
 
         return new JsonResponse($result);
     }
@@ -76,14 +68,14 @@ class OfflineController implements ContainerAwareInterface
         $themeName = $request->query->get('theme');
         $target = $request->query->get('target');
 
-        $theme = null;
-        foreach ($mapObj->getThemes() as $t) {
-            if ($t->getName() == $themeName) {
-                $theme = $t;
+        $layers = [];
+        foreach ($mapObj->getThemes() as $theme) {
+            if ($theme->getName() === $themeName) {
+                $layers[] = $theme;
             }
         }
 
-        $this->offlineMap->start($mapObj, $theme, $target);
+        $this->offlineMap->start($mapObj, $layers, $target);
 
         return new JsonResponse($result);
     }
@@ -107,14 +99,14 @@ class OfflineController implements ContainerAwareInterface
         $themeName = $request->query->get('theme');
         $target = $request->query->get('target');
 
-        $theme = null;
-        foreach ($mapObj->getThemes() as $t) {
-            if ($t->getName() == $themeName) {
-                $theme = $t;
+        $layers = [];
+        foreach ($mapObj->getThemes() as $theme) {
+            if ($theme->getName() === $themeName) {
+                $layers[] = $theme;
             }
         }
 
-        $this->offlineMap->stop($mapObj, $theme, $target);
+        $this->offlineMap->stop($mapObj, $layers, $target);
 
         return new JsonResponse($result);
     }
@@ -138,14 +130,14 @@ class OfflineController implements ContainerAwareInterface
         $themeName = $request->query->get('theme');
         $target = $request->query->get('target');
 
-        $theme = null;
-        foreach ($mapObj->getThemes() as $t) {
-            if ($t->getName() == $themeName) {
-                $theme = $t;
+        $layers = [];
+        foreach ($mapObj->getThemes() as $theme) {
+            if ($theme->getName() === $themeName) {
+                $layers[] = $theme;
             }
         }
 
-        $this->offlineMap->clear($mapObj, $theme, $target);
+        $this->offlineMap->clear($mapObj, $layers, $target);
 
         return new JsonResponse($result);
     }

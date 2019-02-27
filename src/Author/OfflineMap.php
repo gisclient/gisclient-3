@@ -29,134 +29,153 @@ class OfflineMap
     }
 
     /**
-     * Start offline data generation
+     * Run the operation on the offline data format
      *
+     * @param string $operation
      * @param Map $map
-     * @param Theme|null $theme
+     * @param LayerLevelInterface[] $layers
      * @param string|null $only
      */
-    public function start(Map $map, Theme $theme = null, $only = null)
+    private function run($operation, Map $map, array $layers = [], $only = null)
     {
-        $themes = $map->getThemes();
-        if (!empty($theme)) {
-            $themes = array($theme);
+        if (count($layers) === 0) {
+            $layers = $map->getThemes();
         }
-
-        foreach ($themes as $theme) {
+        foreach ($layers as $layer) {
             foreach ($this->offlineDataFormats as $offlineDataFormat) {
                 $format = $offlineDataFormat->getName();
 
                 // check the format has to be processed
-                if ((!empty($only) && $only !== $format)
-                    || !$offlineDataFormat->supports($theme)
+                if ((empty($only) || $only === $format)
+                    && $offlineDataFormat->supports($layer)
                 ) {
-                    continue;
+                    call_user_func([$offlineDataFormat, $operation], $map, $layer);
                 }
+            }
 
-                $offlineDataFormat->start($map, $theme);
+            $children = $layer->getChildren();
+            if (count($children) > 0) {
+                $this->run($operation, $map, $children, $only);
             }
         }
+    }
+
+    /**
+     * Start offline data generation
+     *
+     * @param Map $map
+     * @param LayerLevelInterface[] $layers
+     * @param string|null $only
+     */
+    public function start(Map $map, array $layers = [], $only = null)
+    {
+        $this->run('start', $map, $layers, $only);
     }
 
     /**
      * Stop offline data generation
      *
      * @param Map $map
-     * @param Theme|null $theme
+     * @param LayerLevelInterface[] $layers
      * @param string|null $only
      */
-    public function stop(Map $map, Theme $theme = null, $only = null)
+    public function stop(Map $map, array $layers = [], $only = null)
     {
-        $themes = $map->getThemes();
-        if (!empty($theme)) {
-            $themes = array($theme);
-        }
-
-        foreach ($themes as $theme) {
-            foreach ($this->offlineDataFormats as $offlineDataFormat) {
-                $format = $offlineDataFormat->getName();
-
-                // check the format has to be processed
-                if ((!empty($only) && $only !== $format)
-                    || !$offlineDataFormat->supports($theme)
-                ) {
-                    continue;
-                }
-
-                $offlineDataFormat->stop($map, $theme);
-            }
-        }
+        $this->run('stop', $map, $layers, $only);
     }
 
     /**
      * Delete offline data
      *
      * @param Map $map
-     * @param Theme|null $theme
+     * @param LayerLevelInterface[] $layers
      * @param string|null $only
      */
-    public function clear(Map $map, Theme $theme = null, $only = null)
+    public function clear(Map $map, array $layers = [], $only = null)
     {
-        $themes = $map->getThemes();
-        if (!empty($theme)) {
-            $themes = array($theme);
-        }
-
-        foreach ($themes as $theme) {
-            foreach ($this->offlineDataFormats as $offlineDataFormat) {
-                $format = $offlineDataFormat->getName();
-
-                // check the format has to be processed
-                if ((!empty($only) && $only !== $format)
-                    || !$offlineDataFormat->supports($theme)
-                ) {
-                    continue;
-                }
-
-                $offlineDataFormat->clear($map, $theme);
-            }
-        }
+        $this->run('clear', $map, $layers, $only);
     }
 
     /**
      * Get current status of offline data
      *
      * @param Map $map
-     * @param Theme|null $theme
+     * @param LayerLevelInterface[] $layers
      * @param string|null $only
+     * @return array
      */
-    public function status(Map $map, Theme $theme = null, $only = null)
+    public function status(Map $map, array $layers = [], $only = null)
     {
         $result = array();
 
-        $themes = $map->getThemes();
-        if (!empty($theme)) {
-            $themes = array($theme);
+        if (count($layers) === 0) {
+            $layers = $map->getThemes();
         }
-
-        foreach ($themes as $theme) {
-            $themeName = $theme->getName();
-            $result[$themeName] = [];
+        foreach ($layers as $layer) {
+            $category = strtolower(substr(strrchr(get_class($layer), '\\'), 1));
+            if (!isset($result[$category])) {
+                $result[$category] = [];
+            }
+            $hasOfflineData = false;
+            $layerResult = [
+                'name' => $layer->getName(),
+                'title' => $layer->getTitle(),
+            ];
 
             foreach ($this->offlineDataFormats as $offlineDataFormat) {
                 $format = $offlineDataFormat->getName();
-                $result[$themeName][$format] = [];
+                $layerResult[$format] = [];
 
                 // check the format has to be processed
-                if ((!empty($only) && $only !== $format)
-                    || !$offlineDataFormat->supports($theme)
+                if ((empty($only) || $only === $format)
+                    && $offlineDataFormat->supports($layer)
                 ) {
-                    continue;
+                    $hasOfflineData = true;
+                    $layerResult[$format] = [
+                        'state' => $offlineDataFormat->getState($map, $layer),
+                        'progress' => $offlineDataFormat->getProgress($map, $layer),
+                    ];
                 }
+            }
 
-                $result[$themeName][$format] = [
-                    'state' => $offlineDataFormat->getState($map, $theme),
-                    'progress' => $offlineDataFormat->getProgress($map, $theme),
-                ];
+            if ($hasOfflineData) {
+                $result[$category][] = $layerResult;
+            }
+
+            $children = $layer->getChildren();
+            if (count($children) > 0) {
+                $result = array_merge_recursive($result, $this->status($map, $children, $only));
             }
         }
 
         return $result;
+    }
+
+    private function getOfflineFiles(Map $map, array $layers, array $formats)
+    {
+        $files = [];
+
+        foreach ($layers as $layer) {
+            foreach ($this->offlineDataFormats as $offlineDataFormat) {
+                $format = $offlineDataFormat->getName();
+
+                // check the format has to be processed
+                if (in_array($format, $formats)
+                    && $offlineDataFormat->supports($layer)
+                ) {
+                    // TODO: check if status is not running??
+
+                    $files = array_merge($files, $offlineDataFormat->getOfflineFiles($map, $layer));
+                }
+            }
+
+            $children = $layer->getChildren();
+            if (count($children) > 0) {
+                $files = array_merge($files, $this->getOfflineFiles($map, $children, $formats));
+            }
+        }
+
+        return $files;
     }
 
     /**
@@ -182,29 +201,18 @@ class OfflineMap
         }
 
         $themes = $map->getThemes();
+
+        // add data
+        $files = $this->getOfflineFiles($map, $themes, $requestFormats);
+        foreach ($files as $file) {
+            $zip->addFile($file, basename($file));
+        }
+
         foreach ($themes as $theme) {
             // add legend
             $img = $this->getLegendForTheme($theme);
             if ($img) {
                 $zip->addFromString($theme->getName() . '.png', $img);
-            }
-
-            foreach ($this->offlineDataFormats as $offlineDataFormat) {
-                $format = $offlineDataFormat->getName();
-
-                // check the format has to be processed
-                if (!in_array($format, $requestFormats)
-                    || !$offlineDataFormat->supports($theme)
-                ) {
-                    continue;
-                }
-
-                // TODO: check if status is not running??
-
-                $files = $offlineDataFormat->getOfflineFiles($map, $theme);
-                foreach ($files as $file) {
-                    $zip->addFile($file, basename($file));
-                }
             }
 
             // add lookups
