@@ -2,7 +2,9 @@
 
 namespace GisClient\GDAL\Export;
 
-interface Task
+use GisClient\Author\Offline\OfflineTaskInterface;
+
+interface Task extends OfflineTaskInterface
 {
     public function getTaskName();
 

@@ -2,7 +2,10 @@
 
 namespace GisClient\GDAL\Export;
 
-class Process
+use GisClient\Author\Offline\OfflineProcessInterface;
+use GisClient\Author\Offline\OfflineTaskInterface;
+
+class Process implements OfflineProcessInterface
 {
     /**
      * Driver
@@ -33,21 +36,30 @@ class Process
         }
     }
 
-    private function getCommand(Task $task)
+    public function getCommand(OfflineTaskInterface $task, $runInBackground = true)
     {
-        //using gdal 1.X
-        $cmdTpl = "ogr2ogr -f %s %s %s %s -overwrite -progress > %s 2> %s & echo $!";
-        $cmd = sprintf(
-            $cmdTpl,
-            $this->driver->getName(),
+        if (!($task instanceof Task)) {
+            throw new \Exception('The given task does not match the required class: '.Task::class);
+        }
+
+        $commandLine = [
+            "ogr2ogr",
+            "-f ".$this->driver->getName(),
             $task->getFilePath(),
             $task->getSource(),
             $this->driver->getCmdArguments(),
-            $task->getLogFile(),
-            $task->getErrFile()
-        );
-        
-        return $cmd;
+        ];
+        if ($runInBackground) {
+            $commandLine[] = ">";
+            $commandLine[] = $task->getLogFile();
+            $commandLine[] = "2>";
+            $commandLine[] = $task->getErrFile();
+            $commandLine[] = "&";
+            $commandLine[] = "echo";
+            $commandLine[] = "$!";
+        }
+
+        return implode(' ', $commandLine);
     }
 
     private function getPID(Task $task)

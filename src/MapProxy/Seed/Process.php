@@ -2,7 +2,10 @@
 
 namespace GisClient\MapProxy\Seed;
 
-class Process
+use GisClient\Author\Offline\OfflineProcessInterface;
+use GisClient\Author\Offline\OfflineTaskInterface;
+
+class Process implements OfflineProcessInterface
 {
     private $bin;
 
@@ -31,20 +34,30 @@ class Process
         }
     }
 
-    private function getCommand(Task $task)
+    public function getCommand(OfflineTaskInterface $task, $runInBackground = true)
     {
-        $cmdTpl = "%s -f %s -c 1 %s --seed %s > %s 2> %s & echo $!";
-        $cmd = (sprintf(
-            $cmdTpl,
+        if (!($task instanceof Task)) {
+            throw new \Exception('The given task does not match the required class: '.Task::class);
+        }
+
+        $commandLine = [
             $this->bin,
-            $task->getMapConfig(),
-            $task->getSeedConfig(),
-            $task->getTaskName(),
-            $task->getLogFile(),
-            $task->getErrFile()
-        ));
-        
-        return $cmd;
+            "--proxy-conf=".$task->getMapConfig(),
+            "--concurrency=1",
+            "--seed-conf=".$task->getSeedConfig(),
+            "--seed=".$task->getTaskName()
+        ];
+        if ($runInBackground) {
+            $commandLine[] = ">";
+            $commandLine[] = $task->getLogFile();
+            $commandLine[] = "2>";
+            $commandLine[] = $task->getErrFile();
+            $commandLine[] = "&";
+            $commandLine[] = "echo";
+            $commandLine[] = "$!";
+        }
+
+        return implode(' ', $commandLine);
     }
 
     private function getPID(Task $task)

@@ -3,8 +3,9 @@
 namespace GisClient\MapProxy\Seed;
 
 use GisClient\Author\Map;
+use GisClient\Author\Offline\OfflineTaskInterface;
 
-class Task
+class Task implements OfflineTaskInterface
 {
     private $mapConfig;
     private $seedConfig;

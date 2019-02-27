@@ -39,7 +39,7 @@ class MVTData extends AbstractOfflineData
         return $layerGroup->getType() === LayerGroup::WFS_LAYER_TYPE;
     }
 
-    private function getOfflineDataFile($mapName, Layer $layer)
+    protected function getOfflineDataFile($mapName, LayerLevelInterface $layer)
     {
         $layerGroup = $layer->getLayerGroup();
         $offlineDataFile = $this->getOfflineDataPath()
@@ -48,83 +48,13 @@ class MVTData extends AbstractOfflineData
         return $offlineDataFile;
     }
 
-    private function getProcess()
+    protected function getProcess()
     {
         return new GDALProcess(new MVTDriver());
     }
 
-    private function getTask(Map $map, Layer $layer)
+    protected function getTask(Map $map, LayerLevelInterface $layer)
     {
         return new MVTTask($layer, $this->getOfflineDataFile($map->getName(), $layer), $this->logDir);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getState(Map $map, LayerLevelInterface $layer)
-    {
-        if (!$this->exists($map, $layer)) {
-            return self::IS_TODO;
-        }
-        
-        $process = $this->getProcess();
-        if ($process->isRunning($this->getTask($map, $layer))) {
-            return self::IS_RUNNING;
-        }
-        
-        return self::IS_STOPPED;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getProgress(Map $map, LayerLevelInterface $layer)
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function start(Map $map, LayerLevelInterface $layer)
-    {
-        $process = $this->getProcess($map);
-        $process->start($this->getTask($map, $layer));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function stop(Map $map, LayerLevelInterface $layer)
-    {
-        $process = $this->getProcess($map);
-        $process->stop($this->getTask($map, $layer));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function clear(Map $map, LayerLevelInterface $layer)
-    {
-        $task = $this->getTask($map, $layer);
-        $task->cleanup();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function exists(Map $map, LayerLevelInterface $layer)
-    {
-        return file_exists($this->getOfflineDataFile($map->getName(), $layer));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getOfflineFiles(Map $map, LayerLevelInterface $layer)
-    {
-        return [
-            $this->getOfflineDataFile($map->getName(), $layer)
-        ];
     }
 }

@@ -19,6 +19,13 @@ interface OfflineDataInterface
      * @return string
      */
     public function getName();
+    
+    /**
+     * Return the command to generate the offline data
+     *
+     * @return string
+     */
+    public function getCommand(Map $map, LayerLevelInterface $layer);
 
     /**
      * Check if theme supports this offline format
