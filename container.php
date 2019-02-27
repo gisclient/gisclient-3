@@ -27,8 +27,8 @@ if (!$containerConfigCache->isFresh()) {
     ) {
         foreach ($extensions as $extensionClassName) {
             $extension = new $extensionClassName();
-            $extension->load([], $containerBuilder);
             $containerBuilder->registerExtension($extension);
+            $containerBuilder->loadFromExtension($extension->getAlias());
         }
     }
 
