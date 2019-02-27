@@ -4,6 +4,7 @@ namespace GisClient\MapProxy\Seed;
 
 use GisClient\Author\Offline\OfflineProcessInterface;
 use GisClient\Author\Offline\OfflineTaskInterface;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 class Process implements OfflineProcessInterface
 {
@@ -34,7 +35,7 @@ class Process implements OfflineProcessInterface
         }
     }
 
-    public function getCommand(OfflineTaskInterface $task, $runInBackground = true)
+    public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
         if (!($task instanceof Task)) {
             throw new \Exception('The given task does not match the required class: '.Task::class);
@@ -57,7 +58,13 @@ class Process implements OfflineProcessInterface
             $commandLine[] = "$!";
         }
 
-        return implode(' ', $commandLine);
+        if ($asArray) {
+            return $commandLine;
+        }
+        
+        // use Process class from symfony, to escape arguments
+        $process = new SymfonyProcess($commandLine);
+        return $process->getCommandLine();
     }
 
     private function getPID(Task $task)

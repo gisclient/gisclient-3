@@ -14,7 +14,7 @@ interface Driver
     /**
      * Get additional command arguments
      *
-     * @return string
+     * @return array
      */
     public function getCmdArguments();
 

@@ -4,6 +4,7 @@ namespace GisClient\GDAL\Export;
 
 use GisClient\Author\Offline\OfflineProcessInterface;
 use GisClient\Author\Offline\OfflineTaskInterface;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 class Process implements OfflineProcessInterface
 {
@@ -36,19 +37,26 @@ class Process implements OfflineProcessInterface
         }
     }
 
-    public function getCommand(OfflineTaskInterface $task, $runInBackground = true)
+    public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
         if (!($task instanceof Task)) {
             throw new \Exception('The given task does not match the required class: '.Task::class);
         }
 
-        $commandLine = [
-            "ogr2ogr",
-            "-f ".$this->driver->getName(),
-            $task->getFilePath(),
+        $commandLine = array_merge(
+            [
+                "ogr2ogr",
+                "-f",
+                $this->driver->getName(),
+                $task->getFilePath(),
+            ],
             $task->getSource(),
             $this->driver->getCmdArguments(),
-        ];
+            [
+                '-overwrite',
+                '-progress'
+            ]
+        );
         if ($runInBackground) {
             $commandLine[] = ">";
             $commandLine[] = $task->getLogFile();
@@ -59,7 +67,13 @@ class Process implements OfflineProcessInterface
             $commandLine[] = "$!";
         }
 
-        return implode(' ', $commandLine);
+        if ($asArray) {
+            return $commandLine;
+        }
+
+        // use Process class from symfony, to escape arguments
+        $process = new SymfonyProcess($commandLine);
+        return $process->getCommandLine();
     }
 
     private function getPID(Task $task)
@@ -84,6 +98,7 @@ class Process implements OfflineProcessInterface
     {
         $this->check($task);
         if (!$this->isRunning($task)) {
+            $cmd = $this->getCommand($task);
             $pid = shell_exec($this->getCommand($task));
         } else {
             $pid = $this->getPID($task);

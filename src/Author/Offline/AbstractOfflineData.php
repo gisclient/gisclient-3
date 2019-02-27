@@ -46,7 +46,7 @@ abstract class AbstractOfflineData implements OfflineDataInterface
     public function getCommand(Map $map, LayerLevelInterface $layer)
     {
         $process = $this->getProcess($map);
-        return $process->getCommand($this->getTask($map, $layer), false);
+        return $process->getCommand($this->getTask($map, $layer), false, true);
     }
 
     /**

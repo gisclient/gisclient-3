@@ -106,7 +106,7 @@ class Task implements \GisClient\GDAL\Export\Task
         $db = new Db($this->layer->getCatalog());
         $dbParams = $db->getParams();
 
-        $connectionTpl = "PG:'host=%s port=%s user=%s password=%s dbname=%s schemas=%s'";
+        $connectionTpl = 'PG:host=%s port=%s user=%s password=%s dbname=%s schemas=%s';
         $connection = sprintf(
             $connectionTpl,
             $dbParams['db_host'],
@@ -132,19 +132,28 @@ class Task implements \GisClient\GDAL\Export\Task
         }
 
         $name = $this->layer->getName();
-        
-        $sqlTpl = '-sql "SELECT %s FROM %s WHERE %s" -nln %s';
+
+        $sqlTpl = 'SELECT %s FROM %s WHERE %s';
         $sql = sprintf(
             $sqlTpl,
             $fieldsText,
             $table,
-            $filter,
-            $name
+            $filter
         );
 
-        $source = $connection . ' ' . $sql;
+        $commandLine = [
+            $connection,
+            '-sql',
+            $sql,
+            '-nln',
+            $name
+        ];
+        
+        
 
-        return $source;
+        // $source = $connection . ' ' . $sql;
+
+        return $commandLine;
     }
 
     public function getFilePath()

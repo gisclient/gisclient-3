@@ -11,5 +11,5 @@ interface OfflineProcessInterface
      *
      * @return Process
      */
-    public function getCommand(OfflineTaskInterface $task, $runInBackground = true);
+    public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false);
 }

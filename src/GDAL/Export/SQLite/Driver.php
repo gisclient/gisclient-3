@@ -13,6 +13,6 @@ class Driver extends AbstractDriver
 
     public function getCmdArguments()
     {
-        return null;
+        return [];
     }
 }

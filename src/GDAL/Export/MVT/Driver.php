@@ -13,6 +13,9 @@ class Driver extends AbstractDriver
 
     public function getCmdArguments()
     {
-        return '-dsco MAXZOOM=19';
+        return [
+            '-dsco',
+            'MAXZOOM=19',
+        ];
     }
 }
