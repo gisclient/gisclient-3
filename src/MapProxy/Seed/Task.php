@@ -2,17 +2,27 @@
 
 namespace GisClient\MapProxy\Seed;
 
+use GisClient\Author\Map;
+
 class Task
 {
+    private $mapConfig;
+    private $seedConfig;
     private $logFile;
     private $errFile;
     private $path;
     private $task;
 
-    public function __construct($filename, $logDir)
+    public function __construct(Map $map, $mapPath, $filename, $logDir)
     {
         $this->path = dirname($filename);
         $this->task = basename($filename);
+
+        $project = $map->getProject();
+        $mapset = $map->getName();
+        $this->mapConfig = $mapPath . "/{$project}/{$mapset}.yaml";
+        $this->seedConfig = $mapPath . "/{$project}/{$mapset}.seed.yaml";
+
         $this->logFile = $logDir . $this->getTaskName() . '-seed.log';
         $this->errFile = $logDir . $this->getTaskName() . '-seed.err';
     }
@@ -20,6 +30,16 @@ class Task
     public function getTaskName()
     {
         return basename($this->task, '.mbtiles');
+    }
+
+    public function getMapConfig()
+    {
+        return $this->mapConfig;
+    }
+
+    public function getSeedConfig()
+    {
+        return $this->seedConfig;
     }
 
     public function getLogFile()

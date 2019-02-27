@@ -5,14 +5,10 @@ namespace GisClient\MapProxy\Seed;
 class Process
 {
     private $bin;
-    private $mapConfig;
-    private $seedConfig;
 
-    public function __construct($path, $mapConfig, $seedConfig)
+    public function __construct($path)
     {
         $this->bin = $path . '/mapproxy-seed';
-        $this->mapConfig = $mapConfig;
-        $this->seedConfig = $seedConfig;
     }
 
     private function check(Task $task)
@@ -20,11 +16,13 @@ class Process
         if (!file_exists($this->bin)) {
             throw new \RuntimeException("Error: File not exists '{$this->bin}'", 1);
         }
-        if (!file_exists($this->mapConfig)) {
-            throw new \RuntimeException("Error: File not exists '{$this->mapConfig}'", 1);
+        $mapConfig = $task->getMapConfig();
+        if (!file_exists($mapConfig)) {
+            throw new \RuntimeException("Error: File not exists '{$mapConfig}'", 1);
         }
-        if (!file_exists($this->seedConfig)) {
-            throw new \RuntimeException("Error: File not exists '{$this->seedConfig}'", 1);
+        $seedConfig = $task->getSeedConfig();
+        if (!file_exists($seedConfig)) {
+            throw new \RuntimeException("Error: File not exists '{$seedConfig}'", 1);
         }
 
         $logDir = dirname($task->getLogFile());
@@ -39,8 +37,8 @@ class Process
         $cmd = (sprintf(
             $cmdTpl,
             $this->bin,
-            $this->mapConfig,
-            $this->seedConfig,
+            $task->getMapConfig(),
+            $task->getSeedConfig(),
             $task->getTaskName(),
             $task->getLogFile(),
             $task->getErrFile()

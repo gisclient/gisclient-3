@@ -50,16 +50,12 @@ class MbtilesData extends AbstractOfflineData
 
     private function getProcess(Map $map)
     {
-        $project = $map->getProject();
-        $mapset = $map->getName();
-        $mapConfig = $this->mapPath . "/{$project}/{$mapset}.yaml";
-        $seedConfig = $this->mapPath . "/{$project}/{$mapset}.seed.yaml";
-        return new SeedProcess($this->binPath, $mapConfig, $seedConfig);
+        return new SeedProcess($this->binPath);
     }
 
     private function getTask(Map $map, LayerLevelInterface $layer)
     {
-        return new SeedTask($this->getOfflineDataFile($map->getName(), $layer), $this->logDir);
+        return new SeedTask($map, $this->mapPath, $this->getOfflineDataFile($map->getName(), $layer), $this->logDir);
     }
 
     /**
