@@ -76,10 +76,7 @@ class FilterType extends AbstractType
                 ],
             ])
             ->add('saved_filter_data', TextType::class, [
-                'compound' => true,
                 'allow_extra_fields' => true,
-                //'allow_add' => true,
-                //'entry_type' => FilterDataType::class,
                 'constraints' => [
                     new Constraints\Required(),
                     new Constraints\NotBlank()
@@ -139,18 +136,6 @@ class FilterType extends AbstractType
                     }
                     
                     return $layerId;
-                }
-            ))
-        ;
-
-        $builder
-            ->get('saved_filter_data')
-            ->addModelTransformer(new CallbackTransformer(
-                function ($jsonString) {
-                    return $jsonString;
-                },
-                function ($json) {
-                    return json_encode($json);
                 }
             ))
         ;
