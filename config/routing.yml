@@ -58,7 +58,12 @@ offlineDownload:
         - GET
     requirements:
         format: json|zip
-
+getLookup:
+    path: lookup.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\LookupController::getLookupAction'
+    methods:
+        - GET
 getSymbol:
     path: symbol.php
     defaults:
