@@ -22,6 +22,11 @@ class Symbol
         $this->database = \GCApp::getDB();
     }
 
+    /**
+     * Create png for the icon
+     *
+     * @return string
+     */
     public function createIcon()
     {
         $dbSchema = DB_SCHEMA;

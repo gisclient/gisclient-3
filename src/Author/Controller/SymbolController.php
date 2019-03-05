@@ -7,20 +7,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use GisClient\Author\Symbol;
+use GisClient\Author\Utils\SymbolCreator;
 
 class SymbolController
 {
-    /**
-     * @var \PDO
-     */
-    private $database;
-
-    public function __construct()
-    {
-        $this->database = \GCApp::getDB();
-    }
-
     private function getOutputHeaders()
     {
         return [
@@ -44,18 +34,11 @@ class SymbolController
         $table = $request->query->get('table');
         $id = $request->query->get('id');
 
-        $symbol = new Symbol($table);
-        switch ($symbol->table) {
-            case 'class':
-                $symbol->filter = "class.class_id=".$this->database->quote($id);
-                break;
-            case 'symbol':
-                $symbol->filter = "symbol.symbol_name=".$this->database->quote($id);
-                break;
-        }
-
-        $image = $symbol->createIcon();
-
-        return new Response($image, Response::HTTP_OK, $this->getOutputHeaders());
+        $symbolCreator = new SymbolCreator();
+        return new Response(
+            $symbolCreator->createSymbol($table, $id),
+            Response::HTTP_OK,
+            $this->getOutputHeaders()
+        );
     }
 }
