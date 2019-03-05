@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Layer implements LayerLevelInterface
+class Layer extends AbstractLayerLevel
 {
     private $db;
     private $data;

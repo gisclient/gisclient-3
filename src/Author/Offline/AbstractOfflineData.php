@@ -3,7 +3,6 @@
 namespace GisClient\Author\Offline;
 
 use GisClient\Author\LayerLevelInterface;
-use GisClient\Author\Map;
 
 abstract class AbstractOfflineData implements OfflineDataInterface
 {
@@ -21,14 +20,14 @@ abstract class AbstractOfflineData implements OfflineDataInterface
      *
      * @return OfflineTaskInterface
      */
-    abstract protected function getTask(Map $map, LayerLevelInterface $layer);
+    abstract protected function getTask(LayerLevelInterface $layer);
 
     /**
      * Return the offline filename
      *
      * @return string
      */
-    abstract protected function getOfflineDataFile($mapName, LayerLevelInterface $layer);
+    abstract protected function getOfflineDataFile(LayerLevelInterface $layer);
 
     /**
      * Return the path containing offline data
@@ -43,50 +42,50 @@ abstract class AbstractOfflineData implements OfflineDataInterface
     /**
      * {@inheritdoc}
      */
-    public function getCommand(Map $map, LayerLevelInterface $layer)
-    {
-        $process = $this->getProcess($map);
-        return $process->getCommand($this->getTask($map, $layer), false, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function start(Map $map, LayerLevelInterface $layer)
+    public function getCommand(LayerLevelInterface $layer)
     {
         $process = $this->getProcess();
-        $process->start($this->getTask($map, $layer));
+        return $process->getCommand($this->getTask($layer), false, true);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function stop(Map $map, LayerLevelInterface $layer)
+    public function start(LayerLevelInterface $layer)
     {
         $process = $this->getProcess();
-        $process->stop($this->getTask($map, $layer));
+        $process->start($this->getTask($layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function clear(Map $map, LayerLevelInterface $layer)
+    public function stop(LayerLevelInterface $layer)
     {
-        $task = $this->getTask($map, $layer);
+        $process = $this->getProcess();
+        $process->stop($this->getTask($layer));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear(LayerLevelInterface $layer)
+    {
+        $task = $this->getTask($layer);
         $task->cleanup();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getState(Map $map, LayerLevelInterface $layer)
+    public function getState(LayerLevelInterface $layer)
     {
-        if (!$this->exists($map, $layer)) {
+        if (!$this->exists($layer)) {
             return self::IS_TODO;
         }
         
         $process = $this->getProcess();
-        if ($process->isRunning($this->getTask($map, $layer))) {
+        if ($process->isRunning($this->getTask($layer))) {
             return self::IS_RUNNING;
         }
         
@@ -96,7 +95,7 @@ abstract class AbstractOfflineData implements OfflineDataInterface
     /**
      * {@inheritdoc}
      */
-    public function getProgress(Map $map, LayerLevelInterface $layer)
+    public function getProgress(LayerLevelInterface $layer)
     {
         return null;
     }
@@ -104,18 +103,18 @@ abstract class AbstractOfflineData implements OfflineDataInterface
     /**
      * {@inheritdoc}
      */
-    public function exists(Map $map, LayerLevelInterface $layer)
+    public function exists(LayerLevelInterface $layer)
     {
-        return file_exists($this->getOfflineDataFile($map->getName(), $layer));
+        return file_exists($this->getOfflineDataFile($layer));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOfflineFiles(Map $map, LayerLevelInterface $layer)
+    public function getOfflineFiles(LayerLevelInterface $layer)
     {
         return [
-            $this->getOfflineDataFile($map->getName(), $layer)
+            $this->getOfflineDataFile($layer)
         ];
     }
 }

@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Map
+class Map implements LayerLevelInterface
 {
     private $db;
     private $data;
@@ -52,6 +52,27 @@ class Map
         return $this->get('mapset_name');
     }
 
+    public function getTitle()
+    {
+        return $this->get('mapset_title');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChildren()
+    {
+        return $this->getThemes();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMap()
+    {
+        return self;
+    }
+
     public function getLayerGroups()
     {
         $layerGroups = array();
@@ -60,7 +81,9 @@ class Map
         $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($this->data['mapset_name']));
         while ($layergroup_id = $stmt->fetchColumn(0)) {
-            $layerGroups[] = new LayerGroup($layergroup_id);
+            $layerGroup = new LayerGroup($layergroup_id);
+            $layerGroup->setMap(self);
+            $layerGroups[] = $layerGroup;
         }
 
         return $layerGroups;
@@ -82,7 +105,9 @@ class Map
         $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($this->data['mapset_name'], $this->data['project_name']));
         while ($theme_id = $stmt->fetchColumn(0)) {
-            $themes[] = new Theme($theme_id, $this->data['mapset_name']);
+            $theme = new Theme($theme_id, $this->data['mapset_name']);
+            $theme->setMap($this);
+            $themes[] = $theme;
         }
 
         return $themes;

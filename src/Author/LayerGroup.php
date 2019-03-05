@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class LayerGroup implements LayerLevelInterface
+class LayerGroup extends AbstractLayerLevel
 {
     private $db;
     private $data;
@@ -72,7 +72,9 @@ class LayerGroup implements LayerLevelInterface
             $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($this->data['layergroup_id']));
             while ($layer_id = $stmt->fetchColumn(0)) {
-                $layers[] = new Layer($layer_id);
+                $layer = new Layer($layer_id);
+                $layer->setMap($this->getMap());
+                $layers[] = $layer;
             }
         }
 

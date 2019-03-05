@@ -24,4 +24,11 @@ interface LayerLevelInterface
      * @return LayerLevelInterface[]
      */
     public function getChildren();
+
+    /**
+     * Return the relative map
+     *
+     * @return Map|null
+     */
+    public function getMap();
 }

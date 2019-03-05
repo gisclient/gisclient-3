@@ -5,13 +5,6 @@ namespace GisClient\Author;
 class OfflineMap
 {
     /**
-     * Map
-     *
-     * @var Map
-     */
-    protected $map;
-
-    /**
      * List of available offline data formats
      *
      * @var Offline\OfflineDataInterface[]
@@ -21,7 +14,7 @@ class OfflineMap
     /**
      * Constructor
      *
-     * @param Map $map
+     * @param Offline\OfflineDataInterface[] $offlineDataFormats
      */
     public function __construct(\Traversable $offlineDataFormats)
     {
@@ -32,147 +25,127 @@ class OfflineMap
      * Run the operation on the offline data format
      *
      * @param string $operation
-     * @param Map $map
-     * @param LayerLevelInterface[] $layers
+     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
-    private function run($operation, Map $map, array $layers = [], $only = null)
+    private function run($operation, LayerLevelInterface $layer, $only = null)
     {
-        if (count($layers) === 0) {
-            $layers = $map->getThemes();
+        foreach ($this->offlineDataFormats as $offlineDataFormat) {
+            $format = $offlineDataFormat->getName();
+
+            // check the format has to be processed
+            if ((empty($only) || $only === $format)
+                && $offlineDataFormat->supports($layer)
+            ) {
+                call_user_func([$offlineDataFormat, $operation], $layer);
+            }
         }
-        foreach ($layers as $layer) {
-            foreach ($this->offlineDataFormats as $offlineDataFormat) {
-                $format = $offlineDataFormat->getName();
 
-                // check the format has to be processed
-                if ((empty($only) || $only === $format)
-                    && $offlineDataFormat->supports($layer)
-                ) {
-                    call_user_func([$offlineDataFormat, $operation], $map, $layer);
-                }
-            }
-
-            $children = $layer->getChildren();
-            if (count($children) > 0) {
-                $this->run($operation, $map, $children, $only);
-            }
+        $children = $layer->getChildren();
+        foreach ($children as $layer) {
+            $this->run($operation, $layer, $only);
         }
     }
 
     /**
      * Start offline data generation
      *
-     * @param Map $map
-     * @param LayerLevelInterface[] $layers
+     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
-    public function start(Map $map, array $layers = [], $only = null)
+    public function start(LayerLevelInterface $layer, $only = null)
     {
-        $this->run('start', $map, $layers, $only);
+        $this->run('start', $layer, $only);
     }
 
     /**
      * Stop offline data generation
      *
-     * @param Map $map
-     * @param LayerLevelInterface[] $layers
+     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
-    public function stop(Map $map, array $layers = [], $only = null)
+    public function stop(LayerLevelInterface $layer, $only = null)
     {
-        $this->run('stop', $map, $layers, $only);
+        $this->run('stop', $layer, $only);
     }
 
     /**
      * Delete offline data
      *
-     * @param Map $map
-     * @param LayerLevelInterface[] $layers
+     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
-    public function clear(Map $map, array $layers = [], $only = null)
+    public function clear(LayerLevelInterface $layer, $only = null)
     {
-        $this->run('clear', $map, $layers, $only);
+        $this->run('clear', $layer, $only);
     }
 
     /**
      * Get current status of offline data
      *
-     * @param Map $map
-     * @param LayerLevelInterface[] $layers
-     * @param string|null $only
+     * @param LayerLevelInterface $layer
      * @return array
      */
-    public function status(Map $map, array $layers = [], $only = null)
+    public function status(LayerLevelInterface $layer)
     {
         $result = array();
 
-        if (count($layers) === 0) {
-            $layers = $map->getThemes();
+        $category = strtolower(substr(strrchr(get_class($layer), '\\'), 1));
+        if (!isset($result[$category])) {
+            $result[$category] = [];
         }
-        foreach ($layers as $layer) {
-            $category = strtolower(substr(strrchr(get_class($layer), '\\'), 1));
-            if (!isset($result[$category])) {
-                $result[$category] = [];
-            }
-            $hasOfflineData = false;
-            $layerResult = [
-                'name' => $layer->getName(),
-                'title' => $layer->getTitle(),
-            ];
+        $hasOfflineData = false;
+        $layerResult = [
+            'name' => $layer->getName(),
+            'title' => $layer->getTitle(),
+        ];
 
-            foreach ($this->offlineDataFormats as $offlineDataFormat) {
-                $format = $offlineDataFormat->getName();
-                $layerResult[$format] = [];
+        foreach ($this->offlineDataFormats as $offlineDataFormat) {
+            $format = $offlineDataFormat->getName();
+            $layerResult[$format] = [];
 
-                // check the format has to be processed
-                if ((empty($only) || $only === $format)
-                    && $offlineDataFormat->supports($layer)
-                ) {
-                    $hasOfflineData = true;
-                    $layerResult[$format] = [
-                        'state' => $offlineDataFormat->getState($map, $layer),
-                        'progress' => $offlineDataFormat->getProgress($map, $layer),
-                    ];
-                }
+            // check the format has to be processed
+            if ($offlineDataFormat->supports($layer)) {
+                $hasOfflineData = true;
+                $layerResult[$format] = [
+                    'state' => $offlineDataFormat->getState($layer),
+                    'progress' => $offlineDataFormat->getProgress($layer),
+                ];
             }
+        }
 
-            if ($hasOfflineData) {
-                $result[$category][] = $layerResult;
-            }
+        if ($hasOfflineData) {
+            $result[$category][] = $layerResult;
+        }
 
-            $children = $layer->getChildren();
-            if (count($children) > 0) {
-                $result = array_merge_recursive($result, $this->status($map, $children, $only));
-            }
+        $children = $layer->getChildren();
+        foreach ($children as $layer) {
+            $result = array_merge_recursive($result, $this->status($layer));
         }
 
         return $result;
     }
 
-    private function getOfflineFiles(Map $map, array $layers, array $formats)
+    private function getOfflineFiles(LayerLevelInterface $layer, array $formats)
     {
         $files = [];
 
-        foreach ($layers as $layer) {
-            foreach ($this->offlineDataFormats as $offlineDataFormat) {
-                $format = $offlineDataFormat->getName();
+        foreach ($this->offlineDataFormats as $offlineDataFormat) {
+            $format = $offlineDataFormat->getName();
 
-                // check the format has to be processed
-                if (in_array($format, $formats)
-                    && $offlineDataFormat->supports($layer)
-                ) {
-                    // TODO: check if status is not running??
+            // check the format has to be processed
+            if (in_array($format, $formats)
+                && $offlineDataFormat->supports($layer)
+            ) {
+                // TODO: check if status is not running??
 
-                    $files = array_merge($files, $offlineDataFormat->getOfflineFiles($map, $layer));
-                }
+                $files = array_merge($files, $offlineDataFormat->getOfflineFiles($layer));
             }
+        }
 
-            $children = $layer->getChildren();
-            if (count($children) > 0) {
-                $files = array_merge($files, $this->getOfflineFiles($map, $children, $formats));
-            }
+        $children = $layer->getChildren();
+        foreach ($children as $layer) {
+            $files = array_merge($files, $this->getOfflineFiles($layer, $formats));
         }
 
         return $files;
@@ -181,11 +154,11 @@ class OfflineMap
     /**
      * Create zip containing the offline data
      *
-     * @param Map $map
+     * @param LayerLevelInterface $layer
      * @param string $zipFile
      * @param array $formats
      */
-    public function createZip(Map $map, $zipFile, array $formats = [])
+    public function createZip(LayerLevelInterface $layer, $zipFile, array $formats = [])
     {
         $supportedFormats = [];
         foreach ($this->offlineDataFormats as $offlineDataFormat) {
@@ -194,144 +167,21 @@ class OfflineMap
         $requestFormats = array_merge($supportedFormats, $formats);
 
         $zip = new \ZipArchive();
-        $mapName = $map->getName();
 
         if ($zip->open($zipFile, \ZipArchive::CREATE) !== true) {
             throw new \Exception("Failed to create zip file '{$zipFile}'", 1);
         }
 
-        $themes = $map->getThemes();
-
         // add data
-        $files = $this->getOfflineFiles($map, $themes, $requestFormats);
+        $files = $this->getOfflineFiles($layer, $requestFormats);
         foreach ($files as $file) {
-            $zip->addFile($file, basename($file));
-        }
-
-        foreach ($themes as $theme) {
-            // add legend
-            $img = $this->getLegendForTheme($theme);
-            if ($img) {
-                $zip->addFromString($theme->getName() . '.png', $img);
-            }
-
-            // add lookups
-            foreach ($theme->getLayerGroups() as $layerGroup) {
-                if ($layerGroup->getType() == LayerGroup::WFS_LAYER_TYPE) {
-                    foreach ($layerGroup->getLayers() as $layer) {
-                        $catalogId = $layer->getCatalogId();
-                        foreach ($layer->getFields() as $field) {
-                            $lookupTable = $field->getLookupTable();
-                            $lookupId = $field->getLookupId();
-                            $lookupName = $field->getLookupName();
-                            if ($catalogId && $lookupTable && $lookupId && $lookupName) {
-                                $json = $this->getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName);
-                                if ($json) {
-                                    $zip->addFromString(
-                                        "{$catalogId}{$lookupTable}.json",
-                                        $json
-                                    );
-                                } else {
-                                    throw new \Exception(sprintf(
-                                        "Could not create json with lookup values for %s",
-                                        $field->getName()
-                                    ));
-                                }
-                            }
-                        }
-                    }
-                }
+            if (is_array($file)) {
+                $zip->addFile($file['file'], $file['filename']);
+            } else {
+                $zip->addFile($file, basename($file));
             }
         }
-
-        $zip->addFromString(
-            'config.json',
-            $this->getMapConfig($mapName)
-        );
-
-        $zip->addFromString(
-            'saved_filter.json',
-            $this->getSavedFilter($mapName)
-        );
 
         $zip->close();
-    }
-
-    protected function getSavedFilter($mapset)
-    {
-        $url = INTERNAL_URL . "services/saved_filter/".$mapset;
-        return $this->getFile($url);
-    }
-
-    protected function getLookupValues($catalogId, $lookupTable, $lookupId, $lookupName)
-    {
-        $url = INTERNAL_URL . "services/lookup.php";
-        $params = array(
-            'catalog' => $catalogId,
-            'table' => $lookupTable,
-            'id' => $lookupId,
-            'name' => $lookupName
-        );
-
-        return $this->getFile($url, $params);
-    }
-
-    protected function getMapConfig($mapName)
-    {
-        $url = INTERNAL_URL . "services/gcmapconfig.php";
-        $params = array(
-            'mapset' => $mapName,
-            'legend' => 1
-        );
-
-        return $this->getFile($url, $params);
-    }
-
-    protected function getFile($url, array $params = [])
-    {
-        if (count($params) > 0) {
-            $stringParams = array();
-
-            foreach ($params as $key => $value) {
-                $stringParams[] = $key . '=' . $value;
-            }
-            $url .= substr($url, -1) !== '?'? '?' : '';
-            $url .= implode("&", $stringParams);
-        }
-
-        /*using CURL*/
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-        if (isset($_COOKIE['gisclient3'])) {
-            curl_setopt($curl, CURLOPT_COOKIE, 'gisclient3='.$_COOKIE['gisclient3']);
-        }
-        $data = curl_exec($curl);
-        curl_close($curl);
-
-        return $data;
-    }
-
-    protected function getLegendForTheme($theme)
-    {
-        $img = null;
-        $symbol = $theme->getSymbolName();
-        if ($symbol) {
-            $img = $this->getSymbolImage($symbol);
-        }
-        return $img;
-    }
-
-    private function getSymbolImage($symbolName)
-    {
-        return $this->getFile(INTERNAL_URL . "services/symbol.php", [
-            'table' => 'symbol',
-            'id' => $symbolName
-        ]);
     }
 }

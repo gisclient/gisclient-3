@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class Theme implements LayerLevelInterface
+class Theme extends AbstractLayerLevel
 {
     private $db;
     private $mapName;
@@ -64,7 +64,9 @@ class Theme implements LayerLevelInterface
         $stmt = $this->db->getDb()->prepare($sql);
         $stmt->execute(array($this->data['theme_id']));
         while ($layergroup_id = $stmt->fetchColumn(0)) {
-            $layerGroups[] = new LayerGroup($layergroup_id);
+            $layerGroup = new LayerGroup($layergroup_id);
+            $layerGroup->setMap($this->getMap());
+            $layerGroups[] = $layerGroup;
         }
 
         return $layerGroups;

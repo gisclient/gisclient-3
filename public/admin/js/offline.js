@@ -34,67 +34,36 @@ $(document).ready(function() {
                     for (var layerType in response.data) {
                         var html = '';
                         for (var i = 0; i < response.data[layerType].length; i++) {
-                            var theme = response.data[layerType][i];
+                            var layer = response.data[layerType][i];
                             html += '<tr>';
-                            html += '<td>' + theme.title + ' (' + theme.name + ')</td>';
-                            if (Object.keys(theme.mbtiles).length) {
-                                html += '<td id="td_' + theme.name + '">';
-                                switch (theme.mbtiles.state) {
-                                    case 'running':
-                                        html += '<a href="#" data-action="check" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                        html += '<a href="#" data-action="stop" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                        break;
+                            html += '<td>' + layer.title + ' (' + layer.name + ')</td>';
 
-                                    case 'stopped':
-                                        html += '<a href="#" data-action="clear" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                    /* fall through */
-                                    case 'to-do':
-                                        html += '<a href="#" data-action="generate" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                            var formats = ['mbtiles', 'sqlite', 'mvt'];
+                            for (var j in formats) {
+                                var format = formats[j];
+
+                                if (Object.keys(layer[format]).length) {
+                                    html += '<td id="td_' + layer.name + '">';
+                                    switch (layer[format].state) {
+                                        case 'running':
+                                            html += '<a href="#" data-action="check" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Check</a>';
+                                            html += '<a href="#" data-action="stop" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Stop</a>';
+                                            break;
+    
+                                        case 'stopped':
+                                            html += '<a href="#" data-action="clear" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Clear</a>';
+                                        /* fall through */
+                                        case 'to-do':
+                                            html += '<a href="#" data-action="generate" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Generate</a>';
+                                    }
+    
+                                    if (layer[format].progress) {
+                                        html += layer[format].progress + '%';
+                                    }
+                                    html += '</td>';
+                                } else {
+                                    html += '<td>no '+format+'</td>';
                                 }
-
-                                if (theme.mbtiles.progress) {
-                                    html += theme.mbtiles.progress + '%';
-                                }
-                                html += '</td>';
-                            } else {
-                                html += '<td>no tiles</td>';
-                            }
-                            if (Object.keys(theme.sqlite).length) {
-                                html += '<td>';
-                                switch (theme.sqlite.state) {
-                                    case 'running':
-                                        html += '<a href="#" data-action="check" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                        html += '<a href="#" data-action="stop" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                        break;
-
-                                    case 'stopped':
-                                        html += '<a href="#" data-action="clear" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                    /* fall through */
-                                    case 'to-do':
-                                        html += '<a href="#" data-action="generate" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
-                                }
-                                html += '</td>';
-                            } else {
-                                html += '<td>no sqlite</td>';
-                            }
-
-                            if (Object.keys(theme.mvt).length) {
-                                html += '<td>';
-                                switch (theme.mvt.state) {
-                                    case 'running':
-                                        html += '<a href="#" data-action="check" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                        html += '<a href="#" data-action="stop" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                        break;
-
-                                    case 'stopped':
-                                        html += '<a href="#" data-action="clear" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                    /* fall through */
-                                    case 'to-do':
-                                        html += '<a href="#" data-action="generate" data-target="mvt" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
-                                }
-                                html += '</td>';
-                            } else {
-                                html += '<td>no mvt</td>';
                             }
                             html += '</tr>';
                         }
@@ -122,7 +91,8 @@ $(document).ready(function() {
                         var map = $(this).attr('data-map');
                         var params = {
                             target: $(this).attr('data-target'),
-                            theme: $(this).attr('data-theme')
+                            layertype: $(this).attr('data-layertype'),
+                            layer: $(this).attr('data-layer')
                         };
                         $.ajax({
                             url: '../services/offline/'+project+'/'+map+'/clear.json',
@@ -145,7 +115,8 @@ $(document).ready(function() {
                         var map = $(this).attr('data-map');
                         var params = {
                             target: $(this).attr('data-target'),
-                            theme: $(this).attr('data-theme')
+                            layertype: $(this).attr('data-layertype'),
+                            layer: $(this).attr('data-layer')
                         };
                         $.ajax({
                             url: '../services/offline/'+project+'/'+map+'/stop.json',
@@ -168,7 +139,8 @@ $(document).ready(function() {
                         var map = $(this).attr('data-map');
                         var params = {
                             target: $(this).attr('data-target'),
-                            theme: $(this).attr('data-theme')
+                            layertype: $(this).attr('data-layertype'),
+                            layer: $(this).attr('data-layer')
                         };
                         $.ajax({
                             url: '../services/offline/'+project+'/'+map+'/start.json',

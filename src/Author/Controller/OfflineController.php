@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
 use GisClient\Author\OfflineMap;
 
@@ -48,6 +49,23 @@ class OfflineController implements ContainerAwareInterface
 
         return new JsonResponse($result);
     }
+
+    private function getLayer(LayerLevelInterface $layer, $layerType, $layerName)
+    {
+        $category = strtolower(substr(strrchr(get_class($layer), '\\'), 1));
+        if ($layerType === $category && $layer->getName() === $layerName) {
+            return $layer;
+        }
+
+        $children = $layer->getChildren();
+        foreach ($children as $layer) {
+            if (($result = $this->getLayer($layer, $layerType, $layerName)) !== null) {
+                return $result;
+            }
+        }
+
+        return null;
+    }
     
     /**
      * Start generation of offline data for theme
@@ -65,17 +83,9 @@ class OfflineController implements ContainerAwareInterface
             'result' => 'ok'
         ];
 
-        $themeName = $request->query->get('theme');
         $target = $request->query->get('target');
-
-        $layers = [];
-        foreach ($mapObj->getThemes() as $theme) {
-            if ($theme->getName() === $themeName) {
-                $layers[] = $theme;
-            }
-        }
-
-        $this->offlineMap->start($mapObj, $layers, $target);
+        $layer = $this->getLayer($mapObj, $request->query->get('layertype'), $request->query->get('layer'));
+        $this->offlineMap->start($layer, $target);
 
         return new JsonResponse($result);
     }
@@ -96,17 +106,9 @@ class OfflineController implements ContainerAwareInterface
             'result' => 'ok'
         ];
 
-        $themeName = $request->query->get('theme');
         $target = $request->query->get('target');
-
-        $layers = [];
-        foreach ($mapObj->getThemes() as $theme) {
-            if ($theme->getName() === $themeName) {
-                $layers[] = $theme;
-            }
-        }
-
-        $this->offlineMap->stop($mapObj, $layers, $target);
+        $layer = $this->getLayer($mapObj, $request->query->get('layertype'), $request->query->get('layer'));
+        $this->offlineMap->stop($layer, $target);
 
         return new JsonResponse($result);
     }
@@ -127,17 +129,9 @@ class OfflineController implements ContainerAwareInterface
             'result' => 'ok'
         ];
 
-        $themeName = $request->query->get('theme');
         $target = $request->query->get('target');
-
-        $layers = [];
-        foreach ($mapObj->getThemes() as $theme) {
-            if ($theme->getName() === $themeName) {
-                $layers[] = $theme;
-            }
-        }
-
-        $this->offlineMap->clear($mapObj, $layers, $target);
+        $layer = $this->getLayer($mapObj, $request->query->get('layertype'), $request->query->get('layer'));
+        $this->offlineMap->clear($layer, $target);
 
         return new JsonResponse($result);
     }

@@ -2,7 +2,6 @@
 
 namespace GisClient\Author\Offline;
 
-use GisClient\Author\Map;
 use GisClient\Author\LayerLevelInterface;
 
 interface OfflineDataInterface
@@ -25,7 +24,7 @@ interface OfflineDataInterface
      *
      * @return string
      */
-    public function getCommand(Map $map, LayerLevelInterface $layer);
+    public function getCommand(LayerLevelInterface $layer);
 
     /**
      * Check if theme supports this offline format
@@ -39,63 +38,56 @@ interface OfflineDataInterface
      * Check if offline data already exists for the theme
      *  could be different foreach map, because of the extent
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return string
      */
-    public function exists(Map $map, LayerLevelInterface $layer);
+    public function exists(LayerLevelInterface $layer);
 
     /**
      * Start generation of offline data
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return void
      */
-    public function start(Map $map, LayerLevelInterface $layer);
+    public function start(LayerLevelInterface $layer);
 
     /**
      * Stop generation of offline data
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return void
      */
-    public function stop(Map $map, LayerLevelInterface $layer);
+    public function stop(LayerLevelInterface $layer);
 
     /**
      * Delete offline data
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return void
      */
-    public function clear(Map $map, LayerLevelInterface $layer);
+    public function clear(LayerLevelInterface $layer);
 
     /**
      * Get current state of offline data
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return string
      */
-    public function getState(Map $map, LayerLevelInterface $layer);
+    public function getState(LayerLevelInterface $layer);
 
     /**
      * Get current progress of offline data generation
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return int|null
      */
-    public function getProgress(Map $map, LayerLevelInterface $layer);
+    public function getProgress(LayerLevelInterface $layer);
 
     /**
      * Get list of offline files
      *
-     * @param Map $map
      * @param LayerLevelInterface $layer
      * @return string[]
      */
-    public function getOfflineFiles(Map $map, LayerLevelInterface $layer);
+    public function getOfflineFiles(LayerLevelInterface $layer);
 }

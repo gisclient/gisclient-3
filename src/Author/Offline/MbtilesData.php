@@ -2,7 +2,6 @@
 
 namespace GisClient\Author\Offline;
 
-use GisClient\Author\Map;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Theme;
 use GisClient\MapProxy\Seed\Process as SeedProcess;
@@ -39,11 +38,11 @@ class MbtilesData extends AbstractOfflineData
         return ($layer instanceof Theme);
     }
 
-    protected function getOfflineDataFile($mapName, LayerLevelInterface $layer)
+    protected function getOfflineDataFile(LayerLevelInterface $layer)
     {
         $offlineDataFile = $this->getOfflineDataPath()
-            . $mapName . '/'
-            . sprintf('%s_%s.mbtiles', $mapName, $layer->getName());
+            . $layer->getMap()->getProject() . '/'
+            . sprintf('%s_%s.mbtiles', $layer->getMap()->getName(), $layer->getName());
 
         return $offlineDataFile;
     }
@@ -53,16 +52,16 @@ class MbtilesData extends AbstractOfflineData
         return new SeedProcess($this->binPath);
     }
 
-    protected function getTask(Map $map, LayerLevelInterface $layer)
+    protected function getTask(LayerLevelInterface $layer)
     {
-        return new SeedTask($map, $this->mapPath, $this->getOfflineDataFile($map->getName(), $layer), $this->logDir);
+        return new SeedTask($layer->getMap(), $this->mapPath, $this->getOfflineDataFile($layer), $this->logDir);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProgress(Map $map, LayerLevelInterface $layer)
+    public function getProgress(LayerLevelInterface $layer)
     {
-        return $this->getTask($map, $layer)->getProgress();
+        return $this->getTask($layer)->getProgress();
     }
 }

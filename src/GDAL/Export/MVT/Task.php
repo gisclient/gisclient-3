@@ -159,8 +159,14 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function cleanup()
     {
-        unlink($this->logFile);
-        unlink($this->errFile);
-        unlink($this->getFilePath());
+        if (file_exists($this->logFile)) {
+            unlink($this->logFile);
+        }
+        if (file_exists($this->errFile)) {
+            unlink($this->errFile);
+        }
+        if (file_exists($this->getFilePath())) {
+            unlink($this->getFilePath());
+        }
     }
 }
