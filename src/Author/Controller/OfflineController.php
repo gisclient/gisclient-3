@@ -147,14 +147,20 @@ class OfflineController implements ContainerAwareInterface
      * @param string $map
      * @return JsonResponse
      */
-    public function downloadAction($project, $map, $format)
+    public function downloadAction($project, $map, $format, Request $request)
     {
         $fs = new Filesystem();
         $mapObj = $this->getMap($project, $map);
 
         $zipFile = $fs->tempnam($this->tmpDir, 'offline_zip');
 
-        $this->offlineMap->createZip($mapObj, $zipFile);
+        $formats = [
+            'mbtiles' => $request->query->get('mbtiles', 1) == 1,
+            'mvt' => $request->query->get('mvt', 1) == 1,
+            'sqlite' => $request->query->get('sqlite', 1) == 1,
+        ];
+
+        $this->offlineMap->createZip($mapObj, $zipFile, $formats);
 
         if ($format === 'json') {
             $result = [
