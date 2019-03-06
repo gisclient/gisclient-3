@@ -97,7 +97,7 @@ class MapData implements OfflineDataInterface
         $fs = new Filesystem();
         $objMapset = new GCMap($layer->getName(), true);
         $mapConfig = $fs->tempnam($this->tmpDir, sprintf('offline_%s', $this->getName()));
-        $fs->dumpFile($mapConfig, $objMapset->mapConfig);
+        $fs->dumpFile($mapConfig, json_encode($objMapset->mapConfig));
         return [
             ['file' => $mapConfig, 'filename' => 'config.json'],
         ];
