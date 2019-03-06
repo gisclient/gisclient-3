@@ -135,6 +135,7 @@ class OfflineMap
 
             // check the format has to be processed
             if (in_array($format, $formats)
+                && $formats[$format] === true
                 && $offlineDataFormat->supports($layer)
             ) {
                 // TODO: check if status is not running??
