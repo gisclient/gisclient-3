@@ -4,6 +4,7 @@ namespace GisClient\Author\Controller;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,9 +22,12 @@ class OfflineController implements ContainerAwareInterface
      */
     private $offlineMap;
 
+    private $tmpDir;
+
     public function setContainer(ContainerInterface $container = null)
     {
         $this->offlineMap = $container->get(OfflineMap::class);
+        $this->tmpDir = $container->getParameter('tmp_dir');
     }
 
     private function getMap($project, $map)
@@ -145,9 +149,10 @@ class OfflineController implements ContainerAwareInterface
      */
     public function downloadAction($project, $map, $format)
     {
+        $fs = new Filesystem();
         $mapObj = $this->getMap($project, $map);
 
-        $zipFile = ROOT_PATH . 'var/' . $map . '.zip';
+        $zipFile = $fs->tempnam($this->tmpDir, 'offline_zip');
 
         $this->offlineMap->createZip($mapObj, $zipFile);
 
@@ -161,7 +166,8 @@ class OfflineController implements ContainerAwareInterface
         }
 
         $response = new BinaryFileResponse($zipFile);
-        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, basename($zipFile));
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $map . '.zip');
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
