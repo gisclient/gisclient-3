@@ -2,19 +2,19 @@
 
 namespace GisClient\Author\Offline;
 
-use GisClient\Author\LayerGroup;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
 use GisClient\Author\Utils\GCMap;
+use GisClient\Author\Utils\TemporaryFileService;
 use Symfony\Component\Filesystem\Filesystem;
 
 class MapData implements OfflineDataInterface
 {
-    private $tmpDir;
+    private $tmpService;
 
-    public function __construct($tmpDir)
+    public function __construct(TemporaryFileService $tmpService)
     {
-        $this->tmpDir = $tmpDir;
+        $this->tmpService = $tmpService;
     }
 
     /**
@@ -96,7 +96,7 @@ class MapData implements OfflineDataInterface
     {
         $fs = new Filesystem();
         $objMapset = new GCMap($layer->getName(), true);
-        $mapConfig = $fs->tempnam($this->tmpDir, sprintf('offline_%s', $this->getName()));
+        $mapConfig = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
         $fs->dumpFile($mapConfig, json_encode($objMapset->mapConfig));
         return [
             ['file' => $mapConfig, 'filename' => 'config.json'],

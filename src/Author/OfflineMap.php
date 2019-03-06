@@ -2,8 +2,12 @@
 
 namespace GisClient\Author;
 
+use GisClient\Author\Utils\TemporaryFileService;
+
 class OfflineMap
 {
+    private $tmpService;
+
     /**
      * List of available offline data formats
      *
@@ -16,8 +20,11 @@ class OfflineMap
      *
      * @param Offline\OfflineDataInterface[] $offlineDataFormats
      */
-    public function __construct(\Traversable $offlineDataFormats)
-    {
+    public function __construct(
+        TemporaryFileService $tmpService,
+        \Traversable $offlineDataFormats
+    ) {
+        $this->tmpService = $tmpService;
         $this->offlineDataFormats = $offlineDataFormats;
     }
 
@@ -184,5 +191,7 @@ class OfflineMap
         }
 
         $zip->close();
+
+        $this->tmpService->cleanup();
     }
 }

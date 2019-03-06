@@ -5,15 +5,16 @@ namespace GisClient\Author\Offline;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
 use GisClient\Author\Utils\SavedFilterHandler;
+use GisClient\Author\Utils\TemporaryFileService;
 use Symfony\Component\Filesystem\Filesystem;
 
 class SavedFilterData implements OfflineDataInterface
 {
-    private $tmpDir;
+    private $tmpService;
 
-    public function __construct($tmpDir)
+    public function __construct(TemporaryFileService $tmpService)
     {
-        $this->tmpDir = $tmpDir;
+        $this->tmpService = $tmpService;
     }
 
     /**
@@ -96,7 +97,7 @@ class SavedFilterData implements OfflineDataInterface
         $fs = new Filesystem();
         $handler = new SavedFilterHandler();
         $filters = $handler->getList($layer->getName());
-        $savedFilter = $fs->tempnam($this->tmpDir, sprintf('offline_%s', $this->getName()));
+        $savedFilter = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
         $fs->dumpFile($savedFilter, json_encode($filters));
 
         return [

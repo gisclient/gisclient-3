@@ -5,15 +5,16 @@ namespace GisClient\Author\Offline;
 use GisClient\Author\Layer;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Utils\LookupUtils;
+use GisClient\Author\Utils\TemporaryFileService;
 use Symfony\Component\Filesystem\Filesystem;
 
 class LookupData implements OfflineDataInterface
 {
-    private $tmpDir;
+    private $tmpService;
 
-    public function __construct($tmpDir)
+    public function __construct(TemporaryFileService $tmpService)
     {
-        $this->tmpDir = $tmpDir;
+        $this->tmpService = $tmpService;
     }
 
     /**
@@ -104,7 +105,7 @@ class LookupData implements OfflineDataInterface
             $lookupName = $field->getLookupName();
             if ($catalogId && $lookupTable && $lookupId && $lookupName) {
                 $json = json_encode($utils->getList($catalogId, $lookupTable, $lookupId, $lookupName));
-                $lookupFile = $fs->tempnam($this->tmpDir, sprintf('offline_%s', $this->getName()));
+                $lookupFile = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
                 $fs->dumpFile($lookupFile, $json);
                 $files[] = [
                     'file' => $lookupFile,

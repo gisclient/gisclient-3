@@ -5,15 +5,16 @@ namespace GisClient\Author\Offline;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Theme;
 use GisClient\Author\Utils\SymbolCreator;
+use GisClient\Author\Utils\TemporaryFileService;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ThemeLegendData implements OfflineDataInterface
 {
-    private $tmpDir;
+    private $tmpService;
 
-    public function __construct($tmpDir)
+    public function __construct(TemporaryFileService $tmpService)
     {
-        $this->tmpDir = $tmpDir;
+        $this->tmpService = $tmpService;
     }
 
     /**
@@ -95,7 +96,7 @@ class ThemeLegendData implements OfflineDataInterface
     {
         $fs = new Filesystem();
         $symbolCreator = new SymbolCreator();
-        $themeLegend = $fs->tempnam($this->tmpDir, sprintf('offline_%s', $this->getName()));
+        $themeLegend = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
         $fs->dumpFile($themeLegend, $symbolCreator->createSymbol('symbol', $layer->getSymbolName()));
 
         return [
