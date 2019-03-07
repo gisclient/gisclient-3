@@ -10,5 +10,5 @@ security:
             path: '^\/(autocomplete.php|download.php|gcmap.php|gcmapconfig.php|login).*'
             authenticated: false
         -
-            path: '^/'
+            path: ^/
             authenticated: true
