@@ -1,12 +1,14 @@
 # add custom guard to secure some services in public/services/...
 security:
-    
     firewalls:
         default:
             pattern: ^/
             guard: GisClient\Author\Security\Guard\UsernamePasswordAuthenticator
             provider: GisClient\Author\Security\User\UserProvider
-
     access_control:
-        - { path: ^\/(autocomplete.php|download.php|gcmap.php|gcmapconfig.php|login).*, authenticated: false }
-        - { path: ^/, authenticated: true }
+        -
+            path: '^\/(autocomplete.php|download.php|gcmap.php|gcmapconfig.php|login).*'
+            authenticated: false
+        -
+            path: '^/'
+            authenticated: true
