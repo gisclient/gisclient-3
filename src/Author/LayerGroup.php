@@ -19,6 +19,12 @@ class LayerGroup extends AbstractLayerLevel
     const XYZ_LAYER_TYPE = 9;
     const WFS_LAYER_TYPE = 10;
 
+    const PNG24_FORMAT = 1;
+    const PNG8_FORMAT = 7;
+    const PNG_FORMAT = 9;
+    const JPEG_FORMAT = 3;
+    const GEOJSON_FORMAT = 10;
+
     public function __construct($id = null)
     {
         if ($id) {
@@ -52,6 +58,11 @@ class LayerGroup extends AbstractLayerLevel
     public function getType()
     {
         return $this->get('owstype_id');
+    }
+
+    public function getFormat()
+    {
+        return $this->get('outputformat_id');
     }
 
     /**

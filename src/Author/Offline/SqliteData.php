@@ -35,7 +35,10 @@ class SqliteData extends AbstractOfflineData
             return false;
         }
         $layerGroup = $layer->getLayerGroup();
-        return $layerGroup->getType() === LayerGroup::WFS_LAYER_TYPE;
+        $format = $layerGroup->getFormat();
+        $type = $layerGroup->getType();
+        return $format === LayerGroup::GEOJSON_FORMAT
+            && $type === LayerGroup::WFS_LAYER_TYPE;
     }
 
     protected function getOfflineDataFile(LayerLevelInterface $layer)
