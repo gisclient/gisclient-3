@@ -116,8 +116,8 @@ deleteSavedFilter:
         - DELETE
     requirements:
         id: \d+
-offlineGetTile:
-    path: 'offline/{project}/{map}/{layer}/{z}/{x}/{y}.{format}'
+mvtGetTile:
+    path: 'mvt/{project}/{map}/{layer}/{z}/{x}/{y}.{format}'
     defaults:
         _controller: 'GisClient\Author\Controller\MvtController::getTileAction'
     methods:
