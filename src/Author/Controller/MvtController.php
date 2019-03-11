@@ -58,9 +58,9 @@ class MvtController
         $stmtMvt = $db->prepare($sqlMvt);
         $stmtMvt->bindColumn('mvt', $data);
         $stmtMvt->execute();
-        // if ($data === false) {
-        //     throw new NotFoundHttpException('Not Found');
-        // }
+        if (!$stmtMvt->fetch()) {
+            throw new \Exception("Could not load data from db");
+        }
 
         // echo $sqlMvt;
         // var_dump($data1);
