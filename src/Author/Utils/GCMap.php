@@ -836,6 +836,26 @@ class GCMap
                         $layerOptions["owsurl"] = $ows_url . "?PROJECT=" . $this->projectName . "&MAP=" . $mapsetName;
                     }
 
+                    $aLayer["nodes"] = array();
+
+                    foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
+                        array_push($aLayer["parameters"]["layers"], $userLayer["name"]);
+                        $arr = array("layer" => $userLayer["name"], "title" => $userLayer["title"]);
+                        if ($userLayer["minScale"]) {
+                            $arr["minScale"] = floatval($userLayer["minScale"]);
+                        }
+                        if ($userLayer["maxScale"]) {
+                            $arr["maxScale"] = floatval(+$userLayer["maxScale"]);
+                        }
+                        array_push($aLayer["nodes"], $arr);
+                        if ($userLayer["hidden"] == 0) {
+                            $hidden = false;
+                        }
+                    }
+                    if ($hidden) {
+                        $aLayer["options"]["displayInLayerSwitcher"] = false;
+                    }
+
                     //BOH TODO VERIFICARE PERCHÉ
                     if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                         $layerOptions["zoomOffset"] = $this->levelOffset - 1;
