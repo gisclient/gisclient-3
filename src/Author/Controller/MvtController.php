@@ -11,12 +11,30 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
+use GisClient\Author\Db;
 
 class MvtController
 {
     private function getMap($project, $map)
     {
         return new Map($project, $map);
+    }
+
+    private function getLayer(LayerLevelInterface $layer, $layerType, $layerName)
+    {
+        $category = strtolower(substr(strrchr(get_class($layer), '\\'), 1));
+        if ($layerType === $category && $layer->getName() === $layerName) {
+            return $layer;
+        }
+
+        $children = $layer->getChildren();
+        foreach ($children as $layer) {
+            if (($result = $this->getLayer($layer, $layerType, $layerName)) !== null) {
+                return $result;
+            }
+        }
+
+        return null;
     }
     
     /**
@@ -33,7 +51,19 @@ class MvtController
     public function getTileAction($project, $map, $layer, $z, $x, $y)
     {
         $mapObj = $this->getMap($project, $map);
-        $db = \GCApp::getDB();
+
+        list($themeName, $layerName) = explode('.', $layer);
+        $layer = $this->getLayer($mapObj, 'layer', $layerName);
+
+        $dbObj = new Db($layer->getCatalog());
+        $dbParams = $dbObj->getParams();
+        $db = $dbObj->getDB();
+
+        $fields = $layer->getFields();
+        $fieldsText = '';
+        foreach ($fields as $field) {
+            $fieldsText .= $field->getName() . ',';
+        }
 
         $sqlBox = "SELECT "
             . "     -params.max1 + (x * params.res) as minx,"
@@ -48,24 +78,20 @@ class MvtController
         $stmtBox->execute();
         $data1 = $stmtBox->fetch(\PDO::FETCH_ASSOC);
         
-        $sqlMvt = "SELECT ST_AsMVT(q, 'internal-layer-name', 4096, 'geom') as mvt"
+        $sqlMvt = "SELECT ST_AsMVT(q, '{$layer->getName()}', 4096, 'geom') as mvt"
             . " FROM ("
-            . "     SELECT gid,"
-            . "         ST_AsMVTGeom(ST_Transform(the_geom,3857), ST_MakeEnvelope({$data1['minx']}, {$data1['miny']}, {$data1['maxx']}, {$data1['maxy']},3857), 4096, 256, true) geom"
-            . "     FROM r3gis.un_vol c"
-            . "      "
+            . "     SELECT {$fieldsText} ST_AsMVTGeom(geom3857, bbox, 4096, 256, true) as geom"
+            . "     FROM ( "
+            . "         SELECT *, ST_Transform({$layer->getGeomColumn()}, 3857) as geom3857, ST_MakeEnvelope({$data1['minx']}, {$data1['miny']}, {$data1['maxx']}, {$data1['maxy']}, 3857) as bbox"
+            . "         FROM {$dbParams['schema']}.{$layer->getTable()} ) c"
+            . "     WHERE ST_Intersects(geom3857, bbox)"
             . " ) q";
-        $stmtMvt = $db->prepare($sqlMvt);
-        $stmtMvt->bindColumn('mvt', $data);
-        $stmtMvt->execute();
-        if (!$stmtMvt->fetch()) {
-            throw new \Exception("Could not load data from db");
-        }
-
-        // echo $sqlMvt;
-        // var_dump($data1);
-
-        // var_dump($data);die;
+            $stmtMvt = $db->prepare($sqlMvt);
+            $stmtMvt->bindColumn('mvt', $data);
+            $stmtMvt->execute();
+            if (!$stmtMvt->fetch()) {
+                throw new \Exception("Could not load data from db");
+            }
         
         $response = new Response();
         $response->setContent($data);
