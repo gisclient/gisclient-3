@@ -104,7 +104,10 @@ class LookupData implements OfflineDataInterface
             $lookupId = $field->getLookupId();
             $lookupName = $field->getLookupName();
             if ($catalogId && $lookupTable && $lookupId && $lookupName) {
-                $json = json_encode($utils->getList($catalogId, $lookupTable, $lookupId, $lookupName));
+                $json = json_encode([
+                    'result' => 'ok',
+                    'data' => $utils->getList($catalogId, $lookupTable, $lookupId, $lookupName),
+                ]);
                 $lookupFile = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
                 $fs->dumpFile($lookupFile, $json);
                 $files[] = [

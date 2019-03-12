@@ -96,7 +96,14 @@ class SavedFilterData implements OfflineDataInterface
     {
         $fs = new Filesystem();
         $handler = new SavedFilterHandler();
-        $filters = $handler->getList($layer->getName());
+        $rows = $handler->getList($layer->getName());
+        $filters = [
+            'status' => 'ok',
+            'data' => [
+                'rows' => $rows,
+                'total' => count($rows)
+            ]
+        ];
         $savedFilter = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
         $fs->dumpFile($savedFilter, json_encode($filters));
 
