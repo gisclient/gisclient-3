@@ -15,7 +15,11 @@ class Driver extends AbstractDriver
     {
         return [
             '-dsco',
-            'MAXZOOM=19',
+            'MINZOOM=13',
+            '-dsco',
+            'MAXZOOM=15',
+            '-dsco',
+            'SIMPLIFICATION_MAX_ZOOM=0',
         ];
     }
 }
