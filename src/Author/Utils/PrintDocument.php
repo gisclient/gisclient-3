@@ -131,9 +131,6 @@ class PrintDocument
         if (!is_dir($this->options['TMP_PATH']) || !is_writeable($this->options['TMP_PATH'])) {
             throw new \RuntimeException('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
         }
-        if (substr($this->options['TMP_URL'], -1) != '/') {
-            $this->options['TMP_URL'] .= '/';
-        }
         
         if (defined('GC_PRINT_IMAGE_SIZE_INI') && file_exists(GC_PRINT_IMAGE_SIZE_INI)) {
             $this->dimensions = parse_ini_file(GC_PRINT_IMAGE_SIZE_INI, true);
@@ -239,10 +236,8 @@ class PrintDocument
             'prefix'=>'GCPrintMap-',
             'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'
         ));
-        $pdfFile = str_replace($this->options['TMP_PATH'], $this->options['TMP_URL'], $pdfFile);
-
         $this->deleteOldTmpFiles();
-        return $pdfFile;
+        return $this->options['TMP_URL'].'?filename='.basename($pdfFile);
     }
 
     public function getDimensions()
@@ -404,7 +399,7 @@ class PrintDocument
                     imagepng($dest, $this->options['TMP_PATH'].$filename);
                     array_push($groupArray['layers'], array(
                         'title' => $layer['title'],
-                        'img' => $this->options['TMP_URL'].$filename
+                        'img' => $this->options['TMP_URL'].'?filename='.$filename
                     ));
                 }
                 array_push($themeArray['groups'], $groupArray);
@@ -507,7 +502,7 @@ class PrintDocument
         $dom_height->appendChild(new \DOMText($this->documentSize['h']));
 
         $dom_img = $dom_map->appendChild(new \DOMElement('map-img'));
-        $mapImgUrl = $this->options['TMP_URL'].$this->imageFileName;
+        $mapImgUrl = $this->options['TMP_URL'].'?filename='.$this->imageFileName;
         if ($absoluteUrls) {
             $mapImgUrl = self::addPrefixToRelativeUrl($mapImgUrl);
         }
