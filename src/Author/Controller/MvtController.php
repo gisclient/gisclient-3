@@ -65,33 +65,46 @@ class MvtController
             $fieldsText .= $field->getName() . ',';
         }
 
-        $sqlBox = "SELECT "
-            . "     -params.max1 + (x * params.res) as minx,"
-            . "     params.max1 - (y * params.res) as miny,"
-            . "     -params.max1 + (x * params.res) + params.res as maxx,"
-            . "     params.max1 - (y *  params.res) - params.res as maxy"
-            . " FROM (SELECT q.z, q.x, q.y, q.max1, q.max1 * 2 / 2^z as res"
-            . "     FROM (SELECT $z as z, $x as x, $y as y, 6378137 * pi() as max1) as q"
-            . " ) as params;";
+        $sqlMvt = "
+            WITH extent AS (
+                WITH tile AS (
+                    SELECT {$z} as z, {$x} as x, {$y} as y, 6378137 * pi() as max1
+                ), tile_res AS (
+                    SELECT
+                        tile.z, tile.x, tile.y, tile.max1, tile.max1 * 2 / 2^z as res
+                    FROM tile
+                ), box_coordinates AS (
+                    SELECT
+                        -max1 + (x * res) as minx,
+                        max1 - (y * res) as miny,
+                        -max1 + (x * res) + res as maxx,
+                        max1 - (y *  res) - res as maxy
+                    FROM tile_res
+                )
+                SELECT ST_MakeEnvelope(minx, miny, maxx, maxy, 3857) as bbox
+                FROM box_coordinates
+            ), data_source AS (
+                SELECT
+                    {$fieldsText}
+                    ST_Transform({$layer->getGeomColumn()}, 3857) as geom3857
+                FROM {$dbParams['schema']}.{$layer->getTable()}
+            ), mvt_data_set AS (
+                SELECT
+                    {$fieldsText}
+                    ST_AsMVTGeom(geom3857, bbox, 4096, 256, true) as geom
+                FROM data_source, extent
+                WHERE ST_Intersects(geom3857, bbox)
+            )
+            SELECT ST_AsMVT(mvt_data_set, '{$layer->getName()}', 4096, 'geom') as mvt
+            FROM mvt_data_set
+        ";
 
-        $stmtBox = $db->prepare($sqlBox);
-        $stmtBox->execute();
-        $data1 = $stmtBox->fetch(\PDO::FETCH_ASSOC);
-        
-        $sqlMvt = "SELECT ST_AsMVT(q, '{$layer->getName()}', 4096, 'geom') as mvt"
-            . " FROM ("
-            . "     SELECT {$fieldsText} ST_AsMVTGeom(geom3857, bbox, 4096, 256, true) as geom"
-            . "     FROM ( "
-            . "         SELECT *, ST_Transform({$layer->getGeomColumn()}, 3857) as geom3857, ST_MakeEnvelope({$data1['minx']}, {$data1['miny']}, {$data1['maxx']}, {$data1['maxy']}, 3857) as bbox"
-            . "         FROM {$dbParams['schema']}.{$layer->getTable()} ) c"
-            . "     WHERE ST_Intersects(geom3857, bbox)"
-            . " ) q";
             $stmtMvt = $db->prepare($sqlMvt);
             $stmtMvt->bindColumn('mvt', $data);
             $stmtMvt->execute();
-            if (!$stmtMvt->fetch()) {
-                throw new \Exception("Could not load data from db");
-            }
+        if (!$stmtMvt->fetch()) {
+            throw new \Exception("Could not load data from db");
+        }
         
         $response = new Response();
         $response->setContent($data);
