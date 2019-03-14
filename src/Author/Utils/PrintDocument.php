@@ -502,10 +502,7 @@ class PrintDocument
         $dom_height->appendChild(new \DOMText($this->documentSize['h']));
 
         $dom_img = $dom_map->appendChild(new \DOMElement('map-img'));
-        $mapImgUrl = $this->options['TMP_URL'].'?filename='.$this->imageFileName;
-        if ($absoluteUrls) {
-            $mapImgUrl = self::addPrefixToRelativeUrl($mapImgUrl);
-        }
+        $mapImgUrl = $this->options['TMP_PATH'].$this->imageFileName;
         $dom_img->appendChild(new \DOMText($mapImgUrl));
 
         if (isset($this->documentElements['map-date'])) {
