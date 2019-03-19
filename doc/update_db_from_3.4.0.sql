@@ -1304,5 +1304,14 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         v_author_version = '3.5.4';
         INSERT INTO version (version_name,version_key, version_date) values ('3.5.4', 'author', '2019-08-01');
     END IF;
+    
+    IF v_author_version = '3.5.4' THEN
+    
+    INSERT INTO e_language (language_id,language_name,language_order) VALUES ('he','יהודי (Jewish)',10);
+
+         --version
+        v_author_version = '3.5.5';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.5', 'author', '2019-03-19');
+    END IF;
 
 END$$
