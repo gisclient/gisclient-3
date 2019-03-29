@@ -58,6 +58,26 @@ class Map implements LayerLevelInterface
     }
 
     /**
+     * Return srid of the map
+     *
+     * @return integer
+     */
+    public function getSrid()
+    {
+        return $this->get('mapset_srid');
+    }
+
+    /**
+     * Return extent of the map
+     *
+     * @return array
+     */
+    public function getExtent()
+    {
+        return explode(' ', $this->get('mapset_extent'));
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getChildren()

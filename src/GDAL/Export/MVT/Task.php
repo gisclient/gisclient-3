@@ -131,6 +131,18 @@ class Task implements \GisClient\GDAL\Export\Task
             $filter = 'true';
         }
 
+        // apply filter on current extent
+        $extent = $this->layer->getMap()->getExtent();
+        $filter .= sprintf(
+            " AND ST_Intersects(%s, ST_MakeEnvelope(%d, %d, %d, %d, %d))",
+            $this->layer->getGeomColumn(),
+            $extent[0],
+            $extent[1],
+            $extent[2],
+            $extent[3],
+            $this->layer->getMap()->getSrid()
+        );
+
         $name = $this->layer->getName();
         
         $sqlTpl = 'SELECT %s FROM %s WHERE %s';
