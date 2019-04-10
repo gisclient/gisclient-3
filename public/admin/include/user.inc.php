@@ -1,4 +1,5 @@
 <?php
+use GisClient\Author\Security\User\UserProvider;
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
@@ -12,7 +13,8 @@ if(!empty($username)) {
     if(!isset($data) || !is_array($data)) {
         $data = array();
     }
-    $user = GCApp::getUserProvider()->loadUserByUsername($username);
+    $userProvider = new UserProvider(\GCApp::getDB());
+    $user = $userProvider->loadUserByUsername($username);
     array_push($data, array(
         'username' => $user->getUsername(),
         'nome' => $user->getNome(),
