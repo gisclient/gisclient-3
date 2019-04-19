@@ -420,7 +420,7 @@ class GCAuthor {
                     $groupByFieldList[] = $aField['field_name'];
                 } else {
                     $fieldName = $aliasTable . "." . $aField["field_name"];
-                    $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
+                    $groupByFieldList[] = $aField['field_name'];
                 }
 
                 $fieldList[] = $fieldName;
@@ -469,9 +469,9 @@ class GCAuthor {
         }
 		$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid, '.$geomField.' as gc_geom';
         if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
-        $datalayerTable .= ' FROM '.$joinString;
+        $datalayerTable = 'SELECT * FROM (' . $datalayerTable . ' FROM '.$joinString . ') as LAYER_Q';
 		if (!empty($datalayerFilter)) $datalayerTable .= ' WHERE ' . $datalayerFilter;
-        if(!empty($groupByFieldList)) $datalayerTable .= ' group by '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.', '.DATALAYER_ALIAS_TABLE.'.'.$datalayerGeom.', '. implode(', ', $groupByFieldList);
+        if(!empty($groupByFieldList)) $datalayerTable .= ' GROUP BY gc_objid, gc_geom, ' . implode(', ', $groupByFieldList);
 		print_debug($datalayerTable,null,'datalayer');
 		return $datalayerTable;
 
