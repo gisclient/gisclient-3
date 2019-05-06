@@ -93,7 +93,7 @@ class LayerAuthorizationChecker
         }
         
         $layerAuthorizations = array();
-        $sql = '
+        $sql = "
             SELECT
                 theme.project_name, theme_name, layergroup_name, layergroup_single,
                 layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title,
@@ -102,27 +102,29 @@ class LayerAuthorizationChecker
                 case when coalesce(layer.private,1) = 1 then wfs else 1 end as wfs,
                 case when coalesce(layer.private,1) = 1 then wfst else 1 end as wfst,
                 layer_order
-            FROM '.DB_SCHEMA.'.theme
-            INNER JOIN  '.DB_SCHEMA.'.layergroup USING (theme_id)
-            INNER JOIN '.DB_SCHEMA.'.mapset_layergroup USING (layergroup_id)
+            FROM ".DB_SCHEMA.".theme
+            INNER JOIN  ".DB_SCHEMA.".layergroup USING (theme_id)
+            INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING (layergroup_id)
             INNER JOIN (
                 SELECT *
-                FROM '.DB_SCHEMA.'.mapset
-                LEFT JOIN '.DB_SCHEMA.'.mapset_groups USING (mapset_name)
-                WHERE ' .
+                FROM ".DB_SCHEMA.".mapset
+                LEFT JOIN ".DB_SCHEMA.".mapset_groups USING (mapset_name)
+                WHERE " .
                     $authClause
-                . ') AS mapset USING (mapset_name)
+                . ") AS mapset USING (mapset_name)
             INNER JOIN (
                 SELECT
                     layer.layer_id, layergroup_id, layer.layer_name, layer_title,
                     layer.maxscale, layer.minscale, layer.hidden, layer.private, layer_order,
-                    wms, wfs, wfst
-                FROM '.DB_SCHEMA.'.layer
-                LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id) 
-                WHERE ' .
+                    COALESCE(wms, ".((int)$isAdmin).") AS wms,
+                    COALESCE(wfs, ".((int)$isAdmin).") AS wfs,
+                    COALESCE(wfst, ".((int)$isAdmin).") AS wfst
+                FROM ".DB_SCHEMA.".layer
+                LEFT JOIN ".DB_SCHEMA.".layer_groups USING (layer_id) 
+                WHERE " .
                     $authClause
-                . ') as layer USING (layergroup_id)
-            WHERE ('.$sqlFilter.') ORDER BY layer.layer_order DESC;';
+                . ") as layer USING (layergroup_id)
+            WHERE (".$sqlFilter.") ORDER BY layer.layer_order DESC;";
             
         $stmt = $this->db->prepare($sql);
         $stmt->execute($sqlValues);
