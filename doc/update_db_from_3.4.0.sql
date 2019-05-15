@@ -1314,4 +1314,261 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         INSERT INTO version (version_name,version_key, version_date) values ('3.5.5', 'author', '2019-03-19');
     END IF;
 
+    IF v_author_version = '3.5.5' THEN
+    
+        ALTER TABLE i18n_field
+          ADD UNIQUE (table_name, field_name);
+        ALTER TABLE localization
+          ADD UNIQUE (project_name, i18nf_id,pkey_id, language_id) ;
+        CREATE OR REPLACE FUNCTION upsertLocalization(
+            v_field_name character varying,
+            v_language_id character varying,
+            v_string_to_translate character varying,
+            v_translation character varying
+        ) RETURNS boolean AS
+        $BODY$
+        DECLARE
+            v_affected_rows integer;
+        BEGIN
+            IF (v_field_name = 'theme_title') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'theme'::character varying AS table_name,
+                        'theme_title'::character varying As field_name,
+                        project_name,
+                        theme_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM theme
+                    WHERE theme_title = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'copyright_string') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'theme'::character varying AS table_name,
+                        'copyright_string'::character varying As field_name,
+                        project_name,
+                        theme_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM theme
+                    WHERE copyright_string = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'layergroup_title') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'layergroup'::character varying AS table_name,
+                        'layergroup_title'::character varying As field_name,
+                        project_name,
+                        layergroup_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM layergroup
+                    INNER JOIN theme USING (theme_id)
+                    WHERE layergroup_title = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'sld') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'layergroup'::character varying AS table_name,
+                        'sld'::character varying As field_name,
+                        project_name,
+                        layergroup_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM layergroup
+                    INNER JOIN theme USING (theme_id)
+                    WHERE sld = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'layer_title') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'layer'::character varying AS table_name,
+                        'layer_title'::character varying As field_name,
+                        project_name,
+                        layer_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM layer
+                    INNER JOIN layergroup USING (layergroup_id)
+                    INNER JOIN theme USING (theme_id)
+                    WHERE layer_title = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'labelitem') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'layer'::character varying AS table_name,
+                        'labelitem'::character varying As field_name,
+                        project_name,
+                        layer_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM layer
+                    INNER JOIN layergroup USING (layergroup_id)
+                    INNER JOIN theme USING (theme_id)
+                    WHERE labelitem = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'template') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'layer'::character varying AS table_name,
+                        'template'::character varying As field_name,
+                        project_name,
+                        layer_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM layer
+                    INNER JOIN layergroup USING (layergroup_id)
+                    INNER JOIN theme USING (theme_id)
+                    WHERE template = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'class_title') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'class'::character varying AS table_name,
+                        'class_title'::character varying As field_name,
+                        project_name,
+                        class_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM class
+                    INNER JOIN layer USING (layer_id)
+                    INNER JOIN layergroup USING (layergroup_id)
+                    INNER JOIN theme USING (theme_id)
+                    WHERE class_title = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'field_header') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'field'::character varying AS table_name,
+                        'field_header'::character varying As field_name,
+                        project_name,
+                        field_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM field
+                    INNER JOIN layer USING (layer_id)
+                    INNER JOIN layergroup USING (layergroup_id)
+                    INNER JOIN theme USING (theme_id)
+                    WHERE field_header = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+            ELSIF (v_field_name = 'field_name') THEN
+                INSERT INTO localization (project_name, i18nf_id,pkey_id, language_id, value)
+                WITH export_i18n AS (
+                    SELECT
+                        'field'::character varying AS table_name,
+                        'field_name'::character varying As field_name,
+                        project_name,
+                        field_id AS pkey_id,
+                        v_language_id AS language_id,
+                        v_translation AS value
+                    FROM field
+                    INNER JOIN layer USING (layer_id)
+                    INNER JOIN layergroup USING (layergroup_id)
+                    INNER JOIN theme USING (theme_id)
+                    WHERE field_name = v_string_to_translate
+                )
+                SELECT
+                    project_name, i18nf_id, pkey_id, language_id, value
+                FROM export_i18n
+                INNER JOIN i18n_field USING(table_name, field_name)
+                ON CONFLICT (project_name, i18nf_id,pkey_id, language_id) DO UPDATE SET
+                    value = excluded.value
+                ;
+          ELSE
+            RAISE EXCEPTION 'Fieldname "%" is not supported', v_field_name ; 
+          END IF;
+          
+          GET DIAGNOSTICS v_affected_rows = ROW_COUNT;
+          IF (v_affected_rows > 0) THEN
+            RETURN TRUE;
+          ELSE
+            RAISE WARNING 'Translation could not be applied for field "%" and value="%"', v_field_name, v_string_to_translate;
+            RETURN FALSE;
+          END IF;
+        END;
+        $BODY$
+
+        LANGUAGE plpgsql
+        VOLATILE
+        SECURITY DEFINER
+        ;
+
+         --version
+        v_author_version = '3.5.6';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.5.6', 'author', '2019-05-14');
+    END IF;
+
 END$$
