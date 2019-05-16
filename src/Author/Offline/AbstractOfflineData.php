@@ -51,10 +51,10 @@ abstract class AbstractOfflineData implements OfflineDataInterface
     /**
      * {@inheritdoc}
      */
-    public function start(LayerLevelInterface $layer)
+    public function start(LayerLevelInterface $layer, $runInBackground = true)
     {
         $process = $this->getProcess();
-        $process->start($this->getTask($layer));
+        $process->start($this->getTask($layer), $runInBackground);
     }
 
     /**

@@ -47,9 +47,10 @@ interface OfflineDataInterface
      * Start generation of offline data
      *
      * @param LayerLevelInterface $layer
+     * @param boolean $runInBackground
      * @return void
      */
-    public function start(LayerLevelInterface $layer);
+    public function start(LayerLevelInterface $layer, $runInBackground = true);
 
     /**
      * Stop generation of offline data

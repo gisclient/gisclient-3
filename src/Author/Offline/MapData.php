@@ -68,7 +68,7 @@ class MapData implements OfflineDataInterface
     /**
      * {@inheritdoc}
      */
-    public function start(LayerLevelInterface $layer)
+    public function start(LayerLevelInterface $layer, $runInBackground = true)
     {
         throw new \RuntimeException('Method not supported');
     }

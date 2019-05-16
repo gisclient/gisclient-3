@@ -91,11 +91,11 @@ class Process implements OfflineProcessInterface
         return false;
     }
 
-    public function start(Task $task)
+    public function start(Task $task, $runInBackground = true)
     {
         $this->check($task);
         if (!$this->isRunning($task)) {
-            $pid = shell_exec($this->getCommand($task));
+            $pid = shell_exec($this->getCommand($task, $runInBackground));
         } else {
             $pid = $this->getPID($task);
         }
