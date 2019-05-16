@@ -155,8 +155,8 @@ class OfflineController implements ContainerAwareInterface
         $zipFile = $fs->tempnam($this->tmpDir, 'offline_zip');
 
         $formats = [
-            'mbtiles' => $request->query->get('mbtiles', 1) == 1,
-            'mvt' => $request->query->get('mvt', 1) == 1,
+            'mbtiles' => $request->query->get('mbtiles', 0) == 1,
+            'mvt' => $request->query->get('mvt', 0) == 1,
             'sqlite' => $request->query->get('sqlite', 1) == 1,
         ];
 
