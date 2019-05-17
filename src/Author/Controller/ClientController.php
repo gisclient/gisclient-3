@@ -52,7 +52,13 @@ class ClientController
         if (empty($jsonformat)) {
             $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
         } else {
-            $objMapset = new R3GisGCMap($mapset, $getLegend, $languageId, $showAsPublic);
+            $objMapset = new R3GisGCMap(
+                $request->getSchemeAndHttpHost(),
+                $mapset,
+                $getLegend,
+                $languageId,
+                $showAsPublic
+            );
         }
         
         // get output

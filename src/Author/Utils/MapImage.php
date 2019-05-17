@@ -4,6 +4,8 @@ namespace GisClient\Author\Utils;
 
 class MapImage
 {
+    private $baseUrl;
+
     protected $wmsMergeUrl = 'services/gcWMSMerge.php';
 
     protected $tiles = array();
@@ -61,8 +63,9 @@ class MapImage
         ],
     );
     
-    public function __construct($tiles, array $imageSize, $srid, array $options)
+    public function __construct($baseUrl, $tiles, array $imageSize, $srid, array $options)
     {
+        $this->baseUrl = $baseUrl;
         $defaultOptions = array(
             'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale
             'extent'=>array(),
@@ -73,7 +76,7 @@ class MapImage
             'scalebar'=>true,
             'request_type'=>'get-map',
             'TMP_PATH' => ROOT_PATH.'tmp/files/',
-            'TMP_URL' => PUBLIC_URL.'services/download.php',
+            'TMP_URL' => $baseUrl.'/services/download.php',
             'dpi' => 72
         );
         $this->options = array_merge($defaultOptions, $options);
@@ -82,7 +85,7 @@ class MapImage
         $this->imageSize = $imageSize;
         $this->db = \GCApp::getDB();
         $this->srid = $srid;
-        $this->wmsMergeUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.$this->wmsMergeUrl);
+        $this->wmsMergeUrl = PrintDocument::addPrefixToRelativeUrl($baseUrl.'/'.$this->wmsMergeUrl);
         if ($this->options['scale_mode'] == 'user') {
             if (empty($this->options['center']) || empty($this->options['scale'])) {
                 throw new \Exception('Missing center or scale');
@@ -151,7 +154,7 @@ class MapImage
             }
             $url = trim($tile['url'], '?');
             $url = PrintDocument::addPrefixToRelativeUrl($url);
-            $url = str_replace(PUBLIC_URL, INTERNAL_URL, $url);
+            $url = str_replace($this->baseUrl, INTERNAL_URL, $url);
             if (!empty($tile['service'])) {
                 $service = $tile['service'];
             } else {
@@ -204,7 +207,7 @@ class MapImage
         }
         
         if (!empty($this->vectorId)) {
-            $url = PUBLIC_URL.'services/vectors.php';
+            $url = $this->baseUrl.'/services/vectors.php';
             $url = PrintDocument::addPrefixToRelativeUrl($url);
             $parameters = array(
                 'LAYERS'=>$this->vectorId,
@@ -260,7 +263,7 @@ class MapImage
         if (false === ($ch = curl_init())) {
             throw new \Exception("Could not init curl");
         }
-        curl_setopt($ch, CURLOPT_URL, str_replace(PUBLIC_URL, INTERNAL_URL, $this->wmsMergeUrl));
+        curl_setopt($ch, CURLOPT_URL, str_replace($this->baseUrl, INTERNAL_URL, $this->wmsMergeUrl));
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);

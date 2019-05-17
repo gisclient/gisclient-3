@@ -249,7 +249,7 @@ class PrintDocument
     {
         $this->calculateSizes();
         
-        $mapImage = new MapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
+        $mapImage = new MapImage(rtrim(PUBLIC_URL, '/'), $this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         return $mapImage->getExtent();
     }
 
@@ -473,7 +473,7 @@ class PrintDocument
             $this->options['vectors'] = $this->vectors;
         }
         
-        $mapImage = new MapImage($this->tiles, $this->imageSize, $this->options['srid'], $this->options);
+        $mapImage = new MapImage(rtrim(PUBLIC_URL, '/'), $this->tiles, $this->imageSize, $this->options['srid'], $this->options);
         $this->wmsList = $mapImage->getWmsList();
         $this->imageFileName = $mapImage->getImageFileName();
         $this->documentElements['map-scale'] = $mapImage->getScale();

@@ -124,7 +124,7 @@ class DownloadController
         }
 
         try {
-            $mapImage = new MapImage($tiles, $imageSize, $srid, $options);
+            $mapImage = new MapImage($request->getSchemeAndHttpHost(), $tiles, $imageSize, $srid, $options);
             $imageUrl = $mapImage->getImageUrl();
         } catch (\Exception $e) {
             print_debug($e->getTraceAsString(), null, 'download');

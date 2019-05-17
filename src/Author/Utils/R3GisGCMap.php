@@ -47,6 +47,8 @@ class R3GisGCMap
     const SCALE_TYPE_USER = 0;
     const SCALE_TYPE_POWEROF2 = 1;
     public $db;
+
+    private $baseUrl;
         
     /**
      * Layer authorization checker
@@ -88,8 +90,9 @@ class R3GisGCMap
     protected $sldContents = array();
     
     
-    public function __construct($mapsetName, $getLegend = false, $languageId = null, $onlyPublicLayers = false)
+    public function __construct($baseUrl, $mapsetName, $getLegend = false, $languageId = null, $onlyPublicLayers = false)
     {
+        $this->baseUrl = $baseUrl;
         $this->getLegend = $getLegend;
         $this->onlyPublicLayers = $onlyPublicLayers;
 
@@ -285,8 +288,8 @@ class R3GisGCMap
         $stmt->bindValue(':mapset_name', $this->mapsetName);
         $stmt->execute();
 
-        $ows_url = (defined('GISCLIENT_OWS_URL')) ? GISCLIENT_OWS_URL : "../../services/ows.php";
-        $tiles_cache_url = (defined('GISCLIENT_TMS_URL')) ? GISCLIENT_TMS_URL : "../../services/tms/";
+        $ows_url = $this->baseUrl . '/services/ows.php';
+        $tiles_cache_url = $this->baseUrl . '/services/tms/';
 
         $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         for ($i=0; $i < count($rowset); $i++) {
