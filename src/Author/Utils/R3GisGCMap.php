@@ -90,8 +90,13 @@ class R3GisGCMap
     protected $sldContents = array();
     
     
-    public function __construct($baseUrl, $mapsetName, $getLegend = false, $languageId = null, $onlyPublicLayers = false)
-    {
+    public function __construct(
+        $baseUrl,
+        $mapsetName,
+        $getLegend = false,
+        $languageId = null,
+        $onlyPublicLayers = false
+    ) {
         $this->baseUrl = $baseUrl;
         $this->getLegend = $getLegend;
         $this->onlyPublicLayers = $onlyPublicLayers;
