@@ -26,7 +26,7 @@ if (isset($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
 }
 
 try {
-    $printMap = new PrintDocument();
+    $printMap = new PrintDocument(rtrim(PUBLIC_URL, '/'));
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();

@@ -4,6 +4,7 @@ namespace GisClient\Author\Utils;
 
 class PrintDocument
 {
+    private $baseUrl;
 
     private $options;
 
@@ -26,7 +27,7 @@ class PrintDocument
         )
     );
 
-    private $wmsMergeUrl = 'services/gcWMSMerge.php';
+    private $wmsMergeUrl = '/services/gcWMSMerge.php';
 
     private $wmsList = array();
 
@@ -50,14 +51,15 @@ class PrintDocument
 
     private $getLegendGraphicRequest;
     
-    public function __construct()
+    public function __construct($baseUrl)
     {
+        $this->baseUrl = $baseUrl;
         $defaultOptions = array(
             'format' => 'A4',
             'dpi' => 72,
             'direction' => 'vertical',
             'TMP_PATH' => ROOT_PATH.'tmp/files/',
-            'TMP_URL' => PUBLIC_URL.'services/download.php',
+            'TMP_URL' => $this->baseUrl.'/services/download.php',
             'legend' => null,
             'scale_mode' => 'auto',
             'image_format'=>'png',
@@ -155,7 +157,7 @@ class PrintDocument
                 throw new \Exception('For auto scale mode, the extend must be provided');
             }
         }
-        $this->wmsMergeUrl = PUBLIC_URL.$this->wmsMergeUrl;
+        $this->wmsMergeUrl = $this->baseUrl.$this->wmsMergeUrl;
         
         $this->db = \GCApp::getDB();
         
@@ -249,7 +251,13 @@ class PrintDocument
     {
         $this->calculateSizes();
         
-        $mapImage = new MapImage(rtrim(PUBLIC_URL, '/'), $this->tiles, $this->imageSize, $this->options['srid'], $this->options);
+        $mapImage = new MapImage(
+            $this->baseUrl,
+            $this->tiles,
+            $this->imageSize,
+            $this->options['srid'],
+            $this->options
+        );
         return $mapImage->getExtent();
     }
 
@@ -473,7 +481,13 @@ class PrintDocument
             $this->options['vectors'] = $this->vectors;
         }
         
-        $mapImage = new MapImage(rtrim(PUBLIC_URL, '/'), $this->tiles, $this->imageSize, $this->options['srid'], $this->options);
+        $mapImage = new MapImage(
+            $this->baseUrl,
+            $this->tiles,
+            $this->imageSize,
+            $this->options['srid'],
+            $this->options
+        );
         $this->wmsList = $mapImage->getWmsList();
         $this->imageFileName = $mapImage->getImageFileName();
         $this->documentElements['map-scale'] = $mapImage->getScale();
