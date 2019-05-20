@@ -53,7 +53,7 @@ class ClientController
             $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
         } else {
             $objMapset = new R3GisGCMap(
-                $request->getSchemeAndHttpHost(),
+                trim(PUBLIC_URL, '/'),
                 $mapset,
                 $getLegend,
                 $languageId,
