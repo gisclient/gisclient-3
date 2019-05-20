@@ -1572,7 +1572,7 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
     END IF;
 
 
-    IF v_author_version = '3.5.3' THEN
+    IF v_author_version = '3.5.6' THEN
         CREATE TABLE sessions (
             sess_id VARCHAR(128) NOT NULL PRIMARY KEY,
             sess_data BYTEA NOT NULL,
