@@ -69,7 +69,7 @@ if (php_sapi_name() == "cli") {
     }
     define('PUBLIC_URL', trim(getenv('AUTHOR_PUBLIC_URL'), '/').'/'); // url for external requests (like map client)
 } else {
-    i$request = Request::createFromGlobals();
+    $request = Request::createFromGlobals();
     define('PUBLIC_URL', $request->getSchemeAndHttpHost().$request->server->get('HTTP_X_FORWARDED_PATH', '').'/');
 }
 define('INTERNAL_URL', 'http://127.0.0.1/'); // url for internal requests
