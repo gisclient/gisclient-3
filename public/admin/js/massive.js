@@ -51,7 +51,8 @@ function GCMassive(level, currentId) {
         var windowStruct = response[form.level];
         windowStruct = normalize(windowStruct, form, form.level);
         form.buildWindow(windowStruct);
-        form.getData(windowStruct[0].label, form.currentId);
+        for(var i=0; i< windowStruct.length;i++)
+            form.getData(windowStruct[i].label, form.currentId);
         form.addFormulaTextArea();
       },
       error: function() {
@@ -70,7 +71,7 @@ function GCMassive(level, currentId) {
         + "<div class=\"divButton\"><button class=\"massiveBtn\" style=\"display: none;\" id=\"massiveUpdate\">Modifica</button><button class=\"massiveBtn\" style=\"display: none;\" id=\"massivePreview\">Preview</button></div>"
         + "<div id=\"tableResult\" style=\"max-height: 120px; overflow-y: auto; margin-top: 10px;\"></div>"
         + "<div id=\"queryResult\"></div>";
-        
+
     $('#massive_dialog').append(html);
     $('#massive_dialog button[id="massiveUpdate"]').click(function(event) {
       event.preventDefault();
@@ -177,7 +178,7 @@ function GCMassive(level, currentId) {
           $('#massive_dialog select[name="'+level+'"]').empty();
           $('#massive_dialog select[name="'+level+'"]').append(form.emptyOption);
           $('#massive_dialog select[name="'+level+'"]').append('<option value="-1">-Tutti gli oggetti-</option>');
-          
+
           $.each(response.data, function(pkey, title) {
             $('#massive_dialog select[name="'+level+'"]').append('<option value="'+pkey+'">'+title+'</option>');
 	      });
