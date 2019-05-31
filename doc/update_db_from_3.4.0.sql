@@ -1585,5 +1585,13 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         INSERT INTO version (version_name,version_key, version_date) values ('3.6.0', 'author', '2019-01-24');
     END IF;
     
+    IF v_author_version = '3.6.0' THEN
+        DELETE FROM layer_groups WHERE layer_groups_id NOT IN (
+            SELECT MIN(layer_groups_id) FROM layer_groups GROUP BY layer_id, groupname HAVING count(*) > 1
+        ) ;
+        ALTER TABLE layer_groups ADD UNIQUE (layer_id, groupname) ;
 
+        v_author_version = '3.6.1';
+        INSERT INTO version (version_name,version_key, version_date) values ('3.6.1', 'author', '2019-05-31');
+    END IF;
 END$$
