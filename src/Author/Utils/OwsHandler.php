@@ -86,7 +86,10 @@ class OwsHandler
         // Lopp layers to create an array of single layers
         foreach ($layerNames as $name) {
             $layerIndexes = $oMap->getLayersIndexByGroup($name);
-            if (!$layerIndexes && count($layerNames) == 1 && $name == $objRequest->getvaluebyname('map')) {
+            if (!$layerIndexes
+                && count($layerNames) == 1
+                && $name == $oMap->getMetaData('ows_title') // use ows_title to avoid mapset with language key
+            ) {
                 $layerIndexes = array_keys($oMap->getAllLayerNames());
             }
             // Is a layergroup

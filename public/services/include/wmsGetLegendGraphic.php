@@ -67,11 +67,22 @@ if($objRequest->getvaluebyname('layer')){
     $layers = array();
     
     // QGIS set the layers list
-    foreach(explode(',', $objRequest->getvaluebyname('layer')) as $layerName) {
-        if($aLayersIndexes=$oMap->getLayersIndexByGroup($objRequest->getvaluebyname('layer'))){
-            for($j=0;$j<count($aLayersIndexes);$j++) array_unshift($layers, $oMap->getLayer($aLayersIndexes[$j]));
+    $layerNames = explode(',', $objRequest->getvaluebyname('layer'));
+    foreach ($layerNames as $layerName) {
+        $layer = $oMap->getLayerByName($layerName);
+        if (!empty($layer)) {
+            $layerIndexes[] = $layer->index;
         } else {
-            array_push($layers, $oMap->getLayerByName($objRequest->getvaluebyname('layer')));
+            $layerIndexes = $oMap->getLayersIndexByGroup($layerName);
+        }
+        if (!$layerIndexes
+            && count($layerNames) == 1
+            && $layerName == $oMap->getMetaData('ows_title') // use ows_title to avoid mapset with language key
+        ) {
+            $layerIndexes = array_keys($oMap->getAllLayerNames());
+        }
+        for ($j=0; $j<count($layerIndexes); $j++) {
+            array_unshift($layers, $oMap->getLayer($layerIndexes[$j]));
         }
     }
 
