@@ -2,7 +2,7 @@
 table = "field"
 pkey = "field_id"
 dato[] = "Layer o Relazione;relation_id;200#seldb_relation#layer_id;selectdb"
-dato[] = "Campo *;field_name;40;text|Elenco campi;field_name;100#openList#layer#relation_id;button"
+dato[] = "Campo *;field_name;100;text|Elenco campi;field_name;100#openList#layer#relation_id;button"
 dato[] = "Titolo *;field_header;40;text"
 dato[] = "Ordine *;field_order;3;intero"
 
