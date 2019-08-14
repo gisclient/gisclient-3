@@ -261,7 +261,7 @@ class PgQuery{
 			if($resultAction > 0) $_SESSION[$myMap]["SELECTION_ACTIVE"] = 1;//Metto in sessione il poligono di selezione
 			$_SESSION[$myMap]["SELECTION_POLYGON"] = $sPoly;//Metto in sessione il poligono di selezione
 			$srid = $_SESSION[$myMap]["SRID"];
-			$this->queryGeom = "GeometryFromText('$sPoly',$srid)";
+			$this->queryGeom = "ST_GeometryFromText('$sPoly',$srid)";
 		}
 	}
 			
