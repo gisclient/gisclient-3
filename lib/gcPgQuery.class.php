@@ -1014,13 +1014,13 @@ class PgQuery{
 		if($mapSRID>0 && $mapSRID!=$datalayerSRID){
 			$layerSRS = $_SESSION[$myMap]["SRS"][$datalayerSRID];
 			$mapsetSRS = $_SESSION[$myMap]["SRS"][$mapSRID];
-			$datalayerGeom="transform_geometry($datalayerGeom,'$layerSRS','$mapsetSRS',$mapSRID)";
+			$datalayerGeom="postgis_transform_geometry($datalayerGeom,'$layerSRS','$mapsetSRS',$mapSRID)";
 		}
 		
 		if(count($idList)==1)
-			$sql="select astext(buffer($datalayerGeom,$buffer)) as geom from $dbtable where $dataKey = $sList;";
+			$sql="select st_astext(st_buffer($datalayerGeom,$buffer)) as geom from $dbtable where $dataKey = $sList;";
 		else		
-			$sql="select astext(geomunion(buffer($datalayerGeom,$buffer))) as geom from $dbtable where $dataKey in ($sList);";
+			$sql="select st_astext(st_union(st_buffer($datalayerGeom,$buffer))) as geom from $dbtable where $dataKey in ($sList);";
 		
 		$result = pg_query($dbData, $sql);
 		$numRows = pg_num_rows($result);
