@@ -58,14 +58,3 @@ deleteSavedFilter:
     methods:  [DELETE]
     requirements:
         id: \d+
-<<<<<<< Updated upstream
-=======
-mvtGetTile:
-    path: 'mvt/{project}/{map}/{layer}/{z}/{x}/{y}.{format}'
-    defaults:
-        _controller: 'GisClient\Author\Controller\MvtController::getTileAction'
-    methods:
-        - GET
-    requirements:
-        format: pbf|mvt
->>>>>>> Stashed changes
