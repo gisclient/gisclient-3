@@ -8,6 +8,18 @@ use Symfony\Component\HttpFoundation\Request;
 class LoginController
 {
     /**
+     * Route to refresh cookie lifetime
+     *
+     * @return JsonResponse
+     */
+    public function refreshAction()
+    {
+        return new JsonResponse([
+            'status' => 'ok'
+        ]);
+    }
+
+    /**
      * Route for Username/Password Authenticator
      *
      * @param Request $request

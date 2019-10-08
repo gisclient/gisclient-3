@@ -11,6 +11,12 @@ logout:
         _controller: 'GisClient\Author\Controller\LoginController::logoutAction'
     methods:
         - GET
+refreshCookie:
+    path: refresh
+    defaults:
+        _controller: 'GisClient\Author\Controller\LoginController::refreshAction'
+    methods:
+        - GET
 autocomplete:
     path: autocomplete.php
     defaults:

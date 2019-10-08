@@ -565,8 +565,11 @@ class gcFeature {
             $aMeta["ows_extent"] = $this->srsList[$this->aFeature["data_srid"]]["extent"];
             $aMeta["ows_srs"] = $this->srsList[$this->aFeature["data_srid"]]["epsg_code"];
         }
-        if ($this->aFeature["queryable"] == 1) {
 
+        // WFS
+        $aMeta["wfs_enable_request"] = "!*"; // disabled by default
+        if ($this->aFeature["queryable"] == 1) {
+            $aMeta["wfs_enable_request"] = "*"; // enable all WFS requests
             $aMeta["gml_geometries"] = $this->aFeature["data_geom"];
             $aMeta["ows_onlineresource"] = $this->owsUrl;
 

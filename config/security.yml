@@ -7,7 +7,7 @@ security:
             provider: GisClient\Author\Security\User\UserProvider
     access_control:
         -
-            path: '^\/(autocomplete.php|download.php|gcmap.php|gcmapconfig.php|login).*'
+            path: '^\/(autocomplete.php|download.php|gcmap.php|gcmapconfig.php|login|refresh).*'
             authenticated: false
         -
             path: ^/
