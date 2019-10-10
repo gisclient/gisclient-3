@@ -89,7 +89,14 @@
 						</fo:table>
 
 						<!-- map -->
-						<fo:block border-bottom="1pt solid #000000" text-align="center"><fo:external-graphic src="{map-img}" content-width="{map-width}cm" /></fo:block>
+						<fo:block border-bottom="1pt solid #000000" text-align="center"><fo:external-graphic src="{map-img}" content-width="{map-width}cm" />
+                            <!-- copyrightString -->
+                            <xsl:if test="copyright-string!=''">
+                                <fo:block-container font-size="75%" text-align="right">
+                                    <fo:block><xsl:value-of select="copyright-string" /></fo:block>
+                                </fo:block-container>
+                            </xsl:if>
+                        </fo:block>
 
 						<!-- scale -->
 						<fo:table>
