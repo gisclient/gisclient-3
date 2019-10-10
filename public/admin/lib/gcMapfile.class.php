@@ -156,7 +156,7 @@ class gcMapfile
         if (!empty($this->languageId)) {
             // inizializzo l'oggetto i18n per le traduzioni
               $this->i18n = new GCi18n($aLayer["project_name"], $this->languageId);
-          }
+        }
 
         //SCALA MASSIMA DEL PROGETTO
         $projectMaxScale = floatval($aLayer["max_extent_scale"])?floatval($aLayer["max_extent_scale"]):100000000;
@@ -420,7 +420,7 @@ class gcMapfile
             if ($symbolsList[$mapName]) {
                 $this->layerText .= $this->_getSymbolText($symbolsList[$mapName]);
             }
-            $this->_writeFile($mapName);
+            $this->writeFile($mapName);
             
             //NON GENERO I FILE YAML TEMPORANEI PER MAPPROXY
             if (defined('MAPPROXY_PATH') && ($this->target == 'public')) {
@@ -489,25 +489,24 @@ class gcMapfile
         return $mapName;
     }
     
-    public function _writeFile(&$mapFile)
+    private function writeFile(&$mapName)
     {
         $projectName = $this->projectName;
+        $mapFileName = $mapName;
+        if (!empty($this->i18n)) {
+            $mapFileName .= '_'.$this->i18n->getLanguageId();
+        }
         $fontList=(defined('FONT_LIST'))?FONT_LIST:'fonts';
         $projLib=(defined('PROJ_LIB'))?"CONFIG 'PROJ_LIB' '".PROJ_LIB."'":'';
         $configDebugfile = '';
         $debugLevel = '';
         if (defined('DEBUG') && DEBUG && defined('DEBUG_DIR') && DEBUG_DIR) {
-            $configDebugfile = "CONFIG 'MS_ERRORFILE' '".DEBUG_DIR.basename($mapFile).".debug'";
+            $configDebugfile = "CONFIG 'MS_ERRORFILE' '".DEBUG_DIR.basename($mapFileName).".debug'";
             $debugLevel = "DEBUG 5";
         }
-        $outputFormat = $this->_getOutputFormat($mapFile);
-
-        //$outputFormat = file_get_contents (ROOT_PATH."config/mapfile.outputformats.inc");
-        //$metadata_inc = file_get_contents (ROOT_PATH."config/mapfile.metadata.inc");
-        $metadata_inc = $this->_getMapsetMetadata($mapFile);
-        //$legend_inc = file_get_contents (ROOT_PATH."config/mapfile.legend.inc");
-        $legend_inc = $this->_getLegendSettings();
-        //$legend_inc = '';
+        $outputFormat = $this->getOutputFormats();
+        $mapfileMetadata = $this->getMapsetMetadata($mapName);
+        $mapfileLegend = $this->getLegendSettings();
         
         $imgPath = "IMAGEPATH \"".IMAGE_PATH."\"";
         $imgUrl = "IMAGEURL \"".IMAGE_URL."\"";
@@ -515,7 +514,7 @@ class gcMapfile
         $size = TILE_SIZE . " " . TILE_SIZE;
 
         $wms_mime_type = "\t\"wms_feature_info_mime_type\"  \"text/html, text/xml\"";
-        $ows_title = "\t\"ows_title\"\t\"". $mapFile ."\"";
+        $ows_title = "\t\"ows_title\"\t\"". $mapName ."\"";
         $project_name = "\t\"project_name\"\t\"". $projectName ."\"";
         $ows_wfs_encoding = $this->_getEncoding();
         $ows_abstract = ""; //TODO: ripristinare aggiungendo descrizione a progetto
@@ -540,14 +539,14 @@ class gcMapfile
                 $sep = '?';
             }
             if (in_array($this->target, array('tmp', 'layer'))) {
-                $owsUrl .= "{$sep}project={$this->projectName}&map={$this->target}.{$mapFile}";
+                $owsUrl .= "{$sep}project={$this->projectName}&map={$this->target}.{$mapFileName}";
             } else {
-                $owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFile;
+                $owsUrl .= $sep . 'project='.$this->projectName.'&map='.$mapFileName;
             }
 
-            if (!empty($this->i18n)) {
+            /*if (!empty($this->i18n)) {
                 $owsUrl .= '&lang=' . $this->i18n->getLanguageId();
-            }
+            }*/
         }
 
         $wms_onlineresource = '';
@@ -573,7 +572,7 @@ class gcMapfile
         
         $fileContent="
 MAP
-NAME \"$mapFile\"
+NAME \"$mapName\"
 SIZE $size  
 MAXSIZE $maxSize
 $imgResolution
@@ -596,7 +595,7 @@ WEB
     $wfs_namespace_uri
     $ows_srs
     $ows_accessConstraints
-    $metadata_inc
+    $mapfileMetadata
     END
     $imgPath
     $imgUrl 
@@ -606,7 +605,7 @@ $mapProjection
 END
 $mapsetExtent
 $layerText
-$legend_inc
+$mapfileLegend
 $outputFormat
 END #MAP";
 
@@ -626,14 +625,16 @@ END #MAP";
                     return;
                 }
             }
-            $mapFilePath=$mapfileDir.$mapFile.".map";
+            $mapFilePath=$mapfileDir.$mapName.".map";
         } else {
             $mapfileDir = ROOT_PATH.'map/';
+            
             if ($this->target == 'tmp') {
-                $mapFile = 'tmp.'.$mapFile;
-            }
-            if ($this->target == 'layer') {
-                $mapFile = 'layer.'.$mapFile;
+                $mapName = 'tmp.'.$mapFileName;
+            } elseif ($this->target == 'layer') {
+                $mapName = 'layer.'.$mapFileName;
+            } else {
+                $mapName = $mapFileName;
             }
             $projectDir = $mapfileDir.$projectName.'/';
             if (!is_dir($projectDir)) {
@@ -646,11 +647,7 @@ END #MAP";
             }
             $this->_writeTemplateWms($projectDir);
             
-            if (!empty($this->i18n)) {
-                $languageId = $this->i18n->getLanguageId();
-                $mapFile.= "_".$languageId;
-            }
-            $mapFilePath = $projectDir.$mapFile.".map";
+            $mapFilePath = $projectDir.$mapFileName.".map";
         }
         if (false === ($f = fopen($mapFilePath, "w"))) {
             $errorMsg = "Could not open $mapFilePath for writing";
@@ -695,7 +692,7 @@ END #MAP";
             if ($error->code != MS_NOERR) {
                 $this->mapError=150;
                 while (is_object($error) && $error->code != MS_NOERR) {
-                    $errorMsg = "MAPFILE ERROR $mapFile<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
+                    $errorMsg = "MAPFILE ERROR $mapFileName<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
                     GCError::register($errorMsg);
                     $error = $error->next();
                 }
@@ -761,7 +758,7 @@ END";
         return true;
     }
     
-    public function _getOutputFormat($mapName)
+    private function getOutputFormats()
     {
         $formatText = '';
         $sql="select distinct e_outputformat.* from ".DB_SCHEMA.".e_outputformat;";
@@ -812,7 +809,7 @@ END";
         return $ows_wfs_encoding;
     }
 
-    private function _getMapsetMetadata($mapName)
+    private function getMapsetMetadata($mapName)
     {
         $sql = "select metadata "
             . "from ".DB_SCHEMA.".mapset "
@@ -828,7 +825,7 @@ END";
         }
     }
     
-    public function _getLegendSettings()
+    private function getLegendSettings()
     {
         // default font
         $legendFont = 'verdana';

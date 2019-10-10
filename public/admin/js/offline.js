@@ -13,17 +13,11 @@ $(document).ready(function() {
         dialog.empty();
         dialog.append($('#offline_theme').html());
         
-        var params = {
-            action: 'get-data',
-            project: $('input#project').val(),
-            map: map
-        };
-
+        var project = $('input#project').val();
         $.ajax({
-            url: 'ajax/offline.php',
+            url: '../services/offline/'+project+'/'+map+'/get-data.json',
             type: 'GET',
             dataType: 'json',
-            data: params,
             success: function(response) {
                 console.log(response);
 
@@ -37,55 +31,50 @@ $(document).ready(function() {
                     }
                     return alert('Error');
                 } else {
-                    var html = '';
+                    for (var layerType in response.data) {
+                        var html = '';
+                        for (var i = 0; i < response.data[layerType].length; i++) {
+                            var layer = response.data[layerType][i];
+                            html += '<tr>';
+                            html += '<td>' + layer.title + ' (' + layer.name + ')</td>';
 
-                    for (var i = 0; i < response.themes.length; i++) {
-                        var theme = response.themes[i];
-                        html += '<tr>';
-                        html += '<td>' + theme.title + ' (' + theme.name + ')</td>';
-                        if (Object.keys(theme.mbtiles).length) {
-                            html += '<td id="td_' + theme.name + '">';
-                            switch (theme.mbtiles.state) {
-                                case 'running':
-                                    html += '<a href="#" data-action="check" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                    html += '<a href="#" data-action="stop" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                    break;
+                            var formats = ['mbtiles', 'sqlite', 'mvt'];
+                            for (var j in formats) {
+                                var format = formats[j];
 
-                                case 'stopped':
-                                    html += '<a href="#" data-action="clear" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                /* fall through */
-                                case 'to-do':
-                                    html += '<a href="#" data-action="generate" data-target="mbtiles" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
+                                if (Object.keys(layer[format]).length) {
+                                    html += '<td id="td_' + layer.name + '">';
+                                    switch (layer[format].state) {
+                                        case 'running':
+                                            html += '<a href="#" data-action="check" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Check</a>';
+                                            html += '<a href="#" data-action="stop" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Stop</a>';
+                                            break;
+    
+                                        case 'stopped':
+                                            html += '<a href="#" data-action="clear" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Clear</a>';
+                                        /* fall through */
+                                        case 'to-do':
+                                            html += '<a href="#" data-action="generate" data-target="'+format+'" data-map="' + map + '" data-layertype="' + layerType +'" data-layer="' + layer.name +'">Generate</a>';
+                                    }
+    
+                                    if (layer[format].progress) {
+                                        html += layer[format].progress + '%';
+                                    }
+                                    html += '</td>';
+                                } else {
+                                    html += '<td>no '+format+'</td>';
+                                }
                             }
-
-                            if (theme.mbtiles.progress) {
-                                html += theme.mbtiles.progress + '%';
-                            }
-                            html += '</td>';
-                        } else {
-                            html += '<td>no tiles</td>';
+                            html += '</tr>';
                         }
-                        if (Object.keys(theme.sqlite).length) {
-                            html += '<td>';
-                            switch (theme.sqlite.state) {
-                                case 'running':
-                                    html += '<a href="#" data-action="check" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Check</a>';
-                                    html += '<a href="#" data-action="stop" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Stop</a>';
-                                    break;
-
-                                case 'stopped':
-                                    html += '<a href="#" data-action="clear" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Clear</a>';
-                                /* fall through */
-                                case 'to-do':
-                                    html += '<a href="#" data-action="generate" data-target="sqlite" data-map="' + map + '" data-theme="' + theme.name +'">Generate</a>';
-                            }
-                            html += '</td>';
+                        var table = dialog.find('table[data-layer='+layerType+']')
+                        if (html != '') {
+                            $(table).append(html);
+                            $(table).show();
                         } else {
-                            html += '<td>no sqlite</td>';
+                            $(table).hide();
                         }
-                        html += '</tr>';
                     }
-                    dialog.find('table').append(html);
 
                     $('div#offline_manager a[data-action="check"]').button(
                         {icons:{primary:'ui-icon-refresh'}, text:false}
@@ -98,60 +87,72 @@ $(document).ready(function() {
                         if (!confirm('Delete this?')) {
                             return;
                         }
+                        var project = $('input#project').val();
+                        var map = $(this).attr('data-map');
                         var params = {
-                            action: 'clear',
-                            project: $('input#project').val(),
-                            map: $(this).attr('data-map'),
                             target: $(this).attr('data-target'),
-                            theme: $(this).attr('data-theme')
+                            layertype: $(this).attr('data-layertype'),
+                            layer: $(this).attr('data-layer')
                         };
                         $.ajax({
-                            url: 'ajax/offline.php',
+                            url: '../services/offline/'+project+'/'+map+'/clear.json',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                loadMapView(params.map);
+                                loadMapView(map);
+                            },
+                            error: function(responseObj) {
+                                var response = JSON.parse(responseObj.responseText);
+                                return alert(response.message);
                             }
                         });
                     });
                     $('div#offline_manager a[data-action="stop"]').button(
                         {icons:{primary:'ui-icon-stop'}, text:false}
                     ).click(function () {
+                        var project = $('input#project').val();
+                        var map = $(this).attr('data-map');
                         var params = {
-                            action: 'stop',
-                            project: $('input#project').val(),
-                            map: $(this).attr('data-map'),
                             target: $(this).attr('data-target'),
-                            theme: $(this).attr('data-theme')
+                            layertype: $(this).attr('data-layertype'),
+                            layer: $(this).attr('data-layer')
                         };
                         $.ajax({
-                            url: 'ajax/offline.php',
+                            url: '../services/offline/'+project+'/'+map+'/stop.json',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                loadMapView(params.map);
+                                loadMapView(map);
+                            },
+                            error: function(responseObj) {
+                                var response = JSON.parse(responseObj.responseText);
+                                return alert(response.message);
                             }
                         });
                     });
                     $('div#offline_manager a[data-action="generate"]').button(
                         {icons:{primary:'ui-icon-play'}, text:false}
                     ).click(function () {
+                        var project = $('input#project').val();
+                        var map = $(this).attr('data-map');
                         var params = {
-                            action: 'start',
-                            project: $('input#project').val(),
-                            map: $(this).attr('data-map'),
                             target: $(this).attr('data-target'),
-                            theme: $(this).attr('data-theme')
+                            layertype: $(this).attr('data-layertype'),
+                            layer: $(this).attr('data-layer')
                         };
                         $.ajax({
-                            url: 'ajax/offline.php',
+                            url: '../services/offline/'+project+'/'+map+'/start.json',
                             type: 'GET',
                             dataType: 'json',
                             data: params,
                             success: function(response) {
-                                loadMapView(params.map);
+                                loadMapView(map);
+                            },
+                            error: function(responseObj) {
+                                var response = JSON.parse(responseObj.responseText);
+                                return alert(response.message);
                             }
                         });
                     });
@@ -189,23 +190,20 @@ $(document).ready(function() {
             $(activeLink).hide();
             $(activeLinkContainer).append(loadingGif);
 
-            var params = {
-                action: 'download',
-                project: $('input#project').val(),
-                map: $(this).attr('data-map')
-            };
-            $.ajax({
-                url: 'ajax/offline.php',
+            var project = $('input#project').val();
+            var map = $(this).attr('data-map');
+            location.href = '../services/offline/'+project+'/'+map+'/download.zip';
+            /*$.ajax({
+                url: ,
                 type: 'GET',
                 dataType: 'json',
-                data: params,
                 success: function(response) {
                     $(activeLink).show();
                     $('img', activeLinkContainer).remove();
                     
                     console.log(response);
                 }
-            });
+            });*/
         });
     }
 

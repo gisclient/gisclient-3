@@ -238,7 +238,7 @@ if(!empty($layersParameter)) {
 	// aggiorno il parametro layers con i soli layers che l'utente può vedere 
 	$objRequest->setParameter($parameterName, implode(",",$layersToInclude));		
 }
-session_write_close();
+$gcService->saveAndClose();
 
 // Cache part 1
 $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;

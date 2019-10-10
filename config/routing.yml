@@ -1,8 +1,10 @@
 ## Available routes in public/services/...
 login:
     path: login
-    defaults:  { _controller: GisClient\Author\Controller\LoginController::loginAction }
-    methods:  [POST]
+    defaults:
+        _controller: 'GisClient\Author\Controller\LoginController::loginAction'
+    methods:
+        - POST
 logout:
     path: logout
     defaults:
@@ -21,40 +23,110 @@ autocomplete:
         _controller: 'GisClient\Author\Controller\AutocompleteController::autocompleteAction'
     methods:
         - GET
+createImage:
+    path: download.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\DownloadController::createImageAction'
+    methods:
+        - POST
+downloadImage:
+    path: download.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\DownloadController::downloadImageAction'
+    methods:
+        - GET
+offlineGetData:
+    path: 'offline/{project}/{map}/get-data.json'
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::getDataAction'
+    methods:
+        - GET
+offlineStart:
+    path: 'offline/{project}/{map}/start.json'
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::startAction'
+    methods:
+        - GET
+offlineStop:
+    path: 'offline/{project}/{map}/stop.json'
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::stopAction'
+    methods:
+        - GET
+offlineClear:
+    path: 'offline/{project}/{map}/clear.json'
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::clearAction'
+    methods:
+        - GET
+offlineDownload:
+    path: 'offline/{project}/{map}/download.{format}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\OfflineController::downloadAction'
+    methods:
+        - GET
+    requirements:
+        format: json|zip
+getLookup:
+    path: lookup.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\LookupController::getLookupAction'
+    methods:
+        - GET
+getSymbol:
+    path: symbol.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\SymbolController::getSymbolAction'
+    methods:
+        - GET
 gcmap:
     path: gcmap.php
-    defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapAction }
-    
+    defaults:
+        _controller: 'GisClient\Author\Controller\ClientController::gcmapAction'
 gcmapConfig:
     path: gcmapconfig.php
-    defaults:  { _controller: GisClient\Author\Controller\ClientController::gcmapConfigAction }
-
+    defaults:
+        _controller: 'GisClient\Author\Controller\ClientController::gcmapConfigAction'
 refreshMapfile:
     path: refresh_mapfile
-    defaults: { _controller: GisClient\Author\Controller\RefreshMapfileController::refreshMapfileAction }
-    methods: [POST]
-
+    defaults:
+        _controller: 'GisClient\Author\Controller\RefreshMapfileController::refreshMapfileAction'
+    methods:
+        - POST
 ## Saved filter routes
 getAllSavedFilter:
-    path: saved_filter/{mapset}
-    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::getAllAction }
-    methods:  [GET]
-
+    path: 'saved_filter/{mapset}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\SavedFilterController::getAllAction'
+    methods:
+        - GET
 createSavedFilter:
     path: saved_filter
-    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::createAction }
-    methods:  [POST]
-    
+    defaults:
+        _controller: 'GisClient\Author\Controller\SavedFilterController::createAction'
+    methods:
+        - POST
 modifySavedFilter:
-    path: saved_filter/{id}
-    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::modifyAction }
-    methods:  [PUT]
+    path: 'saved_filter/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\SavedFilterController::modifyAction'
+    methods:
+        - PUT
     requirements:
         id: \d+
-
 deleteSavedFilter:
-    path: saved_filter/{id}
-    defaults:  { _controller: GisClient\Author\Controller\SavedFilterController::deleteAction }
-    methods:  [DELETE]
+    path: 'saved_filter/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\SavedFilterController::deleteAction'
+    methods:
+        - DELETE
     requirements:
         id: \d+
+mvtGetTile:
+    path: 'mvt/{project}/{map}/{layer}/{z}/{x}/{y}.{format}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\MvtController::getTileAction'
+    methods:
+        - GET
+    requirements:
+        format: pbf|mvt

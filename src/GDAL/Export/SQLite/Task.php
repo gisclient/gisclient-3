@@ -14,21 +14,16 @@ class Task implements \GisClient\GDAL\Export\Task
     private $taskName;
     private $path;
 
-    public function __construct(Layer $layer, $taskName, $logDir)
+    public function __construct(Layer $layer, $filename, $logDir)
     {
-        $this->path = 'var/SQLite/';
+        $this->path = dirname($filename);
         $this->layer = $layer;
-        $this->taskName = $taskName;
+        $this->taskName = basename($filename);
+        $this->logFile = $logDir . $this->getTaskName() . '.log';
+        $this->errFile = $logDir . $this->getTaskName() . '.err';
 
-        if (is_writable($logDir)) {
-            $this->logFile = $logDir . $this->getTaskName() . '.log';
-            $this->errFile = $logDir . $this->getTaskName() . '.err';
-        } else {
-            throw new \Exception("Error: Directory not exists or not writable '$logDir'", 1);
-        }
-
-        if (!is_dir(ROOT_PATH . $this->path)) {
-            if (!mkdir(ROOT_PATH . $this->path, 0700, true)) {
+        if (!is_dir($this->path)) {
+            if (!mkdir($this->path, 0700, true)) {
                 throw new \Exception("Error: Failed to create {$this->path}", 1);
             }
         }
@@ -36,7 +31,7 @@ class Task implements \GisClient\GDAL\Export\Task
 
     public function getTaskName()
     {
-        return $this->taskName;
+        return basename($this->taskName, '.sqlite');
     }
 
     public function getLogFile()
@@ -111,7 +106,7 @@ class Task implements \GisClient\GDAL\Export\Task
         $db = new Db($this->layer->getCatalog());
         $dbParams = $db->getParams();
 
-        $connectionTpl = "PG:'host=%s port=%s user=%s password=%s dbname=%s schemas=%s'";
+        $connectionTpl = 'PG:host=%s port=%s user=%s password=%s dbname=%s schemas=%s';
         $connection = sprintf(
             $connectionTpl,
             $dbParams['db_host'],
@@ -136,31 +131,58 @@ class Task implements \GisClient\GDAL\Export\Task
             $filter = 'true';
         }
 
+        // apply filter on current extent
+        $extent = $this->layer->getMap()->getExtent();
+        $filter .= sprintf(
+            " AND ST_Intersects(%s, ST_MakeEnvelope(%d, %d, %d, %d, %d))",
+            $this->layer->getGeomColumn(),
+            $extent[0],
+            $extent[1],
+            $extent[2],
+            $extent[3],
+            $this->layer->getMap()->getSrid()
+        );
+
         $name = $this->layer->getName();
-        
-        $sqlTpl = '-sql "SELECT %s FROM %s WHERE %s" -nln %s';
+
+        $sqlTpl = 'SELECT %s FROM %s WHERE %s';
         $sql = sprintf(
             $sqlTpl,
             $fieldsText,
             $table,
-            $filter,
-            $name
+            $filter
         );
 
-        $source = $connection . ' ' . $sql;
+        $commandLine = [
+            $connection,
+            '-sql',
+            $sql,
+            '-nln',
+            $name
+        ];
+        
+        
 
-        return $source;
+        // $source = $connection . ' ' . $sql;
+
+        return $commandLine;
     }
 
     public function getFilePath()
     {
-        return ROOT_PATH . "{$this->path}{$this->getTaskName()}.sqlite";
+        return $this->path . '/' . $this->taskName;
     }
 
     public function cleanup()
     {
-        unlink($this->logFile);
-        unlink($this->errFile);
-        unlink($this->getFilePath());
+        if (file_exists($this->logFile)) {
+            unlink($this->logFile);
+        }
+        if (file_exists($this->errFile)) {
+            unlink($this->errFile);
+        }
+        if (file_exists($this->getFilePath())) {
+            unlink($this->getFilePath());
+        }
     }
 }

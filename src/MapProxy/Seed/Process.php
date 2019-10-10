@@ -2,45 +2,69 @@
 
 namespace GisClient\MapProxy\Seed;
 
-class Process
+use GisClient\Author\Offline\OfflineProcessInterface;
+use GisClient\Author\Offline\OfflineTaskInterface;
+use Symfony\Component\Process\Process as SymfonyProcess;
+
+class Process implements OfflineProcessInterface
 {
     private $bin;
-    private $mapConfig;
-    private $seedConfig;
 
-    public function __construct($path, $mapConfig, $seedConfig)
+    public function __construct($path)
     {
-        if (file_exists($path . 'mapproxy-seed')) {
-            $this->bin = $path . 'mapproxy-seed';
-        } else {
-            throw new \Exception("Error: File not exists '{$path}mapproxy-seed'", 1);
+        $this->bin = $path . '/mapproxy-seed';
+    }
+
+    private function check(Task $task)
+    {
+        if (!file_exists($this->bin)) {
+            throw new \RuntimeException("Error: File not exists '{$this->bin}'", 1);
         }
-        if (file_exists($mapConfig)) {
-            $this->mapConfig = $mapConfig;
-        } else {
-            throw new \Exception("Error: File not exists '{$mapConfig}'", 1);
+        $mapConfig = $task->getMapConfig();
+        if (!file_exists($mapConfig)) {
+            throw new \RuntimeException("Error: File not exists '{$mapConfig}'", 1);
         }
-        if (file_exists($seedConfig)) {
-            $this->seedConfig = $seedConfig;
-        } else {
-            throw new \Exception("Error: File not exists '{$seedConfig}'", 1);
+        $seedConfig = $task->getSeedConfig();
+        if (!file_exists($seedConfig)) {
+            throw new \RuntimeException("Error: File not exists '{$seedConfig}'", 1);
+        }
+
+        $logDir = dirname($task->getLogFile());
+        if (!is_writable($logDir)) {
+            throw new \RuntimeException("Error: Directory not exists or not writable '{$logDir}'", 1);
         }
     }
 
-    private function getCommand(Task $task)
+    public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
-        $cmdTpl = "%s -f %s -c 1 %s --seed %s > %s 2> %s & echo $!";
-        $cmd = (sprintf(
-            $cmdTpl,
+        if (!($task instanceof Task)) {
+            throw new \Exception('The given task does not match the required class: '.Task::class);
+        }
+
+        $commandLine = [
             $this->bin,
-            $this->mapConfig,
-            $this->seedConfig,
-            $task->getTaskName(),
-            $task->getLogFile(),
-            $task->getErrFile()
-        ));
+            "--proxy-conf=".$task->getMapConfig(),
+            "--concurrency=1",
+            "--seed-conf=".$task->getSeedConfig(),
+            "--seed=".$task->getTaskName()
+        ];
+        if ($runInBackground) {
+            $commandLine[] = ">";
+            $commandLine[] = $task->getLogFile();
+            $commandLine[] = "2>";
+            $commandLine[] = $task->getErrFile();
+            $commandLine[] = "&";
+            $commandLine[] = "echo";
+            $commandLine[] = "$!";
+        }
+
+        if ($asArray) {
+            return $commandLine;
+        }
         
-        return $cmd;
+        // use Process class from symfony, to escape arguments
+        $process = new SymfonyProcess($commandLine);
+        return $process->getCommandLine();
     }
 
     private function getPID(Task $task)
@@ -67,10 +91,11 @@ class Process
         return false;
     }
 
-    public function start(Task $task)
+    public function start(Task $task, $runInBackground = true)
     {
+        $this->check($task);
         if (!$this->isRunning($task)) {
-            $pid = shell_exec($this->getCommand($task));
+            $pid = shell_exec($this->getCommand($task, $runInBackground));
         } else {
             $pid = $this->getPID($task);
         }

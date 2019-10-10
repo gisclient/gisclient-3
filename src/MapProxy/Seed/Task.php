@@ -2,29 +2,45 @@
 
 namespace GisClient\MapProxy\Seed;
 
-class Task
+use GisClient\Author\Map;
+use GisClient\Author\Offline\OfflineTaskInterface;
+
+class Task implements OfflineTaskInterface
 {
+    private $mapConfig;
+    private $seedConfig;
     private $logFile;
     private $errFile;
-    private $project;
+    private $path;
     private $task;
 
-    public function __construct($project, $taskName, $logDir)
+    public function __construct(Map $map, $mapPath, $filename, $logDir)
     {
-        $this->project = $project;
-        $this->task = $taskName;
+        $this->path = dirname($filename);
+        $this->task = basename($filename);
 
-        if (is_writable($logDir)) {
-            $this->logFile = $logDir . $this->task . '-seed.log';
-            $this->errFile = $logDir . $this->task . '-seed.err';
-        } else {
-            throw new \Exception("Error: Directory not exists or not writable '$logDir'", 1);
-        }
+        $project = $map->getProject();
+        $mapset = $map->getName();
+        $this->mapConfig = $mapPath . "/{$project}/{$mapset}.yaml";
+        $this->seedConfig = $mapPath . "/{$project}/{$mapset}.seed.yaml";
+
+        $this->logFile = $logDir . $this->getTaskName() . '-seed.log';
+        $this->errFile = $logDir . $this->getTaskName() . '-seed.err';
     }
 
     public function getTaskName()
     {
-        return $this->task;
+        return basename($this->task, '.mbtiles');
+    }
+
+    public function getMapConfig()
+    {
+        return $this->mapConfig;
+    }
+
+    public function getSeedConfig()
+    {
+        return $this->seedConfig;
     }
 
     public function getLogFile()
@@ -105,6 +121,6 @@ class Task
 
     public function getFilePath()
     {
-        return MAPPROXY_CACHE_PATH . "{$this->project}/{$this->task}.mbtiles";
+        return $this->path . '/' . $this->task;
     }
 }

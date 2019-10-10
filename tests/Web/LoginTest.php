@@ -7,7 +7,7 @@ class LoginTest extends PHPUnit_Framework_TestCase {
 	private $cookieJar;
 	
 	public function __construct() {
-		$this->cookieJar = GC_WEB_TMP_DIR.'test_cookies.txt';
+		$this->cookieJar = ROOT_PATH.'tmp/files/test_cookies.txt';
 	}
 	
     public function testLoginFailure() {

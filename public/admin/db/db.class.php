@@ -1,4 +1,7 @@
 <?php
+
+use GisClient\Author\Symbol;
+
 $config_file=$_POST["config_file"];
 $parent=$_POST["parametri"][count($_POST["parametri"])-2];
 $pkeys=$_POST["parametri"][count($_POST["parametri"])-1];
@@ -29,7 +32,6 @@ if($save->status==1 && $_POST["dati"]["legendtype_id"]==2 && $_FILES["legend_ico
 else*/
 if(!$save->hasErrors && $save->action=="salva"){
 	if($_POST["dati"]["legendtype_id"]!=0){
-		require_once ADMIN_PATH."lib/gcSymbol.class.php";
 		$smb=new Symbol("class");
 		$smb->table='class';
 		$smb->filter="class.class_id=".$p->parametri[$p->livello];

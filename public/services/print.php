@@ -2,8 +2,8 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
-require_once 'include/printDocument.php';
-require_once 'include/mapImage.php';
+
+use GisClient\Author\Utils\PrintDocument;
 
 
 header('Access-Control-Allow-Origin: *');
@@ -26,7 +26,7 @@ if (isset($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
 }
 
 try {
-    $printMap = new printDocument();
+    $printMap = new PrintDocument(rtrim(PUBLIC_URL, '/'));
 
 	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
 		$box = $printMap->getBox();
@@ -45,7 +45,6 @@ try {
     if ($_REQUEST['format'] == 'HTML') {
         $file = $printMap->printMapHTML();
     } else if ($_REQUEST['format'] == 'PDF') {
-        $TmpPath = GC_WEB_TMP_DIR;
         $file = $printMap->printMapPDF();
     }
 } catch (Exception $e) {

@@ -2,10 +2,17 @@
 
 namespace GisClient\GDAL\Export\SQLite;
 
-class Driver implements \GisClient\GDAL\Export\Driver
+use GisClient\GDAL\Export\AbstractDriver;
+
+class Driver extends AbstractDriver
 {
     public function getName()
     {
         return 'SQLite';
+    }
+
+    public function getCmdArguments()
+    {
+        return [];
     }
 }

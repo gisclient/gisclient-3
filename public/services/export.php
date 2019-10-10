@@ -98,7 +98,7 @@ switch($data['export_format']) {
                 $geomColIndex = array_search('the_geom', $columns);
                 if($geomColIndex === false) continue;
                 unset($columns[$geomColIndex]);
-                $tmpTableName = 'export_'.$table['tablename'].'_'.session_id().'_'.rand(0,999999);
+                $tmpTableName = 'export_'.$table['tablename'].'_'.$gcService->getSession()->getId().'_'.rand(0,999999);
                 $sql = 'create table '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName.' as '.
                     ' select '.implode(', ', $columns).', st_intersection(the_geom, :geom) as the_geom '.
                     ' from '.$dbParams['schema'].'.'.$table['tablename'].
@@ -230,7 +230,7 @@ switch($data['export_format']) {
         }
 
         if(empty($data['feature_type'])) {
-            $filename = GCApp::getUniqueRandomTmpFilename(GC_WEB_TMP_DIR, 'export', 'xls');
+            $filename = GCApp::getUniqueRandomTmpFilename(ROOT_PATH.'tmp/files', 'export', 'xls');
         } else {
             $parts = explode('.', $data['feature_type']);
             if(count($parts) > 1) $filename = $parts[1];
@@ -239,7 +239,7 @@ switch($data['export_format']) {
             $filename .= '_'.date('Y-m-d_H-i').'_'.rand(0,999).'.xls';
         }
         $content = $excel->generateXML();
-        file_put_contents(GC_WEB_TMP_DIR.$filename, $content);
-        die(json_encode(array('result'=>'ok','file'=>GC_WEB_TMP_URL.$filename)));
+        file_put_contents(ROOT_PATH.'tmp/files/'.$filename, $content);
+        die(json_encode(array('result'=>'ok','file'=>PUBLIC_URL.'services/download.php?filename='.$filename)));
     break;
 }

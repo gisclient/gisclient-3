@@ -2,7 +2,7 @@
 
 namespace GisClient\Author;
 
-class LayerGroup
+class LayerGroup extends AbstractLayerLevel
 {
     private $db;
     private $data;
@@ -18,6 +18,12 @@ class LayerGroup
     const BING_LAYER_TYPE = 8;
     const XYZ_LAYER_TYPE = 9;
     const WFS_LAYER_TYPE = 10;
+
+    const PNG24_FORMAT = 1;
+    const PNG8_FORMAT = 7;
+    const PNG_FORMAT = 9;
+    const JPEG_FORMAT = 3;
+    const GEOJSON_FORMAT = 10;
 
     public function __construct($id = null)
     {
@@ -54,6 +60,19 @@ class LayerGroup
         return $this->get('owstype_id');
     }
 
+    public function getFormat()
+    {
+        return $this->get('outputformat_id');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChildren()
+    {
+        return $this->getLayers();
+    }
+
     public function getLayers()
     {
         $layers = null;
@@ -64,7 +83,9 @@ class LayerGroup
             $stmt = $this->db->getDb()->prepare($sql);
             $stmt->execute(array($this->data['layergroup_id']));
             while ($layer_id = $stmt->fetchColumn(0)) {
-                $layers[] = new Layer($layer_id);
+                $layer = new Layer($layer_id);
+                $layer->setMap($this->getMap());
+                $layers[] = $layer;
             }
         }
 
@@ -74,6 +95,11 @@ class LayerGroup
     public function getName()
     {
         return $this->get('layergroup_name');
+    }
+
+    public function getTitle()
+    {
+        return $this->get('layergroup_title');
     }
 
     public function getOpacity()

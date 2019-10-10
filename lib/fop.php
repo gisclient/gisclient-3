@@ -26,7 +26,7 @@ class EFOPError extends Exception
  *                       format:   output format. Default PDF
  *                       purge:    if true remove the temporary files generated: Default true
  *                       cmd:      FOP executable name: Default GC_FOP_CMD
- *                       tmp_path: Temporary path. Defaulr GC_WEB_TMP_DIR
+ *                       tmp_path: Temporary path. Defaulr tmp/files
  *                       out_name: Output name (Default ''). If provided the file is generated with this name
  *                       prefix:   File for temporary files. Default: fop-
  *
@@ -37,7 +37,7 @@ function runFOP(DOMDocument $dom, $xslFileName, $opt=array()) {
 	    'format'=>'pdf',
 	    'purge'=>true, 
         'cmd'=>defined('GC_FOP_CMD') ? GC_FOP_CMD : '',
-        'tmp_path'=>defined('GC_WEB_TMP_DIR') ? GC_WEB_TMP_DIR : '/tmp/',
+        'tmp_path'=>ROOT_PATH.'tmp/files/',
         'out_name'=>'',
 		'prefix'=>'fop-',
     );

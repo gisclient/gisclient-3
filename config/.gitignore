@@ -1,4 +1,2 @@
-config.php
-config.db.php
 config.mapproxy.wsgi
 config.mapproxy-wms.wsgi

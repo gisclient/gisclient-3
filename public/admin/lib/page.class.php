@@ -568,7 +568,7 @@
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
 					$button=@implode("\n\t\t",$btn);
 					
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->tag=$tab["level"];
 					$tb->get_titolo();
@@ -590,7 +590,7 @@
 					$parent_key=$tmp[count($tmp)-2];
 					$tb=new Tabella_h($tab["config_file"].".tab","edit");
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->tag=$tab["level"];
 					switch($tab["level"]){
@@ -694,7 +694,7 @@
 						}
 					}
 					$tb->set_titolo($tb->FileTitle,"",$prm);
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					$tb->get_titolo();
 					$tb->edita();
 					$this->write_page_param($prm);
@@ -727,7 +727,7 @@
 					}
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->get_titolo();
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					
 					$tb->edita();
 					$this->write_page_param($prm);
@@ -754,7 +754,7 @@
 						$tb->set_errors($this->errors);
 						$tb->set_dati($_POST["dati"]);
 					}
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->get_titolo();
 					$tb->edita();
@@ -792,7 +792,7 @@
 							break;
 					}
 					$button=@implode("\n\t\t",$btn);
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->tag=$tab["level"];
 					$tb->get_titolo();
@@ -832,7 +832,7 @@
 						$prm["pkey_value[$j]"]=isset($tb->pkeys[$j])?$this->_get_pkey_value($tb->pkeys[$j]):null;
 					}
 					$filter=$tab["parent_name"]."_id = ".$this->db->quote($el["value"]);
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					//$tb->set_titolo($tab["title"],"",$prm);
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->get_titolo();
@@ -886,7 +886,7 @@
 						$tb->set_errors($this->errors);
 						$tb->set_dati($_POST["dati"]);
 					}
-					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->get_titolo();
 					$tb->edita($prm);
@@ -941,7 +941,7 @@
 							switch ($this->action){
 								
 								case "importa raster":
-									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
+									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\" class=\"\">";
 									$level=$this->get_idLivello();
 									$project=$this->parametri["project"];
 									$objId=$this->parametri[$tab["level"]];
@@ -951,7 +951,7 @@
 									if(isset($resultForm)) echo $resultForm;
 									break;
 								case "wizard wms":
-									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
+									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\" class=\"\">";
 									$level=$this->get_idLivello();
 									$project=$this->parametri["project"];
 									$objId=$this->parametri[$tab["level"]];
@@ -963,7 +963,7 @@
 									break;
 								case "esporta test":
 								case "esporta":
-									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
+									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\" class=\"\">";
 									$level=$this->get_idLivello();
 									$project=$this->parametri["project"];
 									$objId=$this->parametri[$tab["level"]];
@@ -993,7 +993,7 @@
 							
 							switch ($this->action){
 								case "classifica":
-									//echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
+									//echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\" class=\"\">";
 									
 									$level=$this->get_idLivello();
 									
@@ -1007,7 +1007,7 @@
 									
 									break;
 								case "importa":
-									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
+									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
 									$level=$this->get_idLivello();
 									$project=$this->parametri["project"];
 									$objId=$this->get_parentValue();

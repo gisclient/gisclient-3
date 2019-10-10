@@ -78,7 +78,10 @@ class MsMapObjFactory
         
         // update metadata
         $url = OwsHandler::currentPageURL();
-        $onlineResource = $url.'?project='.$project.'&map='.$map.'&tmp='.$temporary.'&lang='.$lang;
+        $onlineResource = $url.'?project='.$project.'&map='.$map.'&tmp='.$temporary;
+        if (!is_null($lang)) {
+            $onlineResource .= '&lang='.$lang;
+        }
         $oMap->setMetaData("ows_onlineresource", $onlineResource);
         
         return $oMap;

@@ -1,0 +1,37 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  GisClient\Author\Offline\LookupData:
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\MapData:
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\MbtilesData:
+    arguments: ['%mapproxy_dir%/bin', '%project_dir%/map', '%debug_dir%']
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\MVTData:
+    arguments: ['%debug_dir%']
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\SavedFilterData:
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\SqliteData:
+    arguments: ['%debug_dir%']
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\Offline\ThemeLegendData:
+    tags: ['gisclient.offline_data_format']
+  GisClient\Author\OfflineMap:
+    public: true
+    arguments:
+      $offlineDataFormats: !tagged gisclient.offline_data_format
+  GisClient\Author\Utils\TemporaryFileService:
+    arguments: ['%tmp_dir%']
+
+  Symfony\Component\Config\FileLocator:
+    arguments: ['%project_dir%/config']
+  Symfony\Component\Routing\Loader\YamlFileLoader:
+    arguments: ['@Symfony\Component\Config\FileLocator']
+  Symfony\Component\Routing\Router:
+    arguments: ['@Symfony\Component\Routing\Loader\YamlFileLoader', 'routing.yml']
+    public: true

@@ -1,7 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once 'include/mapImage.php';
+
+use GisClient\Author\Utils\MapImage;
+use GisClient\Author\Utils\PrintDocument;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -30,7 +32,7 @@ if (defined('DEBUG') && DEBUG) {
 
 $db = GCApp::getDB();
 
-$geomTypes = mapImage::$vectorTypes;
+$geomTypes = MapImage::$vectorTypes;
 
 if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
 $parts = explode(':', $_REQUEST["SRS"]);
@@ -87,7 +89,7 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oMap->set('debug', 5);
 		$oMap->setconfigoption('MS_ERRORFILE', $logfile);
 	}
-	$onlineUrl = printDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
+	$onlineUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
 	$mapfileBase = <<<EOMAP
     WEB
         METADATA

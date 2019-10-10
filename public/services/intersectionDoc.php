@@ -221,8 +221,12 @@ $TBS->MergeField('arts', $assign['arts']);
 
 $filename = $docOptions['filename'].rand(0,1000000).'.docx';
 
-$TBS->Show(OPENTBS_FILE, GC_WEB_TMP_DIR.$filename);
+$TBS->Show(OPENTBS_FILE, ROOT_PATH.'tmp/files/'.$filename);
 //FINE TBS
 
 
-$ajax->success(array('url'=>GC_WEB_TMP_URL.$filename, 'assign'=>$assign, 'file'=>GC_WEB_TMP_DIR.$filename));
+$ajax->success(array(
+    'url'=>PUBLIC_URL.'services/download.php?filename='.$filename,
+    'assign'=>$assign,
+    'file'=>ROOT_PATH.'tmp/files/'.$filename
+));

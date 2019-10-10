@@ -148,7 +148,7 @@ class Tabella{
 	
 		$tabella_titolo="
 		<div class=\"tableHeader ui-widget ui-widget-header ui-corner-top\">";
-		if ($mode) $tabella_titolo.="<form method=\"post\" target=\"_parent\" action=\"".$_SERVER["PHP_SELF"]."\">";
+		if ($mode) $tabella_titolo.="<form method=\"post\" target=\"_parent\" action=\".\">";
 		$tabella_titolo.="<input type=\"hidden\" name=\"mode\" value=\"$mode\">
 				$hidden
 				$riga_titolo";

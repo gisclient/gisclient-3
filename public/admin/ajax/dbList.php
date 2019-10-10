@@ -1,9 +1,10 @@
 <?php
 
+use GisClient\Author\Symbol;
+
 require_once __DIR__ . '/../../../bootstrap.php';
 include_once ROOT_PATH.'lib/ajax.class.php';
 include_once ADMIN_PATH.'lib/functions.php';
-include_once ADMIN_PATH."lib/gcSymbol.class.php";
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -74,7 +75,7 @@ switch($selectedField) {
 		$result['fields']['font'] = 'Font';
 		$result['fields']['position'] = GCAuthor::t('position');
 		foreach($smbList['values'] as $symbol) {
-			$result['data'][] = array_merge($symbol, array('image'=>'<img src="getImage.php?table=symbol_ttf&font='.urlencode($symbol["font"]).'&id='.urlencode($symbol["symbol"]).'">'));
+			$result['data'][] = array_merge($symbol, array('image'=>'<img src="../services/symbol.php?table=symbol_ttf&font='.urlencode($symbol["font"]).'&id='.urlencode($symbol["symbol"]).'">'));
 			$result['data_objects'][] = array(
 				'fk_symbol_ttf_name'=>$symbol['symbol'],
 				'label_font'=>$symbol['font'],
@@ -106,7 +107,7 @@ switch($selectedField) {
 			'category'=>GCAuthor::t('category')
 				);
 		foreach($smbList['values'] as $symbol) {
-			$result['data'][] = array_merge($symbol, array('image'=>'<img src="getImage.php?table=symbol&id='.urlencode($symbol['symbol']).'">'));
+			$result['data'][] = array_merge($symbol, array('image'=>'<img src="../services/symbol.php?table=symbol&id='.urlencode($symbol['symbol']).'">'));
 			$result['data_objects'][] = array('symbol_name'=>$symbol['symbol']);
 		}
 	break;
@@ -124,7 +125,7 @@ switch($selectedField) {
 				);
 		foreach($smbList['values'] as $symbol) {
 			$result['data'][] = array_merge($symbol,
-					array('image'=>'<img src="getImage.php?table=symbol&id='.urlencode($symbol['symbol']).'">',
+					array('image'=>'<img src="../services/symbol.php?table=symbol&id='.urlencode($symbol['symbol']).'">',
 					'actions' => '<button class="delete_symbol">Cancella</button>'));
 			$result['data_objects'][] = array('symbol_name'=>$symbol['symbol']);
 		}
