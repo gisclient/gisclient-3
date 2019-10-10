@@ -118,15 +118,25 @@ $map = $objRequest->getvaluebyname('map');
 $temporary = $objRequest->getvaluebyname('tmp');
 $useTemporaryMapfile = !empty($temporary);
 $lang = $objRequest->getvaluebyname('lang');
+$requestService = strtolower($objRequest->getValueByName('service'));
+$requestRequest = strtolower($objRequest->getValueByName('request'));
+
+$isGetLegendGraphicRequest = $requestRequest == 'getlegendgraphic';
 
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
-if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
+if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) || 
+    $isGetLegendGraphicRequest){
     $hasPrivateLayers = false;
     $layersArray = array();
-    if (!empty($layersParameter)) {
-        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
+    if ($isGetLegendGraphicRequest) {
+        // Get layer from request without change $layersParameter value
+        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $objRequest->getValueByName('layer'));  // not layers
+    } else {
+        if (!empty($layersParameter)) {
+            $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
+        }
     }
     
     foreach ($layersArray as $layer) {
@@ -196,8 +206,6 @@ if (!empty($resolution) && $resolution != 72) {
 
 
 // APPLY SLD FOR WMS REQUEST
-$requestService = strtolower($objRequest->getValueByName('service'));
-$requestRequest = strtolower($objRequest->getValueByName('request'));
 if (strtolower($objRequest->getValueByName('service')) == 'wms' &&
     in_array($requestRequest, array('getlegendgraphic', 'getmap'))) {
     $db = GCApp::getDB();
