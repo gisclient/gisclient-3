@@ -130,3 +130,9 @@ mvtGetTile:
         - GET
     requirements:
         format: pbf|mvt
+geolocator:
+    path: geolocator.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\GeolocatorController::getAction'
+    methods:
+        - GET

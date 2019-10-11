@@ -174,17 +174,3 @@ define('MAPFILE_MAX_SIZE', '4096'); //MASSIMA DIMENSIONE IN PIXEL DEL MAPFILE. P
 define('OWS_CACHE_TTL', 60);            // CACHE PER EVITARE DOPPIE RICHIESTE DI OL
 define('OWS_CACHE_TTL_OPEN', 4*60*60);  // CACHE ALLA PRIMA RICHIESTA DI MAPPA PER VELOCIZZARE
 //define('DYNAMIC_LAYERS', '');         // comma separated list of dynamic layers (same url different result)
-
-$GEOLOCATOR_CONFIG = array(
-    'mapset' => array(                      //NOME DEL MAPSET AUTHOR
-        'catalogname'=>'common',            //NOME DEL CATALOGO AUTHOR
-        'namefield'=>'search_name',         //NOME DEL CAMPO DB DELLA TABELLA SU CUI RICERCARE
-        'idfield'=>'id',                    //NOME DEL CAMPO CHIAVE DB DELLA TABELLA SU CUI RICERCARE
-        'geomfield'=>'the_geom',            //NOME DEL CAMPO GEOMETRICO DB DELLA TABELLA SU CUI RICERCARE
-        'tablename'=>'common.map_search',   // SCHEMA_DB.TABELLA_DB
-        'order'=>' order_id, search_name',  //CAMPI DB DI ORDINAMENTO RISULTATI
-        'where'=>"lang_id='de'"             //EVENTUALE FILTRO
-    )
-);
-
-//$GEOLOCATOR_CONFIG_PATH = ROOT_PATH . 'custumer_config/'; //cartella contenente sottocartelle per ogni mapset con geolocator.json
