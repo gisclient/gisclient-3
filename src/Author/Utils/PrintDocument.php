@@ -526,7 +526,10 @@ class PrintDocument
 
         foreach ($this->documentElements as $key => $val) {
             $dom_element = $dom_map->appendChild(new \DOMElement($key));
-            if (strpos($key, 'map-logo') !== false && $absoluteUrls) {
+            if ($absoluteUrls
+                && strpos($key, 'map-logo') !== false
+                && substr($val, 0, 4) === 'http'
+            ) {
                 $val = self::addPrefixToRelativeUrl($val);
             }
             $dom_element->appendChild(new \DOMText($val));
