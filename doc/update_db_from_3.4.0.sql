@@ -1596,7 +1596,7 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
     END IF;
     RAISE INFO v_author_version ;
     IF v_author_version = '3.6.1' THEN
-        ALTER TABLE mapset ADD COLUMN geolocator jsonb ;
+        ALTER TABLE mapset ADD COLUMN IF NOT EXISTS geolocator jsonb ;
         COMMENT ON COLUMN mapset.geolocator IS 'Config for geolocator; Example: {"mapset":{"catalogname":"common","namefield":"search_name","idfield":"id","geomfield":"the_geom","tablename":"common.map_search","order":" order_id, search_name","where":"lang_id=''de''"}}';
 
         v_author_version = '3.6.2';
