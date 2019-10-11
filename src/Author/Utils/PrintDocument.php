@@ -47,8 +47,6 @@ class PrintDocument
 
     private $getLegendGraphicWmsList = array();
 
-    private $nullLogo = 'null.png';
-
     private $getLegendGraphicRequest;
     
     public function __construct($baseUrl)
@@ -182,8 +180,12 @@ class PrintDocument
         }
         
         $this->documentElements['gisclient-folder'] = GC_PRINT_TPL_URL;
-        $this->documentElements['map-logo-sx'] = GC_PRINT_TPL_URL.$this->nullLogo;
-        $this->documentElements['map-logo-dx'] = GC_PRINT_TPL_URL.$this->nullLogo;
+        $this->documentElements['map-logo-sx'] = sprintf('data:image/png;base64,%s', base64_encode(
+            file_get_contents(ROOT_PATH . 'public/images/logo.png')
+        ));
+        $this->documentElements['map-logo-dx'] = sprintf('data:image/png;base64,%s', base64_encode(
+            file_get_contents(ROOT_PATH . 'public/images/pixel.png')
+        ));
         $this->documentElements['map-box'] = $_REQUEST['extent'];
     }
     
