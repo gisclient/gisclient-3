@@ -103,8 +103,12 @@ define('MAPPROXY_GRIDS_NUMLEVELS', 20);
 define('GC_PRINT_TPL_DIR', ROOT_PATH.'public/services/print/');
 define('GC_PRINT_TPL_URL', PUBLIC_URL.'services/print/');
 define('GC_PRINT_IMAGE_SIZE_INI', ROOT_PATH.'config/print_image_size.ini');
-define('GC_PRINT_LOGO_SX', 'http://localhost/images/logo_sx.png');  //LOGO SINISTRO DI STAMPA
-define('GC_PRINT_LOGO_DX', 'http://localhost/images/logo_dx.png');  //LOGO DESTRO DI STAMPA
+if (!empty(getenv('GC_PRINT_LOGO_SX'))) {
+    define('GC_PRINT_LOGO_SX', getenv('GC_PRINT_LOGO_SX'));  //LOGO SINISTRO DI STAMPA
+}
+if (!empty(getenv('GC_PRINT_LOGO_DX'))) {
+    define('GC_PRINT_LOGO_DX', getenv('GC_PRINT_LOGO_DX'));  //LOGO DESTRO DI STAMPA
+}
 define('GC_FOP_CMD', '/usr/local/fop/fop');
 define('GC_FOP_LIB', ROOT_PATH.'lib/fop.php');
 define('GC_PRINT_SAVE_IMAGE', true);                                // baco mapscript: il saveImage a volte funziona solo specificando il nome del file, altre volte funziona solo se NON si specifica il nome del file
