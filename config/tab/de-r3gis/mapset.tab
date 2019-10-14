@@ -16,6 +16,7 @@ dato[] = "Mapset Sortierung;mapset_order;10;text"
 dato[] = "Privat;private;;noyes"
 dato[] = "Anmerkungen;mapset_description;48x4;textarea"
 dato[] = "Metadaten;metadata;48x4;textarea"
+dato[] = "Geolocator;geolocator;48x4;textarea"
 //dato[] = "Formati di stampa;page_size;20;text"
 //dato[] = "Scarica immagine;dl_image_res;20;text"
 
