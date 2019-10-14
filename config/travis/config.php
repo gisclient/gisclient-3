@@ -151,14 +151,3 @@ define('MAPFILE_MAX_SIZE', '4096');
 define('OWS_CACHE_TTL', 60); // Map cache (Prevent OL bug for multiple request)
 define('OWS_CACHE_TTL_OPEN', 4*60*60); // Map cache for the 1st open of the map
 //define('DYNAMIC_LAYERS', ''); // comma separated list of dynamic layers (same url different result)
-
-$GEOLOCATOR_CONFIG = array(
-    'pei' => array(
-        'namefield'=>'search_name',
-        'idfield'=>'id',
-        'geomfield'=>'the_geom',
-        'tablename'=>'common.map_search',
-        'order'=>' order_id, search_name'
-    )
-);
-
