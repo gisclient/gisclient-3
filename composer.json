@@ -42,16 +42,16 @@
     },
     "scripts": {
         "create-writable-directories": [
-            "mkdir -p fonts",
-            "mkdir -p map/tmp",
             "mkdir -p config/debug",
+            "mkdir -p files",
+            "mkdir -p fonts",
+            "mkdir -p import",
+            "mkdir -p map/tmp",
+            "mkdir -p pixmap",
             "mkdir -p public/services/tmp/export",
             "mkdir -p public/services/print/tmp",
             "mkdir -p public/services/documents",
             "mkdir -p public/admin/export",
-            "mkdir -p import",
-            "mkdir -p files",
-            "mkdir -p pixmap",
             "mkdir -p tmp/files",
             "mkdir -p tmp/sess",
             "mkdir -p var/offline"
