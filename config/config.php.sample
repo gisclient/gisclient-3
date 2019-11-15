@@ -153,6 +153,8 @@ define('LEGEND_POINT_SIZE',15);
 define('LEGEND_LINE_WIDTH',1);
 define('LEGEND_POLYGON_WIDTH',2);
 define('PRINT_PDF_FONT','times');
+define('LEGEND_CACHE_PATH', ROOT_PATH.'public/services/legend/');
+define('LEGEND_CACHE_URL', PUBLIC_URL.'services/legend/');
 
 /****************** DATA MANAGER ***************+*/
 define('USE_DATA_IMPORT', false);
@@ -197,4 +199,3 @@ foreach (glob(ROOT_PATH."config/plugins/*.php") as $filename)
 {
     require_once($filename);
 }
-

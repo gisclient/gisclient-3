@@ -260,10 +260,12 @@ class printDocument {
         $layers = array();
         $project = $mapset = null;
         $themes = array();
+        $tmp = '';
 
         foreach($this->tiles as $wms) {
             if(!empty($wms['parameters']['PROJECT']) && empty($project)) $project = $wms['parameters']['PROJECT'];
             if(!empty($wms['parameters']['MAP']) && empty($mapset)) $mapset = $wms['parameters']['MAP'];
+            if(!empty($wms['parameters']['TMP']) && $wms['parameters']['TMP']==1 && empty($tmp)) $tmp = 'tmp.';
 
             //print_array($wms);
             if (isset($wms['parameters']['LAYERS'])){
@@ -283,7 +285,9 @@ class printDocument {
         }
 
         if(!empty($project) && !empty($mapset)) {
-            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+            $this->project = $project;
+            $this->mapset = $tmp . $mapset;
+            $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$tmp.$mapset.'.map');
             foreach($themes as &$theme) {
                 $theme['groups'] = array();
                 foreach($theme['layers'] as $layergroupName) {
@@ -354,6 +358,14 @@ class printDocument {
                     $groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
                     if(empty($group['layers'])) continue;
                     foreach($group['layers'] as $key => $layer) {
+                        if (defined('LEGEND_CACHE_PATH') && defined('LEGEND_CACHE_URL')) {
+                            $legendCacheFile = LEGEND_CACHE_PATH .'/'. $this->project.'/'.$this->mapset . '/' . $layer['url'] . '.png';
+                            if (file_exists($legendCacheFile)) {
+                                array_push($groupArray['layers'], array('title'=>$layer['title'],'img'=>LEGEND_CACHE_URL .'/'. $this->project.'/'.$this->mapset . '/' . $layer['url'] . '.png'));
+                                continue;
+                            }
+
+                        }
                         $tmpFileId = $theme['id'].'-'.$group['id'];
                         if(!isset($legendImages[$layer['url']])) {
                             if(isset($group['sld'])) $sld = $group['sld'];

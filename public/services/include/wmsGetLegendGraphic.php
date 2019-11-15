@@ -35,8 +35,8 @@ if($objRequest->getvaluebyname('layer')){
 	$ruleClassName=false;
 
 	$iconsArray = array();
-	$iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:24;
-	$iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:24;
+	$iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:LEGEND_ICON_W;
+	$iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:LEGEND_ICON_H;
 	$totWidth = isset($_REQUEST['WIDTH'])?$_REQUEST['WIDTH']:250;
 
 
@@ -181,6 +181,16 @@ if($objRequest->getvaluebyname('layer')){
                 };
                 //print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
                 if($oLayer->numclasses>0){
+					// **** Fix for error #5268 in mapserver 7: legend not diplayed if no minsize and maxsize specified
+					// **** TODO: remove in next versions?
+					for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
+						$oClass = $oLayer->getClass($clno);
+						for ($stno=0; $stno < $oClass->numstyles; $stno++) {
+							$oStyle = $oClass->getStyle($stno);
+							$oStyle->set('minsize', $iconH);
+							$oStyle->set('maxsize', $iconH);
+						}
+					}
                     ms_ioinstallstdouttobuffer();
                     $objRequest->setParameter('LAYER', $oLayer->name);
                     $objRequest->setParameter('WIDTH', $totWidth);
@@ -209,6 +219,13 @@ if($objRequest->getvaluebyname('layer')){
                     $check = $oClass->getMetaData('gc_no_image');
                     if(!empty($check)) continue;
 					try {
+						// **** Fix for error #5268 in mapserver 7: legend not diplayed if no minsize and maxsize specified
+						// **** TODO: remove in next versions?
+						for ($stno=0; $stno < $oClass->numstyles; $stno++) {
+							$oStyle = $oClass->getStyle($stno);
+							$oStyle->set('minsize', $iconH);
+							$oStyle->set('maxsize', $iconH);
+						}
                     	$icoImg = $oClass->createLegendIcon($iconW,$iconH);
 					}
 					catch (Exception $e) {

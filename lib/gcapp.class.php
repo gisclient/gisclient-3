@@ -273,6 +273,11 @@ class GCAuthor {
 		$mapfile->setTarget($target);
 		$mapfile->writeMap("project",$project);
 
+		$maps = GCAuthor::getMapsets($project);
+        foreach($maps as $singleMap) {
+          GCAuthor::generateLegendCache($project, $singleMap["mapset_name"], $target);
+	  	}
+
 		$localization = new GCLocalization($project);
 		$alternativeLanguages = $localization->getAlternativeLanguages();
 		if($alternativeLanguages){
@@ -305,6 +310,8 @@ class GCAuthor {
 		$mapfile = new gcMapfile();
 		$mapfile->setTarget($target);
 		$mapfile->writeMap("mapset",$mapset);
+
+		GCAuthor::generateLegendCache($project, $mapset, $target);
 
 		$localization = new GCLocalization($project);
 		$alternativeLanguages = $localization->getAlternativeLanguages();
@@ -346,6 +353,118 @@ class GCAuthor {
         GCError::register("$project.$mapset: Mapfile inesistente. Creare il file prima di procedere.");
       }
     }
+
+	private static function generateLegendCache($project, $mapset, $target) {
+		if (!defined('LEGEND_CACHE_PATH')) {
+			return;
+		}
+		$legendDir = LEGEND_CACHE_PATH .'/'.$project.'/';
+		if ($target === 'tmp') {
+			$legendDir .= 'tmp.';
+		}
+		$legendDir .= $mapset;
+		if(!is_dir($legendDir)) {
+            $rv = mkdir($legendDir, 0770, true);
+            if ($rv === false) {
+                $errorMsg = "Could not create directory $legendDir";
+                GCError::register($errorMsg);
+                return;
+            }
+        }
+		array_map('unlink', glob("$legendDir/*"));
+		$oMap = @ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+		// **** Generate legend cache images by layergroup ****
+		$layerGroups = $oMap->getAllGroupNames();
+		foreach($layerGroups as $layerGroup) {
+			print_debug($layerGroup, null, 'legend_generate');
+			$params = array(
+                'REQUEST'=>'getlegendgraphic',
+                'SERVICE'=>'wms',
+                'FORMAT'=>'image/png',
+                'WIDTH'=>'500',
+                'LAYER'=>$layerGroup,
+                'VERSION'=>'1.1.1',
+				'PROJECT'=>$project,
+				'MAP'=>$mapset
+            );
+
+            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
+
+                $params['GC_SESSION_ID'] = session_id();
+            }
+            $urlWmsRequest = PUBLIC_URL . '/services/ows.php?' . http_build_query($params);
+			$source = imagecreatefrompng($urlWmsRequest);
+			if($source !== false) {
+				$result = imagepng($source, $legendDir . '/' . $layerGroup . '.png');
+				if ($result === false) {
+					GCError::register("Error saving legend image from $urlWmsRequest");
+				}
+			}
+			else {
+				GCError::register("Error getting legend image from $urlWmsRequest");
+            }
+		}
+		// **** Generate legend cache images by layer ****
+		$numLayers = $oMap->numlayers;
+		for ($i=0; $i<$numLayers; $i++) {
+			$oLayer = $oMap->getLayer($i);
+			//print_debug($oLayer->name, null, 'legend_generate');
+			$params = array(
+                'REQUEST'=>'getlegendgraphic',
+                'SERVICE'=>'wms',
+                'FORMAT'=>'image/png',
+                'WIDTH'=>'500',
+                'LAYER'=>$oLayer->name,
+                'VERSION'=>'1.1.1',
+				'PROJECT'=>$project,
+				'MAP'=>$mapset
+            );
+
+            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
+
+                $params['GC_SESSION_ID'] = session_id();
+            }
+            $urlWmsRequest = PUBLIC_URL . '/services/ows.php?' . http_build_query($params);
+			$source = imagecreatefrompng($urlWmsRequest);
+			if($source !== false) {
+				$result = imagepng($source, $legendDir . '/' . $oLayer->name . '.png');
+				if ($result === false) {
+					GCError::register("Error saving legend image from $urlWmsRequest");
+				}
+			}
+			else {
+				GCError::register("Error getting legend image from $urlWmsRequest");
+            }
+			// **** Generate legend cache images by class ****
+			for ($j=0;$j<$oLayer->numclasses; $j++) {
+				try {
+					$oClass = $oLayer->getClass($j);
+					if($oClass->getMetaData("gc_no_image") == 1) {
+						continue;
+					}
+					// **** Fix for error #5268 in mapserver 7: legend not diplayed if no minsize and maxsize specified
+					// **** TODO: remove in next versions?
+					for ($stno=0; $stno < $oClass->numstyles; $stno++) {
+						$oStyle = $oClass->getStyle($stno);
+						$oStyle->set('minsize', LEGEND_ICON_H);
+						$oStyle->set('maxsize', LEGEND_ICON_H);
+					}
+					$oLegendImg = $oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
+					$oLegendImg->saveImage($legendDir . '/' . $oLayer->name . '-' . $j . '.png');
+				} catch (Exception $e) {
+					$errorStr = "Error generating legend image for layer " . $oLayer->name . ", class " . $oClass->name . ". Details: " . $e->getMessage();
+					$error = ms_GetErrorObj();
+					while($error && $error->code != MS_NOERR)
+					{
+					  $errorStr .= " Error in ". $error->routine . ":" . $error->message;
+					  $error = $error->next();
+					}
+					ms_ResetErrorList();
+					GCError::register($errorStr);
+				}
+			}
+		}
+	}
 
     private static function getNextChoords($choordsArray) {
       $xmin = $choordsArray[0] + (($choordsArray[2] - $choordsArray[0])/4);

@@ -169,7 +169,9 @@ class gcMap{
 
         $this->getLegend = $getLegend;
 
-        //$this->_getLayers();
+        if (defined('LEGEND_CACHE_PATH') && defined('LEGEND_CACHE_URL')) {
+			$mapConfig["legendCacheUrl"] = LEGEND_CACHE_URL;
+		}
 
         $this->_getSelgroup();
         $this->_getLayers();
