@@ -905,13 +905,13 @@ switch ($_REQUEST['action']) {
                 if ($colTypes[$colIndex] == 'text') {
                     continue;
                 }
-                if ($colTypes[$colIndex] == 'double') {
+                if ($colTypes[$colIndex] == 'double precision') {
                     if (!is_numeric($val)) {
                         $colTypes[$colIndex] = 'text';
                     }
                 } else if ($colTypes[$colIndex] == 'bigint') {
                     if ((int)$val != $val) {
-                        $colTypes[$colIndex] = 'double';
+                        $colTypes[$colIndex] = 'double precision';
                     }
                     if (!is_numeric($val)) {
                         $colTypes[$colIndex] = 'text';
