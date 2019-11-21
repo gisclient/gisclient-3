@@ -549,12 +549,18 @@ class GCAuthor {
 			if($aRelation=$aFeature["relation"]) {
 				foreach($aRelation as $idrel => $rel){
 					$relationAliasTable = GCApp::nameReplace($rel["name"]);
-
 					//se relazione 1-n, salta se non vogliamo il join
                     //se vogliamo i dati della secondaria, elimina il groupBy
+                    $joinClause = 'left join';
 					if($rel["relation_type"] == 2) {
                         if(!$options['include_1n_relations']) continue;
-                        if(!empty($options['show_relation']) && $rel['name'] != $options['show_relation']) continue;
+                        if(!empty($options['show_relation']) && $rel['name'] != $options['show_relation'])
+						{
+							continue;
+						}
+						else {
+							$joinClause = 'join';
+						}
 
                         if(!$options['group_1n']) {
                             $groupByFieldList = null;
@@ -568,7 +574,7 @@ class GCAuthor {
                     }
 
                     $joinFields = implode(" AND ",$joinList);
-                    $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
+                    $joinString = "$joinString $joinClause ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
 				}
 
 			}
