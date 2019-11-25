@@ -558,7 +558,8 @@ class GCAuthor {
 						{
 							continue;
 						}
-						else {
+
+						if (!empty($options['show_relation']) && $rel['name'] == $options['show_relation']){
 							$joinClause = 'join';
 						}
 
