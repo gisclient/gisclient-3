@@ -78,10 +78,10 @@
 						<fo:table border-bottom="1pt solid #000000">
 							<fo:table-body>
 								<fo:table-row>
-									<fo:table-cell>
+									<fo:table-cell padding="5px">
 										<fo:block><fo:external-graphic src="{map-logo-sx}" content-height="1cm" /></fo:block>
 									</fo:table-cell>
-									<fo:table-cell text-align="right">
+									<fo:table-cell text-align="right" padding="5px">
 										<fo:block><fo:external-graphic src="{map-logo-dx}" content-height="1cm" /></fo:block>
 									</fo:table-cell>
 								</fo:table-row>
