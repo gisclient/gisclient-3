@@ -358,9 +358,11 @@ class GCAuthor {
 		if (!defined('LEGEND_CACHE_PATH')) {
 			return;
 		}
+		$mapsetFileName = $mapset.'.map';
 		$legendDir = LEGEND_CACHE_PATH .'/'.$project.'/';
 		if ($target === 'tmp') {
 			$legendDir .= 'tmp.';
+			$mapsetFileName .= 'tmp.';
 		}
 		$legendDir .= $mapset;
 		if(!is_dir($legendDir)) {
@@ -372,7 +374,7 @@ class GCAuthor {
             }
         }
 		array_map('unlink', glob("$legendDir/*"));
-		$oMap = @ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map');
+		$oMap = @ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapsetFileName);
 		// **** Generate legend cache images by layergroup ****
 		$layerGroups = $oMap->getAllGroupNames();
 		foreach($layerGroups as $layerGroup) {
