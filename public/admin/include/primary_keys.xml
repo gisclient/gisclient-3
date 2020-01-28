@@ -2,12 +2,12 @@
 <root>
 	<catalog>
 		<table>catalog</table>
-		<pkey>catalog_id</pkey> 
+		<pkey>catalog_id</pkey>
 		<parent>project</parent>
 	</catalog>
 	<class>
 		<table>class</table>
-		<pkey>class_id</pkey> 
+		<pkey>class_id</pkey>
 		<parent>layer</parent>
 	</class>
 	<groups>
@@ -48,6 +48,12 @@
 		<pkey>mapset_name</pkey>
 		<parent>mapset</parent>
 	</mapset_layergroup>
+	<mapset_theme>
+		<table>mapset_theme</table>
+		<pkey>theme_id</pkey>
+		<pkey>mapset_name</pkey>
+		<parent>mapset</parent>
+	</mapset_theme>
 	<mapset>
 		<table>mapset</table>
 		<pkey>mapset_name</pkey>

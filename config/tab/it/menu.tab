@@ -63,6 +63,8 @@ constant = "'Link'"
 standard = "'Gruppi del Mapset '||mapset_name"
 [mapset_layergroup]
 standard = "'LayerGroup del Mapset '||mapset_name"
+[mapset_theme]
+standard = "'Configurazione temi del Mapset '||mapset_name"
 [mapset_qt]
 standard = "'QT del mapset '||mapset_name"
 [mapset_link]

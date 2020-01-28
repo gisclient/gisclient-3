@@ -288,13 +288,13 @@ class gcMap{
             }
 
         }
-        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
+        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,mapset_theme.rootpath,coalesce(mapset_theme.mapset_theme_order, theme.theme_order) as mapset_theme_order,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) LEFT JOIN ".DB_SCHEMA.".mapset_theme using (theme_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
             WHERE layergroup_id IN (
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
         $sqlLayers .= " UNION
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layergroup LEFT JOIN ".DB_SCHEMA.".layer USING (layergroup_id) WHERE layer_id IS NULL
-            ) AND mapset_name = :mapset_name
-                        ORDER BY theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;";
+            ) AND mapset_layergroup.mapset_name = :mapset_name
+                        ORDER BY mapset_theme_order,theme.theme_order,theme.theme_title, layergroup.layergroup_order,layergroup.layergroup_title;";
 
         $stmt = $this->db->prepare($sqlLayers);
         $stmt->bindValue(':mapset_name', $this->mapsetName);
@@ -345,6 +345,16 @@ class gcMap{
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
             $themeTitle = empty($row['theme_title'])?$theme_name:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["theme_title"]):$row["theme_title"]);
+            if (empty($row['rootpath'])) {
+                $rootPath = $themeTitle;
+            }
+            else {
+                $rootPath = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["rootpath"]):$row["rootpath"];
+                $rootPath = trim($rootPath);
+                $rootPath = trim($rootPath, '/');
+                $rootPath .= '/' . $themeTitle;
+            }
+
             $layergroupName = $row['layergroup_name'];
             $layergroupTitle = empty($row['layergroup_title'])?$layergroupName:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["layergroup_title"]):$row["layergroup_title"]);
             $layerType = intval($row["owstype_id"]);
@@ -378,7 +388,7 @@ class gcMap{
             $layerOptions["theme"] = $themeTitle;
             $layerOptions["theme_id"] = $row['theme_name'];
             $layerOptions["title"] = $layergroupTitle;
-            $layerOptions["rootPath"] = $themeTitle;
+            $layerOptions["rootPath"] = $rootPath;
             $layerOptions["order"] = $layerOrder;
 
             if ($row["refmap"])
@@ -445,7 +455,7 @@ class gcMap{
                             $aLayer['theme_single'] = true;
                             $aLayer["options"]["title"] = $themeTitle;
                             $aLayer["options"]["visibility"] = false;
-                            $aLayer["options"]["rootPath"] = "";
+                            $aLayer["options"]["rootPath"] = $rootPath;
                             $aLayer["options"]["zindex_correction"] = $themeZCorr;
                             unset($aLayer["options"]["order"]);
                             $aLayer["parameters"]["layers"] = array();
@@ -706,7 +716,7 @@ class gcMap{
                     $layerParameters["theme"] = $themeTitle;
                     $layerParameters["title"] = $layergroupTitle;
                     $layerParameters["theme_id"] = $row['theme_name'];
-                    $layerParameters["rootPath"] = $themeTitle;
+                    $layerParameters["rootPath"] = $rootPath;
                     $layerParameters["order"] = $layerOrder;
                     $layerParameters["zindex_correction"] = $layerZCorr?$layerZCorr:$themeZCorr;
                     //$layerParameters["displayInLayerSwitcher"] = true;

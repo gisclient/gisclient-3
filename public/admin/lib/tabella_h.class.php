@@ -20,7 +20,7 @@ function set_punto($image){
 }
 
 function set_color($intestazione,$font_intestazione,$titolo,$font_titolo){
-// ************ da fare********************usare class?????	
+// ************ da fare********************usare class?????
 	//aggiungere stile
 	$this->colore_colonne=$intestazione;
 	$this->color_head_font=$font_intestazione;
@@ -32,36 +32,36 @@ function get_cella($row,$col){
 	$valore = $this->array_dati[$row][$nome];
 	$w=$this->def_col[$col][2];//larghezza del campo
 	$tipo=trim($this->def_col[$col][3]);//tipo del campo
-	
+
 	switch ($tipo){//tipo campo in configfile
 		case "hidden":
-			$retval="";
+			$retval="<td><input type=\"hidden\" name=\"dati[$row][$nome]\" id=\"hid_$row$nome\" value=\"$valore\" /></td>";
 			break;
 		case "idriga":
 			$retval="<td><input type=\"hidden\" name=\"idriga\" value=\"$valore\" ></td>\n";
 			break;
-	
+
 		case "text":
 			//$valore=html_entity_decode($valore);
 			$retval="<td>$valore</td>\n";
 			break;
-			
+
 	//	Modificato Marco
 		case "ora":
 			$valore=number_format($dati[$campo],2, ':', '');
-			if ($valore!=0)	
+			if ($valore!=0)
 				$retval="<td>$valore</td>\n";
 			else
 				$retval="<td>---</td>\n";
 			break;
 		case "numero":
 			$valore=number_format($valore,4, ',', '.');
-			if ($valore!=0)	
+			if ($valore!=0)
 				$retval="<td>$valore</td>\n";
 			else
 				$retval="<td>---</td>\n";
 			break;
-			
+
 		case "valuta":
 			if ($valore){
 				$valore=number_format($valore,2, ',', '.');
@@ -71,13 +71,13 @@ function get_cella($row,$col){
 				$retval="<td>---</td>\n";
 			break;
 		case "superficie":
-			if ($valore!=0)	
+			if ($valore!=0)
 				$retval="<td>$valore mq</td>\n";
 			else
 				$retval="<td>---</td>\n";
 			break;
 		case "volume":
-			if ($valore!=0)	
+			if ($valore!=0)
 				$retval="<td>$valore mc</td>\n";
 			else
 				$retval="<td>---</td>\n";
@@ -86,17 +86,17 @@ function get_cella($row,$col){
 		case "data":
 			$data=$this->date_format(stripslashes($valore));
 			$retval="<td>$data</td>\n";
-			break;	
-			
+			break;
+
 		case "checkbox":
 			(($valore=="t") or ($valore==1))?($selezionato="checked"):($selezionato="");
-			
+
 			if ($valore==-1)
 				$retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input type=\"checkbox\" name=\"$valore\" id=\"$valore\" value=\"$nome\" disabled checked></td>\n";
 			else
 				$retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input type=\"checkbox\" name=\"$valore\" id=\"$valore\" value=\"$nome\" $selezionato></td>\n";
 			break;
-			
+
 		case "checkbox_chk":
 			$retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input type=\"checkbox\" name=\"$valore\" id=\"$valore\" value=\"$nome\" checked=\"checked\"></td>\n";
 			break;
@@ -110,7 +110,7 @@ function get_cella($row,$col){
 			$size=explode("#",$this->def_col[$col][2]);
 			$group=$this->array_dati[$row][$size[1]];
 			$id=$this->array_dati[$row][$size[2]];
-			
+
 			$selected=($id>0)?("checked"):("");
 			$strValore=($valore)?("value=\"$valore\""):("value=\"1\"");
 			$retval="<td align=\"center\" valign=\"middle\" width=\"7\" style=\"text-align:center;\"><input width=\"7\" type=\"checkbox\" name=\"dati[$group][$nome]\" $strValore $selected></td>\n";
@@ -134,7 +134,7 @@ function get_cella($row,$col){
 			}
 			else
 				$jslink="link('".addslashes(html_entity_decode($valore,ENT_QUOTES))."')";
-			
+
 			$retval ="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\">";
 			$retval.="<a class=\"button info\" href=\"javascript:$jslink\">Info</a>";
 			$retval.="</td>\n";
@@ -146,7 +146,7 @@ function get_cella($row,$col){
 			}
 			else
 				$jslink="edit('".addslashes(html_entity_decode($valore,ENT_QUOTES))."')";
-			
+
 			$retval ="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\">";
 			$retval.="<a class=\"button edit\" href=\"javascript:$jslink\">Edit</a>";
 			$retval.="</td>\n";
@@ -161,14 +161,14 @@ function get_cella($row,$col){
 				array_push($values, $this->array_dati[$row][$pkey]);
 			}
 			$jsLink = "deleteRow('".implode(',',$pkeys)."', '".implode(',',$values)."', '".$this->array_hidden['livello']."', '".$this->config_file."')";
-			
+
 			$retval ="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\">";
 			$retval.="<a class=\"button delete\" href=\"javascript:$jsLink\">Delete</a>";
 			$retval.="</td>\n";
 			break;
-			
-		
-			break;		
+
+
+			break;
 		case "zoom":
 			$jslink=$this->zoomto(trim($this->tabelladb),$valore);
 			$retval="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\"><a href=\"javascript:$jslink\"><img src=\"images/zoom.gif\" border=\"0\"></a></td>\n";
@@ -177,8 +177,8 @@ function get_cella($row,$col){
 		case "yesno":
 			($valore==0)?($yn=GCAuthor::t('no')):($yn=GCAuthor::t('yes'));
 			$retval="<td align=\"left\" valign=\"middle\"  width=\"$w\">$yn</td>\n";
-			break;		
-		
+			break;
+
 		case "delete":
 			$id=$this->array_dati[$row][$nome];
 			$keys=array_keys($this->pkeys);
@@ -188,11 +188,11 @@ function get_cella($row,$col){
 			$jslink="elimina([".implode(",",$prm)."])";
 			$retval=($this->mode=="view")?('<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" >&nbsp;</td>'):("<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><a href=\"javascript:$jslink;\"><img src=\"images/delete16.gif\" border=\"0\"></a></td>\n");
 			break;
-			
+
 		case "semaforo":
 			($valore)?($img="frossa"):($img="fblu");
 			$retval="<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img.gif\" border=\"0\"></td>\n";
-			
+
 			break;
 		case "image":
 			$size=explode("#",$w);
@@ -203,36 +203,37 @@ function get_cella($row,$col){
 				$retval="<td><a href=\"#\" onclick=\"javascript:window.open('getImage.php?id=$v&table=$table')\"><img src=\"getImage.php?id=$v&table=$table\" style=\"width:".$dim[0]."px;height:".$dim[1]."px;\"></a></td>";
 			else
 				$retval="<td>Nessuna immagine salvata $v</td>";
-			break;	
+			break;
 		case "image2":
 			$img=(!$valore)?("frossa"):($valore);
 			$retval="<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img\" border=\"0\"></td>\n";
-			
+
 			break;
 		//Genera un array di text indicizzati su id
 		case "text_box":
-			$data=$this->date_format(stripslashes($valore));
-			$nome.="[".$this->array_dati[$row]["id"]."]";
-			$retval="<td><input $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"$nome\" id=\"data\" value=\"$data\">$help"; 
+			$data=stripslashes($valore);
+			$id=$row . '_' . $nome;
+			//$nome.="[".$this->array_dati[$row]["id"]."]";
+			$retval="<td><input $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$row][$nome]\" id=\"$id\" value=\"$data\">$help";
 			break;
-			
+
 		case "radio1":
-			
+
 			$id=$this->array_dati[$row][$size[1]];
 			(($valore=="t") or ($valore==1))?($selezionato="checked"):($selezionato="");
 			$retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input width=\"7\" type=\"radio\" name=\"$nome\" value=\"$id\" $selezionato></td>\n";
-			break;	
-			
-	
+			break;
+
+
 		case "punto":
 			$p_image=$this->img_punto;
 			$retval="<td align=\"center\" valign=\"middle\" width=\"$w\"><img src=\"images/$p_image.gif\" border=\"0\"></td>\n";
-			break;	
+			break;
 		//crea  un array di text area con associata un'immagine che permette di visualizzare le text area. Di default è nascosta
 		case "nota":
 			$nome.="[".$this->array_dati[$row]["id"]."]";
 			$imm="imm_".$nome;
-			$retval="<td>&nbsp;&nbsp;<img border=\"0\" id=\"$imm\" height=\"12\" src=\"images/left.gif\" onclick=\"show_note('$nome','$imm')\">&nbsp;<span id=\"$nome\" style=\"display:none\"><textarea name=\"$nome\" cols=\"$w\" rows=\"2\">$valore</textarea>$help</span>"; 
+			$retval="<td>&nbsp;&nbsp;<img border=\"0\" id=\"$imm\" height=\"12\" src=\"images/left.gif\" onclick=\"show_note('$nome','$imm')\">&nbsp;<span id=\"$nome\" style=\"display:none\"><textarea name=\"$nome\" cols=\"$w\" rows=\"2\">$valore</textarea>$help</span>";
 			break;
 		case "selectdb":
 			$size=explode("#",$w);
@@ -240,7 +241,7 @@ function get_cella($row,$col){
 			break;
 		case "chiave_esterna":
 			$size=explode("#",$w);
-			
+
 			$retval="<td>&nbsp;".$this->get_chiave_esterna($valore,$nome,$size[1],$size[2])."</td>";
 			break;
 		case "color":
@@ -248,7 +249,7 @@ function get_cella($row,$col){
 			if ($val)
 				$retval="<td>".$valore."&nbsp;<span style=\"width:10px;height:10px;border:1px solid black;background-color:rgb($val);\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>";
 			else
-				$retval = "<td>".GCAuthor::t('undefined')."</td>"; 
+				$retval = "<td>".GCAuthor::t('undefined')."</td>";
 			break;
         case "button":
         case "buttonTooltip":
@@ -262,7 +263,7 @@ function get_cella($row,$col){
           if(!$mode || $mode=="all" || $this->mode==$mode)
 				$retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" $tooltip type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" />";
 		  break;
-		
+
 		case "submit":
 			if (in_array(strtolower($label),Array("cancella","elimina")))
 				$js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
@@ -287,7 +288,7 @@ function get_cella($row,$col){
 			break;
 	}
 	return $retval;
-}	
+}
 
 
 function elenco ($message = null){
@@ -302,34 +303,34 @@ function elenco ($message = null){
 	//Intestazione delle colonne
 	$tabella.="
 		<div><table class=\"stiletabella\">
-			
+
 			<tr class=\"ui-widget ui-state-default\">\n";
 
 	//riga intestazione colonne ecreazione di def_col
 	for ($i=0;$i<$ncols;$i++){
-		$this->def_col[]=explode(";",$this->tab_config[$i][0]);//qui trovo la definizione della i-esima colonna 
+		$this->def_col[]=explode(";",$this->tab_config[$i][0]);//qui trovo la definizione della i-esima colonna
 		//if($i==($ncols-1) && $hide)
-		//	$tabella.="\t\t\t\t<td align=\"$all\" width=\"".$this->def_col[$i][2]."\"><font face=\"Verdana\" color=\"$this->color_head_font\" size=\"1\"><b>".$this->def_col[$i][0]."</b></font>$hide</td>\n";		
+		//	$tabella.="\t\t\t\t<td align=\"$all\" width=\"".$this->def_col[$i][2]."\"><font face=\"Verdana\" color=\"$this->color_head_font\" size=\"1\"><b>".$this->def_col[$i][0]."</b></font>$hide</td>\n";
 		//else
 		//if($this->def_col[$i][0])
-			$tabella.="\t\t\t\t<td align=\"$all\" width=\"".$this->def_col[$i][2]."\"><b>".$this->def_col[$i][0]."</b></td>\n";		
+			$tabella.="\t\t\t\t<td align=\"$all\" width=\"".$this->def_col[$i][2]."\"><b>".$this->def_col[$i][0]."</b></td>\n";
 		$all="left";
 	}
 	$tabella.="\t\t\t</tr>\n";
 
 	for ($i=0;$i<$this->num_record;$i++){
-		
+
 		for ($j=0; $j<$ncols; $j++)
 			$tabella.="\t\t\t\t".$this->get_cella($i,$j);
 		 $tabella.="\t\t\t</tr>\n";
-		 //$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";			
+		 //$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";
 	}
-	
+
 	if($this->num_record==0){
-		$tabella.="\t\t\t<tr>\n";//CICLO SULLE COLONNE	
+		$tabella.="\t\t\t<tr>\n";//CICLO SULLE COLONNE
 		$tabella.="<td colspan=\"".$ncols."\"><p><b>$message</b></p></td>";
 		 $tabella.="\t\t\t</tr>\n";
-	}	
+	}
 		//fine righe di dettaglio
 		$tabella.="\t\t</table></div>\n";
 		print $tabella;
@@ -346,8 +347,8 @@ $all="center";
 
 	//riga intestazione colonne ecreazione di def_col
 	for ($i=0;$i<$ncols;$i++){
-		$this->def_col[]=explode(";",$this->tab_config[$i][0]);//qui trovo la definizione della i-esima colonna 
-		$tabella.="\t\t\t\t<td width=\"".$this->def_col[$i][2]."\"><font face=\"Verdana\" color=\"$this->color_head_font\" size=\"1\"><b>".$this->def_col[$i][0]."</b></font></td>\n";		
+		$this->def_col[]=explode(";",$this->tab_config[$i][0]);//qui trovo la definizione della i-esima colonna
+		$tabella.="\t\t\t\t<td width=\"".$this->def_col[$i][2]."\"><font face=\"Verdana\" color=\"$this->color_head_font\" size=\"1\"><b>".$this->def_col[$i][0]."</b></font></td>\n";
 		$all="left";
 	}
 	$tabella.="\t\t\t</tr>\n";
@@ -356,7 +357,7 @@ $all="center";
 		$tabella.="\t\t\t\t".$this->get_cella($i,0)."&nbsp;&nbsp;";
 	}
 	$tabella.="</td>\t\t\t</tr>\n";
-	//$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";			
+	//$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";
 	//fine righe di dettaglio
 	$tabella.="\t\t</table>\n";
 	print $tabella;
@@ -366,7 +367,7 @@ $all="center";
 		if ($val==-1)
 			return GCAuthor::t('undefined');
 		elseif(!$val){
-			
+
 			switch($tab){
 				case "e_searchtype":
 					$fkey="Nessuna Ricerca";
@@ -396,24 +397,18 @@ $all="center";
 
                         $row=$stmt->fetch(PDO::FETCH_ASSOC);
                         return $row[$campo];
-		
+
 		}
 	}
 	/*
 	function get_chiave_esterna($val,$fld,$tab,$campo){
 		$sql="SELECT $campo FROM $this->schemadb.$tab WHERE $fld='$val';";
-		
+
 		if (!isset($this->db)) $this->connettidb();
 		print_debug($sql,null,"fkey");
 		if(!$this->db->sql_query($sql))
 			print_debug($sql,null,"tabella");
-		
+
 		return $this->db->sql_fetchfield($campo);
 	}*/
 }//end class
-
-
-
-
-
-

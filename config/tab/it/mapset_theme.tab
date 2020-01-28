@@ -1,0 +1,30 @@
+[standard]
+table = "mapset_theme"
+pkey = "mapset_name;theme_id"
+order_fld = "theme_title#presente DESC"
+dato[] = ";theme_id;1%;hidden"
+
+dato[] = "Tema;theme_title;35%;text"
+dato[] = "Percorso del tema (su albero livelli);rootpath;35%;text_box"
+dato[] = "Ordine del tema in mappa;mapset_theme_order;35%;text_box"
+
+[list]
+table = "mapset_theme"
+pkey = "mapset_name;theme_id"
+order_fld = "theme_title"
+
+dato[] = "Tema;theme_title;35%;text"
+dato[] = "Percorso del tema (su albero livelli);rootpath;35%;text"
+dato[] = "Ordine del tema in mappa;mapset_theme_order;35%;text"
+
+[title]
+edit = "Modifica configurazione temi della mappa"
+view = "Visualizza configurazione temi della mappa"
+new = "Inserisci configurazione temi nella mappa"
+list = "Configurazione temi presenti nella mappa"
+
+[menu]
+standard = "Inserisci configurazione temi nella mappa"
+
+[message]
+nodata = ""
