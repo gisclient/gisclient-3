@@ -2,6 +2,7 @@
 insert into gisclient_3.e_form(id,name,config_file,tab_type,level_destination,save_data,parent_level) values (88,'map_theme','mapset_theme',5,23,'mapset_theme',8);
 insert into gisclient_3.e_form(id,name,config_file,tab_type,level_destination,save_data,parent_level) values (87,'map_theme','mapset_theme',4,23,'mapset_theme',8);
 insert into gisclient_3.e_form(id,name,config_file,tab_type,level_destination,save_data,parent_level) values (89,'map_theme','mapset_theme',0,23,'mapset_theme',8);
+insert into gisclient_3.form_level (id,level,mode,form,order_fld,visible) values (80,8,3,87,6,1);
 insert into gisclient_3.form_level (id,level,mode,form,order_fld,visible) values (81,23,1,88,1,1);
 insert into gisclient_3.form_level (id,level,mode,form,order_fld,visible) values (82,23,-1,89,2,1);
 CREATE TABLE gisclient_3.mapset_theme
