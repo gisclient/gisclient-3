@@ -288,7 +288,7 @@ class gcMap{
             }
 
         }
-        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,mapset_theme.rootpath,coalesce(mapset_theme.mapset_theme_order, theme.theme_order) as mapset_theme_order,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) LEFT JOIN ".DB_SCHEMA.".mapset_theme using (theme_id) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
+        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,mapset_theme.rootpath,coalesce(mapset_theme.mapset_theme_order, theme.theme_order) as mapset_theme_order,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) LEFT JOIN ".DB_SCHEMA.".mapset_theme using (theme_id,mapset_name) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
             WHERE layergroup_id IN (
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
         $sqlLayers .= " UNION
