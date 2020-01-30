@@ -352,7 +352,9 @@ class gcMap{
                 $rootPath = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["rootpath"]):$row["rootpath"];
                 $rootPath = trim($rootPath);
                 $rootPath = trim($rootPath, '/');
-                $rootPath .= '/' . $themeTitle;
+                if ($row["theme_single"] != 1) {
+                    $rootPath .= '/' . $themeTitle;
+                }
             }
 
             $layergroupName = $row['layergroup_name'];
