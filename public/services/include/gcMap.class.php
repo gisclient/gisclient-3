@@ -483,20 +483,36 @@ class gcMap{
                         else {
                             $nodes = array();
                             $layers = array();
+                            $userLayersMinScale = 0;
+                            $userLayersMaxScale = PHP_INT_MAX;
                             foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
 
                                 if ($row["status"] == 1)
                                     array_push($this->mapLayers[$idx]["parameters"]["layers"], $userLayer["name"]);
                                 $arr = array("layer" => $userLayer["name"], "title" => $userLayer["title"]);
+
                                 //ALLA ROVESCIA RISPETTO A MAPSERVER
-                                if ($userLayer["minScale"])
+                                if ($userLayer["minScale"]) {
                                     $arr["maxScale"] = floatval($userLayer["minScale"]);
-                                else if (isset($layerOptions["maxScale"]))
+                                    $userLayersMaxScale = $arr["maxScale"]<$userLayersMaxScale?$arr["maxScale"]:$userLayersMaxScale;
+                                }
+                                else if (isset($layerOptions["maxScale"])) {
                                     $arr["maxScale"] = $layerOptions["maxScale"];
-                                if ($userLayer["maxScale"])
-                                    $arr["minScale"] = floatval(+$userLayer["maxScale"]);
-                                else if (isset($layerOptions["minScale"]))
+                                }
+                                else {
+                                    $userLayersMaxScale = 0;
+                                }
+                                if ($userLayer["maxScale"]) {
+                                    $arr["minScale"] = floatval($userLayer["maxScale"]);
+                                    $userLayersMinScale = $arr["minScale"]>$userLayersMinScale?$arr["minScale"]:$userLayersMinScale;
+                                }
+                                else if (isset($layerOptions["minScale"])) {
                                     $arr["minScale"] = $layerOptions["minScale"];
+                                }
+                                else {
+                                    $userLayersMinScale = PHP_INT_MAX;
+                                }
+
                                 if (isset($userLayer['hidden']) && $userLayer['hidden'] !== '0') {
                                     $arr['hidden'] = $userLayer['hidden'];
                                 }
@@ -504,7 +520,14 @@ class gcMap{
                                 $nodes[] = $arr;
                                 $layers[] = $userLayer["name"];
                             }
+
                             $node = array("layer" => $layergroupName, "title" => $layergroupTitle, "visibility" => $row["status"] == 1, "order" => $layerOrder, "nodes" => $nodes);
+                            if (!isset($layerOptions["maxScale"])  && $userLayersMaxScale>0) {
+                                $layerOptions["maxScale"] = $userLayersMaxScale;
+                            }
+                            if (!isset($layerOptions["minScale"])  && $userLayersMinScale<PHP_INT_MAX) {
+                                $layerOptions["minScale"] = $userLayersMinScale;
+                            }
                             if ($row["refmap"])
                                 $node["overview"] = true;
                         }
@@ -549,20 +572,33 @@ class gcMap{
                         $aLayer["parameters"]["layers"] = array();
                         $aLayer["nodes"] = array();
                         $hidden = true;
+                        $userLayersMinScale = 0;
+                        $userLayersMaxScale = PHP_INT_MAX;
 
                         foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
                             array_push($aLayer["parameters"]["layers"], $userLayer["name"]);
                             $arr = array("layer" => $userLayer["name"], "title" => $userLayer["title"]);
                             //ALLA ROVESCIA RISPETTO A MAPSERVER
-                            if ($userLayer["minScale"])
+                            if ($userLayer["minScale"]) {
                                 $arr["maxScale"] = floatval($userLayer["minScale"]);
-                            else if (isset($layerOptions["maxScale"]))
+                                $userLayersMaxScale = $arr["maxScale"]<$userLayersMaxScale?$arr["maxScale"]:$userLayersMaxScale;
+                            }
+                            else if (isset($layerOptions["maxScale"])) {
                                 $arr["maxScale"] = $layerOptions["maxScale"];
-                            if ($userLayer["maxScale"])
-                                $arr["minScale"] = floatval(+$userLayer["maxScale"]);
-                            else if (isset($layerOptions["minScale"]))
+                            }
+                            else {
+                                $userLayersMaxScale = 0;
+                            }
+                            if ($userLayer["maxScale"]) {
+                                $arr["minScale"] = floatval($userLayer["maxScale"]);
+                                $userLayersMinScale = $arr["minScale"]>$userLayersMinScale?$arr["minScale"]:$userLayersMinScale;
+                            }
+                            else if (isset($layerOptions["minScale"])) {
                                 $arr["minScale"] = $layerOptions["minScale"];
-
+                            }
+                            else {
+                                $userLayersMinScale = PHP_INT_MAX;
+                            }
                             if (isset($userLayer['hidden']) && $userLayer['hidden'] !== '0') {
                                 $arr['hidden'] = $userLayer['hidden'];
                             }
@@ -571,6 +607,13 @@ class gcMap{
                             }
 
                             array_push($aLayer["nodes"], $arr);
+                        }
+
+                        if (!isset($layerOptions["maxScale"])  && $userLayersMaxScale>0) {
+                            $aLayer["options"]["maxScale"] = $userLayersMaxScale;
+                        }
+                        if (!isset($layerOptions["minScale"])  && $userLayersMinScale<PHP_INT_MAX) {
+                            $aLayer["options"]["minScale"] = $userLayersMinScale;
                         }
                         if ($hidden)
                             $aLayer["options"]["displayInLayerSwitcher"] = false;
