@@ -288,6 +288,11 @@ class printDocument {
             $this->project = $project;
             $this->mapset = $tmp . $mapset;
             $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$tmp.$mapset.'.map');
+            $printRect = ms_newRectObj();
+            $printRect->setextent($this->options['extent'][0],$this->options['extent'][1],$this->options['extent'][2],$this->options['extent'][3]);
+            $reqProj =  ms_newProjectionObj($this->options['auth_name'].":".$this->options['srid']);
+            $mapProj = ms_newProjectionObj($oMap->getProjection());
+            $printRect->project($reqProj, $mapProj);
             foreach($themes as &$theme) {
                 $theme['groups'] = array();
                 foreach($theme['layers'] as $layergroupName) {
@@ -295,6 +300,15 @@ class printDocument {
                     if (count($layerIndexes) > 0) {
                         foreach($layerIndexes as $index) {
                             $oLayer = $oMap->getLayer($index);
+                            $oLayer->updateFromString('LAYER TEMPLATE "dummy" END');
+                            $oLayer->set('status', 'on');
+                            $oLayer->open();
+                            $oLayer->queryByRect($printRect);
+                            if ($oLayer->getNumResults() == 0) {
+                                $oLayer->close();
+                                continue;
+                            }
+                            $oLayer->close();
                             $layerName = $oLayer->name;
                             $group = array(
                                 'id'=>$layerName,
@@ -316,6 +330,15 @@ class printDocument {
                     else {
                         $oLayer = $oMap->getLayerByName($layergroupName);
                         if ($oLayer !== NULL) {
+                            $oLayer->updateFromString('LAYER TEMPLATE "dummy" END');
+                            $oLayer->set('status', MS_ON);
+                            $oLayer->open();
+                            $oLayer->queryByRect($printRect);
+                            if ($oLayer->getNumResults() == 0) {
+                                $oLayer->close();
+                                continue;
+                            }
+                            $oLayer->close();
                             $group = array(
                                 'id'=>$layergroupName,
                                 'title'=>$oLayer->getMetaData('ows_title'),
