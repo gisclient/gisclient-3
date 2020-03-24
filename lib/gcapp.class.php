@@ -355,6 +355,8 @@ class GCAuthor {
     }
 
 	private static function generateLegendCache($project, $mapset, $target) {
+		require_once ROOT_PATH."public/services/include/wmsGetLegendGraphic.php";
+
 		if (!defined('LEGEND_CACHE_PATH')) {
 			return;
 		}
@@ -375,68 +377,43 @@ class GCAuthor {
         }
 		array_map('unlink', glob("$legendDir/*"));
 		$oMap = @ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$mapsetFileName);
-		// **** Generate legend cache images by layergroup ****
+		$objRequest = ms_newOwsrequestObj();
+		$objRequest->addParameter('REQUEST', 'getlegendgraphic');
+		$objRequest->addParameter('SERVICE', 'wms');
+		$objRequest->addParameter('FORMAT', 'image/png');
+		$objRequest->addParameter('WIDTH', '500');
+		$objRequest->addParameter('VERSION', '1.1.1');
+		$objRequest->addParameter('PROJECT', $project);
+		$objRequest->addParameter('MAP', $mapset);
+		$objRequest->addParameter('LAYER', $mapset);
+		$paramsRequest = array(
+			'WIDTH'=>'500'
+		);
+		if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
+
+			$paramsRequest['GC_SESSION_ID'] = session_id();
+		}
 		$layerGroups = $oMap->getAllGroupNames();
 		foreach($layerGroups as $layerGroup) {
-			print_debug($layerGroup, null, 'legend_generate');
-			$params = array(
-                'REQUEST'=>'getlegendgraphic',
-                'SERVICE'=>'wms',
-                'FORMAT'=>'image/png',
-                'WIDTH'=>'500',
-                'LAYER'=>$layerGroup,
-                'VERSION'=>'1.1.1',
-				'PROJECT'=>$project,
-				'MAP'=>$mapset
-            );
-
-            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
-
-                $params['GC_SESSION_ID'] = session_id();
-            }
-            $urlWmsRequest = PUBLIC_URL . '/services/ows.php?' . http_build_query($params);
-			$source = imagecreatefrompng($urlWmsRequest);
-			if($source !== false) {
-				$result = imagepng($source, $legendDir . '/' . $layerGroup . '.png');
-				if ($result === false) {
-					GCError::register("Error saving legend image from $urlWmsRequest");
-				}
+			print_debug("Layergroup $layerGroup", null, 'legend_generate');
+			$objRequest->setParameter('LAYER', $layerGroup);
+			$imgPath = $legendDir . '/' . $layerGroup . '.png';
+    		$result = gcGetLegendGraphic($objRequest, $oMap, $paramsRequest, $imgPath);
+			if ($result === false) {
+				GCError::register("Error saving legend image for layergroup  $layerGroup in $imgPath");
 			}
-			else {
-				GCError::register("Error getting legend image from $urlWmsRequest");
-            }
 		}
 		// **** Generate legend cache images by layer ****
 		$numLayers = $oMap->numlayers;
 		for ($i=0; $i<$numLayers; $i++) {
 			$oLayer = $oMap->getLayer($i);
-			//print_debug($oLayer->name, null, 'legend_generate');
-			$params = array(
-                'REQUEST'=>'getlegendgraphic',
-                'SERVICE'=>'wms',
-                'FORMAT'=>'image/png',
-                'WIDTH'=>'500',
-                'LAYER'=>$oLayer->name,
-                'VERSION'=>'1.1.1',
-				'PROJECT'=>$project,
-				'MAP'=>$mapset
-            );
-
-            if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == session_id()) {
-
-                $params['GC_SESSION_ID'] = session_id();
-            }
-            $urlWmsRequest = PUBLIC_URL . '/services/ows.php?' . http_build_query($params);
-			$source = imagecreatefrompng($urlWmsRequest);
-			if($source !== false) {
-				$result = imagepng($source, $legendDir . '/' . $oLayer->name . '.png');
-				if ($result === false) {
-					GCError::register("Error saving legend image from $urlWmsRequest");
-				}
+			print_debug("Layer " . $oLayer->name, null, 'legend_generate');
+			$objRequest->setParameter('LAYER', $oLayer->name);
+			$imgPath = $legendDir . '/' . $oLayer->name . '.png';
+			$result = gcGetLegendGraphic($objRequest, $oMap, $paramsRequest, $imgPath);
+			if ($result === false) {
+				GCError::register("Error saving legend image for layergroup  $layerGroup in $imgPath");
 			}
-			else {
-				GCError::register("Error getting legend image from $urlWmsRequest");
-            }
 			// **** Generate legend cache images by class ****
 			for ($j=0;$j<$oLayer->numclasses; $j++) {
 				try {
