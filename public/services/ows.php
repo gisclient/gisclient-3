@@ -312,13 +312,13 @@ if(!empty($layersParameter) || !empty($layerIndexList)) {
 		}
 
 		if(!empty($_SESSION['GC_LAYER_FILTERS'])) {
-            if(!empty($_SESSION['GC_LAYER_FILTERS'][$layer->name])) {
+            if(!empty($_SESSION['GC_LAYER_FILTERS'][$oMap->name][$layer->name])) {
                 $filter = $layer->getFilterString();
                 $filter = trim($filter, '"');
                 if(!empty($filter)) {
-                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$layer->name].')';
+                    $filter = $filter.' AND ('.$_SESSION['GC_LAYER_FILTERS'][$oMap->name][$layer->name].')';
                 } else {
-                    $filter = $_SESSION['GC_LAYER_FILTERS'][$layer->name];
+                    $filter = $_SESSION['GC_LAYER_FILTERS'][$oMap->name][$layer->name];
                 }
                 $layer->setFilter($filter);
             }
