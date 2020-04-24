@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	RULE E' DATA DA LAYER_NAME:CLASS_NAME OPPURE LAYER_NAME
 
 */
+set_time_limit(300);
 function gcGetLegendGraphic(&$objRequest, &$oMap, $request, $savePath = null) {
     // **** Compatibility with mapserver 7+
     if (!defined('MS_LAYER_ANNOTATION')) {
