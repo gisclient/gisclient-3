@@ -97,7 +97,7 @@
 		<pkey>qt_field_id</pkey>
 		<parent>qt</parent>
 	</qt_field>
-        <qt_relation>
+    <qt_relation>
 		<table>qt_relation</table>
 		<pkey>qt_relation_id</pkey>
 		<parent>qt</parent>
@@ -112,6 +112,12 @@
 		<pkey>selgroup_id</pkey>
 		<parent>project</parent>
 	</selgroup>
+	<selgroup_layer>
+		<table>selgroup_layer</table>
+		<pkey>selgroup_id</pkey>
+		<pkey>layer_id</pkey>
+		<parent>selgroup</parent>
+	</selgroup_layer>
 	<style>
 		<table>style</table>
 		<pkey>style_id</pkey>
