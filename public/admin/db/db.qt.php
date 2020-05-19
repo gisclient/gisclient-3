@@ -21,7 +21,7 @@ if($save->action == "salva" && !$save->hasErrors){
 			$newid = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'qt_field', 'qt_field_id');
 			unset($field['field_id']);
 			unset($field['layer_id']);
-			$field['qtfield_name'] = $field['field_name'];
+			$field['qt_field_name'] = $field['field_name'];
 			unset($field['field_name']);
 			$field['qtfield_order'] = $field['field_order'];
 			unset($field['field_order']);
@@ -29,9 +29,9 @@ if($save->action == "salva" && !$save->hasErrors){
 			unset($field['relation_id']);
 			$field['qt_id'] =  $qt_id;
 			$field['qt_field_id'] = $newid;
-			$sql = "insert into ".DB_SCHEMA.".qt_field (qt_field_id, qt_id, qtfield_name, field_header, fieldtype_id, searchtype_id, resultype_id,
+			$sql = "insert into ".DB_SCHEMA.".qt_field (qt_field_id, qt_id, qt_field_name, field_header, fieldtype_id, searchtype_id, resultype_id,
 			field_format, column_width, orderby_id, field_filter, datatype_id, qtfield_order, default_op, formula, lookup_table, lookup_id, lookup_name, filter_field_name)
-				values (:qt_field_id, :qt_id, :qtfield_name, :field_header, :fieldtype_id, :searchtype_id, :resultype_id,
+				values (:qt_field_id, :qt_id, :qt_field_name, :field_header, :fieldtype_id, :searchtype_id, :resultype_id,
 				:field_format, :column_width, :orderby_id, :field_filter, :datatype_id, :qtfield_order, :default_op, :formula, :lookup_table, :lookup_id, :lookup_name, :filter_field_name)";
 			try {
 				$stmt = $_db->prepare($sql);

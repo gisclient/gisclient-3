@@ -17,11 +17,11 @@ if(!$save->hasErrors) {
 			$table_name = $save->data['table_name'];
 			
 			$alreadyInserted = array();
-			$sql = "select qtfield_name from ".DB_SCHEMA.".qtfield where layer_id=?";
+			$sql = "select qt_field_name from ".DB_SCHEMA.".qtfield where layer_id=?";
 			$stmt = $db->prepare($sql);
 			$stmt->execute(array($save->parent_flds['layer']));
 			while($array = $stmt->fetch(PDO::FETCH_ASSOC)) {
-				array_push($alreadyInserted, $array['qtfield_name']);
+				array_push($alreadyInserted, $array['qt_field_name']);
 			}
 			
 			$db2 = pg_connect($connStr);
@@ -35,7 +35,7 @@ if(!$save->hasErrors) {
 				if(!$dataType) continue;
 				$params = array(
 					'qtfield_id'=>$newid,
-					'qtfield_name'=>"'".$array['column_name']."'",
+					'qt_field_name'=>"'".$array['column_name']."'",
 					'field_header'=>"'".$array['column_name']."'",
 					'searchtype_id'=>1, //FD: soluzione migliore?
 					'resultype_id'=>1,

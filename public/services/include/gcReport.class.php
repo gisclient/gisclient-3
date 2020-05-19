@@ -160,11 +160,83 @@ class gcReport {
         $this->reportQueryResult['result'] = $this->result;
     }
 
+    function materializeReport($request) {
+        if (!isset($request['report_id']))
+        {
+            $this->reportQueryResult["result"] = 'error';
+            $this->reportQueryResult['error'] = "Nessun report ID specificato";
+            return;
+        }
+
+        $this->_initQuery($request);
+
+        $aTemplate = $this->templates[$request['report_id']];
+        $datalayerSchema = GCApp::getDataDBSchema($aTemplate['catalog_path']);
+        $tableName = 'gw_qt_' . $request['report_id'];
+        $aTemplate['table_schema'] = $datalayerSchema;
+        $aTemplate['fields'] = $aTemplate['field']; //temporaneo
+
+        $connStr = $aTemplate['catalog_path'];
+        if (preg_match('/user=([^ ]*)/', $connStr, $charMatches))
+	            $connStr = str_replace('user='.$charMatches[1], 'user='.DB_USER, $connStr);
+	    if (preg_match('/password=([^ ]*)/', $connStr, $charMatches))
+                $connStr = str_replace('password='.$charMatches[1], 'password='.DB_PWD, $connStr);
+        $dataDB = new GCDataDB($connStr);
+
+        $options = array('include_1n_relations'=>true, 'getGeomAs'=>'text');
+        if(!empty($this->request['srid'])) $options['srid'] = $this->request['srid'];
+        if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') {
+            $options['group_1n'] = false;
+            if(!empty($this->request['relationName'])) {
+                $options['show_relation'] = $this->request['relationName'];
+            }
+        }
+
+        print_debug("Materialize report " . $request['report_id'] . " - starting",null,'report');
+
+        $queryString = $this->_buildReportQuery($aTemplate, $options);
+
+        $sqlCheck = 'SELECT GREATEST(last_analyze, last_autoanalyze) as mod_time FROM pg_stat_all_tables WHERE schemaname=:schemaname AND relname=:relname';
+        $stmt = $dataDB->db->prepare($sqlCheck);
+        $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$tableName));
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($res) == 1) {
+            if (empty($res[0]['mod_time'])) {
+                print_debug("Other instance running for materialized report " . $request['report_id'] . " - exiting",null,'report');
+                return;
+            }
+            $viewTime = $res[0]['mod_time'];
+            $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$aTemplate['data']));
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (count($res) != 1) {
+                print_debug("Error - origin data layer table not found for report " . $request['report_id'] . " - exiting",null,'report');
+                return;
+            }
+            $dataTime = $res[0]['mod_time'];
+            echo $viewTime . '-' . $dataTime;
+            if ($datatime < $viewTime) {
+                print_debug("Materialized report " . $request['report_id'] . " up to date - exiting",null,'report');
+                return;
+            }
+        }
+
+        echo 'CREATE MATERIALIZED VIEW ' . $datalayerSchema . '.' . $tableName . ' AS ' . $queryString . ' WITH DATA';
+        $dataDB->db->query('DROP MATERIALIZED VIEW IF EXISTS ' . $datalayerSchema . '.' . $tableName);
+        $dataDB->db->query('CREATE MATERIALIZED VIEW ' . $datalayerSchema . '.' . $tableName . ' AS ' . $queryString . ' WITH NO DATA');
+        $dataDB->db->query('GRANT SELECT ON ' . $datalayerSchema . '.' . $tableName . ' TO ' . MAP_USER);
+        $dataDB->db->query('REFRESH MATERIALIZED VIEW ' . $datalayerSchema . '.' . $tableName);
+        $dataDB->db->query('ANALYZE '  . $datalayerSchema . '.' . $tableName);
+
+        print_debug("Materialize report " . $request['report_id'] . " - completed",null,'report');
+    }
+
+
+
     function _initQuery($request) {
 
         $dbschema=DB_SCHEMA;
 
-        $sqlField="select qt_field.*, sql_function, qt_relation.qtrelation_name, qt_relation.qt_relation_id, qt_relation.qtrelationtype_id, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
+        $sqlField="select qt_field.*, sql_function, qt_relation.qt_relation_name, qt_relation.qt_relation_id, qt_relation.qtrelationtype_id, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
         from $dbschema.qt_field
         left join $dbschema.qt_relation using (qt_relation_id)
         left join $dbschema.catalog using (catalog_id)
@@ -179,7 +251,7 @@ class gcReport {
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			$Id=$row["qt_id"];
 			$fieldId=$row["qt_field_id"];
-			$qField[$Id][$fieldId]["field_name"]=trim($row["qtfield_name"]);
+			$qField[$Id][$fieldId]["field_name"]=trim($row["qt_field_name"]);
 			$qField[$Id][$fieldId]["field_alias"]=trim($row["field_header"]);
                         $qField[$Id][$fieldId]["title"]=trim($row["field_header"]);
 			$qField[$Id][$fieldId]["formula"]=trim($row["formula"]);
@@ -202,7 +274,7 @@ class gcReport {
 				if(($row["data_field_2"])&&($row["table_field_2"])) $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
 				if(($row["data_field_3"])&&($row["table_field_3"])) $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
 				$qRelation[$Id][$relationId]["join_field"]=$f;
-				$qRelation[$Id][$relationId]["name"]=trim($row["qtrelation_name"]);
+				$qRelation[$Id][$relationId]["name"]=trim($row["qt_relation_name"]);
 				$qRelation[$Id][$relationId]["table_name"]=trim($row["table_name"]);
 				$qRelation[$Id][$relationId]["path"]=trim($row["catalog_path"]);
 				$qRelation[$Id][$relationId]["catalog_url"]=trim($row["catalog_url"]);
@@ -215,7 +287,7 @@ class gcReport {
 		}
 /*         echo 'Fields<br><pre>';
 		var_export($qField); */
-		//Assegno alle relazioni i valori  di schema e connessione
+		//Assegno alle relazioni i valori  di spontechema e connessione
 		foreach($qRelation as $qt=>$aRel){
 			foreach($aRel as $qtrel=>$row){
 				$aConnInfo = connInfofromPath($row["path"]);
@@ -230,12 +302,12 @@ class gcReport {
 
 		//query template *******************
 		//$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.id $sqlQt order by order;";
-		$sqlTemplate="select qt.qt_id, qt.qt_name as report_name, qt.qt_filter as data_filter, layer.layer_id, layer.layer_name, layer.data, layer.data_geom, layer.data_filter as layer_data_filter, catalog_path, catalog_url, connection_type, data_unique, data_srid
+		$sqlTemplate="select qt.qt_id, qt.qt_name as report_name, qt.qt_filter as data_filter, qt.materialize, layer.layer_id, layer.layer_name, layer.data, layer.data_geom, layer.data_filter as layer_data_filter, catalog_path, catalog_url, connection_type, data_unique, data_srid
         from $dbschema.qt
         inner join $dbschema.layer using (layer_id)
         inner join $dbschema.catalog using (catalog_id)
         where qt_id = :qt_id order by qt_order;";
-		print_debug($sqlTemplate,null,'template_report');
+		print_debug($sqlTemplate,null,'report');
 
         $stmt = $this->db->prepare($sqlTemplate);
         $stmt->execute(array('qt_id'=>$request['report_id']));
@@ -294,8 +366,22 @@ class gcReport {
             }
         }
 
-
-        $queryString = $this->_buildReportQuery($aTemplate, $options);
+        if (!empty($aTemplate['materialize'])) {
+            $tableNameMat = 'gw_qt_' . $aTemplate['qt_id'];
+            $sqlCheck = 'SELECT GREATEST(last_analyze, last_autoanalyze) as mod_time FROM pg_stat_all_tables WHERE schemaname=:schemaname AND relname=:relname';
+            $stmt = $dataDB->prepare($sqlCheck);
+            $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$tableNameMat));
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (isset($res[0])) {
+                $queryString = 'SELECT * FROM ' . $datalayerSchema . '.' . $tableNameMat;
+            }
+            else {
+                $queryString = $this->_buildReportQuery($aTemplate, $options);
+            }
+        }
+        else {
+            $queryString = $this->_buildReportQuery($aTemplate, $options);
+        }
 
         $params = array();
         $whereClause = null;
@@ -491,7 +577,7 @@ class gcReport {
         // **** Add check if fieldList empty
         $datalayerTable = 'SELECT ' . implode(',', $fieldList) . ' FROM '. $joinString;
         if(!empty($groupByFieldList)) $datalayerTable .= ' group by '. implode(', ', $groupByFieldList) . ' ORDER BY ' . $orderByFieldList;
-		print_debug($datalayerTable,null,'datalayer');
+		print_debug($datalayerTable,null,'report');
 		return $datalayerTable;
 
     }
@@ -502,7 +588,6 @@ class gcReport {
         $this->reportConfig["reportDefs"] = $this->reportDefs;
         $this->reportConfig["result"] = 'ok';
     }
-
 
 
     function _getReports(){
@@ -516,7 +601,7 @@ class gcReport {
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
 
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme.theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, qt.qt_id, coalesce(qt_title,qt_name) as report_title, data_unique, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, qt.zoom_buffer, qt.selection_color, selection_width, qt_field_id, qtfield_name, qt_field.filter_field_name as filter_field_name, qt_field.field_header as field_header, qt_field.fieldtype_id as fieldtype_id, qt_field.column_width as column_width, qtrelation_name, qtrelationtype_id, qt_field.searchtype_id as searchtype_id, qt_field.resultype_id as resultype_id, qt_field.datatype_id as datatype_id, qt_field.field_filter as field_filter, layer.hidden, qt_field.editable as field_editable, layer.data_type as data_type, qt_field.lookup_table as lookup_table, qt_field.lookup_id, qt_field.lookup_name,qt_relation.qt_relation_id, qt_relation.data_field_1, qt_relation.table_field_1
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme.theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, qt.qt_id, coalesce(qt_title,qt_name) as report_title, data_unique, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, qt.materialize, qt.selection_color, selection_width, qt_field_id, qt_field_name, qt_field.filter_field_name as filter_field_name, qt_field.field_header as field_header, qt_field.fieldtype_id as fieldtype_id, qt_field.column_width as column_width, qt_relation_name, qtrelationtype_id, qt_field.searchtype_id as searchtype_id, qt_field.resultype_id as resultype_id, qt_field.datatype_id as datatype_id, qt_field.field_filter as field_filter, layer.hidden, qt_field.editable as field_editable, layer.data_type as data_type, qt_field.lookup_table as lookup_table, qt_field.lookup_id, qt_field.lookup_name,qt_relation.qt_relation_id, qt_relation.data_field_1, qt_relation.table_field_1
 				FROM " . DB_SCHEMA . ".theme
 				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id)
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
@@ -581,8 +666,8 @@ class gcReport {
              */
             if (!empty($row["maxvectfeatures"]))
                 $reportDefs[$index][$reportID]["maxvectfeatures"] = intval($row["maxvectfeatures"]);
-            //if (!empty($row["zoom_buffer"]))
-            //    $featureTypes[$index][$typeName]["zoomBuffer"] = intval($row["zoom_buffer"]);
+            if (!empty($row["materialize"]))
+                $reportDefs[$index][$reportID]["materializeReport"] = intval($row["materialize"]);
             $reportDefs[$index][$reportID]['hidden'] = intval($row['hidden']);
             //$reportDefs[$index][$reportID]['searchable'] = intval($row['searchable_id']);
             //if (isset($featureTypesLinks[$row['layer_id']])) {
@@ -611,7 +696,7 @@ class gcReport {
                 }
                 */
                 //AGGIUNGO IL CAMPO GEOMETRIA COME PRIMO CAMPO
-             if($fieldName = $row["qtfield_name"]) {
+             if($fieldName = $row["qt_field_name"]) {
                 if(empty($reportDefs[$index][$reportID]["properties"])) $reportDefs[$index][$reportID]["properties"] = array();
 
                 /*
@@ -622,10 +707,10 @@ class gcReport {
                 }
                 */
                 $aRel=array();
-                if($row["qtrelation_name"]){
-                    $aRel["relationName"] =  $row["qtrelation_name"];
+                if($row["qt_relation_name"]){
+                    $aRel["relationName"] =  $row["qt_relation_name"];
                     $aRel["relationType"] = intval($row["qtrelationtype_id"]);
-                    $aRel["relationTitle"] =  $row["qtrelation_title"]?$row["qtrelation_title"]:$row["qtrelation_name"];
+                    $aRel["relationTitle"] =  $row["qtrelation_title"]?$row["qtrelation_title"]:$row["qt_relation_name"];
                     if(!isset($reportDefs[$index][$reportID]["relations"]))
                         $reportDefs[$index][$reportID]["relations"] = array();
                 }
@@ -646,8 +731,8 @@ class gcReport {
                     //'isPrimaryKey'=>$isPrimaryKey
                 );
 
-                if($row["qtrelation_name"]){
-                    $fieldSpecs["relationName"] =  $row["qtrelation_name"];
+                if($row["qt_relation_name"]){
+                    $fieldSpecs["relationName"] =  $row["qt_relation_name"];
                     $fieldSpecs["relationType"] = intval($row["qtrelationtype_id"]);
                 }
                 if(intval($row["field_filter"]) > 0){

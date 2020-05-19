@@ -28,7 +28,7 @@ if(empty($_REQUEST['f_key_value'])) $ajax->error('Undefined f_key_value');
 $ajax = new GCAjax();
 $db = GCApp::getDB();
 
-$sql = 'select qt_relation_id, catalog.catalog_id, catalog_path, qtrelation_name, qtrelationtype_id, data_field_1, table_name, table_field_1, layer_id, layer.data as layer_table
+$sql = 'select qt_relation_id, catalog.catalog_id, catalog_path, qt_relation_name, qtrelationtype_id, data_field_1, table_name, table_field_1, layer_id, layer.data as layer_table
     from '.DB_SCHEMA.'.qtrelation inner join '.DB_SCHEMA.'.catalog using(catalog_id) inner join '.DB_SCHEMA.'.layer using(layer_id) where qt_relation_id = :qt_relation_id';
 
 $stmt = $db->prepare($sql);
@@ -36,12 +36,12 @@ $stmt->execute(array('qt_relation_id'=>$_REQUEST['qt_relation_id']));
 $qtRelation = $stmt->fetch(PDO::FETCH_ASSOC);
 if(empty($qtRelation)) $ajax->error('Invalid qt_relation_id');
 
-$sql = 'select qtfield_name, field_header, qt_relation_id from '.DB_SCHEMA.'.qtfield where searchtype_id not in (4,5) and qt_relation_id in (0, '.$qtRelation['qt_relation_id'].') and layer_id = '.$qtRelation['layer_id'];
+$sql = 'select qt_field_name, field_header, qt_relation_id from '.DB_SCHEMA.'.qtfield where searchtype_id not in (4,5) and qt_relation_id in (0, '.$qtRelation['qt_relation_id'].') and layer_id = '.$qtRelation['layer_id'];
 $fields = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 if(empty($fields)) $ajax->error('No fields defined');
 
 $fieldsName = array();
-foreach($fields as $field) array_push($fieldsName, 't_'.$field['qt_relation_id'].'.'.$field['qtfield_name']);
+foreach($fields as $field) array_push($fieldsName, 't_'.$field['qt_relation_id'].'.'.$field['qt_field_name']);
 
 $sql = 'select catalog_path from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog using(catalog_id) where layer_id = '.$qtRelation['layer_id'];
 $layerCatalogPath = $db->query($sql)->fetchColumn(0);

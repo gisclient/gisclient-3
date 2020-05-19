@@ -17,8 +17,8 @@ class GCLevels {
         'relation'=>array('pkey'=>'relation_id', 'title'=>'relation_name'),
         //'qt_link'=>array('pkey'=>['layer_id', 'link_id'], 'title'=>'link_id'),/*doppia chiave*/
         'qt'=>array('pkey'=>'qt_id', 'title'=>'qt_name'),
-        'qt_field'=>array('pkey'=>'qt_field_id', 'title'=>'qtfield_name'),
-        'qt_relation'=>array('pkey'=>'qt_relation_id', 'title'=>'qtrelation_name')
+        'qt_field'=>array('pkey'=>'qt_field_id', 'title'=>'qt_field_name'),
+        'qt_relation'=>array('pkey'=>'qt_relation_id', 'title'=>'qt_relation_name')
 	);
 	static private $copyLimits = array(
 		'theme'=>'theme',
