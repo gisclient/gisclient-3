@@ -483,6 +483,7 @@ class gcReport {
 		if($aFeature["fields"]){
 			$fieldList = array();
             $groupByFieldList = array();
+            $orderByFieldList = array();
 
 			foreach($aFeature["fields"] as $idField=>$aField){
 
@@ -515,6 +516,12 @@ class gcReport {
                     else {
                         $fieldName .= " AS " . $aField["field_name"];
                         $groupByFieldList[] = $aField['field_name'];
+                        if ($aField['order_by'] == 1) {
+                            $orderByFieldList[] = $aField['field_name'] . ' ASC';
+                        }
+                        else if ($aField['order_by'] == 2) {
+                            $orderByFieldList[] = $aField['field_name'] . ' DESC';
+                        }
                     }
 
                 } else {
@@ -524,6 +531,12 @@ class gcReport {
                     }
                     else {
                         $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
+                        if ($aField['order_by'] == 1) {
+                            $orderByFieldList[] = $aliasTable.'.'.$aField['field_name'] . ' ASC';
+                        }
+                        else if ($aField['order_by'] == 2) {
+                            $orderByFieldList[] = $aliasTable.'.'.$aField['field_name'] . ' DESC';
+                        }
                     }
                 }
                 $fieldList[] = $fieldName;
@@ -542,6 +555,7 @@ class gcReport {
 
                         if(!$options['group_1n']) {
                             $groupByFieldList = null;
+                            $orderByFieldList = null;
                         }
 					}
 
@@ -571,12 +585,16 @@ class gcReport {
             }
         }
 
-        $orderByFieldList = !empty($aFeature['order_by'])?$aFeature['order_by']:implode(', ', $groupByFieldList);
+        if (!empty($aFeature['order_by'])) {
+            $orderByFieldList = array($aFeature['order_by']);
+        }
+        //$orderByFieldList = !empty($aFeature['order_by'])?array()$aFeature['order_by']]:implode(', ', $orderByFieldList);
 		//$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid, '.$geomField.' as gc_geom';
         //if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
         // **** Add check if fieldList empty
         $datalayerTable = 'SELECT ' . implode(',', $fieldList) . ' FROM '. $joinString;
-        if(!empty($groupByFieldList)) $datalayerTable .= ' group by '. implode(', ', $groupByFieldList) . ' ORDER BY ' . $orderByFieldList;
+        if(!empty($groupByFieldList) && count($groupByFieldList) < count($fieldList)) $datalayerTable .= ' GROUP BY '. implode(', ', $groupByFieldList);
+        if(!empty($orderByFieldList)) $datalayerTable .= ' ORDER BY ' . implode(', ', $orderByFieldList);
 		print_debug($datalayerTable,null,'report');
 		return $datalayerTable;
 

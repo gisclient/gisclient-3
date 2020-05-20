@@ -7,6 +7,10 @@ $ajax = new GCAjax();
 $auth = new GCUser();
 $db = GCApp::getDb();
 
+if (defined('GC_EXPORT_MEM_LIMIT')) {
+    ini_set('memory_limit', GC_EXPORT_MEM_LIMIT);
+}
+
 if (!isset($data))
 {
     $inputJSONText = file_get_contents('php://input');
@@ -19,7 +23,7 @@ switch($data['export_format']) {
     case 'dxf':
     case 'shp':
         if(empty($data['tables']) || !is_array($data['tables'])) $ajax->error('Empty tables');
-        
+
         $tables = array();
         foreach($data['tables'] as $table) {
             $dataDb = null;
@@ -40,8 +44,8 @@ switch($data['export_format']) {
                 ));
             } else if(isset($table['layer'])) {
                 $authorizedLayers = $auth->getAuthorizedLayers(array('mapset_name'=>$data['mapset']));
-                
-                $sql = 'select catalog_path, layer.data as tablename, layer_id from '.DB_SCHEMA.'.catalog 
+
+                $sql = 'select catalog_path, layer.data as tablename, layer_id from '.DB_SCHEMA.'.catalog
                     inner join '.DB_SCHEMA.'.layer using(catalog_id)
                     inner join '.DB_SCHEMA.'.layergroup using(layergroup_id)
                     where layergroup_name = :layergroup and layer_name = :layer';
@@ -52,9 +56,9 @@ switch($data['export_format']) {
                     'layer'=>$layer
                 ));
                 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
-                
+
                 if(empty($layer) || !in_array($layer['layer_id'], $authorizedLayers)) continue;
-                
+
                 $dbParams = GCApp::getDataDBParams($layer['catalog_path']);
                 $dataDb = GCApp::getDataDB($layer['catalog_path']);
                 array_push($tables, array(
@@ -65,7 +69,7 @@ switch($data['export_format']) {
                 ));
             }
         }
-        
+
         $exportTables = array();
         if(!empty($data['extent'])) {
             if(!defined('GC_EXPORT_TMP_SCHEMA')) $ajax->error('Undefined export tmp schema');
@@ -73,7 +77,7 @@ switch($data['export_format']) {
             if(empty($data['srid'])) $ajax->error('Empty srid');
             if(strpos($data['srid'], ':') !== false) list($auth, $srid) = explode(':', $data['srid']);
             else $srid = $data['srid'];
-            
+
             $sql = 'select st_setsrid(st_makebox2d(st_point(:p0, :p1), st_point(:p2, :p3)), :srid)';
             $stmt = $db->prepare($sql);
             $stmt->execute(array(
@@ -84,7 +88,7 @@ switch($data['export_format']) {
                 'srid'=>$srid
             ));
             $extent = $stmt->fetchColumn(0);
-            
+
             foreach($tables as $table) {
                 if(!GCApp::tableExists($table['db'], $table['schema'], $table['tablename'])) continue;
                 $columns = GCApp::getColumns($table['db'], $table['schema'], $table['tablename']);
@@ -98,14 +102,14 @@ switch($data['export_format']) {
                     ' where st_intersects(the_geom, :geom) ';
                 $stmt = $table['db']->prepare($sql);
                 $stmt->execute(array('geom'=>$extent));
-                
+
                 $sql = 'select count(*) from '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName;
                 $count = $table['db']->query($sql)->fetchColumn(0);
                 if(empty($count)) {
                     $table['db']->exec('drop table '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName);
                     continue;
                 }
-                
+
                 $sql = 'insert into geometry_columns(f_table_catalog, f_table_schema, f_table_name, f_geometry_column, coord_dimension, srid, type) '.
                     ' select f_table_catalog, :tmp_table_schema, :tmp_table_name, f_geometry_column, 2, srid, type from geometry_columns '.
                     ' where f_table_schema = :schema and f_table_name = :table';
@@ -136,7 +140,7 @@ switch($data['export_format']) {
                 ));
             }
         }
-        
+
         if($data['export_format'] == 'shp') {
             $zipFile = null;
             foreach($exportTables as $table) {
@@ -228,7 +232,7 @@ switch($data['export_format']) {
             $parts = explode('.', $data['feature_type']);
             if(count($parts) > 1) $filename = $parts[1];
             else $filename = $parts[0];
-            
+
             $filename .= '_'.date('Y-m-d_H-i').'_'.rand(0,999).'.xls';
         }
         $content = $excel->generateXML();
@@ -236,7 +240,7 @@ switch($data['export_format']) {
         die(json_encode(array('result'=>'ok','file'=>GC_WEB_TMP_URL.$filename)));
     break;
     case 'pdf':
-        
+
         if(empty($data['data']) || !is_array($data['data'])) {
             die(json_encode(array('result' => 'error', 'error' => 'Empty data')));
         }
@@ -248,16 +252,16 @@ switch($data['export_format']) {
         if(empty($data['export_format']) || !in_array($data['export_format'], array('xls', 'pdf'))) {
             die(json_encode(array('result' => 'error', 'error' => 'Invalid export format')));
         }
-        
+
 	if(!file_exists(GC_FOP_LIB)) {
             die(json_encode(array('result'=>'error','error' => 'fop lib does not exist')));
         }
-	
+
         require_once GC_FOP_LIB;
-        
+
         $_REQUEST['request_type'] = 'table';
         require_once 'include/printDocument.php';
-        
+
         try {
             $printTable = new printDocument();
 
@@ -271,10 +275,10 @@ switch($data['export_format']) {
 
             $TmpPath = GC_WEB_TMP_DIR;
             $file = $printTable->printTablePDF($data);
-         } 
+         }
          catch (Exception $e) {
             die(json_encode(array('result'=>'error','error' => $e->getMessage())));
          }
          die(json_encode(array('result'=>'ok','file'=>$file)));
-    break;   
+    break;
 }
