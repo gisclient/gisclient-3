@@ -242,7 +242,7 @@ class gcReport {
         left join $dbschema.catalog using (catalog_id)
         left join $dbschema.e_fieldtype using (fieldtype_id)
         where qt_field.qt_id = :qt_id
-        order by qtfield_order;";
+        order by qtfield_order,field_header;";
 
         $stmt = $this->db->prepare($sqlField);
         $stmt->execute(array('qt_id'=>$request['report_id']));
@@ -585,6 +585,19 @@ class gcReport {
             }
         }
 
+        $whereClause = null;
+        if(isset($aFeature['data_filter'])) {
+            $whereClause = '('.$aFeature['data_filter'].')';
+        }
+        if (isset($aFeature['layer_data_filter'])) {
+            if (isset($whereClause)) {
+                $whereClause .= ' AND ('.$aFeature['layer_data_filter'].')';
+            }
+            else {
+                $whereClause = '('.$aFeature['layer_data_filter'].')';
+            }
+        }
+
         if (!empty($aFeature['order_by'])) {
             $orderByFieldList = array($aFeature['order_by']);
         }
@@ -593,6 +606,7 @@ class gcReport {
         //if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
         // **** Add check if fieldList empty
         $datalayerTable = 'SELECT ' . implode(',', $fieldList) . ' FROM '. $joinString;
+        if(!empty($whereClause)) $datalayerTable .= ' WHERE '. $whereClause;
         if(!empty($groupByFieldList) && count($groupByFieldList) < count($fieldList)) $datalayerTable .= ' GROUP BY '. implode(', ', $groupByFieldList);
         if(!empty($orderByFieldList)) $datalayerTable .= ' ORDER BY ' . implode(', ', $orderByFieldList);
 		print_debug($datalayerTable,null,'report');

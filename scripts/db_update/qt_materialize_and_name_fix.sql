@@ -1,6 +1,7 @@
 ALTER TABLE gisclient_3.qt RENAME COLUMN zoom_buffer TO materialize;
 ALTER TABLE gisclient_3.qt_relation RENAME COLUMN qtrelation_name TO qt_relation_name;
 ALTER TABLE gisclient_3.qt_field RENAME COLUMN qtfield_name TO qt_field_name;
+DROP VIEW gisclient_3.seldb_qt_relation;
 CREATE OR REPLACE VIEW gisclient_3.seldb_qt_relation AS
  SELECT 0 AS id,
     'layer'::character varying AS opzione,
@@ -10,6 +11,7 @@ UNION ALL
     qt_relation.qt_relation_name AS opzione,
     qt_relation.qt_id
    FROM gisclient_3.qt_relation;
+DROP VIEW gisclient_3.vista_qtfield;
 CREATE OR REPLACE VIEW gisclient_3.vista_qtfield AS
 SELECT qt_field.qt_field_id,
    qt_field.qt_id,

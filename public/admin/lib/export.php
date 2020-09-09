@@ -10,17 +10,17 @@ function _writeHeader($pr,$lev,$name,$file){
 }
 function _getChild($lev,$export){		//FUNZIONE CHE RECUPERA I FIGLI DEL LIVELLO
     $db = GCApp::getDB();
-    
+
     if($export) {
         $sql = "SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE export>0 AND struct_parent_id=(select id from ".DB_SCHEMA.".e_level WHERE name=:lev) order by export";
     } else {
         $sql = "SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE struct_parent_id=:lev";
     }
-    
+
     $stmt = $db->prepare($sql);
     $stmt->execute(array('lev'=>$lev));
     $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
 	return $ris;
 }
 
@@ -34,10 +34,10 @@ function _getFieldName($level){
 }
 function _getFieldValue($table,$fld,$pk,$pkVal){		// SI PUO' ANCHE MODIFICARE PER FAR RESTITUIRE UNA LISTA DI CAMPI
     $db = GCApp::getDB();
-    
+
     $params = array();
     $filters = array();
-    
+
 	for($i=0;$i<count($pk);$i++){
         array_push($filters, $pk[$i].' = :'.$pk[i]);
         $params[$pk[$i]] = $pkVal[$i];
@@ -45,7 +45,7 @@ function _getFieldValue($table,$fld,$pk,$pkVal){		// SI PUO' ANCHE MODIFICARE PE
 	$sql="SELECT $fld FROM ".DB_SCHEMA.".$table WHERE ".implode(' AND ', $filters);
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
-    
+
     return $stmt->fetchColumn(0);
 }
 
@@ -58,16 +58,16 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 	$standardMem=ini_get('memory_limit');
 	ini_set('max_execution_time',LONG_EXECUTION_TIME);
 	ini_set('memory_limit',LONG_EXECUTION_MEMORY);
-    
+
 	$db = GCApp::getDB();
     $err = array();
-    
+
 	$fName=$f;
 	$rows=file($fName);
 	$type=str_replace("--Type:","",trim($rows[1]));
-    
+
 	//$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=:type"; //????? - questa non sembra essere eseguita, $sql viene sovrascritto verso la riga 81
-    
+
 	if ($qt) $name=str_replace("--Name:","",$rows[2]);
 	$newName=($newName)?($newName):($name);
 	$arrSubst=Array("@PARENTID@"=>"'".$parentId."'","@PARENTKEY@"=>$parentkey,"@PROJECTNAME@"=>$parentName,"@DB_SCHEMA@"=>DB_SCHEMA,"@OBJECTNAME@"=>$newName,"\\n"=>"\n");
@@ -76,7 +76,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		$err[]="Il File $f non esiste.";
 		return $err;
 	}
-	
+
 	$handle=fopen(ROOT_PATH.'config/debug/test_import.sql','w+');
 	for($i=3;$i<count($rows);$i++){
 		$sql=trim(str_replace("\n",'',str_replace("\r","",$rows[$i])));
@@ -88,7 +88,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 		if(preg_match_all('|@FOREIGNKEY(.+)@|Ui',$sql,$out,PREG_SET_ORDER)){
 			for($k=0;$k<count($out);$k++){
 				$str=$out[$k][0];
-				if($out[$k][1]=="[relation][0]"){
+				if(($out[$k][1]=="[relation][0]") || ($out[$k][1]=="[qt_relation][0]")){
 					$newVal="0";
 				}
 				elseif($out[$k][1]=="[catalog][]"){
@@ -106,24 +106,24 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 					$flt[]="project.project_name='$parentName'";
 					$tables[]=DB_SCHEMA.'.project';
 					$sqlVal="SELECT $fld as val FROM ".implode(",",array_unique($tables))." WHERE ".implode(' AND ',array_unique($flt)).";";
-                    
+
                     try {
                         $newVal = $db->query($sqlVal)->fetchColumn(0);
                     } catch(Exception $e) {
                         echo "<p>$sqlVal</p>";
                     }
-				}	
-				$sql=str_replace($out[$k][0],$newVal,$sql);	
+				}
+				$sql=str_replace($out[$k][0],$newVal,$sql);
 			}
 		}
 		if(preg_match_all('|@KEY\[(.+)\]\[(.+)\]@|Ui',$sql,$newkey)){
 			for($j=0;$j<count($newkey[0]);$j++){
 				if(!$newid[$newkey[1][$j]][$newkey[2][$j]]) $newid[$newkey[1][$j]][$newkey[2][$j]]=$newkey[2][$j];
-				$sql=str_replace($newkey[0][$j],$newid[$newkey[1][$j]][$newkey[2][$j]],$sql);	
+				$sql=str_replace($newkey[0][$j],$newid[$newkey[1][$j]][$newkey[2][$j]],$sql);
 			}
 		}
 		if(preg_match("|@NEWKEY_I\[(.+)\]\[(.+)\]@|Ui",$sql,$out)) {
-			if($out[1]=='relation' && !$out[2])
+			if(($out[1]=='relation' || $out[1]=='qt_relation') && !$out[2])
 				$newId[$out[1]][$out[2]]="0";
 			else{
 				$table=str_replace('_id','',$out[1]);
@@ -154,11 +154,11 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
         } catch(Exception $e) {
             array_push($err, "ROW $i : ".$e->getMessage()."\n<p>$sql</>");
         }
-	
+
 	}
 	fclose($handle);
 	ini_set('max_execution_time',$standardTime);
-	ini_set('memory_limit',$standardMem);	
+	ini_set('memory_limit',$standardMem);
 	return $err;
 }
 
@@ -225,11 +225,11 @@ function _getListValue($level,$val,$db){
 	if($level=='project') $result[]="[$level][$val]";
 	else
 	{
-                
+
 		while(trim($pk["parent"][$level])){
 			$table=$pk["table"][$level];
 			if(count($pk['pkey'][$level])>1){
-				
+
 			}
 			else{
 				if($pk["parent"][$level]) $parentPK=$pk["pkey"][$pk["parent"][$level]][0];
@@ -244,8 +244,8 @@ function _getListValue($level,$val,$db){
             } catch(Exception $e) {
                 echo "<p>$sql</p>";
             }
-            
-			if($level=="relation" && !$val){
+
+			if(($level=="relation" || $level=="qt_relation") && !$val){
 				$result[]="[$level][0]";
 				return implode("",$result);
 			}
@@ -254,9 +254,9 @@ function _getListValue($level,$val,$db){
                         }
 			$level=$pk["parent"][$level];
 			$val=$newval;
-			
+
 		}
-                
+
 	}
 	return implode("",$result);
 }
@@ -269,16 +269,16 @@ function _isPKey($fld,$pk,$lev=""){
 }
 function _export($fileName="export.sql",$currentLevel,$projName,$structure,$start=0,$startName,$parentValue,&$valutatedKey,&$Errors=Array()){
 	//MODIFICO I PARAMETRI DEL PHP PER PERMETTERE LE ESPORTAZIONI
-	
+
 	$standardTime=ini_get('max_execution_time');
 	$standardMem=ini_get('memory_limit');
 	ini_set('max_execution_time',LONG_EXECUTION_TIME);
 	ini_set('memory_limit',LONG_EXECUTION_MEMORY);
-	
+
 	$db = GCApp::getDB();
     $filter = array();
     $params = array();
-	
+
 	$pkey=$structure["pkey"];		//RECUPERO LE CHIAVI PRIMARIE DELLA STRUTTURA
 	$parent=$structure["parent"][$currentLevel];
 	if($start){
@@ -298,7 +298,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
             $params[$pkey[$currentLevel][$i]] = $parentValue[$pkey[$currentLevel][$i]];
         }
     }
-    
+
     //query per ottenere il tipo di dato
     $sqlType = 'select udt_name from information_schema.columns where table_schema = :schema
         and table_name = :table and column_name = :column';
@@ -307,7 +307,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
     if(!empty($filter)) {
         $sql .= ' WHERE '.implode(' AND ', $filter);
     }
-    
+
     try {
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
@@ -322,7 +322,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 		$fldIns=Array();
 		$valIns=Array();
 		$j=0;
-		
+
 		foreach($rec as $key=>$val){		//Ciclo su tutti i campi
 			//SFRUTTO IL PRIMO GIRO PER ESTRARRE I TIPI DI DATO
 			if($i==0) {
@@ -335,7 +335,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
                 $fldType[$key] = $getColType->fetchColumn(0);
                 $getColType->fetchAll(); //pdo si innervosisce se gli stmt rimangono mezzi aperti
             }
-			
+
 			/*MODIFICHE*/
 			if($valutatedKey[$key][$val]){	//CHIAVE GIA' VALUTATA (SONO TUTTE LE PARENT KEY)
 				$lev=str_replace('_name','',str_replace('_id','',$key));
@@ -360,7 +360,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 					if($key=="srid")
 						$values[$key]=$val;
 					elseif($valutatedKey[$key][$val]==1){
-						
+
 						$values[$key]=($key==$startName)?("'@OBJECTNAME@'"):("'@KEY[$lev][$val]@'");
 					}
 					else{
@@ -372,7 +372,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 			}
 
 			elseif(_isPKey($key,$pkey)){					//CHIAVI ESTERNE
-				if(($key=='relation_id' && !$val) || ($key=='catalog_id' && $val==-1)){
+				if(($key=='relation_id' && !$val) || ($key=='qt_relation_id' && !$val) || ($key=='catalog_id' && $val==-1)){
 					$values[$key]="$val";
 					$valutatedKey[$key][$val]=1;
 				}
@@ -396,7 +396,7 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 			}
 			$j++;
 		}
-	
+
 		$list_value=@implode(",",$values);
 		$list_flds=@implode(",",array_keys($values));
 		$s="INSERT INTO ".$structure["table"][$currentLevel]."($list_flds) VALUES($list_value);\n";
@@ -404,43 +404,43 @@ function _export($fileName="export.sql",$currentLevel,$projName,$structure,$star
 		$sql=str_replace(chr(13),"",str_replace(chr(10),"",$s))."\n";print_debug($sql,null,'testExport');
 		if(!fwrite($f,$sql)) echo "<p>IMPOSSIBILE SCRIVERE SUL FILE $fileName:<br>$sql</p>";
 		fclose($f);
-		//CHIAMATA RICORSIVA	
+		//CHIAMATA RICORSIVA
 		if($child){
 			foreach($child as $ch){
 				$struct["child"][$currentLevel]=_export($fileName,$ch["name"],$projName,$structure,0,$startName,$pkeyVal,$valutatedKey,$Errors);
 			}
 		}
 		$values=Array();	//Svuoto Array deli Valori
-		
+
 	}
 	ini_set('max_execution_time',$standardTime);
 	ini_set('memory_limit',$standardMem);
 	return $struct;
-	
+
 }
 
 //questa non sembra utilizzata
 function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startName='',$parentValue=Array(),&$valutatedKey){
     die('invece sono usata! public/admin/lib/export.php _exportNew()');
 	//MODIFICO I PARAMETRI DEL PHP PER PERMETTERE LE ESPORTAZIONI
-	
+
 	$standardTime=ini_get('max_execution_time');
 	$standardMem=ini_get('memory_limit');
 	ini_set('max_execution_time',LONG_EXECUTION_TIME);
 	ini_set('memory_limit',LONG_EXECUTION_MEMORY);
 	$pkey=parse_ini_file(ADMIN_PATH."include/primary_keys.ini");		//Recupero le Chiavi Primarie della Struttura
-	
+
 
 	//DA CANCELLARE O AGGIORNARE A PDO
 
 	$db=new sql_db(DB_HOST.":".DB_PORT,DB_USER,DB_PWD,DB_NAME, false);			//CONNESSIONE AL DB
 	if(!$db->db_connect_id)  die( "Impossibile connettersi al database");
-	
-	
+
+
 	$struct["name"]=$arr[$lev]["name"];	//LIVELLO CORRENTE
 	$el=$arr[$lev];						//INFO LIVELLO CORRENTE
-	
-	
+
+
 	$child=_getChild($lev,1);
 	$parent_key=$pkey[$arr[$arr[$lev]["parent"]]["name"]];		//CHIAVI PRIMARIE DEL LIVELLO PADRE
 	//QUERY CHE RECUPERA I VALORI DELLE PK DEL LIVELLO ATTUALE DA ESPORTARE (SOLO nel CASO start=0) altrimenti i valori solo quelli dell'id
@@ -456,7 +456,7 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 		for($i=0;$i<count($pkey[$el["name"]]);$i++) $filter[]=$pkey[$el["name"]][$i]."='".$parentValue[$pkey[$el["name"]][$i]]."'";
 	$filter=(count($filter))?(implode(' AND ',$filter)):('');
 	$sql="SELECT * FROM ".DB_SCHEMA.".$struct[name] WHERE $filter;";
-        
+
 	if(!$db->sql_query($sql)) echo "<p>Errore $sql</p>";
 	$recordSet=$db->sql_fetchrowset();
 	$child=_getChild($lev,1);
@@ -466,12 +466,12 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 		$j=0;
 		$fldIns=Array();
 		$valIns=Array();
-		
+
 		foreach($rec as $key=>$val){		//Ciclo su tutti i campi
 			if($key==$startName) echo "$level $key=>$val<br>";
 			//SFRUTTO IL PRIMO GIRO PER ESTRARRE I TIPI DI DATO
 			if($i==0) $fldType[$key]=$db->sql_fieldtype($j);
-			
+
 			/*FINE MODIFICHE*/
 			if(in_array($key,$parent_key)){									//CHIAVI DEL PARENT
 				if(preg_match('/(.+)_id$/Ui',$key,$out)){
@@ -505,7 +505,7 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 					}
 					else{
 						$table=str_replace("_id","",$key);
-						if($valutatedKey[$key][$val]) 
+						if($valutatedKey[$key][$val])
 							$values[$key]="@NEWPARENTKEY[".$table."][".$val."]@";
 						else{
 							$tree=_getListValue($table,$val);
@@ -548,7 +548,7 @@ function _exportNew($fileName="export.sql",$arr,$lev,$project,$start=0,$startNam
 		fclose($f);
 		//CHIAMATA RICORSIVA
 		if($child){
-			
+
 			foreach($child as $ch){
 				$tb=$ch["name"];
 				$struct["child"][$lev]=_exportNew($fileName,$arr,$ch["id"],$project,0,$startName,$pkeyVal,$valutatedKey);

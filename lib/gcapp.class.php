@@ -355,6 +355,7 @@ class GCAuthor {
     }
 
 	private static function generateLegendCache($project, $mapset, $target) {
+		require_once ROOT_PATH."public/services/include/OwsHandler.php";
 		require_once ROOT_PATH."public/services/include/wmsGetLegendGraphic.php";
 
 		if (!defined('LEGEND_CACHE_PATH')) {
@@ -572,8 +573,9 @@ class GCAuthor {
                 $geomField = 'st_astext('.$geomField.')';
             }
         }
-		$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid, '.$geomField.' as gc_geom';
-        if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
+		$datalayerTable = 'SELECT '.DATALAYER_ALIAS_TABLE.'.'.$datalayerKey.' as gc_objid';
+		if(!empty($datalayerGeom)) $datalayerTable .= ', ' . $geomField.' as gc_geom';
+		if(!empty($fieldList)) $datalayerTable .= ', '.implode(',', $fieldList);
         $datalayerTable = 'SELECT * FROM (' . $datalayerTable . ' FROM '.$joinString . ') as LAYER_Q';
 		if (!empty($datalayerFilter)) $datalayerTable .= ' WHERE ' . $datalayerFilter;
         if(!empty($groupByFieldList)) $datalayerTable .= ' GROUP BY gc_objid, gc_geom, ' . implode(', ', $groupByFieldList);
