@@ -85,51 +85,51 @@ $response['conditions'] = array();
 if ($_REQUEST['action'] == 'set') {
 	if (empty($_REQUEST['featureType']))
 	    die(json_encode(array('error' => 200, 'message' => 'No layer name')));
-	$featureType = $_REQUEST['featureType'];
-
+	$featureTypes = explode(',', $_REQUEST['featureType']);
 	$db = GCApp::getDB();
+	foreach ($featureTypes as $featureType) {
+		$sql = 'select layer_id from '.DB_SCHEMA.'.layer
+		    inner join '.DB_SCHEMA.'.layergroup on layer.layergroup_id = layergroup.layergroup_id
+		    inner join '.DB_SCHEMA.'.mapset_layergroup on mapset_layergroup.layergroup_id = layergroup.layergroup_id
+		    where mapset_name = :mapset_name and layergroup_name = :layergroup_name and layer_name = :layer_name';
+		$stmt = $db->prepare($sql);
 
-	$sql = 'select layer_id from '.DB_SCHEMA.'.layer
-	    inner join '.DB_SCHEMA.'.layergroup on layer.layergroup_id = layergroup.layergroup_id
-	    inner join '.DB_SCHEMA.'.mapset_layergroup on mapset_layergroup.layergroup_id = layergroup.layergroup_id
-	    where mapset_name = :mapset_name and layergroup_name = :layergroup_name and layer_name = :layer_name';
-	$stmt = $db->prepare($sql);
+		list($layergroupName, $layerName) = explode('.', $featureType);
 
-	list($layergroupName, $layerName) = explode('.', $featureType);
+		$stmt->execute(array(
+		    'mapset_name'=>$mapsetName,
+		    'layergroup_name'=>$layergroupName,
+		    'layer_name'=>$layerName
+		));
 
-	$stmt->execute(array(
-	    'mapset_name'=>$mapsetName,
-	    'layergroup_name'=>$layergroupName,
-	    'layer_name'=>$layerName
-	));
+		$res = $stmt->fetchAll();
+		if (count($res) < 1)
+		    die(json_encode(array('error' => 200, 'message' => 'Layer '.$featureType.' not found in mapset '.$mapsetName)));
 
-	$res = $stmt->fetchAll();
-	if (count($res) < 1)
-	    die(json_encode(array('error' => 200, 'message' => 'Layer '.$featureType.' not found in mapset '.$mapsetName)));
-
-	if (!isset($_SESSION['GC_LAYER_FILTERS'][$mapsetName])) {
-	    $_SESSION['GC_LAYER_FILTERS'][$mapsetName] = array();
-		$_SESSION['GC_LAYER_FILTERS_C'][$mapsetName] = array();
-	}
-
-	if (isset($_REQUEST['filter'])) {
-	    $_SESSION['GC_LAYER_FILTERS'][$mapsetName][$featureType] = $_REQUEST['filter'];
-		$response['filters'][$featureType] = $_REQUEST['filter'];
-	}
-	else if (isset($_REQUEST['condition'])) {
-		$condition = json_decode($_REQUEST['condition'], true);
-		$res = parseCondition($condition);
-		if ($res === FALSE) {
-			die(json_encode(array('error' => 200, 'message' => 'Error parsing condition')));
+		if (!isset($_SESSION['GC_LAYER_FILTERS'][$mapsetName])) {
+		    $_SESSION['GC_LAYER_FILTERS'][$mapsetName] = array();
+			$_SESSION['GC_LAYER_FILTERS_C'][$mapsetName] = array();
 		}
-		$_SESSION['GC_LAYER_FILTERS'][$mapsetName][$featureType] = $res;
-		$_SESSION['GC_LAYER_FILTERS_C'][$mapsetName][$featureType] = $condition;
-		$response['filters'][$featureType] = $res;
-		$response['conditions'][$featureType] = $condition;
-	}
-	else {
-	    unset($_SESSION['GC_LAYER_FILTERS'][$mapsetName][$featureType]);
-		unset($_SESSION['GC_LAYER_FILTERS_C'][$mapsetName][$featureType]);
+
+		if (isset($_REQUEST['filter'])) {
+		    $_SESSION['GC_LAYER_FILTERS'][$mapsetName][$featureType] = $_REQUEST['filter'];
+			$response['filters'][$featureType] = $_REQUEST['filter'];
+		}
+		else if (isset($_REQUEST['condition'])) {
+			$condition = json_decode($_REQUEST['condition'], true);
+			$res = parseCondition($condition);
+			if ($res === FALSE) {
+				die(json_encode(array('error' => 200, 'message' => 'Error parsing condition')));
+			}
+			$_SESSION['GC_LAYER_FILTERS'][$mapsetName][$featureType] = $res;
+			$_SESSION['GC_LAYER_FILTERS_C'][$mapsetName][$featureType] = $condition;
+			$response['filters'][$featureType] = $res;
+			$response['conditions'][$featureType] = $condition;
+		}
+		else {
+		    unset($_SESSION['GC_LAYER_FILTERS'][$mapsetName][$featureType]);
+			unset($_SESSION['GC_LAYER_FILTERS_C'][$mapsetName][$featureType]);
+		}
 	}
 	die(json_encode($response));
 }
@@ -142,12 +142,5 @@ else if ($_REQUEST['action'] == 'list') {
 }
 
 die(json_encode(array('error' => 200, 'message' => 'No valid action')));
-
-
-
-
-
-
-
 
 ?>
