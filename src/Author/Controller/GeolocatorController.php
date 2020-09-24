@@ -45,11 +45,12 @@ class GeolocatorController
             throw new \Exception(json_last_error_msg());
         }
 
+        $result = isset($geolocatorConfig[$mapset]) ? $geolocatorConfig[$mapset] : null
         if ($lang !== null) {
             $mapset = $mapset.'_'.$lang;
         }
 
-        return isset($geolocatorConfig[$mapset]) ? $geolocatorConfig[$mapset] : null;
+        return isset($geolocatorConfig[$mapset]) ? $geolocatorConfig[$mapset] : $result;
     }
 
     private function getDatabaseFromConfig(array $config, $mapset)
