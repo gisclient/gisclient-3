@@ -127,7 +127,7 @@ function import($f,$parentId,$parentName,$newName='',$parentkey=null){
 				$newId[$out[1]][$out[2]]="0";
 			else{
 				$table=str_replace('_id','',$out[1]);
-				$sqlId="select ".DB_SCHEMA.".new_pkey('$table','".$out[1]."_id') as newid;";
+				$sqlId="select ".DB_SCHEMA.".new_pkey('".DB_SCHEMA."','$table','".$out[1]."_id') as newid;";
                 $newid[$out[1]][$out[2]] = $db->query($sqlId)->fetchColumn(0);
 			}
 		}
@@ -190,7 +190,7 @@ function import_raster($d,$ext,$layergroup_id,$catalog_id,$srid=-1, $layerDef)/*
     array_pop($tmp);
 	$fname=@implode("",$tmp);
 	$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name, layer_title, catalog_id,layertype_id,data,data_srid,layer_order,layer_def)"
-         ." VALUES(".DB_SCHEMA.".new_pkey('layer','layer_id'),$layergroup_id,'".$fname."','".$fname."',$catalog_id,4,'".str_replace("//","/","/".substr($d,0,strrpos($d,"/"))."/".$f)."',$srid,-1, '".$layerDef."')";
+         ." VALUES(".DB_SCHEMA.".new_pkey('".DB_SCHEMA."','layer','layer_id'),$layergroup_id,'".$fname."','".$fname."',$catalog_id,4,'".str_replace("//","/","/".substr($d,0,strrpos($d,"/"))."/".$f)."',$srid,-1, '".$layerDef."')";
     try {
       $stmt = $db->prepare($sql);
       $stmt->execute();

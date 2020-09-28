@@ -35,7 +35,7 @@ $n2 = 0;
 
 foreach($traduzioni as $row) {
     $pkey = GCApp::getTablePKey($db, DB_SCHEMA, $row['table_name']);
-    
+
     $sql = 'select '.$pkey.' from '.DB_SCHEMA.'.'.$row['table_name'].' where '.$row['field_name'].' = :orig_val and '.$row['table_name'].'_id = :pkey_id' ;
     $stmt = $db->prepare($sql);
     $stmt->execute(array('orig_val'=>$row['original_value'], 'pkey_id' => $row['pkey_id']));
@@ -45,8 +45,8 @@ foreach($traduzioni as $row) {
             echo 'manca '.$row['table_name'].' '.$row['field_name'].' in i18n_field, inserimento '.$row['original_value'].' - '.$row['value']." saltato \n";
             continue;
         }
-        $localization_id = $db->query("select ".DB_SCHEMA.".new_pkey('localization', 'localization_id') ")->fetchColumn(0);
-        
+        $localization_id = $db->query("select ".DB_SCHEMA.".new_pkey('".DB_SCHEMA."','localization', 'localization_id') ")->fetchColumn(0);
+
         $checkStmt->execute(array(
             'project'=>$project,
             'i18nfid'=>$i18nfid,
@@ -65,7 +65,7 @@ foreach($traduzioni as $row) {
             }
             continue;
         }
-        
+
         $insertStmt->execute(array(
             'localization_id' => $localization_id,
             'project'=>$project,

@@ -320,7 +320,7 @@ class Symbol{
 		$table=$this->table;
 		$tableId=$table."_id";
 		foreach($aSymbol as $smbName=>$smbDef){
-			$sql="insert into $dbSchema.symbol(symbol_id,symbol_name,def) values ((select $dbSchema.new_pkey('symbol','symbol_id')),'$smbName','$smbDef');";
+			$sql="insert into $dbSchema.symbol(symbol_id,symbol_name,def) values ((select $dbSchema.new_pkey('".$dbSchema."','symbol','symbol_id')),'$smbName','$smbDef');";
             $this->db->exec($sql);
 			print($sql."\n");
 		}

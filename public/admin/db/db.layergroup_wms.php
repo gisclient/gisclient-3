@@ -61,8 +61,8 @@ if(!$save->hasErrors && $save->action=="salva"){
 				for($j=0;$j<count($lGroup[$i]["layer"]);$j++){
 					$layer=$lGroup[$i]["layer"][$j];
 					$metaData="\"wms_srs\" \"$epsgList\"\\n\"wms_name\" \"$lGroupName\"\\n\"wms_server_version\" \"$serviceVersion\"\\n\"wms_format\" \"$format\"\\n\"wms_style\" \"$layer[name]\"\n\"wms_formatlist\" \"$formatsList\"";
-					
-					$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name,layertype_id,catalog_id,data,data_srid,minscale,maxscale,metadata) VALUES((SELECT ".DB_SCHEMA.".new_pkey('layer','layer_id',1)),$layergroup_id,'$layer[name]',4,$idcat,'no',$epsg,".$lGroup[$i]["minscale"].",".$lGroup[$i]["maxscale"].",'$metaData');";
+
+					$sql="INSERT INTO ".DB_SCHEMA.".layer(layer_id,layergroup_id,layer_name,layertype_id,catalog_id,data,data_srid,minscale,maxscale,metadata) VALUES((SELECT ".DB_SCHEMA.".new_pkey('".DB_SCHEMA."','layer','layer_id',1)),$layergroup_id,'$layer[name]',4,$idcat,'no',$epsg,".$lGroup[$i]["minscale"].",".$lGroup[$i]["maxscale"].",'$metaData');";
 					if(!$save->db->sql_query($sql))
 						print_debug($sql,null,"WMS");
 				}
@@ -70,6 +70,6 @@ if(!$save->hasErrors && $save->action=="salva"){
 		}
 	}
 	$_SESSION["AUTHOR"]["WMS"]=null;
-	
+
 }
 ?>
