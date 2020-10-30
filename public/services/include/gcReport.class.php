@@ -633,7 +633,7 @@ class gcReport {
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
 
-        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme.theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, qt.qt_id, coalesce(qt_title,qt_name) as report_title, data_unique, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, qt.materialize, qt.selection_color, selection_width, qt_field_id, qt_field_name, qt_field.filter_field_name as filter_field_name, qt_field.field_header as field_header, qt_field.fieldtype_id as fieldtype_id, qt_field.column_width as column_width, qt_relation_name, qtrelationtype_id, qt_field.searchtype_id as searchtype_id, qt_field.resultype_id as resultype_id, qt_field.datatype_id as datatype_id, qt_field.field_filter as field_filter, layer.hidden, qt_field.editable as field_editable, layer.data_type as data_type, qt_field.lookup_table as lookup_table, qt_field.lookup_id, qt_field.lookup_name,qt_relation.qt_relation_id, qt_relation.data_field_1, qt_relation.table_field_1
+        $sql = "SELECT theme.project_name, theme_name, theme_title, theme_single, theme.theme_id, layergroup_id, layergroup_name, layergroup_name || '.' || layer_name as type_name, layer.layer_id, layer.searchable_id, qt.qt_id, coalesce(qt_title,qt_name) as report_title, data_unique, layer.data, catalog.catalog_id, catalog.catalog_url, private, layertype_id, classitem, labelitem, maxvectfeatures, qt.materialize, qt.selection_color, selection_width, qt_field_id, qt_field_name, qt_field.filter_field_name as filter_field_name, qt_field.field_header as field_header, qt_field.fieldtype_id as fieldtype_id, qt_field.field_format as field_format, qt_field.column_width as column_width, qt_relation_name, qtrelationtype_id, qt_field.searchtype_id as searchtype_id, qt_field.resultype_id as resultype_id, qt_field.datatype_id as datatype_id, qt_field.field_filter as field_filter, layer.hidden, qt_field.editable as field_editable, layer.data_type as data_type, qt_field.lookup_table as lookup_table, qt_field.lookup_id, qt_field.lookup_name,qt_relation.qt_relation_id, qt_relation.data_field_1, qt_relation.table_field_1
 				FROM " . DB_SCHEMA . ".theme
 				INNER JOIN " . DB_SCHEMA . ".layergroup using (theme_id)
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
@@ -758,6 +758,7 @@ class gcReport {
                     "dataType"=>intval($row["datatype_id"]),
                     "width"=>intval($row["column_width"]),
                     "searchType"=>intval($row["searchtype_id"]),
+                    "fieldFormat"=>$row["field_format"],
                     'editable'=>$userCanEdit ? intval($row['field_editable']) : 0,
                     "resultType"=>intval($row["resultype_id"])
                     //'isPrimaryKey'=>$isPrimaryKey
