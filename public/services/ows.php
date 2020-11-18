@@ -264,6 +264,7 @@ if(!empty($layersParameter) || !empty($layerIndexList)) {
 	// stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
 	$layersToRemove = array();
 	$layersToInclude = array();
+	$mapsetFilter = $oMap->getMetaData("mapset_filter");
 	foreach($layersArray as $layer) {
 
 		//layer aggiunto x highlight
@@ -308,6 +309,31 @@ if(!empty($layersParameter) || !empty($layerIndexList)) {
 				}
 				// aggiorno il FILTER del layer
 				$layer->setFilter($filter);
+			}
+		}
+
+		/*
+			FILTRO SUL MAPSET PER LA VERSIONE 7 DI MAPSERVER
+			TODO AGGIUNGERE CODICE PER VERSIONE 6 USANDO SET FILTER
+			DEVE ESISTERE IL CAMPO METADATA NEL MAPSET E CONTENERE UNA STRINGA DI QUESTO TIPO:
+			"mapset_filter" "nomefile like 'E463_000100%'"
+		*/
+		if ($mapsetFilter) {
+			$flag=1;
+			//Filtri per la versione 7
+			$pp = $layer->getProcessing();
+			for ($i=0;$i<count($pp);$i++){
+				if(strpos($pp[$i],"_FILTER")>0){
+					$flag=0;
+					$pp[$i]=str_replace("NATIVE_FILTER=","NATIVE_FILTER=(",$pp[$i]);
+					$pp[$i]=$pp[$i] . ") AND " . $mapsetFilter;
+				}
+			}
+			if ($flag) $pp[]="NATIVE_FILTER=" . $mapsetFilter;
+
+			$layer->clearProcessing();
+			for ($i=0;$i<count($pp);$i++){
+				$layer->setProcessing($pp[$i]);
 			}
 		}
 

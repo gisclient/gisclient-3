@@ -87,6 +87,13 @@ class PgQuery{
 			return;
 		} */
 
+		if(!empty($request['projectName']) && !empty($request['mapsetName'])) {
+		    $mapsetFileName = ROOT_PATH.'map/'.$request['projectName'].'/'.$request['mapsetName'].'.map';
+		    if (is_readable($mapsetFileName)) {
+		        $oMap = ms_newMapobj($mapsetFileName);
+		        $mapsetFilter = $oMap->getMetaData("mapset_filter");
+		    }
+		}
 
 		//costruzione oggetto querytemplate
 		$sqlField="select field.*, relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, catalog_url
@@ -177,6 +184,10 @@ class PgQuery{
 		//Tutti i query template dei modelli di ricerca interessati
 		$allTemplates = array();
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+			//mapsetFilter
+			if(!empty($mapsetFilter)) {
+				$row['data_filter'] = '('.$row['data_filter'].') AND ('.$mapsetFilter.')';
+			}
 			$layerId=$row["layer_id"];
 			$allTemplates[$layerId]=$row;
 			$allTemplates[$layerId]["field"]= (isset($qField[$layerId]))?$qField[$layerId]:null;

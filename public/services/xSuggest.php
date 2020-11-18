@@ -20,6 +20,14 @@ if(!empty($_REQUEST["filtervalue"]) && !empty($_REQUEST["filterfields"])) {
     }
 }
 
+if(!empty($_REQUEST["project"]) && !empty($_REQUEST["mapset"])) {
+    $mapsetFileName = ROOT_PATH.'map/'.$_REQUEST["project"].'/'.$_REQUEST["mapset"].'.map';
+    if (is_readable($mapsetFileName)) {
+        $oMap = ms_newMapobj($mapsetFileName);
+        $mapsetFilter = $oMap->getMetaData("mapset_filter");
+    }
+}
+
 $db = GCApp::getDB();
 
 /* Recupero i dati del layer */
@@ -37,6 +45,7 @@ for ($k = 0; $k < count($fieldIDs); $k++) {
     $datalayerKey = $layer["data_unique"];
     $filters = array(); //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
     if(!empty($layer['data_filter'])) array_push($filters, '('.$layer['data_filter'].')');
+    if(!empty($mapsetFilter)) array_push($filters, '('.$mapsetFilter.')');
     $sTable = $datalayerSchema.".".$datalayerTable;
 
 
