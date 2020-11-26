@@ -186,7 +186,12 @@ class PgQuery{
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			//mapsetFilter
 			if(!empty($mapsetFilter)) {
-				$row['data_filter'] = '('.$row['data_filter'].') AND ('.$mapsetFilter.')';
+				if (!empty($row['data_filter'])) {
+					$row['data_filter'] = '('.$row['data_filter'].') AND ('.$mapsetFilter.')';
+				}
+				else {
+					$row['data_filter'] = $mapsetFilter;
+				}
 			}
 			$layerId=$row["layer_id"];
 			$allTemplates[$layerId]=$row;
