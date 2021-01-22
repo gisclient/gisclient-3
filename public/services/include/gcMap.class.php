@@ -127,6 +127,7 @@ class gcMap{
         $mapConfig=array();
         $mapConfig["mapsetName"] = $row["mapset_name"];
         $mapConfig["mapsetTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_title"]):$row["mapset_title"];
+        $mapConfig["mapsetDescription"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_description"]):$row["mapset_description"];
         $mapConfig["projectName"] = $row["project_name"];
         if(!empty($row["project_title"])) $mapConfig["projectTitle"] = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["project_title"]):$row["project_title"];
         $this->mapsetTiles = (int)$row["mapset_tiles"];
@@ -215,7 +216,7 @@ class gcMap{
             $mapConfig['logged_username'] = $user->getUsername();
         }
 
-        $sql = 'select mapset_name, mapset_title from '.DB_SCHEMA.'.mapset where project_name = :project';
+        $sql = 'select mapset_name, mapset_title, template from '.DB_SCHEMA.'.mapset where project_name = :project';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
         $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -973,7 +974,7 @@ class gcMap{
                     continue;
             }
 
-            $typeTitle = $row["layer_title"];
+            $typeTitle = empty($row["layer_wms_title"])?$row["layer_title"]:$row["layer_wms_title"];
             $groupTitle = empty($row["theme_title"]) ? $row["theme_name"] : $row["theme_title"];
             $index = ($row['theme_single'] == 1 && $row['owstype_id'] == WMS_LAYER_TYPE ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
             if (!isset($featureTypes[$index]))
@@ -1010,7 +1011,7 @@ class gcMap{
                 $featureTypes[$index][$typeName]["maxvectfeatures"] = intval($row["maxvectfeatures"]);
             if (!empty($row["zoom_buffer"]))
                 $featureTypes[$index][$typeName]["zoomBuffer"] = intval($row["zoom_buffer"]);
-            $featureTypes[$index][$typeName]['hidden'] = intval($row['hidden'] || $row['hide_vector_geom']);
+            $featureTypes[$index][$typeName]['hidden'] = intval($row['hide_vector_geom']);
             $featureTypes[$index][$typeName]['searchable'] = intval($row['searchable_id']);
             if (isset($featureTypesLinks[$row['layer_id']])) {
                 $featureTypes[$index][$typeName]['link'] = $featureTypesLinks[$row['layer_id']];
@@ -1064,7 +1065,7 @@ class gcMap{
 
                 if (intval($row["resultype_id"]) === 5)
                     continue;
-                    
+
                 $fieldSpecs = array(
                     "name"=>$fieldName,
                     "header"=>(strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["field_header"]):$row["field_header"],
