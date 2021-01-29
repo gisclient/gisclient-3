@@ -507,7 +507,7 @@ class gcReport {
                     if (empty($aField['relation'])){
                         $fieldName = $aField["formula"];
                     }else{
-                        $fieldName = str_replace($aFeature["relation"][$aField["relation"]]["name"], $aliasTable, $aField["formula"]) . " AS " . $aField["field_name"];
+                        $fieldName = str_replace($aFeature["relation"][$aField["relation"]]["name"], $aliasTable, $aField["formula"]);
                     }
 
                     if (!empty($aField['aggr_function'])) {
