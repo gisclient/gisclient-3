@@ -1347,7 +1347,8 @@ class gcMap{
         $sql = "SELECT srtext, auth_srid as srid, proj4text||coalesce('+towgs84='||projparam,'') AS proj4text, " .
                 "CASE WHEN proj4text like '%+units=m%' then 'm' " .
                 "WHEN proj4text LIKE '%+units=ft%' OR proj4text LIKE '%+units=us-ft%' THEN 'ft' " .
-                "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' END AS um " .
+                "WHEN proj4text LIKE '%+proj=longlat%' THEN 'dd' END AS um, " .
+                "array_to_string(regexp_matches(srtext, '^PROJCS\[\"([^\"]*)|GEOGCS\[\"([^\"]*)'), '') as proj4title  " .
                 "FROM " . DB_SCHEMA . ".project_srs RIGHT JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array(':project_name' => $this->projectName));
@@ -1356,7 +1357,7 @@ class gcMap{
             //$parts = preg_split("/[,]+/",$row['srtext']);
             //$name = trim(substr($parts[0], strpos($parts[0], '[')+1), '"');//VEDERE CON MARCO
             if (!in_array($row["srid"], $exclude))
-                $this->projDefs["EPSG:" . $row["srid"]] = $row["proj4text"];
+                $this->projDefs["EPSG:" . $row["srid"]] = "+title=" . $row["proj4title"] . " " . $row["proj4text"];
             if ($row["srid"] == $this->mapsetSRID)
                 $this->mapsetUM = $row["um"];
         }
