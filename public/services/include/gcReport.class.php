@@ -183,14 +183,8 @@ class gcReport {
                 $connStr = str_replace('password='.$charMatches[1], 'password='.DB_PWD, $connStr);
         $dataDB = new GCDataDB($connStr);
 
-        $options = array('include_1n_relations'=>true, 'getGeomAs'=>'text');
+        $options = array('getGeomAs'=>'text');
         if(!empty($this->request['srid'])) $options['srid'] = $this->request['srid'];
-        if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') {
-            $options['group_1n'] = false;
-            if(!empty($this->request['relationName'])) {
-                $options['show_relation'] = $this->request['relationName'];
-            }
-        }
 
         print_debug("Materialize report " . $request['report_id'] . " - starting",null,'report');
 
@@ -236,9 +230,10 @@ class gcReport {
 
         $dbschema=DB_SCHEMA;
 
-        $sqlField="select qt_field.*, sql_function, qt_relation.qt_relation_name, qt_relation.qt_relation_id, qt_relation.qtrelationtype_id, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
+        $sqlField="select qt_field.*, sql_function, qt_relation.qt_relation_name, qt_relation.qt_relation_id, qt_relation.qtrelationtype_id, e_qt_relationtype.qtrelationtype_name, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
         from $dbschema.qt_field
         left join $dbschema.qt_relation using (qt_relation_id)
+        left join $dbschema.e_qt_relationtype using (qtrelationtype_id)
         left join $dbschema.catalog using (catalog_id)
         left join $dbschema.e_fieldtype using (fieldtype_id)
         where qt_field.qt_id = :qt_id
@@ -253,7 +248,7 @@ class gcReport {
 			$fieldId=$row["qt_field_id"];
 			$qField[$Id][$fieldId]["field_name"]=trim($row["qt_field_name"]);
 			$qField[$Id][$fieldId]["field_alias"]=trim($row["field_header"]);
-                        $qField[$Id][$fieldId]["title"]=trim($row["field_header"]);
+            $qField[$Id][$fieldId]["title"]=trim($row["field_header"]);
 			$qField[$Id][$fieldId]["formula"]=trim($row["formula"]);
 			$qField[$Id][$fieldId]["field_type"]=$row["fieldtype_id"];
             $qField[$Id][$fieldId]["aggr_function"]=$row["sql_function"];
@@ -283,6 +278,7 @@ class gcReport {
 					$this->isGraph=1;
 				}
 				$qRelation[$Id][$relationId]["relation_type"]=$row["qtrelationtype_id"];
+                $qRelation[$Id][$relationId]["relation_join_type"]=$row["qtrelationtype_name"];
 			}
 		}
 /*         echo 'Fields<br><pre>';
@@ -357,14 +353,8 @@ class gcReport {
         $aTemplate['fields'] = $aTemplate['field']; //temporaneo
         $aTemplate['order_by'] = !empty($this->request['order_by'])?$this->request['order_by']:NULL;
 
-        $options = array('include_1n_relations'=>true, 'getGeomAs'=>'text');
+        $options = array('getGeomAs'=>'text');
         if(!empty($this->request['srid'])) $options['srid'] = $this->request['srid'];
-        if(!empty($this->request['action']) && $this->request['action'] == 'viewdetails') {
-            $options['group_1n'] = false;
-            if(!empty($this->request['relationName'])) {
-                $options['show_relation'] = $this->request['relationName'];
-            }
-        }
 
         if (!empty($aTemplate['materialize'])) {
             $tableNameMat = 'gw_qt_' . $aTemplate['qt_id'];
@@ -448,9 +438,6 @@ class gcReport {
 
     function _buildReportQuery($aFeature, array $options = array()) {
         $defaultOptions = array(
-            'include_1n_relations'=>false, //se true, le relazioni 1-n vengono incluse nella query (se, per esempio, si vuole filtrare su un campo della secondaria)
-            'group_1n'=>true, //se false, vengono inclusi i campi della secondaria, di conseguenza i records non sono più raggruppati per i campi della primaria (se, per esempio, si vogliono visualizzare i dati della secondaria in tabella),
-            'show_relation'=>null, //se voglio visualizzare i dati di una sola secondaria, popolo questo con il nome della relazione da visualizzare
             'getGeomAs'=>null, // se text, viene usato st_astext, altrimenti nulla (astext serve per le interrogazioni, nulla serve per il mapfile)
             'srid'=>null //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
         );
@@ -487,16 +474,6 @@ class gcReport {
 
 			foreach($aFeature["fields"] as $idField=>$aField){
 
-                //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
-                if(!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
-                    if(!$options['include_1n_relations'] || $options['group_1n']) continue;
-                    else if(!empty($options['show_relation'])) {
-                        //se voglio vedere i dati della secondaria di una sola relazione, escludo i campi delle altre
-                        if($options['show_relation'] != $aFeature['relation'][$aField['relation']]['name']) continue;
-                    }
-                }
-
-                //field su layer oppure su relazione 1-1
                 if(empty($aField['relation'])) {
                     $aliasTable = DATALAYER_ALIAS_TABLE;
                 } else {
@@ -547,26 +524,13 @@ class gcReport {
 				foreach($aRelation as $idrel => $rel){
 					$relationAliasTable = GCApp::nameReplace($rel["name"]);
 
-					//se relazione 1-n, salta se non vogliamo il join
-                    //se vogliamo i dati della secondaria, elimina il groupBy
-					if($rel["relation_type"] == 2) {
-                        if(!$options['include_1n_relations']) continue;
-                        if(!empty($options['show_relation']) && $rel['name'] != $options['show_relation']) continue;
-
-                        if(!$options['group_1n']) {
-                            $groupByFieldList = null;
-                            $orderByFieldList = null;
-                        }
-					}
-
-
                     $joinList = array();
                     foreach($rel['join_field'] as $joinField) {
                         $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
                     }
 
                     $joinFields = implode(" AND ",$joinList);
-                    $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
+                    $joinString = "$joinString " . $rel['relation_join_type'] . " " .$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
 				}
 
 			}
@@ -648,7 +612,6 @@ class gcReport {
 
         $stmt->execute(array($this->mapsetName));
         $reportDefs = array();
-        $layersWith1n = array();
 
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if(!empty($this->i18n)) {
@@ -784,28 +747,6 @@ class gcReport {
                 $reportDefs[$index][$reportID]["properties"][] = $fieldSpecs;
             }
         }
-/*         foreach($layersWith1n as $index => $arr) {
-            foreach($arr as $typeName => $Relations) {
-                foreach($Relations as $Relation) {
-                    $featureTypes[$index][$typeName]['relation1n'] = $Relation;
-                    array_push($featureTypes[$index][$typeName]['properties'], array(
-                        'name'=>'num_'.$Relation['relation_id'],
-                        'header'=>'Num',
-                        'type'=>'String',
-                        'fieldId'=>9999999,
-                        'fieldType'=>1,
-                        'dataType'=>2,
-                        'searchType'=>0,
-                        'editable'=>0,
-                        'relationType'=>null,
-                        'resultType'=>1,
-                        'filterFieldName'=>null,
-                        'isPrimaryKey'=>false,
-                        'is1nCountField'=>true
-                    ));
-                }
-            }
-        } */
 
         foreach($reportDefs as $index => $arr) {
             foreach($arr as $typeName => $ftype) {
