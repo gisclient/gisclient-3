@@ -115,7 +115,7 @@ class GeolocatorController
     {
         $database = $this->getDatabaseFromConfig($config, $mapset);
 
-        $sql = 'SELECT st_astext(ST_Force_2D('.$config['geomfield'].'))
+        $sql = 'SELECT st_astext(ST_Force2D('.$config['geomfield'].'))
                 FROM '.$config['tablename'].' 
                 WHERE '.$config['idfield'].' = :id
         ';
