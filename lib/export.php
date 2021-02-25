@@ -328,7 +328,7 @@ class GCExportGml
     public function addLayer($layer, $gid = 'gid', $geom = 'the_geom')
     {
         $gml = '<layer name="' . $layer['name'] . '">';
-        $sql = "SELECT {$gid} as gml_object_id, st_asgml(3, st_force_2d({$geom})) as gml_geom "
+        $sql = "SELECT {$gid} as gml_object_id, st_asgml(3, st_force2d({$geom})) as gml_geom "
             . " FROM {$layer['schema']}.{$layer['table']}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
