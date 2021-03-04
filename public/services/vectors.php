@@ -157,7 +157,11 @@ EOMAP;
 			$oLay->setFilter("print_id=".$_REQUEST['LAYERS']);
 		}
 		$oLay->setProjection("init=epsg:".PRINT_VECTORS_SRID);
-        $oLay->set('opacity', 50);
+		$vectorOpacity = 50;
+		if (defined('PRINT_VECTORS_OPACITY')) {
+			$vectorOpacity = PRINT_VECTORS_OPACITY;
+		}
+        $oLay->set('opacity', $vectorOpacity);
         $oLay->set('sizeunits', MS_PIXELS);
 		$oLay->set('status', MS_ON);
 		$oLay->set('labelitem', 'label');

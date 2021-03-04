@@ -80,6 +80,7 @@ define('GC_EXPORT_MEM_LIMIT', '1024M');
 /****** print vectors ********/
 define('PRINT_VECTORS_TABLE', 'print_vectors');
 define('PRINT_VECTORS_SRID', 4326);
+define('PRINT_VECTORS_OPACITY', 50);
 define('PRINT_VECTORS_USE_SLD', TRUE);
 define('PRINT_VECTORS_DEFAULT_COLOR', '#FF00FF');
 define('PRINT_VECTORS_DEFAULT_COLOR_OPACITY', 90);
