@@ -45,7 +45,7 @@ class GeolocatorController
             throw new \Exception(json_last_error_msg());
         }
 
-        $result = isset($geolocatorConfig[$mapset]) ? $geolocatorConfig[$mapset] : null
+        $result = isset($geolocatorConfig[$mapset]) ? $geolocatorConfig[$mapset] : null;
         if ($lang !== null) {
             $mapset = $mapset.'_'.$lang;
         }
