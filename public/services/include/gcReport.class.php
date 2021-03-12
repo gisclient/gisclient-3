@@ -190,7 +190,7 @@ class gcReport {
 
         $queryString = $this->_buildReportQuery($aTemplate, $options);
 
-        $sqlCheck = "SELECT TO_CHAR(GREATEST(last_analyze, last_autoanalyze),'YYYY-MM-DD HH:MI:SS.US') as mod_time FROM pg_stat_all_tables WHERE schemaname=:schemaname AND relname=:relname";
+        $sqlCheck = "SELECT TO_CHAR(GREATEST(last_analyze, last_autoanalyze),'YYYY-MM-DD HH24:MI:SS.US') AS mod_time FROM pg_stat_all_tables WHERE schemaname=:schemaname AND relname=:relname";
         $stmt = $dataDB->db->prepare($sqlCheck);
         $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$tableName));
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -203,8 +203,20 @@ class gcReport {
             $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$aTemplate['data']));
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
             if (count($res) != 1) {
-                print_debug("Error - origin data layer table not found for report " . $request['report_id'] . " - exiting",null,'report');
-                return;
+                // **** Table not found in pg_stat_all tables... maybe this is a report based on a view?
+                $sqlCheck = "SELECT TO_CHAR(MAX(GREATEST(last_analyze, last_autoanalyze)),'YYYY-MM-DD HH24:MI:SS.US') AS mod_time
+                             FROM pg_stat_all_tables
+                             WHERE schemaname=:schemaname AND relname IN
+                                (SELECT table_name
+                                 FROM information_schema.view_table_usage
+                                 WHERE table_schema=:schemaname and view_name=:relname)";
+                $stmt = $dataDB->db->prepare($sqlCheck);
+                $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$aTemplate['data']));
+                $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                if (count($res) != 1) {
+                    print_debug("Error - origin data layer table not found for report " . $request['report_id'] . " - exiting",null,'report');
+                    return;
+                }
             }
             $dataTime = $res[0]['mod_time'];
             echo $viewTime . '-' . $dataTime;
