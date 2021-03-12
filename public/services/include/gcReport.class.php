@@ -190,7 +190,7 @@ class gcReport {
 
         $queryString = $this->_buildReportQuery($aTemplate, $options);
 
-        $sqlCheck = 'SELECT GREATEST(last_analyze, last_autoanalyze) as mod_time FROM pg_stat_all_tables WHERE schemaname=:schemaname AND relname=:relname';
+        $sqlCheck = "SELECT TO_CHAR(GREATEST(last_analyze, last_autoanalyze),'YYYY-MM-DD HH:MI:SS.US') as mod_time FROM pg_stat_all_tables WHERE schemaname=:schemaname AND relname=:relname";
         $stmt = $dataDB->db->prepare($sqlCheck);
         $stmt->execute(array('schemaname'=>$datalayerSchema, 'relname'=>$tableName));
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -208,11 +208,12 @@ class gcReport {
             }
             $dataTime = $res[0]['mod_time'];
             echo $viewTime . '-' . $dataTime;
-            if ($datatime < $viewTime) {
-                print_debug("Materialized report " . $request['report_id'] . " up to date - exiting",null,'report');
+            if ($dataTime < $viewTime) {
+                print_debug("Materialized report " . $request['report_id'] . " up to date ($dataTime < $viewTime) - exiting",null,'report');
                 return;
             }
         }
+        print_debug("Materialize report " . $request['report_id'] . " - execution started",null,'report');
 
         echo 'CREATE MATERIALIZED VIEW ' . $datalayerSchema . '.' . $tableName . ' AS ' . $queryString . ' WITH DATA';
         $dataDB->db->query('DROP MATERIALIZED VIEW IF EXISTS ' . $datalayerSchema . '.' . $tableName);
