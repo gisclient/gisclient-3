@@ -394,14 +394,18 @@ class gcMap{
                 $layerOptions["maxScale"] = $userLayers[$themeName][$layergroupName]['minScale'];
 
             switch ($layerType) {
+				
                 case WMS_LAYER_TYPE:
                     //TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
                     $layerParameters = array();
-
                     $aLayer["url"] = empty($row["url"]) ? $ows_url : $row["url"];
-
                     $layerParameters["project"] = $this->projectName;
                     $layerParameters["map"] = $mapsetName; // AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
+                    
+                    if ($row["metadata_url"]){
+							$layerParameters["map"]=$row["metadata_url"];
+						}
+                    
                     $layerParameters["exceptions"] = (defined('DEBUG') && DEBUG == 1) ? 'xml' : 'blank';
                     $layerParameters["format"] = $row["outputformat_mimetype"];
                     $layerParameters["transparent"] = true;
