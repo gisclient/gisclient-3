@@ -34,6 +34,7 @@ class printDocument {
     private $getLegendGraphicWmsList = array();
     private $nullLogo = 'null.png';
     private $getLegendGraphicRequest;
+    private $templates = array();
 
     public function __construct() {
 
@@ -142,7 +143,7 @@ class printDocument {
         if (!empty($_REQUEST['date']))
             $this->documentElements['map-date'] = $_REQUEST['date'];
         else
-            $this->documentElements['map-date'] = date("Y/m/d");
+            $this->documentElements['map-date'] = date("d/m/Y");
         if(!empty($_REQUEST['northArrow']) && $_REQUEST['northArrow'] != 'null') {
             $this->documentElements['north-arrow'] = GC_PRINT_TPL_URL.$_REQUEST['northArrow'];
         }
@@ -154,6 +155,13 @@ class printDocument {
         $this->documentElements['map-logo-sx'] = GC_PRINT_TPL_URL.$this->nullLogo;
         $this->documentElements['map-logo-dx'] = GC_PRINT_TPL_URL.$this->nullLogo;
         $this->documentElements['map-box'] = $_REQUEST['extent'];
+        $this->documentElements['map-minx'] = intval($this->options['extent'][0]);
+        $this->documentElements['map-miny'] = intval($this->options['extent'][1]);
+        $this->documentElements['map-maxx'] = intval($this->options['extent'][2]);
+        $this->documentElements['map-maxy'] = intval($this->options['extent'][3]);
+        $this->documentElements['mapset'] = $_REQUEST['map'];
+        $this->documentElements['page-format'] = $this->options['format'];
+
 
     }
 
@@ -229,6 +237,38 @@ class printDocument {
         return $mapImage->getExtent();
     }
 
+    public function getTemplates() {
+        foreach (glob(GC_PRINT_TPL_DIR."/*.xsl") as $filename)
+        {
+            $template = array();
+            $templateName = pathinfo($filename,PATHINFO_FILENAME);
+            $contents = file_get_contents($filename);
+            if(!preg_match_all("/map-img/", $contents, $matches)){
+                continue;
+            }
+            if(preg_match_all("/gcTemplateName[ \t=]*(.*)/", $contents, $matches)){
+                $template['title'] = trim($matches[1][0]);
+            }
+            else {
+                $template['title'] = $templateName;
+            }
+            if(preg_match_all("/xmlns:fo/", $contents, $matches)){
+                $template['type'] = 'pdf';
+            }
+            else {
+                $template['type'] = 'html';
+            }
+            if(preg_match_all("/map-legend/", $contents, $matches)){
+                $template['legend'] = 'yes';
+            }
+            else {
+                $template['legend'] = 'no';
+            }
+            $this->templates[$templateName] = $template;
+        }
+        return $this->templates;
+    }
+
 
     private function buildLegendGraphicWmsList() {
         foreach($this->wmsList as $wms) {
@@ -288,6 +328,7 @@ class printDocument {
             $this->project = $project;
             $this->mapset = $tmp . $mapset;
             $oMap = ms_newMapobj(ROOT_PATH.'map/'.$project.'/'.$tmp.$mapset.'.map');
+            $mapsetFilter = $oMap->getMetaData("mapset_filter");
             $printRect = ms_newRectObj();
             $printRect->setextent($this->options['extent'][0],$this->options['extent'][1],$this->options['extent'][2],$this->options['extent'][3]);
             $reqProj =  ms_newProjectionObj($this->options['auth_name'].":".$this->options['srid']);
@@ -300,6 +341,23 @@ class printDocument {
                     if (count($layerIndexes) > 0) {
                         foreach($layerIndexes as $index) {
                             $oLayer = $oMap->getLayer($index);
+                            if ($mapsetFilter) {
+                    			$flag=1;
+                    			//Filtri per la versione 7
+                    			$pp = $oLayer->getProcessing();
+                    			for ($i=0;$i<count($pp);$i++){
+                    				if(strpos($pp[$i],"_FILTER")>0){
+                    					$flag=0;
+                    					$pp[$i]=str_replace("NATIVE_FILTER=","NATIVE_FILTER=(",$pp[$i]);
+                    					$pp[$i]=$pp[$i] . ") AND " . $mapsetFilter;
+                    				}
+                    			}
+                    			if ($flag) $pp[]="NATIVE_FILTER=" . $mapsetFilter;
+                    			$oLayer->clearProcessing();
+                    			for ($i=0;$i<count($pp);$i++){
+                    				$oLayer->setProcessing($pp[$i]);
+                    			}
+                    		}
                             $oLayer->updateFromString('LAYER TEMPLATE "dummy" END');
                             $oLayer->set('status', 'on');
                             $oLayer->open();
@@ -330,6 +388,23 @@ class printDocument {
                     else {
                         $oLayer = $oMap->getLayerByName($layergroupName);
                         if ($oLayer !== NULL) {
+                            if ($mapsetFilter) {
+                    			$flag=1;
+                    			//Filtri per la versione 7
+                    			$pp = $oLayer->getProcessing();
+                    			for ($i=0;$i<count($pp);$i++){
+                    				if(strpos($pp[$i],"_FILTER")>0){
+                    					$flag=0;
+                    					$pp[$i]=str_replace("NATIVE_FILTER=","NATIVE_FILTER=(",$pp[$i]);
+                    					$pp[$i]=$pp[$i] . ") AND " . $mapsetFilter;
+                    				}
+                    			}
+                    			if ($flag) $pp[]="NATIVE_FILTER=" . $mapsetFilter;
+                    			$oLayer->clearProcessing();
+                    			for ($i=0;$i<count($pp);$i++){
+                    				$oLayer->setProcessing($pp[$i]);
+                    			}
+                    		}
                             $oLayer->updateFromString('LAYER TEMPLATE "dummy" END');
                             $oLayer->set('status', MS_ON);
                             $oLayer->open();

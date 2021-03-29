@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+    <!--
+     **** GISClient print templates attributes here!
+        gcTemplateName = Standard PDF
+    -->
     <xsl:template match="map">
         <fo:root>
             <fo:layout-master-set>
@@ -70,7 +74,7 @@
 
                 <!-- Body content -->
                 <fo:flow flow-name="xsl-region-body">
-					
+
 					<!-- page -->
 					<fo:block font-family="sans-serif" font-size="10pt" border="1pt solid #000000">
 
@@ -124,7 +128,7 @@
 									</fo:table-row>
 								</xsl:if>
 							</fo:table-body>
-						</fo:table>					
+						</fo:table>
 					</fo:block>
 					<!-- north arrow -->
 					<xsl:if test="north-arrow!=''">

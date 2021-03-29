@@ -2,3 +2,4 @@ config.php
 config.db.php
 config.mapproxy.wsgi
 config.mapproxy-wms.wsgi
+print_image_size.ini
