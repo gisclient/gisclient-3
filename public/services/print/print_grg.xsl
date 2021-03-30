@@ -93,58 +93,51 @@
                                 <fo:table-column column-width="26%"/>
 						        <fo:table-body>
                                     <fo:table-row>
-    									<fo:table-cell number-rows-spanned="3">
+    									<fo:table-cell number-rows-spanned="2">
     									    <fo:block text-align="center" white-space="pre" border-right="solid 0.1mm black">
                                                 <fo:external-graphic src="{map-logo-dx}" content-height="1cm" />
                                             </fo:block>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt" >
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Scala:</fo:block>
+    									        <fo:block text-align="center" white-space="pre">Scala:</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt">
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Data:</fo:block>
+    									        <fo:block text-align="center" white-space="pre">Data:</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt">
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Coordinate area di stampa min</fo:block>
+    									        <fo:block text-align="center" white-space="pre">Coordinate area di stampa min</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt">
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Coordinate area di stampa max</fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-    								</fo:table-row>
-                                    <fo:table-row>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">1: <xsl:value-of select="map-scale" /></fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black"><xsl:value-of select="map-date" /></fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black"><xsl:value-of select="map-minx" /> , <xsl:value-of select="map-miny" /></fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black"><xsl:value-of select="map-maxx" /> , <xsl:value-of select="map-maxy" /></fo:block>
+    									        <fo:block text-align="center" white-space="pre">Coordinate area di stampa max</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
     								</fo:table-row>
                                     <fo:table-row>
-                                        <fo:table-cell font-family="arial" font-size="10pt" number-columns-spanned="4">
-                                            <fo:block-container height="3.8mm">
-    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="substring(map-text, 1, 130)" /></fo:block>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre">1: <xsl:value-of select="map-scale" /></fo:block>
+                                            </fo:block-container>
+    									</fo:table-cell>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="map-date" /></fo:block>
+                                            </fo:block-container>
+    									</fo:table-cell>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="map-minx" /> , <xsl:value-of select="map-miny" /></fo:block>
+                                            </fo:block-container>
+    									</fo:table-cell>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="map-maxx" /> , <xsl:value-of select="map-maxy" /></fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
     								</fo:table-row>
@@ -158,60 +151,53 @@
                                 <fo:table-column column-width="14%"/>
                                 <fo:table-column column-width="26%"/>
                                 <fo:table-column column-width="26%"/>
-						        <fo:table-body>
+                                <fo:table-body>
                                     <fo:table-row>
-    									<fo:table-cell number-rows-spanned="3">
+    									<fo:table-cell number-rows-spanned="2">
     									    <fo:block text-align="center" white-space="pre" border-right="solid 0.1mm black">
-                                                <fo:external-graphic src="{map-logo-sx}" content-height="1cm" />
+                                                <fo:external-graphic src="{map-logo-dx}" content-height="1cm" />
                                             </fo:block>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt" >
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Scala:</fo:block>
+    									        <fo:block text-align="center" white-space="pre">Scala:</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt">
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Data:</fo:block>
+    									        <fo:block text-align="center" white-space="pre">Data:</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt">
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Coordinate area di stampa min</fo:block>
+    									        <fo:block text-align="center" white-space="pre">Coordinate area di stampa min</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="8pt">
+                                        <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
                                             <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">Coordinate area di stampa max</fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-    								</fo:table-row>
-                                    <fo:table-row>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">1: <xsl:value-of select="map-scale" /></fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black"><xsl:value-of select="map-date" /></fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black"><xsl:value-of select="map-minx" /> , <xsl:value-of select="map-miny" /></fo:block>
-                                            </fo:block-container>
-    									</fo:table-cell>
-                                        <fo:table-cell font-family="arial" font-size="10pt">
-                                            <fo:block-container height="3.9mm">
-    									        <fo:block text-align="center" white-space="pre" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black"><xsl:value-of select="map-maxx" /> , <xsl:value-of select="map-maxy" /></fo:block>
+    									        <fo:block text-align="center" white-space="pre">Coordinate area di stampa max</fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
     								</fo:table-row>
                                     <fo:table-row>
-                                        <fo:table-cell font-family="arial" font-size="10pt" number-columns-spanned="4">
-                                            <fo:block-container height="3.8mm">
-    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="substring(map-text, 1, 130)" /></fo:block>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre">1: <xsl:value-of select="map-scale" /></fo:block>
+                                            </fo:block-container>
+    									</fo:table-cell>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="map-date" /></fo:block>
+                                            </fo:block-container>
+    									</fo:table-cell>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="map-minx" /> , <xsl:value-of select="map-miny" /></fo:block>
+                                            </fo:block-container>
+    									</fo:table-cell>
+                                        <fo:table-cell font-family="arial" font-size="10pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
+                                            <fo:block-container display-align="center" height="6.6mm">
+    									        <fo:block text-align="center" white-space="pre"><xsl:value-of select="map-maxx" /> , <xsl:value-of select="map-maxy" /></fo:block>
                                             </fo:block-container>
     									</fo:table-cell>
     								</fo:table-row>
