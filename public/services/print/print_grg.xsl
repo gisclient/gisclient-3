@@ -94,8 +94,8 @@
 						        <fo:table-body>
                                     <fo:table-row>
     									<fo:table-cell number-rows-spanned="2">
-    									    <fo:block text-align="center" white-space="pre" border-right="solid 0.1mm black">
-                                                <fo:external-graphic src="{map-logo-dx}" content-height="1cm" />
+                                            <fo:block text-align="center" white-space="pre" border-right="solid 0.1mm black">
+                                                <fo:external-graphic src="{map-logo-sx}" content-height="1cm" /><fo:external-graphic src="{map-logo-dx}" content-height="1cm" />
                                             </fo:block>
     									</fo:table-cell>
                                         <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
@@ -155,7 +155,7 @@
                                     <fo:table-row>
     									<fo:table-cell number-rows-spanned="2">
     									    <fo:block text-align="center" white-space="pre" border-right="solid 0.1mm black">
-                                                <fo:external-graphic src="{map-logo-dx}" content-height="1cm" />
+                                                <fo:external-graphic src="{map-logo-sx}" content-height="1cm" /><fo:external-graphic src="{map-logo-dx}" content-height="1cm" />
                                             </fo:block>
     									</fo:table-cell>
                                         <fo:table-cell font-family="arial" font-size="8pt" border-bottom="solid 0.1mm black" border-right="solid 0.1mm black">
