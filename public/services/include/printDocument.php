@@ -246,6 +246,9 @@ class printDocument {
             if(!preg_match_all("/map-img/", $contents, $matches)){
                 continue;
             }
+            if(preg_match_all("/gcTemplateHidden/", $contents, $matches)){
+                continue;
+            }
             if(preg_match_all("/gcTemplateName[ \t=]*(.*)/", $contents, $matches)){
                 $template['title'] = trim($matches[1][0]);
             }
