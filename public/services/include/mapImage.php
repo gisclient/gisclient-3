@@ -11,6 +11,7 @@ class mapImage {
     protected $mapSize = array();
     protected $db = null;
     protected $vectorId = null;
+    protected $gdalRasterLayers = array();
     protected $options = array();
     protected $imageFileName = null;
     protected $srid = null;
@@ -101,6 +102,14 @@ class mapImage {
 
     protected function buildWmsList() {
         foreach($this->tiles as $key => $tile) {
+            if (isset($tile['externalProvider'])) {
+                $gdalRasterLayer = strtolower($tile['externalProvider']);
+                if (isset($tile['externalType'])) {
+                    $gdalRasterLayer .= '_' . strtolower($tile['externalType']);
+                }
+                array_push($this->gdalRasterLayers, $gdalRasterLayer);
+                continue;
+            }
             if(is_array($tile['url']))
                 $tile['url']=$tile['url'][0];
             $url = trim($tile['url'], '?');
@@ -160,6 +169,17 @@ class mapImage {
                 'FORMAT'=>'image/png'
             );
             array_push($this->wmsList, array('URL'=>$url, 'SERVICE'=>'WMS', 'PARAMETERS'=>$parameters));
+        }
+
+        if (count($this->gdalRasterLayers) > 0) {
+            $url = PUBLIC_URL.'services/print_gdal_wms.php';
+            $url = printDocument::addPrefixToRelativeUrl($url);
+            $parameters = array(
+                'LAYERS'=>implode(',', $this->gdalRasterLayers),
+                'VERSION'=>'1.1.1',
+                'FORMAT'=>'image/png'
+            );
+            array_unshift($this->wmsList, array('URL'=>$url, 'SERVICE'=>'WMS', 'PARAMETERS'=>$parameters));
         }
 
     }

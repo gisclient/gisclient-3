@@ -87,6 +87,9 @@ define('PRINT_VECTORS_DEFAULT_COLOR_OPACITY', 90);
 define('PRINT_VECTORS_DEFAULT_FILLCOLOR', '#FF00FF');
 define('PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY', 40);
 
+/****** print external layers via gdal_wms raster driver ********/
+define(PRINT_GDAL_WMS_XML, ROOT_PATH.'config/gdal_tms/');
+
 /******************* TINYOWS **************/
 define('TINYOWS_PATH', '/var/www/cgi-bin');
 define('TINYOWS_EXEC', 'tinyows');
