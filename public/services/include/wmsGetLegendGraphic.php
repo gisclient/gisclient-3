@@ -108,7 +108,8 @@ function gcGetLegendGraphic(&$objRequest, &$oMap, $request, $savePath = null) {
                     CURLOPT_HEADER => 0,
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_BINARYTRANSFER => true,
-    				CURLOPT_SSL_VERIFYHOST => 0
+    				CURLOPT_SSL_VERIFYHOST => 0,
+                    CURLOPT_SSL_VERIFYPEER => 0
                 );
                 $ch = curl_init();
                 curl_setopt_array($ch, $options);
