@@ -134,7 +134,11 @@ class AutocompleteController
             }
         } else {
             $alias = $catalog['alias'];
-            $fieldName = $field['formula'];
+            /* 
+            check the follow line. When the formula is set maybe we need to apply always not only in relation data
+            I commented because is the cause of some others bugs
+            */
+            /* $fieldName = $field['formula']; */
         }
 
         if ($request->query->has('filter') && $request->query->get('filter')) {
