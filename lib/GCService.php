@@ -92,7 +92,7 @@ class GCService
     public function startSession($allowTokenFromRequest = false)
     {
         // start the sessione (if not started)
-        if (null === $this->session || !$this->session->isStarted) {
+        if (null === $this->session || !$this->session->isStarted()) {
             print_debug('start new session', null, 'system');
 
             // Get Symfony to interface with the existing session
