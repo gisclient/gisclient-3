@@ -3,6 +3,7 @@
   error_reporting (E_ERROR | E_PARSE);
   $db = GCApp::getDB();
   $array_levels = array();
+  $Errors = array();
   include_once ADMIN_PATH."lib/export.php";
   $level=$_POST["level"];
   $project=$_POST["project"];
@@ -24,7 +25,7 @@
     } catch(Exception $e) {
       die("Impossibile eseguire la query : $sql");
     }
-	$r=_export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId));
+	$r=_export($fName,$_POST["livello"],$project,$structure,1,'',Array("$l"=>$objId),$Errors);
 	$message="$overwrite_message <br> FILE <a href=\"export/$fName\" download>$fName</a> ESPORTATO CORRETTAMENTE";
   } else {
     $message = "Il File $fName è già presente. Utilizzare un nome differente o procedere alla sovrascrizione.";

@@ -159,8 +159,10 @@ class printDocument {
         $this->documentElements['map-miny'] = intval($this->options['extent'][1]);
         $this->documentElements['map-maxx'] = intval($this->options['extent'][2]);
         $this->documentElements['map-maxy'] = intval($this->options['extent'][3]);
-        $this->documentElements['mapset'] = $_REQUEST['map'];
         $this->documentElements['page-format'] = $this->options['format'];
+        if (isset($_REQUEST['map'])) {
+            $this->documentElements['mapset'] = $_REQUEST['map'];
+        }
 
 
     }

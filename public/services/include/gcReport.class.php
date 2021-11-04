@@ -718,7 +718,7 @@ class gcReport {
                 if($row["qt_relation_name"]){
                     $aRel["relationName"] =  $row["qt_relation_name"];
                     $aRel["relationType"] = intval($row["qtrelationtype_id"]);
-                    $aRel["relationTitle"] =  $row["qtrelation_title"]?$row["qtrelation_title"]:$row["qt_relation_name"];
+                    $aRel["relationTitle"] =  isset($row["qtrelation_title"])?$row["qtrelation_title"]:$row["qt_relation_name"];
                     if(!isset($reportDefs[$index][$reportID]["relations"]))
                         $reportDefs[$index][$reportID]["relations"] = array();
                 }

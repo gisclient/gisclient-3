@@ -4,15 +4,15 @@
 	include_once ADMIN_PATH."lib/tabella_v.class.php";
 	include_once ADMIN_PATH."lib/savedata.class.php";
 	include_once ADMIN_PATH."lib/export.php";
-	
-	
+
+
 	class page{
-		
+
 		const MODE_VIEW=0;
 		const MODE_LIST=3;
 		const MODE_EDIT=1;
 		const MODE_NEW=2;
-		
+
 		var $parametri;	// Elenco dei parametri
 		var $tableList;	// Elenco delle tabelle da disegnare
 		var $arr_mode=Array("view"=>0,"edit"=>1,"new"=>2,"list"=>3);
@@ -28,7 +28,7 @@
 		var $action;
 		private $primary_keys;
 		private $navTreeValues;
-		
+
 		// Costruttore della classe
 		function page($param=Array()){
             $user = new GCUser();
@@ -44,17 +44,17 @@
 			$this->db = GCApp::getDB();
 			if(is_null($this->db))  die( "Impossibile connettersi al database ".DB_NAME);
 			//Ricostruisco L'albero
-                        $sql="select e_level.id,e_level.name,coalesce(e_level.parent_id,0) as parent,X.name as parent_name,e_level.leaf 
-                            from ".DB_SCHEMA.".e_level left join ".DB_SCHEMA.".e_level X on (e_level.parent_id=X.id)  
+                        $sql="select e_level.id,e_level.name,coalesce(e_level.parent_id,0) as parent,X.name as parent_name,e_level.leaf
+                            from ".DB_SCHEMA.".e_level left join ".DB_SCHEMA.".e_level X on (e_level.parent_id=X.id)
                             order by e_level.depth asc;";
                         $stmt = $this->db->prepare($sql);
                         $success = $stmt->execute();
 
-                        if (!$success) 
+                        if (!$success)
                             print_debug($sql,null,"page_obj");
 
                         print_debug($sql,null,"conf");
-                        $ris=$stmt->fetchAll(); 
+                        $ris=$stmt->fetchAll();
 			foreach($ris as $v) $this->array_levels[$v["id"]]=Array("name"=>$v["name"],"parent"=>$v["parent"],"leaf"=>$v["leaf"]);
 		}
 		private function _get_frm_parameter(){
@@ -75,7 +75,7 @@
 			foreach($this->parametri as $k=>$v){
 				//if ($pk==$k."_id" || $pk==$k."_name")
 					if(in_array($pk,$this->primary_keys[$k])){
-						
+
 						for($i=0;$i<count($this->primary_keys[$k]);$i++){
 							if($this->primary_keys[$k][$i]==$pk){
 								if(is_numeric($v) && (int)$v<=0) return 0;
@@ -110,42 +110,42 @@
 			if(!$this->livello) $lev="root";
 			else
 				$lev=$this->livello;
-				
+
 			if ($this->mode==self::MODE_VIEW or $this->mode==self::MODE_LIST)
 				$filter_mode="(mode=0 or mode=3)";
                         else {
                                 $sqlParam[':mode'] = $this->mode;
                                 $filter_mode='(mode=:mode)';
                         }
-                        $sql="select e_form.name as form_name,e_form.save_data,config_file,tab_type,form_destination,e_form.parent_level,foo.parent_name,e_level.name as level,e_form.js as javascript,order_fld,coalesce(foo.depth,-1) 
-                            from ".DB_SCHEMA.".form_level left join ".DB_SCHEMA.".e_form on (form_level.form=e_form.id) 
-                            left join ".DB_SCHEMA.".e_level on (e_form.level_destination=e_level.id) 
-                            left join ".DB_SCHEMA.".e_level as foo on (form_level.level=foo.id) 
-                            where ".$filter_mode." 
+                        $sql="select e_form.name as form_name,e_form.save_data,config_file,tab_type,form_destination,e_form.parent_level,foo.parent_name,e_level.name as level,e_form.js as javascript,order_fld,coalesce(foo.depth,-1)
+                            from ".DB_SCHEMA.".form_level left join ".DB_SCHEMA.".e_form on (form_level.form=e_form.id)
+                            left join ".DB_SCHEMA.".e_level on (e_form.level_destination=e_level.id)
+                            left join ".DB_SCHEMA.".e_level as foo on (form_level.level=foo.id)
+                            where ".$filter_mode."
                             and foo.name=:lev
-                            and visible=1 
-                            and :admintype <= e_level.admintype_id 
+                            and visible=1
+                            and :admintype <= e_level.admintype_id
                             order by e_level.depth,order_fld;";
 
                         $sqlParam[':lev'] = $lev;
                         $sqlParam[':admintype'] = $this->admintype;
-			
+
                         print_debug($sql,null,"conf");
                         print_debug($sqlParam,null,"conf");
                         $stmt = $this->db->prepare($sql);
                         $success = $stmt->execute($sqlParam);
-			
+
                         if (!$success) {
 				print_debug($sql,null,'error');
 				echo "<p>Errore nella configurazione del sistema</p>";
 				exit;
 			}
                         $res=$stmt->fetchAll();
-			
+
                         // FIXME: column menu_field does not exist
                         // $sql="select id as val,name as key,menu_field as field from ".DB_SCHEMA.".e_level order by id";
                         $sql="select id as val,name as key from ".DB_SCHEMA.".e_level order by \"order\"";
-                       
+
                         $stmt = $this->db->prepare($sql);
                         $success = $stmt->execute();
 
@@ -157,19 +157,19 @@
 				// see obive FIXME: $this->navTreeValues[$lvl_name]=$lvl_header;
 				$livelli[$lvl_id]=Array("val"=>$lvl_id,"key"=>$lvl_name);
 			}
-			unset($this->tableList);			
-			
+			unset($this->tableList);
+
 			for($i=0;$i<count($res);$i++){
 				$res[$i]["parent_level"]=isset($livelli[$res[$i]["parent_level"]])?$livelli[$res[$i]["parent_level"]]:null;
 				$this->tableList[]=$res[$i];
 			}
 		}
-		
+
 		//Metodo che scrive il menu di navigazione
 		function writeMenuChild(){	//Da Fare!!!!!!
-			
+
 		}
-		
+
 		function writeMenuNav(){
 		  $rel_dir = GCAuthor::getTabDir();
 		  $tmp=parse_ini_file(ROOT_PATH.$rel_dir.'menu.tab',true);
@@ -192,7 +192,7 @@
                         $filter=Array();
 		        $i=0;
 		        foreach($pk as $v){
-		          $value=$this->_get_pkey_value($v); 
+		          $value=$this->_get_pkey_value($v);
 		          if($value) {
 			    $filter[]=sprintf("%s=:VALUE%d", $v, $i);
 			    $sqlParam[sprintf(":VALUE%d", $i)] = $value;
@@ -203,7 +203,7 @@
 			$xml->LoadFile(PK_FILE);
 			$struct=$xml->ToArray();
 			$table=$struct[$key]["table"];
-			$schema=(in_array($key,Array("users","groups","user_group")))?(USER_SCHEMA):(DB_SCHEMA);						
+			$schema=(in_array($key,Array("users","groups","user_group")))?(USER_SCHEMA):(DB_SCHEMA);
 			$sql = "SELECT coalesce(CAST(".$this->navTreeValues[$key]["standard"]." AS varchar),'') as val FROM ".$schema.".".$table;
 			if(!empty($filter)) {
 			  $sql .= " WHERE ".implode(' AND ',$filter);
@@ -221,7 +221,7 @@
 		          $lbl.="<a class=\"link_label next\" href=\"#\" onclick=\"javascript:navigate(['".@implode("','",$lvl)."'],['".@implode("','",$val)."'])\"> $navTreeTitle</a>";
 		        else
 		          $lbl.="<a class=\"link_label next\" href=\"#\"> $navTreeTitle</a>";
-		      } 
+		      }
 		    }
 		    echo "
 		    <form name=\"frm_label\" id=\"frm_label\" method=\"POST\">
@@ -234,10 +234,10 @@
 			$m=(!empty($p["mode"]))?($p["mode"]):('view');
 			$this->mode=$this->arr_mode[$m];
 			if (!empty($p["parametri"])){
-				
+
 				for($i=0;$i<count($p["parametri"]);$i++){
 					$arr=$p["parametri"][$i];
-					$val=each($arr);
+					$val=["key"=>key($arr), "value"=>current($arr)];
 					if(preg_match("|^'(.+)'$|",stripslashes($val["value"]),$match)) $this->parametri[$val["key"]]=$match[1];
 					else
 						$this->parametri[$val["key"]]=$val["value"];
@@ -260,9 +260,9 @@
 				}
 			}
 		}
-		
+
 		function write_parameter(){
-			
+
 			if(is_array($this->parametri) && count($this->parametri)){
 				$i=0;
 				foreach ($this->parametri as $key=>$val){
@@ -271,15 +271,15 @@
 				}
 			}
 		}
-		
+
 		function write_page_param($param){
-			
+
 			if (count($param)>0){
 			foreach($param as $key=>$value)
 				if ($value) echo "\t<input type=\"hidden\" name=\"$key\" value=\"".stripslashes($value)."\" id=\"prm_$key\">\n";
 			}
 		}
-		
+
 		function get_livello(){
 			if(count($this->parametri)){
 				$lvl=array_keys($this->parametri);
@@ -296,7 +296,7 @@
 			else
 				return 0;
 		}
-		
+
 		function get_parentValue(){
 			if(count($this->parametri)>1){
 				$tmp=array_keys($this->parametri);
@@ -323,7 +323,7 @@
 				}
 				return null;
 			}
-			
+
 		}
 		function _getChild(){
 			$out=Array();
@@ -352,7 +352,7 @@
 			foreach($notice as $val)
 				if ($val) $this->notice[]=$val;
 		}
-		
+
 		//Metodo che scrive il div dei Messagii e Errori Generici
 		private function writeMessage($msg){
 			if(!empty($this->errors["generic"]) || !empty($msg["generic"]) || $this->notice){
@@ -366,21 +366,21 @@
 				echo "<div id=\"error\" class=\"errori\" style=\"width=100%;color:red;font-weight:bold;\"><ul><li>".@implode("</li><li>",$generic)."</li></ul></div>";
 			}
 		}
-		
+
 		//Metodo che scrive il Form in modalit� List  Elenco dei Child
-		
+
 		private function writeListForm(array $tab,$el,&$prm){
             $user = new GCUser();
             switch ($tab["tab_type"]){
 				case 0:	//elenco con molteplici valori (TABELLA H)
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="";
-					
+
 					if (is_array($el) && $el["value"] && $tab["parent_name"]) $filter=$tab["parent_name"]."_name = ".$this->db->quote($el["value"]);
-					
+
 					$tb=new Tabella_h($tab["config_file"].".tab","list");
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
-					
+
 					foreach($this->pageKeys as $key) if ($el["value"]) $flt[]="$key = ".$this->db->quote($el["value"]);
 					$filter=@implode(" AND ",$flt);
 					if($tab["level"]=="project" && !$user->isAdmin() && defined('USER_SCHEMA'))
@@ -395,7 +395,7 @@
 					$tb->get_titolo();
 					$tb->elenco();
 					break;
-					
+
 				case 2:	//elenco con molteplici valori (TABELLA H) che porta alla modifica tramite Aggiungi
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="-1";
@@ -420,9 +420,9 @@
 					$tb->get_titolo();
 					$tb->elenco();
 					break;
-					
+
 				case 3:	// Elenco con un solo valore(TABELLA H)
-					
+
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="-1";
 					if (is_array($el) && $el["value"]) $filter=$tab["parent_name"]."_name = ".$this->db->quote($el["value"]);
@@ -431,7 +431,7 @@
 					$tb->set_dati($filter);
 					if ($tb->num_record==0){
 						$tb->set_titolo($tb->FileTitle,"nuovo",$prm);
-					}	
+					}
 					else{
 						foreach($tb->pkeys as $key) $prm["parametri[][".$tab["level"]."]"]=$tb->array_dati[0][$key];	//Passo i valori delle Primary Key
 						if($tab["level"]!='tb_import')
@@ -440,17 +440,17 @@
 							$tb->set_titolo($tb->FileTitle,"",$prm);
 					}
 					$tb->tag=$tab["level"];
-					
+
 					$tb->get_titolo();
 					$tb->elenco();
 					break;
-					
+
 				case 4:	//elenco con molteplici valori (TABELLA H) dove si include un file di configurazione
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="-1";
 					if (is_array($el) && $el["value"]) $filter=$tab["parent_name"]."_id = ".$this->db->quote($el["value"]);
 					$tb=new Tabella_h($tab["config_file"].".tab","list");
-					
+
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
 					$data=Array();
 					$enabled=1;
@@ -458,14 +458,14 @@
 						include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
 
 					$tb->set_titolo($tb->FileTitle,"modifica",$prm);
-					
+
 					$tb->tag=$tab["level"];
 					$tb->set_multiple_data($data);
 					$tb->get_titolo();
 					$tb->elenco();
-							
+
 					break;
-					
+
 				case 5:
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="";
@@ -481,9 +481,9 @@
 					break;
 			}
 		}
-		
+
 		//Metodo che scrive il Form in modalit� View
-		
+
 		private function writeViewForm($tab,$el,&$prm){
 			$frm = '';
 			switch ($tab["tab_type"]){
@@ -504,7 +504,7 @@
 					$tb->set_dati($filter);
 					$prm["livello"]=$tab["level"];
 					if ($tb->num_record>0){
-						
+
 						for($j=0;$j<count($tb->pkeys);$j++){
 							$tb->pkeys_value[$j]=isset($tb->pkeys[$j])?$this->_get_pkey_value($tb->pkeys[$j]):null;
 						}
@@ -520,12 +520,12 @@
 							echo "<p><b>".GCAuthor::t('nodata')."</b></p>";
 						}
 					break;
-					
+
 				case 50: // MODALITA' VIEW Inclusione File(TABELLA V)
 					$tb=new Tabella_v($tab["config_file"].".tab","view");
 					$data=Array();
 					include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
-					
+
 					if(trim($tab["form_destination"])) $frm=trim($tab["form_destination"]);
 					$tb->set_dati(isset($data[0])?$data[0]:null);
 					$prm["livello"]=$tab["level"];
@@ -539,14 +539,14 @@
 			}
 			echo "<hr>\n";
 		}
-		
+
 		/**
 		 * Metodo che scrive il formulario in modalita EDIT
-		 * 
+		 *
 		 * @param array $tab
 		 * @param type $el
 		 * @param type $prm
-		 * 
+		 *
 		 * @throws RuntimeException
 		 */
 		private function writeEditForm(array $tab,$el,&$prm){
@@ -562,7 +562,7 @@
 					$filter=@implode(" AND ",$flt);
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
 					$button=@implode("\n\t\t",$btn);
-					
+
 					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->tag=$tab["level"];
@@ -577,7 +577,7 @@
 					echo "<hr>$button";
 					echo "</form>";
 					break;
-					
+
 				case 100: //Tabella H per elencare tutti i valori possibili e quelli selezionati
 					$prm["livello"]=$tab["level"];
 					$prm["savedata"]=$tab["save_data"];
@@ -602,7 +602,7 @@
 							$param="link";
 							break;
 						case "qt_selgroup":
-							
+
 							$param="qt";
 							break;
 						case "project_groups":
@@ -618,7 +618,7 @@
 						default:
 							break;
 					}
-					
+
 					$btn[]="\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"".GCAuthor::t('button_cancel')."\">";
 					$btn[]="<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"".GCAuthor::t('button_save')."\">";
 					//$btn[]="<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'$param');\">\n";
@@ -626,30 +626,30 @@
 					$tb->set_dati($filter);
 					$tb->elenco();
 					$button=@implode("\n\t\t",$btn);
-					
+
 					echo "<hr>$button";
 					echo "\n<input type=\"hidden\" name=\"save_type\" value=\"multiple\">";
 					echo "</form>";
 					break;
-					
+
 				case 0:		//SERVE PER ELENCARE I VALORI IN FUNZIONE DEL PARENT (TABELLA H)
-					
+
 					$prm["livello"]=$tab["level"];
 					$tmp=array_values($this->parametri);
 					$parent_key=$tmp[count($tmp)-2];
 					$filter=$tab["parent_level"]["key"]."_id = ".$this->db->quote($parent_key);
 					$prm["parametri[][".$tab["level"]."]"]="";
-					
+
 					$tb=new Tabella_h($tab["config_file"].".tab",$mode);
-					
+
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->tag=$tab["level"];
-					
+
 					$tb->get_titolo();
 					$tb->set_dati($filter);
 					$tb->elenco();
-				
+
 					break;
 				case 1:	//MODALITA' STANDARD
 				case 50:
@@ -661,9 +661,9 @@
 					$prm["livello"]=$tab["level"];
 					$prm["config_file"]=$tab["config_file"].".tab";
 					$prm["savedata"]=$tab["save_data"];
-									
+
 					$tb=new Tabella_v($tab["config_file"].".tab","edit");
-					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];	
+					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
 					$j=0;
 					$e=array_pop($this->levKey);
 					$j=0;
@@ -673,14 +673,14 @@
 						$prm["pkey_value[$j]"]=$v;
 						$j++;
 					}
-					$j=0;					
+					$j=0;
 					$filter=@implode(" AND ",$flt);
-					
+
 					if(count($this->errors)){
 						$tb->set_errors($this->errors);
 						$tb->set_dati($_POST["dati"]);
 					}
-					else{						
+					else{
 						if($tab["tab_type"]==1)
 							$tb->set_dati($filter);
 						else{
@@ -706,7 +706,7 @@
 					$prm["savedata"]=$tab["save_data"];
 					$tb=new Tabella_v($tab["config_file"].".tab","edit");
 					for($j=0;$j<count($tb->function_param);$j++) $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
-					
+
 					for($j=0;$j<count($tb->pkeys);$j++){
 						$prm["pkey[$j]"]=$tb->pkeys[$j];
 						$prm["pkey_value[$j]"]=$this->_get_pkey_value($tb->pkeys[$j]);
@@ -723,7 +723,7 @@
 					$tb->set_titolo($tb->FileTitle,"",$prm);
 					$tb->get_titolo();
 					echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
-					
+
 					$tb->edita();
 					$this->write_page_param($prm);
 					echo "</form>";
@@ -792,7 +792,7 @@
 					$tb->tag=$tab["level"];
 					$tb->get_titolo();
 					$tb->set_dati($filtro);
-					
+
 					$tb->elenco();
 					echo "<hr>$button";
 					echo "</form>";
@@ -810,12 +810,12 @@
 					for($j=0;$j<count($tb->function_param);$j++)
                                           $tb->function_param[$j] = $this->parametri[$tb->function_param[$j]];
 					$msg="";
-					
+
 					// do some basic checks!
 					if (!isset($tab["save_data"])) {
 					  throw new RuntimeException("save_data not set in tab");
 					}
-					
+
 					$includeFile = ADMIN_PATH."include/".$tab["save_data"].".inc.php";
                                         if (!file_exists($includeFile)) {
 					  throw new RuntimeException("can not find include file for '{$tab["save_data"]}': $includeFile not found");
@@ -840,8 +840,8 @@
 					echo "<input type=\"hidden\" name=\"save_type\" value=\"multiple\">";
 					echo "</form>";
 					break;
-					
-			}	
+
+			}
 		}
 		//Metodo che scrive il Form in modalita NEW
 		private function writeNewForm($tab,$el,&$prm){
@@ -852,7 +852,7 @@
 			}
 			$j=0;
 			switch ($tab["tab_type"]){
-				
+
 				case 0:
 					$prm["livello"]=$tab["level"];
 					$prm["parametri[][".$tab["level"]."]"]="";
@@ -888,12 +888,12 @@
 					$this->write_page_param($prm);
 					echo "</form>";
 					break;
-			}		
+			}
 		}
-		
+
 		// Metodo che costruisce la pagina
 		public function writePage(array $err=Array()){
-			
+
 			//Stampa errori generici e messaggi se ci sono
 			$this->writeMessage($err);
 			if(!empty($this->tableList)){
@@ -901,22 +901,22 @@
 				$table=new Tabella_v($this->tableList[0]["config_file"].".tab");
 				$this->pageKeys=array_keys($table->pkeys);
 				if (!is_null($this->parametri)) {
-					foreach($table->pkeys as $k=>$v) 
+					foreach($table->pkeys as $k=>$v)
 						foreach($this->parametri as $k1=>$v1)
 							if(preg_match("/(".$k1."_id|".$k1."_name)/Ui",$k))
 								if(!empty($_POST["dati"][$k])) $this->parametri[$k1]=$_POST["dati"][$k];
 				}
 				unset($table);
-				
+
 				for($i=0;$i<count($this->tableList);$i++){
-					
+
 					$el=@each(@array_reverse($this->parametri,true));
 					$this->_getKey($el["value"]);
 					$prm=$this->_get_frm_parameter();
 					//VALORIZZO SE PRESENTI I PARAMETRI DELLE FUNZIONI DI SELECT
 					$tab=$this->tableList[$i];
 					switch ($this->mode){		//IDENTIFICO LA MODALITA DI VISUALIZZAZIONE 0:VIEW --- 1:EDIT --- 2:NEW
-						
+
 						case self::MODE_VIEW:					// MODALITA VIEW
 						case self::MODE_LIST:					// MODALITA LIST
 							if($tab["tab_type"]==1 || $tab["tab_type"]==50) {
@@ -934,7 +934,7 @@
 							$prm["livello"]=$tab["level"];
 							$prm["config_file"]=$tab["config_file"].".tab";
 							switch ($this->action){
-								
+
 								case "importa raster":
 									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
 									$level=$this->get_idLivello();
@@ -985,21 +985,21 @@
 									$prm[$ris[2]]=$val;
 								}
 							}
-							
+
 							switch ($this->action){
 								case "classifica":
 									//echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\" class=\"\">";
-									
+
 									$level=$this->get_idLivello();
-									
+
 									$livello=$this->livello;
 									$prm['layer']=$this->parametri[$livello];
 									//$prm["pkey[0]"]='layer_id';
 									//$prm["pkey_value[0]"]=
 									include ADMIN_PATH."include/classify.php";
 									$this->write_page_param($prm);
-									
-									
+
+
 									break;
 								case "importa":
 									echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">";
@@ -1013,20 +1013,20 @@
 									echo "</form>";
 									echo $resultForm;
 									break;
-								default:	
+								default:
 									$this->writeNewForm($tab,$el,$prm);
 									break;
 							}
 							break;
-						
+
 					}
-					
+
 					if($tab["javascript"]){
 						echo "<script>\n\t".$tab["javascript"]."('".$tab["form_name"]."');\n</script> \n";
 					}
 				}
 				$arr_keys=(count($this->parametri))?(array_keys($this->parametri)):(Array());
-				
+
 				if(($this->mode==self::MODE_VIEW || $this->mode==self::MODE_LIST) && !empty($arr_keys[0])){
 					$tmp=$this->parametri;
 					array_pop($tmp);
@@ -1034,7 +1034,7 @@
 					$arrvalues=array_values($tmp);
 					$keys=(count($arrkeys))?("'".implode("','",$arrkeys)."'"):("");
 					$values=(count($arrvalues))?("'".implode("','",$arrvalues)."'"):("");
-					
+
 					$btn  = "\n\t<div id=\"footerButton\">";
 					$btn .= "<input type=\"button\" class=\"hexfield\" value=\"".GCAuthor::t('button_back')."\" onclick=\"javascript:navigate([$keys],[$values])\">";
 					if($this->initI18n()) {
@@ -1048,19 +1048,19 @@
 				echo "<p>Nessun configurazione definita per la pagina</p>";
 			//$this->showTime();
 		}
-		
+
 		function getTime($str){
 			$tmp=explode(" ",microtime());
 			$t=$tmp[0]+$tmp[1];
 			$this->time[$str]=$t;
 		}
-		
+
 		function showTime(){
 			print_debug($this->time,null,'TIME');
 		}
-		
+
 		public function initI18n() {
-			if(isset($this->parametri['project'])) {		
+			if(isset($this->parametri['project'])) {
 				$localization = new GCLocalization($this->parametri['project']);
 				if($localization->hasAlternativeLanguages($this->livello) && $this->mode == 0) {
 					return true;

@@ -219,7 +219,7 @@ function _getPKeys(){
 	}
 	return $struct;
 }
-function _getListValue($level,$val,$db){
+function _getListValue($level,$val,$db=null){
 	$db = GCApp::getDB();
 	$pk=_getPKeys();
 	if($level=='project') $result[]="[$level][$val]";
