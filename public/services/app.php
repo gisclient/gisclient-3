@@ -95,6 +95,7 @@ try {
         if (!checkAccessControl($request, $authHandler)) {
             throw new AccessDeniedHttpException('Authentication required to access this path.');
         }
+	$gcService->getSession()->migrate(false);
     }
     
     $request->attributes->add($requestMatch);
