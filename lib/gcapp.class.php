@@ -783,6 +783,50 @@ class GCError {
 	}
 }
 
+class GCLog {
+	static private $logFiles = array();
+	static private $logDir = GC_WEB_TMP_DIR;
+	static private $logLevel = 0;
+
+	public static function log($message, $level=3, $withdate=true, $newline=true) {
+		if(defined('GC_LOG_FILES')) self::$logFiles = GC_LOG_FILES;
+		if(defined('GC_LOG_DIRECTORY')) self::$logDir = GC_LOG_DIRECTORY;
+		if(defined('GC_LOG_LEVEL')) self::$logLevel = GC_LOG_LEVEL;
+
+		if ($level > self::$logLevel || count(self::$logFiles) == 0) {
+			return;
+		}
+		$logFile = self::$logDir;
+		if(!is_dir($logFile)) {
+			mkdir($logFile);
+		}
+		$key = array_search(__FUNCTION__, array_column(debug_backtrace(), 'function'));
+		$calledFrom = debug_backtrace()[$key]['file'];
+		$calledFrom = basename($calledFrom, '.php');
+		if (isset(self::$logFiles[$calledFrom])) {
+			$logFile .= '/' . self::$logFiles[$calledFrom];
+		}
+		else if (isset(self::$logFiles['default'])) {
+			$logFile .= '/' . self::$logFiles['default'];
+		}
+		else {
+			print_debug("No log file defined: $logFile", NULL, 'log');
+			return;
+		}
+		$msg = '';
+		if ($withdate) {
+			$msg .= date('Y-m-d H:i:s O') . ' ';
+		}
+		$msg .= $message;
+		if ($newline) {
+			$msg .= PHP_EOL;
+		}
+		if (!error_log($msg, 3, $logFile)) {
+			print_debug("Error writing log file: $logFile", NULL, 'log');
+		}
+	}
+}
+
 class GCUtils {
 	public static function parseBox($box) {
 		$split = explode(',', str_replace(array('BOX(',')'), '', $box));

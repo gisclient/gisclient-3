@@ -88,7 +88,7 @@ define('PRINT_VECTORS_DEFAULT_FILLCOLOR', '#FF00FF');
 define('PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY', 40);
 
 /****** print external layers via gdal_wms raster driver ********/
-define(PRINT_GDAL_WMS_XML, ROOT_PATH.'config/gdal_tms/');
+define('PRINT_GDAL_WMS_XML', ROOT_PATH.'config/gdal_tms/');
 
 /******************* TINYOWS **************/
 define('TINYOWS_PATH', '/var/www/cgi-bin');
@@ -114,6 +114,12 @@ define('ADMIN_PATH',ROOT_PATH.'public/admin/');
 //debug
 if(!defined('DEBUG_DIR')) define('DEBUG_DIR',ROOT_PATH.'config/debug/');
 if(!defined('DEBUG')) define('DEBUG', 0); // Debugging 0 off 1 on
+
+const GC_LOG_FILES = [
+    "default" => "geoweb.log",
+];
+define('GC_LOG_DIRECTORY', '/tmp');
+define('GC_LOG_LEVEL', 3);
 
 require_once (ROOT_PATH."config/login.php");
 

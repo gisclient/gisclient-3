@@ -35,8 +35,10 @@ abstract class AbstractUser {
             return ($this->username == $this->adminUsername);
         } else {
             // **** The global Admin should be administrator for every project
-            if ($this->username == $this->adminUsername)
+            if ($this->username == $this->adminUsername) {
+                GCLog::log("Access granted to project " .$project . " for user " . $this->username . " as global administrator");
                 return true;
+            }
             $db = GCApp::getDB();
             $sql = 'select username from '.DB_SCHEMA.'.project_admin
                 where project_name = :project and username = :username';
@@ -46,7 +48,10 @@ abstract class AbstractUser {
                 'project'=>$project
             ));
             $result = $stmt->fetchColumn(0);
-            return !empty($result);
+            if (!empty($result)) {
+                GCLog::log("Access granted to project " .$project . " for user " . $this->username . " as project administrator");
+                return true;
+            }
         }
     }
 
@@ -82,8 +87,10 @@ abstract class AbstractUser {
 
     protected function _setSessionData() {
         $_SESSION['USERNAME'] = $this->username;
+        GCLog::log("Session opened for user ".$this->username);
         $this->_getUserGroups();
         $_SESSION['GROUPS'] = $this->groups;
+        GCLog::log("Group membership for user ".$this->username . " : " . implode(',', $this->groups), 4);
     }
 
     protected function _getUserGroups() {
@@ -97,14 +104,17 @@ abstract class AbstractUser {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset_name';
+            GCLog::log("Access to mapset " . $filter['mapset_name'] . " for user ".$this->username);
 		} else if(isset($filter['theme_name'])) {
 			$sqlFilter = 'theme_name = :theme_name';
 			$sqlValues = array(':theme_name'=>$filter['theme_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
+            GCLog::log("Access to theme " . $filter['theme_name'] . " for user ".$this->username);
 		} else if(isset($filter['project_name'])) {
 			$sqlFilter = 'project_name = :project_name';
 			$sqlValues = array(':project_name'=>$filter['project_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
+            GCLog::log("Access to project " . $filter['project_name'] . " for user ".$this->username);
 		} else {
 			return false;
 		}
@@ -213,7 +223,7 @@ abstract class AbstractUser {
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->mapLayers;
 	}
-	
+
     public function getClientConfiguration() {
       if($this->isAdmin()) {
         $result = array("CLIENT_ID" => $this->username);

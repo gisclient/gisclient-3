@@ -2,7 +2,7 @@
 require_once(ROOT_PATH.'/lib/gcuser.class.php');
 
 class GCUser extends AbstractUser {
-  
+
   function __construct(array $options = array()) {
     $defaultOptions = array();
     $this->options = array_merge($defaultOptions, $options);
@@ -26,10 +26,12 @@ class GCUser extends AbstractUser {
       $this->_setSessionData();
     }
   }
-  
+
   protected function _setSessionData() {
     $_SESSION['USERNAME'] = $this->username;
+    GCLog::log("Session opened for user ".$this->username);
     $_SESSION['GROUPS'] = $this->groups;
+    GCLog::log("Group membership for user ".$this->username . " : " . implode(',', $this->groups), 4);
   }
 
   protected function _getUserGroups() {
@@ -41,11 +43,11 @@ class GCUser extends AbstractUser {
       $index = array_search($currentUserGroup, $predefinedGroupNames);
       if($index != FALSE) {
         error_log($this->username."-> Associated group:".$currentUserGroup);
-	array_push($result, $predefinedGroups[$index]);
+	array_push($result, $predefinedGroupNames[$index]);
       }
     }
     return $result;
-  }  
+  }
 
   public function saveUserOption($key, $value) {
     //TODO: utente di access control salva su DB?
@@ -80,7 +82,7 @@ if ((SUPER_PWD=='') ||(isset($_POST["username"]) && $_POST["username"]==SUPER_US
 	$usr->setUserOptions();
 }
 else{
-	$usr->context=(dirname($_SERVER["SCRIPT_FILENAME"])."/"==ADMIN_PATH)?('author'):('gisclient');	
+	$usr->context=(dirname($_SERVER["SCRIPT_FILENAME"])."/"==ADMIN_PATH)?('author'):('gisclient');
 	if(!empty($usr->data["logout"])) $usr->logout();
 	if(!$usr->checkUser()) {
         if(isset($_POST['username'])) $message='Errore login';
