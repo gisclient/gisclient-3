@@ -366,7 +366,7 @@ class printDocument {
                             $oLayer->updateFromString('LAYER TEMPLATE "dummy" END');
                             $oLayer->set('status', 'on');
                             $oLayer->open();
-                            $oLayer->queryByRect($printRect);
+                            @$oLayer->queryByRect($printRect);
                             if ($oLayer->getNumResults() == 0) {
                                 $oLayer->close();
                                 continue;

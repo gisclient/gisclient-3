@@ -188,9 +188,9 @@ class gcFeature {
     }
 
     public function isEditable() {
-        if ($this->aFeature['connection_type'] != 6)
+        if (!isset($this->aFeature['connection_type']) || $this->aFeature['connection_type'] != 6)
             return false;
-        if ($this->aFeature['queryable'] != 1)
+        if (!isset($this->aFeature['queryable']) || $this->aFeature['queryable'] != 1)
             return false;
         foreach ($this->aFeature['fields'] as $k => $v) {
             if ($v['editable'] == 1)
@@ -216,7 +216,8 @@ class gcFeature {
     }
 
     public function isPrivate() {
-        return $this->forcePrivate || ($this->aFeature['private'] > 0);
+        $privFeature = isset($this->aFeature['private']) ? $this->aFeature['private'] : 0;
+        return $this->forcePrivate || ($privFeature > 0);
     }
 
     // Used to force private layer in mapset is private
