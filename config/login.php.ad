@@ -3,59 +3,111 @@ require_once(ROOT_PATH.'/lib/gcuser.class.php');
 
 class GCUser extends AbstractUser {
 
-  function __construct(array $options = array()) {
-    $defaultOptions = array();
-    $this->options = array_merge($defaultOptions, $options);
-    $sid = session_id();
-    if(empty($sid)) {
-      if(defined('GC_SESSION_NAME'))
-        session_name(GC_SESSION_NAME);
-      session_start();
+    function __construct(array $options = array()) {
+        $defaultOptions = array();
+        $this->options = array_merge($defaultOptions, $options);
+        $sid = session_id();
+        if(empty($sid)) {
+            if(defined('GC_SESSION_NAME'))
+            session_name(GC_SESSION_NAME);
+            session_start();
+        }
+        if(!empty($_SESSION['USERNAME'])) {
+            $this->username = $_SESSION['USERNAME'];
+            if(!empty($_SESSION['GROUPS']))
+            $this->groups = $_SESSION['GROUPS'];
+            else
+            $this->_setSessionData();
+        } else if(isset($_SERVER['REMOTE_USER'])){
+            error_log("Silent Authentication for user:".$_SERVER['REMOTE_USER']);
+            $limitIndex = strpos($_SERVER['REMOTE_USER'], "@");
+            $this->username = !$limitIndex ? $_SERVER['REMOTE_USER'] : substr($_SERVER['REMOTE_USER'], 0, $limitIndex);
+            $this->groups = $this->_getUserGroups();
+            $this->_setSessionData();
+        }
     }
-    if(!empty($_SESSION['USERNAME'])) {
-      $this->username = $_SESSION['USERNAME'];
-      if(!empty($_SESSION['GROUPS']))
-        $this->groups = $_SESSION['GROUPS'];
-      else
-        $this->_setSessionData();
-    } else if(isset($_SERVER['REMOTE_USER'])){
-      error_log("Silent Authentication for user:".$_SERVER['REMOTE_USER']);
-      $limitIndex = strpos($_SERVER['REMOTE_USER'], "@");
-      $this->username = !$limitIndex ? $_SERVER['REMOTE_USER'] : substr($_SERVER['REMOTE_USER'], 0, $limitIndex);
-      $this->groups = $this->_getUserGroups();
-      $this->_setSessionData();
+
+    protected function _setSessionData() {
+        $_SESSION['USERNAME'] = $this->username;
+        GCLog::log("Session opened for user ".$this->username);
+        $_SESSION['GROUPS'] = $this->groups;
+        $gcGroups = empty($this->groups) ? 'none' : implode(',', $this->groups);
+        GCLog::log("Group membership for user ".$this->username . " : " . $gcGroups, 4);
     }
-  }
 
-  protected function _setSessionData() {
-    $_SESSION['USERNAME'] = $this->username;
-    GCLog::log("Session opened for user ".$this->username);
-    $_SESSION['GROUPS'] = $this->groups;
-    GCLog::log("Group membership for user ".$this->username . " : " . implode(',', $this->groups), 4);
-  }
-
-  protected function _getUserGroups() {
-    $result = array();
-    $predefinedGroups = self::getGroups();
-    $predefinedGroupNames = array_column($predefinedGroups, "groupname");
-    $userGroupArr = explode(":", $_SERVER['REMOTE_USER_GROUPS']);
-    foreach ($userGroupArr as $currentUserGroup) {
-      $index = array_search($currentUserGroup, $predefinedGroupNames);
-      if($index != FALSE) {
-        error_log($this->username."-> Associated group:".$currentUserGroup);
-	array_push($result, $predefinedGroupNames[$index]);
-      }
+    protected function _getUserGroups($groups = null) {
+        $result = array();
+        $predefinedGroups = self::getGroups();
+        $predefinedGroupNames = array_column($predefinedGroups, "groupname");
+        if (!empty($groups) && is_array($groups)) {
+            $userGroupArr = $groups;
+        }
+        else {
+            $userGroupArr = explode(":", $_SERVER['REMOTE_USER_GROUPS']);
+        }
+        foreach ($userGroupArr as $currentUserGroup) {
+            $index = array_search($currentUserGroup, $predefinedGroupNames);
+            if($index != FALSE) {
+                error_log($this->username."-> Associated group:".$currentUserGroup);
+                array_push($result, $predefinedGroupNames[$index]);
+            }
+        }
+        return $result;
     }
-    return $result;
-  }
 
-  public function saveUserOption($key, $value) {
-    //TODO: utente di access control salva su DB?
-  }
+    public function saveUserOption($key, $value) {
+        //TODO: utente di access control salva su DB?
+    }
 
-  public function setUserOptions() {
-    //TODO: ha senso per access control?
-  }
+    public function setUserOptions() {
+        //TODO: ha senso per access control?
+    }
+
+    public function login($username, $password) {
+        $db = GCApp::getDB();
+        $sql = 'select username from '.DB_SCHEMA.'.users where username=:user and enc_pwd=:pass';
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(
+            'user'=>$username,
+            'pass'=>md5($password)
+        ));
+        $usernameInDb = $stmt->fetchColumn(0);
+        if(empty($usernameInDb)) {
+            $curlHandler = curl_init();
+            $url = PUBLIC_URL.'login.ad.php';
+            curl_setopt_array($curlHandler, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => 1,
+                CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+                CURLOPT_USERPWD => $username . ':' . $password,
+                CURLOPT_VERBOSE => true,
+                CURLOPT_STDERR => $streamVerboseHandle
+            ]);
+            $response = curl_exec($curlHandler);
+            curl_close($curlHandler);
+            $basicAuthData = json_decode($response, true);
+            if (isset($basicAuthData['result']) && $basicAuthData['result'] == 'ok') {
+                $this->username = $basicAuthData['username'];
+                $this->groups = $this->_getUserGroups($basicAuthData['groups']);
+                $this->_setSessionData();
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            $this->username = $usernameInDb;
+            $this->getUserGroups($this->username);
+            $this->_setSessionData();
+            return true;
+        }
+    }
+
+    public static function encPwd($pwd) {
+        return $pwd;
+    }
+
 }
 
 

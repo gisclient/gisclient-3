@@ -237,7 +237,9 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 	if ($hasPrivateLayers) {
 		$user = new GCUser();
 		$isAuthenticated = $user->isAuthenticated();
-
+		if (empty($_SESSION['GISCLIENT_USER_LAYER'])) {
+				$user->setAuthorizedLayers(array('mapset_name' => $objRequest->getValueByName('map')));
+		}
 		// user does not have an open session, try to log in
 		if (!$isAuthenticated &&
 			isset($_SERVER['PHP_AUTH_USER']) &&
@@ -247,7 +249,6 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 				$isAuthenticated = true;
 			}
 		}
-
 		// user could not even log in, send correct headers and exit
 		if (!$isAuthenticated) {
 			print_debug('unauthorized access', null, 'system');

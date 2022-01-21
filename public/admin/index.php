@@ -45,7 +45,7 @@ if(!empty($_REQUEST['logout'])) {
 
 $message = "";
 if(!empty($_POST['username']) && !empty($_POST['password'])) {
-    if(!$user->login($_POST['username'], md5($_POST['password'])))
+    if(!$user->login($_POST['username'], GCUser::encPwd($_POST['password'])))
       $message =  GCAuthor::t('failed_login');;
 }
 

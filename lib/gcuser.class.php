@@ -20,8 +20,13 @@ abstract class AbstractUser {
 
         if(!empty($_SESSION['USERNAME'])) {
             $this->username = $_SESSION['USERNAME'];
-            if(!empty($_SESSION['GROUPS'])) $this->groups = $_SESSION['GROUPS'];
-            else $this->_setSessionData();
+            if(!empty($_SESSION['GROUPS'])) {
+                $this->groups = $_SESSION['GROUPS'];
+            }
+            else {
+                $this->_getUserGroups();
+                $_SESSION['GROUPS'] = $this->groups;
+            }
         }
     }
 
@@ -90,7 +95,8 @@ abstract class AbstractUser {
         GCLog::log("Session opened for user ".$this->username);
         $this->_getUserGroups();
         $_SESSION['GROUPS'] = $this->groups;
-        GCLog::log("Group membership for user ".$this->username . " : " . implode(',', $this->groups), 4);
+        $gcGroups = empty($this->groups) ? 'none' : implode(',', $this->groups);
+        GCLog::log("Group membership for user ".$this->username . " : " . $gcGroups, 4);
     }
 
     protected function _getUserGroups() {
@@ -100,21 +106,22 @@ abstract class AbstractUser {
 
 	public function setAuthorizedLayers(array $filter) {
 		$db = GCApp::getDB();
+        $gcUser = empty($this->username) ? 'anonymous' : $this->username;
 		if(isset($filter['mapset_name'])) {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset_name';
-            GCLog::log("Access to mapset " . $filter['mapset_name'] . " for user ".$this->username);
+            GCLog::log("Access to mapset " . $filter['mapset_name'] . " for user ".$gcUser);
 		} else if(isset($filter['theme_name'])) {
 			$sqlFilter = 'theme_name = :theme_name';
 			$sqlValues = array(':theme_name'=>$filter['theme_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
-            GCLog::log("Access to theme " . $filter['theme_name'] . " for user ".$this->username);
+            GCLog::log("Access to theme " . $filter['theme_name'] . " for user ".$gcUser);
 		} else if(isset($filter['project_name'])) {
 			$sqlFilter = 'project_name = :project_name';
 			$sqlValues = array(':project_name'=>$filter['project_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
-            GCLog::log("Access to project " . $filter['project_name'] . " for user ".$this->username);
+            GCLog::log("Access to project " . $filter['project_name'] . " for user ".$gcUser);
 		} else {
 			return false;
 		}
@@ -311,5 +318,9 @@ abstract class AbstractUser {
         $stmt = $db->prepare($sql);
         $stmt->execute(array('group'=>$groupname));
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function encPwd($pwd) {
+        return md5($pwd);
     }
 }
