@@ -244,7 +244,7 @@ if(!isset($_SESSION['GISCLIENT_USER_LAYER']) && !empty($layersParameter) && empt
 		if (!$isAuthenticated &&
 			isset($_SERVER['PHP_AUTH_USER']) &&
 			isset($_SERVER['PHP_AUTH_PW'])) {
-			if ($user->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+			if ($user->login($_SERVER['PHP_AUTH_USER'], GCUser::encPwd($_SERVER['PHP_AUTH_PW']))) {
 				$user->setAuthorizedLayers(array('mapset_name' => $objRequest->getValueByName('map')));
 				$isAuthenticated = true;
 			}
