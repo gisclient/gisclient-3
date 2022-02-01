@@ -24,17 +24,18 @@ $db = GCApp::getDB();
 /* Recupero i dati del layer */
 //qt_filter -> data_filter
 
-$sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter, qt_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.qt  using (layer_id) inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.qt_field using(qt_id) where qt_field_id=:field_id';
+$sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter, qt_filter, qt.qt_id, qt.materialize from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.qt  using (layer_id) inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.qt_field using(qt_id) where qt_field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $dataDb = GCApp::getDataDB($layer['catalog_path']);
 $datalayerSchema = GCApp::getDataDBSchema($layer['catalog_path']);
-$datalayerTable = $layer["data"];
+$materialize = $layer["materialize"];
+$datalayerTable = $materialize === 1 ? "gw_qt_" .$layer["qt_id"] : $layer["data"];
 $datalayerKey = $layer["data_unique"];
 $filters = array(); //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
-if(!empty($layer['data_filter'])) array_push($filters, '('.$layer['data_filter'].')');
+if(!empty($layer['data_filter']) && $materialize != 1) array_push($filters, '('.$layer['data_filter'].')');
 if(!empty($layer['qt_filter'])) array_push($filters, $layer['qt_filter']);
 $sTable = $datalayerSchema.".".$datalayerTable;
 
@@ -45,7 +46,7 @@ $stmt = $db->prepare($sql);
 $stmt->execute(array('field_id'=>$_REQUEST['field_id']));
 $field = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if(empty($field['qt_relation_id'])) {
+if(empty($field['qt_relation_id']) || $materialize === 1) {
     $field["qt_relation_name"] = DATALAYER_ALIAS_TABLE;//alias per la tabella del livello
     $field["schema"] = $datalayerSchema;
     $field["table_name"] = $datalayerTable;
@@ -54,7 +55,7 @@ if(empty($field['qt_relation_id'])) {
 }
 
 $fieldName = DATALAYER_ALIAS_TABLE . "." . $field["qt_field_name"];
-if(!empty($field['formula'])) {
+if(!empty($field['formula']) && $materialize != 1) {
     $fieldName = $field['formula'];
 }
 
@@ -62,7 +63,7 @@ $fromString = $sTable ." as " . DATALAYER_ALIAS_TABLE;
 
 // +++++++++++++++++ FILTRO AUTOSUGGEST ++++++++++++++++++++++++++++++++++//
 // **** Query su campo principale
-if(!empty($field["qt_relation_id"])) {//il campo oggetto di autosuggest è su tabella secondaria
+if(!empty($field["qt_relation_id"]) && $materialize != 1) {//il campo oggetto di autosuggest è su tabella secondaria
     if(empty($field['formula'])) {
         $fieldName = $field['qt_relation_name'] . '.' . $field["qt_field_name"];
     }
@@ -90,7 +91,7 @@ if(isset($field["field_filter"]) && isset($filterFields)){
 
     while ($fieldFilter = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
-        if(!empty($fieldFilter['qt_relation_id'])) {
+        if(!empty($fieldFilter['qt_relation_id']) && $materialize != 1) {
             $fieldFilter['schema'] = GCApp::getDataDBSchema($fieldFilter['catalog_path']);
 
             $fieldFilterName = '"' . $fieldFilter['qt_relation_name'] . '"."' . $fieldFilter["qt_field_name"] . '"';
@@ -110,7 +111,7 @@ if(isset($field["field_filter"]) && isset($filterFields)){
         }
         else {
             $fieldFilterName = DATALAYER_ALIAS_TABLE.".".$fieldFilter["qt_field_name"];
-            if(!empty($fieldFilter['formula'])) {
+            if(!empty($fieldFilter['formula']) && $materialize != 1) {
                 $fieldFilterName = $fieldFilter['formula'];
             }
         }

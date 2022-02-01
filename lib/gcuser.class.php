@@ -155,7 +155,7 @@ abstract class AbstractUser {
 			$authClause = '(coalesce(layer.private,0)=0)';
 		}
 
-        $sql = 'SELECT DISTINCT project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,
+        $sql = 'SELECT DISTINCT project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,layer.layer_order,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'max(coalesce(wms,0))').' else 1 end as wms,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'max(coalesce(wfs,0))').' else 1 end as wfs,
             case when coalesce(layer.private,1) = 1 then '.($isAdmin ? '1' : 'max(coalesce(wfst,0))').' else 1 end as wfst,
@@ -165,7 +165,7 @@ abstract class AbstractUser {
             INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
             LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
-            WHERE ('.$sqlFilter.') AND ('.$authClause.') GROUP BY project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden ORDER BY layer.layer_order;';
+            WHERE ('.$sqlFilter.') AND ('.$authClause.') GROUP BY project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,layer.layer_order ORDER BY layer.layer_order;';
 
         $stmt = $db->prepare($sql);
         $stmt->execute($sqlValues);
