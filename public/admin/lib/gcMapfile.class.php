@@ -161,6 +161,7 @@ class gcMapfile{
         $projectMaxScale = floatval($aLayer["max_extent_scale"])?floatval($aLayer["max_extent_scale"]):100000000;
         $projectExtent = $this->_calculateExtentFromCenter($projectMaxScale, $this->projectSrid);
         $this->projectMaxScale = $projectMaxScale;
+        $this->customMapDef = $aLayer["mapset_def"]; // **** TODO: validate
 
         $mapText=array();
         $mapSrid=array();
@@ -495,6 +496,7 @@ class gcMapfile{
         if(defined('MAPFILE_MAX_SIZE')) $maxSize = MAPFILE_MAX_SIZE;
         else $maxSize = '4096';
         $fontList = '../../fonts/'.$fontList.'.list';
+        $customMapDef = $this->customMapDef;
 
         $fileContent=
 "MAP
@@ -529,6 +531,7 @@ PROJECTION
 $mapProjection
 END
 $mapsetExtent
+$customMapDef
 $layerText
 $legend_inc
 $outputFormat
