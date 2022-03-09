@@ -90,6 +90,10 @@ abstract class AbstractUser {
         return $this->username;
     }
 
+    public function getGroups() {
+        return $this->groups;
+    }
+
     protected function _setSessionData() {
         $_SESSION['USERNAME'] = $this->username;
         GCLog::log("Session opened for user ".$this->username);
@@ -295,7 +299,7 @@ abstract class AbstractUser {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getGroups() {
+    public static function getAllGroups() {
         $db = GCApp::getDB();
 
         $sql = 'select groupname, description from '.DB_SCHEMA.'.groups';

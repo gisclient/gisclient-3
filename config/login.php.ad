@@ -37,7 +37,7 @@ class GCUser extends AbstractUser {
 
     protected function _getUserGroups($groups = null) {
         $result = array();
-        $predefinedGroups = self::getGroups();
+        $predefinedGroups = self::getAllGroups();
         $predefinedGroupNames = array_column($predefinedGroups, "groupname");
         if (!empty($groups) && is_array($groups)) {
             $userGroupArr = $groups;
@@ -98,7 +98,7 @@ class GCUser extends AbstractUser {
         }
         else {
             $this->username = $usernameInDb;
-            $this->getUserGroups($this->username);
+            $this->groups = $this->getUserGroups($this->username);
             $this->_setSessionData();
             return true;
         }

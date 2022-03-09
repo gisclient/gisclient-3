@@ -1,7 +1,7 @@
 <?php
 require_once "../../config/config.php";
 
-    $groups = GCUser::getGroups();
+    $groups = GCUser::getAllGroups();
     if(!isset($data) || !is_array($data)) $data = array();
 
 	$username = isset($this->parametri["users"])?$this->parametri["users"]:null;

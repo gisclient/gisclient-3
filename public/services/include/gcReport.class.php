@@ -45,6 +45,7 @@ class gcReport {
     var $getLegend = false;
     var $result = '';
     var $error = '';
+    var $materialize = false;
 
     private $i18n;
     protected $oMap;
@@ -129,6 +130,9 @@ class gcReport {
         }
 
         $this->_initQuery($request);
+        if ($this->reportQueryResult["result"] === 'error') {
+            return;
+        }
         $this->reportQueryResult['templates'] = $this->templates;
         $this->reportQueryResult['data'] = $this->_getInfoByTemplate($this->templates[$request['report_id']]);
         $this->reportQueryResult['total'] = $this->totRowsReport;
@@ -151,7 +155,9 @@ class gcReport {
         }
 
         $this->_initQuery($request);
-
+        if ($this->reportQueryResult["result"] === 'error') {
+            return;
+        }
         $this->reportQueryResult["export_format"] = $request['action'];
         $this->reportQueryResult["feature_type"] = $this->templates[$request['report_id']]["report_name"];
         $this->reportQueryResult["fields"] = array_values($this->templates[$request['report_id']]["field"]);
@@ -167,9 +173,12 @@ class gcReport {
             $this->reportQueryResult['error'] = "Nessun report ID specificato";
             return;
         }
-
+        $this->materialize = true;
         $this->_initQuery($request);
-
+        if ($this->reportQueryResult["result"] === 'error') {
+            return;
+        }
+        $this->materialize = false;
         $aTemplate = $this->templates[$request['report_id']];
         $datalayerSchema = GCApp::getDataDBSchema($aTemplate['catalog_path']);
         $tableName = 'gw_qt_' . $request['report_id'];
@@ -242,6 +251,14 @@ class gcReport {
     function _initQuery($request) {
 
         $dbschema=DB_SCHEMA;
+        $user = new GCUser();
+        $userGroupFilter = "";
+        if((!$user->isAdmin($this->projectName)) || $this->materialize == false) {
+            $this->authorizedGroups = $user->getGroups();
+            $userGroup = '';
+            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("','", $this->authorizedGroups)."')";
+            $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
+        }
 
         $sqlField="select qt_field.*, sql_function, qt_relation.qt_relation_name, qt_relation.qt_relation_id, qt_relation.qtrelationtype_id, e_qt_relationtype.qtrelationtype_name, qt_relation.data_field_1, qt_relation.data_field_2, qt_relation.data_field_3, qt_relation.table_field_1, qt_relation.table_field_2, qt_relation.table_field_3, qt_relation.table_name, catalog_path, catalog_url
         from $dbschema.qt_field
@@ -249,10 +266,12 @@ class gcReport {
         left join $dbschema.e_qt_relationtype using (qtrelationtype_id)
         left join $dbschema.catalog using (catalog_id)
         left join $dbschema.e_fieldtype using (fieldtype_id)
-        where qt_field.qt_id = :qt_id
+        left join $dbschema.qt_field_groups using(qt_field_id)
+        where $userGroupFilter qt_field.qt_id = :qt_id
         order by qtfield_order,field_header;";
 
         $stmt = $this->db->prepare($sqlField);
+        print_debug($sqlField,null,'report');
         $stmt->execute(array('qt_id'=>$request['report_id']));
 		$qRelation = array();
 		$qField = array();
@@ -311,10 +330,11 @@ class gcReport {
 
 		//query template *******************
 		//$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.id $sqlQt order by order;";
-		$sqlTemplate="select qt.qt_id, qt.qt_name as report_name, qt.qt_filter as data_filter, qt.materialize, layer.layer_id, layer.layer_name, layer.data, layer.data_geom, layer.data_filter as layer_data_filter, catalog_path, catalog_url, connection_type, data_unique, data_srid
+        $sqlTemplate="select qt.qt_id, qt.qt_name as report_name, qt.qt_filter as data_filter, qt.materialize, layer.layer_id, layer.layer_name, layergroup_name || '.' || layer_name as type_name, layer.private, layer.data, layer.data_geom, layer.data_filter as layer_data_filter, catalog_path, catalog_url, connection_type, data_unique, data_srid
         from $dbschema.qt
         inner join $dbschema.layer using (layer_id)
         inner join $dbschema.catalog using (catalog_id)
+        inner join $dbschema.layergroup using (layergroup_id)
         where qt_id = :qt_id order by qt_order;";
 		print_debug($sqlTemplate,null,'report');
 
@@ -323,6 +343,12 @@ class gcReport {
 		//Tutti i query template dei modelli di ricerca interessati
 		$allTemplates = array();
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            $typeName = $row["type_name"];
+            if($row['private'] != 0 && @$_SESSION['GISCLIENT_USER_LAYER'][$this->projectName][$typeName]['WFS'] != 1 && $this->materialize == false) {
+                $this->reportQueryResult["result"] = 'error';
+                $this->reportQueryResult['error'] = "Diritti insufficenti per la visualizzazione del report (id = " . $request['report_id'] . ")";
+                continue;
+            }
 			$reportId=$row["qt_id"];
 			$allTemplates[$reportId]=$row;
 			$allTemplates[$reportId]["field"]= (isset($qField[$reportId]))?$qField[$reportId]:null;
@@ -605,8 +631,9 @@ class gcReport {
         $userGroupFilter = '';
         $user = new GCUser();
         if(!$user->isAdmin($this->projectName)) {
+            $this->authorizedGroups = $user->getGroups();
             $userGroup = '';
-            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
+            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("','", $this->authorizedGroups)."')";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
         }
 
@@ -616,10 +643,11 @@ class gcReport {
 				INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (layergroup_id)
 				INNER JOIN " . DB_SCHEMA . ".layer using (layergroup_id)
 				INNER JOIN " . DB_SCHEMA . ".catalog using (catalog_id)
-                                INNER JOIN " . DB_SCHEMA . ".qt using (layer_id)
+                INNER JOIN " . DB_SCHEMA . ".qt using (layer_id)
 				LEFT JOIN " . DB_SCHEMA . ".qt_field using(qt_id)
 				LEFT JOIN " . DB_SCHEMA . ".qt_relation using(qt_relation_id)
-                WHERE mapset_layergroup.mapset_name=:mapset_name ";
+                LEFT JOIN " . DB_SCHEMA . ".qt_field_groups using(qt_field_id)
+                WHERE  $userGroupFilter layer.queryable = 1 AND  mapset_layergroup.mapset_name=:mapset_name ";
         $sql .= " ORDER BY theme_title, theme_id, qt_order, qt_name, qtfield_order, qt_field.field_header;";
         $stmt = $this->db->prepare($sql);
 

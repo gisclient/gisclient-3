@@ -156,6 +156,12 @@
 		<pkey>groupname</pkey>
 		<parent>field</parent>
 	</field_groups>
+	<field_groups>
+		<table>qt_field_groups</table>
+		<pkey>qt_field_id</pkey>
+		<pkey>groupname</pkey>
+		<parent>qt_field</parent>
+	</field_groups>
 	<group_properties>
       <table>group_properties</table>
       <pkey>group_properties_id</pkey>
