@@ -36,7 +36,7 @@ $datalayerTable = $materialize === 1 ? "gw_qt_" .$layer["qt_id"] : $layer["data"
 $datalayerKey = $layer["data_unique"];
 $filters = array(); //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
 if(!empty($layer['data_filter']) && $materialize != 1) array_push($filters, '('.$layer['data_filter'].')');
-if(!empty($layer['qt_filter'])) array_push($filters, $layer['qt_filter']);
+if(!empty($layer['qt_filter']) && $materialize != 1) array_push($filters, $layer['qt_filter']);
 $sTable = $datalayerSchema.".".$datalayerTable;
 
 
