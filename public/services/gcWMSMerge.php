@@ -157,7 +157,19 @@ foreach($mapConfig['layers'] as $key => $layer) {
 			case 'TMS':
 			
 				$query = getWmsParameters($layer['PARAMETERS']);
-				
+				if (empty($layer['PARAMETERS']['VERSION'])) {
+					$wmsUrl = parse_url($layer['URL']);
+					if (isset($wmsUrl['query'])) {
+						parse_str($wmsUrl['query'], $queryParams);
+						foreach ($queryParams as $key=>$val) {
+							if (strtoupper($key) == 'VERSION') {
+								// Move verson from query string to parameters
+								$layer['PARAMETERS']['VERSION'] = $val;
+							}
+						}
+					}
+				}
+
 				if(!empty($sessionId)) $query .= '&GC_SESSION_ID='.$sessionId;
 				if(!empty($mapConfig['resolution'])) $query.= '&RESOLUTION='.$mapConfig['resolution'];
 				$layerNames = '';
