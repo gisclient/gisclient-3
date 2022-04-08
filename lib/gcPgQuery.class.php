@@ -87,6 +87,8 @@ class PgQuery{
 			return;
 		} */
 
+
+
 		if(!empty($request['projectName']) && !empty($request['mapsetName'])) {
 		    $mapsetFileName = ROOT_PATH.'map/'.$request['projectName'].'/'.$request['mapsetName'].'.map';
 		    if (is_readable($mapsetFileName)) {
@@ -95,12 +97,22 @@ class PgQuery{
 		    }
 		}
 
+		$userGroupFilter = '';
+        $user = new GCUser();
+        if(!$user->isAdmin($this->projectName)) {
+            $this->authorizedGroups = $user->getGroups();
+            $userGroup = '';
+            if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("','", $this->authorizedGroups)."')";
+            $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
+        }
+
 		//costruzione oggetto querytemplate
 		$sqlField="select field.*, relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, catalog_url
         from $dbschema.field
         left join $dbschema.relation using (relation_id)
         left join $dbschema.catalog using (catalog_id)
-        where field.layer_id = :layer_id
+		left join $dbschema.field_groups using(field_id)
+        where $userGroupFilter field.layer_id = :layer_id
         order by field_order;";
 
         $stmt = $db->prepare($sqlField);
@@ -171,7 +183,7 @@ class PgQuery{
 
 		//query template *******************
 		//$sqlTemplate="select layer.layer_id,layer_name,layer.layergroup_id,layergroup.hidden,mapset_filter,id,base_url,catalog_path,catalog_url,connection_type,data,data_geom,data_filter,data_unique,data_srid,template,tolerance,name,max_rows,selection_color,zoom_buffer,edit_url,groupobject,layertype_ms,static,papersize_id,filter,papersize_size,papersize_orientation from $dbschema.qt inner join $dbschema.layer using (layer_id) inner join $dbschema.e_layertype using (layertype_id) inner join $dbschema.catalog using (catalog_id) inner join $dbschema.layergroup using (layergroup_id) inner join $dbschema.project using (project_name) left join $dbschema.e_papersize using(papersize_id)  where qt.id $sqlQt order by order;";
-		$sqlTemplate="select layer.layer_id, layer_name, layer.layergroup_id, layergroup.hidden, catalog_path, catalog_url, connection_type, data, data_geom, data_filter, data_unique, data_srid, layertype_ms
+		$sqlTemplate="select layer.layer_id, layer_name, layer.layergroup_id, layergroup.hidden, catalog_path, catalog_url, connection_type, data, data_geom, data_filter, data_unique, data_srid, layertype_ms, layer.private
         from $dbschema.layer
         inner join $dbschema.e_layertype using (layertype_id)
         inner join $dbschema.catalog using (catalog_id)
@@ -184,6 +196,9 @@ class PgQuery{
 		//Tutti i query template dei modelli di ricerca interessati
 		$allTemplates = array();
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+			if($row['private'] != 0 && @$_SESSION['GISCLIENT_USER_LAYER'][$this->request['projectName']][$this->request['featureType']]['WFS'] != 1) {
+                continue;
+            }
 			//mapsetFilter
 			if(!empty($mapsetFilter)) {
 				if (!empty($row['data_filter'])) {
@@ -228,6 +243,9 @@ class PgQuery{
 	}
 
     public function query($layerId) {
+		if (empty($this->templates)) {
+			return array();
+		}
         return $this->_getInfoByTemplate($this->templates[$layerId]);
     }
 

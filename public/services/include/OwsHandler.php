@@ -32,7 +32,7 @@ class OwsHandler {
 
     static function currentPageURL() {
         $pageURL = 'http';
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')
+        if (isset($_SERVER['HTTPS']))
             $pageURL .= 's';
         $pageURL .= '://';
         if ($_SERVER["SERVER_PORT"] != "80")
