@@ -253,7 +253,7 @@ class gcReport {
         $dbschema=DB_SCHEMA;
         $user = new GCUser();
         $userGroupFilter = "";
-        if((!$user->isAdmin($this->projectName)) || $this->materialize == false) {
+        if((!$user->isAdmin($this->projectName)) && $this->materialize == false) {
             $this->authorizedGroups = $user->getGroups();
             $userGroup = '';
             if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("','", $this->authorizedGroups)."')";
