@@ -84,7 +84,10 @@ class OwsHandler {
                 }
                 // è un singolo layer
             } else {
-                array_push($layersArray, $oMap->getLayerByName($name));
+                @$objLayer = $oMap->getLayerByName($name);
+                if (isset($objLayer)) {
+                    array_push($layersArray, $objLayer);
+                }
             }
         }
         return $layersArray;
