@@ -634,7 +634,7 @@ class GCAuthor {
 	public static function getMapsets($project) {
 		$db = GCApp::getDB();
 
-		$sql = "select mapset_name, mapset_title, template, project_name from ".DB_SCHEMA.".mapset where project_name=?";
+		$sql = "select mapset_name, mapset_title, template, project_name from ".DB_SCHEMA.".mapset where project_name=? order by mapset_order, mapset_title";
 		$stmt = $db->prepare($sql);
 		$stmt->execute(array($project));
 		$mapsets = $stmt->fetchAll(PDO::FETCH_ASSOC);

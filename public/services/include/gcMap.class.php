@@ -216,7 +216,7 @@ class gcMap{
             $mapConfig['logged_username'] = $user->getUsername();
         }
 
-        $sql = 'select mapset_name, mapset_title, template from '.DB_SCHEMA.'.mapset where project_name = :project';
+        $sql = 'select mapset_name, mapset_title, template from '.DB_SCHEMA.'.mapset where project_name = :project order by mapset_order, mapset_title';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
         $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
