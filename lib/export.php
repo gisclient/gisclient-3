@@ -47,14 +47,14 @@ class GCExport
                 if (!empty($tableSpec['name'])) {
                     $exportOptions['name'] = $tableSpec['name'];
                 }
-                $layer = $this->_exportShp($tableSpec, $exportOptions);
+                $layer = $this->exportShp($tableSpec, $exportOptions);
                 foreach ($layer as $niceName => $realName) {
                     $files[$niceName] = $realName;
                 }
             }
         } elseif ($this->type == 'dxf') {
             $exportGml = new GCExportGml($this->db, $options['extent'], $options['srid']);
-            $gmlFile = $this->_getFileName($options['name']) . '.gml';
+            $gmlFile = $this->getFileName($options['name']) . '.gml';
 
             foreach ($tables as $tableSpec) {
                 if (empty($tableSpec['name'])) {
@@ -64,8 +64,8 @@ class GCExport
             }
 
             $exportGml->export($this->exportPath . $gmlFile);
-            $dxfFile = $this->_getFileName($options['name']) . '.dxf';
-            $this->_exportDxf($gmlFile, $dxfFile);
+            $dxfFile = $this->getFileName($options['name']) . '.dxf';
+            $this->exportDxf($gmlFile, $dxfFile);
             $files[$options['name'] . '.dxf'] = $this->exportPath . $dxfFile;
         } elseif ($this->type == 'xls') {
             foreach ($tables as $tableSpec) {
@@ -77,7 +77,7 @@ class GCExport
                     $exportOptions['name'] = $tableSpec['name'];
                 }
 
-                $file = $this->_exportXls($tableSpec, $exportOptions);
+                $file = $this->exportXls($tableSpec, $exportOptions);
                 $files[$exportOptions['name'] . '.xls'] = $file;
             }
         } elseif ($this->type == 'kml') {
@@ -98,7 +98,7 @@ class GCExport
                     $kml->addLayer($options['layer'], $table['schema'], $table['table'], $exportOptions);
                 }
 
-                $kmlFile = $this->exportPath . $this->_getFileName($options['name']) . '.kml';
+                $kmlFile = $this->exportPath . $this->getFileName($options['name']) . '.kml';
                 $kml->export($kmlFile);
 
                 $files[$exportOptions['name'] . '.kml'] = $kmlFile;
@@ -111,7 +111,7 @@ class GCExport
             $zipName = $options['add_to_zip'];
             $openZipFlag = ZIPARCHIVE::CHECKCONS;
         } else {
-            $zipName = $this->_getFileName($options['name']) . '.zip';
+            $zipName = $this->getFileName($options['name']) . '.zip';
             $openZipFlag = ZIPARCHIVE::CREATE;
         }
         $options['add_to_zip'] = $zipName;
@@ -135,14 +135,14 @@ class GCExport
         return $return;
     }
     
-    protected function _exportShp(array $config, array $options = array())
+    protected function exportShp(array $config, array $options = array())
     {
         $defaultOptions = array(
             'name' => $config['table']
         );
         $options = array_merge($defaultOptions, $options);
         
-        $fileName = $this->_getFileName($options['name']);
+        $fileName = $this->getFileName($options['name']);
         $filePath = $this->exportPath.$fileName;
         $errorFile = $this->errorPath.$fileName . '.err';
 
@@ -217,7 +217,7 @@ class GCExport
         return $files;
     }
     
-    protected function _exportDxf($gmlFile, $dxfFile)
+    protected function exportDxf($gmlFile, $dxfFile)
     {
         chdir('/usr/local/kabeja/');
         //$cmd = "java -Xmx512m -jar launcher.jar -main org.kabeja.gml.Main -template /data/sites/gc/author-giussano/config/prova.dxf ".
@@ -232,7 +232,7 @@ class GCExport
         }
     }
 
-    protected function _exportXls($config, array $options = array())
+    protected function exportXls($config, array $options = array())
     {
         include_once 'include/php-excel.class.php';
 
@@ -241,7 +241,7 @@ class GCExport
         );
         $options = array_merge($defaultOptions, $options);
         
-        $fileName = $this->_getFileName($options['name']);
+        $fileName = $this->getFileName($options['name']);
         $filePath = $this->exportPath.$fileName;
 
         $excel = new Excel_XML();
@@ -290,7 +290,7 @@ class GCExport
         return $filePath;
     }
     
-    protected function _deleteOldFiles()
+    protected function deleteOldFiles()
     {
         $files = glob($this->exportPath.'*');
         foreach ($files as $file) {
@@ -301,7 +301,7 @@ class GCExport
         }
     }
     
-    protected function _getFileName($customPart)
+    protected function getFileName($customPart)
     {
         return $customPart . '_' . date('YmdHis') . '_' . rand(0, 9999);
     }
@@ -325,7 +325,7 @@ class GCExportGml
     
     public function export($file)
     {
-        $content = $this->_getHeader() . implode(' ', $this->gmlLayers) . $this->_getFooter();
+        $content = $this->getHeader() . implode(' ', $this->gmlLayers) . $this->getFooter();
         file_put_contents($file, $content);
     }
     
@@ -343,7 +343,7 @@ class GCExportGml
         array_push($this->gmlLayers, $gml);
     }
     
-    protected function _getHeader()
+    protected function getHeader()
     {
         return '<?xml version="1.0" encoding="UTF-8" ?>
             <gml:FeatureCollection xmlns:gml="http://www.opengis.net/gml"
@@ -363,7 +363,7 @@ class GCExportGml
             <gml:featureMembers>';
     }
     
-    protected function _getFooter()
+    protected function getFooter()
     {
         return '</gml:featureMembers></r3sg:geometry></gml:FeatureCollection>';
     }
@@ -384,7 +384,7 @@ class GCExportKml
         $this->srid = $srid;
     }
 
-    protected function _checkStyleExpression($exp, $values)
+    protected function checkStyleExpression($exp, $values)
     {
         $res = null;
         foreach ($values as $key => $value) {
@@ -397,7 +397,7 @@ class GCExportKml
         return $res;
     }
 
-    protected function _getCamera()
+    protected function getCamera()
     {
         $centerX = ($this->extent[0] + $this->extent[2]) / 2;
         $centerY = ($this->extent[1] + $this->extent[3]) / 2;
@@ -418,7 +418,7 @@ class GCExportKml
             . "</Camera>";
     }
 
-    protected function _getData()
+    protected function getData()
     {
         $kmlData = '';
         foreach ($this->layers as $layerConf) {
@@ -453,7 +453,7 @@ class GCExportKml
                 $kmlData .= preg_replace('/>/', '>' . $geomExtraAttribute, $row['kml_geom'], 1);
 
                 foreach ($this->styles as $styleName => $exp) {
-                    if ($this->_checkStyleExpression($exp, $row)) {
+                    if ($this->checkStyleExpression($exp, $row)) {
                         $kmlData .= "<styleUrl>#{$styleName}</styleUrl>";
                         break; //kml supports only one style
                     }
@@ -481,12 +481,12 @@ class GCExportKml
         return $kmlData;
     }
 
-    protected function _getHeader()
+    protected function getHeader()
     {
         return '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document>';
     }
 
-    protected function _getKMLColor($string)
+    protected function getKMLColor($string)
     {
         $colorArr = array_reverse(
             array_map(
@@ -502,7 +502,7 @@ class GCExportKml
         return implode($colorArr);
     }
 
-    protected function _getStyles()
+    protected function getStyles()
     {
         $kmlStyle = '';
         foreach ($this->layers as $layerConf) {
@@ -516,9 +516,9 @@ class GCExportKml
             foreach ($layer->getStyleClasses() as $class) {
                 $styleName = $layer->getName() . '.' . $class->getName();
                 foreach ($class->getStyles() as $style) {
-                    $color = $style->getColor()? $this->_getKMLColor($style->getColor() . ' ' . $opacity) : 'ff000000';
-                    $backgroundColor = $style->getBackgroundColor()? $this->_getKMLColor($style->getBackgroundColor() . ' ' . $opacity) : '';
-                    $outlineColor = $style->getOutlineColor()? $this->_getKMLColor($style->getOutlineColor() . ' ' . $opacity) : '';
+                    $color = $style->getColor()? $this->getKMLColor($style->getColor() . ' ' . $opacity) : 'ff000000';
+                    $backgroundColor = $style->getBackgroundColor()? $this->getKMLColor($style->getBackgroundColor() . ' ' . $opacity) : '';
+                    $outlineColor = $style->getOutlineColor()? $this->getKMLColor($style->getOutlineColor() . ' ' . $opacity) : '';
                     $size = $style->getSize() ?: 1;
 
                     $bgColor = $backgroundColor ?: $color;
@@ -538,7 +538,7 @@ class GCExportKml
         return $kmlStyle;
     }
     
-    protected function _getFooter()
+    protected function getFooter()
     {
         return '</Document></kml>';
     }
@@ -558,7 +558,7 @@ class GCExportKml
 
     public function export($file)
     {
-        $content = $this->_getHeader() . $this->_getCamera() . $this->_getStyles() . $this->_getData() . $this->_getFooter();
+        $content = $this->getHeader() . $this->getCamera() . $this->getStyles() . $this->getData() . $this->getFooter();
         file_put_contents($file, $content);
     }
 }

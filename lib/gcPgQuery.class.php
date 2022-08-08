@@ -169,16 +169,16 @@ class PgQuery
 
         $this->templates = $allTemplates;
 
-        //return $this->_getInfoByTemplate($aTemplate);
+        //return $this->getInfoByTemplate($aTemplate);
     }
 
     public function query($layerId)
     {
-        return $this->_getInfoByTemplate($this->templates[$layerId]);
+        return $this->getInfoByTemplate($this->templates[$layerId]);
     }
 
     //Per ogni querytemplate ritorna un array di risultati
-    public function _getInfoByTemplate($aTemplate)
+    public function getInfoByTemplate($aTemplate)
     {
         //$myMap = "MAPSET_".$_REQUEST["mapset"];
         //$templateId = $aTemplate["layer_id"];

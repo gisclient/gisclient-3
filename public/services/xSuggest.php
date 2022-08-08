@@ -29,7 +29,6 @@ $layer = $stmt->fetch(PDO::FETCH_ASSOC);
 $dataDb = GCApp::getDataDB($layer['catalog_path']);
 $datalayerSchema = GCApp::getDataDBSchema($layer['catalog_path']);
 $datalayerTable = $layer["data"];
-$datalayerKey = $layer["data_unique"];
 $filters = array(); //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
 if (!empty($layer['data_filter'])) {
     array_push($filters, $layer['data_filter']);

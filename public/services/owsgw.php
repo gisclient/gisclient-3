@@ -254,7 +254,6 @@ $gcService->saveAndClose();
 
 // Cache part 1
 $owsCacheTTL = defined('OWS_CACHE_TTL') ? OWS_CACHE_TTL : 0;
-$owsCacheTTLOpen = defined('OWS_CACHE_TTL_OPEN') ? OWS_CACHE_TTL_OPEN : 0;
 if ((isset($_REQUEST['REQUEST']) &&
      strtolower($_REQUEST['REQUEST']) == 'getmap') ||
     (isset($_REQUEST['request']) &&
@@ -292,6 +291,7 @@ $ctt = explode("/", $contenttype);
 
 /* Send response with appropriate header */
 if ($ctt[0] == 'image') {
+    /*
     $hasDynamicLayer = false;
     if (defined('DYNAMIC_LAYERS')) {
         $dynamicLayers = explode(',', DYNAMIC_LAYERS);
@@ -304,6 +304,7 @@ if ($ctt[0] == 'image') {
             }
         }
     }
+    */
 
     header('Content-type: image/'. $ctt[1]);
     

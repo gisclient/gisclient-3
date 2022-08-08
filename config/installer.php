@@ -69,7 +69,7 @@ class GcInstaller
      * @param  string $base
      * @throws Exception
      */
-    function checkOutputDirs(array $dirs, $base = '')
+    public function checkOutputDirs(array $dirs, $base = '')
     {
 
         foreach ($dirs as $dir) {
@@ -131,7 +131,7 @@ class GcInstaller
         }
     }
 
-    function getGroupGid($group)
+    public function getGroupGid($group)
     {
         if (false === ($groupInfo = posix_getgrnam($group))) {
             throw new Exception("Can not get group id of $group");
@@ -139,7 +139,7 @@ class GcInstaller
         return $groupInfo['gid'];
     }
 
-    function exec($cmd, &$output, &$retval)
+    public function exec($cmd, &$output, &$retval)
     {
         if ($this->options['simulate']) {
             echo $cmd . "\n";
@@ -151,7 +151,7 @@ class GcInstaller
         }
     }
 
-    function setBasePermissions($base)
+    public function setBasePermissions($base)
     {
         if ($this->options['root_as_default']) {
             $cmd = "chown -R root.root $base";

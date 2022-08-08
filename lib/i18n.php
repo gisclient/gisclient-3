@@ -102,7 +102,7 @@ class GCLocalization
     public function getDefaultLanguageId()
     {
         if (empty($this->defaultLanguageId)) {
-            $this->_getDefaultLanguageId();
+            $this->loadDefaultLanguageId();
         }
         return $this->defaultLanguageId;
     }
@@ -110,7 +110,7 @@ class GCLocalization
     public function getLanguages()
     {
         if (empty($this->languages)) {
-            $this->_getLanguages();
+            $this->loadLanguages();
         }
         return $this->languages;
     }
@@ -118,7 +118,7 @@ class GCLocalization
     public function getAlternativeLanguages()
     {
         if (empty($this->languages)) {
-            $this->_getLanguages();
+            $this->loadLanguages();
         }
         $defaultLanguageId = $this->getDefaultLanguageId();
         unset($this->languages[$defaultLanguageId]);
@@ -128,7 +128,7 @@ class GCLocalization
     public function getI18nFields($table)
     {
         if (empty($this->i18nFields)) {
-            $this->_getI18nFields();
+            $this->loadI18nFields();
         }
         if (!isset($this->i18nFields[$table])) {
             return array();
@@ -139,7 +139,7 @@ class GCLocalization
     public function getTranslations($languageId, $table, $pkeyId)
     {
         if (empty($this->translations)) {
-            $this->_getTranslations();
+            $this->loadTranslations();
         }
         if (!isset($this->translations[$languageId][$table][$pkeyId])) {
             return array();
@@ -150,7 +150,7 @@ class GCLocalization
     public function getTranslationsByFieldName($languageId, $table, $pkeyId)
     {
         if (empty($this->translations)) {
-            $this->_getTranslations();
+            $this->loadTranslations();
         }
         if (!isset($this->translations[$languageId][$table][$pkeyId])) {
             return array();
@@ -165,7 +165,7 @@ class GCLocalization
     public function getTranslation($languageId, $table, $pkeyId, $fieldId)
     {
         if (empty($this->translations)) {
-            $this->_getTranslations();
+            $this->loadTranslations();
         }
         if (!isset($this->translations[$languageId][$table][$pkeyId][$fieldId])) {
             return null;
@@ -180,7 +180,7 @@ class GCLocalization
     public function getFieldTable($i18nFieldId)
     {
         if (empty($this->i18nFields)) {
-            $this->_getI18nFields();
+            $this->loadI18nFields();
         }
         foreach ($this->i18nFields as $table => $fields) {
             foreach ($fields as $fieldId => $field) {
@@ -195,9 +195,9 @@ class GCLocalization
     public function getFieldName($i18nFieldId)
     {
         if (empty($this->i18nFields)) {
-            $this->_getI18nFields();
+            $this->loadI18nFields();
         }
-        foreach ($this->i18nFields as $table => $fields) {
+        foreach ($this->i18nFields as $fields) {
             foreach ($fields as $fieldId => $field) {
                 if ($i18nFieldId == $fieldId) {
                     return $field['field_name'];
@@ -207,7 +207,7 @@ class GCLocalization
         return null;
     }
 
-    private function _getTranslations()
+    private function loadTranslations()
     {
         $sql = "select i18nf_id, pkey_id, language_id, value from ".DB_SCHEMA.".localization ".
         " where project_name=:project_name";
@@ -228,7 +228,7 @@ class GCLocalization
         }
     }
 
-    private function _getLanguages()
+    private function loadLanguages()
     {
         $sql = "select e.language_id, language_name from ".DB_SCHEMA.".e_language e ".
         " inner join ".DB_SCHEMA.".project_languages pl on e.language_id = pl.language_id ".
@@ -240,7 +240,7 @@ class GCLocalization
         }
     }
 
-    private function _getDefaultLanguageId()
+    private function loadDefaultLanguageId()
     {
         $sql = "select default_language_id from ".DB_SCHEMA.".project where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
@@ -248,7 +248,7 @@ class GCLocalization
         $this->defaultLanguageId = $stmt->fetchColumn(0);
     }
 
-    private function _getI18nFields()
+    private function loadI18nFields()
     {
         $sql = "select i18nf_id, table_name, field_name from ".DB_SCHEMA.".i18n_field";
         $stmt = $this->db->query($sql);

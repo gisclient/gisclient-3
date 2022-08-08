@@ -465,13 +465,10 @@ class GCAuthor
         
 
         //$aFeature = $this->aFeature;
-        $layerId=$aFeature["layer_id"];
         $datalayerTable=$aFeature["data"];
         $datalayerGeom=$aFeature["data_geom"];
         $datalayerKey=$aFeature["data_unique"];
-        $datalayerSRID=$aFeature["data_srid"];
         $datalayerSchema = $aFeature["table_schema"];
-        $datalayerFilter = $aFeature["data_filter"];
 
         if (!empty($aFeature["tileindex"])) { //X TILERASTER
             $location = "'".trim($aFeature["base_path"])."' || location as location";//value for location
@@ -491,7 +488,7 @@ class GCAuthor
             $fieldList = array();
             $groupByFieldList = array();
             
-            foreach ($aFeature["fields"] as $idField => $aField) {
+            foreach ($aFeature["fields"] as $aField) {
                 //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
                 if (!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
                     if (!$options['include_1n_relations'] || $options['group_1n']) {
@@ -528,7 +525,7 @@ class GCAuthor
             
             //Elenco delle relazioni
             if ($aRelation=$aFeature["relation"]) {
-                foreach ($aRelation as $idrel => $rel) {
+                foreach ($aRelation as $rel) {
                     $relationAliasTable = GCApp::nameReplace($rel["name"]);
                     
                     //se relazione 1-n, salta se non vogliamo il join

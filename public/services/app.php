@@ -40,7 +40,6 @@ function getFirewall(Request $request)
 
 function checkAccessControl(Request $request, AuthenticationHandler $authHandler)
 {
-    $allowAccess = false;
     $security = Yaml::parse(
         file_get_contents(ROOT_PATH . 'config/security.yml')
     );

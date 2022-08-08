@@ -216,7 +216,7 @@ unset($row);
 //raggruppo gli oggetti per il campo field di groupBy
 if ($groupBy) {
     $assign['table']['groupedrows'] = array();
-    foreach ($assign['table']['rows'] as $k => $feature) {
+    foreach ($assign['table']['rows'] as $feature) {
         if (!isset($assign['table']['groupedrows'][$feature[$groupBy['field']]])) {
             $assign['table']['groups'][$feature[$groupBy['field']]] = ' ';
             $assign['table']['groupedrows'][$feature[$groupBy['field']]] = array();

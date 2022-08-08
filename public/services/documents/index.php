@@ -165,7 +165,7 @@ function deliverFile($fileName, $opt = array())
     /* ETAG */
     if (isset($opt['header']['etag'])) {
         if ($opt['header']['etag'] != '') {
-            header("ETag: \"$hash\"");
+            header("ETag: \"{$opt['header']['etag']}\"");
         }
     } else {
         $hash = sprintf('%8X', time()) . md5(microtime(true) + rand(0, getrandmax()));
@@ -213,7 +213,6 @@ function deliverFile($fileName, $opt = array())
     if (($handle = fopen($fileName, 'rb')) === false) {
         throw new Exception("Could not open $fileName");
     }
-    $buffer = '';
     while (!feof($handle)) {
         echo fread($handle, 8 * 1024);
         //SS: Removed because of error flush();

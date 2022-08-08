@@ -46,8 +46,6 @@ if (empty($_REQUEST['SRS'])) {
 }
 $parts = explode(':', $_REQUEST["SRS"]);
 $mapSRID = $parts[1];
-$SRS_params = array();
-
 
 if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST["SERVICE"] == "WMS") {
     ms_ResetErrorList();
@@ -145,6 +143,7 @@ EOMAP;
     $oSymbol->set("sizey", 1);
     $oSymbol->set("inmapfile", MS_TRUE);
 
+    $aPoints = [];
     $aPoints[0] = 1;
     $aPoints[1] = 1;
     $oSymbol->setpoints($aPoints);
@@ -178,7 +177,7 @@ EOMAP;
     ms_ioinstallstdouttobuffer();
     
     $oMap->owsdispatch($objRequest);
-    $contenttype = ms_iostripstdoutbuffercontenttype();
+    ms_iostripstdoutbuffercontenttype();
     header('Content-type: image/png');
     ms_iogetStdoutBufferBytes();
     ms_ioresethandlers();

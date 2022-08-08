@@ -27,7 +27,6 @@ if (!defined('POSTGIS_TRANSFORM_GEOMETRY')) {
 
 //Creazione di un geotiff con le annotazioni
 if ($_REQUEST["REQUEST"] == "PrintMap") {
-    $file = fopen('php://input', 'r');
     $fileContent = file_get_contents('php://input');
     $_REQUEST["options"] = $fileContent;
     require_once 'gcWMSMerge.php';

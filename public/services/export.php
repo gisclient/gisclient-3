@@ -91,7 +91,7 @@ switch ($data['export_format']) {
                 $ajax->error('Empty srid');
             }
             if (strpos($data['srid'], ':') !== false) {
-                list($sridPrefix, $srid) = explode(':', $data['srid']);
+                list(, $srid) = explode(':', $data['srid']);
             } else {
                 $srid = $data['srid'];
             }

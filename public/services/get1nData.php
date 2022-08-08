@@ -59,7 +59,6 @@ $layerCatalogPath = $db->query($sql)->fetchColumn(0);
 
 $layerDataDb = GCApp::getDataDB($layerCatalogPath);
 $layerSchema = GCApp::getDataDBSchema($layerCatalogPath);
-$relationDataDb = GCApp::getDataDB($relation['catalog_path']);
 $relationSchema = GCApp::getDataDBSchema($relation['catalog_path']);
 
 $layerTable = $relation['layer_table'];

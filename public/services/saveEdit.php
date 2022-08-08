@@ -47,10 +47,10 @@ class GCEditFeature
     private $table;
     private $primaryKey;
     
-    function __construct($project, $map, $featureType, $primaryKey)
+    public function __construct($project, $map, $featureType, $primaryKey)
     {
     
-        list($layergrupName, $layerName) = $this->_splitFeatureType($featureType);
+        list(, $layerName) = $this->splitFeatureType($featureType);
         
         $db = GCApp::getDB();
         $sql = "select data, data_unique, data_geom, catalog_path from ".DB_SCHEMA.".layer ".
@@ -69,7 +69,7 @@ class GCEditFeature
             throw new Exception('Invalid primary key');
         }
         
-        if (!$this->_checkPermission($project, $map, $featureType)) {
+        if (!$this->checkPermission($project, $map, $featureType)) {
             throw new Exception('Permission denied');
         }
         
@@ -158,7 +158,7 @@ class GCEditFeature
             throw new Exception('Missing srid');
         }
         if (strpos($geomData['srid'], ':') !== false) {
-            list($authSrid, $srid) = explode(':', $geomData['srid']);
+            list(, $srid) = explode(':', $geomData['srid']);
         } else {
             $srid = $geomData['srid'];
         }
@@ -174,12 +174,12 @@ class GCEditFeature
         $stmt->execute($params);
     }
     
-    private function _splitFeatureType($featureType)
+    private function splitFeatureType($featureType)
     {
         return explode('.', $featureType);
     }
     
-    private function _checkPermission($project, $map, $featureType)
+    private function checkPermission($project, $map, $featureType)
     {
             $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
         if (empty($layerAuthorizations)) {
