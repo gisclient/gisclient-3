@@ -11,5 +11,5 @@ define('DB_USER', 'gisclient'); //Superutente
 define('DB_PWD', 'gisclient');
 
 //Utente scritto sul file .map
-define('MAP_USER','mapserver');
-define('MAP_PWD','mapserver');
+define('MAP_USER', 'mapserver');
+define('MAP_PWD', 'mapserver');

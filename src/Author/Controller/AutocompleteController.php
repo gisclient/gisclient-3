@@ -13,7 +13,7 @@ class AutocompleteController
     /**
      * Autocomplete for fields in advanced search
      *
-     * @param Request $request
+     * @param  Request $request
      * @return JsonResponse
      */
     public function autocompleteAction(Request $request)
@@ -24,10 +24,12 @@ class AutocompleteController
             $stmt = $dataDb->prepare($q["query"]);
             $stmt->execute($q["params"]);
             $results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-            return new JsonResponse(array(
+            return new JsonResponse(
+                array(
                 "result" => "ok",
                 "data" => $results
-            ));
+                )
+            );
         } catch (HttpException $e) {
             return new JsonResponse(
                 array(
@@ -55,8 +57,8 @@ class AutocompleteController
 
         $db = \GCApp::getDB();
 
-        if (!$request->query->has("field_id") ||
-            (int)$request->query->get("field_id") != $request->query->get("field_id")
+        if (!$request->query->has("field_id") 
+            || (int)$request->query->get("field_id") != $request->query->get("field_id")
         ) {
             throw new BadRequestHttpException("No or invalid data for field_id.");
         } else {
@@ -109,11 +111,13 @@ class AutocompleteController
                     from '.DB_SCHEMA.'.localization
                     where i18nf_id=:i18nf_id and pkey_id=:pkey and language_id=:lang';
                 $stmt = $db->prepare($sql);
-                $stmt->execute(array(
+                $stmt->execute(
+                    array(
                     'i18nf_id'=>$i18nFieldId,
                     'pkey'=>$field['field_id'],
                     'lang'=>$lang
-                ));
+                    )
+                );
                 $localized = $stmt->fetchColumn(0);
                 if ($localized) {
                     $field['field_name'] = $localized;

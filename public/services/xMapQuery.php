@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once (ROOT_PATH.'lib/functions.php');
+require_once(ROOT_PATH.'lib/functions.php');
 require_once(ROOT_PATH.'lib/gcPgQuery.class.php');//Definizione dell'oggetto PgQuery
 
 $db = GCApp::getDB();

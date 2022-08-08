@@ -4,14 +4,16 @@
 class EFOPError extends Exception
 {
     private $output = null;
-    public function __construct($message, $output='', $code = 0) {
+    public function __construct($message, $output = '', $code = 0)
+    {
         
         parent::__construct($message, $code);
         $this->output = $output;
     }
 
-    final function getOutput() {   // Output of the exception
-                        
+    final public function getOutput()
+    {
+        // Output of the exception
         return $this->output;
     }
 
@@ -20,8 +22,9 @@ class EFOPError extends Exception
 
 /**
  * Create the PDF file from a DOM
+ *
  * @param resource     the DOM to transform
- * @param string       the XSLT template file 
+ * @param string       the XSLT template file
  * @param array        options. Valid parameters are:
  *                       format:   output format. Default PDF
  *                       purge:    if true remove the temporary files generated: Default true
@@ -32,24 +35,27 @@ class EFOPError extends Exception
  *
  * @return string      name of the PDF file on an empty string when errors are encountered
  */
-function runFOP(DOMDocument $dom, $xslFileName, $opt=array()) {
+function runFOP(DOMDocument $dom, $xslFileName, $opt = array())
+{
     $defaultOpt = array(
-	    'format'=>'pdf',
-	    'purge'=>true, 
+        'format'=>'pdf',
+        'purge'=>true,
         'cmd'=>defined('GC_FOP_CMD') ? GC_FOP_CMD : '',
         'tmp_path'=>ROOT_PATH.'tmp/files/',
         'out_name'=>'',
-		'prefix'=>'fop-',
+    'prefix'=>'fop-',
     );
-	
+    
     $opt = array_merge($defaultOpt, $opt);
-	
-	if (empty($opt['config']))
-		$opt['config'] = ROOT_PATH . '/config/fop.conf';
+    
+    if (empty($opt['config'])) {
+        $opt['config'] = ROOT_PATH . '/config/fop.conf';
+    }
     
     /* Parameter check */
-    if ($opt['config'] != '' && !file_exists($opt['config']))
+    if ($opt['config'] != '' && !file_exists($opt['config'])) {
         throw new EFOPError("Missing configuration file \"{$opt['config']}\"");
+    }
     $configParam = $opt['config'] == '' ? '' : "-c \"{$opt['config']}\"";
         
     $opt['format'] = strtolower($opt['format']);
@@ -84,8 +90,15 @@ function runFOP(DOMDocument $dom, $xslFileName, $opt=array()) {
     }
     
     $dom->save($xmlFileName);
-    $cmd = sprintf("%s $configParam -xml \"%s\" -xsl \"%s\" -%s \"%s\" 2> \"%s\"", 
-                   $opt['cmd'], $xmlFileName, $xslFileName, $opt['format'], $outFileName, $logFileName);
+    $cmd = sprintf(
+        "%s $configParam -xml \"%s\" -xsl \"%s\" -%s \"%s\" 2> \"%s\"",
+        $opt['cmd'],
+        $xmlFileName,
+        $xslFileName,
+        $opt['format'],
+        $outFileName,
+        $logFileName
+    );
 
     $stdout = array();
     exec($cmd, $stdout, $retval);

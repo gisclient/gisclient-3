@@ -6,6 +6,7 @@ class GCExport
     protected $db;
     protected $exportPath;
     protected $exportUrl;
+    protected $errorPath;
     protected $exportExtensions = array(
         'shp'=>array('shp','dbf','shx','prj','cpg')
     );
@@ -51,7 +52,7 @@ class GCExport
                     $files[$niceName] = $realName;
                 }
             }
-        } else if ($this->type == 'dxf') {
+        } elseif ($this->type == 'dxf') {
             $exportGml = new GCExportGml($this->db, $options['extent'], $options['srid']);
             $gmlFile = $this->_getFileName($options['name']) . '.gml';
 
@@ -66,7 +67,7 @@ class GCExport
             $dxfFile = $this->_getFileName($options['name']) . '.dxf';
             $this->_exportDxf($gmlFile, $dxfFile);
             $files[$options['name'] . '.dxf'] = $this->exportPath . $dxfFile;
-        } else if ($this->type == 'xls') {
+        } elseif ($this->type == 'xls') {
             foreach ($tables as $tableSpec) {
                 $exportOptions = array();
                 if (!empty($options['fields'])) {
@@ -79,7 +80,7 @@ class GCExport
                 $file = $this->_exportXls($tableSpec, $exportOptions);
                 $files[$exportOptions['name'] . '.xls'] = $file;
             }
-        } else if ($this->type == 'kml') {
+        } elseif ($this->type == 'kml') {
             foreach ($tables as $tableSpec) {
                 $exportOptions = array();
                 if (!empty($options['fields'])) {
@@ -90,11 +91,11 @@ class GCExport
                 }
 
                 $kml = new GCExportKml($this->db, $options['extent'], $options['srid']);
-                foreach ($tables as $tableSpec) {
-                    if (empty($tableSpec['name'])) {
-                        $tableSpec['name'] = $tableSpec['table'];
+                foreach ($tables as $table) {
+                    if (empty($table['name'])) {
+                        $table['name'] = $table['table'];
                     }
-                    $kml->addLayer($options['layer'], $tableSpec['schema'], $tableSpec['table'], $exportOptions);
+                    $kml->addLayer($options['layer'], $table['schema'], $table['table'], $exportOptions);
                 }
 
                 $kmlFile = $this->exportPath . $this->_getFileName($options['name']) . '.kml';
@@ -233,7 +234,7 @@ class GCExport
 
     protected function _exportXls($config, array $options = array())
     {
-        require_once('include/php-excel.class.php');
+        include_once 'include/php-excel.class.php';
 
         $defaultOptions = array(
             'name' => $config['table']
@@ -247,9 +248,12 @@ class GCExport
 
         $select = '';
         if (isset($options['fields'])) {
-            $fieldsNames = array_map(function ($element) {
-                return $element['field_name'];
-            }, $options['fields']);
+            $fieldsNames = array_map(
+                function ($element) {
+                    return $element['field_name'];
+                },
+                $options['fields']
+            );
             $select = implode(', ', $fieldsNames);
         } else {
             $select = '*';
@@ -487,7 +491,7 @@ class GCExportKml
         $colorArr = array_reverse(
             array_map(
                 'dechex',
-                explode(' ', $string)
+                explode(' ', intval($string))
             )
         );
 
@@ -506,7 +510,7 @@ class GCExportKml
             $opacity = 255;
             if ($layer->getOpacity()) {
                 $opacity = ($opacity * $layer->getOpacity()) / 100;
-            } else if ($layer->getLayerGroup()->getOpacity()) {
+            } elseif ($layer->getLayerGroup()->getOpacity()) {
                 $opacity = ($opacity * $layer->getLayerGroup()->getOpacity()) / 100;
             }
             foreach ($layer->getStyleClasses() as $class) {
@@ -515,10 +519,10 @@ class GCExportKml
                     $color = $style->getColor()? $this->_getKMLColor($style->getColor() . ' ' . $opacity) : 'ff000000';
                     $backgroundColor = $style->getBackgroundColor()? $this->_getKMLColor($style->getBackgroundColor() . ' ' . $opacity) : '';
                     $outlineColor = $style->getOutlineColor()? $this->_getKMLColor($style->getOutlineColor() . ' ' . $opacity) : '';
-                    $size = $style->getSize()? $style->getSize() : 1;
+                    $size = $style->getSize() ?: 1;
 
-                    $bgColor = $backgroundColor? $backgroundColor : $color;
-                    $olColor = $outlineColor? $outlineColor : $color;
+                    $bgColor = $backgroundColor ?: $color;
+                    $olColor = $outlineColor ?: $color;
 
                     $kmlStyle .= "<Style id=\"{$styleName}\">"
                         . "<LineStyle><color>{$olColor}</color><width>{$size}</width></LineStyle>"
@@ -541,12 +545,15 @@ class GCExportKml
 
     public function addLayer($layer, $schema, $table, $options)
     {
-        array_push($this->layers, array(
-            'layer' => $layer,
-            'schema' => $schema,
-            'table' => $table,
-            'options' => $options
-        ));
+        array_push(
+            $this->layers,
+            array(
+                'layer' => $layer,
+                'schema' => $schema,
+                'table' => $table,
+                'options' => $options
+            )
+        );
     }
 
     public function export($file)
