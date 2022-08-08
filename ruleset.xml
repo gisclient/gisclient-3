@@ -11,6 +11,9 @@
     <file>./public/</file>
     <file>./src/</file>
 
+    <!-- Ignore these non-php files -->
+    <exclude-pattern>*\.(inc|css|js)$</exclude-pattern>
+
     <!-- run against the following rules -->
     <rule ref="Generic.PHP.Syntax" />
     <rule ref="PHPCompatibility" />
