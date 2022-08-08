@@ -1016,7 +1016,7 @@ END";
 
             if ($row['mapset_scales'] !='') {
                 $scaleList = explode(',', $row['mapset_scales']);
-            } else if (defined('SCALE')) {
+            } elseif (defined('SCALE')) {
                 $scaleList = explode(',', SCALE);
             } else {
                 $scaleList = GCAuthor::$defaultScaleList;
@@ -1178,7 +1178,6 @@ END";
             $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
             file_put_contents($wsgiConfigFile, $content);
         }
-        
     }
 
     private function _writeMapProxySeed($mapName)

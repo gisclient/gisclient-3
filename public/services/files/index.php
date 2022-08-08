@@ -5,7 +5,9 @@ require_once __DIR__ . '/../../../bootstrap.php';
 $gcService = GCService::instance();
 $gcService->startSession();
 
-if(!defined('UPLOADED_FILES_PRIVATE_PATH')) die('undefined upload path');
+if (!defined('UPLOADED_FILES_PRIVATE_PATH')) {
+    die('undefined upload path');
+}
 
 $self = $_SERVER['PHP_SELF'];
 $pos = strrpos($self, '/') + 1;
@@ -14,15 +16,19 @@ $request = $_SERVER['REQUEST_URI'];
 $path = str_replace($selfDir, '', $request);
 
 $parts = explode('/', $path);
-if(count($parts) > 1) die('invalid file url');
+if (count($parts) > 1) {
+    die('invalid file url');
+}
 
 $fileName = $parts[0];
 
-if(!file_exists(UPLOADED_FILES_PRIVATE_PATH . $fileName)) die('404');
+if (!file_exists(UPLOADED_FILES_PRIVATE_PATH . $fileName)) {
+    die('404');
+}
 
 try {
     deliverFile(UPLOADED_FILES_PRIVATE_PATH . $fileName);
-} catch(Exception $e) {
+} catch (Exception $e) {
     die($e->getMessage());
 }
 
@@ -41,7 +47,8 @@ die();
  *
  * @return boolea      return true on success
  */
-function getMimeFromFileExt($ext) {
+function getMimeFromFileExt($ext)
+{
 
     $mimes = array(
         'application/pdf' => 'pdf',
@@ -90,7 +97,6 @@ function getMimeFromFileExt($ext) {
         if (is_array($val) && in_array($ext, $val)) {
             return $key;
         } else {
-
             if ($ext == $val) {
                 return $key;
             }
@@ -115,7 +121,8 @@ function getMimeFromFileExt($ext) {
  *
  * @return boolea      return true on success
  */
-function deliverFile($fileName, $opt=array()) {
+function deliverFile($fileName, $opt = array())
+{
 
     $defaultOpt = array(
         'format' => '',
@@ -172,10 +179,11 @@ function deliverFile($fileName, $opt=array()) {
     header("Content-Length: " . filesize($fileName));
 
     // Mode for Include File
-    if ($opt['disposition'] == 'attachment' || $opt['disposition'] == 'download')
+    if ($opt['disposition'] == 'attachment' || $opt['disposition'] == 'download') {
         header("Content-Disposition: attachment; filename=\"" . $opt['name'] . "\"");
-    else if ($opt['disposition'] == 'inline')
+    } elseif ($opt['disposition'] == 'inline') {
         header("Content-Disposition: inline; filename=\"" . $opt['name'] . "\"");
+    }
 
     header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($fileName)) . ' GMT');
     if ($opt['cacheable'] === true) {
@@ -200,12 +208,12 @@ function deliverFile($fileName, $opt=array()) {
         header($opt['header']);
     }
 
-	//SS: Removed because of error flush();
-	
+    //SS: Removed because of error flush();
+    
     // read file faild on big files
     //readfile($fileName);
 
-    if (($handle = fopen($fileName, 'rb')) === FALSE) {
+    if (($handle = fopen($fileName, 'rb')) === false) {
         throw new Exception("Could not open $fileName");
     }
     $buffer = '';

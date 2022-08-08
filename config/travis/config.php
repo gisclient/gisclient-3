@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 /************
- * Session Name 
+ * Session Name
  ********/
 define('GC_SESSION_NAME', 'gisclient3'); // se definito, viene chiamato session_name() prima di session_start();
 
@@ -32,7 +32,7 @@ define('LONG_EXECUTION_TIME', 300);
 define('LONG_EXECUTION_MEMORY', '512M');
 
 /*******************
-* Installation path 
+* Installation path
 *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');
 define('PUBLIC_URL', 'http://localhost/');
@@ -45,7 +45,7 @@ define('OPENLAYERS', 'http://openlayers.org/dev/OpenLayers.js');
 /*******************                  *************************/
 
 /*******************
-* OWS service url 
+* OWS service url
 *************************/
 define('GISCLIENT_OWS_URL', 'http://localhost/gisclient/services/ows.php');//NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL', 'http://localhost/gisclient/services/tms/');//NON E' OBBLIGATORIO
@@ -53,7 +53,7 @@ define('MAPSERVER_URL', 'http://127.0.0.1/cgi-bin/mapserv?'); //NON E' OBBLIGATO
 /*******************                  *************************/
 
 /****************
- * PRINT - EXPORT 
+ * PRINT - EXPORT
 ***************/
 define('GC_PRINT_TPL_DIR', ROOT_PATH.'public/services/print/');
 define('GC_PRINT_TPL_URL', PUBLIC_URL.'services/print/');
@@ -69,13 +69,13 @@ define('GC_PRINT_SAVE_IMAGE', true); // baco mapscript: il saveImage a volte fun
 define('PRINT_RELATIVE_URL_PREFIX', 'http://localhost'); // se GISCLIENT_OWS_URL è relativo, questo prefisso viene aggiunto in fase di stampa
 
 /******
- * print vectors 
+ * print vectors
 ********/
 define('PRINT_VECTORS_TABLE', 'print_vectors');
 define('PRINT_VECTORS_SRID', 32632);
 
 /*******************
- * TINYOWS 
+ * TINYOWS
 **************/
 define('TINYOWS_PATH', '/var/www/cgi-bin');
 define('TINYOWS_EXEC', 'tinyows');
@@ -83,7 +83,7 @@ define('TINYOWS_SCHEMA_DIR', '/usr/share/tinyows/schema/');
 define('TINYOWS_ONLINE_RESOURCE', PUBLIC_URL.'services/tinyows/');
 
 /*************
-  * REDLINE 
+  * REDLINE
 ***************/
 define('REDLINE_SCHEMA', 'public'); //non obbligatorio, default public
 define('REDLINE_TABLE', 'annotazioni');
@@ -98,9 +98,11 @@ require_once ROOT_PATH.'lib/gcapp.class.php';
 define('ADMIN_PATH', ROOT_PATH.'public/admin/');
 
 //debug
-if(!defined('DEBUG_DIR')) { define('DEBUG_DIR', ROOT_PATH.'config/debug/');
+if (!defined('DEBUG_DIR')) {
+    define('DEBUG_DIR', ROOT_PATH.'config/debug/');
 }
-if(!defined('DEBUG')) { define('DEBUG', 1); // Debugging 0 off 1 on
+if (!defined('DEBUG')) {
+    define('DEBUG', 1); // Debugging 0 off 1 on
 }
 
 //COSTANTI DEI REPORT
@@ -151,7 +153,7 @@ define('PRINT_PDF_FONT', 'times');
 //define('TAB_DIR','geoweb');
 
 define('USE_DATA_IMPORT', false);
-// 
+//
 //define('LAST_EDIT_USER_COL_NAME', 'gc_last_edit_user'); //funzione per aggiungere una colonna che in wfs-t viene popolata automaticamente con il nome utente di chi ha fatto l'ultima modifica
 //define('LAST_EDIT_DATE_COL_NAME', 'gc_last_edit_date'); //come sopra, ma con la data
 //define('MEASURE_AREA_COL_NAME', 'gc_area'); //funzione per aggiungere una colonna che viene popolata automaticamente con l'area del poligono editato

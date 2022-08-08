@@ -17,7 +17,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache"); // HTTP/1.0
 
 if ($img) {
-	echo $img;
+    echo $img;
 } else {
-	readfile(ROOT_PATH.'public/images/warning.png');
+    readfile(ROOT_PATH.'public/images/warning.png');
 }

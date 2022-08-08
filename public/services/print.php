@@ -5,7 +5,6 @@ require_once ROOT_PATH.'lib/ajax.class.php';
 
 use GisClient\Author\Utils\PrintDocument;
 
-
 header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -21,33 +20,41 @@ if (($data = json_decode($inputJSONText, true)) !== null) {
 $ajax = new GCAjax();
 
 if (isset($_REQUEST['format']) && $_REQUEST['format'] == 'PDF') {
-	if(!file_exists(GC_FOP_LIB)) $ajax->error('fop lib does not exist');
-	require_once GC_FOP_LIB;
+    if (!file_exists(GC_FOP_LIB)) {
+        $ajax->error('fop lib does not exist');
+    }
+    require_once GC_FOP_LIB;
 }
 
 try {
     $printMap = new PrintDocument(rtrim(PUBLIC_URL, '/'));
 
-	if(!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
-		$box = $printMap->getBox();
-		$pages = $printMap->getDimensions();
-		$ajax->success(array('box'=>$box, 'pages'=>$pages));
-	}
+    if (!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
+        $box = $printMap->getBox();
+        $pages = $printMap->getDimensions();
+        $ajax->success(array('box'=>$box, 'pages'=>$pages));
+    }
 
-	if(!empty($_REQUEST['lang'])) {
-		$printMap->setLang($_REQUEST['lang']);
-	}
-    if(!empty($_REQUEST['logoSx'])) $printMap->setLogo($_REQUEST['logoSx']);
-	else if(defined('GC_PRINT_LOGO_SX')) $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_SX));
-    if(!empty($_REQUEST['logoDx'])) $printMap->setLogo($_REQUEST['logoDx'], 'dx');
-	else if(defined('GC_PRINT_LOGO_DX')) $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_DX), 'dx');
+    if (!empty($_REQUEST['lang'])) {
+        $printMap->setLang($_REQUEST['lang']);
+    }
+    if (!empty($_REQUEST['logoSx'])) {
+        $printMap->setLogo($_REQUEST['logoSx']);
+    } elseif (defined('GC_PRINT_LOGO_SX')) {
+        $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_SX));
+    }
+    if (!empty($_REQUEST['logoDx'])) {
+        $printMap->setLogo($_REQUEST['logoDx'], 'dx');
+    } elseif (defined('GC_PRINT_LOGO_DX')) {
+        $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_DX), 'dx');
+    }
 
     if ($_REQUEST['format'] == 'HTML') {
         $file = $printMap->printMapHTML();
-    } else if ($_REQUEST['format'] == 'PDF') {
+    } elseif ($_REQUEST['format'] == 'PDF') {
         $file = $printMap->printMapPDF();
     }
 } catch (Exception $e) {
-	$ajax->error($e->getMessage());
+    $ajax->error($e->getMessage());
 }
 $ajax->success(array('file'=>$file, 'format'=>$_REQUEST['format']));

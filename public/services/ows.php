@@ -95,7 +95,7 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms') {
         $prunedFilter = $owsHandler->pruneSrsFromFilter($skippedParams['filter'], $invertedAxisOrderSrids);
         $objRequest->setParameter('filter', $prunedFilter);
     }
-} else if ($objRequest->getValueByName('request') == '') {
+} elseif ($objRequest->getValueByName('request') == '') {
     // WFS request is invalid. Missing or invalid service parameter
     //   see http://cite.opengeospatial.org/teamengine/listings/srv_local_teamengine-prod_TE_BASE_scripts_wfs_1.1.0_ctl_main.html#wfs:wfs-1.1.0-Basic-GetCapabilities-tc7
     print_debug('Invalid request: Request GetCapabilities without service parameter');
@@ -126,8 +126,8 @@ $isGetLegendGraphicRequest = $requestRequest == 'getlegendgraphic';
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
 
-if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) || 
-    $isGetLegendGraphicRequest){
+if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
+    $isGetLegendGraphicRequest) {
     $hasPrivateLayers = false;
     $layersArray = array();
     if ($isGetLegendGraphicRequest) {
@@ -213,7 +213,7 @@ if (strtolower($objRequest->getValueByName('service')) == 'wms' &&
     OwsHandler::applyWmsSld($db, $i18n, $oMap, $objRequest);
 }
 
-//CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE 
+//CAMBIA EPSG CON QUELLO CON PARAMETRI DI CORREZIONE SE ESISTE
 if ($objRequest->getvaluebyname('srsname')) {
     $objRequest->setParameter('srs', $objRequest->getvaluebyname('srsname'));// QUANTUM GIS PASSAVA SRSNAME... DA VERIFICARE
 }

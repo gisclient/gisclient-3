@@ -73,7 +73,7 @@ foreach ($data as $expConf) {
         $where .= " AND {$layer->getPrimaryColumn()} IN (";
         $where .= implode(', ', $ids);
         $where .= ')';
-    } else if (isset($expConf['extent'])) {
+    } elseif (isset($expConf['extent'])) {
         $extentString = implode(', ', $expConf['extent']);
         $where = "ST_Intersects({$layer->getGeomColumn()}, ST_MakeEnvelope({$extentString}, {$layer->getGeomSrid()}))";
     }

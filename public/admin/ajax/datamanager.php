@@ -185,16 +185,16 @@ switch ($_REQUEST['action']) {
 
         if ($_REQUEST['file_type'] == 'shp') {
             $files = elenco_file(IMPORT_PATH, array('shp'));
-        } else if ($_REQUEST['file_type'] == 'raster') {
+        } elseif ($_REQUEST['file_type'] == 'raster') {
             checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
             $dir = filesPathFromCatalog($_REQUEST['catalog_id']);
             if (!is_dir($dir)) {
                 $ajax->error("'$dir' is not a directory");
             }
             $files = elenco_dir($dir);
-        } else if ($_REQUEST['file_type'] == 'xls') {
+        } elseif ($_REQUEST['file_type'] == 'xls') {
             $files = elenco_file(IMPORT_PATH, array('xls','xlsx'));
-        } else if ($_REQUEST['file_type'] == 'csv') {
+        } elseif ($_REQUEST['file_type'] == 'csv') {
             $files = elenco_file(IMPORT_PATH, array('csv'));
         } else {
             $ajax->error("can not handle file_type '{$_REQUEST['file_type']}'");
@@ -482,7 +482,7 @@ switch ($_REQUEST['action']) {
         if (in_array($geomInfo['type'], array('POLYGON', 'MULTIPOLYGON')) && $autoUpdaters['area']) {
             $columnName = $autoUpdaters['area'];
             $measureFunction = 'st_area';
-        } else if (in_array($geomInfo['type'], array('LINESTRING', 'MULTILINESTRING')) && $autoUpdaters['length']) {
+        } elseif (in_array($geomInfo['type'], array('LINESTRING', 'MULTILINESTRING')) && $autoUpdaters['length']) {
             $columnName = $autoUpdaters['length'];
             $measureFunction = 'st_length';
         }
@@ -501,7 +501,7 @@ switch ($_REQUEST['action']) {
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
             }
-        } else if (in_array($geomInfo['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
+        } elseif (in_array($geomInfo['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
             //aggiungo colonne e trigger per coordinate
             try {
                 $sql = "ALTER TABLE {$schema}.{$table} ADD COLUMN {$autoUpdaters['pointx']} float";
@@ -583,7 +583,7 @@ switch ($_REQUEST['action']) {
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
             }
-        } else if ($_REQUEST['file_type'] == 'raster') {
+        } elseif ($_REQUEST['file_type'] == 'raster') {
             if (empty($_REQUEST['catalog_id'])) {
                 $ajax->error("missing parameter 'catalog_id'");
             }
@@ -597,7 +597,7 @@ switch ($_REQUEST['action']) {
                 // TODO: add to log
                 $ajax->error($e->getMessage());
             }
-        } else if ($_REQUEST['file_type'] == 'xls') {
+        } elseif ($_REQUEST['file_type'] == 'xls') {
             if (!file_exists($filePath)) {
                 $ajax->error("File '$filePath' does not exist");
             }
@@ -909,7 +909,7 @@ switch ($_REQUEST['action']) {
                     if (!is_numeric($val)) {
                         $colTypes[$colIndex] = 'text';
                     }
-                } else if ($colTypes[$colIndex] == 'bigint') {
+                } elseif ($colTypes[$colIndex] == 'bigint') {
                     if ((int)$val != $val) {
                         $colTypes[$colIndex] = 'double precision';
                     }
@@ -1087,13 +1087,13 @@ switch ($_REQUEST['action']) {
     /*case 'check-upload-folder':
         checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
         $targetDir = addFinalSlash($_REQUEST['directory']);
-        
+
         if (strtolower($targetDir) != $targetDir || !simpleCharsOnly(str_replace('/', '', $targetDir))) {
             $ajax->success(array('data'=>'Invalid directory name (Allowed characters are a-z 0-9 _)'));
         }
-        
+
         $basePath = filesPathFromCatalog($_REQUEST['catalog_id']);
-        
+
         if (!is_dir($basePath.$targetDir)) {
             if (!mkdir($basePath.$targetDir)) {
                 $ajax->success(array('data'=>'Unable to create directory'));

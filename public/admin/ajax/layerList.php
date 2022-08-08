@@ -17,13 +17,13 @@ $n = 0;
 $sql = 'select layer_id, layer_name, layer_title from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.layergroup using(layergroup_id) where theme_id = :theme';
 $stmt = $db->prepare($sql);
 $stmt->execute(array('theme'=>$_REQUEST['theme']));
-while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {	
-	$result['data'][$n] = array('layer_title'=>$row['layer_title'], 'layer_name'=>$row['layer_name']);
-	$result['data_objects'][$n] = array(
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $result['data'][$n] = array('layer_title'=>$row['layer_title'], 'layer_name'=>$row['layer_name']);
+    $result['data_objects'][$n] = array(
         'layer_id' => $row['layer_id'],
         'fk_layer_id'=>(!empty($row['layer_title']) ? $row['layer_title'] : $row['layer_name'])
     );
-	$n++;
+    $n++;
 }
 
 $ajax->success($result);

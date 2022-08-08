@@ -8,7 +8,7 @@ ini_set('display_errors', 'On');
 error_reporting(E_ALL);
 set_time_limit(0);
 
-if(empty($_POST)) {
+if (empty($_POST)) {
     echo '<html><head><title>Aggiornamento GisClient</title></head><body>';
     echo '<form method="post">';
     echo 'Migrazione database da GisClient 2 a GisClient 3<br><br>';
@@ -20,18 +20,24 @@ if(empty($_POST)) {
     die();
 }
 
-if(empty($_POST['old_schema'])) die('Specificare il nome dello schema GisClient 2');
+if (empty($_POST['old_schema'])) {
+    die('Specificare il nome dello schema GisClient 2');
+}
 
 echo '<pre>';
 echo 'Migrazione schema da '.$_POST['old_schema'].' a '.DB_SCHEMA.' nel database '.DB_NAME."\n\n";
 
 $workingDir = ROOT_PATH.'tmp/';
-if(!is_writable($workingDir)) die('La directory '.$workingDir.' non è scrivibile');
+if (!is_writable($workingDir)) {
+    die('La directory '.$workingDir.' non è scrivibile');
+}
 
 $db = GCApp::getDB();
-if(!GCApp::schemaExists($db, $_POST['old_schema'])) die('Lo schema '.$_POST['old_schema'].' non esiste');
+if (!GCApp::schemaExists($db, $_POST['old_schema'])) {
+    die('Lo schema '.$_POST['old_schema'].' non esiste');
+}
 
-if(!empty($_POST['drop_schema'])) {
+if (!empty($_POST['drop_schema'])) {
     $db->exec('drop schema if exists '.DB_SCHEMA.' cascade');
 }
 
@@ -39,7 +45,9 @@ $authCmd = 'export PGPASSWORD='.DB_PWD.' && export PGUSER='.DB_USER.' && ';
 $unsetAuthCmd = ' && unset PGPASSWORD && unset PGUSER';
 $host = DB_HOST;
 $port = DB_PORT;
-if($host == 'localhost') $host = '127.0.0.1'; //per come è configurato di solito pg_hba.conf
+if ($host == 'localhost') {
+    $host = '127.0.0.1'; //per come è configurato di solito pg_hba.conf
+}
 
 //DUMP
 $exportFile = $workingDir.'gc21.sql';
@@ -47,11 +55,13 @@ $outputFile = $workingDir.'dump_output.txt';
 $errorFile = $workingDir.'dump_errors.txt';
 $cmd = $authCmd.'pg_dump -h '.$host.' -p '.$port.' -f '.$exportFile.' -n '.$_POST['old_schema'].' '.DB_NAME.' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
 exec($cmd, $output, $return); //TODO: aggiungere output degli errori
-if($return != 0) {
+if ($return != 0) {
     die('Errore nel dump '."\n\n".file_get_contents($errorFile));
 }
 
-if(!file_exists($exportFile)) die('Errore nel dump dello schema');
+if (!file_exists($exportFile)) {
+    die('Errore nel dump dello schema');
+}
 
 //sostizione schema vecchio / schema nuovo sul file dump
 $content = file_get_contents($exportFile);
@@ -63,7 +73,7 @@ $outputFile = $workingDir.'import_output.txt';
 $errorFile = $workingDir.'import_errors.txt';
 $cmd = $authCmd . 'psql -h '.$host.' -p '.$port.' -f '.$exportFile.' '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
 exec($cmd, $output, $return);
-if($return != 0) {
+if ($return != 0) {
     die('Errore in importazione '."\n\n".file_get_contents($errorFile));
 }
 
@@ -77,7 +87,7 @@ $outputFile = $workingDir.'ms6_output.txt';
 $errorFile = $workingDir.'ms6_errors.txt';
 $cmd = $authCmd . 'psql --quiet -h '.$host.' -p '.$port.' -f '.ROOT_PATH.'doc/aggiornamento_database_mapserver_6.sql '.DB_NAME . ' > '.$outputFile.' 2> '.$errorFile. ' ' .$unsetAuthCmd;
 exec($cmd, $output, $return);
-if($return != 0) {
+if ($return != 0) {
     die('Errore in aggiornamento mapserver 6 '."\n\n".file_get_contents($errorFile));
 }
 
@@ -119,7 +129,7 @@ $sql = 'select field_id from '.DB_SCHEMA.'.field where layer_id = :layer and fie
 $fieldExists = $db->prepare($sql);
 
 
-foreach($layers as $layer) {
+foreach ($layers as $layer) {
     $dataDb = GCApp::getDataDB($layer['catalog_path']);
     $schema = GCApp::getDataDBSchema($layer['catalog_path']);
     $tableFields = GCApp::getColumns($dataDb, $schema, $layer['data']);
@@ -128,48 +138,46 @@ foreach($layers as $layer) {
 
     try {
         $insertQTField->execute(array('layer'=>$layer['layer_id']));
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
         echo 'Caught exception: ',  $e->getMessage(), "\n";
     }
 
 
-    foreach($tableFields as $field) {
+    foreach ($tableFields as $field) {
         $used = false;
         
         //se il campo è contenuto nel tag FILTER
         $used = (strpos($layer['data_filter'], $field) !== false);
         
         //se il campo è un CLASSITEM, LABELITEM, LABELSIZEITEM
-        if(!$used) {
+        if (!$used) {
             $used = in_array($field, array($layer['classitem'], $layer['labelitem'], $layer['labelsizeitem']));
         }
         
         //se il campo è usato nelle classi o negli stili del layer
-        if(!$used) {
+        if (!$used) {
             $getClasses->execute(array('layer'=>$layer['layer_id']));
 
             
             $styles = $getClasses->fetchAll(PDO::FETCH_ASSOC);
-            foreach($styles as $style) {
-
-                if(strpos($style['expression'], $field) !== false) {
+            foreach ($styles as $style) {
+                if (strpos($style['expression'], $field) !== false) {
                     $used = true;
                     break;
                 }
-                if(strpos($style['label_angle'], $field) !== false) {
+                if (strpos($style['label_angle'], $field) !== false) {
                     $used = true;
                     break;
                 }
-                if(strpos($style['label_size'], $field) !== false) {
+                if (strpos($style['label_size'], $field) !== false) {
                     $used = true;
                     break;
                 }
-                if(strpos($style['class_text'], $field) !== false) {
+                if (strpos($style['class_text'], $field) !== false) {
                     $used = true;
                     break;
                 }
-                if(in_array($field, $style)) {
+                if (in_array($field, $style)) {
                     $used = true;
                     break;
                 }
@@ -177,14 +185,14 @@ foreach($layers as $layer) {
         }
         
         //se è usato, lo inserisco se non è già nella teballa field
-        if($used) {
+        if ($used) {
             $fieldExists->execute(array(
                 'layer'=>$layer['layer_id'],
                 'field_name'=>$field
             ));
             $exists = $fieldExists->fetchColumn(0);
             
-            if(empty($exists)) {
+            if (empty($exists)) {
                 $insertField->execute(array(
                     'field_id'=>GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'field', 'field_id', 1),
                     'layer_id'=>$layer['layer_id'],
@@ -192,14 +200,15 @@ foreach($layers as $layer) {
                     'field_header'=>$field,
                 ));
                 echo 'campo '.$field.' di '.$layer['data'].' inserito'."\n";
-            } else echo $field.' già inserito'."\n";
-        } else echo $field.' non usato '."\n";
+            } else {
+                echo $field.' già inserito'."\n";
+            }
+        } else {
+            echo $field.' non usato '."\n";
+        }
     }
-
-    
 }
 
 die('fatto!');
 
 //$db->rollback();
-

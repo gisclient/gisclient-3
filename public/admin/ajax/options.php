@@ -19,10 +19,10 @@ $stmtInsert = $db->prepare('
 ');
 
 $userName = $authHandler->getToken()->getUserName();
-foreach(array('auto_refresh_mapfiles', 'save_to_tmp_map') as $key) {
-	$value = (isset($_POST[$key]) && $_POST[$key] == 'checked');
+foreach (array('auto_refresh_mapfiles', 'save_to_tmp_map') as $key) {
+    $value = (isset($_POST[$key]) && $_POST[$key] == 'checked');
         $gcService->set($key, $value);
-	$stmtDelete->execute(array(
+    $stmtDelete->execute(array(
             'key' => $key,
             'username' => $userName
         ));

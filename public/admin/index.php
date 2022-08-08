@@ -57,20 +57,21 @@ include ADMIN_PATH . "lib/page.class.php";
 $param = array();
 $arr_action = array("salva", "aggiungi", "cancella", "elimina", "genera mappa", "copia", "sposta");
 $arr_noaction = array("chiudi", "annulla", "avvia importazione");
-if (!empty($_REQUEST["parametri"]))
+if (!empty($_REQUEST["parametri"])) {
     $param = $_REQUEST["parametri"];
+}
 
 $p = new page($authHandler, $_REQUEST);
 
 $p->get_conf();
 
 if (in_array(strtolower($p->action), $arr_action) || in_array(strtolower($p->action), $arr_noaction)) {
-
     include_once ADMIN_PATH . "lib/savedata.class.php";
-    if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH . "db/db." . $_POST["savedata"] . ".php"))
+    if (empty($_POST["savedata"]) || !file_exists(ADMIN_PATH . "db/db." . $_POST["savedata"] . ".php")) {
         include ADMIN_PATH . "db/db.save.php";
-    else
+    } else {
         include ADMIN_PATH . "db/db." . $_POST["savedata"] . ".php";
+    }
 }
 
 if (!empty($_REQUEST['publish_tmp_mapfiles']) && $_REQUEST['publish_tmp_mapfiles'] == 1) {
@@ -80,7 +81,9 @@ if (!empty($_REQUEST['publish_tmp_mapfiles']) && $_REQUEST['publish_tmp_mapfiles
 
 
 $initI18n = 'false';
-if ($p->initI18n()) $initI18n = 'true';
+if ($p->initI18n()) {
+    $initI18n = 'true';
+}
 
 $initDataManager = 'false';
 $db = GCApp::getDB();
@@ -89,7 +92,9 @@ if (defined('USE_DATA_IMPORT') && USE_DATA_IMPORT == true && $p->livello == 'cat
     $stmt = $db->prepare($sql);
     $stmt->execute(array($p->parametri['catalog']));
     $catalogType = $stmt->fetchColumn(0);
-    if ($catalogType == 6) $initDataManager = 'true';
+    if ($catalogType == 6) {
+        $initDataManager = 'true';
+    }
 }
 
 $initPreviewMap = 'false';
@@ -143,10 +148,12 @@ if (isset($p->parametri['project'])) {
         <?php
         $errors = GCError::get();
         if (!empty($errors)) {
-            foreach ($errors as &$error) $error = str_replace(array('"', "\n"), array('\"', '<br>'), $error);
+            foreach ($errors as &$error) {
+                $error = str_replace(array('"', "\n"), array('\"', '<br>'), $error);
+            }
             unset($error);
             ?>var errors = ["<?php echo implode('","', $errors); ?>"];
-        <?php
+            <?php
         } ?>
     </script>
     <script type="text/javascript" src="js/opentype/opentype.min.js"></script>

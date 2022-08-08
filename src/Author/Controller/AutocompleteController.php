@@ -57,7 +57,7 @@ class AutocompleteController
 
         $db = \GCApp::getDB();
 
-        if (!$request->query->has("field_id") 
+        if (!$request->query->has("field_id")
             || (int)$request->query->get("field_id") != $request->query->get("field_id")
         ) {
             throw new BadRequestHttpException("No or invalid data for field_id.");
@@ -138,7 +138,7 @@ class AutocompleteController
             }
         } else {
             $alias = $catalog['alias'];
-            /* 
+            /*
             check the follow line. When the formula is set maybe we need to apply always not only in relation data
             I commented because is the cause of some others bugs
             */

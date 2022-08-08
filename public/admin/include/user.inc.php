@@ -9,8 +9,8 @@ if (isset($this->parametri["users"])) {
     $username = null;
 }
 
-if(!empty($username)) {
-    if(!isset($data) || !is_array($data)) {
+if (!empty($username)) {
+    if (!isset($data) || !is_array($data)) {
         $data = array();
     }
     $userProvider = new UserProvider(\GCApp::getDB());
@@ -22,7 +22,7 @@ if(!empty($username)) {
     ));
 }
 
-if(empty($data)) {
+if (empty($data)) {
     $msg = "Nessun Utente definito";
 }
 

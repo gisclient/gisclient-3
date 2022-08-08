@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../../bootstrap.php';
 $project=$this->parametri["project"];
 $selgroup=$this->parametri["selgroup"];
 $db = GCApp::getDB();
-$data = Array();
+$data = array();
 
 $JOIN=($this->mode==0)?(" INNER JOIN "):(" , ");
 $JOINFIELD=($this->mode==0)?(" USING (layer_id) "):("");
@@ -27,9 +27,9 @@ try {
     $stmt = $db->prepare($sql);
     $stmt->execute(array('selgroup_id'=>$selgroup, 'project'=>$project));
     
-    if($stmt->rowCount() > 0) {
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if($this->mode!=0 || $row['presente']==1) {
+    if ($stmt->rowCount() > 0) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($this->mode!=0 || $row['presente']==1) {
                 array_push($data, array(
                     'theme_title'=>$row['theme_title'],
                     'selgroup_id'=>$row['selgroup_id'],
@@ -43,7 +43,7 @@ try {
     } else {
         $msg="Nessun Livello Interrogabile definito nel Gruppo di selezione";
     }
-} catch(Exception $e) {
+} catch (Exception $e) {
     $msg="<b style=\"color:red\">Errore</b> ".$e->getMessage();
 }
 
@@ -52,4 +52,3 @@ $btn[]="\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"ma
 $btn[]="<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Salva\">";
 $btn[]="<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'qt');\">\n";
 $button="modifica";
-?>

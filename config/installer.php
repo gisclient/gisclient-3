@@ -46,7 +46,7 @@ class GcInstaller
                     return R3_ERROR;
                 }
             } else {
-                // in case of a directory referenced by a symbolic link, realpath 
+                // in case of a directory referenced by a symbolic link, realpath
                 // gives the accurate parent
                 $realTestPath = $realParent . DIRECTORY_SEPARATOR . $path_elements[$i];
                 if (($rv = mkdir($realTestPath)) === false) {
@@ -64,7 +64,7 @@ class GcInstaller
 
     /**
      * Create directories where the webserver can write to
-     * 
+     *
      * @param  array  $dirs
      * @param  string $base
      * @throws Exception
@@ -79,7 +79,7 @@ class GcInstaller
                 if ($this->options['simulate']) {
                     echo "create directory {$currentDir}\n";
                     continue;
-                } else if ($this->options['create_dir']) {
+                } elseif ($this->options['create_dir']) {
                     echo "create $currentDir\n";
                     $this->createMissingDir($currentDir);
                 }
@@ -91,7 +91,7 @@ class GcInstaller
             }
             
             if (is_link($currentDir)) {
-                // if it is a link, then verify target 
+                // if it is a link, then verify target
                 if (($realDir = readlink($currentDir)) === false) {
                     throw new Exception("Could not readlink($currentDir)");
                 }
@@ -164,13 +164,11 @@ class GcInstaller
         $cmd = "find $base -type f -exec chmod 644 {} \;";
         $this->exec($cmd, $output, $retval);
     }
-
 }
 
-if (count(debug_backtrace()) === 0 
+if (count(debug_backtrace()) === 0
     && basename($argv[0]) == basename(__FILE__)
 ) {
-
     $options = array(
     'simulate' => false,
     'create_dir' => false,

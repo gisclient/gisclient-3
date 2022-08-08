@@ -21,43 +21,43 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 /* POSSO PASSARE DEI PARAMETRI PERSONALIZZATI :
-	LEGEND : 0/1 PER INDICARE CHE VOGLIO TUTTA L'IMMAGINE LEGENDA COMPLETA
-	TITLES : SE NELL'IMMAGINE METTO ANCHE I TITOLI
-	EXTENT : X VEDERE SE GLI OGGETTI SONO NELL'AREA VISUALIZZATA
-	ICONW e ICONH
-	RULE E' DATA DA LAYER_NAME:CLASS_NAME OPPURE LAYER_NAME
+    LEGEND : 0/1 PER INDICARE CHE VOGLIO TUTTA L'IMMAGINE LEGENDA COMPLETA
+    TITLES : SE NELL'IMMAGINE METTO ANCHE I TITOLI
+    EXTENT : X VEDERE SE GLI OGGETTI SONO NELL'AREA VISUALIZZATA
+    ICONW e ICONH
+    RULE E' DATA DA LAYER_NAME:CLASS_NAME OPPURE LAYER_NAME
 
 */
 
 use GisClient\Author\Utils\OwsHandler;
 
-if($objRequest->getvaluebyname('layer')){
-	//PRENDO TUTTI I LIVELLI DEL GRUPPO E CREO UNA LEGENDA CON TUTTE LE CLASSI DI TUTTI I LIVELLI
-	$ruleLayerName=false;
-	$ruleClassName=false;
+if ($objRequest->getvaluebyname('layer')) {
+    //PRENDO TUTTI I LIVELLI DEL GRUPPO E CREO UNA LEGENDA CON TUTTE LE CLASSI DI TUTTI I LIVELLI
+    $ruleLayerName=false;
+    $ruleClassName=false;
 
-	$iconsArray = array();
-	$iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:250;
-	$iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:24;
-	$totWidth = $objRequest->getvaluebyname('width')?$objRequest->getvaluebyname('width'):250;
+    $iconsArray = array();
+    $iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:250;
+    $iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:24;
+    $totWidth = $objRequest->getvaluebyname('width')?$objRequest->getvaluebyname('width'):250;
 
 
-	$legend=false;
-/*	if(isset($_REQUEST["RULE"])){
-		//SE RULE E' FORMATA DA NOME_LIVELLO:NOME_CLASSE PRENDO LA SOLA CLASSE ALTRIMENTI CREO UNA LEGENDA CON TUTTE LE ICONE DELLE CLASSI DEL LIVELLO
-		$rule=$_REQUEST["RULE"];
-		if(strpos($rule,':')>0) {//USARE REGEXP!!!!
-			$v=explode(":",$rule);
-			$ruleLayerName=$v[0];
-			$ruleClassName=$v[1];
-			$legend=false;
-		}
-		else{
-			$ruleLayerName=$rule;
-			$legend = false;
-		}
-	}
-  */  
+    $legend=false;
+/*  if(isset($_REQUEST["RULE"])){
+        //SE RULE E' FORMATA DA NOME_LIVELLO:NOME_CLASSE PRENDO LA SOLA CLASSE ALTRIMENTI CREO UNA LEGENDA CON TUTTE LE ICONE DELLE CLASSI DEL LIVELLO
+        $rule=$_REQUEST["RULE"];
+        if(strpos($rule,':')>0) {//USARE REGEXP!!!!
+            $v=explode(":",$rule);
+            $ruleLayerName=$v[0];
+            $ruleClassName=$v[1];
+            $legend=false;
+        }
+        else{
+            $ruleLayerName=$rule;
+            $legend = false;
+        }
+    }
+  */
     $gcLegendText = true;
     if (isset($_REQUEST['GCLEGENDTEXT']) && $_REQUEST['GCLEGENDTEXT'] == 0) {
         $gcLegendText = false;
@@ -87,18 +87,21 @@ if($objRequest->getvaluebyname('layer')){
     }
 
     $dy=0;
-    foreach($layers as $oLayer) {
+    foreach ($layers as $oLayer) {
         $private = $oLayer->getMetaData('gc_private_layer');
-        if(!empty($private)) {
-            if(!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $oLayer->name)) {
+        if (!empty($private)) {
+            if (!OwsHandler::checkLayer($objRequest->getvaluebyname('project'), $objRequest->getvaluebyname('service'), $oLayer->name)) {
                 continue;
             }
         }
-		
-        if($oLayer->connectiontype == MS_WMS) {
+        
+        if ($oLayer->connectiontype == MS_WMS) {
             $url = $oLayer->connection;
-            if(strpos($url, '?') === false) $url .= '?';
-            else if(substr($url, 0, -1) != '&' && substr($url, 0, -1) != '?') $url .= '&';
+            if (strpos($url, '?') === false) {
+                $url .= '?';
+            } elseif (substr($url, 0, -1) != '&' && substr($url, 0, -1) != '?') {
+                $url .= '&';
+            }
             $params = array(
                 'request'=>'getlegendgraphic',
                 'service'=>'wms',
@@ -112,34 +115,33 @@ if($objRequest->getvaluebyname('layer')){
             $gcService = \GCService::instance();
             
             if (defined('GC_SESSION_NAME') && isset($_REQUEST['GC_SESSION_ID']) && $_REQUEST['GC_SESSION_ID'] == $gcService->getSession()->getId()) {
-
                 $params['GC_SESSION_ID'] = $gcService->getSession()->getId();
             }
 
             $urlWmsRequest = $url. http_build_query($params);
-			
+            
             $options = array(
-                CURLOPT_URL => $urlWmsRequest, 
-                CURLOPT_HEADER => 0, 
+                CURLOPT_URL => $urlWmsRequest,
+                CURLOPT_HEADER => 0,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_BINARYTRANSFER => true,
                 CURLOPT_SSL_VERIFYPEER => 0,
                 CURLOPT_SSL_VERIFYHOST => 0
-            ); 
-            $ch = curl_init(); 
+            );
+            $ch = curl_init();
             curl_setopt_array($ch, $options);
             $result = curl_exec($ch);
-            if($result === false) {
-				throw new RunTimeException("Could not call $urlWmsRequest: " . curl_error($ch));
-            } else if($result) {
-				array_push($iconsArray, $result);
+            if ($result === false) {
+                throw new RunTimeException("Could not call $urlWmsRequest: " . curl_error($ch));
+            } elseif ($result) {
+                array_push($iconsArray, $result);
             }
-            curl_close($ch); 
+            curl_close($ch);
             continue;
         }
         
-        $oLayer->set('sizeunits',MS_PIXELS);
-        if(!$ruleLayerName || $ruleLayerName == $oLayer->name){
+        $oLayer->set('sizeunits', MS_PIXELS);
+        if (!$ruleLayerName || $ruleLayerName == $oLayer->name) {
             $numCls = $oLayer->numclasses;
 
             //verifica sulle classi
@@ -149,39 +151,39 @@ if($objRequest->getvaluebyname('layer')){
                 $className = $oClass->name;
 //                if($oClass->title) $oClass->set('name',$oClass->title);
                 
-                if($oClass->getMetaData("gc_no_image") == 1)
+                if ($oClass->getMetaData("gc_no_image") == 1) {
                     $classToRemove[] = $oClass->title;
-                elseif(!$ruleClassName || $ruleClassName == $className){
-                    //RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ... 
+                } elseif (!$ruleClassName || $ruleClassName == $className) {
+                    //RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ...
                     //if(($oClass->getMetaData("gc_no_image")!='1') && (!$ruleClassName || $ruleClassName == $className)){
                     //if((($oClass->maxscale == -1) || ($scale <= $oClass->maxscale)) && (($oClass->minscale == -1) || ($scale >= $oClass->minscale))){
                     
                     $char=$oClass->getTextString();
                     //SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
-                    if(strlen($char)==3){//USARE REGEXP, non � detto che questa stringa sia lunga 3 !!!!
+                    if (strlen($char)==3) {//USARE REGEXP, non � detto che questa stringa sia lunga 3 !!!!
                         $lbl=$oClass->label;
                         $idSymbol = ms_newSymbolObj($oMap, "v");
                         $oSymbol = $oMap->getSymbolObjectById($idSymbol);
-                        $oSymbol->set('type',MS_SYMBOL_TRUETYPE);
-                        $oSymbol->set('font',$lbl->font);
-                        $oSymbol->set('character',substr($char,1,1));
-                        $oSymbol->set('antialias',1);
+                        $oSymbol->set('type', MS_SYMBOL_TRUETYPE);
+                        $oSymbol->set('font', $lbl->font);
+                        $oSymbol->set('character', substr($char, 1, 1));
+                        $oSymbol->set('antialias', 1);
 
                         $oStyle=ms_newStyleObj($oClass);
-                        $oStyle->set("size",$iconW/2);//DA VERERE !!!!!
+                        $oStyle->set("size", $iconW/2);//DA VERERE !!!!!
                         //$oStyle->set("offsetx",-25);
                         //$oStyle->set("offsety",25);
-                        $oStyle->set('symbolname','v');
-                        $oStyle->color->setRGB($lbl->color->red,$lbl->color->green,$lbl->color->blue);
+                        $oStyle->set('symbolname', 'v');
+                        $oStyle->color->setRGB($lbl->color->red, $lbl->color->green, $lbl->color->blue);
                     }
 
-                    if($legend){
-                        $icoImg = $oClass->createLegendIcon($iconW,$iconH);
+                    if ($legend) {
+                        $icoImg = $oClass->createLegendIcon($iconW, $iconH);
                         header("Content-type: image/png");
                         $icoImg->saveImage('');
-						if (ms_GetVersionInt() < 60000) {
-							$icoImg->free();
-						}
+                        if (ms_GetVersionInt() < 60000) {
+                            $icoImg->free();
+                        }
                         die();
                     }
                 }
@@ -189,45 +191,48 @@ if($objRequest->getvaluebyname('layer')){
 
             if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
                 //Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
-                foreach($classToRemove as $className){
+                foreach ($classToRemove as $className) {
                     for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
                         $oClass = $oLayer->getClass($clno);
-                        if($oClass->name == $className) $oLayer->removeClass($clno);
+                        if ($oClass->name == $className) {
+                            $oLayer->removeClass($clno);
+                        }
                     }
                 };
                 //print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
-                if($oLayer->numclasses>0){
-                    ms_ioinstallstdouttobuffer(); 
+                if ($oLayer->numclasses>0) {
+                    ms_ioinstallstdouttobuffer();
                     $tempRequest = new OWSRequestObj();
                     $tempRequest->loadParams();
                     $tempRequest->setParameter('LAYER', $oLayer->name);
 
                     $oMap->owsdispatch($tempRequest);
-                    $contenttype = ms_iostripstdoutbuffercontenttype(); 
+                    $contenttype = ms_iostripstdoutbuffercontenttype();
 
                     ob_start();
                     ms_iogetStdoutBufferBytes();
                     ms_ioresethandlers();
                     $imageContent = ob_get_contents();
                     ob_end_clean();
-					// FIXME: ha senso aggiungere anche se il centent è vuoto?
-					// oppure non è un'immagine?
+                    // FIXME: ha senso aggiungere anche se il centent è vuoto?
+                    // oppure non è un'immagine?
                     //die($imageContent);
                     array_push($iconsArray, $imageContent);
                 }
-                
             } else {
                 $numCls = $oLayer->numclasses;
                 for ($clno=0; $clno < $numCls; $clno++) {
                     $oClass = $oLayer->getClass($clno);
                     $check = $oClass->getMetaData('gc_no_image');
-                    if(!empty($check)) continue;
-                    $icoImg = $oClass->createLegendIcon($iconW,$iconH);
+                    if (!empty($check)) {
+                        continue;
+                    }
+                    $icoImg = $oClass->createLegendIcon($iconW, $iconH);
                     ob_start();
                     $icoImg->saveImage('');
                     $imageContent = ob_get_contents();
                     ob_end_clean();
-					if (ms_GetVersionInt() < 60000) {
+                    if (ms_GetVersionInt() < 60000) {
                         $icoImg->free();
                     }
                     array_push($iconsArray, $imageContent);
@@ -237,38 +242,42 @@ if($objRequest->getvaluebyname('layer')){
     }
 }
 
-if(!$legend) {
-	$w = $iconW;
-	$h = 0;
-	
-	foreach($iconsArray as $icon) {
-		$gdImage = @imagecreatefromstring($icon);
-        if(!$gdImage) continue;
-		$h += (imagesy($gdImage)+0);
-	}
-	$legendImage = imagecreatetruecolor($w, $h);
-	$white = imagecolorallocate($legendImage, 255, 255, 255);
-	imagefill($legendImage, 0, 0, $white);
-	$offset = 0;
-	
-	foreach($iconsArray as $key => $icon) {
-		$img = @imagecreatefromstring($icon);
-        if(!$img) continue;
-		$size = array(imagesx($img), imagesy($img));
-		imagealphablending($img, true);
-		imagesavealpha($img, true);
-		$temp = imagecreatetruecolor($w, $h);
-		$white = imagecolorallocate($temp, 255, 255, 255);
-		imagefill($temp, 0, 0, $white);
-		imagecopy($temp, $img, 0, 0, 0, 0, $size[0], $size[1]);
-		imagecopymerge($legendImage, $temp, 0, $offset, 0, 0, $size[0], $size[1], 100);
-		$addOffset = $size[1];
-		//if($gcLegendText) $addOffset += 2;
-		$offset += $addOffset;
-	}
-	header("Content-type: image/png");
-	imagepng($legendImage);
-	exit(0);
+if (!$legend) {
+    $w = $iconW;
+    $h = 0;
+    
+    foreach ($iconsArray as $icon) {
+        $gdImage = @imagecreatefromstring($icon);
+        if (!$gdImage) {
+            continue;
+        }
+        $h += (imagesy($gdImage)+0);
+    }
+    $legendImage = imagecreatetruecolor($w, $h);
+    $white = imagecolorallocate($legendImage, 255, 255, 255);
+    imagefill($legendImage, 0, 0, $white);
+    $offset = 0;
+    
+    foreach ($iconsArray as $key => $icon) {
+        $img = @imagecreatefromstring($icon);
+        if (!$img) {
+            continue;
+        }
+        $size = array(imagesx($img), imagesy($img));
+        imagealphablending($img, true);
+        imagesavealpha($img, true);
+        $temp = imagecreatetruecolor($w, $h);
+        $white = imagecolorallocate($temp, 255, 255, 255);
+        imagefill($temp, 0, 0, $white);
+        imagecopy($temp, $img, 0, 0, 0, 0, $size[0], $size[1]);
+        imagecopymerge($legendImage, $temp, 0, $offset, 0, 0, $size[0], $size[1], 100);
+        $addOffset = $size[1];
+        //if($gcLegendText) $addOffset += 2;
+        $offset += $addOffset;
+    }
+    header("Content-type: image/png");
+    imagepng($legendImage);
+    exit(0);
 }
 
 $oLayer=$oMap->getLayer($aLayersIndexes[0]);

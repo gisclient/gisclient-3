@@ -13,9 +13,9 @@ try {
     $stmt = $db->prepare($sql);
     $stmt->execute(array('qtfield_id'=>$qtfield));
     
-    if($stmt->rowCount() > 0) {
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if($this->mode!=0 || $row['presente']==1) {
+    if ($stmt->rowCount() > 0) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($this->mode!=0 || $row['presente']==1) {
                 array_push($data, array(
                     'presente'=>$row['presente'],
                     'groupname'=>$row['groupname'],
@@ -24,13 +24,13 @@ try {
             }
         }
     } else {
-		$msg="";
+        $msg="";
     }
-} catch(Exception $e) {
-	$msg="<b style=\"color:red\">Errore</b>";
+} catch (Exception $e) {
+    $msg="<b style=\"color:red\">Errore</b>";
 }
 
-	
+    
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
 $button="modifica";

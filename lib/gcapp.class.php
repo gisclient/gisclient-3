@@ -492,7 +492,6 @@ class GCAuthor
             $groupByFieldList = array();
             
             foreach ($aFeature["fields"] as $idField => $aField) {
-            
                 //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
                 if (!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
                     if (!$options['include_1n_relations'] || $options['group_1n']) {

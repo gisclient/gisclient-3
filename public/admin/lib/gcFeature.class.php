@@ -21,7 +21,7 @@
 
  */
 
-/* 	Campo search_type per definizione della ricerca:
+/*  Campo search_type per definizione della ricerca:
   1 - Testo secco;
   2 - Parte di testo senza suggerimenti
   3 - Testo con autocompletamento e lista suggerimenti (dati presi dal campo search_list);
@@ -29,11 +29,12 @@
   5 - Data
   6 - SI/NO */
 
-// QUESTA SERVE SOLO PER LA COSTRUZIONE DEI MAPFILES	
+// QUESTA SERVE SOLO PER LA COSTRUZIONE DEI MAPFILES
 
 
 
-class gcFeature {
+class gcFeature
+{
 
     var $msFeatureType = array();
     var $aggregateFunction = array(101 => 'sum', 102 => 'avg', 103 => 'min', 104 => 'max', 105 => 'count', 106 => 'variance', 107 => 'stddev');
@@ -51,23 +52,26 @@ class gcFeature {
     
     /**
      * Container of feature information
-     * 
+     *
      * @var array
      */
     private $aFeature;
 
-    function __destruct() {
+    function __destruct()
+    {
         unset($this->aFeature);
         unset($this->mapError);
     }
 
-    function __construct($i18n = null) {
+    function __construct($i18n = null)
+    {
         $this->db = GCApp::getDB();
         $this->i18n = $i18n;
         $this->msVersion = substr(ms_GetVersionInt(), 0, 1);
     }
 
-    public function initFeature($layerId) {
+    public function initFeature($layerId)
+    {
         $this->forcePrivate = false;
 
         $sqlField = "select field.*,
@@ -87,7 +91,6 @@ class gcFeature {
 
         // Costruzione dell'oggetto Feature
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
             if (!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'field', $row['field_id'], array('field_name', 'field_header'));
             }
@@ -109,12 +112,15 @@ class gcFeature {
             $qField[$fieldId]["column_width"] = $row["column_width"];
             $f = array();
             if ($relationId = $row["relation_id"]) {
-                if (($row["data_field_1"]) && ($row["table_field_1"]))
+                if (($row["data_field_1"]) && ($row["table_field_1"])) {
                     $f[] = array(trim($row["data_field_1"]), trim($row["table_field_1"]));
-                if (($row["data_field_2"]) && ($row["table_field_2"]))
+                }
+                if (($row["data_field_2"]) && ($row["table_field_2"])) {
                     $f[] = array(trim($row["data_field_2"]), trim($row["table_field_2"]));
-                if (($row["data_field_3"]) && ($row["table_field_3"]))
+                }
+                if (($row["data_field_3"]) && ($row["table_field_3"])) {
                     $f[] = array(trim($row["data_field_3"]), trim($row["table_field_3"]));
+                }
                 $qRelation[$relationId]["join_field"] = $f;
                 $qRelation[$relationId]["name"] = NameReplace($row["relation_name"]);
                 $qRelation[$relationId]["table_name"] = trim($row["table_name"]);
@@ -171,35 +177,42 @@ class gcFeature {
     
     /**
      * Return data of the current feature
-     * 
+     *
      * @return array
      */
-    public function getFeatureData() {
+    public function getFeatureData()
+    {
         return $this->aFeature;
     }
     
     /**
      * Set feature data
-     * 
+     *
      * @param array $aFeature
      */
-    public function setFeatureData(array $aFeature) {
+    public function setFeatureData(array $aFeature)
+    {
         $this->aFeature = $aFeature;
     }
 
-    public function isEditable() {
-        if ($this->aFeature['connection_type'] != 6)
+    public function isEditable()
+    {
+        if ($this->aFeature['connection_type'] != 6) {
             return false;
-        if ($this->aFeature['queryable'] != 1)
+        }
+        if ($this->aFeature['queryable'] != 1) {
             return false;
+        }
         foreach ($this->aFeature['fields'] as $k => $v) {
-            if ($v['editable'] == 1)
+            if ($v['editable'] == 1) {
                 return true;
+            }
         }
         return false;
     }
 
-    public function getTinyOWSLayerParams() {
+    public function getTinyOWSLayerParams()
+    {
         //TODO: così funziona solo per le definizioni DB_NAME/DB_SCHEMA
         list($dbName, $dbSchema) = explode('/', $this->aFeature['catalog_path']);
         return array(
@@ -211,25 +224,30 @@ class gcFeature {
         );
     }
 
-    public function getLayerName() {
+    public function getLayerName()
+    {
         return $this->aFeature['layer_name'];
     }
 
-    public function isPrivate() {
+    public function isPrivate()
+    {
         return $this->forcePrivate || ($this->aFeature['private'] > 0);
     }
 
     // Used to force private layer in mapset is private
-    public function setPrivate($private) {
+    public function setPrivate($private)
+    {
         $this->forcePrivate = $private;
     }
 
-    public function getLayerText($layergroupName, $layergroup) {
-        if (!$this->aFeature)
+    public function getLayerText($layergroupName, $layergroup)
+    {
+        if (!$this->aFeature) {
             return false;
+        }
             
         // translate layergroup
-        if(!empty($this->i18n)) {
+        if (!empty($this->i18n)) {
             $layergroup = $this->i18n->translateRow($layergroup, 'layergroup', $layergroup['layergroup_id']);
         }
             
@@ -254,42 +272,55 @@ class gcFeature {
         if (!empty($this->aFeature["data_srid"])) {
             $layText[] = "PROJECTION";
             $layText[] = "\t\"init=epsg:" . $this->aFeature["data_srid"] . "\"";
-            if (!empty($this->srsParams[$this->aFeature["data_srid"]]))
+            if (!empty($this->srsParams[$this->aFeature["data_srid"]])) {
                 $layText[] = "\t\"+towgs84=" . $this->srsParams[$this->aFeature["data_srid"]] . "\"";
+            }
             $layText[] = "END";
         }
 
         $this->_getLayerConnection($layText);
-        if (!empty($this->aFeature["data_extent"]))
+        if (!empty($this->aFeature["data_extent"])) {
             $layText[] = "EXTENT " . $this->aFeature["data_extent"];
-        if (!empty($this->aFeature["sizeunits_id"]))
+        }
+        if (!empty($this->aFeature["sizeunits_id"])) {
             $layText[] = "SIZEUNITS " . $aMapservUnitDef[$this->aFeature["sizeunits_id"]];
-        if (!empty($this->aFeature['maxscale']))
+        }
+        if (!empty($this->aFeature['maxscale'])) {
             $layText[] = 'MAXSCALEDENOM ' . $this->aFeature['maxscale'];
-        else if (!empty($maxScale))
+        } elseif (!empty($maxScale)) {
             $layText[] = 'MAXSCALEDENOM ' . $maxScale;
-        if (!empty($this->aFeature['minscale']))
+        }
+        if (!empty($this->aFeature['minscale'])) {
             $layText[] = 'MINSCALEDENOM ' . $this->aFeature['minscale'];
-        else if (!empty($minScale))
+        } elseif (!empty($minScale)) {
             $layText[] = 'MINSCALEDENOM ' . $minScale;
+        }
         //if(!empty($maxScale))$layText[]="MAXSCALEDENOM $maxScale"; elseif(!empty($this->aFeature["maxscale"])) $layText[]="MAXSCALEDENOM ". $this->aFeature["maxscale"];
         //if(!empty($minScale))$layText[]="MINSCALEDENOM $minScale"; elseif(!empty($this->aFeature["minscale"])) $layText[]="MINSCALEDENOM ". $this->aFeature["minscale"];
-        if (!empty($this->aFeature["maxfeatures"]) && $this->aFeature["maxfeatures"] > 0)
+        if (!empty($this->aFeature["maxfeatures"]) && $this->aFeature["maxfeatures"] > 0) {
             $layText[] = "MAXFEATURES " . $this->aFeature["maxfeatures"];
-        if (!empty($this->aFeature["tolerance"]))
+        }
+        if (!empty($this->aFeature["tolerance"])) {
             $layText[] = "TOLERANCE " . $this->aFeature["tolerance"];
-        if (!empty($this->aFeature["toleranceunits"]))
+        }
+        if (!empty($this->aFeature["toleranceunits"])) {
             $layText[] = "TOLERANCEUNITS " . $aMapservUnitDef[$this->aFeature["toleranceunits_id"]];
-        if (!empty($this->aFeature["template"]))
+        }
+        if (!empty($this->aFeature["template"])) {
             $layText[] = "TEMPLATE \"" . $this->aFeature["template"] . "\"";
-        if (!empty($this->aFeature["header"]))
-            $layText[] = "HEADER \"" . $this->aFeature["header"] . "\"";;
-        if (!empty($this->aFeature["footer"]))
-            $layText[] = "FOOTER \"" . $this->aFeature["footer"] . "\"";;
-        if (!empty($this->aFeature["opacity"]))
+        }
+        if (!empty($this->aFeature["header"])) {
+            $layText[] = "HEADER \"" . $this->aFeature["header"] . "\"";
+        };
+        if (!empty($this->aFeature["footer"])) {
+            $layText[] = "FOOTER \"" . $this->aFeature["footer"] . "\"";
+        };
+        if (!empty($this->aFeature["opacity"])) {
             $layText[] = "OPACITY " . $this->aFeature["opacity"];
-        if (!empty($this->aFeature["symbolscale"]))
+        }
+        if (!empty($this->aFeature["symbolscale"])) {
             $layText[] = "SYMBOLSCALEDENOM " . $this->aFeature["symbolscale"];
+        }
 
         //classi:
 
@@ -304,18 +335,21 @@ class gcFeature {
 
         //Solo se presenti classi
         if (count($res) > 0) {
-            if (!empty($this->aFeature["labelitem"]))
+            if (!empty($this->aFeature["labelitem"])) {
                 $layText[] = "LABELITEM \"" . $this->aFeature["labelitem"] . "\"";
-            if (!empty($this->aFeature["labelminscale"]))
+            }
+            if (!empty($this->aFeature["labelminscale"])) {
                 $layText[] = "LABELMINSCALEDENOM " . $this->aFeature["labelminscale"];
-            if (!empty($this->aFeature["labelmaxscale"]))
+            }
+            if (!empty($this->aFeature["labelmaxscale"])) {
                 $layText[] = "LABELMAXSCALEDENOM " . $this->aFeature["labelmaxscale"];
-            if (!empty($this->aFeature["classitem"]))
+            }
+            if (!empty($this->aFeature["classitem"])) {
                 $layText[] = "CLASSITEM \"" . $this->aFeature["classitem"] . "\"";
+            }
         }
 
         for ($i = 0; $i < count($res); $i++) {
-
             if (!empty($this->i18n)) {
                 $res[$i] = $this->i18n->translateRow($res[$i], 'class', $res[$i]['class_id']);
             }
@@ -325,16 +359,19 @@ class gcFeature {
             $layText[] = "END";
         }
 
-        if ($this->labels && $this->aFeature['postlabelcache'] == 1)
+        if ($this->labels && $this->aFeature['postlabelcache'] == 1) {
             $layText[] = "POSTLABELCACHE TRUE";
-        if (!empty($this->aFeature["layer_def"]))
+        }
+        if (!empty($this->aFeature["layer_def"])) {
             $layText[] = $this->aFeature["layer_def"];
+        }
         $layText[] = "END";
 
         return implode("\n\t", $layText);
     }
 
-    private function _getLayerConnection(&$layText) {
+    private function _getLayerConnection(&$layText)
+    {
         if ($this->aFeature["layertype_id"] == 10 && !$this->aFeature["tileindex"]) {//TILERASTER
             $layText[] = "TILEINDEX \"" . $this->aFeature["layer_name"] . ".TILEINDEX\"";
             $layText[] = "TILEITEM \"location\"";
@@ -343,8 +380,9 @@ class gcFeature {
             switch ($this->aFeature["connection_type"]) {
                 case MS_SHAPEFILE: //Local folder shape and raster
                     $filePath = $this->aFeature["filePath"];
-                    if (substr($filePath, -1) != "/")
+                    if (substr($filePath, -1) != "/") {
                         $filePath.="/";
+                    }
                     $layText[] = "DATA \"" . $filePath . $this->aFeature["data"] . "\"";
                     break;
 
@@ -362,17 +400,22 @@ class gcFeature {
                     $layText[] = "CONNECTIONTYPE POSTGIS";
                     $layText[] = "CONNECTION \"" . $this->aFeature["connection_string"] . "\"";
                     $sData = $this->_getLayerData();
-                    if (!empty($this->aFeature["data_unique"]))
+                    if (!empty($this->aFeature["data_unique"])) {
                         $sData .= " USING UNIQUE gc_objid";
-                    if (!empty($this->aFeature["data_srid"]))
+                    }
+                    if (!empty($this->aFeature["data_srid"])) {
                         $sData .= " USING SRID=" . $this->aFeature["data_srid"];
+                    }
                     $layText[] = "DATA \"$sData\"";
-                    if (!empty($this->aFeature["data_filter"]))
+                    if (!empty($this->aFeature["data_filter"])) {
                         $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
-                    if ($closedDefer)
+                    }
+                    if ($closedDefer) {
                         $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
-                    if ($this->aFeature["queryable"] == 1)
+                    }
+                    if ($this->aFeature["queryable"] == 1) {
                         $layText[] = "DUMP TRUE";
+                    }
                     break;
 
                 case MS_ORACLESPATIAL:
@@ -390,11 +433,13 @@ class gcFeature {
                         }
                     }
                     $layText[] = "DATA \"$sData\"";
-                    if (!empty($this->aFeature["data_filter"]))
+                    if (!empty($this->aFeature["data_filter"])) {
                         $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                    }
                     $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
-                    if ($this->aFeature["queryable"] == 1)
+                    if ($this->aFeature["queryable"] == 1) {
                         $layText[] = "DUMP TRUE";
+                    }
                     break;
 
                 case MS_SDE:
@@ -404,8 +449,9 @@ class gcFeature {
                     $layText[] = "CONNECTIONTYPE OGR";
                     $layText[] = "CONNECTION \"" . $this->aFeature["catalog_path"] . "\"";
                     $layText[] = "DATA \"" . $this->aFeature["data"] . "\"";
-                    if ($this->aFeature["queryable"] == 1)
+                    if ($this->aFeature["queryable"] == 1) {
                         $layText[] = "DUMP TRUE";
+                    }
                     break;
                 case MS_GRATICULE:
                     break;
@@ -418,7 +464,8 @@ class gcFeature {
         }
     }
 
-    public function getTileIndexLayer() {
+    public function getTileIndexLayer()
+    {
         $layText = array();
         $layText[] = "LAYER";
         $layText[] = "\tNAME \"" . $this->aFeature["layer_name"] . ".TILEINDEX\"";
@@ -437,12 +484,14 @@ class gcFeature {
     }
 
     //ritorna la querystring per la feature da usare nel tag DATA del mapfile
-    private function _getOracleLayerData() {
+    private function _getOracleLayerData()
+    {
         $string = $this->aFeature['data_geom'] . ' FROM ';
         return $string . $this->aFeature['data'];
         // questo sotto non sembra funzionare
-        if (empty($this->aFeature["fields"]))
+        if (empty($this->aFeature["fields"])) {
             return $string . $this->aFeature['data'];
+        }
 
         $fields = array($this->aFeature['data_geom']);
         foreach ($this->aFeature["fields"] as $fieldId => $field) {
@@ -455,7 +504,8 @@ class gcFeature {
      * Construct the DATA statement for the mapfile, http://mapserver.org/mapfile/layer.html
      * @return string
      */
-    private function _getLayerData() {
+    private function _getLayerData()
+    {
 
         $aFeature = $this->aFeature;
         $datalayerTable = $aFeature["data"];
@@ -468,10 +518,11 @@ class gcFeature {
             $table = $aFeature["table_schema"] . "." . $aFeature["data"];
             $datalayerTable = "(SELECT $datalayerKey as gc_objid,$datalayerGeom as the_geom,$location FROM $table) AS " . DATALAYER_ALIAS_TABLE;
             return "the_geom from " . $datalayerTable;
-        } elseif (preg_match("|select (.+) from (.+)|i", $datalayerTable))//Definizione alias della tabella o vista pricipale (nel caso l'utente abbia definito una vista)  (da valutare se ha senso)
+        } elseif (preg_match("|select (.+) from (.+)|i", $datalayerTable)) { //Definizione alias della tabella o vista pricipale (nel caso l'utente abbia definito una vista)  (da valutare se ha senso)
             $datalayerTable = "($datalayerTable) AS " . DATALAYER_ALIAS_TABLE;
-        else
+        } else {
             $datalayerTable = $datalayerSchema . "." . $datalayerTable . " AS " . DATALAYER_ALIAS_TABLE;
+        }
 
         $joinString = $datalayerTable;
         $fieldString = "*";
@@ -487,10 +538,8 @@ class gcFeature {
             $groupByFieldList = array(DATALAYER_ALIAS_TABLE . "." . $datalayerKey);
 
             foreach ($aFeature["fields"] as $idField => $aField) {
-
                 if ($aField["relation"] == 0 || $aFeature["relation"][$aField["relation"]]["relation_type"] == 1) {
-
-                    if ($aField["relation"] != 0) {//Il campo appartiene alla relazione e non alla tabella del layer 
+                    if ($aField["relation"] != 0) {//Il campo appartiene alla relazione e non alla tabella del layer
                         $idRelation = $aField["relation"];
                         $aliasTable = $aFeature["relation"][$idRelation]["name"];
                     } else {
@@ -522,14 +571,17 @@ class gcFeature {
                         //continue;
                         //aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore è vuoto
                         $keyList = array();
-                        foreach($rel["join_field"] as $jF) $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
-                        $fieldList[] = implode("||','||",$keyList)." as $relationAliasTable";
+                        foreach ($rel["join_field"] as $jF) {
+                            $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
+                        }
+                        $fieldList[] = implode("||','||", $keyList)." as $relationAliasTable";
 
                         $groupBy = ' GROUP BY  ' . implode(', ', $groupByFieldList) . ', ' . $datalayerGeom;
                         $fieldList[] = ' count(' . $relationAliasTable . '.' . $rel['join_field'][0][1] . ') as num_' . $idrel;
 
-                        if (!isset($this->aFeature['1n_count_fields']))
+                        if (!isset($this->aFeature['1n_count_fields'])) {
                             $this->aFeature['1n_count_fields'] = array();
+                        }
                         array_push($this->aFeature['1n_count_fields'], 'num_' . $idrel);
                     }
 
@@ -554,7 +606,8 @@ class gcFeature {
         return $datalayerTable;
     }
 
-    private function _getMetadata() {
+    private function _getMetadata()
+    {
         $agmlType = array(1 => "Point", 2 => "Line", 3 => "Polygon", 4 => "Point");
         $ageometryType = array("point" => "point", "multipoint" => "multipoint", "linestring" => "line", "multilinestring" => "multiline", "polygon" => "polygon", "multipolygon" => "multipolygon");
         $metaText = '';
@@ -574,14 +627,16 @@ class gcFeature {
             $aMeta["ows_onlineresource"] = $this->owsUrl;
 
             if ($this->aFeature["fields"]) {
-                if ($this->aFeature["connection_type"] == MS_POSTGIS)
+                if ($this->aFeature["connection_type"] == MS_POSTGIS) {
                     $aMeta["gml_featureid"] = "gc_objid";
-                else
+                } else {
                     $aMeta["gml_featureid"] = $this->aFeature["data_unique"];
+                }
                 $includeItems = array();
                 foreach ($this->aFeature['fields'] as $field) {
-                    if ($field['result_type'] != 5)
+                    if ($field['result_type'] != 5) {
                         array_push($includeItems, $field['field_name']);
+                    }
                 }
                 if (!empty($this->aFeature['1n_count_fields'])) {
                     foreach ($this->aFeature['1n_count_fields'] as $fieldName) {
@@ -601,16 +656,18 @@ class gcFeature {
                 $aMeta["gml_featureid"] = $this->aFeature["data_unique"];
             }
             if (strpos($this->aFeature['metadata'], "gml_" . $this->aFeature["data_geom"] . "_type") === false) {
-                if (array_key_exists($this->aFeature["data_type"], $ageometryType))
+                if (array_key_exists($this->aFeature["data_type"], $ageometryType)) {
                     $aMeta["gml_" . $this->aFeature["data_geom"] . "_type"] = $ageometryType[$this->aFeature["data_type"]];
-                else
+                } else {
                     $aMeta["gml_" . $this->aFeature["data_geom"] . "_type"] = $agmlType[$this->aFeature["layertype_id"]];
+                }
             }
 
             foreach ($this->aFeature['fields'] as $fieldId => $field) {
                 $gmlType = $this->_getMetadataFieldDataType($field['data_type']);
-                if ($gmlType && $field['field_name'] != 'layer')
+                if ($gmlType && $field['field_name'] != 'layer') {
                     $aMeta['gml_' . $field['field_name'] . '_type'] = $gmlType;
+                }
             }
         }
 
@@ -625,13 +682,15 @@ class gcFeature {
         foreach ($aMeta as $key => $value) {
             $metaText .= "\t\"$key\"\t\"$value\"\n\t";
         }
-        if (!empty($this->aFeature["metadata"]))
+        if (!empty($this->aFeature["metadata"])) {
             $metaText .= "\t" . str_replace("\n", "\n\t\t", $this->aFeature["metadata"]);
+        }
         //$metaText;
         return $metaText;
     }
 
-    private function _getClassText($aClass) {
+    private function _getClassText($aClass)
+    {
 
         print_debug($aClass, null, 'classi');
         $clsText = array();
@@ -643,29 +702,36 @@ class gcFeature {
             $clsText[] = "KEYIMAGE \"" . $aClass["keyimage"] . "\"";
         }
 
-        if (!empty($aClass["class_title"]))
+        if (!empty($aClass["class_title"])) {
             $clsText[] = "TITLE \"" . str_replace("\"", "'", $aClass["class_title"]) . "\"";
-        if (!empty($aClass["classgroup_name"]))
+        }
+        if (!empty($aClass["classgroup_name"])) {
             $clsText[] = "GROUP \"" . $aClass["classgroup_name"] . "\"";
-        if (!empty($aClass["expression"]))
+        }
+        if (!empty($aClass["expression"])) {
             $clsText[] = "EXPRESSION " . $aClass["expression"];
+        }
         if (ms_GetVersionInt() < 60000) {
             // MapServer 5
-            if(!empty($aClass["class_text"])){
+            if (!empty($aClass["class_text"])) {
                 $clsText[]="TEXT (". $aClass["class_text"].")";
-            }elseif(!empty($aClass["smbchar"])){//simbolo true type
+            } elseif (!empty($aClass["smbchar"])) {//simbolo true type
                 $clsText[]="TEXT (". $aClass["smbchar"].")";
             }
         }
 
-        if (!empty($aClass["maxscale"]))
+        if (!empty($aClass["maxscale"])) {
             $clsText[] = "MAXSCALEDENOM " . $aClass["maxscale"];
-        if (!empty($aClass["minscale"]))
+        }
+        if (!empty($aClass["minscale"])) {
             $clsText[] = "MINSCALEDENOM " . $aClass["minscale"];
-        if (!empty($aClass["class_template"]))
+        }
+        if (!empty($aClass["class_template"])) {
             $clsText[] = "TEMPLATE \"" . $aClass["class_template"] . "\"";
-        if (!empty($aClass["class_def"]))
+        }
+        if (!empty($aClass["class_def"])) {
             $clsText[] = $aClass["class_def"];
+        }
 
         //Se ho impostato il font aggiungo la label
         if ($aClass["label_font"]) {
@@ -681,34 +747,48 @@ class gcFeature {
                     $clsText[] = "\tTEXT '" . $aClass["smbchar"] . "'";
                 }
             }
-            if ($aClass["label_angle"])
+            if ($aClass["label_angle"]) {
                 $clsText[] = "\tANGLE " . $aClass["label_angle"];
-            if ($aClass["label_color"])
+            }
+            if ($aClass["label_color"]) {
                 $clsText[] = "\tCOLOR " . $aClass["label_color"];
-            if ($aClass["label_bgcolor"] && $this->msVersion == '5')
+            }
+            if ($aClass["label_bgcolor"] && $this->msVersion == '5') {
                 $clsText[] = "\tBACKGROUNDCOLOR " . $aClass["label_bgcolor"];
-            if ($aClass["label_outlinecolor"])
+            }
+            if ($aClass["label_outlinecolor"]) {
                 $clsText[] = "\tOUTLINECOLOR " . $aClass["label_outlinecolor"];
-            if ($aClass["label_size"])
+            }
+            if ($aClass["label_size"]) {
                 $clsText[] = "\tSIZE " . $aClass["label_size"];
-            if ($aClass["label_minsize"])
+            }
+            if ($aClass["label_minsize"]) {
                 $clsText[] = "\tMINSIZE " . $aClass["label_minsize"];
-            if ($aClass["label_maxsize"])
+            }
+            if ($aClass["label_maxsize"]) {
                 $clsText[] = "\tMAXSIZE " . $aClass["label_maxsize"];
-            if ($aClass["label_position"])
+            }
+            if ($aClass["label_position"]) {
                 $clsText[] = "\tPOSITION " . $aClass["label_position"];
-            if ($aClass["label_priority"])
+            }
+            if ($aClass["label_priority"]) {
                 $clsText[] = "\tPRIORITY " . $aClass["label_priority"];
-            if ($aClass["label_buffer"])
+            }
+            if ($aClass["label_buffer"]) {
                 $clsText[] = "\tBUFFER " . $aClass["label_buffer"];
-            if ($aClass["label_force"])
+            }
+            if ($aClass["label_force"]) {
                 $clsText[] = "\tFORCE TRUE";
-            if ($aClass["label_wrap"] == '#')
+            }
+            if ($aClass["label_wrap"] == '#') {
                 $aClass["label_wrap"] = ' ';
-            if ($aClass["label_wrap"])
+            }
+            if ($aClass["label_wrap"]) {
                 $clsText[] = "\tWRAP \"" . $aClass["label_wrap"] . "\"";
-            if ($aClass["label_def"])
+            }
+            if ($aClass["label_def"]) {
                 $clsText[] = $aClass["label_def"];
+            }
             $clsText[] = "END";
         }
 
@@ -734,56 +814,73 @@ class gcFeature {
         return implode("\n\t\t", $clsText);
     }
 
-    private function _getStyleText($aStyle) {
+    private function _getStyleText($aStyle)
+    {
 
         $styText = array();
-        if (!empty($aStyle["color"]))
+        if (!empty($aStyle["color"])) {
             $styText[] = "COLOR " . $aStyle["color"];
-        if (!empty($aStyle["symbol_name"]))
+        }
+        if (!empty($aStyle["symbol_name"])) {
             $styText[] = "SYMBOL \"" . $aStyle["symbol_name"] . "\"";
-        if (!empty($aStyle["bgcolor"]))
+        }
+        if (!empty($aStyle["bgcolor"])) {
             $styText[] = "BACKGROUNDCOLOR " . $aStyle["bgcolor"];
-        if (!empty($aStyle["outlinecolor"]))
+        }
+        if (!empty($aStyle["outlinecolor"])) {
             $styText[] = "OUTLINECOLOR " . $aStyle["outlinecolor"];
-        if (!empty($aStyle["size"]))
+        }
+        if (!empty($aStyle["size"])) {
             $styText[] = "SIZE " . $aStyle["size"];
-        if (!empty($aStyle["minsize"]))
+        }
+        if (!empty($aStyle["minsize"])) {
             $styText[] = "MINSIZE " . $aStyle["minsize"];
-        if (!empty($aStyle["maxsize"]))
+        }
+        if (!empty($aStyle["maxsize"])) {
             $styText[] = "MAXSIZE " . $aStyle["maxsize"];
-        if (!empty($aStyle["angle"]))
+        }
+        if (!empty($aStyle["angle"])) {
             $styText[] = "ANGLE " . $aStyle["angle"];
-        if (isset($aStyle["width"]) && $aStyle["width"])
+        }
+        if (isset($aStyle["width"]) && $aStyle["width"]) {
             $styText[] = "WIDTH " . $aStyle["width"];
-        else
+        } else {
             $styText[] = "WIDTH 1"; //pach mapserver 5.6 non disegna un width di default
-        if (!empty($aStyle["pattern_def"]) && $this->msVersion == '6')
+        }
+        if (!empty($aStyle["pattern_def"]) && $this->msVersion == '6') {
             $styText[] = $aStyle["pattern_def"];
-        if (!empty($aStyle["minwidth"]))
+        }
+        if (!empty($aStyle["minwidth"])) {
             $styText[] = "MINWIDTH " . $aStyle["minwidth"];
-        if (!empty($aStyle["maxwidth"]))
+        }
+        if (!empty($aStyle["maxwidth"])) {
             $styText[] = "MAXWIDTH " . $aStyle["maxwidth"];
-        if ((!empty($aStyle["symbol_name"])))
+        }
+        if ((!empty($aStyle["symbol_name"]))) {
             $this->aSymbols[$aStyle["symbol_name"]] = $aStyle["symbol_name"];
-        if (!empty($aStyle["style_def"]))
+        }
+        if (!empty($aStyle["style_def"])) {
             $styText[] = $aStyle["style_def"];
+        }
         $styleText = "\t" . implode("\n\t\t\t", $styText);
         return $styleText;
     }
 
     /**
      * Funzione utilizzato ancora in rpc.php
-     * 
+     *
      * SERVE A MARCO??????
-     * 
+     *
      * @param type $layerId
      * @return type
      */
     
-    public function getFeatureField($layerId = null) {
-        $result = Array();
-        if ($layerId)
+    public function getFeatureField($layerId = null)
+    {
+        $result = array();
+        if ($layerId) {
             $this->init($layerId);
+        }
         $data = $this->_getLayerData();
         $sqlField = "SELECT * FROM $data LIMIT 0;";
         $aFeature = $this->aFeature;
@@ -791,7 +888,7 @@ class gcFeature {
             $relationName = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["table_name"]) : ($aFeature["data"]);
             $relationSchema = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["table_schema"]) : ($aFeature["table_schema"]);
             $relationConnStr = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["connection_string"]) : ($aFeature["connection_string"]);
-            $result[$fieldId] = Array(
+            $result[$fieldId] = array(
                 "id" => $fieldId,
                 "name" => $field["field_name"],
                 "title" => $field["field_title"],

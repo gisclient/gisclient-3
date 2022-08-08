@@ -36,15 +36,15 @@ if (!empty(getenv('TRUSTED_PROXIES'))) {
 /************ Session Name ********/
 define('GC_SESSION_NAME', 'gisclient3'); // se definito, viene chiamato session_name() prima di session_start();
 
-ini_set('max_execution_time',90);
-ini_set('memory_limit','512M');
+ini_set('max_execution_time', 90);
+ini_set('memory_limit', '512M');
 ini_set('session.cookie_lifetime', 86400);
 ini_set('session.gc_maxlifetime', 86400);
 //error_reporting (E_ERROR | E_PARSE);
-error_reporting  (E_ALL & ~E_STRICT);
+error_reporting(E_ALL & ~E_STRICT);
 
-define('LONG_EXECUTION_TIME',300);
-define('LONG_EXECUTION_MEMORY','512M');
+define('LONG_EXECUTION_TIME', 300);
+define('LONG_EXECUTION_MEMORY', '512M');
 
 //custom tab files
 //define('TAB_DIR','it-custom');
@@ -76,11 +76,11 @@ if (php_sapi_name() == "cli") {
 }
 define('INTERNAL_URL', getenv('AUTHOR_INTERNAL_URL') ?: 'http://127.0.0.1/'); // url for internal requests
 define('MAP_URL', 'http://localhost/map/'); //URL CLIENT DI MAPPA
-define('IMAGE_PATH','/tmp/');
-define('IMAGE_URL','/tmp/');
-define('PROJ_LIB',"/usr/share/proj");
-define('TILES_CACHE','/tmp/');
-define('OPENLAYERS','///cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js'); // PREVIEW MAP PER LAYERGROUP E LAYER
+define('IMAGE_PATH', '/tmp/');
+define('IMAGE_URL', '/tmp/');
+define('PROJ_LIB', "/usr/share/proj");
+define('TILES_CACHE', '/tmp/');
+define('OPENLAYERS', '///cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js'); // PREVIEW MAP PER LAYERGROUP E LAYER
 //define('PROJ_LIB',"/msiis/proj/nad/");
 /*******************                  *************************/
 
@@ -132,70 +132,72 @@ define('REDLINE_TABLE', 'annotazioni');         //NOME DELLA TABELLA DB DELLE AN
 define('REDLINE_SRID', '4326');                 //SRID DELLA TABELLA DB DELLE ANNOTAZIONI
 define('REDLINE_FONT', 'dejavu-sans-bold');     //FONT DELLE ANNOTAZIONI. DEVE ESISTERE TRA I FONT AUTHOR
 
-require_once (ROOT_PATH."config/config.db.php");
+require_once(ROOT_PATH."config/config.db.php");
 
 //Author
-define('ADMIN_PATH',ROOT_PATH.'public/admin/');
+define('ADMIN_PATH', ROOT_PATH.'public/admin/');
 
 //debug
-if(!defined('DEBUG')) define('DEBUG', 0); // Debugging 0 off 1 on
+if (!defined('DEBUG')) {
+    define('DEBUG', 0); // Debugging 0 off 1 on
+}
 
 /****************** QUERY REPORTS ***************+*/
-define('MAX_REPORT_ROWS',5000);
-define('REPORT_PROJECT_NAME','REPORT');
-define('REPORT_MAPSET_NAME','report');
-define('FONT_LIST','fonts');
-define('MS_VERSION','');
+define('MAX_REPORT_ROWS', 5000);
+define('REPORT_PROJECT_NAME', 'REPORT');
+define('REPORT_MAPSET_NAME', 'report');
+define('FONT_LIST', 'fonts');
+define('MS_VERSION', '');
 
-define('CATALOG_EXT','SHP,TIFF,TIF,ECW');   //elenco delle estensioni caricabili sul layer
-define('DEFAULT_ZOOM_BUFFER',100);          //buffer di zoom in metri in caso non venga specificato layer.tolerance
-define('MAX_HISTORY',6);                    //massimo numero di viste memorizzate
-define('MAX_OBJ_SELECTED',2000);            //massimo numero di oggetti selezionabili
+define('CATALOG_EXT', 'SHP,TIFF,TIF,ECW');   //elenco delle estensioni caricabili sul layer
+define('DEFAULT_ZOOM_BUFFER', 100);          //buffer di zoom in metri in caso non venga specificato layer.tolerance
+define('MAX_HISTORY', 6);                    //massimo numero di viste memorizzate
+define('MAX_OBJ_SELECTED', 2000);            //massimo numero di oggetti selezionabili
 define('WIDTH_SELECTION', 4);               //larghezza della polilinea di selezione
 define('TRASP_SELECTION', 50);              //trasparenza della polilinea di selezione
 define('COLOR_SELECTION', '255 0 255');     //colore della polilinea di selezione
 define('MAP_BG_COLOR', '255 255 255');      //colore dello sfondo per default
 define('EDIT_BUTTON', 'edit');
 
-define('DEFAULT_TOLERANCE',4);                          //Raggio di ricerca in caso non venga specificato layer.tolerance
-define('LAYER_SELECTION','__sel_layer');                //Nome per i layer di selezione
-define('LAYER_IMAGELABEL','__image_label');             //Nome per il layer testo sulla mappa
-define('LAYER_READLINE','__readline_layer');
-define('DATALAYER_ALIAS_TABLE','__data__');             //nome riservato ad alias per il nome della tabella del layer (usato dal sistema nelle query, non ci devono essere tabelle con questo nome)
-define('WRAP_READLINE','\\');
-define('COLOR_REDLINE','0 0 255');                      //Colore Line di contorno oggetti poligono o linea selezionati
-define('OBJ_COLOR_SELECTION','255 255 0');              //Colore Line di contorno oggetti poligono o linea selezionati
-define('MAP_DPI',72);                                   //Mapserver map resolution
-define('TILE_SIZE',256);                                //Mapserver map resolution
+define('DEFAULT_TOLERANCE', 4);                          //Raggio di ricerca in caso non venga specificato layer.tolerance
+define('LAYER_SELECTION', '__sel_layer');                //Nome per i layer di selezione
+define('LAYER_IMAGELABEL', '__image_label');             //Nome per il layer testo sulla mappa
+define('LAYER_READLINE', '__readline_layer');
+define('DATALAYER_ALIAS_TABLE', '__data__');             //nome riservato ad alias per il nome della tabella del layer (usato dal sistema nelle query, non ci devono essere tabelle con questo nome)
+define('WRAP_READLINE', '\\');
+define('COLOR_REDLINE', '0 0 255');                      //Colore Line di contorno oggetti poligono o linea selezionati
+define('OBJ_COLOR_SELECTION', '255 255 0');              //Colore Line di contorno oggetti poligono o linea selezionati
+define('MAP_DPI', 72);                                   //Mapserver map resolution
+define('TILE_SIZE', 256);                                //Mapserver map resolution
 // define('SERVICE_MAX_RESOLUTION',156543.03392812);    // WMTS: Calcolare in base al valore presente nel campo ScaleDenominator del GetCapabilities (nella TileMatrix 0)
 // define('SERVICE_MIN_ZOOM_LEVEL',7);                  // WMTS: min zoom level (default: 0 for google maps)
 // define('SERVICE_MAX_ZOOM_LEVEL',19);                 // WMTS: max zoom level (default: 21 for google maps)
-define('PDF_K',2);//Mapserver map resolution
+define('PDF_K', 2);//Mapserver map resolution
 
-define('SCALE','8000000,7000000,6000000,5000000,4000000,3000000,2000000,1000000,900000,800000,700000,600000,500000,400000,300000,200000,100000,50000,25000,10000,7500,5000,2000,1000,500,200,100,50');
+define('SCALE', '8000000,7000000,6000000,5000000,4000000,3000000,2000000,1000000,900000,800000,700000,600000,500000,400000,300000,200000,100000,50000,25000,10000,7500,5000,2000,1000,500,200,100,50');
 
 /****************** LEGEND ***************+*/
-define('LEGEND_ICON_W',24);
-define('LEGEND_ICON_H',16);
-define('LEGEND_POINT_SIZE',15);
-define('LEGEND_LINE_WIDTH',1);
-define('LEGEND_POLYGON_WIDTH',2);
-define('PRINT_PDF_FONT','times');
+define('LEGEND_ICON_W', 24);
+define('LEGEND_ICON_H', 16);
+define('LEGEND_POINT_SIZE', 15);
+define('LEGEND_LINE_WIDTH', 1);
+define('LEGEND_POLYGON_WIDTH', 2);
+define('PRINT_PDF_FONT', 'times');
 
 /****************** DATA MANAGER ***************+*/
 define('USE_DATA_IMPORT', false);                                           // true = ABILITA IL DATAMANAGER
 define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');            //TABELLA DB IN CUI VENGONO SCRITTI GLI UTENTI DI EDITING
 define('TRANSFORM_EDIT_GEOMETRY', false);                                   // true = CONSENTE L'EDITING SU MAPPA CON SRID XXXXX DI UNA TABELLA DB CON SRID YYYYY
-//define('USE_PHP_EXCEL', true);                                            // true = ABILITA IL TAB XLS DEL DATAMANAGER. DEVE ANCHE ESISTERE LA LIBRERIA PHPExcel 
+//define('USE_PHP_EXCEL', true);                                            // true = ABILITA IL TAB XLS DEL DATAMANAGER. DEVE ANCHE ESISTERE LA LIBRERIA PHPExcel
 //define('MEASURE_AREA_COL_NAME', 'gc_area');                               //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELL'AREA IN EDITING DI MAPPA
 //define('MEASURE_LENGTH_COL_NAME', 'gc_length');                           //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELLA LUNGHEZZA IN EDITING DI MAPPA
 //define('COORDINATE_X_COL_NAME', 'gc_coord_x');                            //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELLA COORDINATA X IN EDITING DI MAPPA
 //define('COORDINATE_Y_COL_NAME', 'gc_coord_y');                            //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELLA COORDINATA Y IN EDITING DI MAPPA
 //define('LAST_EDIT_USER_COL_NAME', 'gc_user');                             //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL NOME DELL'UTENTE DI ULTIMA MODIFICA IN EDITING DI MAPPA
 //define('LAST_EDIT_DATE_COL_NAME', 'gc_date');                             //NOME DEL CAMPO DB IN CUI VERRA' SCRITTA LA DATA DI ULTIMA MODIFICA IN EDITING DI MAPPA
-//define('UPLOADED_FILES_PRIVATE_PATH', ROOT_PATH.'files/');                //DECOMMENTARE PER ABILITARE IL CARICAMENTO IMMAGINI/DOCUMENTI IN FASE DI EDITING DA MAPPA 
-//define('UPLOADED_FILES_PUBLIC_PATH', ROOT_PATH.'public/services/files/'); //DECOMMENTARE PER ABILITARE IL CARICAMENTO IMMAGINI/DOCUMENTI IN FASE DI EDITING DA MAPPA 
-//define('UPLOADED_FILES_PUBLIC_URL', PUBLIC_URL.'services/files/');        //DECOMMENTARE PER ABILITARE IL CARICAMENTO IMMAGINI/DOCUMENTI IN FASE DI EDITING DA MAPPA 
+//define('UPLOADED_FILES_PRIVATE_PATH', ROOT_PATH.'files/');                //DECOMMENTARE PER ABILITARE IL CARICAMENTO IMMAGINI/DOCUMENTI IN FASE DI EDITING DA MAPPA
+//define('UPLOADED_FILES_PUBLIC_PATH', ROOT_PATH.'public/services/files/'); //DECOMMENTARE PER ABILITARE IL CARICAMENTO IMMAGINI/DOCUMENTI IN FASE DI EDITING DA MAPPA
+//define('UPLOADED_FILES_PUBLIC_URL', PUBLIC_URL.'services/files/');        //DECOMMENTARE PER ABILITARE IL CARICAMENTO IMMAGINI/DOCUMENTI IN FASE DI EDITING DA MAPPA
 
 define('CLIENT_LOGO', null); //LOGO CLIENTE PERSONALIZZATO IN AUTHOR
 
@@ -205,4 +207,3 @@ define('MAPFILE_MAX_SIZE', '4096'); //MASSIMA DIMENSIONE IN PIXEL DEL MAPFILE. P
 define('OWS_CACHE_TTL', 60);            // CACHE PER EVITARE DOPPIE RICHIESTE DI OL
 define('OWS_CACHE_TTL_OPEN', 4*60*60);  // CACHE ALLA PRIMA RICHIESTA DI MAPPA PER VELOCIZZARE
 //define('DYNAMIC_LAYERS', '');         // comma separated list of dynamic layers (same url different result)
-

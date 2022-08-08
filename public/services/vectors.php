@@ -8,41 +8,49 @@ use GisClient\Author\Utils\PrintDocument;
 $gcService = GCService::instance();
 $gcService->startSession();
 
-function outputError($msg) {
-	header("Status: 500 Internal Server Error");
-	die(json_encode(array('error'=>$msg)));
+function outputError($msg)
+{
+    header("Status: 500 Internal Server Error");
+    die(json_encode(array('error'=>$msg)));
 }
 
 
-if(!isset($_REQUEST['REQUEST']) || $_REQUEST['REQUEST'] != 'GetMap') die('Invalid request');
+if (!isset($_REQUEST['REQUEST']) || $_REQUEST['REQUEST'] != 'GetMap') {
+    die('Invalid request');
+}
 
-if(!defined('PRINT_VECTORS_TABLE') || !defined('PRINT_VECTORS_SRID')) outputError('Missing config print vectors values');
+if (!defined('PRINT_VECTORS_TABLE') || !defined('PRINT_VECTORS_SRID')) {
+    outputError('Missing config print vectors values');
+}
 $tableName = PRINT_VECTORS_TABLE;
 $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
 
-if(!file_exists(ROOT_PATH.'config/printVectorsSLD.xml')) outputError('Missing SLD');
+if (!file_exists(ROOT_PATH.'config/printVectorsSLD.xml')) {
+    outputError('Missing SLD');
+}
 $sld = file_get_contents(ROOT_PATH.'config/printVectorsSLD.xml');
 
 $enableDebug = false;
 $logfile = "/tmp/mapfile.vector.debug";
 if (defined('DEBUG') && DEBUG) {
-	$enableDebug = true;
-	$logfile = DEBUG_DIR . "/mapfile.vector.debug";
+    $enableDebug = true;
+    $logfile = DEBUG_DIR . "/mapfile.vector.debug";
 }
 
 $db = GCApp::getDB();
 
 $geomTypes = MapImage::$vectorTypes;
 
-if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
+if (empty($_REQUEST['SRS'])) {
+    outputError('Missing geometry srid');
+}
 $parts = explode(':', $_REQUEST["SRS"]);
 $mapSRID = $parts[1];
 $SRS_params = array();
 
 
-if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST["SERVICE"] == "WMS") {
-	
-	ms_ResetErrorList();
+if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST["SERVICE"] == "WMS") {
+    ms_ResetErrorList();
     $objRequest = ms_newOwsrequestObj();
     foreach ($_REQUEST as $k => $v) {
         if (is_string($v)) {
@@ -50,47 +58,53 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
         }
     }
 
-	if(empty($_REQUEST['LAYERS'])) outputError('Missing layers');
-	$geomFields = array();
-	foreach($geomTypes as $type) array_push($geomFields, 'st_transform('. $type['db_field'] . ", $mapSRID) as " . $type['db_field']);
-	$sql = "select ".implode(",", $geomFields)." from $schema.$tableName".
-		" where print_id = ?";
-	$stmt = $db->prepare($sql);
-	$stmt->execute(array($_REQUEST['LAYERS']));
-	$redline = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	$types = array();
-    foreach($redline as $row) {
-        foreach($geomTypes as $index => $type) {
-            if(!empty($row[$type['db_field']]) && !in_array($geomTypes[$index], $types)) {
+    if (empty($_REQUEST['LAYERS'])) {
+        outputError('Missing layers');
+    }
+    $geomFields = array();
+    foreach ($geomTypes as $type) {
+        array_push($geomFields, 'st_transform('. $type['db_field'] . ", $mapSRID) as " . $type['db_field']);
+    }
+    $sql = "select ".implode(",", $geomFields)." from $schema.$tableName".
+        " where print_id = ?";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array($_REQUEST['LAYERS']));
+    $redline = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $types = array();
+    foreach ($redline as $row) {
+        foreach ($geomTypes as $index => $type) {
+            if (!empty($row[$type['db_field']]) && !in_array($geomTypes[$index], $types)) {
                 array_push($types, $geomTypes[$index]);
             }
-        }        
+        }
     }
 
-	if(empty($types)) { // empty geom, che facciamo?
-	}
+    if (empty($types)) { // empty geom, che facciamo?
+    }
 
-	$oMap=ms_newMapObj('');
+    $oMap=ms_newMapObj('');
         
         // set MAXSIZE of mapfile to the value defined in the configuration
-        if (defined('MAPFILE_MAX_SIZE')) {
-            $oMap->set('maxsize',  MAPFILE_MAX_SIZE);
-        } else {
-            $oMap->set('maxsize',  '4096');
-        }
+    if (defined('MAPFILE_MAX_SIZE')) {
+        $oMap->set('maxsize', MAPFILE_MAX_SIZE);
+    } else {
+        $oMap->set('maxsize', '4096');
+    }
         
-	if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
-	$aExtent = explode(",",$_REQUEST['BBOX']);
+    if (defined('PROJ_LIB')) {
+        $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
+    }
+    $aExtent = explode(",", $_REQUEST['BBOX']);
 
-	$oMap->extent->setextent($aExtent[0], $aExtent[1], $aExtent[2], $aExtent[3]);
-	$oMap->setSize(intval($_REQUEST['WIDTH']), intval($_REQUEST['HEIGHT']));	
-	$oMap->setProjection("init=".strtolower($_REQUEST['SRS']));
-	if ($enableDebug) { 
-		$oMap->set('debug', 5);
-		$oMap->setconfigoption('MS_ERRORFILE', $logfile);
-	}
-	$onlineUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
-	$mapfileBase = <<<EOMAP
+    $oMap->extent->setextent($aExtent[0], $aExtent[1], $aExtent[2], $aExtent[3]);
+    $oMap->setSize(intval($_REQUEST['WIDTH']), intval($_REQUEST['HEIGHT']));
+    $oMap->setProjection("init=".strtolower($_REQUEST['SRS']));
+    if ($enableDebug) {
+        $oMap->set('debug', 5);
+        $oMap->setconfigoption('MS_ERRORFILE', $logfile);
+    }
+    $onlineUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
+    $mapfileBase = <<<EOMAP
     WEB
         METADATA
             # for mapserver 6.0
@@ -112,16 +126,16 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 
 EOMAP;
     $oMap->web->updateFromString($mapfileBase);
- 	$oMap->outputformat->set('name','png');
-	$oMap->outputformat->set('mimetype','image/png');
-	$oMap->outputformat->set('driver','AGG/PNG');
-	$oMap->outputformat->set('extension','png');
-	$oMap->outputformat->set('imagemode',MS_IMAGEMODE_RGBA);
-	$oMap->outputformat->set('transparent',MS_ON);
+    $oMap->outputformat->set('name', 'png');
+    $oMap->outputformat->set('mimetype', 'image/png');
+    $oMap->outputformat->set('driver', 'AGG/PNG');
+    $oMap->outputformat->set('extension', 'png');
+    $oMap->outputformat->set('imagemode', MS_IMAGEMODE_RGBA);
+    $oMap->outputformat->set('transparent', MS_ON);
 
     $oMap->selectOutputFormat('png');
-	
-	$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');		
+    
+    $oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
     
     $nId = ms_newsymbolobj($oMap, "CIRCLE");
     $oSymbol = $oMap->getsymbolobjectbyid($nId);
@@ -135,48 +149,48 @@ EOMAP;
     $aPoints[1] = 1;
     $oSymbol->setpoints($aPoints);
 
-	$layersToInclude = array();
+    $layersToInclude = array();
     
-	foreach($types as $type) {
+    foreach ($types as $type) {
         array_push($layersToInclude, 'printvectors_'.$type['db_type']);
-		$oLay = ms_newLayerObj($oMap);
-		$oLay->set('name', 'printvectors_'.$type['db_type']);
-		$oLay->set('group', 'printvectors');
-		$oLay->set('type', $type['ms_type']);
-		$oLay->setConnectionType(MS_POSTGIS);
-		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
+        $oLay = ms_newLayerObj($oMap);
+        $oLay->set('name', 'printvectors_'.$type['db_type']);
+        $oLay->set('group', 'printvectors');
+        $oLay->set('type', $type['ms_type']);
+        $oLay->setConnectionType(MS_POSTGIS);
+        $oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
         $data = "the_geom from (select gid, print_id, ".$type['db_field']." as the_geom from $schema.$tableName) as foo using unique gid using srid=".PRINT_VECTORS_SRID;
-		$oLay->set('data', $data);
-		$oLay->setFilter("print_id=".$_REQUEST['LAYERS']);
-		$oLay->setProjection("init=epsg:".PRINT_VECTORS_SRID);
+        $oLay->set('data', $data);
+        $oLay->setFilter("print_id=".$_REQUEST['LAYERS']);
+        $oLay->setProjection("init=epsg:".PRINT_VECTORS_SRID);
         $oLay->set('opacity', 50);
         $oLay->set('sizeunits', MS_PIXELS);
-		$oLay->set('status', MS_ON);
+        $oLay->set('status', MS_ON);
         $oLay->applySLD($sld);
-	}
+    }
     
-    $objRequest->setParameter('LAYERS', implode(",",$layersToInclude));
+    $objRequest->setParameter('LAYERS', implode(",", $layersToInclude));
     
-    if($enableDebug) {
+    if ($enableDebug) {
         $oMap->save(DEBUG_DIR."printvectors.map");
     }
     
-    ms_ioinstallstdouttobuffer(); 
+    ms_ioinstallstdouttobuffer();
     
     $oMap->owsdispatch($objRequest);
-    $contenttype = ms_iostripstdoutbuffercontenttype(); 
-    header('Content-type: image/png'); 
-    ms_iogetStdoutBufferBytes(); 
+    $contenttype = ms_iostripstdoutbuffercontenttype();
+    header('Content-type: image/png');
+    ms_iogetStdoutBufferBytes();
     ms_ioresethandlers();
-	
-	// check if something bad happenend
-	$error = ms_GetErrorObj();
-	$errMsg = '';
-	while($error && $error->code != MS_NOERR) {
-		$errMsg .= sprintf("Error in %s: %s<br>\n", $error->routine, $error->message);
-		$error = $error->next();
-	}
-	if ($errMsg != '') {
-		outputError($errMsg);
-	}
+    
+    // check if something bad happenend
+    $error = ms_GetErrorObj();
+    $errMsg = '';
+    while ($error && $error->code != MS_NOERR) {
+        $errMsg .= sprintf("Error in %s: %s<br>\n", $error->routine, $error->message);
+        $error = $error->next();
+    }
+    if ($errMsg != '') {
+        outputError($errMsg);
+    }
 }

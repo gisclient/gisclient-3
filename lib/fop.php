@@ -16,7 +16,6 @@ class EFOPError extends Exception
         // Output of the exception
         return $this->output;
     }
-
 }
 
 
