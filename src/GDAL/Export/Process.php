@@ -37,6 +37,14 @@ class Process implements OfflineProcessInterface
         }
     }
 
+    /**
+     * Get Command to run
+     *
+     * @param OfflineTaskInterface $task
+     * @param boolean $runInBackground
+     * @param boolean $asArray
+     * @return string|array
+     */
     public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
         if (!($task instanceof Task)) {
@@ -98,8 +106,8 @@ class Process implements OfflineProcessInterface
     {
         $this->check($task);
         if (!$this->isRunning($task)) {
-            $cmd = $this->getCommand($task);
-            $pid = shell_exec($this->getCommand($task, $runInBackground));
+            $cmd = $this->getCommand($task, $runInBackground);
+            $pid = shell_exec($cmd);
         } else {
             $pid = $this->getPID($task);
         }

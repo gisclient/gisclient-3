@@ -371,7 +371,7 @@ class MapImage
             $db->exec($sql);
             $sql = 'select addgeometrycolumn(:schema, :table, :column, :srid, :type, 2)';
             $addGeometryColumn = $db->prepare($sql);
-            foreach (self::$vectorTypes as $key => $type) {
+            foreach (self::$vectorTypes as $type) {
                 $addGeometryColumn->execute(array(
                     'schema'=>$schema,
                     'table'=>$tableName,

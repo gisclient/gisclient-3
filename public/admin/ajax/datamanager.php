@@ -690,7 +690,7 @@ switch ($_REQUEST['action']) {
         $data = $dataDb->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         foreach ($data as $nRow => $row) {
             $colCount = 0;
-            foreach ($row as $nCell => $cell) {
+            foreach ($row as $cell) {
                 $sheet->setCellValueByColumnAndRow($colCount, ($nRow+2), $cell);
                 $colCount++;
             }
@@ -942,7 +942,7 @@ switch ($_REQUEST['action']) {
             }
             $sql = 'insert into '.$schema.'.'.$tableName.' ('.implode(',', $columns).') values ('.implode(',', $sqlParams).');';
             $stmt = $dataDb->prepare($sql);
-            foreach ($data as $rowIndex => $row) {
+            foreach ($data as $row) {
                 $params = array();
                 foreach ($row as $colIndex => $val) {
                     $params['param_'.$colIndex] = $val;

@@ -20,8 +20,7 @@ $sql = "select catalog_path, connection_type, layer.data from ".DB_SCHEMA.".laye
 $stmt = $db->prepare($sql);
 $stmt->execute(array($layerId));
 $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
-$tableName = $catalogData['data'];
-list($connStr, $schema) = connAdminInfofromPath($catalogData["catalog_path"]);
+list(, $schema) = connAdminInfofromPath($catalogData["catalog_path"]);
 $dataDb = GCApp::getDataDB($catalogData['catalog_path']);
 
 $result = array('steps'=>3, 'data'=>array(), 'data_objects'=>array());

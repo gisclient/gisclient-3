@@ -27,7 +27,7 @@ class SenchaTouchUtils
         }
         $mapOptions['olMapConfig'] = $olMapConfig;
         $layers = array();
-        foreach ($themes as $themeName => $theme) {
+        foreach ($themes as $theme) {
             $lastThemeType = null;
             foreach ($theme as $key => $val) {
                 if (in_array($key, array('title', 'radio'))) {

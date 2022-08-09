@@ -7,37 +7,38 @@ Descrizione della classe e dei metodi
 class Tabella
 {
     // costanti che definiscono i file immagine
-    var $testo_titolo="#FFFFFF";
-    var $sfondo_titolo="#728bb8";
-    var $sfondo_label="#728bb8";
-    var $testo_label="#FFFFFF";
-    var $stile="stiletabella";
-    var $idpratica;
-    var $titolo; //stringa del titolo puo essere il titolo esplicito o il nome del campo che contiene il titolo
-    var $button_menu;//pulsante da inserire nella riga di intestazione della tabella "nuovo" o "modifica"
-    var $array_hidden;//array con l'elenco dei campi nascosti
+    public $testo_titolo="#FFFFFF";
+    public $sfondo_titolo="#728bb8";
+    public $sfondo_label="#728bb8";
+    public $testo_label="#FFFFFF";
+    public $stile="stiletabella";
+    public $idpratica;
+    public $titolo; //stringa del titolo puo essere il titolo esplicito o il nome del campo che contiene il titolo
+    public $button_menu;//pulsante da inserire nella riga di intestazione della tabella "nuovo" o "modifica"
+    public $array_hidden;//array con l'elenco dei campi nascosti
     
-    var $array_dati;//array associativo campo=>dato con i dati da visualizzare
-    var $num_record;//numero di record presenti in array_dati
-    var $curr_record;//bookmark al record corrente di array_dati
+    public $array_dati;//array associativo campo=>dato con i dati da visualizzare
+    public $num_record;//numero di record presenti in array_dati
+    public $curr_record;//bookmark al record corrente di array_dati
     
     
-    var $mode;
-    var $config_file;//file di configurazione del form
-    var $schemadb;
-    var $tabelladb; //nome della tabella o vista sul db dalla quale estraggo i dati
+    public $mode;
+    public $config_file;//file di configurazione del form
+    public $schemadb;
+    public $tabelladb; //nome della tabella o vista sul db dalla quale estraggo i dati
     //var $campi_obb; // array con l'elenco dei campi obbligatori (non serve qui)
-    var $tab_config; //vettore che definisce la configurazione della tabella. La dimensione corrisponde al numero di righe per le tabelle H o al numero di colonne per le tabelle V
+    public $tab_config; //vettore che definisce la configurazione della tabella. La dimensione corrisponde al numero di righe per le tabelle H o al numero di colonne per le tabelle V
                      //ogni elemento è un vettore con un elemento per la tabella V e un numero di elementi pari al numero di campi sulla stessa riga per le tabelle H
-    var $num_col; // numero di colonne di tab_config
-    var $elenco_campi;//elenco dei campi per la select
-    var $pkeys;//elenco delle primary keys
-    var $pkeys_value;//elenco dei valori delle chiavi primarie
-    var $elenco_modelli;//elenco dei modelli di stampa da proporre nel form separati da virgola(posso non mettere nulla e lasciare all'utente ogni volta libera scelta)
+    public $num_col; // numero di colonne di tab_config
+    public $elenco_campi;//elenco dei campi per la select
+    public $pkeys;//elenco delle primary keys
+    public $pkeys_value;//elenco dei valori delle chiavi primarie
+    public $elenco_modelli;//elenco dei modelli di stampa da proporre nel form separati da virgola(posso non mettere nulla e lasciare all'utente ogni volta libera scelta)
     
-    var $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
-    var $display_number=-1;
-    function Tabella($config_file, $mode = "standard")
+    public $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
+    public $display_number=-1;
+
+    public public function Tabella($config_file, $mode = "standard")
     {
     // ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
         //  NUOVA MODALITA
@@ -99,12 +100,12 @@ class Tabella
         $this->order_fld=(!empty($data["order_fld"]))?implode(",", explode("#", $data["order_fld"])):array();
     }
     
-    function get_idpratica()
+    public public function get_idpratica()
     {
         return $this->idpratica;
     }
     
-    function set_titolo($titolo, $menu = 0, $hidden = 0, $display_first = 0)
+    public public function set_titolo($titolo, $menu = 0, $hidden = 0, $display_first = 0)
     {
         $this->titolo=$titolo;
         if ($menu) {
@@ -118,7 +119,7 @@ class Tabella
         }
     }
     
-    function get_titolo($self = null)
+    public public function get_titolo($self = null)
     {
         
         if (is_null($self)) {
@@ -183,7 +184,7 @@ class Tabella
         print $tabella_titolo;
     }
     // >>>>>>>>>>>>>>>>>>>>>>>>>ATTENZIONE OGNI TABELLA DEVE AVERE I CAMPI ID PRATICA E CHK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    function set_dati($data = "", $order = "")
+    public public function set_dati($data = "", $order = "")
     {
         
         //se passo un array questo è l'array di POST altrimenti è il filtro - per default filtra su idpratica se settato
@@ -241,7 +242,7 @@ class Tabella
             return  $this->num_record;
         }
     }
-    function set_multiple_data($data)
+    public function set_multiple_data($data)
     {
         
         if (is_array($data)) {
@@ -265,7 +266,7 @@ class Tabella
         $this->num_record=count($data);
         $this->curr_record=0;
     }
-    function date_format($stringa_data)
+    public function date_format($stringa_data)
     {
     //formatta la data in giorno-mese-anno
         if ($stringa_data) {
@@ -275,12 +276,12 @@ class Tabella
         return $stringa_data;
     }
     
-    function set_db($db)
+    public function set_db($db)
     {
         $this->db=$db;
     }
     
-    function get_db()
+    public function get_db()
     {
         if (!isset($this->db)) {
             $this->connettidb();
@@ -288,7 +289,7 @@ class Tabella
         return $this->db;
     }
     
-    function connettidb()
+    public function connettidb()
     {
         $this->db = GCApp::getDB();
         if (is_null($this->db)) {
@@ -296,14 +297,14 @@ class Tabella
         }
     }
     
-    function close_db()
+    public function close_db()
     {
         if (isset($this->db)) {
             unset($this->db);
         }
     }
     
-    function set_tag($mytag)
+    public function set_tag($mytag)
     {
         $this->tag=$mytag;
     }

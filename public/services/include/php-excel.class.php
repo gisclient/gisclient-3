@@ -124,7 +124,7 @@ class Excel_XML
     public function addRow($array)
     {
         $cells = "";
-        foreach ($array as $k => $v) :
+        foreach ($array as $v) :
                 $type = 'String';
             if ($this->bConvertTypes === true && is_numeric($v)) :
                     $type = 'Number';
@@ -141,7 +141,7 @@ class Excel_XML
      */
     public function addArray($array)
     {
-        foreach ($array as $k => $v) {
+        foreach ($array as $v) {
                 $this->addRow($v);
         }
     }

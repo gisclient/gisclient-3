@@ -25,6 +25,7 @@ class Db
                 throw new \Exception("Connection type not supported", 1);
             }
         } else {
+            $dbParams = [];
             $dbParams['db_host'] = DB_HOST;
             $dbParams['db_port'] = DB_PORT;
             $dbParams['db_user'] = DB_USER;

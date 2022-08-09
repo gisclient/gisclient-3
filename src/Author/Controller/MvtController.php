@@ -2,13 +2,7 @@
 
 namespace GisClient\Author\Controller;
 
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
 use GisClient\Author\Db;
@@ -52,7 +46,7 @@ class MvtController
     {
         $mapObj = $this->getMap($project, $map);
 
-        list($themeName, $layerName) = explode('.', $layer);
+        list(, $layerName) = explode('.', $layer);
         $layer = $this->getLayer($mapObj, 'layer', $layerName);
 
         $dbObj = new Db($layer->getCatalog());

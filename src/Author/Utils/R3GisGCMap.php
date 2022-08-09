@@ -184,12 +184,6 @@ class R3GisGCMap
             $maxRes = false;
         }
         
-        if ($row["minscale"] > 0) {
-            $minRes = floatval($row["minscale"])/$pixelsPerUnit;
-        } else {
-            $minRes = false;
-        }
-        
         //Normalizzo rispetto all'array delle risoluzioni
         $mapOptions["resolutions"] = $this->getResolutions($this->mapsetScaleType);
         $mapOptions["minZoomLevel"] = $this->arrayIndex($mapOptions["resolutions"], $maxRes);
@@ -261,7 +255,6 @@ class R3GisGCMap
         $featureTypes = $this->getFeatureTypes();
         $extents = $this->getMaxExtents();
 
-        $sqlParams = array();
         $sqlAuthorizedLayers = "FALSE";
         if (count($this->authorizedLayers)) {
             $sqlAuthorizedLayers = "layer_id IN (".implode(',', $this->authorizedLayers).")";
@@ -311,7 +304,7 @@ class R3GisGCMap
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
             $themeTitle = empty($row['theme_title']) ?
-                $theme_name :
+                $themeName :
                 ((strtoupper(CHAR_SET) != 'UTF-8') ?
                     utf8_encode($row["theme_title"]) :
                     $row["theme_title"]
@@ -830,10 +823,6 @@ class R3GisGCMap
     
     private function getFeatureTypes()
     {
-        $returnFeatureTypes = array(
-            'theme'=>array(),
-            'layergroup'=>array()
-        );
         $wfsGeometryType = array(
             "point" => "PointPropertyType",
             "multipoint" => "MultiPointPropertyType",
@@ -1442,15 +1431,7 @@ class R3GisGCMap
     private function getMaxExtents()
     {
         $extents = array();
-        $userGroupFilter = '';
-        if (!\GCApp::getAuthenticationHandler()->isAdmin($this->projectName)) {
-            $userGroup = '';
-            if (!empty($this->authorizedGroups)) {
-                $userGroup =  " OR groupname in(".implode(',', $this->authorizedGroups).")";
-            }
-            $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
-        }
-        
+
         $sql = "SELECT layergroup_id, layer_id, data_extent
 				FROM ".DB_SCHEMA.".layer 
 				INNER JOIN ".DB_SCHEMA.".layergroup using (layergroup_id) 

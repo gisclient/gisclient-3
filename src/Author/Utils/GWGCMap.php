@@ -288,7 +288,7 @@ class GWGCMap
         $mapTmp = \ms_newMapObjFromString(
             file_get_contents(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map")
         );
-        $layersHash = $mapTmp->getAllLayerNames();
+        //$layersHash = $mapTmp->getAllLayerNames();
         $mapTmp->free();
 
         $allUserLayers = $this->layerAuthChecker->getLayers(array(
@@ -300,7 +300,6 @@ class GWGCMap
         //$extents = $this->_getMaxExtents();
         //print_array($userLayers);
 
-        $sqlParams = array();
         $sqlAuthorizedLayers = "";
         if (count($authorizedLayers)>0) {
             $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', $authorizedLayers).")";
@@ -343,9 +342,6 @@ class GWGCMap
     
         $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $themeMinScale = false;
-        $themeMaxScale = false;
-
         //Chiamata a layer singolo
         if ($this->mapsetSingleLayer) {
             // **** Mapset layer at ID 0
@@ -383,7 +379,7 @@ class GWGCMap
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
             $themeTitle = empty($row['theme_title']) ?
-                $theme_name :
+                $themeName :
                 ((strtoupper(CHAR_SET) != 'UTF-8') ?
                     utf8_encode($row["theme_title"]) :
                     $row["theme_title"]
@@ -588,7 +584,7 @@ class GWGCMap
                         
                         array_push($this->mapLayers[$idx]["nodes"], $node);
 
-                        continue;
+                        break; // or continue 2?
                     } elseif ($row["layergroup_single"] == 1) {
                         //Layergroup singola immagine: passo solo il layergroupname
                         $aLayer["parameters"]["layers"] = array($layergroupName);
@@ -624,7 +620,7 @@ class GWGCMap
                     $layerParameters = array();
 
                     if (!$mapproxy_url) {
-                        continue;
+                        break; // or continue 2?
                     }
                     $aLayer["url"] = $mapproxy_url . "/service";
                     $layerOptions["owsurl"] = $ows_url . "?PROJECT=" . $this->projectName . "&MAP=" . $mapsetName;
@@ -745,7 +741,7 @@ class GWGCMap
                             $row['outputformat_extension'];
                     } else {
                         if (!$mapproxy_url) {
-                            continue;
+                            break; // or continue 2?
                         }
                         $layerParameters["requestEncoding"] = "REST";
                         $layerParameters["style"] = empty($row["layers"]) ? $layergroupName : $row["layers"];
@@ -799,7 +795,7 @@ class GWGCMap
                         $layerOptions["layername"] = empty($row["layers"]) ? '' : $row["layers"];
                     } else {
                         if (!$mapproxy_url) {
-                            continue;
+                            break; // or continue 2?
                         }
                         $aLayer["url"] = $mapproxy_url . "/tms/";
                         $layerOptions["serviceVersion"] = defined('GISCLIENT_TMS_VERSION') ?
@@ -1009,7 +1005,7 @@ class GWGCMap
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
-        $layersWith1n = array();
+
         $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
 
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
@@ -1184,28 +1180,6 @@ class GWGCMap
                 $featureTypes[$index][$typeName]["properties"][] = $fieldSpecs;
             }
         }
-/*         foreach($layersWith1n as $index => $arr) {
-            foreach($arr as $typeName => $Relations) {
-                foreach($Relations as $Relation) {
-                    $featureTypes[$index][$typeName]['relation1n'] = $Relation;
-                    array_push($featureTypes[$index][$typeName]['properties'], array(
-                        'name'=>'num_'.$Relation['relation_id'],
-                        'header'=>'Num',
-                        'type'=>'String',
-                        'fieldId'=>9999999,
-                        'fieldType'=>1,
-                        'dataType'=>2,
-                        'searchType'=>0,
-                        'editable'=>0,
-                        'relationType'=>null,
-                        'resultType'=>1,
-                        'filterFieldName'=>null,
-                        'isPrimaryKey'=>false,
-                        'is1nCountField'=>true
-                    ));
-                }
-            }
-        } */
         
         foreach ($featureTypes as $index => $arr) {
             foreach ($arr as $typeName => $ftype) {
@@ -1272,27 +1246,6 @@ class GWGCMap
         $this->selgroupList = $selgroupArray;
     }
 
-/*
-    private function getTMSExtent($tilesExtent, $tilesExtentSRID){
-        list($x0,$y0,$x1,$y1) = preg_split("/[".$this->coordSep."]+/",$tilesExtent);
-        //RIPROIETTO SE SRID DIVERSO DAL MAPSET
-        if($tilesExtentSRID!=$this->mapsetSRID){
-            $p1 = "SRID=$tilesExtentSRID;POINT($x0 $y0)";
-            $p2 = "SRID=$tilesExtentSRID;POINT($x1 $y1)";
-            $sqlExt = "SELECT X(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as x0, ".
-                " Y(st_transform('$p1'::geometry,".$this->mapsetSRID.")) as y0, ".
-                " X(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as x1, ".
-                " Y(st_transform('$p2'::geometry,".$this->mapsetSRID.")) as y1;";
-            $ext = $this->db->query($sqlExt)->fetch(PDO::FETCH_ASSOC);
-            $extent = array(floatval($ext["x0"]),floatval($ext["y0"]),floatval($ext["x1"]),floatval($ext["y1"]));
-        }
-        else
-            $extent = array(floatval($x0),floatval($y0),floatval($x1),floatval($y1));
-
-        return $extent;
-    }
-
-*/
     //Elenco delle librerie per i providers usati
     private function setMapProviders()
     {
@@ -1431,13 +1384,7 @@ class GWGCMap
         if (isset($mapsetScales)) { //TODO
             $v = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
             foreach ($v as $key => $value) {
-                $aRes[$key] = round((real) $value, $precision);
-            }
-            if (isset($tilesExtent)) {
-                $v = preg_split("/[" . $this->coordSep . "]+/", $tilesExtent);
-                foreach ($v as $key => $value) {
-                    $this->tilesExtent[$key] = round((float) $value, $precision);
-                }
+                $aRes[$key] = round((float) $value, $precision);
             }
         } else {
             //se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale

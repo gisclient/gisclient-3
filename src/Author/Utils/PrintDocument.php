@@ -233,7 +233,7 @@ class PrintDocument
             throw new \RuntimeException("XSL file '$xslFile'not found");
         }
         $dom = $this->buildDOM(true);
-        $xml = $dom->saveXML();
+        //$xml = $dom->saveXML();
 
         $pdfFile = runFOP($dom, $xslFile, array(
             'tmp_path'=>$this->options['TMP_PATH'],
@@ -294,7 +294,6 @@ class PrintDocument
     //Recupera la struttura layergroup=>layer=>class dal mapfile se non viene passata dal client
     protected function getLegendsFromMapfile()
     {
-        $layers = array();
         $project = $mapset = null;
         $themes = array();
 

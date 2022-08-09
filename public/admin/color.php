@@ -21,6 +21,10 @@ font-size: 9px;;
 </head>
 <body>
 <?php
+
+$cell = [];
+$row = [];
+$i = 0;
 for ($col_r=0; $col_r<256; $col_r+=51) {
     for ($col_g=0; $col_g<256; $col_g+=51) {
         for ($col_b=0; $col_b<256; $col_b+=51) {

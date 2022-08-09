@@ -303,7 +303,7 @@ class GCMap
         $mapTmp = \ms_newMapObjFromString(
             file_get_contents(ROOT_PATH. "/map/" . $this->projectName . "/" . $this->mapsetName . ".map")
         );
-        $layersHash = $mapTmp->getAllLayerNames();
+        //$layersHash = $mapTmp->getAllLayerNames();
         $mapTmp->free();
 
         $allUserLayers = $this->layerAuthChecker->getLayers(array(
@@ -315,7 +315,6 @@ class GCMap
         //$extents = $this->_getMaxExtents();
         //print_array($userLayers);
 
-        $sqlParams = array();
         $sqlAuthorizedLayers = "";
         if (count($authorizedLayers)>0) {
             $sqlAuthorizedLayers = " OR layer_id IN (".implode(',', $authorizedLayers).")";
@@ -358,9 +357,6 @@ class GCMap
     
         $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $themeMinScale = false;
-        $themeMaxScale = false;
-
         //Chiamata a layer singolo
         if ($this->mapsetSingleLayer) {
             // **** Mapset layer at ID 0
@@ -398,7 +394,7 @@ class GCMap
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
             $themeTitle = empty($row['theme_title']) ?
-                $theme_name :
+                $themeName :
                 ((strtoupper(CHAR_SET) != 'UTF-8') ?
                     utf8_encode($row["theme_title"]) :
                     $row["theme_title"]
@@ -613,7 +609,7 @@ class GCMap
                         
                         array_push($this->mapLayers[$idx]["nodes"], $node);
 
-                        continue;
+                        break; // or continue 2?
                     } elseif ($row["layergroup_single"] == 1) {
                         //Layergroup singola immagine: passo solo il layergroupname
                         $aLayer["parameters"]["layers"] = array($layergroupName);
@@ -649,7 +645,7 @@ class GCMap
                     $layerParameters = array();
 
                     if (!$mapproxy_url) {
-                        continue;
+                        break; // or continue 2?
                     }
                     $aLayer["url"] = $mapproxy_url . "/service";
                     $layerOptions["owsurl"] = $ows_url . "?PROJECT=" . $this->projectName . "&MAP=" . $mapsetName;
@@ -770,7 +766,7 @@ class GCMap
                             $row['outputformat_extension'];
                     } else {
                         if (!$mapproxy_url) {
-                            continue;
+                            break; // or continue 2?
                         }
                         $layerParameters["requestEncoding"] = "REST";
                         $layerParameters["style"] = empty($row["layers"]) ? $layergroupName : $row["layers"];
@@ -824,7 +820,7 @@ class GCMap
                         $layerOptions["layername"] = empty($row["layers"]) ? '' : $row["layers"];
                     } else {
                         if (!$mapproxy_url) {
-                            continue;
+                            break; // or continue 2?
                         }
                         $aLayer["url"] = $mapproxy_url . "/tms/";
                         $layerOptions["serviceVersion"] = defined('GISCLIENT_TMS_VERSION') ?
@@ -1088,7 +1084,6 @@ class GCMap
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array($this->mapsetName));
         $featureTypes = array();
-        $layersWith1n = array();
         $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
 
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {

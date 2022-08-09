@@ -73,11 +73,11 @@ class Field
     {
         if (array_key_exists('field_id', $values)) {
             //todo update
-            throw new Exception("not implemented", 1);
+            throw new \Exception("not implemented", 1);
         } else {
             //insert
-            $fields = implode(array_keys($values), ',');
-            $params = implode(array_values(array_fill(0, count($values), '?')), ',');
+            $fields = implode(',', array_keys($values));
+            $params = implode(',', array_values(array_fill(0, count($values), '?')));
             $values = array_values($values);
 
             $insertSql = "INSERT INTO {$this->db->getParams()['schema']}.field (field_id, $fields)"

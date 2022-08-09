@@ -326,7 +326,7 @@ class WMSMetadataBuilder
     private $entries;
     private $wmsName;
     
-    function __construct($entries)
+    public function __construct($entries)
     {
         $this->entries = $entries;
     }

@@ -27,7 +27,7 @@ switch ($_REQUEST['action']) {
             }
         }
         $ajax->success();
-
+        break;
     case 'import':
         if (empty($_REQUEST['symbol_file'])) {
             $ajax->error('missing parameter symbol_file');

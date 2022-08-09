@@ -98,7 +98,7 @@ class GCLevels
     public function getLevels()
     {
         if (empty(self::$levels)) {
-            self::_getLevels();
+            self::loadLevels();
         }
         return self::$levels;
     }
@@ -106,7 +106,7 @@ class GCLevels
     public static function getChildren($level)
     {
         if (empty(self::$levels)) {
-            self::_getLevels();
+            self::loadLevels();
         }
         
         $children = array($level => array());
@@ -119,7 +119,7 @@ class GCLevels
     public static function getParent($level)
     {
         if (empty(self::$levels)) {
-            self::_getLevels();
+            self::loadLevels();
         }
         if (!isset(self::$levelsParent[$level])) {
             throw new Exception('Invalid level '.$level);
@@ -135,7 +135,7 @@ class GCLevels
         $options = array_merge($defaultOptions, $options);
         
         if (empty(self::$levels)) {
-            self::_getLevels();
+            self::loadLevels();
         }
         if (!isset(self::$levelsParent[$level])) {
             throw new Exception('Invalid level '.$level);
@@ -159,7 +159,7 @@ class GCLevels
         return self::$config[$level];
     }
     
-    private static function _getLevels()
+    private static function loadLevels()
     {
         $db = GCApp::getDB();
         

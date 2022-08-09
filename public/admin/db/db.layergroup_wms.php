@@ -22,16 +22,17 @@ if (!$save->hasErrors && $save->action=="salva") {
     }
     if (!$error) {
         $serviceVersion=$data["@attributes"]["version"];
-        $serviceName=$data["Service"]["Name"];
-        $serviceTitle=$data["Service"]["Title"];
-        $serviceAbstract=$data["Service"]["Abstract"];
+        // $serviceName=$data["Service"]["Name"];
+        // $serviceTitle=$data["Service"]["Title"];
+        // $serviceAbstract=$data["Service"]["Abstract"];
         $formats=(is_array($data["Capability"]["Request"]["GetMap"]["Format"]))?($data["Capability"]["Request"]["GetMap"]["Format"]):(array($data["Capability"]["Request"]["GetMap"]["Format"]));           // Formati Disponibili
-        $formatsList=implode($formats, ",");
+        $formatsList = implode(",", $formats);
         $format=$formats[0];
         $theme=$data["Capability"]["Layer"];
-        $lThemeTitle=$theme["Title"];
+        // $lThemeTitle=$theme["Title"];
         $lThemeSRS=(is_array($theme["SRS"]))?($theme["SRS"]):(array($theme["SRS"]));
-        $epsgList=implode($lThemeSRS, " ");
+        $epsgList = implode(" ", $lThemeSRS);
+        $lGroup = [];
         for ($i=0; $i<count($theme["Layer"]); $i++) {
             $lGrp=$theme["Layer"][$i];
             if ($lGrp["Name"]==$lGroupName) {

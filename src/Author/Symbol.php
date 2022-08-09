@@ -68,6 +68,8 @@ class Symbol
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
+
+            $aStyle = [];
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
                 if ($row["style_id"]) {
@@ -116,7 +118,7 @@ class Symbol
             
             $this->createMapFile($aSymbol);
 
-            foreach ($aClass as $classId => $class) {
+            foreach ($aClass as $class) {
                 $oIcon = $this->iconFromClass($class);
                 if ($oIcon) {
                     ob_start();
@@ -177,16 +179,13 @@ class Symbol
             }
 
             $this->createMapFile($aSymbol);
-            foreach ($aClass as $symbolName => $class) {
+            foreach ($aClass as $class) {
                 $oIcon = $this->iconFromClass($class);
                 if ($oIcon) {
                     ob_start();
                     $oIcon->saveImage();
                     $image_data = ob_get_contents();
                     ob_end_clean();
-                    // $sql="UPDATE $dbSchema.symbol SET symbol_image='{$image_data}' where symbol_name='$symbolName';";
-                    // echo ($sql."<br>");
-                    // $this->database->sql_query($sql);
                 }
             }
         }

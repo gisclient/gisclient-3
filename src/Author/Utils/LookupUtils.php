@@ -29,7 +29,7 @@ class LookupUtils
         $stmt = $this->database->prepare($sql);
         $stmt->execute(array($catalogId));
         $catalogPath = $stmt->fetchColumn(0);
-        list($connStr,$schema)=connAdminInfofromPath($catalogPath);
+        list(,$schema)=connAdminInfofromPath($catalogPath);
         $dataDb = \GCApp::getDataDB($catalogPath);
         
         $sql = 'select table_name from information_schema.tables where table_schema=:schema and table_name=:table';

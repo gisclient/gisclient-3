@@ -60,7 +60,7 @@ if ($catalogData['connection_type'] != 6) {
     $ajax->error('not implemented');
 }
 
-list($connStr, $schema) = connAdminInfofromPath($catalogData["catalog_path"]);
+list(, $schema) = connAdminInfofromPath($catalogData["catalog_path"]);
 
 $dataDb = GCApp::getDataDB($catalogData['catalog_path']);
 $sql = "SELECT column_name from information_schema.columns " .
