@@ -162,7 +162,6 @@ function deliverFile($fileName, $opt = array())
         if (ini_get('zlib.output_compression')) {
             ini_set('zlib.output_compression', 'Off');
         }
-        @apache_setenv('no-gzip', 1);
     }
 
     /* ETAG */
