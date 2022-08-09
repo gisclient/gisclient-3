@@ -6,7 +6,7 @@
     "homepage": "http://gisclient.net",
     "license": "GPL-3.0-or-later",
     "require": {
-        "php": ">=7.2.0",
+        "php": ">=7.4.0",
         "ext-curl": "*",
         "phpoffice/phpexcel": "^1.8",
         "symfony/config": "^3.4",

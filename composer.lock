@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8d020828fc154d351e9f111cf5825808",
+    "content-hash": "b7bf41a5cd5c6e445d07534bc613ed55",
     "packages": [
         {
             "name": "phpoffice/phpexcel",
@@ -4723,7 +4723,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.2.0",
+        "php": ">=7.4.0",
         "ext-curl": "*"
     },
     "platform-dev": [],

@@ -2,3 +2,4 @@
 /var/
 /vendor/
 .env
+phan.result
