@@ -42,7 +42,7 @@ class GCService
     
     private function setExceptionHandler()
     {
-        $handler = function (Exception $e) {
+        $handler = function (Throwable $e) {
             print_debug($e->getMessage() . "\n" . $e->getTraceAsString(), null, 'service');
             header("HTTP/1.0 500 Internal Server Error");
             echo $e->getMessage();
