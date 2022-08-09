@@ -12,7 +12,7 @@ $extensions = array(
     'shp'=>array('shp', 'shx', 'dbf'),
     'raster'=>array('tif', 'tiff', 'ecw', 'jpg', 'jpeg', 'png')
 );
-$exportExtensions = array('shp', 'shx', 'dbf', 'prj', 'cpg');
+
 $columnTypes = array('double precision', 'text', 'date');
 
 $autoUpdaters = array(

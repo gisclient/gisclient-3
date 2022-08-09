@@ -56,7 +56,6 @@ $result['name'] = $newName;
 file_put_contents(DEBUG_DIR.'upload.txt', var_export($_REQUEST, true)."\n".var_export($_FILES, true)."\n".$newName."\n\n");
 $ajax->success($result);
 
-$numRec = 0;
 function getUniqueFileName($path, $fileName, $ext)
 {
     global $numRec;

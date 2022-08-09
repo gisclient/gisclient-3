@@ -16,19 +16,12 @@ if (empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_
 }
 $catalogId = $_REQUEST['catalog_id'];
 
-$layerTypeId = null;
-if (!empty($_REQUEST['layertype_id']) && is_numeric($_REQUEST['layertype_id']) && $_REQUEST['layertype_id'] > 0) {
-    $layerTypeId = $_REQUEST['layertype_id'];
-}
-
 $sql = "select catalog_path,connection_type from ".DB_SCHEMA.".catalog where catalog_id=?";
 $stmt = $db->prepare($sql);
 $stmt->execute(array($catalogId));
 $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$postParams = array(); //parametri da passare in POST per lo step successivo
-
-list($connStr,$schema)=connAdminInfofromPath($catalogData["catalog_path"]);
+list(, $schema)=connAdminInfofromPath($catalogData["catalog_path"]);
 
 switch ($catalogData["connection_type"]) {
     case 1:     //Local Folder
