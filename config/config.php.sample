@@ -43,6 +43,7 @@ define('MAP_URL', 'http://localhost/gisclient-3/template/');
 define('PRIVATE_MAP_URL', 'http://localhost/gisclient-3/template/');
 define('IMAGE_PATH','/tmp/');
 define('IMAGE_URL','/tmp/');
+define('TEMP_PATH','/tmp/');
 define('PROJ_LIB',"/usr/share/proj");
 define('TILES_CACHE','/tmp/');
 define('OPENLAYERS','http://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js');

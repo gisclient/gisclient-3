@@ -449,6 +449,7 @@ class gcMapfile{
 
         $imgPath = "IMAGEPATH \"".IMAGE_PATH."\"";
         $imgUrl = "IMAGEURL \"".IMAGE_URL."\"";
+        $tempPath = (defined('TEMP_PATH'))?"TEMPPATH \"".TEMP_PATH."\"":"";
         $imgResolution = "RESOLUTION ".MAP_DPI;
         $size = TILE_SIZE . " " . TILE_SIZE;
 
@@ -526,6 +527,7 @@ $metadata_inc
     END
     $imgPath
     $imgUrl
+    $tempPath
 END
 PROJECTION
 $mapProjection
@@ -648,9 +650,13 @@ END";
         $mapserverSupport = ms_GetVersion();
         list($driver, $format) = explode('/', $driverName);
 
-        // **** Allow GEOJSON format (not listed as output... ????)
-        if ($driver == 'OGR' && $format == 'GEOJSON')
-            return true;
+        // **** for OGR Driver check in INPUT
+        if ($driver == 'OGR') {
+            if (preg_match_all ("/INPUT=([A-Z]+)/", $mapserverSupport, $inputs)) {
+                if (in_array($driver, $inputs[1]))
+                    return true;
+                }
+        }
 
         // check on support
         if (preg_match_all ("/SUPPORTS=([A-Z_]+)/", $mapserverSupport, $supports)) {

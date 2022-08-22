@@ -147,6 +147,15 @@ if (!is_readable($mapfile)) {
 $oMap = ms_newMapobj($mapfile);
 print_debug('opened mapfile "' .realpath($mapfile). '": '.get_class($oMap), null, 'system');
 
+$wfs_getfeature_formatlist = $oMap->getMetaData('wfs_getfeature_formatlist');
+if(!empty($_SESSION['WMS_GETFEATURE_FORMATS'])) {
+	if (!empty($wfs_getfeature_formatlist)) {
+		$wfs_getfeature_formatlist .= ',';
+	}
+	$wfs_getfeature_formatlist .= $_SESSION['WMS_GETFEATURE_FORMATS'];
+	$oMap->setMetaData('wfs_getfeature_formatlist', $wfs_getfeature_formatlist);
+}
+
 $resolution = $objRequest->getvaluebyname('resolution');
 if(!empty($resolution) && $resolution != 72) {
 	$oMap->set('resolution', (int)$objRequest->getvaluebyname('resolution'));
