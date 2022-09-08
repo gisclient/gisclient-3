@@ -353,7 +353,7 @@ class gcMap{
                 $rootPath = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["rootpath"]):$row["rootpath"];
                 $rootPath = trim($rootPath);
                 $rootPath = trim($rootPath, '/');
-                if ($row["theme_single"] != 1) {
+                if ($row["theme_single"] == 0) {
                     $rootPath .= '/' . $themeTitle;
                 }
             }
@@ -448,14 +448,14 @@ class gcMap{
                         $aLayer["parameters"]["layers"] = preg_split("/[,]+/", $row['layers']);
                     }
                     //Tema singola immagine: passo tutti i layergroupname come layer e prendo le impostazioni di base dal primo wms
-                    elseif ($row["theme_single"] == 1) {
+                    elseif ($row["theme_single"] >= 1) {
                         $idx = $this->_getThemeLayerIndex($themeName);
                         $newFlag = false;
 
                         if ($idx == -1) {
                             $aLayer["name"] = $themeName;
                             $aLayer["nodes"] = array();
-                            $aLayer['theme_single'] = true;
+                            if ($row["theme_single"] > 1) $aLayer['theme_tiles'] = true;
                             $aLayer["options"]["title"] = $themeTitle;
                             $aLayer["options"]["visibility"] = false;
                             $aLayer["options"]["rootPath"] = $rootPath;
@@ -977,7 +977,7 @@ class gcMap{
 
             $typeTitle = empty($row["layer_wms_title"])?$row["layer_title"]:$row["layer_wms_title"];
             $groupTitle = empty($row["theme_title"]) ? $row["theme_name"] : $row["theme_title"];
-            $index = ($row['theme_single'] == 1 && $row['owstype_id'] == WMS_LAYER_TYPE ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] == 1 ? $row['theme_id'] : $row['layergroup_id']);
+            $index = ($row['theme_single'] >= 1 && $row['owstype_id'] == WMS_LAYER_TYPE ? 'theme' : 'layergroup') . '_' . ($row['theme_single'] >= 1 ? $row['theme_id'] : $row['layergroup_id']);
             if (!isset($featureTypes[$index]))
                 $featureTypes[$index] = array();
             if(!isset($featureTypes[$index][$typeName]))

@@ -245,7 +245,7 @@ class gcMapfile{
                 if(empty($defaultLayers[$mapName])) $defaultLayers[$mapName] = array();
               //CACHE PER I TEMI SINGLE
                 //print_array($aLayer);
-                if($aLayer['theme_single']) {
+                if($aLayer['theme_single'] > 1) {
                     $cacheName = $aLayer['theme_name'].'_cache';
                     if(empty($this->mpxCaches[$mapName][$cacheName])) $this->mpxCaches[$mapName][$cacheName] = array(
                         'grids'=>array_keys($this->grids),
