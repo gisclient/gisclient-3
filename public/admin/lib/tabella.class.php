@@ -38,7 +38,7 @@ class Tabella
     public $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
     public $display_number=-1;
 
-    public public function Tabella($config_file, $mode = "standard")
+    public function Tabella($config_file, $mode = "standard")
     {
     // ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
         //  NUOVA MODALITA
