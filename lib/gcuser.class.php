@@ -58,6 +58,7 @@ abstract class AbstractUser {
                 return true;
             }
         }
+        return false;
     }
 
     public function login($username, $password) {
@@ -205,17 +206,17 @@ abstract class AbstractUser {
                         if (isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'])) {
                             $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'] = min(floatval($row['minscale']), $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale']);
                         }
-                        else {
-                            $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale'] = floatval($row['minscale']);
-                        }
+                    }
+                    else {
+                        unset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['minScale']);
                     }
                     if ($row['maxscale']) {
                         if (isset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'])) {
                             $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'] = max(floatval($row['maxscale']), $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale']);
                         }
-                        else {
-                            $this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale'] = floatval($row['maxscale']);
-                        }
+                    }
+                    else {
+                        unset($this->mapLayers[$row['theme_name']][$row['layergroup_name']]['maxScale']);
                     }
                 }
             }
