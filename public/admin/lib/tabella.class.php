@@ -100,12 +100,12 @@ class Tabella
         $this->order_fld=(!empty($data["order_fld"]))?implode(",", explode("#", $data["order_fld"])):array();
     }
     
-    public public function get_idpratica()
+    public function get_idpratica()
     {
         return $this->idpratica;
     }
     
-    public public function set_titolo($titolo, $menu = 0, $hidden = 0, $display_first = 0)
+    public function set_titolo($titolo, $menu = 0, $hidden = 0, $display_first = 0)
     {
         $this->titolo=$titolo;
         if ($menu) {
@@ -119,7 +119,7 @@ class Tabella
         }
     }
     
-    public public function get_titolo($self = null)
+    public function get_titolo($self = null)
     {
         
         if (is_null($self)) {
@@ -184,7 +184,7 @@ class Tabella
         print $tabella_titolo;
     }
     // >>>>>>>>>>>>>>>>>>>>>>>>>ATTENZIONE OGNI TABELLA DEVE AVERE I CAMPI ID PRATICA E CHK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    public public function set_dati($data = "", $order = "")
+    public function set_dati($data = "", $order = "")
     {
         
         //se passo un array questo è l'array di POST altrimenti è il filtro - per default filtra su idpratica se settato
