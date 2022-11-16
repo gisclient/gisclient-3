@@ -1012,6 +1012,10 @@ END";
             )
         );
 
+        if (defined('MAPPROXY_CACHE_EXTRA')) {
+            $config['globals']['cache'] = array_merge($config['globals']['cache'], MAPPROXY_CACHE_EXTRA);
+        }
+
         if(defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) $config["services"]["demo"]=array('name'=>$mapName);
         if($this->grids) $config["grids"] = $this->grids;
         if($this->mpxCaches && count($this->mpxCaches[$mapName]) > 0) $config["caches"] = $this->mpxCaches[$mapName];

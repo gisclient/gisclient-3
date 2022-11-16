@@ -63,6 +63,8 @@ define('MAPPROXY_CACHE_PATH', '/data/tiles/');
 define('MAPPROXY_CACHE_TYPE', 'mbtiles'); //SUPPORTED:file/mbtiles/sqlite
 define('MAPPROXY_DEMO', true);
 define('MAPPROXY_GRIDS_NUMLEVELS', 20);
+// **** Additional global cache definitions for MapProxy
+const MAPPROXY_CACHE_EXTRA = [];
 
 /**************** PRINT - EXPORT ***************/
 define('GC_PRINT_TPL_DIR', ROOT_PATH.'public/services/print/');
