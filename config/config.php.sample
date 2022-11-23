@@ -57,7 +57,7 @@ define('GISCLIENT_TMS_URL', PUBLIC_URL.'services/tms/');//NON E' OBBLIGATORIO
 /********************* MAPPROXY ***************/
 define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv'); //NON E' OBBLIGATORIO (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
 define('MAPSERVER_BINARY_PATH', '/usr/lib/cgi-bin/mapserv');
-define('MAPPROXY_PATH', '/opt/mapproxy/');
+define('MAPPROXY_PATH', '/opt/mapproxy/');  // **** Path del virtualenv di MaProxy; non definire o lasciare vuoto se MapProxy è intallato come pacchetto di sitema
 define('MAPPROXY_URL', '/');
 define('MAPPROXY_CACHE_PATH', '/data/tiles/');
 define('MAPPROXY_CACHE_TYPE', 'mbtiles'); //SUPPORTED:file/mbtiles/sqlite

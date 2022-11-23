@@ -233,7 +233,7 @@ class gcMapfile{
                 array_push($this->tinyOWSLayers, $oFeature->getTinyOWSLayerParams());
             }
 
-            if(defined('MAPPROXY_PATH')){
+            if(defined('MAPPROXY_URL')){
                 if(!empty($this->i18n)) {
                     $languageId = $this->i18n->getLanguageId();
                     $mapName.= "_".$languageId;
@@ -362,7 +362,7 @@ class gcMapfile{
             $this->_writeFile($mapName);
 
             //NON GENERO I FILE YAML TEMPORANEI PER MAPPROXY
-            if(defined('MAPPROXY_PATH') && ($this->target == 'public')){
+            if(defined('MAPPROXY_URL') && ($this->target == 'public')){
 
                 //NORMALIZZO L'ARRAY DEI LIVELLI
                 foreach ($this->mpxLayers[$mapName] as $th => $grp) {
@@ -1043,30 +1043,37 @@ END";
         $mapfileDir = ROOT_PATH.'map/';
         $projectDir = $mapfileDir.$this->projectName.'/';
 
-        //CREO IL FILE DI CONFIGURAZIONE SE NON ESISTE
-        // **** WSGI for python 2.x
-        $wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
-        if(!file_exists ($wsgiConfigFile)){
-            $content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
-            $content.= "execfile(activate_this, dict(__file__=activate_this))\n";
-            $content.= "from mapproxy.multiapp import make_wsgi_app\n";
-            $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
-            file_put_contents($wsgiConfigFile, $content);
-        }
-        // **** WSGI for python 3.x
-        $wsgiConfigFile = $mapfileDir.$this->projectName."-3.wsgi";
-        if(!file_exists ($wsgiConfigFile)){
-            $content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
-            $content.= "exec(compile(open(activate_this, \"rb\").read(), activate_this, 'exec'), dict(__file__=activate_this))\n";
-            $content.= "from mapproxy.multiapp import make_wsgi_app\n";
-            $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
-            file_put_contents($wsgiConfigFile, $content);
-        }
-
-
         file_put_contents($projectDir.$mapName.'.yaml', $content);
 
-
+        //CREO IL FILE DI CONFIGURAZIONE SE NON ESISTE
+        if(defined('MAPPROXY_PATH') && !empty(MAPPROXY_PATH)) { // **** MapProxy in virtualenv
+            // **** WSGI for python 2.x
+            $wsgiConfigFile = $mapfileDir.$this->projectName."-2.wsgi";
+            if(!file_exists ($wsgiConfigFile)){
+                $content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
+                $content.= "execfile(activate_this, dict(__file__=activate_this))\n";
+                $content.= "from mapproxy.multiapp import make_wsgi_app\n";
+                $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
+                file_put_contents($wsgiConfigFile, $content);
+            }
+            // **** WSGI for python 3.x
+            $wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
+            if(!file_exists ($wsgiConfigFile)){
+                $content = "activate_this = '".MAPPROXY_PATH."bin/activate_this.py'\n";
+                $content.= "exec(compile(open(activate_this, \"rb\").read(), activate_this, 'exec'), dict(__file__=activate_this))\n";
+                $content.= "from mapproxy.multiapp import make_wsgi_app\n";
+                $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
+                file_put_contents($wsgiConfigFile, $content);
+            }
+        }
+        else { // **** MapProxy as system package
+            $wsgiConfigFile = $mapfileDir.$this->projectName.".wsgi";
+            if(!file_exists ($wsgiConfigFile)){
+                $content = "from mapproxy.multiapp import make_wsgi_app\n";
+                $content.= "application = make_wsgi_app('".$projectDir."', allow_listing=True)";
+                file_put_contents($wsgiConfigFile, $content);
+            }
+        }
     }
 
     function _deleteFile($projectName, $mapName) {

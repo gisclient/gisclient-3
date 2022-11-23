@@ -302,7 +302,7 @@ class gcMap{
         $stmt->execute();
 
         $ows_url = (defined('GISCLIENT_OWS_URL'))?GISCLIENT_OWS_URL:'../../services/ows.php';
-        if(defined('MAPPROXY_PATH') && defined('MAPPROXY_URL') ){
+        if(defined('MAPPROXY_URL') ){
             $mapproxy_url = MAPPROXY_URL.$this->projectName;
             if(!(defined('PROJECT_MAPFILE') && PROJECT_MAPFILE))
                 $mapproxy_url = $mapproxy_url."/".$this->mapsetName;
