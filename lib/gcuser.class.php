@@ -226,6 +226,69 @@ abstract class AbstractUser {
 		};
 	}
 
+    public function isAuthorized(array $filter) {
+        $db = GCApp::getDB();
+        $gcUser = empty($this->username) ? 'anonymous' : $this->username;
+		if(isset($filter['mapset_name'])) {
+			$sqlFilter = 'mapset_name = :mapset_name';
+			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
+            $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset_name';
+		} else if(isset($filter['theme_name'])) {
+			$sqlFilter = 'theme_name = :theme_name';
+			$sqlValues = array(':theme_name'=>$filter['theme_name']);
+            $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
+		} else if(isset($filter['project_name'])) {
+			$sqlFilter = 'project_name = :project_name';
+			$sqlValues = array(':project_name'=>$filter['project_name']);
+            $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
+		} else {
+			return false;
+		}
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($sqlValues);
+        $projectName = $stmt->fetchColumn(0);
+
+        $groupFilter = '';
+		if (empty($filter['show_as_public'])) {
+			$isAdmin = ($this->isAdmin() || $this->isAdmin($projectName));
+		} else {
+			$isAdmin = false;
+		}
+        if(!$isAdmin) {
+            if(!empty($this->groups)) {
+                $in = array();
+                foreach($this->groups as $k => $groupId) {
+                    array_push($in, ':group_param_'.$k);
+                    $sqlValues[':group_param_'.$k] = $groupId;
+                }
+                $groupFilter = ' and groupname in ('.implode(',',$in).') ';
+            } else {
+                $groupFilter = ' and 1=2 ';
+            }
+        }
+
+		if (empty($filter['show_as_public'])) {
+			$authClause = '(layer.private=1 '.$groupFilter.' ) OR (coalesce(layer.private,0)=0)';
+		} else {
+			$authClause = '(coalesce(layer.private,0)=0)';
+		}
+
+        $sql = 'SELECT COUNT(*) AS n_layers
+            FROM '.DB_SCHEMA.'.theme
+            INNER JOIN '.DB_SCHEMA.'.layergroup USING (theme_id)
+            INNER JOIN '.DB_SCHEMA.'.mapset_layergroup using (layergroup_id)
+            LEFT JOIN '.DB_SCHEMA.'.layer USING (layergroup_id)
+            LEFT JOIN '.DB_SCHEMA.'.layer_groups USING (layer_id)
+            WHERE ('.$sqlFilter.') AND ('.$authClause.') GROUP BY project_name, theme_name, layergroup_name, layergroup_single, layer.layer_id, layer.private, layer.layer_name, layergroup.layergroup_title, layer.layer_title, layer.maxscale, layer.minscale,layer.hidden,layer.layer_order ORDER BY layer.layer_order;';
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($sqlValues);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ($row['n_layers'] > 0);
+    }
+
 	public function getAuthorizedLayers(array $filter) { //TODO: controllare chi la usa
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->authorizedLayers;
@@ -235,6 +298,8 @@ abstract class AbstractUser {
 		if(empty($this->mapLayers)) $this->setAuthorizedLayers($filter);
 		return $this->mapLayers;
 	}
+
+
 
     public function getClientConfiguration() {
       if($this->isAdmin()) {

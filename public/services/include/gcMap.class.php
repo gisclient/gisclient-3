@@ -219,8 +219,13 @@ class gcMap{
         $sql = 'select mapset_name, mapset_title, template from '.DB_SCHEMA.'.mapset where project_name = :project order by mapset_order, mapset_title';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
-        $mapConfig['mapsets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        $mapConfig['mapsets'] = [];
+        while ($mapRow = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($user->isAuthorized(array('mapset_name' =>$mapRow["mapset_name"]))) {
+                $mapConfig['mapsets'][] = $mapRow;
+            }
+        }
+        
         $mapConfig['default_layers'] = $this->defaultLayers;
 
         //$this->maxRes = $maxRes;

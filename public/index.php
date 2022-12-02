@@ -28,10 +28,12 @@ $res = $db->query ($sql);
 
 $mapset=array();
 while($row = $res->fetch()){
-	$mapset[$row["project_name"]][]=Array("name"=>$row["mapset_name"],
-		"title"=>$row["mapset_title"],"template"=>$row["template"],
-		"extent"=>$row["mapset_extent"],'private'=>$row['private'],
-		'project_title'=>$row["project_title"]);
+    if ($user->isAuthorized(array('mapset_name' =>$row["mapset_name"]))) {
+        $mapset[$row["project_name"]][]=Array("name"=>$row["mapset_name"],
+    		"title"=>$row["mapset_title"],"template"=>$row["template"],
+    		"extent"=>$row["mapset_extent"],'private'=>$row['private'],
+    		'project_title'=>$row["project_title"]);
+    }
 }
 
 $newTable = '';
