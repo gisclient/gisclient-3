@@ -5,7 +5,7 @@ $mapset=$this->parametri["mapset"];
 $db = GCApp::getDB();
 $data = Array();
 $JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
-$sql="SELECT DISTINCT coalesce(mapset_name,'') as mapset_name, X.theme_title, theme_id, rootpath, mapset_theme_order, CASE WHEN COALESCE(mapset_name, '') <> '' THEN 1 ELSE 0 END  AS presente from (select distinct theme_id, theme_title from ".DB_SCHEMA.".layergroup inner join ".DB_SCHEMA.".theme using (theme_id) inner join ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) where project_name=:project and mapset_name=:mapset) as X $JOIN (select * from ".DB_SCHEMA.".mapset_theme where mapset_name=:mapset) as foo using(theme_id) order by X.theme_title";
+$sql="SELECT DISTINCT coalesce(mapset_name,'') as mapset_name, X.theme_title, theme_id, rootpath, mapset_theme_title, mapset_theme_order, CASE WHEN COALESCE(mapset_name, '') <> '' THEN 1 ELSE 0 END  AS presente from (select distinct theme_id, theme_title from ".DB_SCHEMA.".layergroup inner join ".DB_SCHEMA.".theme using (theme_id) inner join ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) where project_name=:project and mapset_name=:mapset) as X $JOIN (select * from ".DB_SCHEMA.".mapset_theme where mapset_name=:mapset) as foo using(theme_id) order by X.theme_title";
 //echo $sql;
 
 try {
@@ -19,6 +19,7 @@ try {
                     'theme_id'=>$row['theme_id'],
                     'theme_title'=>$row['theme_title'],
                     'rootpath'=>$row['rootpath'],
+                    'mapset_theme_title'=>$row['mapset_theme_title'],
                     'mapset_theme_order'=>$row['mapset_theme_order']
                 ));
             }

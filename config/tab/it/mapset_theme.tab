@@ -4,18 +4,20 @@ pkey = "mapset_name;theme_id"
 order_fld = "theme_title#presente DESC"
 dato[] = ";theme_id;1%;hidden"
 
-dato[] = "Tema;theme_title;35%;text"
+dato[] = "Tema;theme_title;25%;text"
 dato[] = "Percorso del tema (su albero livelli);rootpath;35%;text_box"
-dato[] = "Ordine del tema in mappa;mapset_theme_order;35%;text_box"
+dato[] = "Nome del tema per la mappa;mapset_theme_title;25%;text_box"
+dato[] = "Ordine del tema in mappa;mapset_theme_order;5%;text_box"
 
 [list]
 table = "mapset_theme"
 pkey = "mapset_name;theme_id"
 order_fld = "theme_title"
 
-dato[] = "Tema;theme_title;35%;text"
+dato[] = "Tema;theme_title;25%;text"
 dato[] = "Percorso del tema (su albero livelli);rootpath;35%;text"
-dato[] = "Ordine del tema in mappa;mapset_theme_order;35%;text"
+dato[] = "Nome del tema per la mappa;mapset_theme_title;25%;text"
+dato[] = "Ordine del tema in mappa;mapset_theme_order;15%;text"
 
 [title]
 edit = "Modifica configurazione temi della mappa"

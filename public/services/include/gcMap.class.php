@@ -225,7 +225,7 @@ class gcMap{
                 $mapConfig['mapsets'][] = $mapRow;
             }
         }
-        
+
         $mapConfig['default_layers'] = $this->defaultLayers;
 
         //$this->maxRes = $maxRes;
@@ -294,7 +294,7 @@ class gcMap{
             }
 
         }
-        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,mapset_theme.rootpath,coalesce(mapset_theme.mapset_theme_order, theme.theme_order) as mapset_theme_order,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) LEFT JOIN ".DB_SCHEMA.".mapset_theme using (theme_id,mapset_name) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
+        $sqlLayers = "SELECT theme_id,theme_name,theme_title,theme_single,theme.theme_order,theme.radio,theme.copyright_string,theme.zindex_correction as theme_zindex_correction,layergroup.*,mapset_layergroup.*,mapset_theme.rootpath,coalesce(mapset_theme.mapset_theme_order, theme.theme_order) as mapset_theme_order,mapset_theme.mapset_theme_title,outputformat_mimetype,outputformat_extension, owstype_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".mapset_layergroup using (layergroup_id) LEFT JOIN ".DB_SCHEMA.".mapset_theme using (theme_id,mapset_name) INNER JOIN ".DB_SCHEMA.".theme using(theme_id) LEFT JOIN ".DB_SCHEMA.".e_outputformat using (outputformat_id) LEFT JOIN ".DB_SCHEMA.".e_owstype using (owstype_id)
             WHERE layergroup_id IN (
                 SELECT layergroup_id FROM ".DB_SCHEMA.".layer WHERE layer.private = 0 ".$sqlAuthorizedLayers;
         $sqlLayers .= " UNION
@@ -351,6 +351,7 @@ class gcMap{
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
             $themeTitle = empty($row['theme_title'])?$theme_name:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["theme_title"]):$row["theme_title"]);
+            $themeTitle = empty($row['mapset_theme_title'])?$themeTitle:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_theme_title"]):$row["mapset_theme_title"]);
             if (empty($row['rootpath'])) {
                 $rootPath = $themeTitle;
             }
@@ -465,7 +466,7 @@ class gcMap{
                             $aLayer["options"]["visibility"] = false;
                             $aLayer["options"]["rootPath"] = $rootPath;
                             $aLayer["options"]["zindex_correction"] = $themeZCorr;
-                            unset($aLayer["options"]["order"]);
+                            $aLayer["options"]["order"] = $row['mapset_theme_order'];
                             $aLayer["parameters"]["layers"] = array();
                             array_push($this->mapLayers, $aLayer);
                             $idx = count($this->mapLayers) - 1;
