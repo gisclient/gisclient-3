@@ -195,6 +195,11 @@ class gcMapfile{
             $oFeature->initFeature($aLayer["layer_id"]);
 
             $oFeatureData = $oFeature->getFeatureData();
+            if (empty($oFeatureData)) {
+                $errorMsg = "LAYER ERROR ".$aLayer["layergroup_name"].".".$aLayer["layer_name"]."<br>Configurazione layer non corretta o incompleta";
+                GCError::register($errorMsg);
+            }
+
             if ($aLayer['set_extent'] === 1 && empty($oFeatureData['data_extent'])) {
                 // use mapset extent if layer extent is not set
                 // the layer extent is important to make wms layers work in some desktop gis clients
