@@ -129,7 +129,7 @@ class gcMapfile{
 
         $sql="select project_name,".$fieldsMapset."base_url,max_extent_scale,project_srid,xc,yc,outputformat_mimetype,
         theme_title,theme_name,theme_single,layergroup_name,layergroup_title,layergroup_id,layergroup_description,layergroup_maxscale,layergroup_minscale,
-        isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title, set_extent
+        isbaselayer,layergroup_single,tree_group,tiletype_id,owstype_id,layers,layer_id,layer_name,layer_title,layer.hidden,layertype_id, project_title, set_extent
         from ".DB_SCHEMA.".layer
         INNER JOIN ".DB_SCHEMA.".layergroup  using (layergroup_id)
         INNER JOIN ".DB_SCHEMA.".theme using (theme_id)
@@ -195,7 +195,7 @@ class gcMapfile{
             $oFeature->initFeature($aLayer["layer_id"]);
 
             $oFeatureData = $oFeature->getFeatureData();
-            if (empty($oFeatureData)) {
+            if (empty($oFeatureData) && (($aLayer["owstype_id"] < 4 || $aLayer["owstype_id"] == 6) && empty($aLayer["layers"]))) {
                 $errorMsg = "LAYER ERROR ".$aLayer["layergroup_name"].".".$aLayer["layer_name"]."<br>Configurazione layer non corretta o incompleta";
                 GCError::register($errorMsg);
             }
