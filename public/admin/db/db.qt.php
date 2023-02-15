@@ -23,7 +23,7 @@ if($save->action == "salva" && !$save->hasErrors){
 			unset($field['layer_id']);
 			$field['qt_field_name'] = $field['field_name'];
 			unset($field['field_name']);
-			$field['qtfield_order'] = $field['field_order'];
+			$field['qtfield_order'] = isset($field['field_order'])?$field['field_order']:0;
 			unset($field['field_order']);
 			unset($field['editable']);
 			unset($field['relation_id']);
