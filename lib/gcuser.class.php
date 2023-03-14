@@ -12,8 +12,7 @@ abstract class AbstractUser {
         $defaultOptions = array();
         $this->options = array_merge($defaultOptions, $options);
 
-        $sid = session_id();
-        if(empty($sid)) {
+        if(!self::sessionStarted()) {
             if(defined('GC_SESSION_NAME')) session_name(GC_SESSION_NAME);
             session_start();
         }
@@ -116,16 +115,19 @@ abstract class AbstractUser {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset_name';
+            $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_USER_FILTERS']['mapset_name'][$filter['mapset_name']] = true;
             GCLog::log("Access to mapset " . $filter['mapset_name'] . " for user ".$gcUser);
 		} else if(isset($filter['theme_name'])) {
 			$sqlFilter = 'theme_name = :theme_name';
 			$sqlValues = array(':theme_name'=>$filter['theme_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
+            $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_USER_FILTERS']['theme_name'][$filter['theme_name']] = true;
             GCLog::log("Access to theme " . $filter['theme_name'] . " for user ".$gcUser);
 		} else if(isset($filter['project_name'])) {
 			$sqlFilter = 'project_name = :project_name';
 			$sqlValues = array(':project_name'=>$filter['project_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
+            $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_USER_FILTERS']['project_name'][$filter['project_name']] = true;
             GCLog::log("Access to project " . $filter['project_name'] . " for user ".$gcUser);
 		} else {
 			return false;
@@ -299,7 +301,35 @@ abstract class AbstractUser {
 		return $this->mapLayers;
 	}
 
-
+    public function authGCService(array $filter, $strict = false) {
+        $isAuthenticated = !empty($this->username);
+		// user does not have an open session, try to log in
+		if (!$isAuthenticated &&
+			isset($_SERVER['PHP_AUTH_USER']) &&
+			isset($_SERVER['PHP_AUTH_PW'])) {
+			if ($this->login($_SERVER['PHP_AUTH_USER'], self::encPwd($_SERVER['PHP_AUTH_PW']))) {
+				$this->setAuthorizedLayers($filter);
+				$isAuthenticated = true;
+                return true;
+			}
+		}
+		// user could not even log in, send correct headers and exit
+		if (!$isAuthenticated) {
+            $key = array_search(__FUNCTION__, array_column(debug_backtrace(), 'function'));
+		    $calledFrom = debug_backtrace()[$key]['file'];
+            print_debug("unauthorized access in $calledFrom", null, 'system'); // ***** Use Log facility???
+            if ($strict) {
+                header('WWW-Authenticate: Basic realm="Gisclient"');
+			    header('HTTP/1.0 401 Unauthorized');
+            }
+		}
+        else {
+                if (!isset($_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_USER_FILTERS'][array_key_first($filter)][$filter[array_key_first($filter)]])) {
+        			$this->setAuthorizedLayers($filter);
+            }
+        }
+        return $isAuthenticated;
+    }
 
     public function getClientConfiguration() {
       if($this->isAdmin()) {
@@ -392,5 +422,17 @@ abstract class AbstractUser {
 
     public static function encPwd($pwd) {
         return md5($pwd);
+    }
+
+    public static function sessionStarted()
+    {
+        if ( php_sapi_name() !== 'cli' ) {
+            if ( version_compare(phpversion(), '5.4.0', '>=') ) {
+                return session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+            } else {
+                return session_id() === '' ? FALSE : TRUE;
+            }
+        }
+        return FALSE;
     }
 }
