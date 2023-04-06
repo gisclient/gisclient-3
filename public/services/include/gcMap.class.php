@@ -348,6 +348,8 @@ class gcMap{
                 array_push($this->defaultLayers, $row['layergroup_name']);
             }
 
+            $layerType = intval($row["owstype_id"]);
+            
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
             $themeTitle = empty($row['theme_title'])?$theme_name:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["theme_title"]):$row["theme_title"]);
@@ -359,14 +361,13 @@ class gcMap{
                 $rootPath = (strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["rootpath"]):$row["rootpath"];
                 $rootPath = trim($rootPath);
                 $rootPath = trim($rootPath, '/');
-                if ($row["theme_single"] == 0) {
+                if ($row["theme_single"] == 0 || $layerType != WMS_LAYER_TYPE) {
                     $rootPath .= '/' . $themeTitle;
                 }
             }
 
             $layergroupName = $row['layergroup_name'];
             $layergroupTitle = empty($row['layergroup_title'])?$layergroupName:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["layergroup_title"]):$row["layergroup_title"]);
-            $layerType = intval($row["owstype_id"]);
             $layerOrder = empty($row['layergroup_order']) ? 0 : $row['layergroup_order'];
             $themeZCorr = empty($row['theme_zindex_correction']) ? 0 : $row['theme_zindex_correction'];
             $layerZCorr = empty($row['zindex_correction']) ? 0 : $row['zindex_correction'];
