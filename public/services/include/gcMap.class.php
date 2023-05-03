@@ -349,11 +349,11 @@ class gcMap{
             }
 
             $layerType = intval($row["owstype_id"]);
-            
+
             $themeName = $row['theme_name'];
             $mapsetName = $row['mapset_name'];
-            $themeTitle = empty($row['theme_title'])?$theme_name:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["theme_title"]):$row["theme_title"]);
-            $themeTitle = empty($row['mapset_theme_title'])?$themeTitle:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_theme_title"]):$row["mapset_theme_title"]);
+            $themeTitleOrig = empty($row['theme_title'])?$theme_name:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["theme_title"]):$row["theme_title"]);
+            $themeTitle = empty($row['mapset_theme_title'])?$themeTitleOrig:((strtoupper(CHAR_SET) != 'UTF-8')?utf8_encode($row["mapset_theme_title"]):$row["mapset_theme_title"]);
             if (empty($row['rootpath'])) {
                 $rootPath = $themeTitle;
             }
@@ -396,6 +396,7 @@ class gcMap{
             //if(!empty($extents[$row['layergroup_id']])) $layerOptions['maxExtent'] = $extents[$row['layergroup_id']];
 
             $layerOptions["theme"] = $themeTitle;
+            $layerOptions["theme_orig"] = $themeTitleOrig;
             $layerOptions["theme_id"] = $row['theme_name'];
             $layerOptions["title"] = $layergroupTitle;
             $layerOptions["rootPath"] = $rootPath;
