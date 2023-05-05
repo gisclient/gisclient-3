@@ -5,6 +5,7 @@ abstract class AbstractUser {
     protected $username;
     protected $groups;
     protected $adminUsername = SUPER_USER;
+    protected $isProjAdmin = array();
     protected $authorizedLayers = array();
     protected $mapLayers = array();
 
@@ -43,6 +44,9 @@ abstract class AbstractUser {
                 GCLog::log("Access granted to project " .$project . " for user " . $this->username . " as global administrator");
                 return true;
             }
+            if (isset($this->isProjAdmin[$project])) {
+                    return $this->isProjAdmin[$project];
+            }
             $db = GCApp::getDB();
             $sql = 'select username from '.DB_SCHEMA.'.project_admin
                 where project_name = :project and username = :username';
@@ -54,9 +58,11 @@ abstract class AbstractUser {
             $result = $stmt->fetchColumn(0);
             if (!empty($result)) {
                 GCLog::log("Access granted to project " .$project . " for user " . $this->username . " as project administrator");
+                $this->isProjAdmin[$project] = true;
                 return true;
             }
         }
+        $this->isProjAdmin[$project] = false;
         return false;
     }
 
@@ -111,6 +117,7 @@ abstract class AbstractUser {
 	public function setAuthorizedLayers(array $filter) {
 		$db = GCApp::getDB();
         $gcUser = empty($this->username) ? 'anonymous' : $this->username;
+        $projectName = null;
 		if(isset($filter['mapset_name'])) {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
@@ -124,18 +131,18 @@ abstract class AbstractUser {
             $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_USER_FILTERS']['theme_name'][$filter['theme_name']] = true;
             GCLog::log("Access to theme " . $filter['theme_name'] . " for user ".$gcUser);
 		} else if(isset($filter['project_name'])) {
-			$sqlFilter = 'project_name = :project_name';
-			$sqlValues = array(':project_name'=>$filter['project_name']);
-            $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
+			$projectName = $filter['project_name'];
             $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_USER_FILTERS']['project_name'][$filter['project_name']] = true;
             GCLog::log("Access to project " . $filter['project_name'] . " for user ".$gcUser);
 		} else {
 			return false;
 		}
 
-        $stmt = $db->prepare($sql);
-        $stmt->execute($sqlValues);
-        $projectName = $stmt->fetchColumn(0);
+        if ($projectName === null) {
+            $stmt = $db->prepare($sql);
+            $stmt->execute($sqlValues);
+            $projectName = $stmt->fetchColumn(0);
+        }
 
         $groupFilter = '';
 		if (empty($filter['show_as_public'])) {
@@ -229,8 +236,12 @@ abstract class AbstractUser {
 	}
 
     public function isAuthorized(array $filter) {
+        if (isset($_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_AUTH_FILTERS'][array_key_first($filter)][$filter[array_key_first($filter)]])) {
+            return $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_AUTH_FILTERS'][array_key_first($filter)][$filter[array_key_first($filter)]];
+        }
         $db = GCApp::getDB();
         $gcUser = empty($this->username) ? 'anonymous' : $this->username;
+        $projectName = null;
 		if(isset($filter['mapset_name'])) {
 			$sqlFilter = 'mapset_name = :mapset_name';
 			$sqlValues = array(':mapset_name'=>$filter['mapset_name']);
@@ -240,16 +251,16 @@ abstract class AbstractUser {
 			$sqlValues = array(':theme_name'=>$filter['theme_name']);
             $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
 		} else if(isset($filter['project_name'])) {
-			$sqlFilter = 'project_name = :project_name';
-			$sqlValues = array(':project_name'=>$filter['project_name']);
-            $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
+			$projectName = $filter['project_name'];
 		} else {
 			return false;
 		}
 
-        $stmt = $db->prepare($sql);
-        $stmt->execute($sqlValues);
-        $projectName = $stmt->fetchColumn(0);
+        if ($projectName === null) {
+            $stmt = $db->prepare($sql);
+            $stmt->execute($sqlValues);
+            $projectName = $stmt->fetchColumn(0);
+        }
 
         $groupFilter = '';
 		if (empty($filter['show_as_public'])) {
@@ -288,7 +299,14 @@ abstract class AbstractUser {
         $stmt->execute($sqlValues);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return ($row['n_layers'] > 0);
+        if($row['n_layers'] > 0) {
+            $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_AUTH_FILTERS'][array_key_first($filter)][$filter[array_key_first($filter)]] = true;
+            return true;
+        }
+        else {
+            $_SESSION['GISCLIENT_USER_LAYER']['GISCLIENT_AUTH_FILTERS'][array_key_first($filter)][$filter[array_key_first($filter)]] = false;
+            return false;
+        }
     }
 
 	public function getAuthorizedLayers(array $filter) { //TODO: controllare chi la usa

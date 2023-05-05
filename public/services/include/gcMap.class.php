@@ -76,6 +76,7 @@ class gcMap{
     private $i18n;
     protected $oMap;
     protected $sldContents = array();
+    protected $user;
 
     function __construct ($mapsetName, $getLegend = false, $languageId = null){
 
@@ -174,6 +175,11 @@ class gcMap{
 			$mapConfig["legendCacheUrl"] = LEGEND_CACHE_URL;
 		}
 
+        $this->user = new GCUser();
+        if($this->user->isAuthenticated()) {
+            $mapConfig['logged_username'] = $this->user->getUsername();
+        }
+
         $this->_getSelgroup();
         $this->_getLayers();
         $this->_getFeatureTypes();
@@ -211,17 +217,12 @@ class gcMap{
             $mapConfig['bg_color'] = $row['bg_color'];
         }
 
-        $user = new GCUser();
-        if($user->isAuthenticated()) {
-            $mapConfig['logged_username'] = $user->getUsername();
-        }
-
         $sql = 'select mapset_name, mapset_title, template from '.DB_SCHEMA.'.mapset where project_name = :project order by mapset_order, mapset_title';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array('project'=>$this->projectName));
         $mapConfig['mapsets'] = [];
         while ($mapRow = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if ($user->isAuthorized(array('mapset_name' =>$mapRow["mapset_name"]))) {
+            if ($this->user->isAuthorized(array('mapset_name' =>$mapRow["mapset_name"]))) {
                 $mapConfig['mapsets'][] = $mapRow;
             }
         }
@@ -262,11 +263,10 @@ class gcMap{
         $layersHash = $mapTmp->getAllLayerNames();
         $mapTmp->free();
 
-        $user = new GCUser();
-        $user->setAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
+        $this->user->setAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
 
-        $authorizedLayers = $user->getAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
-        $userLayers = $user->getMapLayers(array('mapset_name'=>$this->mapsetName));
+        $authorizedLayers = $this->user->getAuthorizedLayers(array('mapset_name'=>$this->mapsetName));
+        $userLayers = $this->user->getMapLayers(array('mapset_name'=>$this->mapsetName));
         //print_array($userLayers);die();
         //$extents = $this->_getMaxExtents();
         //print_array($userLayers);
@@ -937,9 +937,8 @@ class gcMap{
 
         //Restituisce le features e i range di scala
         $userGroupFilter = '';
-        $user = new GCUser();
-        if(!$user->isAdmin($this->projectName)) {
-            $this->authorizedGroups = $user->getGroups();
+        if(!$this->user->isAdmin($this->projectName)) {
+            $this->authorizedGroups = $this->user->getGroups();
             $userGroup = '';
             if(!empty($this->authorizedGroups)) $userGroup =  " OR groupname in('".implode("','", $this->authorizedGroups)."')";
             $userGroupFilter = ' (groupname IS NULL '.$userGroup.') AND ';
@@ -1027,7 +1026,7 @@ class gcMap{
             }
 
             $userCanEdit = false;
-            if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || $user->isAdmin($this->projectName))
+            if(@$_SESSION['GISCLIENT_USER_LAYER'][$row['project_name']][$typeName]['WFST'] == 1 || $this->user->isAdmin($this->projectName))
                 $userCanEdit = true;
 
             if (!empty($row["selection_color"]) && !empty($row["selection_width"])) {
@@ -1041,7 +1040,7 @@ class gcMap{
 
 
             //TODO DA VERIFICARE DA VEDERE ANCHE L'OPZIONE PER IL CAMPO EDITABILE CHE SOVRASCRIVE QUELLO DI DEFAULT
-            if(($fieldName = $row["field_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
+            if(($fieldName = $row["field_name"]) && (empty($row["field_group"]) || in_array($row["field_group"],$this->authorizedGroups) || $this->user->isAdmin($this->projectName))){//FORSE NON SERVONO TUTTI GLI ATTRIBUTI!!!
                 /*
                 if(!empty($row["relation_name"])){
                     $fieldName = $row["relation_name"] . "_" . NameReplace($row["field_header"]);
@@ -1386,13 +1385,12 @@ class gcMap{
     }
 
     function _getUsercontext($contextId) {
-        $user = new GCUser();
-        if (!$user->isAuthenticated())
+        if (!$this->user->isAuthenticated())
             return array();
         //if(empty($_SESSION) || empty($_SESSION['USERNAME'])) return array();
         $sql = "SELECT context FROM " . DB_SCHEMA . ".usercontext WHERE username=:username AND mapset_name=:mapset_name AND id=:id";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':username' => $user->getUsername(), ':mapset_name' => $this->mapsetName, ':id' => $contextId));
+        $stmt->execute(array(':username' => $this->user->getUsername(), ':mapset_name' => $this->mapsetName, ':id' => $contextId));
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!empty($row))
             return json_decode($row["context"], true);

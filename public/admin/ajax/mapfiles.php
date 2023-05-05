@@ -21,7 +21,6 @@ switch($_REQUEST['action']) {
             } else {
 				$user->authGCService(array('mapset_name' => $_REQUEST['mapset']));
                 GCAuthor::refreshMapfile($_REQUEST['project'], $_REQUEST['mapset'], ($_REQUEST['target'] == 'public'));
-				print_debug($_SESSION['GISCLIENT_USER_LAYER'], null, 'system');
             }
         }
 		$errors = GCError::get();
