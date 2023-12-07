@@ -3,10 +3,11 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
-use Symfony\Component\HttpFoundation\Request;
-use GisClient\Author\Utils\OwsHandler;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Security\Guard\TrustedAuthenticator;
+use GisClient\Author\Utils\OwsHandler;
+use GisClient\Author\Utils\UrlChecker;
+use Symfony\Component\HttpFoundation\Request;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -26,6 +27,7 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
 	file_put_contents('/tmp/postrequest.xml', $fileContent);
 	
 	$curl = curl_init();
+	UrlChecker::checkUrl($url);
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -69,6 +71,7 @@ if(!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'],-4)=='.xml'){
         $oMap->applySLD($sldContent); // for getlegendgraphic
     }
 } else if(!empty($_REQUEST['SLD'])) {
+	UrlChecker::checkUrl($_REQUEST['SLD'], true);
     $ch = curl_init($_REQUEST['SLD']);
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

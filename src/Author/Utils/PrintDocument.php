@@ -435,6 +435,8 @@ class PrintDocument
     {
         $dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
         $finalUrl = self::addPrefixToRelativeUrl($url);
+
+        UrlChecker::checkUrl($finalUrl, true);
         $ch = curl_init($finalUrl);
         if (false === ($fp = fopen($dest, "wb"))) {
             throw new \RuntimeException("Unable to open file $dest in write mode");

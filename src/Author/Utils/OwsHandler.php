@@ -13,6 +13,7 @@ class OwsHandler
      */
     public function post($url, $postFields)
     {
+        UrlChecker::checkUrl($url);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -171,26 +172,6 @@ class OwsHandler
         return $filter;
     }
 
-    public function getHttp($url)
-    {
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        $content = curl_exec($ch);
-        if ($content === false) {
-            throw new \RuntimeException("Call to $url return with error:" . var_export(curl_error($ch), true));
-        }
-        if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new \RuntimeException("Call to $url return HTTP code $httpCode and body " . $content);
-        }
-        curl_close($ch);
-        return $content;
-    }
-
     /**
      * Get the KML file from MapServer.
      * Download the symbol images, bundle them into the KMZ file and adapt
@@ -242,6 +223,7 @@ class OwsHandler
 
     public static function getSldContent($sldUrl)
     {
+        UrlChecker::checkUrl($sldUrl, true);
         $ch = curl_init($sldUrl);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -255,7 +237,7 @@ class OwsHandler
             throw new \RuntimeException("Call to {$sldUrl} return with error:". var_export(curl_error($ch), true));
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new \RuntimeException("Call to {$sldUrl} return HTTP code $httpCode and body ".$sldContent);
+            throw new \RuntimeException("Call to {$sldUrl} return HTTP code $httpCode");
         }
         curl_close($ch);
 

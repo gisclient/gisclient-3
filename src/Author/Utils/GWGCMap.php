@@ -896,6 +896,7 @@ class GWGCMap
                 $this->oMap = \ms_newMapObjFromString(file_get_contents("../../map/{$this->mapsetName}.map"));
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
+                UrlChecker::checkUrl($row['sld'], true);
                 $ch = curl_init($row['sld']);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
