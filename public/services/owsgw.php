@@ -3,10 +3,11 @@
 define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 
-use Symfony\Component\HttpFoundation\Request;
-use GisClient\Author\Utils\OwsHandler;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Security\Guard\TrustedAuthenticator;
+use GisClient\Author\Utils\OwsHandler;
+use GisClient\Author\Utils\UrlChecker;
+use Symfony\Component\HttpFoundation\Request;
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -20,14 +21,14 @@ if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 // ADESSO NON SERVE PIU SECONDO ME!
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-    $url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
-    
-    $fileContent = file_get_contents('php://input');
-    file_put_contents('/tmp/postrequest.xml', $fileContent);
-    
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_POST, true);
+	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
+	
+	$fileContent = file_get_contents('php://input');
+	file_put_contents('/tmp/postrequest.xml', $fileContent);
+	UrlChecker::checkUrl($url);
+	$curl = curl_init();
+	curl_setopt($curl, CURLOPT_URL, $url);
+	curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
     
@@ -74,7 +75,7 @@ if (!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'], -4)=='.xml') 
         $objRequest->setParameter('SLD_BODY', $sldContent);
         $oMap->applySLD($sldContent); // for getlegendgraphic
     }
-} elseif (!empty($_REQUEST['SLD'])) {
+} else if(!empty($_REQUEST['SLD'])) {
     $ch = curl_init($_REQUEST['SLD']);
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

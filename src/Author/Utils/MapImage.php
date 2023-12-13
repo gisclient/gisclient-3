@@ -263,6 +263,7 @@ class MapImage
         if (false === ($ch = curl_init())) {
             throw new \Exception("Could not init curl");
         }
+        UrlChecker::checkUrl($this->wmsMergeUrl);
         curl_setopt($ch, CURLOPT_URL, str_replace($this->baseUrl, INTERNAL_URL, $this->wmsMergeUrl));
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -278,7 +279,7 @@ class MapImage
         }
 
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
-            throw new \RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode and body ".$mapImage);
+            throw new \RuntimeException("Call to {$this->wmsMergeUrl} return HTTP code $httpCode");
         }
 
         if (!$saveImage) {
