@@ -78,7 +78,7 @@ define('INTERNAL_URL', getenv('AUTHOR_INTERNAL_URL') ?: 'http://127.0.0.1/'); //
 define('MAP_URL', 'http://localhost/map/'); //URL CLIENT DI MAPPA
 define('IMAGE_PATH', '/tmp/');
 define('IMAGE_URL', '/tmp/');
-define('PROJ_LIB', "/usr/share/proj");
+define('PROJ_LIB', getenv('AUTHOR_PROJ_LIB') ?: "/usr/share/proj");
 define('TILES_CACHE', '/tmp/');
 define('OPENLAYERS', '///cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js'); // PREVIEW MAP PER LAYERGROUP E LAYER
 //define('PROJ_LIB',"/msiis/proj/nad/");
