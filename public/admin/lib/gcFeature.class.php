@@ -316,7 +316,9 @@ class gcFeature
             $layText[] = "FOOTER \"" . $this->aFeature["footer"] . "\"";
         };
         if (!empty($this->aFeature["opacity"])) {
-            $layText[] = "OPACITY " . $this->aFeature["opacity"];
+            $layText[] = "COMPOSITE";
+            $layText[] = "\tOPACITY " . $this->aFeature["opacity"];
+            $layText[] = "END";
         }
         if (!empty($this->aFeature["symbolscale"])) {
             $layText[] = "SYMBOLSCALEDENOM " . $this->aFeature["symbolscale"];
