@@ -408,7 +408,7 @@ class gcFeature
                     }
                     $layText[] = "DATA \"$sData\"";
                     if (!empty($this->aFeature["data_filter"])) {
-                        $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                        $layText[] = "PROCESSING \"NATIVE_FILTER=" . $this->aFeature["data_filter"] . "\"";
                     }
                     if ($closedDefer) {
                         $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
@@ -434,7 +434,7 @@ class gcFeature
                     }
                     $layText[] = "DATA \"$sData\"";
                     if (!empty($this->aFeature["data_filter"])) {
-                        $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                        $layText[] = "PROCESSING \"NATIVE_FILTER=" . $this->aFeature["data_filter"] . "\"";
                     }
                     $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
                     if ($this->aFeature["queryable"] == 1) {
