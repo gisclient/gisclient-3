@@ -316,7 +316,9 @@ class gcFeature
             $layText[] = "FOOTER \"" . $this->aFeature["footer"] . "\"";
         };
         if (!empty($this->aFeature["opacity"])) {
-            $layText[] = "OPACITY " . $this->aFeature["opacity"];
+            $layText[] = "COMPOSITE";
+            $layText[] = "\tOPACITY " . $this->aFeature["opacity"];
+            $layText[] = "END";
         }
         if (!empty($this->aFeature["symbolscale"])) {
             $layText[] = "SYMBOLSCALEDENOM " . $this->aFeature["symbolscale"];
@@ -408,7 +410,7 @@ class gcFeature
                     }
                     $layText[] = "DATA \"$sData\"";
                     if (!empty($this->aFeature["data_filter"])) {
-                        $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                        $layText[] = "PROCESSING \"NATIVE_FILTER=" . $this->aFeature["data_filter"] . "\"";
                     }
                     if ($closedDefer) {
                         $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
@@ -434,7 +436,7 @@ class gcFeature
                     }
                     $layText[] = "DATA \"$sData\"";
                     if (!empty($this->aFeature["data_filter"])) {
-                        $layText[] = "FILTER \"" . $this->aFeature["data_filter"] . "\"";
+                        $layText[] = "PROCESSING \"NATIVE_FILTER=" . $this->aFeature["data_filter"] . "\"";
                     }
                     $layText[] = "PROCESSING \"CLOSE_CONNECTION=DEFER\"";
                     if ($this->aFeature["queryable"] == 1) {
