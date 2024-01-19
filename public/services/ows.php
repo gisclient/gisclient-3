@@ -233,6 +233,9 @@ if ($objRequest->getvaluebyname('srs')) {
 }
 
 if (!empty($_REQUEST['GCFILTERS'])) {
+    // Security issue? If still used somewhere, reevaluate
+    throw new \Exception("Scream test - should not be used anymore");
+
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
     for ($i=0; $i<count($v); $i++) {
         list($layerName, $gcFilter)=explode('@', $v[$i]);
@@ -278,39 +281,7 @@ if (!empty($layersParameter)) {
         }
         $n = 0;
 
-        if (null !== ($layerAuthorizations = $gcService->get('GISCLIENT_USER_LAYER'))) {
-            if (!empty($layerAuthorizations[$layer->name])) {
-                $filter = $layer->getFilterString();
-                $filter = trim($filter, '"');
-                if (!empty($filter)) {
-                    $filter = $filter.' AND ('.$layerAuthorizations[$layer->name].')';
-                } else {
-                    $filter = $layerAuthorizations[$layer->name];
-                }
-                $layer->setFilter($filter);
-            }
-        }
-
-        
         if (!in_array($layer->name, $layersToRemove)) {
-            $filter = $layer->getFilterString();
-
-            if ($filter) {
-                $filter = trim($filter, '"');
-                $p1 = strpos($layer->data, '(');
-                $p2 = strrpos($layer->data, ')', $p1);
-                $part1 = substr($layer->data, 0, $p1);
-                $part2 = substr($layer->data, $p1+1, $p2-$p1-1);
-                $part3 = substr($layer->data, $p2+1);
-
-                $part2 = "SELECT * FROM ({$part2}) AS foo2 WHERE ({$filter})";
-                $sql = "{$part1}({$part2}){$part3}";
-
-                $layer->data = $sql;
-                $layer->set('data', $sql);
-                $layer->setFilter('');
-            }
-
             array_push($layersToInclude, $layer->name);
         }
     }

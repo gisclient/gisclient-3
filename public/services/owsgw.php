@@ -105,6 +105,8 @@ if ($objRequest->getvaluebyname('srs')) {
 }
 
 if (!empty($_REQUEST['GCFILTERS'])) {
+    // Security issue? If still used somewhere, reevaluate
+    throw new \Exception("Scream test - should not be used anymore");
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
     for ($i=0; $i<count($v); $i++) {
         list($layerName,$gcFilter)=explode('@', $v[$i]);

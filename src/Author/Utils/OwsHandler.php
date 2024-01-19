@@ -50,6 +50,9 @@ class OwsHandler
 
     public static function applyGCFilter(&$oLayer, $layerFilter)
     {
+        // GetFilterString result changed in mapserver ~7 version; Should not be used anymore
+        // !! This might also be a security issue!! If still used somewhere, reevaluate
+        throw new \Exception("Scream test - should not be used anymore");
         if ($oLayer->getFilterString()) {
             $layerFilter = str_replace("\"", "", $oLayer->getFilterString()) . " AND " . $layerFilter;
         }
