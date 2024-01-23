@@ -827,7 +827,7 @@ END";
         ' ' || st_ymin(box2d(ST_Extent(ST_Transform(ST_MakeEnvelope(cast(extent_arr[1] as double precision), cast(extent_arr[2] as double precision), cast(extent_arr[3] as double precision), cast(extent_arr[4] as double precision), mapset_srid), srid)))) ||
         ' ' || st_xmax(box2d(ST_Extent(ST_Transform(ST_MakeEnvelope(cast(extent_arr[1] as double precision), cast(extent_arr[2] as double precision), cast(extent_arr[3] as double precision), cast(extent_arr[4] as double precision), mapset_srid), srid)))) ||
         ' ' || st_ymax(box2d(ST_Extent(ST_Transform(ST_MakeEnvelope(cast(extent_arr[1] as double precision), cast(extent_arr[2] as double precision), cast(extent_arr[3] as double precision), cast(extent_arr[4] as double precision), mapset_srid), srid)))) as extent
-        from(SELECT DISTINCT data_srid as srid, projparam, mapset_srid, regexp_split_to_array(mapset_extent, ' ') as extent_arr FROM gisclient_3.layer
+        from(SELECT DISTINCT data_srid as srid, projparam, mapset_srid, regexp_split_to_array(mapset_extent, ' ') as extent_arr FROM ".DB_SCHEMA.".layer
             INNER JOIN ".DB_SCHEMA.".catalog USING(catalog_id)
             INNER JOIN ".DB_SCHEMA.".project_srs using(project_name)
             INNER JOIN ".DB_SCHEMA.".mapset_layergroup using(layergroup_id)
@@ -835,8 +835,8 @@ END";
             WHERE project_srs.project_name=:project_name
             AND mapset_name=:mapset_name) as ext group by ext.srid
         UNION
-        SELECT mapset_srid as srid, mapset.mapset_extent as extent from gisclient_3.mapset
-	       INNER JOIN gisclient_3.project using (project_name)
+        SELECT mapset_srid as srid, mapset.mapset_extent as extent from ".DB_SCHEMA.".mapset
+	       INNER JOIN ".DB_SCHEMA.".project using (project_name)
 	          WHERE project_name=:project_name
 	          AND mapset_name=:mapset_name
 	          AND mapset_srid=3857";

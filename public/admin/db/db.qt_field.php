@@ -4,7 +4,7 @@ $p=$save->performAction($p);
 $_db = GCApp::getDB();
 if($save->action == "salva" && !$save->hasErrors){
 	require_once (ADMIN_PATH."lib/functions.php");
-	$sql = "select catalog_path from ".DB_SCHEMA.".layer l join ".DB_SCHEMA.".catalog c using(catalog_id) join gisclient_3.qt using (layer_id) where qt_id=:qtId";
+	$sql = "select catalog_path from ".DB_SCHEMA.".layer l join ".DB_SCHEMA.".catalog c using(catalog_id) join ".DB_SCHEMA.".qt using (layer_id) where qt_id=:qtId";
 	try {
 		$stmt = $_db->prepare($sql);
 		$stmt->execute(array('qtId' => $_POST["qt"]));
