@@ -1602,4 +1602,26 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         v_author_version = '3.6.2';
         INSERT INTO version (version_name,version_key, version_date) values ('3.6.2', 'author', '2019-10-11');
     END IF;
+
+    IF v_author_version = '3.6.2' THEN
+        /* remove background color where it is not needed */
+        update gisclient_34."style" s set color = bgcolor, bgcolor = null
+        where symbol_name is null and bgcolor is not null and color is null;
+
+        /* move background color where neeeded to a separate style */
+        INSERT INTO gisclient_34."style" (style_id, class_id, style_name, color, "locked", style_order)
+        SELECT (select coalesce(max(style_id),0) from gisclient_34."style") + row_number() over(order by style_id) as style_id,
+          class_id, (style_name || '_sfondo') as style_name, bgcolor as color, "locked", (style_order + 1) as style_order
+        FROM gisclient_34."style"
+        WHERE symbol_name is not null and bgcolor is not null;
+
+        /* clean background color */
+        update gisclient_34."style" s set bgcolor=null;
+
+        COMMENT ON COLUMN gisclient_34."style".bgcolor IS 'deprecated - use seperate style for background color with only color';
+        ALTER TABLE gisclient_34."style" ADD CONSTRAINT CHECK (bgcolor IS NULL);
+
+        v_author_version = '3.6.3';
+        INSERT INTO version (version_name,version_key, version_date) values (v_author_version, 'author', '2024-03-14');
+    END IF;
 END$$
