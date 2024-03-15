@@ -1619,7 +1619,7 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         update gisclient_34."style" s set bgcolor=null;
 
         COMMENT ON COLUMN gisclient_34."style".bgcolor IS 'deprecated - use seperate style for background color with only color';
-        ALTER TABLE gisclient_34."style" ADD CONSTRAINT CHECK (bgcolor IS NULL);
+        ALTER TABLE gisclient_34."style" ADD CONSTRAINT style_deprecate_bgcolor_check CHECK (bgcolor IS NULL);
 
         v_author_version = '3.6.3';
         INSERT INTO version (version_name,version_key, version_date) values (v_author_version, 'author', '2024-03-14');
