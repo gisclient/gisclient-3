@@ -49,7 +49,6 @@ define('LONG_EXECUTION_MEMORY', '512M');
 //custom tab files
 //define('TAB_DIR','it-custom');
 define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
-//define('PRIVATE_MAP_URL', 'http://localhost/map/index.php'); //URL CLIENT DI MAPPA PRIVATA
 //define('EXTERNAL_LOGIN_KEY', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
 define('LAYER_CLOSE_CONNECTION_DEFER', true);
@@ -76,6 +75,7 @@ if (php_sapi_name() == "cli") {
 }
 define('INTERNAL_URL', getenv('AUTHOR_INTERNAL_URL') ?: 'http://127.0.0.1/'); // url for internal requests
 define('MAP_URL', 'http://localhost/map/'); //URL CLIENT DI MAPPA
+define('PRIVATE_MAP_URL', MAP_URL); //URL CLIENT DI MAPPA PRIVATA
 define('IMAGE_PATH', '/tmp/');
 define('IMAGE_URL', '/tmp/');
 define('PROJ_LIB', getenv('AUTHOR_PROJ_LIB') ?: "/usr/share/proj");
