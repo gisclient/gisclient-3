@@ -114,17 +114,13 @@ EOL;
 }
 
 $project = $objRequest->getvaluebyname('project');
-$map = $objRequest->getvaluebyname('map');
-$temporary = $objRequest->getvaluebyname('tmp');
-$useTemporaryMapfile = !empty($temporary);
-$lang = $objRequest->getvaluebyname('lang');
 $requestService = strtolower($objRequest->getValueByName('service'));
 $requestRequest = strtolower($objRequest->getValueByName('request'));
 
 $isGetLegendGraphicRequest = $requestRequest == 'getlegendgraphic';
 
 $mapObjFactory = \GCApp::getMsMapObjFactory();
-$oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
+$oMap = $mapObjFactory->from($objRequest);
 
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
@@ -168,7 +164,7 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
         }
 
         // re-create mapobj to consider authenticated user
-        $oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
+        $oMap = $mapObjFactory->from($objRequest);
         
         // get layers to populate session with GISCLIENT_USER_LAYER
         GCApp::getLayerAuthorizationChecker()->getLayers(array(
