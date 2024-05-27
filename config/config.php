@@ -76,6 +76,7 @@ if (php_sapi_name() == "cli") {
 define('INTERNAL_URL', getenv('AUTHOR_INTERNAL_URL') ?: 'http://127.0.0.1/'); // url for internal requests
 define('MAP_URL', getenv('AUTHOR_MAP_URL') ?: 'http://localhost/map/'); //URL CLIENT DI MAPPA
 define('PRIVATE_MAP_URL', getenv('AUTHOR_PRIVATE_MAP_URL') ?: MAP_URL); //URL CLIENT DI MAPPA PRIVATA
+define('LIMIT_SLD_URL_TO_SAME_HOST', getenv('AUTHOR_LIMIT_SLD_URL_TO_SAME_HOST') == '0' ? false : true);
 define('IMAGE_PATH', '/tmp/');
 define('IMAGE_URL', '/tmp/');
 define('PROJ_LIB', getenv('AUTHOR_PROJ_LIB') ?: "/usr/share/proj");
