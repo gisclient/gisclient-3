@@ -14,12 +14,12 @@ if(!defined('REDLINE_SCHEMA')) define('REDLINE_SCHEMA', 'public');
 if(!defined('REDLINE_FONT')) define('REDLINE_FONT', 'arial');
 if(!defined('POSTGIS_TRANSFORM_GEOMETRY')) define('POSTGIS_TRANSFORM_GEOMETRY', 'Postgis_Transform_Geometry');
 
-$redlineFields = array ('color' => 'varchar', 'label' => 'text', 'attach' => 'text');
+$redlineFields = array ('color' => 'varchar', 'label' => 'text', 'attach' => 'text', 'attachsize' => 'text', 'resolution' => 'numeric', 'labelxoff' => 'numeric', 'labelyoff' => 'numeric', 'symbol' => 'varchar', 'radius' => 'numeric', 'strokewidth' => 'numeric', 'dashstyle' => 'varchar', 'fontsize' => 'varchar', 'angle' => 'numeric', 'quote_id' => 'varchar', 'unit' => 'varchar');
 
 if ($_REQUEST["REQUEST"] == "attUpload") {
     if(!defined('REDLINE_UPLOAD_DIR') || !defined('REDLINE_UPLOAD_URL')) outputError('Missing upload config values, cannot execute request');
     if(!isset($_FILES["ATTACHMENT"])) outputError('No attachment specified, invalid operation');
-    $attachType = pathinfo(basename($_FILES["ATTACHMENT"]["name"]),PATHINFO_EXTENSION); 
+    $attachType = pathinfo(basename($_FILES["ATTACHMENT"]["name"]),PATHINFO_EXTENSION);
     // **** TODO - check file types?
     $attachName = uniqid("", true);
     $attachName .= '.' . $attachType;
@@ -47,7 +47,7 @@ $redlineUser = $user->isAuthenticated() ? $user->getUsername() : 'GUEST';
 
 //elenco dei layer di redline per l'utente corrente
 if($_REQUEST["REQUEST"] == "GetLayers"){
-	$sql = "SELECT DISTINCT redline_id, redline_title FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE project=:project AND mapset=:mapset AND username=:username ORDER BY redline_id;";
+	$sql = "SELECT DISTINCT redline_id, redline_title, redline_status FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE project=:project AND mapset=:mapset AND username=:username ORDER BY redline_id;";
 	$params = array(
 		':project'=>$_REQUEST['PROJECT'],
 		':mapset'=>$_REQUEST['MAPSET'],
@@ -57,7 +57,7 @@ if($_REQUEST["REQUEST"] == "GetLayers"){
 	try {
 		$stmt->execute($params);
 	} catch(Exception $e) {
-		//outputError($e->getMessage());
+		outputError($e->getMessage());
 	}
 	$layers = array();
 	while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -79,7 +79,7 @@ if($_REQUEST["REQUEST"] == "DeleteLayer"){
 		$fileName = $_REQUEST['IMAGEPATH'].$_REQUEST['REDLINEID'].".tif";
 		@unlink($fileName);
 	}
-	
+
 	die(json_encode(array('result'=>'OK')));
 }
 
@@ -106,8 +106,8 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 
         $customFieldsDecl = str_replace('=', ' ', http_build_query($redlineFields, '', ', '));
         $customFieldsVal = ':' . implode(', :', array_keys($redlineFields));
-        
-	$sql = "CREATE TABLE ".REDLINE_SCHEMA.".".REDLINE_TABLE." (id serial, project varchar, mapset varchar, username varchar, redline_id varchar, redline_title varchar, date timestamp, " . $customFieldsDecl . " , CONSTRAINT annotazioni_pkey PRIMARY KEY (id));";
+
+	$sql = "CREATE TABLE ".REDLINE_SCHEMA.".".REDLINE_TABLE." (id serial, project varchar, mapset varchar, username varchar, redline_id varchar, redline_title varchar, redline_status varchar, date timestamp, " . $customFieldsDecl . " , CONSTRAINT annotazioni_pkey PRIMARY KEY (id));";
 	try {
 		$db->exec($sql);
 		foreach($geomTypes as $type) {
@@ -122,7 +122,7 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
         else
             $redlineId = array_sum( explode( ' ' , microtime() ) );
 	$redlineTitle = !empty($_REQUEST['TITLE']) ? $_REQUEST['TITLE'] : null;
-    
+
         $inserted = false;
         $insertedIdList = array();
 
@@ -133,11 +133,11 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 		//if($geom['type']=='Polygon' && count($geom['coordinates'])<3) continue;
 
 		if(!isset($geomTypes[$geom['type']])) outputError('Geometry type not implemented');
-                
+
                 $rowId = !empty($feature['properties']['id']) ? $feature['properties']['id'] : null;
-                
+
                 if ($rowId == null) {
-                    $sql = "insert into ".REDLINE_SCHEMA.".".REDLINE_TABLE." (project, mapset, username, redline_id, redline_title, date, " . $customFields . ") values (:project, :mapset, :username, :redline_id, :redline_title, now(), " . $customFieldsVal . ")";
+                    $sql = "insert into ".REDLINE_SCHEMA.".".REDLINE_TABLE." (project, mapset, username, redline_id, redline_title, redline_status, date, " . $customFields . ") values (:project, :mapset, :username, :redline_id, :redline_title, 'Nuova', now(), " . $customFieldsVal . ")";
                     $stmt = $db->prepare($sql);
                     $params = array(
                             ':project'=>$_REQUEST['PROJECT'],
@@ -166,11 +166,11 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 		} catch(Exception $e) {
 			outputError($e->getMessage());
 		}
-                
+
                 if ($rowId == null)
                     $rowId = $db->lastInsertId(REDLINE_SCHEMA.'.'.REDLINE_TABLE.'_id_seq');
 		$wktGeom = parseGeoJSONGeomtry($feature['geometry'], $mapSRID);
-		
+
 		$sql = "update ".REDLINE_SCHEMA.".".REDLINE_TABLE." set ".$geomTypes[$geom['type']]['db_field']." = $wktGeom where id = :id";
 		$stmt = $db->prepare($sql);
 
@@ -180,11 +180,11 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 		} catch(Exception $e) {
 			outputError($e->getMessage()."\n\n--".$rowId);
 		}
-                
-                
+
+
         $inserted = true;
 	}
-        
+
         // **** Manage deleted items
         if ($inserted && !empty($_REQUEST['REDLINEID']) && !empty($insertedIdList)) {
             $sql = "DELETE FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE redline_id = :redline_id and ID NOT IN (" . implode(',', $insertedIdList) . ")";
@@ -195,16 +195,16 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
                 outputError($e->getMessage()."\n\n--".$rowId);
             }
         }
-                
+
     if($inserted) {
-        die(json_encode(array('redlineId'=>$redlineId, 'redlineTitle'=>$redlineTitle)));
+        die(json_encode(array('redlineId'=>"$redlineId", 'redlineTitle'=>$redlineTitle)));
     } else {
         outputError('Invalid format');
     }
 }
 
 if($_REQUEST["REQUEST"] == "GetLayer"){
-    if(empty($_REQUEST['REDLINEID'])) outputError("MANCA ID"); 
+    if(empty($_REQUEST['REDLINEID'])) outputError("MANCA ID");
     $geomFields = array();
     foreach($geomTypes as $type) {
         $geomField = $type['db_field'];
@@ -231,7 +231,7 @@ if($_REQUEST["REQUEST"] == "GetLayer"){
     );
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
-    
+
     $redlineGeoJSON = '';
     $featureGeoJSON = '';
     while($redline = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -241,7 +241,7 @@ if($_REQUEST["REQUEST"] == "GetLayer"){
             if(!empty($redline[$type['db_field']])) {
                 $geomGeoJSON = $redline[$type['db_field']];
                 break;
-            }  
+            }
         }
         if (strlen($geomGeoJSON) == 0)
             continue;
@@ -254,7 +254,7 @@ if($_REQUEST["REQUEST"] == "GetLayer"){
         $featureGeoJSON .= $propsGeoJSON . '}}';
         $redlineGeoJSON .= $featureGeoJSON ;
     }
-    
+
     if (strlen($redlineGeoJSON) == 0) {
         outputError("Nessuna geometria valida nella nota richiesta, ID:" . $_REQUEST['REDLINEID']);
     }
@@ -266,7 +266,7 @@ if($_REQUEST["REQUEST"] == "GetLayer"){
 
 if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST["SERVICE"]=="WMS") {
 
-	if(empty($_REQUEST['REDLINEID'])) die("MANCA ID"); 
+	if(empty($_REQUEST['REDLINEID'])) die("MANCA ID");
 	$geomFields = array();
 	foreach($geomTypes as $type) array_push($geomFields, $type['db_field']);
 	$sql = "select ".implode(',', $geomFields).", note, color from ".REDLINE_SCHEMA.".".REDLINE_TABLE.
@@ -284,47 +284,47 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 	}
 
 
-	$oMap=ms_newMapObj('');
+	$oMap=new gc_mapObj('');
 	if(defined('PROJ_LIB')) $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
 	$aExtent = explode(",",$_REQUEST['BBOX']);
-	$oMap->extent->setextent($aExtent[0], $aExtent[1], $aExtent[2], $aExtent[3]);
-	$oMap->setSize(intval($_REQUEST['WIDTH']), intval($_REQUEST['HEIGHT']));	
+	$oMap->extent_setextent($aExtent[0], $aExtent[1], $aExtent[2], $aExtent[3]);
+	$oMap->setSize(intval($_REQUEST['WIDTH']), intval($_REQUEST['HEIGHT']));
 	$oMap->setProjection("init=".strtolower($_REQUEST['SRS']));
-	
-	$oMap->outputformat->set('name','PNG');
-	$oMap->outputformat->set('driver','GD/PNG');
-	$oMap->outputformat->set('extension','png');
-	$oMap->outputformat->set('transparent',MS_ON);
+
+	$oMap->outputformat_set('name','PNG');
+	$oMap->outputformat_set('driver','GD/PNG');
+	$oMap->outputformat_set('extension','png');
+	$oMap->outputformat_set('transparent',MS_ON);
 	$oMap->outputformat->setOption("INTERLACE", "OFF");
-	
-	$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');		
-	
+
+	$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
+
 	$layerProjString = (($mapSRID == REDLINE_SRID) || empty($SRS_params[REDLINE_SRID]))?"init=epsg:".REDLINE_SRID:$SRS_params[REDLINE_SRID];
-	
+
 	foreach($types as $type) {
-		$oLay = ms_newLayerObj($oMap);
+		$oLay = new gc_layerObj($oMap);
 		$oLay->set('name', 'redline_'.$type['db_type']);
 		$oLay->set('group', 'redline');
 		$oLay->set('type', $type['ms_type']);
-		$oLay->setConnectionType(MS_POSTGIS);
+		$oLay->setConnectionType(MS_POSTGIS, null);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
         $data = "the_geom from (select id, note, color, redline_id, ".$type['db_field']." as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID;
 		$oLay->set('data', $data);
 		$oLay->setFilter("redline_id=".$_REQUEST['REDLINEID']);
 		$oLay->setProjection($layerProjString);
 		$oLay->set('sizeunits',MS_PIXELS);
-		$oClass = ms_newClassObj($oLay);
-		$oStyle = ms_newStyleObj($oClass);
-		$oStyle->setbinding(MS_STYLE_BINDING_OUTLINECOLOR, "color");	
+		$oClass = new gc_classObj($oLay);
+		$oStyle = new gc_styleObj($oClass);
+		$oStyle->setbinding(MS_STYLE_BINDING_OUTLINECOLOR, "color");
 		$oStyle->set("width", 1);
 		$oLay->set('status', MS_ON);
 
 		//Annotazione
-		$oLay = ms_newLayerObj($oMap);
+		$oLay = new gc_layerObj($oMap);
 		$oLay->set('name','redline_text_'.$type['db_type']);
 		$oLay->set('group', 'redline');
 		$oLay->set('type', MS_LAYER_ANNOTATION);
-		$oLay->setConnectionType(MS_POSTGIS);
+		$oLay->setConnectionType(MS_POSTGIS, null);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
         $geom = !empty($type['label_function']) ? $type['label_function'].'('.$type['db_field'].')' : $type['db_field'];
 		$oLay->set('data', "the_geom from (select id, note, color, redline_id, $geom as the_geom from ".REDLINE_SCHEMA.".".REDLINE_TABLE.") as foo using unique id using srid=".REDLINE_SRID);
@@ -333,12 +333,12 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->setProjection($layerProjString);
 		$oLay->set('sizeunits', MS_PIXELS);
 		$oLay->set('labelitem', "note");
-		
+
 		// TODO: already called some lines before. Can this be removed?
-		$oClass = ms_newClassObj($oLay);
+		$oClass = new gc_classObj($oLay);
 		// Label properties
 		$lbl = null;
-		if (ms_GetVersionInt() < 60200) {
+		if (mapscript::msGetVersionInt() < 60200) {
 			$lbl = $oClass->label;
 		} else if($oClass->numlabels > 0) {
 			$lbl = $oClass->getLabel(0);
@@ -355,10 +355,10 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 		$oLay->set('status', MS_ON);
 	}
 
-	ms_ResetErrorList();	
+	mapscript::msResetErrorList();
 	$oImage=$oMap->draw();
-			
-	$error = ms_GetErrorObj();
+
+	$error = mapscript::msGetErrorObj();
 	if($error->code != MS_NOERR){
 		while($error->code != MS_NOERR){
 			print("CREATE MAP ERROR <br>");
@@ -384,7 +384,7 @@ function outputError($msg) {
 
 function parseGeoJSONGeomtry($geom, $mapSRID) {
 	global $geomTypes,$SRS_params;
-	
+
 	$wkt = "st_geomfromtext('".$geomTypes[$geom['type']]['db_type']."(";
 	if ($geom['type'] == 'Point') {
             $wkt .= implode(' ', $geom['coordinates']);
@@ -403,7 +403,7 @@ function parseGeoJSONGeomtry($geom, $mapSRID) {
             if($geom['type'] == 'Polygon') $wkt .= ')';
             }
 	$wkt .= ")', $mapSRID)";
-	
+
 	if($mapSRID != REDLINE_SRID) {
 		if(empty($SRS_params[REDLINE_SRID]) || empty($SRS_params[$mapSRID])){
 			$wkt = "st_transform($wkt, ".REDLINE_SRID.")";

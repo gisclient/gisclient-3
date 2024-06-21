@@ -11,7 +11,11 @@ if($smb->table == 'class') {
     $smb->filter="symbol.symbol_name=".$db->quote($_REQUEST['id']);
 }
 
-$img = $smb->createIcon();
+$color = isset($_REQUEST['color'])?$_REQUEST['color']:null;
+$transparency = isset($_REQUEST['transparency'])?1:0;
+if (isset($_REQUEST['size'])) $smb->iconSize = $_REQUEST['size'];
+
+$img = $smb->createIcon($color,$transparency);
 header('Content-type:image/png');
 header("Cache-Control: no-store, no-cache, must-revalidate");  // HTTP/1.1
 header("Cache-Control: post-check=0, pre-check=0", false);

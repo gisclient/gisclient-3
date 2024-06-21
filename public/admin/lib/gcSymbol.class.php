@@ -22,19 +22,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class Symbol{
 	public $filter;
+	public $iconSize;
 
 	function __construct($table){
 		$this->table=$table;
+		$this->iconSize = null;
         $this->db = GCApp::getDB();
 	}
 
-	function createIcon(){
+	function createIcon($color=null,$transparency=0){
 		$dbSchema=DB_SCHEMA;
         if(!is_dir(ROOT_PATH.'tmp')) mkdir(ROOT_PATH.'tmp');
 		$this->mapfile=ROOT_PATH.'map/tmp/tmp.map';
 		$this->symbolSize=array(LEGEND_POINT_SIZE,LEGEND_LINE_WIDTH,LEGEND_POLYGON_WIDTH);
 		$aClass=array();
 
+		if ($color) {
+			list($r, $g, $b) = sscanf($color, "%02x%02x%02x");
+			$aColor = array($r, $g, $b);
+		}
 
 		if($this->table=='class'){
             $aSymbol=array("SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND");//lettera A per le icone dei testi
@@ -54,6 +60,9 @@ class Symbol{
 				$aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
 				if($row["style_id"]){
 					$aStyle["color"]=explode(" ",$row["color"]);
+					if (isset($aColor)) {
+						$aStyle["color"]=explode(" ",$aColor);
+					}
 					$aStyle["outlinecolor"]=explode(" ",$row["outlinecolor"]);
 					$aStyle["bgcolor"]=explode(" ",$row["bgcolor"]);
 					$aStyle["angle"]=$row["angle"];
@@ -79,7 +88,7 @@ class Symbol{
 			}
 
 
-			$this->_createMapFile($aSymbol);
+			$this->_createMapFile($aSymbol,$transparency);
 
 			foreach($aClass as $classId=>$class){
 				$oIcon = $this->_iconFromClass($class);
@@ -105,6 +114,9 @@ class Symbol{
 				$aStyle=array();
 				$aStyle["symbol"]=$row["symbol_name"];
 				$aStyle["color"]=array(0,0,0);
+				if (isset($aColor)) {
+						$aStyle["color"]=$aColor;
+				}
 				$aStyle["size"]=$this->symbolSize[$row["icontype"]];
 				$aClass[$row["symbol_name"]]["style"][]=$aStyle;
 				$smbText=array();
@@ -123,7 +135,7 @@ class Symbol{
 
 			}
 
-			$this->_createMapFile($aSymbol);
+			$this->_createMapFile($aSymbol,$transparency);
 			foreach($aClass as $symbolName=>$class){
 
 				$oIcon = $this->_iconFromClass($class);
@@ -149,6 +161,8 @@ class Symbol{
 
 	function _iconFromClass($class){
 		//creo la mappa
+		$legendIconW = LEGEND_ICON_W;
+		$legendIconH = LEGEND_ICON_H;
 		$oMap = $this->oMap;
 		$oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
 		$oMap->outputformat->set('name','PNG');
@@ -174,27 +188,38 @@ class Symbol{
 			$oStyle->set('width',1);
 			if(!empty($style[$i]['width'])) $oStyle->set('width',$style[$i]['width']);
 			if(!empty($style[$i]['size'])) $oStyle->set('size',$style[$i]['size']);
-
-
+			// **** Override size
+			if (!empty($this->iconSize)) {
+				$oStyle->set('size',$this->iconSize);
+				$legendIconH = $this->iconSize;
+				$legendIconW = $this->iconSize;
+			}
 		}
 
 //$oMap->save(ROOT_PATH.'config/debug/debug.map');
 		try {
-			$icoImg = $oClass->createLegendIcon(LEGEND_ICON_W,LEGEND_ICON_H);
+			$icoImg = $oClass->createLegendIcon($legendIconW,$legendIconH);
 		}
 		catch (Exception $e) {
-			$oMap->setSize(LEGEND_ICON_W,LEGEND_ICON_H);
+			$oMap->setSize($legendIconW,$legendIconH);
 			$icoImg =  $oMap->prepareImage();
 
 		}
 		return $icoImg;
 	}
 
-	function _createMapFile($aSymbol){
+	function _createMapFile($aSymbol,$transparency){
 		//creazione del file di simboli
 		$mapText=array();
 		$mapText[] = "MAP";
 		$mapText[] = "EXTENT 0 0 180 180";
+		if ($transparency) {
+			$mapText[] = "LEGEND";
+			$mapText[] = "STATUS ON";
+			$mapText[] = 'IMAGECOLOR "#FFFFFF00"';
+			$mapText[] = 'TRANSPARENT ON';
+			$mapText[] = "END";
+		}
 		$mapText[] = implode("\n",$aSymbol);
 		$mapText[] = "END";
 	    //test sintassi mapfile
