@@ -85,7 +85,7 @@ class gcMap{
         $this->mapProviders = array(
                         VMAP_LAYER_TYPE => "$protocol://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
                         YMAP_LAYER_TYPE => "$protocol://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
-                        OSM_LAYER_TYPE => "$protocol://openstreetmap.org/openlayers/OpenStreetMap.js",
+                        OSM_LAYER_TYPE => MAP_URL."resources/external/OpenStreetMap.js", // TODO: manage map providers in configuration
                         GMAP_LAYER_TYPE => "$protocol://maps.googleapis.com/maps/api/js?$gmapKey");
 
         $this->db = GCApp::getDB();
