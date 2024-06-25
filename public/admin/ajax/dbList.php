@@ -70,6 +70,9 @@ switch($selectedField) {
 			if (!empty($_REQUEST["label_font"])) {
 				$filters[] = "font_name='".$_REQUEST["label_font"]."'";
 			}
+			if (!empty($_REQUEST["font_name"])) {
+				$filters[] = "symbol_def LIKE '%FONT \"" . $_REQUEST["font_name"] . "\"%'";
+			}
 			if (!empty($_REQUEST["type"]) && strtoupper($_REQUEST["type"]) == 'PIXMAP') {
 				$filters[] = 'symbol_def ~* E\'.*TYPE\\\\s+PIXMAP.*\'';
 			}
