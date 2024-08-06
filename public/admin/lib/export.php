@@ -235,7 +235,7 @@ function _getPKeys()
     }
     return $struct;
 }
-function _getListValue($level, $val, $db)
+function _getListValue($level, $val, $db = null)
 {
     $db = GCApp::getDB();
     $pk=_getPKeys();
@@ -294,7 +294,7 @@ function _isPKey($fld, $pk, $lev = "")
     }
         return false;
 }
-function _export($fileName = "export.sql", $currentLevel, $projName, $structure, $start = 0, $startName, $parentValue, &$valutatedKey, &$Errors = array())
+function _export($fileName = "export.sql", $currentLevel, $projName, $structure, $start = 0, $startName, $parentValue, &$valutatedKey = null, &$Errors = array())
 {
     //MODIFICO I PARAMETRI DEL PHP PER PERMETTERE LE ESPORTAZIONI
     
