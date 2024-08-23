@@ -751,7 +751,7 @@ class R3GisGCMap
                 );
             }
             if (!array_key_exists($row['sld'], $this->sldContents)) {
-                UrlChecker::checkUrl($row['sld'], true);
+                UrlChecker::checkUrl($row['sld'], LIMIT_SLD_URL_TO_SAME_HOST);
                 $ch = curl_init($row['sld']);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

@@ -52,13 +52,8 @@ foreach ($_REQUEST as $k => $v) {
     }
 }
 
-$project = $objRequest->getvaluebyname('project');
-$map = $objRequest->getvaluebyname('map');
-$useTemporaryMapfile = !empty($objRequest->getvaluebyname('tmp'));
-$lang = $objRequest->getvaluebyname('lang');
-
 $mapObjFactory = \GCApp::getMsMapObjFactory();
-$oMap = $mapObjFactory->create($project, $map, $useTemporaryMapfile, $lang);
+$oMap = $mapObjFactory->from($objRequest);
 
 $resolution = $objRequest->getvaluebyname('resolution');
 if (!empty($resolution) && $resolution != 72) {

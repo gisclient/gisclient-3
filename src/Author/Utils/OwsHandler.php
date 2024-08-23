@@ -226,7 +226,7 @@ class OwsHandler
 
     public static function getSldContent($sldUrl)
     {
-        UrlChecker::checkUrl($sldUrl, true);
+        UrlChecker::checkUrl($sldUrl, LIMIT_SLD_URL_TO_SAME_HOST);
         $ch = curl_init($sldUrl);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

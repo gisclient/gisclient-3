@@ -86,4 +86,22 @@ class MsMapObjFactory
         
         return $oMap;
     }
+
+    public function from(\OwsrequestObj $request): \mapObj
+    {
+        /** @var string $project */
+        $project = $request->getvaluebyname('project');
+        /** @var string $map */
+        $map = $request->getvaluebyname('map');
+        /** @var boolean $temporary */
+        $temporary = !empty($request->getvaluebyname('tmp'));
+
+        /** @var string|null $temporary */
+        $lang = $request->getvaluebyname('lang');
+        if (empty($lang)) {
+            $lang = null;
+        }
+
+        return $this->create($project, $map, $temporary, $lang);
+    }
 }
