@@ -26,6 +26,31 @@ class mapImage {
         'MultiLineString'=>array('db_type'=>'MULTILINESTRING', 'db_field'=>'multilinestring_geom', 'ms_type'=>MS_LAYER_LINE),
     );
 
+    public static $vectorFields = array(
+        "pointradius" => "numeric",
+        "fillopacity" => "numeric",
+        "strokeopacity" => "numeric",
+        "fontsize" => "numeric",
+        "fontfamily" => 'varchar',
+        "fontweight" => 'varchar',
+        "fontcolor" => 'varchar',
+        "labelalign" => 'varchar',
+        "labelxoffset" => "numeric",
+        "labelyoffset" => "numeric",
+        "labelselect" => 'varchar',
+        "fillcolor" => 'varchar',
+        "strokecolor" => 'varchar',
+        "strokewidth" => "numeric",
+        "strokedashstyle" => 'varchar',
+        "label" => 'varchar',
+        "externalgraphic" => 'varchar',
+        "graphicname" => 'varchar',
+        "graphicwidth" => "numeric",
+        "graphicheight" => "numeric",
+        "rotation" => "numeric",
+        "angle" => "numeric",
+    );
+
 
     function __construct($tiles, array $imageSize, $srid, array $options) {
         $defaultOptions = array(
@@ -308,13 +333,16 @@ class mapImage {
 
         $tableName = PRINT_VECTORS_TABLE;
         $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
+        $customFields = implode(', ', array_keys(self::$vectorFields));
+        $customFieldsDecl = str_replace('=', ' ', http_build_query(self::$vectorFields, '', ', '));
+        $customFieldsVal = ':' . implode(', :', array_keys(self::$vectorFields));
 
         $db = GCApp::getDB();
 
         if(!GCApp::tableExists($db, $schema, $tableName)) {
             $sql = 'create sequence '.$schema.'.'.$tableName.'_print_id_seq ';
             $db->exec($sql);
-            $sql = "create table $schema.$tableName (gid serial, print_id integer, insert_time timestamp without time zone not null default now(), label varchar, color varchar(10), color_opacity smallint, fillcolor varchar(10), fillcolor_opacity smallint) WITH (OIDS=FALSE)";
+            $sql = "create table $schema.$tableName (gid serial, print_id integer, insert_time timestamp without time zone not null default now(), $customFieldsDecl) WITH (OIDS=FALSE)";
             $db->exec($sql);
             $sql = 'select addgeometrycolumn(:schema, :table, :column, :srid, :type, 2)';
             $addGeometryColumn = $db->prepare($sql);
@@ -352,25 +380,30 @@ class mapImage {
             else {
                 $geomInsert = "st_geomfromtext(:geom, ".PRINT_VECTORS_SRID.")";
             }
-            // **** Add columns for color, fillcolor, label
+            // **** Add columns for feature style attributes,
             // **** allowing upload from client
             $defaultColor = (defined('PRINT_VECTORS_DEFAULT_COLOR'))?PRINT_VECTORS_DEFAULT_COLOR:null;
             $defaultColorOpacity = (defined('PRINT_VECTORS_DEFAULT_COLOR_OPACITY'))?PRINT_VECTORS_DEFAULT_COLOR_OPACITY:null;
             $defaultFillColor = (defined('PRINT_VECTORS_DEFAULT_FILLCOLOR'))?PRINT_VECTORS_DEFAULT_FILLCOLOR:null;
             $defaultFillColorOpacity = (defined('PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY'))?PRINT_VECTORS_DEFAULT_FILLCOLOR_OPACITY:null;
 
-            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, label, color, color_opacity, fillcolor, fillcolor_opacity, '.$field.') values (:print_id, :label, :color, :color_opacity, :fillcolor, :fillcolor_opacity,'.$geomInsert.' )';
+            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$customFields.', '.$field.') values (:print_id,'.$customFieldsVal.', ' .$geomInsert.' )';
             $stmt = $db->prepare($sql);
             foreach($features as $feature) {
-                $stmt->execute(array(
+                $params = array(
                     'print_id'=>$printId,
-                    'label'=>isset($feature['label'])?$feature['label']:'',
-                    'color'=>isset($feature['color'])?$feature['color']:$defaultColor,
-                    'color_opacity'=>(isset($feature['color_opacity']) && $feature['color_opacity'])?intval($feature['color_opacity']):$defaultColorOpacity,
-                    'fillcolor'=>isset($feature['fillcolor'])?$feature['fillcolor']:$defaultFillColor,
-                    'fillcolor_opacity'=>(isset($feature['fillcolor_opacity']) && $feature['fillcolor_opacity'])?intval($feature['fillcolor_opacity']):$defaultFillColorOpacity,
                     'geom'=>$feature['geometry']
-                ));
+                );
+                foreach (self::$vectorFields as $key => $value) {
+                    $params[$key] = !empty($feature[$key]) ? $feature[$key] : null;
+                };
+                // **** Set defaults
+                $params['strokecolor'] = isset($feature['strokecolor'])?$feature['strokecolor']:$defaultColor;
+                $params['fillcolor'] = isset($feature['fillcolor'])?$feature['fillcolor']:$defaultFillColor;
+                $params['strokeopacity'] = isset($feature['strokeopacity'])?$feature['strokeopacity']:$defaultColorOpacity;
+                $params['fillopacity'] = isset($feature['fillopacity'])?$feature['fillopacity']:$defaultFillColorOpacity;
+
+                $stmt->execute($params);
             }
         }
 
