@@ -11,7 +11,6 @@ function outputError($msg) {
 	die(json_encode(array('error'=>$msg)));
 }
 
-
 if(!isset($_REQUEST['REQUEST']) || $_REQUEST['REQUEST'] != 'GetMap') die('Invalid request');
 
 if(!defined('PRINT_VECTORS_TABLE') || !defined('PRINT_VECTORS_SRID')) outputError('Missing config print vectors values');
@@ -31,6 +30,11 @@ if (defined('DEBUG') && DEBUG) {
 $db = GCApp::getDB();
 
 $geomTypes = mapImage::$vectorTypes;
+$customFields = implode(', ', array_keys(mapImage::$vectorFields));
+$customFieldsDecl = str_replace('=', ' ', http_build_query(mapImage::$vectorFields, '', ', '));
+$customFieldsVal = ':' . implode(', :', array_keys(mapImage::$vectorFields));
+// **** Dash line styles available on client
+$olDashStyles = array('dot'=>'1 3','dash'=>'3 3','dashdot'=>'3 3 1 3','longdash'=>'5 3','longdashdot'=>'5 3 1 3');
 
 if(empty($_REQUEST['SRS'])) outputError('Missing geometry srid');
 //$parts = explode(':', $_REQUEST["SRS"]);
@@ -133,6 +137,13 @@ EOMAP;
 	    $aPoints[0] = 1;
 	    $aPoints[1] = 1;
 	    $oSymbol->setpoints($aPoints);
+		$nId1 = ms_newSymbolobj($oMap, "TRIANGLE");
+	    $oSymbol1 = $oMap->getsymbolobjectbyid($nId1);
+	    $oSymbol1->set("filled", MS_TRUE);
+	    $oSymbol1->set("type", MS_SYMBOL_VECTOR);
+	    $oSymbol1->set("inmapfile", MS_TRUE);
+	    $aPoints1 = array(0,1,.5,0,1,1,0,1);
+	    $oSymbol1->setpoints($aPoints1);
 	}
 
 	$layersToInclude = array();
@@ -145,7 +156,7 @@ EOMAP;
 		$oLay->set('type', $type['ms_type']);
 		$oLay->setConnectionType(MS_POSTGIS);
 		$oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
-        $data = "the_geom from (select gid, print_id, label, color, color_opacity, fillcolor, fillcolor_opacity, ".$type['db_field']." as the_geom from $schema.$tableName) as foo using unique gid using srid=".PRINT_VECTORS_SRID;
+        $data = "the_geom from (select gid, print_id, $customFields, ".$type['db_field']." as the_geom from $schema.$tableName) as foo using unique gid using srid=".PRINT_VECTORS_SRID;
 		$oLay->set('data', $data);
 		// **** Old Snapo - Mapserver 7 compatibility
 		// **** Layer FILTERs must use MapServer expression syntax only.
@@ -163,6 +174,7 @@ EOMAP;
 		}
         $oLay->set('opacity', $vectorOpacity);
         $oLay->set('sizeunits', MS_PIXELS);
+		$oLay->set('symbolscaledenom', 500);
 		$oLay->set('status', MS_ON);
 		$oLay->set('labelitem', 'label');
 
@@ -172,35 +184,79 @@ EOMAP;
 			$oClass->set('name', 'PRINTVECTORS_CLASS_' . $type['db_type']);
 			// **** Set label
 			$oLabel = new labelObj();
-			$oLabel->color->setHex('#000000');
+			$oLabel->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+			$oLabel->updateFromString('LABEL SIZE([fontsize]/2) END');
+			//$oLabel->setBinding(MS_LABEL_BINDING_FONT, 'fontfamily');
+			$oLabel->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+			//$oLabel->color->setHex('#000000');
 			$oLabel->set('position', MS_UC);
-			$oLabel->set('size', '15');
-			$oLabel->set('maxsize', '20');
-			$oLabel->set('minsize', '10');
+			//$oLabel->set('size', '15');
+			//$oLabel->set('maxsize', '20');
+			//$oLabel->set('minsize', '10');
 			$oClass->addLabel($oLabel);
 			// **** Set style
 			switch ($type['ms_type']) {
 				case MS_LAYER_POINT:
+					$oClass->setExpression("(length('[graphicname]') > 0)");
 					$oStyle = ms_newStyleObj($oClass);
-					$oStyle->set('symbolname', 'CIRCLE');
-					$oStyle->set('size', '20');
+					$oStyle->setBinding(MS_STYLE_BINDING_SIZE, 'pointradius');
+					//$oStyle->updateFromString('STYLE SIZE ( pointradius]/2 ) END');
 					$oStyle->setBinding(MS_STYLE_BINDING_COLOR, 'fillcolor');
-					$oStyle->setBinding(MS_STYLE_BINDING_OUTLINECOLOR, 'color');
-					$oStyle->updateFromString('STYLE OPACITY [color_opacity] END');
+					$oStyle->setBinding(MS_STYLE_BINDING_OUTLINECOLOR, 'strokecolor');
+					$oStyle->setBinding(MS_STYLE_BINDING_ANGLE, 'rotation');
+					$oStyle->updateFromString('STYLE OPACITY [strokeopacity] END');
+					$oStyle->updateFromString('STYLE SYMBOL [graphicname] END');
+					// **** Set symbol class
+					$oClassS = new classObj($oLay);
+					$oClassS->set('name', 'PRINTVECTORS_CLASS_SYMBOL_' . $type['db_type']);
+					$oLabelS = new labelObj();
+					$oLabelS->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+					$oLabelS->updateFromString('LABEL SIZE([fontsize]/2) END');
+					$oLabelS->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+					$oLabelS->set('position', MS_UC);
+					$oClassS->addLabel($oLabelS);
+					$oClassS->setExpression("(length('[externalgraphic]') > 0)");
+					$oStyleS = new styleObj($oClassS);
+					$oStyleS->set('size', '12');
+					$oStyleS->setBinding(MS_STYLE_BINDING_COLOR, 'fillcolor');
+					$oStyleS->setBinding(MS_STYLE_BINDING_OUTLINECOLOR, 'strokecolor');
+					$oStyleS->setBinding(MS_STYLE_BINDING_ANGLE, 'rotation');
+					$oStyleS->updateFromString('STYLE OPACITY [strokeopacity] END');
+					$oStyleS->updateFromString('STYLE SYMBOL [externalgraphic] END');
+					$oLay->moveClassUp(1);
 					break;
 				case MS_LAYER_LINE:
 					$oStyle = ms_newStyleObj($oClass);
-					$oStyle->set('width', '5');
-					$oStyle->setBinding(MS_STYLE_BINDING_COLOR, 'color');
-					$oStyle->updateFromString('STYLE OPACITY [color_opacity] END');
+					$oStyle->setBinding(MS_STYLE_BINDING_WIDTH, 'strokewidth');
+					$oStyle->setBinding(MS_STYLE_BINDING_COLOR, 'strokecolor');
+					$oStyle->updateFromString('STYLE OPACITY [strokeopacity] END');
+					$styleIdx = 0;
+					foreach($olDashStyles as $dashStyleName =>$dashStylePattern) {
+						$styleIdx++;
+						$oClassS = new classObj($oLay);
+						$oClassS->set('name', 'PRINTVECTORS_CLASS_' . $dashStyleName . '_' . $type['db_type']);
+						$oLabelS = new labelObj();
+						$oLabelS->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+						$oLabelS->updateFromString('LABEL SIZE([fontsize]/2) END');
+						$oLabelS->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+						$oLabelS->set('position', MS_UC);
+						$oClassS->addLabel($oLabelS);
+						$oClassS->setExpression("('[strokedashstyle]' = '$dashStyleName')");
+						$oStyleS = new styleObj($oClassS);
+						$oStyleS->setBinding(MS_STYLE_BINDING_WIDTH, 'strokewidth');
+						$oStyleS->setBinding(MS_STYLE_BINDING_COLOR, 'strokecolor');
+						$oStyleS->updateFromString('STYLE OPACITY [strokeopacity] END');
+						$oStyleS->updateFromString("STYLE PATTERN $dashStylePattern END");
+						$oLay->moveClassUp($styleIdx);
+					}
 					break;
 				case MS_LAYER_POLYGON:
 					$oStyle = ms_newStyleObj($oClass);
 					$oStyle->setBinding(MS_STYLE_BINDING_COLOR, 'fillcolor');
-					$oStyle->updateFromString('STYLE OPACITY [fillcolor_opacity] END');
+					$oStyle->updateFromString('STYLE OPACITY [fillopacity] END');
 					$oStyleIn = ms_newStyleObj($oClass);
-					$oStyleIn->setBinding(MS_STYLE_BINDING_OUTLINECOLOR, 'color');
-					$oStyleIn->updateFromString('STYLE OPACITY [color_opacity] END');
+					$oStyleIn->setBinding(MS_STYLE_BINDING_OUTLINECOLOR, 'strokecolor');
+					$oStyleIn->updateFromString('STYLE OPACITY [strokeopacity] END');
 					break;
 			}
 		}
