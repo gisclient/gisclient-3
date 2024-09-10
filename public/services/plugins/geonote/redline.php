@@ -5,7 +5,7 @@ require_once ROOT_PATH . 'lib/GCService.php';
 $gcService = GCService::instance();
 $gcService->startSession();
 
-if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayer', 'GetLayers', 'PrintMap', 'attUpload'))) {
+if(!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayer', 'GetLayers', 'PrintMap', 'attUpload', 'GetUser', 'SaveUser'))) {
 	outputError("REQUEST unknown");
 }
 
@@ -45,12 +45,54 @@ $db = GCApp::getDB();
 $user = new GCUser();
 $redlineUser = $user->isAuthenticated() ? $user->getUsername() : 'GUEST';
 
+if ($_REQUEST["REQUEST"] == "GetUser") {
+	$sql = "CREATE TABLE ".REDLINE_SCHEMA.".".REDLINE_TABLE."_users (id serial, username varchar unique, config text, CONSTRAINT ".REDLINE_TABLE."_users_pkey PRIMARY KEY (id));";
+	try {
+		$db->exec($sql);
+
+	} catch(Exception $e) { //table already exists
+	}
+	$sql = "SELECT DISTINCT id, username, config FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE."_users WHERE username=:username;";
+	$params = array(
+		':username'=> $redlineUser
+	);
+	$stmt = $db->prepare($sql);
+	try {
+		$stmt->execute($params);
+	} catch(Exception $e) {
+		outputError($e->getMessage());
+	}
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	if ($row) {
+		die(json_encode($row));
+	}
+	else {
+		die(json_encode(array('username'=>"$redlineUser", 'config'=>'{}')));
+	}
+
+}
+
+if ($_REQUEST["REQUEST"] == "SaveUser") {
+    $sql = "INSERT INTO ".REDLINE_SCHEMA.".".REDLINE_TABLE."_users (username, config) VALUES (:username, :config) ON CONFLICT (username) DO UPDATE SET config = EXCLUDED.config;";
+	$params = array(
+		':username'=> $redlineUser,
+		':config'=>$_REQUEST['CONFIG']
+	);
+	$stmt = $db->prepare($sql);
+	try {
+		$stmt->execute($params);
+	} catch(Exception $e) {
+		outputError($e->getMessage());
+	}
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	die(json_encode(array('username'=>"$redlineUser", 'result'=>'ok')));
+}
+
 //elenco dei layer di redline per l'utente corrente
 if($_REQUEST["REQUEST"] == "GetLayers"){
-	$sql = "SELECT DISTINCT redline_id, redline_title, redline_status FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE project=:project AND mapset=:mapset AND username=:username ORDER BY redline_id;";
+	$sql = "SELECT DISTINCT redline_id, redline_title, redline_status, mapset FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE project=:project AND username=:username ORDER BY redline_id;";
 	$params = array(
 		':project'=>$_REQUEST['PROJECT'],
-		':mapset'=>$_REQUEST['MAPSET'],
 		':username'=> $redlineUser
 	);
 	$stmt = $db->prepare($sql);
@@ -61,6 +103,9 @@ if($_REQUEST["REQUEST"] == "GetLayers"){
 	}
 	$layers = array();
 	while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+		if (isset($_REQUEST['MAPSET']) && $row['mapset'] != $_REQUEST['MAPSET']) {
+			continue;
+		}
 		$layers[]=$row;
 	}
 	die(json_encode(array('layers'=>$layers)));
