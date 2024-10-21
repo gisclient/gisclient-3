@@ -40,6 +40,8 @@ ini_set('max_execution_time', 90);
 ini_set('memory_limit', '512M');
 ini_set('session.cookie_lifetime', 86400);
 ini_set('session.gc_maxlifetime', 86400);
+ini_set('session.cookie_samesite', 'none'); // to allow cookies from other domains; necessary for mobile map (CORS requests)
+ini_set('session.cookie_secure', 'On'); // cookie must be secure for mobile map (CORS requests) to work
 //error_reporting (E_ERROR | E_PARSE);
 error_reporting(E_ALL & ~E_STRICT);
 
