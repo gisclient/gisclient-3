@@ -136,12 +136,12 @@ function gcGetLegendGraphic(&$objRequest, &$oMap, $request, $savePath = null) {
                 for ($clno=0; $clno < $numCls; $clno++) {
                     $oClass = $oLayer->getClass($clno);
                     $className = $oClass->name;
-                    if($oClass->title) $oClass->set('name',$oClass->title);
+                    //if($oClass->title) $oClass->set('name',$oClass->title);
 
                     //VORREI TOGLIERE LA CLASSE DALLA LEGENDA MA NON TROVO UN MODO MIGLIORE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     //if($oClass->getMetaData("gc_no_image")) $oClass->set('maxscaledenom',1);
                     if($oClass->getMetaData("gc_no_image") == 1)
-                        $classToRemove[] = $oClass->title;
+                        $classToRemove[] = $oClass->name;
                     elseif(!$ruleClassName || $ruleClassName == $className){
                         //RIMETTERE IN AUTHOR LA LEGENDA PRESA DA IMMAGINE ESTERNA ...
                         //if(($oClass->getMetaData("gc_no_image")!='1') && (!$ruleClassName || $ruleClassName == $className)){
