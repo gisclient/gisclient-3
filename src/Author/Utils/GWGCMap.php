@@ -1137,7 +1137,7 @@ class GWGCMap
                 if ($row["relation_name"]) {
                     $aRel["relationName"] =  $row["relation_name"];
                     $aRel["relationType"] = intval($row["relationtype_id"]);
-                    $aRel["relationTitle"] =  $row["relation_title"]?$row["relation_title"]:$row["relation_name"];
+                    $aRel["relationTitle"] =  $row["relation_title"] ?: $row["relation_name"];
                     if (!isset($featureTypes[$index][$typeName]["relations"])) {
                         $featureTypes[$index][$typeName]["relations"] = array();
                     }

@@ -160,7 +160,7 @@ class LayerAuthorizationChecker
             } else {
                 array_push($result['map_layers'][$row['theme_name']][$row['layergroup_name']], array(
                     "name" => $featureType,
-                    "title" => $row['layer_title'] ? $row['layer_title'] : $row['layer_name'],
+                    "title" => $row['layer_title'] ?: $row['layer_name'],
                     "grouptitle" => $row['layergroup_title'],
                     "minScale" => $row['minscale'],
                     "maxScale" => $row['maxscale'],
