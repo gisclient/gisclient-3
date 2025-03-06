@@ -31,7 +31,7 @@ class FilterType extends AbstractType
                     new Constraints\Required(),
                     new Constraints\NotBlank(),
                     new Constraints\Callback([
-                        'callback' => function ($value, $context) {
+                        'callback' => function ($value, $context): void {
                             $db = \GCApp::getDB();
                             $sql = "SELECT * FROM ".DB_SCHEMA.".mapset WHERE mapset_name=?";
                             $stmt = $db->prepare($sql);
@@ -49,7 +49,7 @@ class FilterType extends AbstractType
                     new Constraints\Required(),
                     new Constraints\NotBlank(),
                     new Constraints\Callback([
-                        'callback' => function ($value, $context) {
+                        'callback' => function ($value, $context): void {
                             $normData = $context->getRoot()->getNormData();
 
                             $db = \GCApp::getDB();
