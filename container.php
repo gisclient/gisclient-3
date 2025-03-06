@@ -24,7 +24,7 @@ if (!$containerConfigCache->isFresh()) {
     $yamlString = file_get_contents(__DIR__."/config/extensions.yml");
     $extensions = Yaml::parse($yamlString)["extensions"];
     if ($extensions !== null
-        && (is_array($extensions) || $extensions instanceof \Traversable)
+        && (is_iterable($extensions))
     ) {
         foreach ($extensions as $extensionClassName) {
             $extension = new $extensionClassName();
