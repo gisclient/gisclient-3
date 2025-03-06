@@ -23,7 +23,7 @@ class MsMapObjFactory
         
         // check project directory
         $projectDir = $mapFileDir.DIRECTORY_SEPARATOR.$project;
-        if (strpos(realpath($projectDir), realpath($mapFileDir)) !== 0) {
+        if (strpos(realpath($projectDir), (string) realpath($mapFileDir)) !== 0) {
             // if the the project directory is not a subdir of map/, something
             // bad is happening
             print_debug(sprintf(
@@ -37,7 +37,7 @@ class MsMapObjFactory
         // check if using mapfile for another language
         if (!is_null($lang)) {
             $mapFileWithLang = $projectDir.DIRECTORY_SEPARATOR.$map.'_'.$lang.'.map';
-            if (strpos(realpath($mapFileWithLang), realpath($projectDir)) !== 0) {
+            if (strpos(realpath($mapFileWithLang), (string) realpath($projectDir)) !== 0) {
                 print_debug(sprintf(
                     'mapfile "%s" is not in project dir "%s"',
                     $mapFileWithLang,
@@ -55,7 +55,7 @@ class MsMapObjFactory
 
         // check if mapfile is in project dir
         $mapFile = $projectDir.DIRECTORY_SEPARATOR.$mapFileBasename;
-        if (strpos(realpath($mapFile), realpath($projectDir)) !== 0) {
+        if (strpos(realpath($mapFile), (string) realpath($projectDir)) !== 0) {
             // if the the map is not in the project dir, something
             // bad is happening
             print_debug(sprintf(
