@@ -289,7 +289,7 @@ class GCMap
         //echo "--$s--";
         for ($i = 0; $i < strlen($s); $i++) {
             //if(substr($val,$i,1)!=".")
-            $value += (floatval(substr($s, $i, 1))) * pow(10, $dec - 1 - $i);
+            $value += (floatval(substr($s, $i, 1))) * 10 ** ($dec - 1 - $i);
             //echo (substr($s,$i,1)*pow(10,$dec-1-$i))."\n" ;
         }
 
@@ -1463,7 +1463,7 @@ class GCMap
         if (self::SCALE_TYPE_POWEROF2 == $scaleType) {
             //calculate scale from scale level and base resolution
             for ($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) {
-                $aRes[] = SERVICE_MAX_RESOLUTION / pow(2, $lev);
+                $aRes[] = SERVICE_MAX_RESOLUTION / 2 ** $lev;
             }
         } elseif (self::SCALE_TYPE_USER == $scaleType) {
             $scaleList = $this->getScaleList();

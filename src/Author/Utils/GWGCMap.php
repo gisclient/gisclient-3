@@ -272,7 +272,7 @@ class GWGCMap
         //echo "--$s--";
         for ($i = 0; $i < strlen($s); $i++) {
             //if(substr($val,$i,1)!=".")
-            $value += (floatval(substr($s, $i, 1))) * pow(10, $dec - 1 - $i);
+            $value += (floatval(substr($s, $i, 1))) * 10 ** ($dec - 1 - $i);
             //echo (substr($s,$i,1)*pow(10,$dec-1-$i))."\n" ;
         }
 
@@ -1392,7 +1392,7 @@ class GWGCMap
             if ($this->mapsetSRID == GOOGLESRID || $this->mapsetSRID == 900913) {
                 $this->tilesExtent = array(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
                 for ($lev = GOOGLE_MIN_ZOOM_LEVEL; $lev <= GOOGLE_MAX_ZOOM_LEVEL; ++$lev) {
-                    $aRes[] = GOOGLE_MAX_RESOLUTION / pow(2, $lev);
+                    $aRes[] = GOOGLE_MAX_RESOLUTION / 2 ** $lev;
                 }
             } else {
                 if (isset($mapsetScales)) {

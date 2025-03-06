@@ -31,7 +31,6 @@ return RectorConfig::configure()
     ->withSkip([
         LongArrayToShortArrayRector::class, // temporarily to avoid lots of code change just for this - execute late together with ecs (to avoid long single line array)
 
-        PowToExpRector::class,
         RandomFunctionRector::class,
         SensitiveConstantNameRector::class,
         StringifyStrNeedlesRector::class,

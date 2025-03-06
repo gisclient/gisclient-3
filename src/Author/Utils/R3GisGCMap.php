@@ -1371,7 +1371,7 @@ class R3GisGCMap
         if (self::SCALE_TYPE_POWEROF2 == $scaleType) {
             //calculate scale from scale level and base resolution
             for ($lev=SERVICE_MIN_ZOOM_LEVEL; $lev<=SERVICE_MAX_ZOOM_LEVEL; ++$lev) {
-                $aRes[] = SERVICE_MAX_RESOLUTION / pow(2, $lev);
+                $aRes[] = SERVICE_MAX_RESOLUTION / 2 ** $lev;
             }
         } elseif (self::SCALE_TYPE_USER == $scaleType) {
             $scaleList = $this->getScaleList();
