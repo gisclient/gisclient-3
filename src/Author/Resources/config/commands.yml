@@ -1,0 +1,2 @@
+commands:
+    - R3Gis\GisClient\Author\Command\ChangeDbOwnerCommand

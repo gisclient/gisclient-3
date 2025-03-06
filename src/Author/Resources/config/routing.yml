@@ -1,0 +1,23 @@
+r3gis_autocomplete:
+    path: /r3gis_apps/autocomplete.php
+    defaults:
+        _controller: 'R3Gis\GisClient\Author\Controller\AutocompleteController::autocompleteAction'
+    methods:
+        - GET
+r3gis_gcmap:
+    path: /r3gis_apps/gcmap.php
+    defaults:
+        _controller: 'GisClient\Author\Controller\ClientController::gcmapAction'
+r3gis_refresh_mapfile:
+    path: /r3gis_apps/refresh_mapfile
+    defaults:
+        _controller: 'GisClient\Author\Controller\RefreshMapfileController::refreshMapfileAction'
+    methods:
+        - POST
+r3gis_refreshCookie:
+    path: /r3gis_apps/refresh
+    defaults:
+        _controller: 'GisClient\Author\Controller\LoginController::refreshAction'
+    methods:
+        - GET
+

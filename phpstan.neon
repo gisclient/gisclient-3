@@ -1,0 +1,12 @@
+parameters:
+    phpVersion: 70400
+    level: 0
+    paths:
+        - src
+        - lib
+        - public
+        - tests
+    tmpDir: var/cache/phpstan
+    bootstrapFiles:
+        # stub for mapscript functions
+        - stubs/mapscript-stubs.php

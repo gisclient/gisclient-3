@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
+use Symplify\EasyCodingStandard\Config\ECSConfig;
+
+return ECSConfig::configure()
+    ->withPaths([
+        __DIR__ . '/src',
+    ])
+    ->withRootFiles()
+
+    ->withPreparedSets(
+        true,
+        false,
+        false,
+        false
+    )
+
+    // add a single rule
+    ->withRules([
+        NoUnusedImportsFixer::class,
+    ])
+    ->withCache(
+        __DIR__ . '/var/cache/ecs'
+    )
+
+    // add sets - group of rules
+   // ->withPreparedSets(
+        // arrays: true,
+        // namespaces: true,
+        // spaces: true,
+        // docblocks: true,
+        // comments: true,
+    // )
+
+;

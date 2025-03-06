@@ -1,10 +1,11 @@
 <?php
 
 use GisClient\Author\Symbol;
+use PHPUnit\Framework\TestCase;
 
 include_once __DIR__."/../../bootstrap.php";
 
-class SymbolTest extends PHPUnit_Framework_TestCase
+class SymbolTest extends TestCase
 {
     public function testSymbolList()
     {
