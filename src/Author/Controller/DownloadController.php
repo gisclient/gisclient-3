@@ -78,7 +78,7 @@ class DownloadController
             return $this->createErrorResponse('No srid');
         }
         if (strpos($srid, ':') !== false) {
-            list($options['auth_name'], $srid) = explode(':', $srid);
+            [$options['auth_name'], $srid] = explode(':', $srid);
         }
 
         $options['dpi'] = MAP_DPI;

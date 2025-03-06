@@ -92,6 +92,6 @@ class PostAuthenticationToken implements TokenInterface
      */
     public function unserialize($serialized)
     {
-        list($this->user, $this->authenticated) = unserialize($serialized);
+        [$this->user, $this->authenticated] = unserialize($serialized);
     }
 }

@@ -68,7 +68,7 @@ class SavedFilterController
         $data = json_decode($request->getContent(), true);
         
         // validate data
-        list($values, $errors) = $handler->validate($data);
+        [$values, $errors] = $handler->validate($data);
         if (count($errors) > 0) {
             return $this->createBadRequestResponse($errors);
         }
@@ -102,7 +102,7 @@ class SavedFilterController
 
         // retrieve data & validate
         $data = json_decode($request->getContent(), true);
-        list($values, $errors) = $handler->validate($data, $filter);
+        [$values, $errors] = $handler->validate($data, $filter);
         if (count($errors) > 0) {
             return $this->createBadRequestResponse($errors);
         }

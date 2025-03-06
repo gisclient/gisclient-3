@@ -1108,7 +1108,7 @@ class R3GisGCMap
 
     private function getTMSExtent($tilesExtent, $tilesExtentSRID)
     {
-        list($x0, $y0, $x1, $y1) = explode($this->coordSep, $tilesExtent);
+        [$x0, $y0, $x1, $y1] = explode($this->coordSep, $tilesExtent);
         //RIPROIETTO SE SRID DIVERSO DAL MAPSET
         if ($tilesExtentSRID!=$this->mapsetSRID) {
             $p1 = "SRID=$tilesExtentSRID;POINT($x0 $y0)";
@@ -1453,7 +1453,7 @@ class R3GisGCMap
                 if ($complete && !empty($groupExtents)) {
                     $extent = array(null, null, null, null);
                     foreach ($groupExtents as $ext) {
-                        list($x1, $y1, $x2, $y2) = explode(' ', $ext);
+                        [$x1, $y1, $x2, $y2] = explode(' ', $ext);
                         if (empty($extent[0]) || $x1 < $extent[0]) {
                             $extent[0] = $x1;
                         }

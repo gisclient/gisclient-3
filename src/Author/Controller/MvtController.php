@@ -46,7 +46,7 @@ class MvtController
     {
         $mapObj = $this->getMap($project, $map);
 
-        list(, $layerName) = explode('.', $layer);
+        [, $layerName] = explode('.', $layer);
         $layer = $this->getLayer($mapObj, 'layer', $layerName);
 
         $dbObj = new Db($layer->getCatalog());

@@ -111,7 +111,7 @@ class FilterType extends AbstractType
                 },
                 function ($composedLayerName) {
                     if (strpos($composedLayerName, '.') !== false) {
-                        list($projectName, $layergroupName, $layerName) = explode('.', $composedLayerName);
+                        [$projectName, $layergroupName, $layerName] = explode('.', $composedLayerName);
                     } else {
                         throw new TransformationFailedException(
                             'The layer_id must provied layergroup and layername separated by dot.'

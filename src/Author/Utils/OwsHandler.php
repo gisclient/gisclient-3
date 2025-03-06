@@ -325,7 +325,7 @@ class OwsHandler
             $layersWithSld = array();
             // Group all the different SLD and apply less times as possible (to prevent performance issue)
             foreach ($layerList as $layerGroup) {
-                list($layerGroup) = explode('.', $layerGroup, 1);  // Extract layer group
+                [$layerGroup] = explode('.', $layerGroup, 1);  // Extract layer group
                 $stmt->execute(array(
                     'mapset_name'=>$objRequest->getValueByName('map'),
                     'layergroup_name'=>$layerGroup));
