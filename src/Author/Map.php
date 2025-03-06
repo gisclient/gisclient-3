@@ -90,7 +90,7 @@ class Map implements LayerLevelInterface
      */
     public function getMap()
     {
-        return self;
+        return $this;
     }
 
     public function getLayerGroups()
@@ -102,7 +102,7 @@ class Map implements LayerLevelInterface
         $stmt->execute(array($this->data['mapset_name']));
         while ($layergroup_id = $stmt->fetchColumn(0)) {
             $layerGroup = new LayerGroup($layergroup_id);
-            $layerGroup->setMap(self);
+            $layerGroup->setMap($this);
             $layerGroups[] = $layerGroup;
         }
 
