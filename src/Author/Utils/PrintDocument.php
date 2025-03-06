@@ -216,7 +216,7 @@ class PrintDocument
         $xsl->importStyleSheet($tmpdoc);
 
         $content = $xsl->transformToXML($dom);
-        $filename = 'printmap_'.rand(0, 99999999).'.html';
+        $filename = 'printmap_'.random_int(0, 99999999).'.html';
         $mapHtmlFile = $this->options['TMP_PATH'].$filename;
         if (false === file_put_contents($mapHtmlFile, $content)) {
             throw new \RuntimeException("Could not write to $mapHtmlFile");
