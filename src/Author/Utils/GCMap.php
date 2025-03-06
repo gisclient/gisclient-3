@@ -386,7 +386,7 @@ class GCMap
                     'layergroup_title', 'sld'
                 ));
             }
-            
+
             if ($row['status']) {
                 array_push($this->defaultLayers, $row['layergroup_name']);
             }
@@ -412,7 +412,7 @@ class GCMap
             $aLayer = array();
             $aLayer["name"] = $layergroupName;
             //$aLayer["title"] = $layergroupTitle;
-            
+
             //$aLayer["typeId"] = $layerType;
             $aLayer["typeId"] = intval($row["owstype_id"]);
             $aLayer["type"] = $row["owstype_name"];
@@ -444,7 +444,7 @@ class GCMap
             $layerOptions["title"] = $layergroupTitle;
             $layerOptions["rootPath"] = $themeTitle;
             $layerOptions["order"] = $layerOrder;
-            
+
             if ($row["refmap"]) {
                 $aLayer["overview"] = true;
             }
@@ -594,7 +594,7 @@ class GCMap
                         } else {
                             unset($this->mapLayers[$idx]["options"]["minScale"]);
                         }
-                        
+
                         if (!empty($layerOptions["maxScale"])) {
                             $node["maxScale"] = $layerOptions["maxScale"];
                             if (isset($this->mapLayers[$idx]["options"]["maxScale"])) {
@@ -606,7 +606,7 @@ class GCMap
                         } else {
                             unset($this->mapLayers[$idx]["options"]["maxScale"]);
                         }
-                        
+
                         array_push($this->mapLayers[$idx]["nodes"], $node);
 
                         break; // or continue 2?
@@ -686,7 +686,7 @@ class GCMap
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case LayerGroup::GMAP_LAYER_TYPE:
                 case LayerGroup::BING_LAYER_TYPE:
                 case LayerGroup::VMAP_LAYER_TYPE:
@@ -731,10 +731,10 @@ class GCMap
                     unset($layerOptions["minScale"]);
                     unset($layerOptions["maxScale"]);
                     $aLayer["options"] = $layerOptions;
-                    
+
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case LayerGroup::OSM_LAYER_TYPE:
                     $this->allOverlays = 0;
                     $this->fractionalZoom = 0;
@@ -755,7 +755,7 @@ class GCMap
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case LayerGroup::WMTS_LAYER_TYPE:
                     $layerParameters = array();
                     $layerParameters["name"] = $aLayer["name"];
@@ -813,7 +813,7 @@ class GCMap
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case LayerGroup::TMS_LAYER_TYPE:
                     if (isset($row["url"])) {
                         $aLayer["url"] = $row["url"];
@@ -874,7 +874,7 @@ class GCMap
 
                     array_push($this->mapLayers, $aLayer);
                     break;
-                    
+
                 case LayerGroup::XYZ_LAYER_TYPE:
                     if ($row["url"]) {
                         $v = preg_split("/[\r\n,]+/", $row["url"]);
@@ -886,7 +886,7 @@ class GCMap
                         array_push($this->mapLayers, $aLayer);
                     }
                     break;
-                    
+
                 default:
                     // **** Error: Unknown layer type
             }

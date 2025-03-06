@@ -70,7 +70,7 @@ class GeolocatorController
         ]);
         $catalogPath = $stmt->fetchColumn(0);
         if (empty($catalogPath)) {
-            throw new \Exception(sprintf('Invalid catalog name "%" in configuration', $config['catalogname']));
+            throw new \Exception(sprintf('Invalid catalog name "%s" in configuration', $config['catalogname']));
         }
         return \GCApp::getDataDB($catalogPath);
     }
