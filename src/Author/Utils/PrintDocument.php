@@ -201,7 +201,7 @@ class PrintDocument
     
     public function printMapHTML()
     {
-        $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map_html';//DEFAULT HTML TEMPLATE
+        $xslFile = $_REQUEST["template"] ?? 'print_map_html';//DEFAULT HTML TEMPLATE
         $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";
         if (!file_exists($xslFile)) {
             throw new \RuntimeException('XSL file ('.$xslFile.') not found');
@@ -227,7 +227,7 @@ class PrintDocument
     
     public function printMapPDF()
     {
-        $xslFile = isset($_REQUEST["template"])?$_REQUEST["template"]:'print_map';//DEFAULT PDF TEMPLATE
+        $xslFile = $_REQUEST["template"] ?? 'print_map';//DEFAULT PDF TEMPLATE
         $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";
         if (!file_exists($xslFile)) {
             throw new \RuntimeException("XSL file '$xslFile'not found");

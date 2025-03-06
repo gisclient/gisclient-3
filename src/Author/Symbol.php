@@ -215,7 +215,7 @@ class Symbol
             $smbSize=$this->symbolSize[$class["icontype"]];
         }
             
-        $style=isset($class["style"])?$class["style"]:array();
+        $style=$class["style"] ?? array();
         //print_array($class);
         //Aggiungo gli stili
         for ($i=0; $i<count($style); $i++) {

@@ -372,7 +372,7 @@ class R3GisGCMap
             }
 
             if ($layerType == LayerGroup::WMS_LAYER_TYPE) {
-                $layerUrl = isset($row["url"])?$row["url"]:$ows_url;
+                $layerUrl = $row["url"] ?? $ows_url;
                 $layerParameters=array();
                 $layerParameters["project"] = $this->projectName;
                 $layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
@@ -523,7 +523,7 @@ class R3GisGCMap
                             $layerOptions["layers"] = $row['layers'];
 
                             
-                $layerUrl = isset($row["url"])?$row["url"]:$tiles_cache_url.$this->projectName;
+                $layerUrl = $row["url"] ?? $tiles_cache_url.$this->projectName;
                 $this->allOverlays = 0;
                 $this->fractionalZoom = 0;
                 $layerOptions["layername"] = $layergroupName;
@@ -564,7 +564,7 @@ class R3GisGCMap
                             $layerOptions["layers"] = $row['layers'];
 
                             
-                $layerUrl = isset($row["url"])?$row["url"]:$tiles_cache_url.$this->projectName;
+                $layerUrl = $row["url"] ?? $tiles_cache_url.$this->projectName;
                 $this->allOverlays = 0;
                 $this->fractionalZoom = 0;
                 $layerOptions["layername"] = $layergroupName;
@@ -611,7 +611,7 @@ class R3GisGCMap
                 $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
                 $aLayers[$themeName][$layergroupName]["options"]= $layerOptions;
             } elseif ($layerType == LayerGroup::WFS_LAYER_TYPE) {
-                $layerUrl = isset($row["url"])?$row["url"]:$ows_url;
+                $layerUrl = $row["url"] ?? $ows_url;
                 $layerParameters=array();
                 $layerParameters["project"] = $this->projectName;
                 $layerParameters["map"] = $mapsetName;// AGGIUNGIAMO LA LINGUA ??? $row["theme_name"];
