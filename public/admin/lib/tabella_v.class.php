@@ -589,9 +589,6 @@ class Tabella_v extends Tabella
             $filtro="id=".$this->array_dati[$this->curr_record][$filtro];
             $sql.=" where $filtro";
         }
-        if ($this->debug) {
-            echo("sql=$sql");
-        }
         print_debug($sql, null, "tabella");
         $stmt = $this->db->prepare($sql);
         $stmt->execute();

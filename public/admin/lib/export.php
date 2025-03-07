@@ -71,14 +71,9 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
     
     $fName=$f;
     $rows=file($fName);
-    $type=str_replace("--Type:", "", trim($rows[1]));
     
     //$sql="SELECT name FROM ".DB_SCHEMA.".e_level WHERE id=:type"; //????? - questa non sembra essere eseguita, $sql viene sovrascritto verso la riga 81
     
-    if ($qt) {
-        $name=str_replace("--Name:", "", $rows[2]);
-    }
-    $newName=$newName ?: $name;
     $arrSubst=array("@PARENTID@"=>"'".$parentId."'","@PARENTKEY@"=>$parentkey,"@PROJECTNAME@"=>$parentName,"@DB_SCHEMA@"=>DB_SCHEMA,"@OBJECTNAME@"=>$newName,"\\n"=>"\n");
 
     if (!file_exists($fName)) {

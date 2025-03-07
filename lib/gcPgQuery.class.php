@@ -42,6 +42,7 @@ class PgQuery
     public $isGraph = 0;
     public $request;
     public $templates;
+    public $db;
 
     public function __destruct()
     {

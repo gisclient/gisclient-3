@@ -114,8 +114,6 @@ function getMimeFromFileExt($ext)
  *                       die:          If true die after send
  *                       cacheable:    If true don't send the cache header
  *                       cache_ttl:    Time to live of a cacheable object (cacheable must be true)
- *
- * @return boolea      return true on success
  */
 function deliverFile($fileName, $opt = array())
 {

@@ -59,6 +59,7 @@ class GCi18n
 
 class GCLocalization
 {
+    private $db;
     private $languages;
     private $defaultLanguageId;
     private $project;

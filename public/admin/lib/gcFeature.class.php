@@ -168,7 +168,7 @@ class gcFeature
         }
         $aFeature["relation"] = $qRelation ?? null;
         $aFeature["fields"] = $qField ?? null;
-        $aFeature["link"] = (isset($qLink)) ? array_values($qLink) : array();
+        $aFeature["link"] = [];
         $aFeature["tileindex"] = false;
 
         print_debug($aFeature, null, 'template');
@@ -873,18 +873,12 @@ class gcFeature
      *
      * SERVE A MARCO??????
      *
-     * @param type $layerId
      * @return type
      */
-    
-    public function getFeatureField($layerId = null)
+    public function getFeatureField()
     {
         $result = array();
-        if ($layerId) {
-            $this->init($layerId);
-        }
-        $data = $this->_getLayerData();
-        $sqlField = "SELECT * FROM $data LIMIT 0;";
+
         $aFeature = $this->aFeature;
         foreach ($aFeature["fields"] as $fieldId => $field) {
             $relationName = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["table_name"]) : ($aFeature["data"]);

@@ -37,6 +37,8 @@ class page
     public $action;
     private $primary_keys;
     private $navTreeValues;
+    private $levKey;
+    private $admintype;
         
     /**
              * Constructor
@@ -285,12 +287,6 @@ class page
             }
         }
 
-        if (!empty($p["parametri"]) > 0) {
-            $lastParams = array_keys(array_pop($p["parametri"]));
-            $this->last_livello=array_pop($lastParams);
-        } else {
-            $this->last_livello="project";
-        }
         $this->livello=(!empty($p["livello"]))?($p["livello"]):("");
         if (!empty($p["azione"])) {
             $this->action=strtolower($p["azione"]);

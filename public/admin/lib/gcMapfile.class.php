@@ -26,7 +26,6 @@ class gcMapfile
 {
     public $db;
     public $projectName='';
-    private $projectTitle;
     public $symbolText='';
     public $layerText='';
     public $mapTitle='';
@@ -38,25 +37,24 @@ class gcMapfile
     public $epsgList;
     public $mapInfo=array();
     public $srsCustom=array();
-    private $projectMaxScale;
     private $projectSrid;
     private $xCenter;
     private $yCenter;
-    private $msVersion;
-    private $grids = array();
     private $target;
-    private $iconSize = array(16,10);
     private $tinyOWSLayers = array();
 
-    
     private $i18n;
     private $languageId;
+    private $mpxCaches;
+    private $mpxLayers;
+    private $mapsetSrid;
+    private $mapsetExtent;
+    private $mapsetTitle;
     
     public function __construct($languageId = null, $target = 'public')
     {
         $this->db = GCApp::getDB();
         $this->languageId = $languageId;
-        $this->msVersion = substr(ms_GetVersionInt(), 0, 1);
         $this->target = $target;
     }
     
@@ -64,12 +62,6 @@ class gcMapfile
     {
         unset($this->db);
         unset($this->filter);
-        unset($this->mapError);
-    }
-    
-    public function setIconSize($size)
-    {
-        $this->iconSize = $size;
     }
 
     public function writeMap($keytype, $keyvalue)
@@ -142,7 +134,6 @@ class gcMapfile
         $res = $stmt->fetchAll();
 
         if ($stmt->rowCount() == 0) {
-            $this->mapError=200;//Mancano i layers
             echo 'NO LAYERS';
             return;
         }
@@ -161,7 +152,6 @@ class gcMapfile
         //SCALA MASSIMA DEL PROGETTO
         $projectMaxScale = floatval($aLayer["max_extent_scale"]) ?: 100000000;
         $projectExtent = $this->_calculateExtentFromCenter($projectMaxScale, $this->projectSrid);
-        $this->projectMaxScale = $projectMaxScale;
 
         $mapText=array();
         $mapSrid=array();
@@ -400,14 +390,14 @@ class gcMapfile
             $this->mapsetSrid = $mapSrid[$mapName];
             $this->mapsetTitle = $mapTitle[$mapName];
 
-            $this->mapsetMaxScale = $mapMaxScale[$mapName];
+            $mapsetMaxScale = $mapMaxScale[$mapName];
             $this->mapsetExtent = $projectExtent;
 
             //non ho fissato un restricted extent per il mapset, quindi prendo l'extent in funzione della scala massima
             if (empty($mapExtent[$mapName])) {
                 //EXTENT DEL MAPSET LO RICALCOLO SE NON POSSO USARE QUELLO DEL PROGETTO
                 if (($mapSrid[$mapName] != $this->projectSrid) || ($mapMaxScale[$mapName] != $projectMaxScale)) {
-                    $this->mapsetExtent = $this->_calculateExtentFromCenter($this->mapsetMaxScale, $this->mapsetSrid);
+                    $this->mapsetExtent = $this->_calculateExtentFromCenter($mapsetMaxScale, $this->mapsetSrid);
                 }
             } else {
                 $v = preg_split('/[\s]+/', $mapExtent[$mapName]);
@@ -690,7 +680,6 @@ END #MAP";
         } catch (Exception $e) {
             $error = ms_GetErrorObj();
             if ($error->code != MS_NOERR) {
-                $this->mapError=150;
                 while (is_object($error) && $error->code != MS_NOERR) {
                     $errorMsg = "MAPFILE ERROR $mapFileName<br>".sprintf("Error in %s: %s<br>", $error->routine, $error->message);
                     GCError::register($errorMsg);
@@ -994,8 +983,6 @@ END";
             $srs = "epsg".$row["srid"];
             $tmpList[$srs] = array(
                 'um' => $row["um"],
-                'xc' => $row["xc"],
-                'yc' => $row["yc"],
                 'xc' => $row["xc"],
                 'yc' => $row["yc"]
             );

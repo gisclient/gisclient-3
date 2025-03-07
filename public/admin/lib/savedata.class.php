@@ -22,6 +22,7 @@ class saveData
     public $conf_dir;              //
     public $error;
     private $refreshMapfiles = false;
+    private $primary_keys;
 
     function __construct($arr_dati)
     {
@@ -545,112 +546,11 @@ class saveData
         }
         return $struct;
     }
-    
-    private function _export_object($arr, $lev, $arr_id = array())
-    {
-        $struct["name"]=$arr[$lev]["name"];
-        $el=$arr[$lev];
-        if (!$arr[$lev]["leaf"]) {
-            $sql="SELECT id,name,leaf FROM ".DB_SCHEMA.".e_level WHERE parent_id=:lev;";
-            print_debug($sql, null, "save.class.debug");
-            $child = array();
-            try {
-                $stmt = $this->db->prepare($sql);
-                $result = $stmt->execute(array('lev' => $lev));
-                print_debug($sql);
-                $child = $stmt->fetchAll();
-            } catch (Exception $e) {
-                GCError::registerException($e);
-                $this->hasErrors=true;
-            }
-        } else {
-            $child=array();
-        }
-        if (count($arr_id)) {
-            $sqlparams = array('structName1' => $struct["name"], 'structName2' => $struct["name"], 'structName3' => $struct["name"]);
-            $sql="SELECT column_name FROM information_schema.columns WHERE table_name=:structName1 and table_schema='".DB_SCHEMA
-                ."' AND NOT column_name IN (SELECT Y.column_name FROM 
-					(select constraint_name FROM information_schema.table_constraints 
-					WHERE constraint_type='PRIMARY KEY' AND constraint_schema='".DB_SCHEMA
-                    ."' and table_name=:structName2)  as X left join 
-					    (SELECT constraint_name,column_name FROM information_schema.constraint_column_usage 
-					    WHERE constraint_schema='".DB_SCHEMA."' and table_name=:structName3) as Y using(constraint_name))";
-            print_debug($sql, null, "save.class.debug");
-            $tmp = array();
-            try {
-                $stmt = $this->db->prepare($sql);
-                $result = $stmt->execute($sqlparams);
-                $tmp = $stmt->fetchAll();
-            } catch (Exception $e) {
-                GCError::registerException($e);
-                $this->hasErrors=true;
-            }
-            foreach ($tmp as $v) {
-                $flds[]=$v["column_name"];
-                
-                if ($parent_fld["value"] && $v["column_name"]==$arr[$arr[$lev]["parent"]]["name"]."_id") {
-                    $value[]="(select ".$arr[$arr[$lev]["parent"]]["name"]."_id from ".DB_SCHEMA.".".$arr[$arr[$lev]["parent"]]["name"]." where ".$arr[$arr[$lev]["parent"]]["name"]."_name='')";
-                } else {
-                    $value[]=$v["column_name"];
-                }
-            }
-            
-                
-            $list_flds=@implode(",", $flds);
-            $list_value=@implode(",", $value);
-        }
-        
-        // INSERISCO GLI ELEMENTI DI QUESTO LIVELLO
-        foreach ($arr_id as $id) {
-            $idx = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, $struct["name"], $struct["name"].'_id');
-            $parent[$lev][$id]=array("key"=>$struct["name"],"value"=>$idx);
-            // PDO: $list_values cannot be quoted/made into a bound parameter because it holds a list of column names
-            $sql="INSERT INTO ".DB_SCHEMA.".".$struct["name"]."(".$struct["name"]."_id,$list_flds) SELECT $idx,$list_value FROM ".DB_SCHEMA.".".$struct["name"]." WHERE ".$struct["name"]."_id=:id;";
-            print_debug($sql, null, "save.class.debug");
 
-            // FIXME: Migrazione PDO: le seguenti righe sono commentate perchè anche nel sorgente originale
-            //        questo codice finiva "nel vuoto" (senza l'esecuzione effettiva della query INSERT)
-            //
-            //$stmt = $this->db->prepare($sql);
-            //$result = $stmt->execute(array('id' => $id));
-            //if (!$result){
-            //  print_debug($stmt->errorInfo(),null,"save.copy.debug");
-            //}
-        }
-        foreach ($child as $ch) {
-            $tb=$ch["name"];
-            $fld=$tb."_id";
-            foreach ($arr_id as $id) {
-                $sql="SELECT DISTINCT $fld as id FROM ".DB_SCHEMA.".$tb WHERE ".$struct["name"]."_id=:id";
-                print_debug($sql, null, "save.class.debug");
-                $rows = array();
-                try {
-                    $stmt = $this->db->prepare($sql);
-                    $result = $stmt->execute(array('id' => $id));
-                    $rows = $stmt->fetchAll();
-                } catch (Exception $e) {
-                    GCError::registerException($e);
-                    $this->hasErrors=true;
-                }
-                $newArrId = array();
-                foreach ($rows as $r) {
-                    $newArrId[] = $r['id'];
-                }
-                if (count($newArrId)) {
-                    $struct["child"][$lev]=$this->_copy_object($arr, $ch["id"], $newArrId, $parent[$lev][$id], $modal);
-                } else {
-                    $struct["child"][$lev]=array();
-                }
-            }
-        }
-        return $struct;
-    }
-    
     private function _validaMultipleDati()
     {
         $dati = array();
         for ($i=0; $i<count($this->data); $i++) {
-            $OK_Save=1;
             
             $dati[$i]=$this->_validaDati($i);
             $error=$this->error;
@@ -663,7 +563,6 @@ class saveData
     {
         $array_data = array();
         //dall'array tratto dal file di configurazione crea l'array campi=>valori validati per il db
-        $OK_Save=1;
         $sql="SELECT DISTINCT column_name as fields FROM information_schema.columns WHERE table_name=:tableName AND table_schema=:tableSchema";
         try {
             $stmt = $this->db->prepare($sql);
@@ -711,7 +610,6 @@ class saveData
                 case "numero":
                     $val=str_replace(",", ".", $val);
                     if (strlen($val) and !is_numeric($val)) {
-                        $OK_Save=0;
                         GCError::register($campo.": Dato non numerico");
                     }
                     break;
@@ -727,7 +625,6 @@ class saveData
                 case "color":
                     if ($val && !(preg_match("|[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}|", $val) || preg_match("|^([\[]{1})([A-z0-9]+)([\]]{1})$|", $val))) {
                         GCError::register($campo.": Valore non RGB");
-                        $OK_Save=0;
                     }
                     break;
                 case "chiave_esterna":

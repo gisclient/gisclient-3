@@ -243,7 +243,7 @@ function setDBPermission($db, $sk, $usr, $type, $mode, $table = '')
 function setTriggerTransformGeometry($db, $schema, $table, $geometry_column)
 {
     $sql = "DROP TRIGGER IF EXISTS transform_geometry ON {$schema}.\"{$table}\";";
-    $result = $dataDb->exec($sql);
+    $result = $db->exec($sql);
     if (!$result) {
         echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
     }
@@ -265,13 +265,13 @@ function setTriggerTransformGeometry($db, $schema, $table, $geometry_column)
         . " ALTER FUNCTION {$schema}.gc_transform_geometry_{$table}() OWNER TO " . MAP_USER . ';'
         . " GRANT EXECUTE ON FUNCTION {$schema}.gc_transform_geometry_{$table}() TO public;"
         . " GRANT EXECUTE ON FUNCTION {$schema}.gc_transform_geometry_{$table}() TO " . MAP_USER . ';';
-    $result = $dataDb->exec($sql);
+    $result = $db->exec($sql);
     if (!$result) {
         echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
     }
 
     $sql = "CREATE TRIGGER transform_geometry BEFORE INSERT OR UPDATE ON {$schema}.{$table} FOR EACH ROW EXECUTE PROCEDURE {$schema}.gc_transform_geometry_{$table}();";
-    $result = $dataDb->exec($sql);
+    $result = $db->exec($sql);
     if (!$result) {
         echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
     }

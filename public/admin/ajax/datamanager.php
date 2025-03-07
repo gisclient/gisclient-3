@@ -1220,7 +1220,7 @@ function deleteFilegroupByExtension($fileFullPath, array $groupExtensions)
         $delendum = $pathWoExtension . '.' . $extension;
         if (file_exists($delendum)) {
             if (false === @unlink($delendum)) {
-                throw new Exception("Could not remove '$delendum', $php_errormsg");
+                throw new Exception("Could not remove '$delendum'");
             }
         }
     }
@@ -1297,13 +1297,13 @@ function rrmdir($dir)
             rrmdir($dir . "/" . $object);
         } else {
             if (false === @unlink($dir . "/" . $object)) {
-                throw new Exception("Could not remove file '$dir/$object', $php_errormsg");
+                throw new Exception("Could not remove file '$dir/$object'");
             }
         }
     }
     reset($objects);
     if (false === @rmdir($dir)) {
-        throw new Exception("Could not remove directory '$dir/$object', $php_errormsg");
+        throw new Exception("Could not remove directory '$dir/$object'");
     }
 }
 
