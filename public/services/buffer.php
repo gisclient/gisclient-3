@@ -15,7 +15,7 @@ if (empty($_REQUEST['buffer'])) {
     die(json_encode(array('result'=>'error', 'error'=>'missing buffer')));
 }
 
-list($auth, $srid) = explode(':', $_REQUEST['projection']);
+[$auth, $srid] = explode(':', $_REQUEST['projection']);
 if (empty($auth) || empty($srid) || !is_numeric($srid)) {
     die(json_encode(array('result'=>'error', 'error'=>'invalid projection')));
 }

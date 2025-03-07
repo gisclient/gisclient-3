@@ -82,7 +82,7 @@ class Tabella
         for ($i=0; $i<$tmp_ncol; $i++) {
             $tmp_nrow=max($tmp_nrow, count($row[$i]));
             for ($j=0; $j<count($row[$i]); $j++) { //ogni elemento può avere un numero di elementi arbitrario
-                list(,$campo,,$tipo)=array_pad(explode(';', $row[$i][$j]), 4, null);
+                [, $campo, , $tipo]=array_pad(explode(';', $row[$i][$j]), 4, null);
                 $tipo=trim($tipo);
                 if (($tipo!="submit") && ($tipo!="button")) {
                     if (!in_array($campo, $campi) && $campo) {

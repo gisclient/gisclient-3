@@ -21,7 +21,7 @@ $stmt = $db->prepare($sql);
 $stmt->execute(array($catalogId));
 $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-list(, $schema)=connAdminInfofromPath($catalogData["catalog_path"]);
+[, $schema]=connAdminInfofromPath($catalogData["catalog_path"]);
 
 switch ($catalogData["connection_type"]) {
     case 1:     //Local Folder

@@ -52,7 +52,7 @@ class GCEditFeature
     public function __construct($project, $map, $featureType, $primaryKey)
     {
     
-        list(, $layerName) = $this->splitFeatureType($featureType);
+        [, $layerName] = $this->splitFeatureType($featureType);
         
         $db = GCApp::getDB();
         $sql = "select data, data_unique, data_geom, catalog_path from ".DB_SCHEMA.".layer ".
@@ -160,7 +160,7 @@ class GCEditFeature
             throw new Exception('Missing srid');
         }
         if (strpos($geomData['srid'], ':') !== false) {
-            list(, $srid) = explode(':', $geomData['srid']);
+            [, $srid] = explode(':', $geomData['srid']);
         } else {
             $srid = $geomData['srid'];
         }

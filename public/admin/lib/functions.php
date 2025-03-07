@@ -281,7 +281,7 @@ function setTriggerTransformGeometry($db, $schema, $table, $geometry_column)
 function rgb2html($r, $g = -1, $b = -1)
 {
     if (is_array($r) && sizeof($r) == 3) {
-        list($r, $g, $b) = $r;
+        [$r, $g, $b] = $r;
     }
 
     $r = intval($r);
@@ -305,11 +305,11 @@ function html2rgb($color)
     }
 
     if (strlen($color) == 6) {
-        list($r, $g, $b) = array($color[0].$color[1],
+        [$r, $g, $b] = array($color[0].$color[1],
                                  $color[2].$color[3],
                                  $color[4].$color[5]);
     } elseif (strlen($color) == 3) {
-        list($r, $g, $b) = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
+        [$r, $g, $b] = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
     } else {
         return false;
     }

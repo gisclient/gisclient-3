@@ -730,7 +730,7 @@ END";
     {
         $mapserverSupport = ms_GetVersion();
         
-        list($driver, $format) = explode('/', $driverName);
+        [$driver, $format] = explode('/', $driverName);
 
         if ($driver == 'OGR') {
             if (preg_match_all("/INPUT=([A-Z_]+)/", $mapserverSupport, $supports)) {

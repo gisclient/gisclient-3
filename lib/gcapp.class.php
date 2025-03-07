@@ -320,7 +320,7 @@ class GCDataDB
     public function __construct($path)
     {
         //TODO: vedere per path diversi
-        list($dbName, $schema) = explode('/', $path);
+        [$dbName, $schema] = explode('/', $path);
         
         $dsn = 'pgsql:dbname='.$dbName.';host='.DB_HOST;
         if (defined('DB_PORT')) {
@@ -842,8 +842,8 @@ class GCUtils
     public static function parseBox($box)
     {
         $split = explode(',', str_replace(array('BOX(',')'), '', $box));
-        list($l, $b) = explode(' ', $split[0]);
-        list($r, $t) = explode(' ', $split[1]);
+        [$l, $b] = explode(' ', $split[0]);
+        [$r, $t] = explode(' ', $split[1]);
         return array($l, $b, $r, $t);
     }
     

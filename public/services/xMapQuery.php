@@ -14,7 +14,7 @@ $sql = 'select layer_id from '.DB_SCHEMA.'.layer
     where mapset_name = :mapset_name and layergroup_name = :layergroup_name and layer_name = :layer_name';
 $stmt = $db->prepare($sql);
 
-list($layergroupName, $layerName) = explode('.', $_REQUEST['featureType']);
+[$layergroupName, $layerName] = explode('.', $_REQUEST['featureType']);
 
 $stmt->execute(array(
     'mapset_name'=>$_REQUEST['mapsetName'],

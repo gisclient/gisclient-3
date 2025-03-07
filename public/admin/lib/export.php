@@ -256,7 +256,7 @@ function _getListValue($level, $val, $db = null)
             try {
                 $stmt = $db->prepare($sql);
                 $stmt->execute(array('val'=>$val));
-                list($name,$newval) = $stmt->fetch(PDO::FETCH_NUM);
+                [$name, $newval] = $stmt->fetch(PDO::FETCH_NUM);
             } catch (Exception $e) {
                 echo "<p>$sql</p>";
             }

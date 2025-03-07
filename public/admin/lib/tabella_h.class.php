@@ -288,7 +288,7 @@ class Tabella_h extends Tabella
                 }
                 break;
             case "goto":
-                list($size,$param)=explode("#", $w);
+                [$size, $param]=explode("#", $w);
                 $id=addslashes($this->array_dati[$row][$param]);
                 if ($this->tag) {
                     $args=$this->tag;

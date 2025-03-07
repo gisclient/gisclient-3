@@ -57,7 +57,7 @@ switch ($data['export_format']) {
                     inner join '.DB_SCHEMA.'.layergroup using(layergroup_id)
                     where layergroup_name = :layergroup and layer_name = :layer';
                 $stmt = $db->prepare($sql);
-                list($layergroup, $layer) = explode('.', $table['layer']);
+                [$layergroup, $layer] = explode('.', $table['layer']);
                 $stmt->execute(array(
                     'layergroup'=>$layergroup,
                     'layer'=>$layer
@@ -91,7 +91,7 @@ switch ($data['export_format']) {
                 $ajax->error('Empty srid');
             }
             if (strpos($data['srid'], ':') !== false) {
-                list(, $srid) = explode(':', $data['srid']);
+                [, $srid] = explode(':', $data['srid']);
             } else {
                 $srid = $data['srid'];
             }

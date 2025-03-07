@@ -179,7 +179,7 @@ class page
 
                 $arr_livelli=$stmt->fetchAll();
         foreach ($arr_livelli as $value) {
-            list($lvl_id,$lvl_name)=array_values($value);
+            [$lvl_id, $lvl_name]=array_values($value);
             $this->navTreeValues[$lvl_name] = 'XXX';
             // list($lvl_id,$lvl_name,$lvl_header)=array_values($value);
             // see obive FIXME: $this->navTreeValues[$lvl_name]=$lvl_header;

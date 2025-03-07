@@ -62,7 +62,7 @@ $envVars = array(
 );
 
 $db = GCApp::getDB();
-list($layergroupName, $layerName) = explode('.', $typeName);
+[$layergroupName, $layerName] = explode('.', $typeName);
 $sql = 'select project_name from '.DB_SCHEMA.'.theme 
 	inner join '.DB_SCHEMA.'.layergroup using(theme_id) 
 	inner join '.DB_SCHEMA.'.layer using(layergroup_id)

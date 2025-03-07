@@ -12,7 +12,7 @@ if (!$save->hasErrors) {
         $stmt->execute(array($save->data['catalog_id']));
         $catalog = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($catalog['connection_type'] == 6) {
-            list($connStr,$schema)=connAdminInfofromPath($catalog["catalog_path"]);
+            [$connStr, $schema]=connAdminInfofromPath($catalog["catalog_path"]);
             
             $table_name = $save->data['table_name'];
             

@@ -151,7 +151,7 @@ class Tabella_v extends Tabella
             case "selectRPC":
                 $size=explode("#", $w);
                 $opzioni=$this->elenco_selectdb($size[1], $dati[$campo], $size[2]);
-                list($schema,$tb)=explode(".", $size[1]);
+                [$schema, $tb]=explode(".", $size[1]);
                 if (isset($size[3])) {
                     $onChange="onChange=\"javascript:".$size[3]."(this)\"";
                 }
@@ -390,7 +390,7 @@ class Tabella_v extends Tabella
         $ctr='';
 
         for ($i=0; $i<count($riga); $i++) {
-            list($label,$campo,$w,$tipo,$mode,$action)=array_pad(explode(';', $riga[$i]), 6, null);
+            [$label, $campo, $w, $tipo, $mode, $action]=array_pad(explode(';', $riga[$i]), 6, null);
             $tipo=trim($tipo);
             if (($tipo!="button") and ($tipo!="submit") and ($tipo!="hidden")) {
                 (
@@ -409,7 +409,7 @@ class Tabella_v extends Tabella
         $testo_riga = '';
         for ($i=0; $i<count($riga); $i++) {
             if (trim($riga[$i])) {
-                list($label,$campo,$w,$tipo) = array_pad(explode(';', trim($riga[$i])), 4, null);
+                [$label, $campo, $w, $tipo] = array_pad(explode(';', trim($riga[$i])), 4, null);
                 if ($label) {
                     $label="<b>".str_replace("<br>", "&nbsp;&nbsp;", $label).":&nbsp;</b>";
                 }

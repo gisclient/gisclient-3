@@ -234,7 +234,7 @@ if (!empty($_REQUEST['GCFILTERS'])) {
 
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
     for ($i=0; $i<count($v); $i++) {
-        list($layerName, $gcFilter)=explode('@', $v[$i]);
+        [$layerName, $gcFilter]=explode('@', $v[$i]);
 
         $oLayer = $oMap->getLayerByName($layerName);
         if ($oLayer) {

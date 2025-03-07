@@ -28,7 +28,7 @@ foreach ($data as $expConf) {
     }
     $projectName = $expConf['project_name'];
     $featureType = $expConf['feature_type'];
-    list($layergroupName, $layerName) = explode('.', $featureType);
+    [$layergroupName, $layerName] = explode('.', $featureType);
 
     $sql = "SELECT layer_id "
         . " FROM {$db->getParams()['schema']}.layer "

@@ -214,7 +214,7 @@ class gcFeature
     public function getTinyOWSLayerParams()
     {
         //TODO: così funziona solo per le definizioni DB_NAME/DB_SCHEMA
-        list($dbName, $dbSchema) = explode('/', $this->aFeature['catalog_path']);
+        [$dbName, $dbSchema] = explode('/', $this->aFeature['catalog_path']);
         return array(
             'schema' => $dbSchema,
             'database' => $dbName,
