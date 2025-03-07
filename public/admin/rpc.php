@@ -113,7 +113,6 @@ switch ($azione) {
                         $res[]=array(
                             "val"=>$startV.' - '.$endV,
                             "color"=>$colors,
-                            "name"=>"class_".($i+1),
                             "title"=>'class '.($i+1),//$startV.' - '.$endV,
                             "condition"=>"(([$field[name]] > $startV) AND ([$field[name]] < $endV))",
                             "name"=>"classe ".($i+1),

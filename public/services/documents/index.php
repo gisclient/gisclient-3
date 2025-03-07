@@ -43,8 +43,6 @@ die();
  *                       purge:    if true remove the file after delivery. Default false
  *                       mime:     Document mime. If specified this mime is returned
  *                       header:   Extra header
- *
- * @return boolea      return true on success
  */
 function getMimeFromFileExt($ext)
 {

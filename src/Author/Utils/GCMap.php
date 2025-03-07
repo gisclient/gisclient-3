@@ -56,6 +56,7 @@ class GCMap
     public $defaultLayers = array();
     public $projectName;
     public $mapsetName;
+    public $mapsetTitle;
     public $mapsetSingleLayer;
     public $mapConfig;
     public $mapsetSRID;
@@ -137,7 +138,7 @@ class GCMap
         $this->projectName = $row["project_name"];
         $this->mapsetName = $row["mapset_name"];
         // **** TODO: read from db/config
-        $this->mapsetSinglelayer = 0;
+        $this->mapsetSingleLayer = 0;
         $this->mapsetSRID = $row["mapset_srid"];
         $this->mapsetGRID = "epsg".$row["mapset_srid"];
         $this->getProjInfo();

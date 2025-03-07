@@ -10,3 +10,6 @@ parameters:
     bootstrapFiles:
         # stub for mapscript functions
         - stubs/mapscript-stubs.php
+    ignoreErrors:
+        # docs say it returns void, but it's used to fetch a string, so very unclear
+        - '#Result of function ms_iogetstdoutbufferstring \(void\) is used.#'

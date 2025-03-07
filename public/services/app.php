@@ -17,6 +17,7 @@ use Symfony\Component\Routing\Router;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Yaml\Yaml;
 use GisClient\Author\Security\AuthenticationHandler;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 function getFirewall(Request $request)
 {
@@ -107,7 +108,7 @@ try {
     }
     
     $response = call_user_func_array($controller, $arguments);
-} catch (Routing\Exception\ResourceNotFoundException $e) {
+} catch (ResourceNotFoundException $e) {
     $response = new Response('Not Found', Response::HTTP_NOT_FOUND);
 } catch (HttpException $e) {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {

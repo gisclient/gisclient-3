@@ -10,6 +10,7 @@ class PreAuthenticationToken implements TokenInterface
      * @var boolean
      */
     private $authenticated = false;
+    private $user = null;
     
     /**
      * {@inheritdoc}

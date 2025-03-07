@@ -205,7 +205,7 @@ if ($objRequest->getvaluebyname('layer')) {
                 //print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
                 if ($oLayer->numclasses>0) {
                     ms_ioinstallstdouttobuffer();
-                    $tempRequest = new OWSRequestObj();
+                    $tempRequest = new owsRequestObj();
                     $tempRequest->loadParams();
                     $tempRequest->setParameter('LAYER', $oLayer->name);
 

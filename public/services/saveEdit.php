@@ -46,6 +46,8 @@ class GCEditFeature
     private $dataDB;
     private $table;
     private $primaryKey;
+    private $geomField;
+    private $schema;
     
     public function __construct($project, $map, $featureType, $primaryKey)
     {

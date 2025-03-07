@@ -197,6 +197,8 @@ class Symbol
         if ($this->filter) {
             return $image_data;
         }
+
+        return "";
     }
 
     private function iconFromClass($class)
@@ -311,7 +313,7 @@ class Symbol
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
                     $values[] = array(
                         "table=class&id=".$row["class_id"],

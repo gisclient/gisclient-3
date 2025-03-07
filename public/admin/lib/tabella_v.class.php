@@ -343,8 +343,6 @@ class Tabella_v extends Tabella
                 $retval=stripslashes($this->get_chiave_esterna($dati[$campo], $campo, $size[1], $size[2]));
             
                 break;
-            case "elenco":
-                $retval=$this->get_dato_elenco($campo);
             case "color":
                 $val=str_replace(" ", ",", trim($dati[$campo]));
                 if ($val) {

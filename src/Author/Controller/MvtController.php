@@ -93,6 +93,8 @@ class MvtController
             FROM mvt_data_set
         ";
 
+            $data = null;
+
             $stmtMvt = $db->prepare($sqlMvt);
             $stmtMvt->bindColumn('mvt', $data);
             $stmtMvt->execute();
