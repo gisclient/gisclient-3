@@ -66,10 +66,6 @@ class ClientController
             $output = $objMapset->mapConfig;
         } else {
             $output = $objMapset->mapOptions;
-            
-            if ($jsonformat == 'senchatouch') {
-                $output = SenchaTouchUtils::toSenchaTouch($output);
-            }
         }
         
         $callback = $request->query->get('callback');
