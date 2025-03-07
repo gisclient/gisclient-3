@@ -249,9 +249,7 @@ class GCExport
         $select = '';
         if (isset($options['fields'])) {
             $fieldsNames = array_map(
-                function ($element) {
-                    return $element['field_name'];
-                },
+                fn($element) => $element['field_name'],
                 $options['fields']
             );
             $select = implode(', ', $fieldsNames);

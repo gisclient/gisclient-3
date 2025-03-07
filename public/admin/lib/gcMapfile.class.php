@@ -1182,9 +1182,7 @@ END";
 
     private function _writeMapProxySeed($mapName)
     {
-        $caches = array_filter($this->mpxCaches[$mapName], function ($cache) {
-            return !(isset($cache['disable_storage']) && $cache['disable_storage']);
-        });
+        $caches = array_filter($this->mpxCaches[$mapName], fn($cache) => !(isset($cache['disable_storage']) && $cache['disable_storage']));
 
         $config = array(
             'seeds' => array(

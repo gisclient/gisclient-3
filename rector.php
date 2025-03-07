@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
-use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
 
 return RectorConfig::configure()
@@ -28,7 +27,6 @@ return RectorConfig::configure()
         LongArrayToShortArrayRector::class, // temporarily to avoid lots of code change just for this - execute late together with ecs (to avoid long single line array)
 
         AddClosureVoidReturnTypeWhereNoReturnRector::class,
-        ClosureToArrowFunctionRector::class,
     ])
     ->withCache(
         __DIR__ . '/var/cache/rector',
