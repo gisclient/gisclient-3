@@ -43,8 +43,6 @@ if (empty($mapConfig['max_extent_scale'])) {
 
 $layerTitle = $mapConfig['layergroup_title'];
 $layerName = $mapConfig['layergroup_name'];
-//$user = new userApps(array());
-//$user->status = true;
 
 $scales = explode(',', SCALE);
 $resolutions = array();
