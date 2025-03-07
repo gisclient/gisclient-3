@@ -253,7 +253,7 @@ if ($groupBy) {
 $TBS->MergeField('arts', $assign['arts']);
 
 
-$filename = $docOptions['filename'].rand(0, 1000000).'.docx';
+$filename = $docOptions['filename'].random_int(0, 1000000).'.docx';
 
 $TBS->Show(OPENTBS_FILE, ROOT_PATH.'tmp/files/'.$filename);
 //FINE TBS

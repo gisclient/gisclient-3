@@ -165,7 +165,7 @@ function deliverFile($fileName, $opt = array())
             header("ETag: \"{$opt['header']['etag']}\"");
         }
     } else {
-        $hash = sprintf('%8X', time()) . md5(microtime(true) + rand(0, getrandmax()));
+        $hash = sprintf('%8X', time()) . md5(microtime(true) + random_int(0, mt_getrandmax()));
         header("ETag: \"$hash\"");
     }
 

@@ -79,7 +79,7 @@ function runFOP(DOMDocument $dom, $xslFileName, $opt = array())
         $dom->formatOutput = true;
     }
     
-    $baseName = $opt['tmp_path'] . $opt['prefix'] . md5(microtime(true) + rand(0, getrandmax()));
+    $baseName = $opt['tmp_path'] . $opt['prefix'] . md5(microtime(true) + random_int(0, mt_getrandmax()));
     $xmlFileName = $baseName . '.xml';
     $logFileName = $baseName . '.log';
     if ($opt['out_name'] == '') {

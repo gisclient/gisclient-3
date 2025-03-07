@@ -230,7 +230,7 @@ class GCApp
         $lettersLength = strlen($letters) - 1;
         $filename = !empty($prefix) ? $prefix.'_' : '';
         for ($n = 0; $n < 20; $n++) {
-            $filename .= $letters[rand(0, $lettersLength)];
+            $filename .= $letters[random_int(0, $lettersLength)];
         }
         if (!empty($extension)) {
             $filename .= '.'.$extension;

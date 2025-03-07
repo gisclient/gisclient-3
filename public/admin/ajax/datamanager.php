@@ -667,7 +667,7 @@ switch ($_REQUEST['action']) {
         $sql = 'select * from '.$dbParams['schema'].'.'.$_REQUEST['table_name'];
         $data = $dataDb->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . rand(0, 9999);
+        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . random_int(0, 9999);
         $filePath = ROOT_PATH.'public/admin/export/'.$fileName.'.csv';
         $handle = fopen($filePath, 'w');
         fputcsv($handle, array_keys(reset($data)));
@@ -723,7 +723,7 @@ switch ($_REQUEST['action']) {
             }
         }
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . rand(0, 9999);
+        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . random_int(0, 9999);
         $objWriter->save(ROOT_PATH . 'public/admin/export/' . $fileName . '.xlsx');
         $ajax->success(array('filename'=>$fileName.'.xlsx'));
         break;

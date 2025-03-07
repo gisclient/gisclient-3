@@ -117,7 +117,7 @@ switch ($data['export_format']) {
                     continue;
                 }
                 unset($columns[$geomColIndex]);
-                $tmpTableName = 'export_'.$table['tablename'].'_'.$gcService->getSession()->getId().'_'.rand(0, 999999);
+                $tmpTableName = 'export_'.$table['tablename'].'_'.$gcService->getSession()->getId().'_'.random_int(0, 999999);
                 $sql = 'create table '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName.' as '.
                     ' select '.implode(', ', $columns).', st_intersection(the_geom, :geom) as the_geom '.
                     ' from '.$dbParams['schema'].'.'.$table['tablename'].
@@ -262,7 +262,7 @@ switch ($data['export_format']) {
                 $filename = $parts[0];
             }
             
-            $filename .= '_'.date('Y-m-d_H-i').'_'.rand(0, 999).'.xls';
+            $filename .= '_'.date('Y-m-d_H-i').'_'.random_int(0, 999).'.xls';
         }
         $content = $excel->generateXML();
         file_put_contents(ROOT_PATH.'tmp/files/'.$filename, $content);

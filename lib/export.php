@@ -303,7 +303,7 @@ class GCExport
     
     protected function getFileName($customPart)
     {
-        return $customPart . '_' . date('YmdHis') . '_' . rand(0, 9999);
+        return $customPart . '_' . date('YmdHis') . '_' . random_int(0, 9999);
     }
 }
 
