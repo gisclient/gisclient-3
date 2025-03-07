@@ -22,7 +22,7 @@ class ParseXml
     public $timeOut;
     public $charsetOutput = CHAR_SET;
     
-    function ParseXml()
+    function __construct()
     {
     }
     
