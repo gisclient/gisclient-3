@@ -979,8 +979,7 @@ if (!class_exists('Spyc')) {
                     $this->result[$key] = $value;
                 } else {
                     $this->result[] = $value;
-                    end($this->result);
-                    $key = key($this->result);
+                    $key = array_key_last($this->result);
                 }
                 $this->path[$incoming_indent] = $key;
                 return;
@@ -1020,8 +1019,7 @@ if (!class_exists('Spyc')) {
                     $key = 0;
                 } else {
                     $_arr[] = $value;
-                    end($_arr);
-                    $key = key($_arr);
+                    $key = array_key_last($_arr);
                 }
             }
 
@@ -1131,8 +1129,7 @@ if (!class_exists('Spyc')) {
             }
             $linePath = $this->path;
             do {
-                end($linePath);
-                $lastIndentInParentPath = key($linePath);
+                $lastIndentInParentPath = array_key_last($linePath);
                 if ($indent <= $lastIndentInParentPath) {
                     array_pop($linePath);
                 }
