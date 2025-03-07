@@ -44,7 +44,6 @@ return RectorConfig::configure()
         EregToPregMatchRector::class,
         ListToArrayDestructRector::class,
         Php4ConstructorRector::class,
-        PowToExpRector::class,
         RandomFunctionRector::class,
         RemoveExtraParametersRector::class,
         ReplaceEachAssignmentWithKeyCurrentRector::class,
