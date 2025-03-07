@@ -1,5 +1,5 @@
 <?php
-    
+
     require_once __DIR__ . '/../../../bootstrap.php';
     error_reporting(E_ERROR | E_PARSE);
 
@@ -10,7 +10,7 @@ try {
 } catch (Exception $e) {
     echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
 }
-    
+
     $opt[]="<option value=\"-1\">Seleziona ===></option>";
     $opt[]="<option value=\"0\">Tutti</option>";
 for ($i=0; $i<count($ris); $i++) {
@@ -28,14 +28,14 @@ if ($_POST["livello"]=="qt" && !$_POST["importa"]) {
         echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
     }
     $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-            
+
+
     for ($i=0; $i<count($ris); $i++) {
         $lay=$ris[$i];
         $opt2[]="<option value=\"$lay[layer_id]\">$lay[layer_name]</option>";
     }
 }
-    
+
 if ($_POST["importa"]) {
     include_once ADMIN_PATH."lib/export.php";
     $objId=$_POST["obj_id"];
@@ -66,8 +66,8 @@ if ($_POST["importa"]) {
             $objId=$_POST["obj_id"];
         }
         $error=import(ADMIN_PATH."export/$fName", $objId, $projectName, $newName, $layer);
-            
-            
+
+
         if (!$error) {
             echo "<p>".GCAuthor::t('import_done')."</p>";
         } else {
@@ -78,7 +78,7 @@ if ($_POST["importa"]) {
 }
 ?>
 <div class="tableHeader ui-widget ui-widget-header ui-corner-top">
-    
+
 <b><?php echo GCAuthor::t('button_import'); ?></b></div>
 <table cellPadding="2" border="0" class="stiletabella" width="90%">
     <tr>

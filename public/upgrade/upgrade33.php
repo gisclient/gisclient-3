@@ -133,7 +133,7 @@ foreach ($layers as $layer) {
     $dataDb = GCApp::getDataDB($layer['catalog_path']);
     $schema = GCApp::getDataDBSchema($layer['catalog_path']);
     $tableFields = GCApp::getColumns($dataDb, $schema, $layer['data']);
-    
+
     echo "\n\n".'layer '.$layer['data'].' - '.$layer['layer_title']."\n";
 
     try {
@@ -145,20 +145,20 @@ foreach ($layers as $layer) {
 
     foreach ($tableFields as $field) {
         $used = false;
-        
+
         //se il campo è contenuto nel tag FILTER
         $used = (strpos($layer['data_filter'], $field) !== false);
-        
+
         //se il campo è un CLASSITEM, LABELITEM, LABELSIZEITEM
         if (!$used) {
             $used = in_array($field, array($layer['classitem'], $layer['labelitem'], $layer['labelsizeitem']));
         }
-        
+
         //se il campo è usato nelle classi o negli stili del layer
         if (!$used) {
             $getClasses->execute(array('layer'=>$layer['layer_id']));
 
-            
+
             $styles = $getClasses->fetchAll(PDO::FETCH_ASSOC);
             foreach ($styles as $style) {
                 if (strpos($style['expression'], $field) !== false) {
@@ -183,7 +183,7 @@ foreach ($layers as $layer) {
                 }
             }
         }
-        
+
         //se è usato, lo inserisco se non è già nella teballa field
         if ($used) {
             $fieldExists->execute(array(
@@ -191,7 +191,7 @@ foreach ($layers as $layer) {
                 'field_name'=>$field
             ));
             $exists = $fieldExists->fetchColumn(0);
-            
+
             if (empty($exists)) {
                 $insertField->execute(array(
                     'field_id'=>GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'field', 'field_id', 1),

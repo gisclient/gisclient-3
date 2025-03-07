@@ -350,7 +350,7 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
         $fldIns=array();
         $valIns=array();
         $j=0;
-        
+
         foreach ($rec as $key => $val) {        //Ciclo su tutti i campi
             //SFRUTTO IL PRIMO GIRO PER ESTRARRE I TIPI DI DATO
             if ($i==0) {
@@ -363,7 +363,7 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
                 $fldType[$key] = $getColType->fetchColumn(0);
                 $getColType->fetchAll(); //pdo si innervosisce se gli stmt rimangono mezzi aperti
             }
-            
+
             /*MODIFICHE*/
             if ($valutatedKey[$key][$val]) {  //CHIAVE GIA' VALUTATA (SONO TUTTE LE PARENT KEY)
                 $lev=str_replace('_name', '', str_replace('_id', '', $key));
@@ -412,7 +412,7 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
             }
             $j++;
         }
-    
+
         $list_value=@implode(",", $values);
         $list_flds=@implode(",", array_keys($values));
         $s="INSERT INTO ".$structure["table"][$currentLevel]."($list_flds) VALUES($list_value);\n";
@@ -493,7 +493,7 @@ function _exportNew($fileName = "export.sql", $arr, $lev, $project, $start = 0, 
         $j=0;
         $fldIns=array();
         $valIns=array();
-        
+
         foreach ($rec as $key => $val) {        //Ciclo su tutti i campi
             if ($key==$startName) {
                 echo "$level $key=>$val<br>";
@@ -502,7 +502,7 @@ function _exportNew($fileName = "export.sql", $arr, $lev, $project, $start = 0, 
             if ($i==0) {
                 $fldType[$key]=$db->sql_fieldtype($j);
             }
-            
+
             /*FINE MODIFICHE*/
             if (in_array($key, $parent_key)) {                                 //CHIAVI DEL PARENT
                 if (preg_match('/(.+)_id$/Ui', $key, $out)) {

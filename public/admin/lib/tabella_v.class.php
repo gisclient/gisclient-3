@@ -40,7 +40,7 @@ class Tabella_v extends Tabella
             $class="class=\"errors\"";
             $help="<image src=\"images/small_help.gif\" onclick=\"alert('$err')\" />";
         }
-    
+
         /*MODIFICA LOCK STATI SE IL CAMPO E' FROZEN AGGIUNGO disabled*/
         if ($frozen) {
             $disabilitato="disabled";
@@ -60,12 +60,12 @@ class Tabella_v extends Tabella
             case "string":
                 $retval=stripslashes($dato);
                 break;
-        
+
             case "ora":
                 if ($dato) {
                     $dato=number_format($dato, 2, ':', '');
                 }
-        
+
                 $retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dato\" $disabilitato />$help";
                 break;
             case "numero":
@@ -87,7 +87,7 @@ class Tabella_v extends Tabella
                 }
                 $retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"valuta\" value=\"$dato\" $disabilitato />$help";
                 break;
-        
+
             case "superficie":
                 if ($dato) {
                     $dato=number_format($dato, 2, ',', '.')." mq";
@@ -116,24 +116,24 @@ class Tabella_v extends Tabella
                 $testo=stripslashes(str_replace("\\", "\\\\", $dato));
                 $retval="<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" $disabilitato />$help";
                 break;
-            
+
             case "data":
                 $data=$this->date_format(stripslashes($dato));
                 $retval="<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$data\" $disabilitato />$help";
                 break;
-            
+
             case "textarea":
                 $size=explode("x", $w);
                 $dato=str_replace('\"', '"', str_replace("\'", "'", $dato));
                 $retval="<textarea cols=\"$size[0]\" rows=\"$size[1]\" name=\"dati[$campo]\" id=\"$campo\" $disabilitato >$dato</textarea>";
                 break;
-        
+
             case "select"://elenco preso da file testo
                 $size=explode("#", $w);
                 $opzioni=$this->elenco_select($size[1], $size[2], $dati[$campo]);
                 $retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>$help";
                 break;
-        
+
             case "selectdb"://elenco preso da query su db
                 $size=explode("#", $w);
                 $filter=array_slice($size, 2);
@@ -157,7 +157,7 @@ class Tabella_v extends Tabella
                 }
                 $retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>$help";
                 break;
-            
+
             case "elenco"://elenco di opzioni da un campo di db valori separati da virgola
                 $size=explode("#", $w);
                 if (isset($size[2])) {
@@ -166,7 +166,7 @@ class Tabella_v extends Tabella
                 $opzioni=$this->elenco_selectfield($campo, $dati[$campo], $size[1]);
                 $retval="<select style=\"width:$size[0]px\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $onChange $disabilitato>$opzioni</select>";
                 break;
-        
+
             case "chiave_esterna":
                 $size=explode("#", $w);
                 $testo = '';
@@ -177,23 +177,23 @@ class Tabella_v extends Tabella
                 //$retval="<INPUT $class maxLength=\"$size[0]\" size=\"$size[0]\"  class=\"textbox\" name=\"fk_$campo\" id=\"fk_".$campo."\" value=\"$dati[$campo]\" disabled><input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dati[$campo]\">$help";
                 $retval="<INPUT $class maxLength=\"$size[0]\" size=\"$size[0]\"  class=\"textbox\" name=\"fk_$campo\" id=\"fk_".$campo."\" value=\"$testo\" disabled>";
                 $retval.="<input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$val\">$help";
-            
+
                 break;
             case "checkbox":
                 (($dati[$campo]=="t") or ($dati[$campo]=="on") or (abs($dati[$campo])==1))?($selezionato="checked"):($selezionato="");
                 $ch=strtoupper($campo);
-            
+
                 if ($dati[$campo]==-1) {
                     $ch="<font color=\"FF0000\">EX $ch</font>";
                 }
                 $retval="<b>$ch</b><input type=\"checkbox\"  name=\"dati[$campo]\"  id=\"$campo\" $selezionato $disabilitato />&nbsp;&nbsp;";
                 break;
-        
+
             case "radio":
                 (($dati[$campo]=="t") or ($dati[$campo]=="on") or ($dati[$campo]==1))?($selezionato="checked"):($selezionato="");
                 $retval="<input type=\"radio\" name=\"dati[opzioni]\"  id=\"$campo\" $selezionato $disabilitato />";
                 break;
-        
+
             case "button":
                 $size=explode("#", $w);
                 $width=$size[0];
@@ -208,7 +208,7 @@ class Tabella_v extends Tabella
                     $retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" />";
                 }
                 break;
-        
+
             case "submit":
                 if (in_array(strtolower($label), array("cancella","elimina"))) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
@@ -220,19 +220,19 @@ class Tabella_v extends Tabella
                     $retval="\n\t\t\t<button  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:".$w."px;display:$display\" type=\"submit\" value=\"$action\" $js>$label</button>";
                 }
                 break;
-            
+
             case "yesno":
                 ((!isset($dati[$campo])) or ($dati[$campo]==="t") or ($dati[$campo]==="on") or ($dati[$campo]==1))?($yselected="selected"):($nselected="selected");
                 $opzioni="<option value=1 $yselected>".GCAuthor::t('yes')."</option><option value=0 $nselected>".GCAuthor::t('no')."</option>";
                 $retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";
                 break;
-            
+
             case "noyes":
                 ((!isset($dati[$campo]) or ($dati[$campo]==="f") or ($dati[$campo]==="off") or ($dati[$campo]==0)))?($nselected="selected"):($yselected="selected");
                 $opzioni="<option value=1 $yselected>".GCAuthor::t('yes')."</option><option value=0 $nselected>".GCAuthor::t('no')."</option>";
                 $retval="<select style=\"width:$wpx\" class=\"textbox\"  name=\"dati[$campo]\"  id=\"$campo\" onmousewheel=\"return false\" $disabilitato>$opzioni</select>";
                 break;
-            
+
             case "pword":
                 $size=intval($w+($w/5));
                 $testo=stripslashes($dato);
@@ -266,7 +266,7 @@ class Tabella_v extends Tabella
                 $retval.="</div>";
                 break;
         }
-        
+
         return $retval;
     }
 
@@ -289,7 +289,7 @@ class Tabella_v extends Tabella
                     $retval='';//'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                 }
                 break;
-            
+
             case "data":
                 $retval=$data=$this->date_format($dati[$campo]);
                 break;
@@ -326,7 +326,7 @@ class Tabella_v extends Tabella
                     $retval=GCAuthor::t('yes');
                 }
                 break;
-            
+
             case "textarea":
                 $retval="<div style=\"width:100%\"><pre>".$dati[$campo]."</pre></div>";
                 break;
@@ -339,9 +339,9 @@ class Tabella_v extends Tabella
             case "chiave_esterna":      //Restituisce il campo descrittivo di un elenco
                 $size=explode("#", $w);
                 //$retval=$this->get_chiave_esterna($size[1],$dati[$campo],$size[2]);
-            
+
                 $retval=stripslashes($this->get_chiave_esterna($dati[$campo], $campo, $size[1], $size[2]));
-            
+
                 break;
             case "color":
                 $val=str_replace(" ", ",", trim($dati[$campo]));
@@ -388,7 +388,7 @@ class Tabella_v extends Tabella
         $riga=$this->tab_config[$nriga];
         $lbl="";
         $ctr='';
-    
+
         for ($i=0; $i<count($riga); $i++) {
             list($label,$campo,$w,$tipo,$mode,$action)=array_pad(explode(';', $riga[$i]), 6, null);
             $tipo=trim($tipo);
@@ -421,7 +421,7 @@ class Tabella_v extends Tabella
         }
         return $testo_riga;
     }
- 
+
     function edita($param = array())
     {
     //if($this->error_flag==1)
@@ -429,8 +429,8 @@ class Tabella_v extends Tabella
         //crea la tabella di editing
         $nrighe=$this->num_col;
         $tabella="<table class=\"stiletabella\">\n";
-    
-    
+
+
         for ($i=0; $i<$nrighe; $i++) {
             $riga=$this->get_riga_edit($i);
             $tabella.="\t<tr>\n";
@@ -496,8 +496,8 @@ class Tabella_v extends Tabella
     function elenco_select($tabella, $sep, $selezionato)
     {
     // dal file tab crea la lista di opzioni per il controllo SELECT
-    
-    
+
+
         if (!file_exists($tabella)) {
             $retval="\n<option value=\"\">File dei Fonts non Esistente</option>";
             return $retval;
@@ -602,7 +602,7 @@ class Tabella_v extends Tabella
             return;
         }
         $ar_elenco=explode(";", $elenco);
-    
+
         $nopt=count($ar_elenco)/2;
         $i=0;
         while ($i<count($ar_elenco)) {

@@ -607,7 +607,7 @@ class saveData
             // PDO: $list_values cannot be quoted/made into a bound parameter because it holds a list of column names
             $sql="INSERT INTO ".DB_SCHEMA.".".$struct["name"]."(".$struct["name"]."_id,$list_flds) SELECT $idx,$list_value FROM ".DB_SCHEMA.".".$struct["name"]." WHERE ".$struct["name"]."_id=:id;";
             print_debug($sql, null, "save.class.debug");
-            
+
             // FIXME: Migrazione PDO: le seguenti righe sono commentate perchè anche nel sorgente originale
             //        questo codice finiva "nel vuoto" (senza l'esecuzione effettiva della query INSERT)
             //

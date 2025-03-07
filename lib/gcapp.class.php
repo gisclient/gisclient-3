@@ -487,7 +487,7 @@ class GCAuthor
         if ($aFeature["fields"]) {
             $fieldList = array();
             $groupByFieldList = array();
-            
+
             foreach ($aFeature["fields"] as $aField) {
                 //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
                 if (!empty($aField['relation']) && ($aFeature["relation"][$aField["relation"]]["relation_type"] == 2)) {
@@ -500,14 +500,14 @@ class GCAuthor
                         }
                     }
                 }
-            
+
                 //field su layer oppure su relazione 1-1
                 if (empty($aField['relation'])) {
                     $aliasTable = DATALAYER_ALIAS_TABLE;
                 } else {
                     $aliasTable = GCApp::nameReplace($aFeature["relation"][$aField["relation"]]["name"]);
                 }
-                
+
                 if (!empty($aField['formula'])) {
                     if (empty($aField['relation'])) {
                         $fieldName = $aField["formula"] . " AS " . $aField["field_name"];
@@ -519,15 +519,15 @@ class GCAuthor
                     $fieldName = $aliasTable . "." . $aField["field_name"];
                     $groupByFieldList[] = $aliasTable.'.'.$aField['field_name'];
                 }
-                
+
                 $fieldList[] = $fieldName;
             }
-            
+
             //Elenco delle relazioni
             if ($aRelation=$aFeature["relation"]) {
                 foreach ($aRelation as $rel) {
                     $relationAliasTable = GCApp::nameReplace($rel["name"]);
-                    
+
                     //se relazione 1-n, salta se non vogliamo il join
                     //se vogliamo i dati della secondaria, elimina il groupBy
                     if ($rel["relation_type"] == 2) {
@@ -537,13 +537,13 @@ class GCAuthor
                         if (!empty($options['show_relation']) && $rel['name'] != $options['show_relation']) {
                             continue;
                         }
-                        
+
                         if (!$options['group_1n']) {
                             $groupByFieldList = null;
                         }
                     }
 
-                        
+
                     $joinList = array();
                     foreach ($rel['join_field'] as $joinField) {
                            $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
@@ -553,7 +553,7 @@ class GCAuthor
                     $joinString = "$joinString left join ".$rel["table_schema"].".". $rel["table_name"] ." AS ". $relationAliasTable ." ON (".$joinFields.")";
                 }
             }
-            
+
             //$fieldString = implode(",",$fieldList);
         }
         

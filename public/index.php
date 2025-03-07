@@ -43,14 +43,14 @@ foreach ($mapset as $key => $map) {
         if (!$authHandler->isAuthenticated() && $map[$j]['private'] == 1) {
             continue;
         }
-                    
+
         $publicLink = MAP_URL;
         if (!empty($map[$j]['template'])) {
             $publicLink .= $map[$j]['template'];
         }
         $separator = strpos($publicLink, '?')?'&':'?';
         $publicLink .= $separator.'mapset='.$map[$j]['name'];
-                    
+
         if (defined('PRIVATE_MAP_URL')) {
             $privateLink = PRIVATE_MAP_URL;
             if (!empty($map[$j]['template'])) {
@@ -59,7 +59,7 @@ foreach ($mapset as $key => $map) {
             $separator = strpos($privateLink, '?')?'&':'?';
             $privateLink .= $separator.'mapset='.$map[$j]['name'];
         }
-                    
+
         $newTable.='
 						<tr>';
         if (empty($map[$j]['private'])) {
@@ -123,7 +123,7 @@ if (!$authHandler->isAuthenticated()) {
             }
         }
         $(document).ready(function() {
-            
+
             /* jquerylayout */
             myLayout = $('#container').layout({
                 north: { size: 90, spacing_open: 10, closable: false, resizable: false },
@@ -132,13 +132,13 @@ if (!$authHandler->isAuthenticated()) {
                 //useStateCookie: true,
                 //cookie: { name: "GisClientAuthor", expires: 10, keys: "west.size" }
             });
-            
+
             /* ui buttons */
             $('a.button , input[type|="button"] , input[type|="submit"]').button();
             $('a.logout').button({icons: { primary: 'ui-icon-power' }});
             $('.stiletabella a.view').button({icons: { primary: 'ui-icon-unlocked' },text: false});
             $('.stiletabella a.private').button({icons: { primary: 'ui-icon-locked' },text: false});
-            
+
             /* ui alert & info */
             $('span.alert , span.error').addClass('ui-state-error ui-corner-all').prepend('<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .5em;"></span>');
             $('span.info').addClass('ui-state-highlight ui-corner-all').prepend('<span class="ui-icon ui-icon-info" style="float: left; margin-right: .5em;"></span>');

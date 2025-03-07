@@ -529,7 +529,7 @@ class gcMapfile
         $owsUrl = null;
         if (defined('GISCLIENT_OWS_URL')) {
             $owsUrl = rtrim(GISCLIENT_OWS_URL, '?&');
-            
+
             if (false === ($owsUrlQueryPart = parse_url($owsUrl, PHP_URL_QUERY))) {
                 throw new Exception("Could not parse '". GISCLIENT_OWS_URL . "' as string");
             }

@@ -1,19 +1,19 @@
 <?php
 
     $buffer = ms_iogetstdoutbufferstring();
-    
+
     include_once "../admin/lib/xml2array.php";
     //$array = xml2array(file_get_contents('php://input', 'r'));
     $array = xml2array($buffer);
     print('<pre>');
     print_r($array);
 exit;
-    
+
     echo $buffer;
     ms_ioresethandlers();
-    
-    
-    
+
+
+
     /*
     //TODO RESTITUZIONE DEI SOLI RISULTATI CON O SENZA GEOMETRIE IN JSON
     if(strtolower($_REQUEST["SERVICE"])=="wfs" && strtolower($_REQUEST["REQUEST"])=="getfeatureXXX"){

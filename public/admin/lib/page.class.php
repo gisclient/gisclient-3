@@ -1014,7 +1014,7 @@ class page
     // Metodo che costruisce la pagina
     public function writePage(array $err = array())
     {
-            
+
         //Stampa errori generici e messaggi se ci sono
         $this->writeMessage($err);
         if (!empty($this->tableList)) {
@@ -1033,7 +1033,7 @@ class page
                 }
             }
             unset($table);
-                
+
             for ($i=0; $i<count($this->tableList); $i++) {
                 $el=@each(@array_reverse($this->parametri, true));
                 $this->_getKey($el["value"]);
@@ -1113,21 +1113,21 @@ class page
                                 $prm[$ris[2]]=$val;
                             }
                         }
-                            
+
                         switch ($this->action) {
                             case "classifica":
                                 //echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\" class=\"\">";
-                                    
+
                                 $level=$this->get_idLivello();
-                                    
+
                                 $livello=$this->livello;
                                 $prm['layer']=$this->parametri[$livello];
                                 //$prm["pkey[0]"]='layer_id';
                                 //$prm["pkey_value[0]"]=
                                 include ADMIN_PATH."include/classify.php";
                                 $this->write_page_param($prm);
-                                    
-                                    
+
+
                                 break;
                             case "importa":
                                 echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
@@ -1147,13 +1147,13 @@ class page
                         }
                         break;
                 }
-                    
+
                 if ($tab["javascript"]) {
                     echo "<script>\n\t".$tab["javascript"]."('".$tab["form_name"]."');\n</script> \n";
                 }
             }
             $arr_keys=(count($this->parametri))?(array_keys($this->parametri)):(array());
-                
+
             if (($this->mode==self::MODE_VIEW || $this->mode==self::MODE_LIST) && !empty($arr_keys[0])) {
                 $tmp=$this->parametri;
                 array_pop($tmp);
@@ -1161,7 +1161,7 @@ class page
                 $arrvalues=array_values($tmp);
                 $keys=(count($arrkeys))?("'".implode("','", $arrkeys)."'"):("");
                 $values=(count($arrvalues))?("'".implode("','", $arrvalues)."'"):("");
-                    
+
                 $btn  = "\n\t<div id=\"footerButton\">";
                 $btn .= "<input type=\"button\" class=\"hexfield\" value=\"".GCAuthor::t('button_back')."\" onclick=\"javascript:navigate([$keys],[$values])\">";
                 if ($this->initI18n()) {

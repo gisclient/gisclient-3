@@ -4,19 +4,29 @@ declare(strict_types=1);
 
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
+use Rector\Php52\Rector\Property\VarToPublicPropertyRector;
 use Rector\Php53\Rector\Ternary\TernaryToElvisRector;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
 use Rector\Php56\Rector\FuncCall\PowToExpRector;
+use Rector\Php70\Rector\ClassMethod\Php4ConstructorRector;
+use Rector\Php70\Rector\FuncCall\EregToPregMatchRector;
 use Rector\Php70\Rector\FuncCall\RandomFunctionRector;
 use Rector\Php70\Rector\Ternary\TernaryToNullCoalescingRector;
+use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php71\Rector\List_\ListToArrayDestructRector;
+use Rector\Php72\Rector\Assign\ReplaceEachAssignmentWithKeyCurrentRector;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
+use Rector\Php73\Rector\FuncCall\ArrayKeyFirstLastRector;
 use Rector\Php73\Rector\FuncCall\StringifyStrNeedlesRector;
+use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
+use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
 
 return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
+        __DIR__ . '/lib',
+        __DIR__ . '/public',
         __DIR__ . '/tests',
     ])
     ->withRootFiles()
@@ -30,6 +40,22 @@ return RectorConfig::configure()
     ])
     ->withSkip([
         LongArrayToShortArrayRector::class, // temporarily to avoid lots of code change just for this - execute late together with ecs (to avoid long single line array)
+
+        AddClosureVoidReturnTypeWhereNoReturnRector::class,
+        ArrayKeyFirstLastRector::class,
+        ClosureToArrowFunctionRector::class,
+        EregToPregMatchRector::class,
+        ListToArrayDestructRector::class,
+        Php4ConstructorRector::class,
+        PowToExpRector::class,
+        RandomFunctionRector::class,
+        RemoveExtraParametersRector::class,
+        ReplaceEachAssignmentWithKeyCurrentRector::class,
+        SensitiveConstantNameRector::class,
+        StringifyStrNeedlesRector::class,
+        TernaryToElvisRector::class,
+        TernaryToNullCoalescingRector::class,
+        VarToPublicPropertyRector::class,
     ])
     ->withCache(
         __DIR__ . '/var/cache/rector',

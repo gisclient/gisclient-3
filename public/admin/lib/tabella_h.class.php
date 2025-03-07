@@ -37,7 +37,7 @@ class Tabella_h extends Tabella
         $valore = $this->array_dati[$row][$nome];
         $w=$this->def_col[$col][2];//larghezza del campo
         $tipo=trim($this->def_col[$col][3]);//tipo del campo
-    
+
         switch ($tipo) {//tipo campo in configfile
             case "hidden":
                 $retval="";
@@ -45,12 +45,12 @@ class Tabella_h extends Tabella
             case "idriga":
                 $retval="<td><input type=\"hidden\" name=\"idriga\" value=\"$valore\" ></td>\n";
                 break;
-    
+
             case "text":
                 //$valore=html_entity_decode($valore);
                 $retval="<td>$valore</td>\n";
                 break;
-            
+
         //  Modificato Marco
             case "ora":
                 $valore=number_format($dati[$campo], 2, ':', '');
@@ -68,7 +68,7 @@ class Tabella_h extends Tabella
                     $retval="<td>---</td>\n";
                 }
                 break;
-            
+
             case "valuta":
                 if ($valore) {
                     $valore=number_format($valore, 2, ',', '.');
@@ -96,17 +96,17 @@ class Tabella_h extends Tabella
                 $data=$this->date_format(stripslashes($valore));
                 $retval="<td>$data</td>\n";
                 break;
-            
+
             case "checkbox":
                 (($valore=="t") or ($valore==1))?($selezionato="checked"):($selezionato="");
-            
+
                 if ($valore==-1) {
                     $retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input type=\"checkbox\" name=\"$valore\" id=\"$valore\" value=\"$nome\" disabled checked></td>\n";
                 } else {
                     $retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input type=\"checkbox\" name=\"$valore\" id=\"$valore\" value=\"$nome\" $selezionato></td>\n";
                 }
                 break;
-            
+
             case "checkbox_chk":
                 $retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input type=\"checkbox\" name=\"$valore\" id=\"$valore\" value=\"$nome\" checked=\"checked\"></td>\n";
                 break;
@@ -120,7 +120,7 @@ class Tabella_h extends Tabella
                 $size=explode("#", $this->def_col[$col][2]);
                 $group=$this->array_dati[$row][$size[1]];
                 $id=$this->array_dati[$row][$size[2]];
-            
+
                 $selected=($id>0)?("checked"):("");
                 $strValore=($valore)?("value=\"$valore\""):("value=\"1\"");
                 $retval="<td align=\"center\" valign=\"middle\" width=\"7\" style=\"text-align:center;\"><input width=\"7\" type=\"checkbox\" name=\"dati[$group][$nome]\" $strValore $selected></td>\n";
@@ -144,7 +144,7 @@ class Tabella_h extends Tabella
                 } else {
                     $jslink="link('".addslashes(html_entity_decode($valore, ENT_QUOTES))."')";
                 }
-            
+
                 $retval ="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\">";
                 $retval.="<a class=\"button info\" href=\"javascript:$jslink\">Info</a>";
                 $retval.="</td>\n";
@@ -156,7 +156,7 @@ class Tabella_h extends Tabella
                 } else {
                     $jslink="edit('".addslashes(html_entity_decode($valore, ENT_QUOTES))."')";
                 }
-            
+
                 $retval ="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\">";
                 $retval.="<a class=\"button edit\" href=\"javascript:$jslink\">Edit</a>";
                 $retval.="</td>\n";
@@ -171,13 +171,13 @@ class Tabella_h extends Tabella
                     array_push($values, $this->array_dati[$row][$pkey]);
                 }
                 $jsLink = "deleteRow('".implode(',', $pkeys)."', '".implode(',', $values)."', '".$this->array_hidden['livello']."', '".$this->config_file."')";
-            
+
                 $retval ="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\">";
                 $retval.="<a class=\"button delete\" href=\"javascript:$jsLink\">Delete</a>";
                 $retval.="</td>\n";
                 break;
-            
-        
+
+
             break;
             case "zoom":
                 $jslink=$this->zoomto(trim($this->tabelladb), $valore);
@@ -188,7 +188,7 @@ class Tabella_h extends Tabella
                 ($valore==0)?($yn=GCAuthor::t('no')):($yn=GCAuthor::t('yes'));
                 $retval="<td align=\"left\" valign=\"middle\"  width=\"$w\">$yn</td>\n";
                 break;
-        
+
             case "delete":
                 $id=$this->array_dati[$row][$nome];
                 $keys=array_keys($this->pkeys);
@@ -198,11 +198,11 @@ class Tabella_h extends Tabella
                 $jslink="elimina([".implode(",", $prm)."])";
                 $retval=($this->mode=="view")?('<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" >&nbsp;</td>'):("<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><a href=\"javascript:$jslink;\"><img src=\"images/delete16.gif\" border=\"0\"></a></td>\n");
                 break;
-            
+
             case "semaforo":
                 ($valore)?($img="frossa"):($img="fblu");
                 $retval="<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img.gif\" border=\"0\"></td>\n";
-            
+
                 break;
             case "image":
                 $size=explode("#", $w);
@@ -218,7 +218,7 @@ class Tabella_h extends Tabella
             case "image2":
                 $img=(!$valore)?("frossa"):($valore);
                 $retval="<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img\" border=\"0\"></td>\n";
-            
+
                 break;
             //Genera un array di text indicizzati su id
             case "text_box":
@@ -226,14 +226,14 @@ class Tabella_h extends Tabella
                 $nome.="[".$this->array_dati[$row]["id"]."]";
                 $retval="<td><input $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"$nome\" id=\"data\" value=\"$data\">$help";
                 break;
-            
+
             case "radio1":
                 $id=$this->array_dati[$row][$size[1]];
                 (($valore=="t") or ($valore==1))?($selezionato="checked"):($selezionato="");
                 $retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input width=\"7\" type=\"radio\" name=\"$nome\" value=\"$id\" $selezionato></td>\n";
                 break;
-            
-    
+
+
             case "punto":
                 $p_image=$this->img_punto;
                 $retval="<td align=\"center\" valign=\"middle\" width=\"$w\"><img src=\"images/$p_image.gif\" border=\"0\"></td>\n";
@@ -250,7 +250,7 @@ class Tabella_h extends Tabella
                 break;
             case "chiave_esterna":
                 $size=explode("#", $w);
-            
+
                 $retval="<td>&nbsp;".$this->get_chiave_esterna($valore, $nome, $size[1], $size[2])."</td>";
                 break;
             case "color":
@@ -276,7 +276,7 @@ class Tabella_h extends Tabella
                     $retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" >";
                 }
                 break;
-        
+
             case "submit":
                 if (in_array(strtolower($label), array("cancella","elimina"))) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
@@ -322,7 +322,7 @@ class Tabella_h extends Tabella
         //Intestazione delle colonne
         $tabella.="
 		<div><table class=\"stiletabella\">
-			
+
 			<tr class=\"ui-widget ui-state-default\">\n";
 
         //riga intestazione colonne ecreazione di def_col
@@ -344,7 +344,7 @@ class Tabella_h extends Tabella
              $tabella.="\t\t\t</tr>\n";
              //$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";
         }
-    
+
         if ($this->num_record==0) {
             $tabella.="\t\t\t<tr>\n";//CICLO SULLE COLONNE
             $tabella.="<td colspan=\"".$ncols."\"><p><b>$message</b></p></td>";
