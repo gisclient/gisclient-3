@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
-use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php71\Rector\List_\ListToArrayDestructRector;
 use Rector\Php72\Rector\Assign\ReplaceEachAssignmentWithKeyCurrentRector;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
@@ -37,7 +36,6 @@ return RectorConfig::configure()
         ArrayKeyFirstLastRector::class,
         ClosureToArrowFunctionRector::class,
         ListToArrayDestructRector::class,
-        RemoveExtraParametersRector::class,
         ReplaceEachAssignmentWithKeyCurrentRector::class,
         SensitiveConstantNameRector::class,
         StringifyStrNeedlesRector::class,

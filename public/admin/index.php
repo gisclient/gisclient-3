@@ -167,7 +167,7 @@ if (isset($p->parametri['project'])) {
         </div>
         <div class="ui-layout-center">
             <div id="containment" style="position: relative;">
-                <?php /* FIXME: signature accepts only one parameter */ $p->writePage($Errors, $Notice); ?>
+                <?php /* FIXME: signature accepts only one parameter */ $p->writePage($Errors); ?>
                 <form method="POST" id="frm_param" name="frm_param"><?php $p->write_parameter(); ?></form>
                 <?php include ADMIN_PATH . "inc/inc.window.php"; ?>
             </div>

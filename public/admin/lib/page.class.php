@@ -1137,7 +1137,7 @@ class page
                                 $livello=$this->livello;
                                 include ADMIN_PATH."include/import.php";
                                 $this->write_page_param($this->parametri);
-                                $this->write_parameter(array_pop($this->parametri));
+                                $this->write_parameter();
                                 echo "</form>";
                                 echo $resultForm;
                                 break;
