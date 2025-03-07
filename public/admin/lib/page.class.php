@@ -272,7 +272,11 @@ class page
         if (!empty($p["parametri"])) {
             for ($i=0; $i<count($p["parametri"]); $i++) {
                 $arr=$p["parametri"][$i];
-                $val=each($arr);
+                $val[1] = current($arr);
+                $val['value'] = current($arr);
+                $val[0] = key($arr);
+                $val['key'] = key($arr);
+                next($arr);
                 if (preg_match("|^'(.+)'$|", stripslashes($val["value"]), $match)) {
                     $this->parametri[$val["key"]]=$match[1];
                 } else {
