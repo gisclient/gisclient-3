@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
-use Rector\Php73\Rector\FuncCall\StringifyStrNeedlesRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
 
@@ -30,7 +29,6 @@ return RectorConfig::configure()
 
         AddClosureVoidReturnTypeWhereNoReturnRector::class,
         ClosureToArrowFunctionRector::class,
-        StringifyStrNeedlesRector::class,
     ])
     ->withCache(
         __DIR__ . '/var/cache/rector',

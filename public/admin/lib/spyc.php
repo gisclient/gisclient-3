@@ -1240,13 +1240,13 @@ if (!class_exists('Spyc')) {
             $array = array();
             $key         = self::unquote(trim(substr($line, 1, -1)));
             $array[$key] = array();
-            $this->delayedPath = array(strpos($line, $key) + $this->indent => $key);
+            $this->delayedPath = array(strpos($line, (string) $key) + $this->indent => $key);
             return array($array);
         }
 
         private function checkKeysInValue($value)
         {
-            if (strchr('[{"\'', $value[0]) === false) {
+            if (strchr('[{"\'', (string) $value[0]) === false) {
                 if (strchr($value, ': ') !== false) {
                     throw new Exception('Too many keys: '.$value);
                 }

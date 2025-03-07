@@ -63,7 +63,7 @@ function trova_testo($testo, $dirname)
                 $f=fopen($filename, "r+");
                 if ($f) {
                     $text=fread($f, filesize($filename));
-                    if (strpos(strtolower($text), $testo)) {
+                    if (strpos(strtolower($text), (string) $testo)) {
                         $ris[dirname($file)][]="Trovato in $file";
                     }
                     fclose($f);

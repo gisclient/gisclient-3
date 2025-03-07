@@ -147,7 +147,7 @@ foreach ($layers as $layer) {
         $used = false;
 
         //se il campo è contenuto nel tag FILTER
-        $used = (strpos($layer['data_filter'], $field) !== false);
+        $used = (strpos($layer['data_filter'], (string) $field) !== false);
 
         //se il campo è un CLASSITEM, LABELITEM, LABELSIZEITEM
         if (!$used) {
@@ -161,19 +161,19 @@ foreach ($layers as $layer) {
 
             $styles = $getClasses->fetchAll(PDO::FETCH_ASSOC);
             foreach ($styles as $style) {
-                if (strpos($style['expression'], $field) !== false) {
+                if (strpos($style['expression'], (string) $field) !== false) {
                     $used = true;
                     break;
                 }
-                if (strpos($style['label_angle'], $field) !== false) {
+                if (strpos($style['label_angle'], (string) $field) !== false) {
                     $used = true;
                     break;
                 }
-                if (strpos($style['label_size'], $field) !== false) {
+                if (strpos($style['label_size'], (string) $field) !== false) {
                     $used = true;
                     break;
                 }
-                if (strpos($style['class_text'], $field) !== false) {
+                if (strpos($style['class_text'], (string) $field) !== false) {
                     $used = true;
                     break;
                 }
