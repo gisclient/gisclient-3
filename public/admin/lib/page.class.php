@@ -35,6 +35,7 @@ class page
     public $notice;
     public $pageKeys;
     public $action;
+    public $currentMode;
     private $primary_keys;
     private $navTreeValues;
     private $levKey;
@@ -661,8 +662,7 @@ class page
                 for ($j=0; $j<count($tb->function_param); $j++) {
                     $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
                 }
-                $button=@implode("\n\t\t", $btn);
-                    
+
                 echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
                 $tb->set_titolo($tb->FileTitle, "", $prm);
                 $tb->tag=$tab["level"];
@@ -674,7 +674,7 @@ class page
                 }
                 $tb->set_dati($filter);
                 $tb->elenco();
-                echo "<hr>$button";
+                echo "<hr>";
                 echo "</form>";
                 break;
                     
@@ -707,7 +707,7 @@ class page
                         $param="qt";
                         break;
                     case "project_groups":
-                        $filter.=" NOT group_name ilike 'gisclient_author'";
+                        $filter = " NOT group_name ilike 'gisclient_author'";
                         break;
                     case "layer_groups":
                         $param="layer_groups";
@@ -740,7 +740,7 @@ class page
                 $filter=$tab["parent_level"]["key"]."_id = ".$this->db->quote($parent_key);
                 $prm["parametri[][".$tab["level"]."]"]="";
                     
-                $tb=new Tabella_h($tab["config_file"].".tab", $mode);
+                $tb=new Tabella_h($tab["config_file"].".tab");
                     
                 for ($j=0; $j<count($tb->function_param); $j++) {
                     $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
@@ -1173,21 +1173,8 @@ class page
         } else {
             echo "<p>Nessun configurazione definita per la pagina</p>";
         }
-        //$this->showTime();
     }
-        
-    function getTime($str)
-    {
-        $tmp=explode(" ", microtime());
-        $t=$tmp[0]+$tmp[1];
-        $this->time[$str]=$t;
-    }
-        
-    function showTime()
-    {
-        print_debug($this->time, null, 'TIME');
-    }
-        
+
     public function initI18n()
     {
         if (isset($this->parametri['project'])) {

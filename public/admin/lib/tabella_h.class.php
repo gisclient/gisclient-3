@@ -12,6 +12,8 @@ class Tabella_h extends Tabella
     public $info_target;//pagina di destinazione per il link info
     public $img_punto; //nome del gif da usare come punto elenco della tabella
 
+    public $tag;
+
 
     function set_target($target)
     {
@@ -53,7 +55,7 @@ class Tabella_h extends Tabella
 
         //  Modificato Marco
             case "ora":
-                $valore=number_format($dati[$campo], 2, ':', '');
+                $valore=number_format($valore, 2, ':', '');
                 if ($valore!=0) {
                     $retval="<td>$valore</td>\n";
                 } else {
@@ -179,10 +181,6 @@ class Tabella_h extends Tabella
 
 
             break;
-            case "zoom":
-                $jslink=$this->zoomto(trim($this->tabelladb), $valore);
-                $retval="<td align=\"center\" valign=\"middle\" width=\"$w\" class=\"printhide\"><a href=\"javascript:$jslink\"><img src=\"images/zoom.gif\" border=\"0\"></a></td>\n";
-                break;
             case "noyes":
             case "yesno":
                 ($valore==0)?($yn=GCAuthor::t('no')):($yn=GCAuthor::t('yes'));
@@ -224,15 +222,8 @@ class Tabella_h extends Tabella
             case "text_box":
                 $data=$this->date_format(stripslashes($valore));
                 $nome.="[".$this->array_dati[$row]["id"]."]";
-                $retval="<td><input $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"$nome\" id=\"data\" value=\"$data\">$help";
+                $retval="<td><input maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"$nome\" id=\"data\" value=\"$data\">";
                 break;
-
-            case "radio1":
-                $id=$this->array_dati[$row][$size[1]];
-                (($valore=="t") or ($valore==1))?($selezionato="checked"):($selezionato="");
-                $retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input width=\"7\" type=\"radio\" name=\"$nome\" value=\"$id\" $selezionato></td>\n";
-                break;
-
 
             case "punto":
                 $p_image=$this->img_punto;
@@ -242,7 +233,7 @@ class Tabella_h extends Tabella
             case "nota":
                 $nome.="[".$this->array_dati[$row]["id"]."]";
                 $imm="imm_".$nome;
-                $retval="<td>&nbsp;&nbsp;<img border=\"0\" id=\"$imm\" height=\"12\" src=\"images/left.gif\" onclick=\"show_note('$nome','$imm')\">&nbsp;<span id=\"$nome\" style=\"display:none\"><textarea name=\"$nome\" cols=\"$w\" rows=\"2\">$valore</textarea>$help</span>";
+                $retval="<td>&nbsp;&nbsp;<img border=\"0\" id=\"$imm\" height=\"12\" src=\"images/left.gif\" onclick=\"show_note('$nome','$imm')\">&nbsp;<span id=\"$nome\" style=\"display:none\"><textarea name=\"$nome\" cols=\"$w\" rows=\"2\">$valore</textarea></span>";
                 break;
             case "selectdb":
                 $size=explode("#", $w);
@@ -271,21 +262,16 @@ class Tabella_h extends Tabella
                 } else {
                     $param="['".@implode("','", $size)."']";
                 }
-                //if(!$size[2]) $size[2]="[]";
-                if (!$mode || $mode=="all" || $this->mode==$mode) {
-                    $retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$label\" onclick=\"javascript:$jsfunction('$campo',$param)\" >";
-                }
+                $retval="\n\t\t\t<input class=\"hexfield\" style=\"width:".$width."px\" type=\"button\" value=\"$nome\" onclick=\"javascript:$jsfunction('$nome',$param)\" >";
                 break;
 
             case "submit":
-                if (in_array(strtolower($label), array("cancella","elimina"))) {
+                if (in_array(strtolower($nome), array("cancella","elimina"))) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
-                } elseif (in_array(strtolower($label), array("copia"))) {
+                } elseif (in_array(strtolower($nome), array("copia"))) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler copiare il record?');\"";
                 }
-                if (!$mode || $mode=="all" || $this->mode==$mode) {
-                    $retval="\n\t\t\t<input  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:".$w."px;display:$display\" type=\"submit\" value=\"$label\" $js >";
-                }
+                $retval="\n\t\t\t<input  name=\"$nome\"  id=\"$nome\" class=\"hexfield\" style=\"width:".$w."px;\" type=\"submit\" value=\"$nome\" $js >";
                 break;
             case "goto":
                 [$size, $param]=explode("#", $w);
@@ -421,15 +407,4 @@ class Tabella_h extends Tabella
                         return $row[$campo];
         }
     }
-    /*
-    function get_chiave_esterna($val,$fld,$tab,$campo){
-        $sql="SELECT $campo FROM $this->schemadb.$tab WHERE $fld='$val';";
-
-        if (!isset($this->db)) $this->connettidb();
-        print_debug($sql,null,"fkey");
-        if(!$this->db->sql_query($sql))
-            print_debug($sql,null,"tabella");
-
-        return $this->db->sql_fetchfield($campo);
-    }*/
-}//end class
+}

@@ -38,6 +38,10 @@ class Tabella
     public $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
     public $display_number=-1;
 
+    public $function_param;
+    public $FileTitle;
+    public $order_fld;
+
     public function __construct($config_file, $mode = "standard")
     {
     // ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
@@ -93,7 +97,6 @@ class Tabella
         }
         $this->function_param=(!empty($data["fun_prm"]))?explode("#", $data["fun_prm"]):array();
         $this->num_col=$ncol;
-        $this->colspan=$tmp_nrow;
         $this->elenco_campi=implode(",", $campi);
         $this->tab_config=$row;
         $this->config_file=$config_file;
@@ -302,10 +305,5 @@ class Tabella
         if (isset($this->db)) {
             unset($this->db);
         }
-    }
-    
-    public function set_tag($mytag)
-    {
-        $this->tag=$mytag;
     }
 }
