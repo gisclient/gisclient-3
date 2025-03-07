@@ -229,14 +229,7 @@ class GWGCMap
         // (PER ORA AGGIUNGO I LAYER DEL REDLINE) (TODO FRANCESCO)
         //SOVRASCRIVO GLI ATTRIBUTI DI mapConfig E AGGIUNGO I LAYER DEL CONTEXT
         //LASCEREI IL DOPPIO PASSAGGIO JSONENCODE JSONDECODE PER IL CONTROLLO DEGLI ERRORI ..... DA VEDERE
-        
-        if (!empty($_REQUEST['context'])) {
-            $userContext = $this->_getUserContext($_REQUEST['context']);
-            if (!empty($userContext) && !empty($userContext['layers'])) {
-                $mapConfig["context_layers"] = $userContext['layers'];
-            }
-        }
-        
+
         // background diverso da bianco/trasparente
         if (!empty($row['bg_color']) && $row['bg_color'] != '255 255 255') {
             $mapConfig['bg_color'] = $row['bg_color'];
