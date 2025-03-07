@@ -5,8 +5,6 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
-use Rector\Php70\Rector\ClassMethod\Php4ConstructorRector;
-use Rector\Php70\Rector\FuncCall\EregToPregMatchRector;
 use Rector\Php70\Rector\FuncCall\RandomFunctionRector;
 use Rector\Php70\Rector\Ternary\TernaryToNullCoalescingRector;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
@@ -40,7 +38,6 @@ return RectorConfig::configure()
         AddClosureVoidReturnTypeWhereNoReturnRector::class,
         ArrayKeyFirstLastRector::class,
         ClosureToArrowFunctionRector::class,
-        EregToPregMatchRector::class,
         ListToArrayDestructRector::class,
         RandomFunctionRector::class,
         RemoveExtraParametersRector::class,

@@ -542,7 +542,7 @@ class Tabella_v extends Tabella
             }
             $filtro=@implode(' AND ', $arrfiltro);
         } elseif (trim($filtro)) {
-            if (!ereg("=", $filtro)) {
+            if (!preg_match("#=#m", $filtro)) {
                 if ($this->array_dati[$this->curr_record][$filtro]) {
                     $value=$this->array_dati[$this->curr_record][$filtro];
                     $filtro="$filtro = '$value'";
@@ -622,7 +622,7 @@ class Tabella_v extends Tabella
             if ($dh = opendir($dir)) {
                 while (($file = readdir($dh)) !== false) {
                     if ($ext) {
-                        if (ereg("\.$ext", strtolower($file))) {
+                        if (preg_match("\.$ext", strtolower($file))) {
                             $elenco[]="<option value=\"$file\">".$file."</option>";
                         }
                     } else {

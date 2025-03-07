@@ -270,7 +270,7 @@ class Tabella
     {
     //formatta la data in giorno-mese-anno
         if ($stringa_data) {
-            $ar= split('[/.-]', $stringa_data);
+            $ar= preg_split('#[\/\.\-]#m', $stringa_data);
             $stringa_data=$ar[0]."-".$ar[1]."-".$ar[2];
         }
         return $stringa_data;
