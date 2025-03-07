@@ -375,7 +375,7 @@ class saveData
                         $_cnt=0;
                         foreach ($this->pkeys as $key => $value) {
                             $flt[]="$key = ".':ph'.$_cnt;
-                            $sqlparams['ph'.$_cnt] = $value?$value:$this->data[$key];
+                            $sqlparams['ph'.$_cnt] = $value ?: $this->data[$key];
                             $_cnt++;
                         }
                         $filter=implode(" AND ", $flt);

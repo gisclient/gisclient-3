@@ -159,7 +159,7 @@ class gcMapfile
         }
 
         //SCALA MASSIMA DEL PROGETTO
-        $projectMaxScale = floatval($aLayer["max_extent_scale"])?floatval($aLayer["max_extent_scale"]):100000000;
+        $projectMaxScale = floatval($aLayer["max_extent_scale"]) ?: 100000000;
         $projectExtent = $this->_calculateExtentFromCenter($projectMaxScale, $this->projectSrid);
         $this->projectMaxScale = $projectMaxScale;
 
@@ -841,9 +841,9 @@ END";
             if (trim($row['imagelabel_font']) != '') {
                 $legendFont = $row['imagelabel_font'];
             }
-            $iconW = $row['icon_w']?$row['icon_w']:20;
-            $iconH = $row['icon_h']?$row['icon_h']:10;
-            $fontSize = $row['legend_font_size']?$row['legend_font_size']:10;
+            $iconW = $row['icon_w'] ?: 20;
+            $iconH = $row['icon_h'] ?: 10;
+            $fontSize = $row['legend_font_size'] ?: 10;
         }
         
         // mapfile snippet

@@ -256,7 +256,7 @@ class Tabella_v extends Tabella
             case "upload":
                 $size=explode("#", $w);
                 $width=($size[0])?("size=\"$size[0]\""):("");
-                $maxsize=($size[1])?($size[1]):("500");
+                $maxsize=$size[1] ?: "500";
                 $retval="<input $class type=\"file\" $width name=\"$campo\" id=\"upl_$campo\" value=\"\">$help <a target=\"_blank\" href=\"$dato\">$dato</a>";
                 break;
             case "checklist":

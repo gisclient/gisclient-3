@@ -161,7 +161,7 @@ switch ($_REQUEST['action']) {
     case 'upload-doc':
         checkMissingParameters($ajax, $_REQUEST, array('parent_id'));
 
-        $parent_id = $_REQUEST['parent_id']? $_REQUEST['parent_id'] : null;
+        $parent_id = $_REQUEST['parent_id'] ?: null;
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
         $name = $_REQUEST['filename'];
 
@@ -344,7 +344,7 @@ switch ($_REQUEST['action']) {
     case 'create-virtual-folder':
         checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'folder_name', 'parent_id'));
         $folder_name = trim($_REQUEST['folder_name']);
-        $parent_id = $_REQUEST['parent_id']? $_REQUEST['parent_id'] : null;
+        $parent_id = $_REQUEST['parent_id'] ?: null;
 
         $sql = "INSERT INTO " . DB_SCHEMA . ".document (doc_parent_id, doc_name, doc_type) VALUES(?, ?, 'folder') RETURNING doc_id";
 

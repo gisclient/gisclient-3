@@ -78,7 +78,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
     if ($qt) {
         $name=str_replace("--Name:", "", $rows[2]);
     }
-    $newName=($newName)?($newName):($name);
+    $newName=$newName ?: $name;
     $arrSubst=array("@PARENTID@"=>"'".$parentId."'","@PARENTKEY@"=>$parentkey,"@PROJECTNAME@"=>$parentName,"@DB_SCHEMA@"=>DB_SCHEMA,"@OBJECTNAME@"=>$newName,"\\n"=>"\n");
 
     if (!file_exists($fName)) {

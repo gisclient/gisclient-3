@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
-use Rector\Php52\Rector\Property\VarToPublicPropertyRector;
-use Rector\Php53\Rector\Ternary\TernaryToElvisRector;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
 use Rector\Php56\Rector\FuncCall\PowToExpRector;
 use Rector\Php70\Rector\ClassMethod\Php4ConstructorRector;
@@ -52,7 +50,6 @@ return RectorConfig::configure()
         ReplaceEachAssignmentWithKeyCurrentRector::class,
         SensitiveConstantNameRector::class,
         StringifyStrNeedlesRector::class,
-        TernaryToElvisRector::class,
         TernaryToNullCoalescingRector::class,
     ])
     ->withCache(

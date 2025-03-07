@@ -39,11 +39,11 @@ if (!$save->hasErrors && $save->action=="salva") {
                 $lGroup[$i]["name"]=$lGrp["Name"];
                 $lGroup[$i]["title"]=$lGrp["Title"];
                 $lGroup[$i]["abstract"]=$lGrp["Abstract"];
-                $epsg=($lGrp["SRS"] && is_array($lGrp["SRS"]))?($lGrp["SRS"][0]):(($lGrp["SRS"])?($lGrp["SRS"]):($lThemeSRS[0]));
+                $epsg=($lGrp["SRS"] && is_array($lGrp["SRS"]))?($lGrp["SRS"][0]):($lGrp["SRS"] ?: $lThemeSRS[0]);
                 $lGroup[$i]["srs"]=$epsg;
                 $epsg=(preg_match("|(.+):([0-9]+)|", $epsg, $out))?($out[2]):(-1);
-                $lGroup[$i]["minscale"]=($lGrp["ScaleHint"]["@attributes"]["min"][0])?($lGrp["ScaleHint"]["@attributes"]["min"][0]):("null");
-                $lGroup[$i]["maxscale"]=($lGrp["ScaleHint"]["@attributes"]["max"][0])?($lGrp["ScaleHint"]["@attributes"]["max"][0]):("null");
+                $lGroup[$i]["minscale"]=$lGrp["ScaleHint"]["@attributes"]["min"][0] ?: "null";
+                $lGroup[$i]["maxscale"]=$lGrp["ScaleHint"]["@attributes"]["max"][0] ?: "null";
                 if ($lGrp["Style"]) {
                     if ($lGrp["Style"]["Name"] && $lGrp["Style"]["Title"]) {
                         $lGroup[$i]["layer"][0]=array("name"=>$lGrp["Style"]["Name"],"title"=>$lGrp["Style"]["Title"]);

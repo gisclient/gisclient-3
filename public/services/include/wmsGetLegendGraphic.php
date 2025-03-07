@@ -40,7 +40,7 @@ if ($objRequest->getvaluebyname('layer')) {
     $iconsArray = array();
     $iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:250;
     $iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:24;
-    $totWidth = $objRequest->getvaluebyname('width')?$objRequest->getvaluebyname('width'):250;
+    $totWidth = $objRequest->getvaluebyname('width') ?: 250;
 
 
     $legend=false;
