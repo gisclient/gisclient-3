@@ -49,7 +49,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
 			VALUES(:styleId, :classId, :styleName, :color,'0 0 0',1)";
         $sqlParams = array('styleId' => $styleId,
             'classId' => $classId,
-            'styleName' => $style[style_name],
+            'styleName' => $style["style_name"],
             'color' => $color);
         try {
             $stmt = $_db->prepare($sql);

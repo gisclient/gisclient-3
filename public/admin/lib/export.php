@@ -45,7 +45,7 @@ function _getFieldValue($table, $fld, $pk, $pkVal)
     $filters = array();
     
     for ($i=0; $i<count($pk); $i++) {
-        array_push($filters, $pk[$i].' = :'.$pk[i]);
+        array_push($filters, $pk[$i].' = :'.$pk[$i]);
         $params[$pk[$i]] = $pkVal[$i];
     }
     $sql="SELECT $fld FROM ".DB_SCHEMA.".$table WHERE ".implode(' AND ', $filters);
