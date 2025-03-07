@@ -33,9 +33,9 @@ class Tabella_v extends Tabella
         $yselected = '';
         $nselected = '';
         $wpx = '';
-        $dati=(isset($this->array_dati[$this->curr_record]))?$this->array_dati[$this->curr_record]:array();
-        $err=(isset($this->errors[$campo]))?$this->errors[$campo]:null;
-        $dato=(isset($dati[$campo]))?$dati[$campo]:null;
+        $dati=$this->array_dati[$this->curr_record] ?? array();
+        $err=$this->errors[$campo] ?? null;
+        $dato=$dati[$campo] ?? null;
         if (isset($err)) {
             $class="class=\"errors\"";
             $help="<image src=\"images/small_help.gif\" onclick=\"alert('$err')\" />";
@@ -141,7 +141,7 @@ class Tabella_v extends Tabella
                 if (empty($filter)) {
                     $filter="";
                 }
-                $opzioni=$this->elenco_selectdb($size[1], (isset($dati[$campo]))?$dati[$campo]:null, $filter);
+                $opzioni=$this->elenco_selectdb($size[1], $dati[$campo] ?? null, $filter);
                 $class=($err)?($class):("class=\"textbox\"");
                 if (isset($size[3])) {
                     $onChange=(preg_match("|([\w]+)[(](.+)[)]|i", $size[3]))?("onChange=\"javascript:".$size[3]."\""):("onChange=javascript:\"".$size[3]."()\"");
@@ -173,7 +173,7 @@ class Tabella_v extends Tabella
                 if (isset($dati[$campo])) {
                     $testo=stripslashes($this->get_chiave_esterna($dati[$campo], $campo, $size[1], $size[2]));
                 }
-                $val=isset($dati[$campo])?$dati[$campo]:"";
+                $val=$dati[$campo] ?? "";
                 //$retval="<INPUT $class maxLength=\"$size[0]\" size=\"$size[0]\"  class=\"textbox\" name=\"fk_$campo\" id=\"fk_".$campo."\" value=\"$dati[$campo]\" disabled><input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$dati[$campo]\">$help";
                 $retval="<INPUT $class maxLength=\"$size[0]\" size=\"$size[0]\"  class=\"textbox\" name=\"fk_$campo\" id=\"fk_".$campo."\" value=\"$testo\" disabled>";
                 $retval.="<input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$val\">$help";
@@ -274,7 +274,7 @@ class Tabella_v extends Tabella
     {
     //restituisce il dato come stringa
         $retval = '';
-        $dati=isset($this->array_dati[$this->curr_record])?$this->array_dati[$this->curr_record]:array();
+        $dati=$this->array_dati[$this->curr_record] ?? array();
         switch ($tipo) {
             case "idriga":
                 $retval="";

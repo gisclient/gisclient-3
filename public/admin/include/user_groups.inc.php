@@ -10,7 +10,7 @@ if (!isset($data) || !is_array($data)) {
     $data = array();
 }
 
-    $username = isset($this->parametri["users"])?$this->parametri["users"]:null;
+    $username = $this->parametri["users"] ?? null;
 if (!empty($username)) {
     $sql = '
             SELECT groupname FROM '.DB_SCHEMA.'.user_group

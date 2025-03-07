@@ -188,7 +188,7 @@ class page
                 unset($this->tableList);
             
         for ($i=0; $i<count($res); $i++) {
-            $res[$i]["parent_level"]=isset($livelli[$res[$i]["parent_level"]])?$livelli[$res[$i]["parent_level"]]:null;
+            $res[$i]["parent_level"]=$livelli[$res[$i]["parent_level"]] ?? null;
             $this->tableList[]=$res[$i];
         }
     }
@@ -456,7 +456,7 @@ class page
                 //$tb->set_titolo($tab["title"],$butt,$prm,20);
                 $tb->set_titolo($tb->FileTitle, $butt, $prm, 20);
                 $tb->tag=$tab["level"];
-                $tb->set_dati($filter, (isset($tab["order_by"]))?$tab["order_by"]:null);
+                $tb->set_dati($filter, $tab["order_by"] ?? null);
                 $tb->get_titolo();
                 $tb->elenco();
                 break;
@@ -489,7 +489,7 @@ class page
                 }
                 $tb->set_titolo($tb->FileTitle, "modifica", $prm);
                 $tb->tag=$tab["level"];
-                $tb->set_dati($filter, isset($tab["order_by"])?$tab["order_by"]:null);
+                $tb->set_dati($filter, $tab["order_by"] ?? null);
                 $tb->get_titolo();
                 $tb->elenco();
                 break;
@@ -620,7 +620,7 @@ class page
                 if (trim($tab["form_destination"])) {
                     $frm=trim($tab["form_destination"]);
                 }
-                $tb->set_dati(isset($data[0])?$data[0]:null);
+                $tb->set_dati($data[0] ?? null);
                 $prm["livello"]=$tab["level"];
                 for ($j=0; $j<count($tb->pkeys); $j++) {
                     $tb->pkeys_value[$j]=isset($tb->pkeys[$j])?$this->_get_pkey_value($tb->pkeys[$j]):null;
@@ -788,7 +788,7 @@ class page
                         $tb->set_dati($filter);
                     } else {
                         include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
-                        $tb->set_dati(isset($data[0])?$data[0]:null);
+                        $tb->set_dati($data[0] ?? null);
                     }
                 }
                 $tb->set_titolo($tb->FileTitle, "", $prm);
@@ -934,7 +934,7 @@ class page
                 include_once $includeFile;
                     
                 for ($j=0; $j<count($tb->pkeys); $j++) {
-                    $prm["pkey[$j]"]=isset($tb->pkeys[$j])?$tb->pkeys[$j]:null;
+                    $prm["pkey[$j]"]=$tb->pkeys[$j] ?? null;
                     $prm["pkey_value[$j]"]=isset($tb->pkeys[$j])?$this->_get_pkey_value($tb->pkeys[$j]):null;
                 }
                 $filter=$tab["parent_name"]."_id = ".$this->db->quote($el["value"]);

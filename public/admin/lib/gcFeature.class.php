@@ -166,8 +166,8 @@ class gcFeature
         } else {
             $aFeature["filePath"] = trim($aFeature["base_path"]) . trim($aFeature["catalog_path"]);
         }
-        $aFeature["relation"] = (isset($qRelation)) ? $qRelation : null;
-        $aFeature["fields"] = (isset($qField)) ? $qField : null;
+        $aFeature["relation"] = $qRelation ?? null;
+        $aFeature["fields"] = $qField ?? null;
         $aFeature["link"] = (isset($qLink)) ? array_values($qLink) : array();
         $aFeature["tileindex"] = false;
 

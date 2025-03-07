@@ -31,7 +31,7 @@ switch ($file_config) {
         $titolo="Parametri di Mappa del Servizio WFS";
         break;
 }
-$data=(isset($_REQUEST["wmsInfo"]))?$_REQUEST["wmsInfo"]:array();
+$data=$_REQUEST["wmsInfo"] ?? array();
 $key=array_keys($data);
 $tb=new Tabella_v($file_config.".tab", "standard");
 $dataStr=explode(",", $tb->elenco_campi);

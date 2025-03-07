@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
-use Rector\Php70\Rector\Ternary\TernaryToNullCoalescingRector;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php71\Rector\List_\ListToArrayDestructRector;
 use Rector\Php72\Rector\Assign\ReplaceEachAssignmentWithKeyCurrentRector;
@@ -42,7 +41,6 @@ return RectorConfig::configure()
         ReplaceEachAssignmentWithKeyCurrentRector::class,
         SensitiveConstantNameRector::class,
         StringifyStrNeedlesRector::class,
-        TernaryToNullCoalescingRector::class,
     ])
     ->withCache(
         __DIR__ . '/var/cache/rector',

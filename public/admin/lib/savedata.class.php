@@ -61,7 +61,7 @@ class saveData
             $this->hasErrors=true;
             return;
         } else {
-            $this->_getConfig($this->conf_dir.$config_file, $arr_dati["pkey"], (isset($arr_dati["pkey_value"]))?$arr_dati["pkey_value"]:null);
+            $this->_getConfig($this->conf_dir.$config_file, $arr_dati["pkey"], $arr_dati["pkey_value"] ?? null);
             $this->newId=(isset($arr_dati["dataction"]))?$arr_dati["dataction"]["new"]:null;
             $this->oldId=(isset($arr_dati["dataction"]))?$arr_dati["dataction"]["old"]:null;
             $this->parent_flds=((count($arr_dati["parametri"])-2)<0)?(array()):($arr_dati["parametri"][count($arr_dati["parametri"])-2]);
@@ -74,7 +74,7 @@ class saveData
                     if ($arr_dati["dati"]) {
                         $cont=0;
                         foreach ($arr_dati["dati"] as $val) {
-                            $this->data[$cont][$fld]=(isset($val[$fld]))?$val[$fld]:null;
+                            $this->data[$cont][$fld]=$val[$fld] ?? null;
                             $cont++;
                         }
                     }
@@ -734,7 +734,7 @@ class saveData
                     $val=($campo=="symbol_ttf_name")?("$val"):($val);
                     break;
                 case "check1":
-                    $val=(isset($this->data[$curr_rec][$campo]))?($this->data[$curr_rec][$campo]):(0);
+                    $val=$this->data[$curr_rec][$campo] ?? 0;
                     break;
             }
             if (($tipo!="button") && ($tipo!="submit") && $present) {

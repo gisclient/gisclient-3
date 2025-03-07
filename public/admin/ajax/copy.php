@@ -170,7 +170,7 @@ class GCLevels
             self::$levels[$row['id']] = $row['name'];
         }
         foreach ($rows as $row) {
-            self::$levelsParent[$row['name']] = isset(self::$levels[$row['parent_id']]) ? self::$levels[$row['parent_id']] : null;
+            self::$levelsParent[$row['name']] = self::$levels[$row['parent_id']] ?? null;
         }
         foreach ($rows as $row) {
             self::$levelsChildren[$row['name']] = array_keys(self::$levelsParent, $row['name']);

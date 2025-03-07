@@ -159,8 +159,8 @@ class PgQuery
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $layerId=$row["layer_id"];
             $allTemplates[$layerId]=$row;
-            $allTemplates[$layerId]["field"]= (isset($qField[$layerId]))?$qField[$layerId]:null;
-            $allTemplates[$layerId]["relation"]= (isset($qRelation[$layerId]))?$qRelation[$layerId]:null;
+            $allTemplates[$layerId]["field"]= $qField[$layerId] ?? null;
+            $allTemplates[$layerId]["relation"]= $qRelation[$layerId] ?? null;
             $allTemplates[$layerId]["link"]=(isset($qLink[$layerId]))?array_values($qLink[$layerId]):array();
         }
 

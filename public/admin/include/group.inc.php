@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../../bootstrap.php';
 
 $db = \GCApp::getDB();
 
-    $groupname = (isset($this->parametri["groups"]))?$this->parametri["groups"]:array();
+    $groupname = $this->parametri["groups"] ?? array();
     
 if (!empty($groupname)) {
     if (!isset($data) || !is_array($data)) {

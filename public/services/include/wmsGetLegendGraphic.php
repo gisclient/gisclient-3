@@ -38,8 +38,8 @@ if ($objRequest->getvaluebyname('layer')) {
     $ruleClassName=false;
 
     $iconsArray = array();
-    $iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:250;
-    $iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:24;
+    $iconW=$_REQUEST["ICONW"] ?? 250;
+    $iconH=$_REQUEST["ICONH"] ?? 24;
     $totWidth = $objRequest->getvaluebyname('width') ?: 250;
 
 

@@ -969,7 +969,7 @@ if (!class_exists('Spyc')) {
             }
 
             $key = key($incoming_data);
-            $value = isset($incoming_data[$key]) ? $incoming_data[$key] : null;
+            $value = $incoming_data[$key] ?? null;
             if ($key === '__!YAMLZero') {
                 $key = '0';
             }

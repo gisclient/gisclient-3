@@ -57,7 +57,7 @@ class ParseXml
             $host = $p['host'];
             $pos = $p['path'];
             $pos .= isset($p['query']) ? sprintf("?%s", $p['query']) : '';
-            $port = isset($p['port'])?$p['port']:80;
+            $port = $p['port'] ?? 80;
             $this->xmlStr = $this->Async_file_get_contents($host, $pos, $port, $timeout);
             //if(!$this->xmlStr) return false;
         } else {

@@ -220,7 +220,7 @@ class GCApp
         }
         print_debug($sql, null, "gcapp.class");
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return isset($row['new_pkey'])?$row['new_pkey']:null;
+        return $row['new_pkey'] ?? null;
     }
         
     
