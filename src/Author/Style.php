@@ -58,11 +58,6 @@ class Style
         return $this->get('outlinecolor');
     }
 
-    public function getPattern()
-    {
-        return new Pattern($this->get('pattern_id'));
-    }
-
     public function getSize()
     {
         return $this->get('size');
