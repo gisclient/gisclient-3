@@ -6,20 +6,20 @@ require_once ADMIN_PATH."lib/functions.php";
 class saveData
 {
     private $db=null;
-    var $data=array();          //Array dei dati da salvare
-    var $fields=array();        //Array dei campi e definizione dei loro tipi
+    public $data=array();          //Array dei dati da salvare
+    public $fields=array();        //Array dei campi e definizione dei loro tipi
     public $parent_flds=array();
-    var $oldId;
-    var $newId;
-    var $table;                 //Nome della tabella
-    var $schema;                //Nome della schema
-    var $pkeys=array();         //Array delle chiavi primarie e loro valori
-    var $mode;                  //Modalita di salvataggio
-    var $action;                //Tipo di azione da eseguire
-    var $array_action=array("salva","aggiungi","elimina","cancella","copia","sposta");  //Elenco delle azioni possibili
-    var $hasErrors;
-    var $delete = 0;
-    var $conf_dir;              //
+    public $oldId;
+    public $newId;
+    public $table;                 //Nome della tabella
+    public $schema;                //Nome della schema
+    public $pkeys=array();         //Array delle chiavi primarie e loro valori
+    public $mode;                  //Modalita di salvataggio
+    public $action;                //Tipo di azione da eseguire
+    public $array_action=array("salva","aggiungi","elimina","cancella","copia","sposta");  //Elenco delle azioni possibili
+    public $hasErrors;
+    public $delete = 0;
+    public $conf_dir;              //
     public $error;
     private $refreshMapfiles = false;
 

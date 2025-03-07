@@ -19,7 +19,6 @@ use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\Php73\Rector\FuncCall\ArrayKeyFirstLastRector;
 use Rector\Php73\Rector\FuncCall\StringifyStrNeedlesRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
-use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
 
 return RectorConfig::configure()
@@ -55,7 +54,6 @@ return RectorConfig::configure()
         StringifyStrNeedlesRector::class,
         TernaryToElvisRector::class,
         TernaryToNullCoalescingRector::class,
-        VarToPublicPropertyRector::class,
     ])
     ->withCache(
         __DIR__ . '/var/cache/rector',

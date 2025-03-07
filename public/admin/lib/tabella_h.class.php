@@ -4,13 +4,13 @@ include_once ADMIN_PATH."lib/tabella.class.php";
 class Tabella_h extends Tabella
 {
 
-    var $def_col;//definizione delle colonne
-    var $colore_colonne="#E7EFFF";//"#CCCCCC";
-    var $color_title="#728bb8";
-    var $color_head_font="#415578";
-    var $color_title_font="#FFFFFF";
-    var $info_target;//pagina di destinazione per il link info
-    var $img_punto; //nome del gif da usare come punto elenco della tabella
+    public $def_col;//definizione delle colonne
+    public $colore_colonne="#E7EFFF";//"#CCCCCC";
+    public $color_title="#728bb8";
+    public $color_head_font="#415578";
+    public $color_title_font="#FFFFFF";
+    public $info_target;//pagina di destinazione per il link info
+    public $img_punto; //nome del gif da usare come punto elenco della tabella
 
 
     function set_target($target)

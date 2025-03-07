@@ -22,19 +22,19 @@ class page
              */
             private $authHandler;
         
-    var $parametri; // Elenco dei parametri
-    var $tableList; // Elenco delle tabelle da disegnare
-    var $arr_mode=array("view"=>0,"edit"=>1,"new"=>2,"list"=>3);
-    var $mode;
-    var $livello;
-    var $array_levels=array();
-    var $db;    // Connessione ad DB postegres
-    var $tb;            // Oggetto Tabella
-    var $save;          //Oggetto SaveData
-    var $errors;
-    var $notice;
-    var $pageKeys;
-    var $action;
+    public $parametri; // Elenco dei parametri
+    public $tableList; // Elenco delle tabelle da disegnare
+    public $arr_mode=array("view"=>0,"edit"=>1,"new"=>2,"list"=>3);
+    public $mode;
+    public $livello;
+    public $array_levels=array();
+    public $db;    // Connessione ad DB postegres
+    public $tb;            // Oggetto Tabella
+    public $save;          //Oggetto SaveData
+    public $errors;
+    public $notice;
+    public $pageKeys;
+    public $action;
     private $primary_keys;
     private $navTreeValues;
         

@@ -15,12 +15,12 @@
  */
 class ParseXml
 {
-    var $xmlStr;
-    var $xmlFile;
-    var $obj;
-    var $aArray;
-    var $timeOut;
-    var $charsetOutput = CHAR_SET;
+    public $xmlStr;
+    public $xmlFile;
+    public $obj;
+    public $aArray;
+    public $timeOut;
+    public $charsetOutput = CHAR_SET;
     
     function ParseXml()
     {

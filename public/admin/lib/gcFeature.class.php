@@ -36,18 +36,18 @@
 class gcFeature
 {
 
-    var $msFeatureType = array();
-    var $aggregateFunction = array(101 => 'sum', 102 => 'avg', 103 => 'min', 104 => 'max', 105 => 'count', 106 => 'variance', 107 => 'stddev');
-    var $resultHeaders = array();
-    var $owsUrl;
-    var $labels = false;
-    var $aSymbols;
-    var $db;
-    var $srsList;
-    var $srsParams;
-    var $dataTypes;
-    var $msVersion;
-    var $forcePrivate = false;
+    public $msFeatureType = array();
+    public $aggregateFunction = array(101 => 'sum', 102 => 'avg', 103 => 'min', 104 => 'max', 105 => 'count', 106 => 'variance', 107 => 'stddev');
+    public $resultHeaders = array();
+    public $owsUrl;
+    public $labels = false;
+    public $aSymbols;
+    public $db;
+    public $srsList;
+    public $srsParams;
+    public $dataTypes;
+    public $msVersion;
+    public $forcePrivate = false;
     private $i18n;
     
     /**

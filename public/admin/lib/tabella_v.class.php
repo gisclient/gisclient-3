@@ -4,11 +4,11 @@ include_once ADMIN_PATH."lib/tabella.class.php";
 class Tabella_v extends Tabella
 {
 
-    var $errors;
-    var $error_flag=0;
+    public $errors;
+    public $error_flag=0;
 //var $rigagrigia="\t<tr>\n\t\t<td><img src=\"images/gray_light.gif\" height=\"1\" width=\"100%\"></td>\n\t</tr>\n";
-    var $rigagrigia="";
-    var $tabella_elenco;//tabella dove prendo le opzioni per il tipo elenco
+    public $rigagrigia="";
+    public $tabella_elenco;//tabella dove prendo le opzioni per il tipo elenco
 
     function set_tabella_elenco($nome_tabella)
     {
