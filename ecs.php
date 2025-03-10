@@ -29,9 +29,6 @@ return ECSConfig::configure()
     ->withCache(
         __DIR__ . '/var/cache/ecs'
     )
-    ->withSkip([
-        \PhpCsFixer\Fixer\FunctionNotation\FunctionDeclarationFixer::class,
-    ])
 
     // add sets - group of rules
    // ->withPreparedSets(

@@ -80,7 +80,7 @@ foreach ($data as $expConf) {
     }
 
     //Create view
-    $fieldsNames = array_map(fn($element) => $element['field_name'], $fields);
+    $fieldsNames = array_map(fn ($element) => $element['field_name'], $fields);
     array_push($fieldsNames, $layer->getGeomColumn());
     $viewName = 'export_' . $layer->getTable() . '_' . $gcService->getSession()->getId() . '_' . random_int(0, 999999);
     $sql = "CREATE VIEW public.{$viewName} AS "
