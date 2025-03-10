@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Handle user definable user font
  *

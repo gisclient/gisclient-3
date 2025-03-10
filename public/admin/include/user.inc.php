@@ -1,4 +1,5 @@
 <?php
+
 use GisClient\Author\Security\User\UserProvider;
 
 require_once __DIR__ . '/../../../bootstrap.php';

@@ -11,7 +11,6 @@ use GisClient\MapServer\MsMapObjFactory;
 
 class GCApp
 {
-
     /**
      * User provider
      *
@@ -190,7 +189,6 @@ class GCApp
 
     public static function prepareInStatement($values)
     {
-
         $i = 0;
         $params = [];
         $inArr = [];
@@ -208,7 +206,6 @@ class GCApp
     
     public static function getNewPKey($dbschema, $schema, $table, $pkey, $start = null)
     {
-
         $db = GCApp::getDB();
         try {
             if (is_null($start)) {
@@ -325,7 +322,6 @@ class GCApp
     //TODO: trovare dove viene usata e sostituirla con questa
     public static function nameReplace($name)
     {
-
         $search = explode(",", " ,ç,æ,œ,á,é,í,ó,ú,à,è,ì,ò,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u,.");
         $replace = explode(",", "_,c,ae,oe,a,e,i,o,u,a,e,i,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u,_");
         if (strtoupper(CHAR_SET)=='UTF-8') {

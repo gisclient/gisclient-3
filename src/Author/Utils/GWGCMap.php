@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 *
 * Purpose: Inizializzazione dei parametri per la creazione della mappa
@@ -278,7 +279,6 @@ class GWGCMap
 
     private function getLayers()
     {
-
         // **** Retrieve Layer names/mapserver ID hash
         // Modifica Giraudi per usare l'id al posto del layer name
         $mapTmp = \ms_newMapObjFromString(
@@ -1387,7 +1387,6 @@ class GWGCMap
 
     private function getResolutions($minScale, $maxScale, $mapsetScales)
     {
-
         //Fattore di conversione tra dpi e unità della mappa
 
         $convFact = \GCAuthor::$aInchesPerUnit[$this->mapsetUM] * MAP_DPI;

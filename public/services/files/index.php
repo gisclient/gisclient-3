@@ -49,7 +49,6 @@ die();
  */
 function getMimeFromFileExt($ext)
 {
-
     $mimes = [
         'application/pdf' => 'pdf',
         'application/zip' => 'zip',
@@ -121,7 +120,6 @@ function getMimeFromFileExt($ext)
  */
 function deliverFile($fileName, $opt = [])
 {
-
     $defaultOpt = [
         'format' => '',
         'name' => '',

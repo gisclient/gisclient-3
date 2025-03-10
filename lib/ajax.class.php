@@ -26,7 +26,6 @@ class GCAjax
     
     public function error($error = 'System Error')
     {
-
         if (isset($_REQUEST["callback"])) {
             die($_REQUEST["callback"]."(".json_encode([
                 'result'=>'error',

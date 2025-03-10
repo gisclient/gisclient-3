@@ -26,7 +26,6 @@ class saveData
 
     function __construct($arr_dati)
     {
-
         $rel_dir = GCAuthor::getTabDir();
         $this->db = GCApp::getDB();
         $this->hasErrors = false;
@@ -564,7 +563,6 @@ class saveData
     {
         $dati = [];
         for ($i=0; $i<count($this->data); $i++) {
-            
             $dati[$i]=$this->_validaDati($i);
             $error=$this->error;
             $this->error=[];
@@ -659,7 +657,6 @@ class saveData
 
     private function _getConfig($file, $pk, $pk_val)
     {
-        
         $tmp=parse_ini_file($file, true);
         $array_config=$tmp["standard"];
         // ACQUISIZIONE DELLA TABELLA DEL DATABASE

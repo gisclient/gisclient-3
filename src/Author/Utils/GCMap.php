@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 *
 * Purpose: Inizializzazione dei parametri per la creazione della mappa

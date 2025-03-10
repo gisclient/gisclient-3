@@ -1,4 +1,5 @@
 <?php
+
 // FILE CHE PERMETTE DI RECUPERARE I GRUPPI ESISTENTI UN' ELENCO ESISTENTE (STANDARD GRUPPI PLONE)
 
 require_once __DIR__ . '/../../../bootstrap.php';

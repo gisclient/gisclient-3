@@ -27,7 +27,6 @@
  */
 class Excel_XML
 {
-
 /**
  * Header (of document)
  * @var string

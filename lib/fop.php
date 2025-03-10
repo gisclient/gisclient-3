@@ -6,7 +6,6 @@ class EFOPError extends Exception
     private $output = null;
     public function __construct($message, $output = '', $code = 0)
     {
-        
         parent::__construct($message, $code);
         $this->output = $output;
     }

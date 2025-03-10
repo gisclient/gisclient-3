@@ -1,4 +1,5 @@
 <?php
+
 include('config/config.php');
 
 $db = GCApp::getDB();

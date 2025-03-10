@@ -1,4 +1,5 @@
 <?php
+
 /**
    * Spyc -- A Simple PHP YAML Class
    * @version 0.6.2
@@ -47,7 +48,6 @@ if (!function_exists('spyc_dump')) {
 }
 
 if (!class_exists('Spyc')) {
-
 /**
    * The Simple PHP YAML Class.
    *
@@ -72,7 +72,6 @@ if (!class_exists('Spyc')) {
    */
     class Spyc
     {
-
       // SETTINGS
 
         const REMPTY = "\0\0\0\0\0";
@@ -971,7 +970,6 @@ if (!class_exists('Spyc')) {
 
         private function addArray($incoming_data, $incoming_indent)
         {
-
            // print_r ($incoming_data);
 
             if (count($incoming_data) > 1) {
@@ -1152,8 +1150,6 @@ if (!class_exists('Spyc')) {
 
         private function clearBiggerPathValues($indent)
         {
-
-
             if ($indent == 0) {
                 $this->path = [];
             }

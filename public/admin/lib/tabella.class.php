@@ -124,7 +124,6 @@ class Tabella
     
     public function get_titolo($self = null)
     {
-        
         if (is_null($self)) {
             $self=$_SERVER["PHP_SELF"];
         }
@@ -189,7 +188,6 @@ class Tabella
     // >>>>>>>>>>>>>>>>>>>>>>>>>ATTENZIONE OGNI TABELLA DEVE AVERE I CAMPI ID PRATICA E CHK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     public function set_dati($data = "", $order = "")
     {
-        
         //se passo un array questo è l'array di POST altrimenti è il filtro - per default filtra su idpratica se settato
         if (is_array($data)) {
             $this->array_dati=[
@@ -249,7 +247,6 @@ class Tabella
     }
     public function set_multiple_data($data)
     {
-        
         if (is_array($data)) {
             for ($i=0; $i<count($data); $i++) {
                 $this->array_dati[$i]=$data[$i];/*

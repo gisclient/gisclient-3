@@ -1,4 +1,5 @@
 <?php
+
 namespace GisClient\Author;
 
 class Catalog

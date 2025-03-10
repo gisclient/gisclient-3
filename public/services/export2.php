@@ -1,4 +1,5 @@
 <?php
+
 require_once '../../bootstrap.php';
 require_once ROOT_PATH.'lib/ajax.class.php';
 require_once ROOT_PATH.'lib/export.php';

@@ -1,4 +1,5 @@
 <?php
+
 //FUNZIONE CHE RESTITUISCE UN ARRAY CON TUTTI I FILE DELLA DIRECTORY
 function elenco_file($p, $ext = '', $fname = '')
 {

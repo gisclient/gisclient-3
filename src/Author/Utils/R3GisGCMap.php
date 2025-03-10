@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 *
 * Purpose: Inizializzazione dei parametri per la creazione della mappa
@@ -1165,7 +1166,6 @@ class R3GisGCMap
     //RESITUTISCO GIA LA MAPPA OL
     public function OLMap()
     {
-
         //CONFIGURAZIONE OPENLAYERS MAP
         $mapOptions = ['"allOverlays":false'];
         $mapOptions[] = '"tileSize":new OpenLayers.Size('.TILE_SIZE.','.TILE_SIZE.')';

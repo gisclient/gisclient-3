@@ -1,4 +1,5 @@
 <?php
+
 /*
 GisClient map browser
 
@@ -33,7 +34,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //SE SI MODIFICA RICORDARSI DI MODIFICARLA ANCHE NELLE FUNZIONI DI RICERCA SU DATABASE!!!!!!!!!!!
 class PgQuery
 {
-
     public $allQueryResults = [];
     public $allQueryExtent = [];
     public $mapToUpdate=0;

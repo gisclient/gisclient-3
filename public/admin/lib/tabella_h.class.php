@@ -1,9 +1,9 @@
 <?php
+
 include_once ADMIN_PATH."lib/tabella.class.php";
 
 class Tabella_h extends Tabella
 {
-
     public $def_col;//definizione delle colonne
     public $colore_colonne="#E7EFFF";//"#CCCCCC";
     public $color_title="#728bb8";

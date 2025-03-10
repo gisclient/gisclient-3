@@ -10,4 +10,3 @@ class AppTest extends TestCase {
         $this->assertTrue($connection instanceof PDO);
     }
 }
-

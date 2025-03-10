@@ -1,7 +1,6 @@
 <?php
 
 class HttpUtils {
-
     static public function post($url, $postParams, $cookieFile = NULL) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, 1);

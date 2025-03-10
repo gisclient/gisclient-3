@@ -1,4 +1,5 @@
 <?php
+
 /*
 GisClient map browser
 

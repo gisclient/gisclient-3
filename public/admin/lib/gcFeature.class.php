@@ -35,7 +35,6 @@
 
 class gcFeature
 {
-
     public $msFeatureType = [];
     public $aggregateFunction = [
         101 => 'sum',
@@ -532,7 +531,6 @@ class gcFeature
      */
     private function _getLayerData()
     {
-
         $aFeature = $this->aFeature;
         $datalayerTable = $aFeature["data"];
         $datalayerGeom = $aFeature["data_geom"];
@@ -729,7 +727,6 @@ class gcFeature
 
     private function _getClassText($aClass)
     {
-
         print_debug($aClass, null, 'classi');
         $clsText = [];
         $clsText[] = "\tNAME \"" . str_replace(" ", "_", $aClass["class_name"]) . "\"";
@@ -854,7 +851,6 @@ class gcFeature
 
     private function _getStyleText($aStyle)
     {
-
         $styText = [];
         if (!empty($aStyle["color"])) {
             $styText[] = "COLOR " . $aStyle["color"];

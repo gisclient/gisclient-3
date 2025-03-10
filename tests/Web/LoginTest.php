@@ -13,7 +13,6 @@ class LoginTest extends TestCase {
 	}
 	
     public function testLoginFailure() {
-		
 		if (file_exists($this->cookieJar)) {
 			unlink($this->cookieJar);
 		}
@@ -29,7 +28,6 @@ class LoginTest extends TestCase {
     }
 	
     public function testLogin() {
-		
 		if (file_exists($this->cookieJar)) {
 			unlink($this->cookieJar);
 		}
@@ -43,7 +41,4 @@ class LoginTest extends TestCase {
 		$this->assertEquals($loginResult[0], 200);
 		$this->assertTrue(strpos($loginResult[1], 'LogOut') !== false);
     }
-	
-	
 }
-

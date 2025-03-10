@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 *
 * Purpose: Inizializzazione dei parametri per la creazione della mappa
@@ -351,7 +352,6 @@ function html2rgb($color)
     //TODO ||||||||||||||||||||||||||!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function NameReplace($name)
 {
-
     $search = explode(",", " ,ç,æ,œ,á,é,í,ó,ú,à,è,ì,ò,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u,.");
     $replace = explode(",", "_,c,ae,oe,a,e,i,o,u,a,e,i,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u,_");
     if (strtoupper(CHAR_SET)=='UTF-8') {

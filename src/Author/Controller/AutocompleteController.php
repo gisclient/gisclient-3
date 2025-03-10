@@ -9,7 +9,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class AutocompleteController
 {
-
     /**
      * Autocomplete for fields in advanced search
      *

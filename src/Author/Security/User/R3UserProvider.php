@@ -2,7 +2,6 @@
 
 namespace GisClient\Author\Security\User;
 
-
 class R3UserProvider implements UserProviderInterface
 {
     /**

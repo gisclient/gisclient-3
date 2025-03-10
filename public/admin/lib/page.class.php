@@ -9,7 +9,6 @@
     
 class page
 {
-        
     const MODE_VIEW=0;
     const MODE_LIST=3;
     const MODE_EDIT=1;
@@ -313,7 +312,6 @@ class page
         
     function write_parameter()
     {
-            
         if (is_array($this->parametri) && count($this->parametri)) {
             $i=0;
             foreach ($this->parametri as $key => $val) {
@@ -325,7 +323,6 @@ class page
         
     function write_page_param($param)
     {
-            
         if (count($param)>0) {
             foreach ($param as $key => $value) {
                 if ($value) {
@@ -1029,7 +1026,6 @@ class page
     // Metodo che costruisce la pagina
     public function writePage(array $err = [])
     {
-
         //Stampa errori generici e messaggi se ci sono
         $this->writeMessage($err);
         if (!empty($this->tableList)) {

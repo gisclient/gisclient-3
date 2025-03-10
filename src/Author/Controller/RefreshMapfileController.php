@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RefreshMapfileController
 {
-
     /**
      * Refresh Mapfile
      */

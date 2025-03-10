@@ -65,7 +65,6 @@ class GCEditFeature
     
     public function __construct($project, $map, $featureType, $primaryKey)
     {
-    
         [, $layerName] = $this->splitFeatureType($featureType);
         
         $db = GCApp::getDB();
