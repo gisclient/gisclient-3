@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
  */
 class GCService
 {
-    const SESSION_KEY_PREFIX = 'GISCLIENT/';
+    public const SESSION_KEY_PREFIX = 'GISCLIENT/';
     
     /**
      * Session instance

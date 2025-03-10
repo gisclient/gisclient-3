@@ -10,18 +10,18 @@ class Tabella_v extends Tabella
     public $rigagrigia = "";
     public $tabella_elenco;//tabella dove prendo le opzioni per il tipo elenco
 
-    function set_tabella_elenco($nome_tabella)
+    public function set_tabella_elenco($nome_tabella)
     {
         $this->tabella_elenco = $nome_tabella;
     }
 
-    function set_errors($err)
+    public function set_errors($err)
     {
         $this->errors = $err;
         $this->error_flag = 1;
     }
 /*MODIFICA LOCK STATI AGGIUNTO PARAMETRO frozen*/
-    function get_controllo($label, $tipo, $w, $campo, $mode, $action = '', $frozen = 0)
+    public function get_controllo($label, $tipo, $w, $campo, $mode, $action = '', $frozen = 0)
     {
     //restituisce il controllo in funzione di tipo letto dal configfile e lo riempie con i dati il valore w può contenere più informazioni
         $retval = '';
@@ -270,7 +270,7 @@ class Tabella_v extends Tabella
         return $retval;
     }
 
-    function get_dato($tipo, $w, $campo)
+    public function get_dato($tipo, $w, $campo)
     {
     //restituisce il dato come stringa
         $retval = '';
@@ -369,11 +369,11 @@ class Tabella_v extends Tabella
         return $retval;
     }
 
-    function get_campo($campo)
+    public function get_campo($campo)
     {
         return $this->array_dati[$this->curr_record][$campo];
     }
-    function get_data($campo)
+    public function get_data($campo)
     {
         $data = $this->array_dati[$this->curr_record][$campo];
         return $this->date_format($data);
@@ -381,7 +381,7 @@ class Tabella_v extends Tabella
 
 //MODIFICA LOCK STATI AGGIUNTO PARAMETRO $frozen_cols ARRAY DI CAMPI CONGELATI
 //function get_riga_edit($nriga){
-    function get_riga_edit($nriga, $frozen_cols = [])
+    public function get_riga_edit($nriga, $frozen_cols = [])
     {
     //prendo una riga che può essere fatta da uno,  due o più colonne
     // restituisce la riga in modalità edit con label controllo associato
@@ -402,7 +402,7 @@ class Tabella_v extends Tabella
         return [$lbl, $ctr];
     }
 
-    function get_riga_view($nriga)
+    public function get_riga_view($nriga)
     {
     // restituisce la riga in modalità view
         $riga = $this->tab_config[$nriga];
@@ -422,7 +422,7 @@ class Tabella_v extends Tabella
         return $testo_riga;
     }
 
-    function edita($param = [])
+    public function edita($param = [])
     {
     //if($this->error_flag==1)
         //echo ("I campi evidenziati in rosso non sono validi");
@@ -454,7 +454,7 @@ class Tabella_v extends Tabella
         print $tabella;
     }
 
-    function tab($curr = 0)
+    public function tab($curr = 0)
     {
     //crea la tabella per l'elenco in consultazione
         $nrighe = $this->num_col;
@@ -478,7 +478,7 @@ class Tabella_v extends Tabella
         print $tabella;
     }
 
-    function elenco($form)
+    public function elenco($form)
     {
         if (!$form) {
             $form = $_SERVER["PHP_SELF"];
@@ -493,7 +493,7 @@ class Tabella_v extends Tabella
 
 //########################## ELENCHI ########################
 
-    function elenco_select($tabella, $sep, $selezionato)
+    public function elenco_select($tabella, $sep, $selezionato)
     {
     // dal file tab crea la lista di opzioni per il controllo SELECT
 
@@ -516,7 +516,7 @@ class Tabella_v extends Tabella
         return $retval;
     }
 
-    function elenco_selectdb($tabella, $selezionato, $filtro)
+    public function elenco_selectdb($tabella, $selezionato, $filtro)
     {
     // dalla tabella crea la lista di opzioni per il controllo SELECT
 
@@ -574,7 +574,7 @@ class Tabella_v extends Tabella
         return $retval;
     }
 
-    function elenco_selectfield($campo, $selezionato, $filtro)
+    public function elenco_selectfield($campo, $selezionato, $filtro)
     {
     // dalla tabella crea la lista di opzioni per il controllo SELECT
     //Utilizzata x ora solo sulla tabella per il calcolo degli oneri
@@ -612,7 +612,7 @@ class Tabella_v extends Tabella
         }
         return $retval;
     }
-    function elenco_file($dir, $ext = "")
+    public function elenco_file($dir, $ext = "")
     {
         if (is_dir($dir)) {
             $elenco[] = "<option value=\"\">Seleziona ====></option>";
@@ -634,7 +634,7 @@ class Tabella_v extends Tabella
         return @implode("\n\t\t\t", $elenco);
     }
 
-    function get_chiave_esterna($val, $fld, $tab, $campo)
+    public function get_chiave_esterna($val, $fld, $tab, $campo)
     {
         //echo "<p>$val -- $fld -- $tab -- $campo</p>";
 

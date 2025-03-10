@@ -6,11 +6,11 @@ use GisClient\Author\LayerLevelInterface;
 
 interface OfflineDataInterface
 {
-    const IS_TODO = 'to-do';
+    public const IS_TODO = 'to-do';
 
-    const IS_RUNNING = 'running';
+    public const IS_RUNNING = 'running';
 
-    const IS_STOPPED = 'stopped';
+    public const IS_STOPPED = 'stopped';
 
     /**
      * Return name of offline data format

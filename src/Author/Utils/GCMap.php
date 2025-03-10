@@ -38,8 +38,8 @@ define('GOOGLE_MAX_ZOOM_LEVEL', 21);
 
 class GCMap
 {
-    const SCALE_TYPE_USER = 0;
-    const SCALE_TYPE_POWEROF2 = 1;
+    public const SCALE_TYPE_USER = 0;
+    public const SCALE_TYPE_POWEROF2 = 1;
     public $db;
     
     /**

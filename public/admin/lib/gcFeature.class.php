@@ -64,13 +64,13 @@ class gcFeature
      */
     private $aFeature;
 
-    function __destruct()
+    public function __destruct()
     {
         unset($this->aFeature);
         unset($this->mapError);
     }
 
-    function __construct($i18n = null)
+    public function __construct($i18n = null)
     {
         $this->db = GCApp::getDB();
         $this->i18n = $i18n;

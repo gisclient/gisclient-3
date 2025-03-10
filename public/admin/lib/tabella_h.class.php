@@ -15,16 +15,16 @@ class Tabella_h extends Tabella
     public $tag;
 
 
-    function set_target($target)
+    public function set_target($target)
     {
         $this->info_target = $target;
     }
-    function set_punto($image)
+    public function set_punto($image)
     {
         $this->img_punto = $image;
     }
 
-    function set_color($intestazione, $font_intestazione, $titolo, $font_titolo)
+    public function set_color($intestazione, $font_intestazione, $titolo, $font_titolo)
     {
     // ************ da fare********************usare class?????
         //aggiungere stile
@@ -32,7 +32,7 @@ class Tabella_h extends Tabella
         $this->color_head_font = $font_intestazione;
     }
 
-    function get_cella($row, $col)
+    public function get_cella($row, $col)
     {
         $nome = $this->def_col[$col][1]; //nome del campo
         //$valore=htmlspecialchars($this->array_dati[$row][$nome], ENT_QUOTES,"ISO-8859-1");//valore del campo
@@ -293,7 +293,7 @@ class Tabella_h extends Tabella
     }
 
 
-    function elenco($message = null)
+    public function elenco($message = null)
     {
         if (empty($message)) {
             $message = GCAuthor::t('nodata');
@@ -341,7 +341,7 @@ class Tabella_h extends Tabella
         print $tabella;
     }
 
-    function elenco_h($t)
+    public function elenco_h($t)
     {
         $ncols = $this->num_record;
         $all = "center";
@@ -369,7 +369,7 @@ class Tabella_h extends Tabella
         print $tabella;
     }
 
-    function get_chiave_esterna($val, $fld, $tab, $campo)
+    public function get_chiave_esterna($val, $fld, $tab, $campo)
     {
         if ($val == -1) {
             return GCAuthor::t('undefined');

@@ -4,7 +4,7 @@ namespace GisClient\Author\Utils;
 
 class UrlChecker
 {
-    /*private*/ const ALLOWED_SCHEMES = [
+    private const ALLOWED_SCHEMES = [
         "http",
         "https",
     ];

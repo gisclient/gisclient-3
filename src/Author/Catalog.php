@@ -4,10 +4,10 @@ namespace GisClient\Author;
 
 class Catalog
 {
-    const LOCAL_FOLDER_CONNECTION = 1;
-    const POSTGIS_CONNECTION = 6;
-    const WMS_CONNECTION = 7;
-    const WFS_CONNECTION = 9;
+    public const LOCAL_FOLDER_CONNECTION = 1;
+    public const POSTGIS_CONNECTION = 6;
+    public const WMS_CONNECTION = 7;
+    public const WFS_CONNECTION = 9;
 
     private $db;
     private $data;

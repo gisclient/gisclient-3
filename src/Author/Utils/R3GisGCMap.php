@@ -45,8 +45,8 @@ if (!defined('SERVICE_MAX_ZOOM_LEVEL')) {
 
 class R3GisGCMap
 {
-    const SCALE_TYPE_USER = 0;
-    const SCALE_TYPE_POWEROF2 = 1;
+    public const SCALE_TYPE_USER = 0;
+    public const SCALE_TYPE_POWEROF2 = 1;
     public $db;
 
     private $baseUrl;

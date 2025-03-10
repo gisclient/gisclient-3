@@ -74,7 +74,7 @@ if (!class_exists('Spyc')) {
     {
       // SETTINGS
 
-        const REMPTY = "\0\0\0\0\0";
+        public const REMPTY = "\0\0\0\0\0";
 
       /**
        * Setting this to true will force YAMLDump to enclose any string value in
@@ -1112,7 +1112,7 @@ if (!class_exists('Spyc')) {
             return $literalBlock . $line;
         }
 
-        function revertLiteralPlaceHolder($lineArray, $literalBlock)
+        public function revertLiteralPlaceHolder($lineArray, $literalBlock)
         {
             foreach ($lineArray as $k => $_) {
                 if (is_array($_)) {

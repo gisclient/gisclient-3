@@ -1,7 +1,7 @@
 <?php
 
 class HttpUtils {
-    static public function post($url, $postParams, $cookieFile = NULL) {
+    public static function post($url, $postParams, $cookieFile = NULL) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postParams);
@@ -19,7 +19,7 @@ class HttpUtils {
         return [$httpStatus, $result];
     }
 
-    static public function get($url, $cookieFile = NULL) {
+    public static function get($url, $cookieFile = NULL) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -35,7 +35,7 @@ class HttpUtils {
         return [$httpStatus, $result];
     }
 
-    static public function put($url, $data, $cookieFile = NULL) {
+    public static function put($url, $data, $cookieFile = NULL) {
         $fh = fopen('php://memory', 'rw');
         fwrite($fh, $data);
         rewind($fh);

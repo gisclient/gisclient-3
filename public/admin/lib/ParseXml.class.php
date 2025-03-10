@@ -23,14 +23,14 @@ class ParseXml
     public $timeOut;
     public $charsetOutput = CHAR_SET;
     
-    function __construct()
+    public function __construct()
     {
     }
     
     /**
      * @param String xmlString xml string to parsing
      */
-    function LoadString($xmlString)
+    public function LoadString($xmlString)
     {
         $this->xmlStr = $xmlString;
     }
@@ -39,7 +39,7 @@ class ParseXml
      * @param String Path and file name which you want to parsing,
      *  Also, if �fopen wrappers�  is activated, you can fetch a remote document, but timeout not be supported.
      */
-    function LoadFile($file)
+    public function LoadFile($file)
     {
         $this->xmlFile = $file;
         $this->xmlStr = @file_get_contents($file);
@@ -50,7 +50,7 @@ class ParseXml
      * @param string $url URL of xml document.
      * @param int $timeout timeout  default:5s
      */
-    function LoadRemote($url, $timeout = 5)
+    public function LoadRemote($url, $timeout = 5)
     {
         $this->xmlFile = $url;
         $p = parse_url($url);
@@ -70,7 +70,7 @@ class ParseXml
      * @todo Set attributes.
      * @param array $set array('attribute_name'=>'value')
      */
-    function Set(array $set)
+    public function Set(array $set)
     {
         foreach ($set as $attribute => $value) {
             if ($attribute == 'charsetOutput') {
@@ -85,7 +85,7 @@ class ParseXml
      *  this member function must be useful.
      * @param string $string &#38656;&#36716;&#25442;&#30340;&#23383;&#31526;&#20018;
      */
-    function ConvertCharset($string)
+    public function ConvertCharset($string)
     {
         if ('UTF-8' != $this->charsetOutput) {
             if (function_exists("iconv")) {
@@ -102,7 +102,7 @@ class ParseXml
     /**
      * &#35299;&#26512;xml
      */
-    function Parse()
+    public function Parse()
     {
         $this->obj = simplexml_load_string($this->xmlStr);
     }
@@ -110,7 +110,7 @@ class ParseXml
     /**
      * @return Array Result of parsing.
      */
-    function ToArray()
+    public function ToArray()
     {
         if (empty($this->obj)) {
             $this->Parse();
@@ -123,7 +123,7 @@ class ParseXml
      * @param Object object Objects you want convert to array.
      * @return Array
      */
-    function Object2array($object)
+    public function Object2array($object)
     {
         $return = [];
         if (is_array($object)) {
@@ -150,7 +150,7 @@ class ParseXml
      * @param int $timeout Timeout  default:5s
      * @return string/false Data or FALSE when timeout.
      */
-    function Async_file_get_contents($site, $pos, $port = 80, $timeout = 5)
+    public function Async_file_get_contents($site, $pos, $port = 80, $timeout = 5)
     {
         $fp = fsockopen($site, $port, $errno, $errstr, 5);
         
@@ -176,7 +176,7 @@ class ParseXml
      * @todo Get xmlStr of current object.
      * @return string xmlStr
      */
-    function GetXmlStr()
+    public function GetXmlStr()
     {
         return $this->xmlStr;
     }

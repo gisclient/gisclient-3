@@ -24,7 +24,7 @@ class saveData
     private $refreshMapfiles = false;
     private $primary_keys;
 
-    function __construct($arr_dati)
+    public function __construct($arr_dati)
     {
         $rel_dir = GCAuthor::getTabDir();
         $this->db = GCApp::getDB();
@@ -84,11 +84,11 @@ class saveData
             }
         }
     }
-    function getPKeys($level, $sk)
+    public function getPKeys($level, $sk)
     {
         return $this->primary_keys[$level];
     }
-    function performAction($p = null)
+    public function performAction($p = null)
     {
         if ($this->hasErrors == true) {
             $p->livello = $p->get_livello();

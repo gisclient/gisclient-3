@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class SessionTokenStorage implements TokenStorageInterface
 {
-    const TOKEN_ID = 'author/user';
+    public const TOKEN_ID = 'author/user';
     
     /**
      * The user session from which the session ID is returned.

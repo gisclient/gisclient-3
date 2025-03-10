@@ -9,10 +9,10 @@
     
 class page
 {
-    const MODE_VIEW = 0;
-    const MODE_LIST = 3;
-    const MODE_EDIT = 1;
-    const MODE_NEW = 2;
+    public const MODE_VIEW = 0;
+    public const MODE_LIST = 3;
+    public const MODE_EDIT = 1;
+    public const MODE_NEW = 2;
                 
             /**
              * Authentication handler
@@ -119,7 +119,7 @@ class page
         }
         return 0;
     }
-    function _getKey($value)
+    public function _getKey($value)
     {
         if (is_null($this->parametri)) {
             return;
@@ -208,12 +208,12 @@ class page
     }
         
     //Metodo che scrive il menu di navigazione
-    function writeMenuChild()
+    public function writeMenuChild()
     {
   //Da Fare!!!!!!
     }
         
-    function writeMenuNav()
+    public function writeMenuNav()
     {
         $rel_dir = GCAuthor::getTabDir();
             
@@ -279,7 +279,7 @@ class page
     }
         
     // Metodo privato che setta i parametri della classe
-    function _get_parameter(array $p)
+    public function _get_parameter(array $p)
     {
         $m = (!empty($p["mode"])) ? ($p["mode"]) : ('view');
         $this->mode = $this->arr_mode[$m];
@@ -310,7 +310,7 @@ class page
         }
     }
         
-    function write_parameter()
+    public function write_parameter()
     {
         if (is_array($this->parametri) && count($this->parametri)) {
             $i = 0;
@@ -321,7 +321,7 @@ class page
         }
     }
         
-    function write_page_param($param)
+    public function write_page_param($param)
     {
         if (count($param) > 0) {
             foreach ($param as $key => $value) {
@@ -332,7 +332,7 @@ class page
         }
     }
         
-    function get_livello()
+    public function get_livello()
     {
         if (count($this->parametri)) {
             $lvl = array_keys($this->parametri);
@@ -341,7 +341,7 @@ class page
             return "";
         }
     }
-    function get_value()
+    public function get_value()
     {
         if (count($this->parametri)) {
             $tmp = array_keys($this->parametri);
@@ -351,7 +351,7 @@ class page
         }
     }
         
-    function get_parentValue()
+    public function get_parentValue()
     {
         if (count($this->parametri) > 1) {
             $tmp = array_keys($this->parametri);
@@ -360,7 +360,7 @@ class page
             return 0;
         }
     }
-    function get_idLivello($lev = "")
+    public function get_idLivello($lev = "")
     {
         if (!$lev) {
                             $sql = "SELECT id FROM " . DB_SCHEMA . ".e_level WHERE name=:livello";
@@ -380,7 +380,7 @@ class page
             return null;
         }
     }
-    function _getChild()
+    public function _getChild()
     {
         $out = [];
         foreach ($this->array_levels as $key => $val) {
@@ -390,13 +390,13 @@ class page
         }
         return $out;
     }
-    function setErrors($err)
+    public function setErrors($err)
     {
         foreach ($err as $key => $val) {
             $this->errors[$key] = $val;
         }
     }
-    function setNotice($notice)
+    public function setNotice($notice)
     {
         foreach ($notice as $val) {
             if ($val) {
