@@ -2,11 +2,11 @@
 
 namespace GisClient\Author\Controller;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Utils\GCMap;
 use GisClient\Author\Utils\R3GisGCMap;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ClientController
 {

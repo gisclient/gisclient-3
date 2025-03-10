@@ -2,10 +2,10 @@
 
 namespace GisClient\Author\Controller;
 
-use Symfony\Component\HttpFoundation\Response;
+use GisClient\Author\Db;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
-use GisClient\Author\Db;
+use Symfony\Component\HttpFoundation\Response;
 
 class MvtController
 {

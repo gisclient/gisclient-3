@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
-use Symplify\EasyCodingStandard\Config\ECSConfig;
 use PhpCsFixer\Fixer\CastNotation\ShortScalarCastFixer;
 use PhpCsFixer\Fixer\ClassNotation\VisibilityRequiredFixer;
-use PhpCsFixer\Fixer\Import\OrderedImportsFixer;
+use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
 use PhpCsFixer\Fixer\Operator\NewWithParenthesesFixer;
 use PhpCsFixer\Fixer\Whitespace\StatementIndentationFixer;
+use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return ECSConfig::configure()
     ->withPaths([
@@ -37,7 +36,6 @@ return ECSConfig::configure()
     ->withSkip([
         ShortScalarCastFixer::class,
         VisibilityRequiredFixer::class,
-        OrderedImportsFixer::class,
         NewWithParenthesesFixer::class,
         StatementIndentationFixer::class,
         \PhpCsFixer\Fixer\Basic\BracesPositionFixer::class,

@@ -2,9 +2,9 @@
 
 namespace GisClient\Author\Controller;
 
+use GisClient\Author\Utils\LookupUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use GisClient\Author\Utils\LookupUtils;
 
 class LookupController
 {

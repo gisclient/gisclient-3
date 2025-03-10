@@ -2,11 +2,11 @@
 
 namespace GisClient\Author\Controller;
 
+use GisClient\Author\Utils\SymbolCreator;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use GisClient\Author\Utils\SymbolCreator;
+use Symfony\Component\HttpFoundation\Response;
 
 class SymbolController
 {

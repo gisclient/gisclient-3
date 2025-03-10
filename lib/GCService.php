@@ -1,8 +1,8 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
+use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
 /**
  * GCService initialized correctly the pages used as a service within GisClient

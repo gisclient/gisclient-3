@@ -4,20 +4,20 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once ADMIN_PATH . 'lib/functions.php';
 
+use GisClient\Author\Security\AuthenticationHandler;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
-use Symfony\Component\Routing\Router;
-use Symfony\Component\Routing\RequestContext;
-use Symfony\Component\Yaml\Yaml;
-use GisClient\Author\Security\AuthenticationHandler;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\Router;
+use Symfony\Component\Yaml\Yaml;
 
 function getFirewall(Request $request)
 {

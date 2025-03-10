@@ -2,6 +2,9 @@
 
 namespace GisClient\Author\Controller;
 
+use GisClient\Author\LayerLevelInterface;
+use GisClient\Author\Map;
+use GisClient\Author\OfflineMap;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -9,9 +12,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use GisClient\Author\LayerLevelInterface;
-use GisClient\Author\Map;
-use GisClient\Author\OfflineMap;
 
 class OfflineController implements ContainerAwareInterface
 {

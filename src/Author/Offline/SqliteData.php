@@ -2,12 +2,12 @@
 
 namespace GisClient\Author\Offline;
 
-use GisClient\Author\LayerGroup;
 use GisClient\Author\Layer;
+use GisClient\Author\LayerGroup;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\GDAL\Export\Process as GDALProcess;
-use GisClient\GDAL\Export\SQLite\Task as SQLiteTask;
 use GisClient\GDAL\Export\SQLite\Driver as SQLiteDriver;
+use GisClient\GDAL\Export\SQLite\Task as SQLiteTask;
 
 class SqliteData extends AbstractOfflineData
 {

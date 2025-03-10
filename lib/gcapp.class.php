@@ -1,9 +1,9 @@
 <?php
 
 use GisClient\Author\Security\AuthenticationHandler;
-use GisClient\Author\Security\LayerAuthorizationChecker;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
+use GisClient\Author\Security\LayerAuthorizationChecker;
 use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
 use GisClient\Author\Security\User\UserProviderInterface;

@@ -4,9 +4,9 @@ namespace GisClient\Author\Utils;
 
 use GisClient\Author\Form\Type\FilterType;
 use GisClient\Author\Security\AuthenticationHandler;
-use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\Forms;
 use Symfony\Component\Validator\Validation;
 
 class SavedFilterHandler

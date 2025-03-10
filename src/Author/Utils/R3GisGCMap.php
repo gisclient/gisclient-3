@@ -28,8 +28,8 @@
 
 namespace GisClient\Author\Utils;
 
-use GisClient\Author\Security\LayerAuthorizationChecker;
 use GisClient\Author\LayerGroup;
+use GisClient\Author\Security\LayerAuthorizationChecker;
 
 define('GOOGLESRID', 3857);
 

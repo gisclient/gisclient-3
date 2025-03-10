@@ -4,9 +4,9 @@ define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Utils\OwsHandler;
+use Symfony\Component\HttpFoundation\Request;
 
 $gcService = GCService::instance();
 $gcService->startSession(true);

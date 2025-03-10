@@ -2,12 +2,12 @@
 
 namespace GisClient\Author\Security\Guard;
 
-use Symfony\Component\HttpFoundation\Request;
+use GisClient\Author\Security\Token\PostAuthenticationToken;
 use GisClient\Author\Security\Token\TokenInterface;
 use GisClient\Author\Security\Token\UsernamePasswordToken;
-use GisClient\Author\Security\Token\PostAuthenticationToken;
 use GisClient\Author\Security\User\UserInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class BasicAuthAuthenticator implements GuardAuthenticatorInterface
 {

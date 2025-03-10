@@ -2,12 +2,12 @@
 
 namespace GisClient\Author\Offline;
 
+use GisClient\Author\Layer;
 use GisClient\Author\LayerGroup;
 use GisClient\Author\LayerLevelInterface;
-use GisClient\Author\Layer;
-use GisClient\GDAL\Export\Process as GDALProcess;
-use GisClient\GDAL\Export\MVT\Task as MVTTask;
 use GisClient\GDAL\Export\MVT\Driver as MVTDriver;
+use GisClient\GDAL\Export\MVT\Task as MVTTask;
+use GisClient\GDAL\Export\Process as GDALProcess;
 
 class MVTData extends AbstractOfflineData
 {

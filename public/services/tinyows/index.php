@@ -2,8 +2,8 @@
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+use Symfony\Component\HttpFoundation\Request;
 
 $gcService = GCService::instance();
 $gcService->startSession();
