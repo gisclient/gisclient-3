@@ -44,7 +44,7 @@ class Symbol
         if ($this->table == 'class') {
             //lettera A per le icone dei testi
             $aSymbol = [
-                "SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND"
+                "SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND",
             ];
             
             $sql = "SELECT
@@ -321,7 +321,7 @@ class Symbol
                         $row["layer"],
                         $row["layergroup"],
                         $row["theme"],
-                        $row["project"]
+                        $row["project"],
                     ];
                 } else {
                     array_push($values, $row);
@@ -353,7 +353,7 @@ class Symbol
 
         return [
             "headers" => $headers,
-            "values" => $values
+            "values" => $values,
         ];
     }
     

@@ -24,7 +24,7 @@ if ($_POST["livello"] == "qt" && !$_POST["importa"]) {
     $stmt = $db->prepare($sql);
     try {
         $stmt->execute([
-            'theme_id' => $this->parametri["theme"]
+            'theme_id' => $this->parametri["theme"],
         ]);
     } catch (Exception $e) {
         echo "<p>" . GCAuthor::t('error_query') . " : $sql</p>";
@@ -52,7 +52,7 @@ if ($_POST["importa"]) {
         $stmt = $db->prepare($sql);
         try {
             $stmt->execute([
-                'project' => $project
+                'project' => $project,
             ]);
         } catch (Exception $e) {
             echo "<p>" . GCAuthor::t('error_query') . " : $sql</p>";

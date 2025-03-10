@@ -18,7 +18,7 @@ if (($data = json_decode($inputJSONText, true)) === null) {
 $layerAuthChecker = GCApp::getLayerAuthorizationChecker();
 if (isset($data['mapset'])) {
     $layers = $layerAuthChecker->getLayers([
-        'mapset_name' => $data['mapset']
+        'mapset_name' => $data['mapset'],
     ]);
 }
 // close the session, because all relevant data are already writte into it
@@ -49,7 +49,7 @@ switch ($data['export_format']) {
                     'tablename' => $table['table'],
                     'schema' => $dbParams['schema'],
                     'dbName' => $dbParams['db_name'],
-                    'db' => $dataDb
+                    'db' => $dataDb,
                 ]);
             } elseif (isset($table['layer'])) {
                 $sql = 'select catalog_path, layer.data as tablename, layer_id from ' . DB_SCHEMA . '.catalog 
@@ -60,7 +60,7 @@ switch ($data['export_format']) {
                 [$layergroup, $layer] = explode('.', $table['layer']);
                 $stmt->execute([
                     'layergroup' => $layergroup,
-                    'layer' => $layer
+                    'layer' => $layer,
                 ]);
                 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
                 
@@ -74,7 +74,7 @@ switch ($data['export_format']) {
                     'tablename' => $layer['tablename'],
                     'schema' => $dbParams['schema'],
                     'dbName' => $dbParams['db_name'],
-                    'db' => $dataDb
+                    'db' => $dataDb,
                 ]);
             }
         }
@@ -103,7 +103,7 @@ switch ($data['export_format']) {
                 'p1' => $data['extent'][1],
                 'p2' => $data['extent'][2],
                 'p3' => $data['extent'][3],
-                'srid' => $srid
+                'srid' => $srid,
             ]);
             $extent = $stmt->fetchColumn(0);
             
@@ -124,7 +124,7 @@ switch ($data['export_format']) {
                     ' where st_intersects(the_geom, :geom) ';
                 $stmt = $table['db']->prepare($sql);
                 $stmt->execute([
-                    'geom' => $extent
+                    'geom' => $extent,
                 ]);
                 
                 $sql = 'select count(*) from ' . GC_EXPORT_TMP_SCHEMA . '.' . $tmpTableName;
@@ -142,14 +142,14 @@ switch ($data['export_format']) {
                     'tmp_table_schema' => GC_EXPORT_TMP_SCHEMA,
                     'tmp_table_name' => $tmpTableName,
                     'schema' => $table['schema'],
-                    'table' => $table['tablename']
+                    'table' => $table['tablename'],
                 ]);
                 array_push($exportTables, [
                     'db' => $table['dbName'],
                     'db_instance' => $table['db'],
                     'table' => $tmpTableName,
                     'schema' => GC_EXPORT_TMP_SCHEMA,
-                    'name' => $table['tablename']
+                    'name' => $table['tablename'],
                 ]);
             }
         } else {
@@ -162,7 +162,7 @@ switch ($data['export_format']) {
                     'db_instance' => $table['db'],
                     'table' => $table['tablename'],
                     'schema' => $table['schema'],
-                    'name' => $table['tablename']
+                    'name' => $table['tablename'],
                 ]);
             }
         }
@@ -174,7 +174,7 @@ switch ($data['export_format']) {
                 $zipFile = $export->export([$table], [
                     'name' => 'export',
                     'add_to_zip' => $zipFile,
-                    'return_url' => false
+                    'return_url' => false,
                 ]);
             }
             $zipFile = $export->getExportUrl() . $zipFile;
@@ -187,7 +187,7 @@ switch ($data['export_format']) {
                     'add_to_zip' => $zipFile,
                     'return_url' => false,
                     'extent' => $data['extent'],
-                    'srid' => $srid
+                    'srid' => $srid,
                 ]);
             }
         }
@@ -199,12 +199,12 @@ switch ($data['export_format']) {
                 $stmt = $db->prepare($sql);
                 $stmt->execute([
                     'tmp_schema' => GC_EXPORT_TMP_SCHEMA,
-                    'tmp_table' => $table['table']
+                    'tmp_table' => $table['table'],
                 ]);
             }
         }
         $ajax->success([
-            'file' => $zipFile
+            'file' => $zipFile,
         ]);
         break;
     case 'xls':
@@ -231,21 +231,21 @@ switch ($data['export_format']) {
         if (empty($data['data']) || !is_array($data['data'])) {
             die(json_encode([
                 'result' => 'error',
-                'error' => 'Empty data'
+                'error' => 'Empty data',
             ]));
         }
 
         if (empty($data['fields']) || !is_array($data['fields'])) {
             die(json_encode([
                 'result' => 'error',
-                'error' => 'Empty fields'
+                'error' => 'Empty fields',
             ]));
         }
 
         if (empty($data['export_format']) || !in_array($data['export_format'], ['xls', 'pdf'])) {
             die(json_encode([
                 'result' => 'error',
-                'error' => 'Invalid export format'
+                'error' => 'Invalid export format',
             ]));
         }
 
@@ -284,7 +284,7 @@ switch ($data['export_format']) {
         file_put_contents(ROOT_PATH . 'tmp/files/' . $filename, $content);
         die(json_encode([
             'result' => 'ok',
-            'file' => PUBLIC_URL . 'services/download.php?filename=' . $filename
+            'file' => PUBLIC_URL . 'services/download.php?filename=' . $filename,
         ]));
         break;
 }

@@ -53,7 +53,7 @@ if (isset($_POST['translations'])) {
         $emptyTranslations->execute([
             'project' => $project,
             'field_id' => $fieldId,
-            'pkey_id' => $_REQUEST['p_key']
+            'pkey_id' => $_REQUEST['p_key'],
         ]);
         
         foreach ($translations as $languageId => $translation) {
@@ -62,7 +62,7 @@ if (isset($_POST['translations'])) {
                 'field_id' => $fieldId,
                 'pkey_value' => $_REQUEST['p_key'],
                 'lang_id' => $languageId,
-                'translation' => $translation
+                'translation' => $translation,
             ]);
         }
     }
@@ -77,7 +77,7 @@ if (isset($_POST['translations'])) {
         'defaultLanguage' => $defaultLanguageId,
         'languages' => $languages,
         'fields' => $fields,
-        'translations' => []
+        'translations' => [],
     ];
     if (empty($fields)) {
         successJson($responseData);
@@ -93,7 +93,7 @@ if (isset($_POST['translations'])) {
     $sql = "select " . implode(',', $fieldNames) . " from " . DB_SCHEMA . ".$level where " . $struct[$level]['pkey'] . " = :pkey_value";
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'pkey_value' => $_REQUEST['p_key']
+        'pkey_value' => $_REQUEST['p_key'],
     ]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     foreach ($row as $key => $val) {
@@ -115,7 +115,7 @@ function errorJson($error = 'System error')
 {
     die(json_encode([
         'result' => 'error',
-        'error' => $error
+        'error' => $error,
     ]));
 }
 
@@ -123,6 +123,6 @@ function successJson($responseData = [])
 {
     die(json_encode([
         'result' => 'ok',
-        'data' => $responseData
+        'data' => $responseData,
     ]));
 }

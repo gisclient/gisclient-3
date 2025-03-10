@@ -234,7 +234,7 @@ class MsMapObjFactoryDecorator
 
                 // Add the condition to the key-value array with its condition type
                 $keyValuePairs[] = [
-                    $propertyName => [$conditionType, $literalValue]
+                    $propertyName => [$conditionType, $literalValue],
                 ];
             }
         }

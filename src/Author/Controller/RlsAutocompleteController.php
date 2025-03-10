@@ -33,13 +33,13 @@ class RlsAutocompleteController extends AutocompleteController
             $results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
             return new JsonResponse([
                 "result" => "ok",
-                "data" => $results
+                "data" => $results,
             ]);
         } catch (HttpException $e) {
             return new JsonResponse(
                 [
                     "result" => "error",
-                    "error" => $e->getMessage()
+                    "error" => $e->getMessage(),
                 ],
                 $e->getStatusCode()
             );
@@ -47,7 +47,7 @@ class RlsAutocompleteController extends AutocompleteController
             return new JsonResponse(
                 [
                     "result" => "error",
-                    "error" => $e->getMessage()
+                    "error" => $e->getMessage(),
                 ],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );

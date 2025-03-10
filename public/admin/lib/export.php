@@ -22,7 +22,7 @@ function _getChild($lev, $export)
     
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'lev' => $lev
+        'lev' => $lev,
     ]);
     $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -82,7 +82,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
         "@PROJECTNAME@" => $parentName,
         "@DB_SCHEMA@" => DB_SCHEMA,
         "@OBJECTNAME@" => $newName,
-        "\\n" => "\n"
+        "\\n" => "\n",
     ];
 
     if (!file_exists($fName)) {
@@ -200,7 +200,7 @@ function import_raster($d, $ext, $layergroup_id, $catalog_id, $srid = -1, $filtr
         try {
             $stmt = $db->prepare($sql);
             $stmt->execute([
-                'layergroup_id' => $layergroup_id
+                'layergroup_id' => $layergroup_id,
             ]);
         } catch (Exception $e) {
             array_push($err, "ROW $i : " . $e->getMessage() . "\n<p>$sql</>");
@@ -262,7 +262,7 @@ function _getListValue($level, $val, $db = null)
             try {
                 $stmt = $db->prepare($sql);
                 $stmt->execute([
-                    'val' => $val
+                    'val' => $val,
                 ]);
                 [$name, $newval] = $stmt->fetch(PDO::FETCH_NUM);
             } catch (Exception $e) {
@@ -285,7 +285,7 @@ function _isPKey($fld, $pk, $lev = "")
 {
     if ($lev != "") {
         $pk = [
-            "$lev" => $pk[$lev]
+            "$lev" => $pk[$lev],
         ];
     }
     foreach ($pk as $key => $arr) {
@@ -367,7 +367,7 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
                 $getColType->execute([
                     'schema' => DB_SCHEMA,
                     'table' => $structure["table"][$currentLevel],
-                    'column' => $key
+                    'column' => $key,
                 ]);
                 //print_r($getColType->fetchAll(PDO::FETCH_NUM));
                 $fldType[$key] = $getColType->fetchColumn(0);

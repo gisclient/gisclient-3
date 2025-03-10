@@ -114,7 +114,7 @@ abstract class AbstractOfflineData implements OfflineDataInterface
     public function getOfflineFiles(LayerLevelInterface $layer)
     {
         return [
-            $this->getOfflineDataFile($layer)
+            $this->getOfflineDataFile($layer),
         ];
     }
 }

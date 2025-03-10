@@ -17,7 +17,7 @@ if (!empty($groupname)) {
         ';
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'group' => $groupname
+        'group' => $groupname,
     ]);
         
     array_push($data, $stmt->fetch(\PDO::FETCH_ASSOC));

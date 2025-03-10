@@ -138,7 +138,7 @@ foreach ($layers as $layer) {
 
     try {
         $insertQTField->execute([
-            'layer' => $layer['layer_id']
+            'layer' => $layer['layer_id'],
         ]);
     } catch (Exception $e) {
         echo 'Caught exception: ',  $e->getMessage(), "\n";
@@ -159,7 +159,7 @@ foreach ($layers as $layer) {
         //se il campo è usato nelle classi o negli stili del layer
         if (!$used) {
             $getClasses->execute([
-                'layer' => $layer['layer_id']
+                'layer' => $layer['layer_id'],
             ]);
 
 
@@ -192,7 +192,7 @@ foreach ($layers as $layer) {
         if ($used) {
             $fieldExists->execute([
                 'layer' => $layer['layer_id'],
-                'field_name' => $field
+                'field_name' => $field,
             ]);
             $exists = $fieldExists->fetchColumn(0);
 

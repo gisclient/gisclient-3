@@ -62,7 +62,7 @@ class Process implements OfflineProcessInterface
             $this->driver->getCmdArguments(),
             [
                 '-overwrite',
-                '-progress'
+                '-progress',
             ]
         );
         if ($runInBackground) {

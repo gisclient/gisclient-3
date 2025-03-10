@@ -25,7 +25,7 @@ switch ($_REQUEST['action']) {
         
         try {
             $parentLevels = GCLevels::getParents($_REQUEST['level'], [
-                'use_copy_limits' => true
+                'use_copy_limits' => true,
             ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -40,7 +40,7 @@ switch ($_REQUEST['action']) {
             }
             $filter = [
                 'level' => $level,
-                'parent' => !empty($parent) ? $parent : ''
+                'parent' => !empty($parent) ? $parent : '',
             ];
             array_push($filters, $filter);
             $parent = $level;
@@ -48,12 +48,12 @@ switch ($_REQUEST['action']) {
         if ($_REQUEST['mode'] != 'move') {
             array_push($filters, [
                 'level' => $_REQUEST['level'],
-                'parent' => !empty($level) ? $level : null
+                'parent' => !empty($level) ? $level : null,
             ]);
         }
         $ajax->success([
             'filters' => $filters,
-            'has_project' => (int)$hasProject
+            'has_project' => (int)$hasProject,
         ]);
         break;
     case 'get-data':
@@ -80,7 +80,7 @@ switch ($_REQUEST['action']) {
             $data[$row['key']] = $row['value'];
         }
         $ajax->success([
-            'data' => $data
+            'data' => $data,
         ]);
         break;
 }
@@ -94,30 +94,30 @@ class GCLevels
     private static $config = [
         'project' => [
             'pkey' => 'project_name',
-            'title' => 'project_title'
+            'title' => 'project_title',
         ],
         'theme' => [
             'pkey' => 'theme_id',
-            'title' => 'theme_title'
+            'title' => 'theme_title',
         ],
         'layergroup' => [
             'pkey' => 'layergroup_id',
-            'title' => 'layergroup_title'
+            'title' => 'layergroup_title',
         ],
         'layer' => [
             'pkey' => 'layer_id',
-            'title' => 'layer_title'
+            'title' => 'layer_title',
         ],
         'class' => [
             'pkey' => 'class_id',
-            'title' => 'class_title'
-        ]
+            'title' => 'class_title',
+        ],
     ];
     private static $copyLimits = [
         'theme' => 'theme',
         'layergroup' => 'theme',
         'layer' => 'theme',
-        'class' => 'project'
+        'class' => 'project',
     ];
     
     public function getLevels()
@@ -135,7 +135,7 @@ class GCLevels
         }
         
         $children = [
-            $level => []
+            $level => [],
         ];
         foreach (self::$levelsChildren[$level] as $childLevel) {
             array_push($children[$level], self::getChildren($childLevel));
@@ -157,7 +157,7 @@ class GCLevels
     public static function getParents($level, $options = [])
     {
         $defaultOptions = [
-            'use_copy_limits' => false
+            'use_copy_limits' => false,
         ];
         $options = array_merge($defaultOptions, $options);
         

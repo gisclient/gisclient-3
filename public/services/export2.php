@@ -40,7 +40,7 @@ foreach ($data as $expConf) {
     $stmt->execute([
         'project' => $projectName,
         'layergroup' => $layergroupName,
-        'layer' => $layerName
+        'layer' => $layerName,
     ]);
     $layerId = $stmt->fetchColumn(0);
 
@@ -100,9 +100,9 @@ foreach ($data as $expConf) {
             'schema' => 'public',
             'name' => $layer->getName(),
             'pk' => $layer->getPrimaryColumn(),
-            'geom' => $layer->getGeomColumn()
+            'geom' => $layer->getGeomColumn(),
         ],
-        'extras' => $expConf
+        'extras' => $expConf,
     ]);
 }
 
@@ -114,7 +114,7 @@ if (isset($exports['shp'])) {
             'name' => 'export_shp',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
-            'fields' => $exp['extras']['fields']
+            'fields' => $exp['extras']['fields'],
         ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
@@ -130,7 +130,7 @@ if (isset($exports['dxf'])) {
             'return_url' => true,
             'extent' => $exp['extras']['extent'],
             'srid' => $exp['extras']['srid'],
-            'layer' => $exp['extras']['layer']
+            'layer' => $exp['extras']['layer'],
         ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
@@ -144,7 +144,7 @@ if (isset($exports['xls'])) {
             'name' => 'export_xls',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
-            'fields' => $exp['extras']['fields']
+            'fields' => $exp['extras']['fields'],
         ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
@@ -161,7 +161,7 @@ if (isset($exports['kml'])) {
             'fields' => $exp['extras']['fields'],
             'extent' => $exp['extras']['extent'],
             'srid' => $exp['extras']['srid'],
-            'layer' => $exp['extras']['layer']
+            'layer' => $exp['extras']['layer'],
         ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
@@ -171,5 +171,5 @@ if (isset($exports['kml'])) {
 
 
 $ajax->success([
-    'file' => $url
+    'file' => $url,
 ]);

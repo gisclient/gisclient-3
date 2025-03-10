@@ -66,7 +66,7 @@ class Font
         $like = '%FONT "' . $fontName . '"%CHARACTER "&#' . $symbolCode . ';"';
         $stmt = $this->db->prepare($selectSymbolName);
         $stmt->execute([
-            ':like' => $like
+            ':like' => $like,
         ]);
         $name = $stmt->fetchColumn();
 
@@ -108,7 +108,7 @@ class Font
         $like = '%FONT "' . $fontName . '"%CHARACTER "&#' . $symbolCode . ';"';
         $stmt = $this->db->prepare($selectSymbolName);
         $stmt->execute([
-            ':like' => $like
+            ':like' => $like,
         ]);
         $name = $stmt->fetchColumn();
 

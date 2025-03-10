@@ -112,7 +112,7 @@ class LookupData implements OfflineDataInterface
                 $fs->dumpFile($lookupFile, $json);
                 $files[] = [
                     'file' => $lookupFile,
-                    'filename' => sprintf('%d%s.json', $catalogId, $lookupTable)
+                    'filename' => sprintf('%d%s.json', $catalogId, $lookupTable),
                 ];
             }
         }

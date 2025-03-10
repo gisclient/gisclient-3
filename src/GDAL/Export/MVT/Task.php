@@ -157,7 +157,7 @@ class Task implements \GisClient\GDAL\Export\Task
             '-sql',
             $sql,
             '-nln',
-            $name
+            $name,
         ];
 
         return $commandLine;

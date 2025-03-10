@@ -13,7 +13,7 @@ define('IMPORT_PATH', ROOT_PATH . 'import/');
 
 $extensions = [
     'shp' => ['shp', 'shx', 'dbf'],
-    'raster' => ['tif', 'tiff', 'ecw', 'jpg', 'jpeg', 'png']
+    'raster' => ['tif', 'tiff', 'ecw', 'jpg', 'jpeg', 'png'],
 ];
 
 $columnTypes = ['double precision', 'text', 'date'];
@@ -24,7 +24,7 @@ $autoUpdaters = [
     'area' => defined('MEASURE_AREA_COL_NAME') ? MEASURE_AREA_COL_NAME : false,
     'length' => defined('MEASURE_LENGTH_COL_NAME') ? MEASURE_LENGTH_COL_NAME : false,
     'pointx' => defined('COORDINATE_X_COL_NAME') ? COORDINATE_X_COL_NAME : false,
-    'pointy' => defined('COORDINATE_Y_COL_NAME') ? COORDINATE_Y_COL_NAME : false
+    'pointy' => defined('COORDINATE_Y_COL_NAME') ? COORDINATE_Y_COL_NAME : false,
 ];
 
 $gcService = GCService::instance();
@@ -81,7 +81,7 @@ switch ($_REQUEST['action']) {
             2 => 'postgis',
             3 => 'xls',
             // 4=>'csv', // not working, yet
-            5 => 'doc'
+            5 => 'doc',
         ];
         checkMissingParameters($ajax, $_REQUEST, ['catalog_id']);
         $dir = filesPathFromCatalog($_REQUEST['catalog_id']);
@@ -97,7 +97,7 @@ switch ($_REQUEST['action']) {
         $results['measureColumn'] = $autoUpdaters['area'] || $autoUpdaters['length'];
         
         $ajax->success([
-            'imports' => $imports
+            'imports' => $imports,
         ]);
         break;
 
@@ -235,11 +235,11 @@ switch ($_REQUEST['action']) {
         $data = [];
         foreach ($files as $file) {
             array_push($data, [
-                'file_name' => $file
+                'file_name' => $file,
             ]);
         }
         $ajax->success([
-            'data' => $data
+            'data' => $data,
         ]);
         break;
 
@@ -251,7 +251,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -271,7 +271,7 @@ switch ($_REQUEST['action']) {
         $sql .= ' order by table_name';
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
-            ':schema' => $schema
+            ':schema' => $schema,
         ]);
         $data = [];
 
@@ -285,7 +285,7 @@ switch ($_REQUEST['action']) {
             array_push($data, $row);
         }
         $ajax->success([
-            'data' => $data
+            'data' => $data,
         ]);
         break;
 
@@ -326,7 +326,7 @@ switch ($_REQUEST['action']) {
         }
 
         $ajax->success([
-            'data' => $data
+            'data' => $data,
         ]);
         break;
 
@@ -353,7 +353,7 @@ switch ($_REQUEST['action']) {
         }
 
         $ajax->success([
-            'isValidName' => $isValidName
+            'isValidName' => $isValidName,
         ]);
         break;
 
@@ -430,7 +430,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -456,7 +456,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -511,7 +511,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -580,7 +580,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -606,7 +606,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -618,7 +618,7 @@ switch ($_REQUEST['action']) {
             $stmt = $dataDb->prepare($sql);
             $stmt->execute([
                 ':schema' => $schema,
-                ':table' => $_REQUEST['table_name']
+                ':table' => $_REQUEST['table_name'],
             ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -677,7 +677,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -708,7 +708,7 @@ switch ($_REQUEST['action']) {
         fclose($handle);
 
         $ajax->success([
-            'filename' => $fileName . '.csv'
+            'filename' => $fileName . '.csv',
         ]);
         break;
 
@@ -718,7 +718,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -741,7 +741,7 @@ switch ($_REQUEST['action']) {
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
             'schema' => $dbParams['schema'],
-            'table' => $_REQUEST['table_name']
+            'table' => $_REQUEST['table_name'],
         ]);
         $columns = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 
@@ -764,7 +764,7 @@ switch ($_REQUEST['action']) {
         $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . random_int(0, 9999);
         $objWriter->save(ROOT_PATH . 'public/admin/export/' . $fileName . '.xlsx');
         $ajax->success([
-            'filename' => $fileName . '.xlsx'
+            'filename' => $fileName . '.xlsx',
         ]);
         break;
 
@@ -776,7 +776,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -800,15 +800,15 @@ switch ($_REQUEST['action']) {
                 [
                     'db' => $dbParams['db_name'],
                     'schema' => $dbParams['schema'],
-                    'table' => $_REQUEST['table_name']
-                ]
+                    'table' => $_REQUEST['table_name'],
+                ],
             ];
             $zipFile = $export->export($tables, [
-                'name' => $_REQUEST['table_name']
+                'name' => $_REQUEST['table_name'],
             ]);
 
             $ajax->success([
-                'filename' => $zipFile
+                'filename' => $zipFile,
             ]);
         } catch (\Exception $e) {
             $ajax->error($e->getMessage());
@@ -827,7 +827,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -867,7 +867,7 @@ switch ($_REQUEST['action']) {
 
         $options = [
             'charset' => $charset,
-            'mode' => $_REQUEST['mode']
+            'mode' => $_REQUEST['mode'],
         ];
         if (!shp2pgsql(IMPORT_PATH . $_REQUEST['file_name'], (int)$_REQUEST['srid'], $tableName, $outputFile, $errorFile, $options)) {
             $errorText = file_get_contents($errorFile);
@@ -898,7 +898,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -925,7 +925,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -1048,7 +1048,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -1075,7 +1075,7 @@ switch ($_REQUEST['action']) {
                 ':table' => $_REQUEST['table_name'],
                 ':srid' => $_REQUEST['srid'],
                 ':type' => $_REQUEST['geometry_type'],
-                ':dimension' => $_REQUEST['coordinate_dimension']
+                ':dimension' => $_REQUEST['coordinate_dimension'],
             ]);
             $sql = "GRANT SELECT ON TABLE $schema." . $_REQUEST['table_name'] . " TO " . MAP_USER . ";";
             $dataDb->exec($sql);
@@ -1094,7 +1094,7 @@ switch ($_REQUEST['action']) {
         $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':catalog_id' => $_REQUEST['catalog_id']
+            ':catalog_id' => $_REQUEST['catalog_id'],
         ]);
         $catalogPath = $stmt->fetchColumn(0);
 
@@ -1244,7 +1244,7 @@ function filesPathFromCatalog($catalogId)
     $sql = "select files_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        ':catalog_id' => $catalogId
+        ':catalog_id' => $catalogId,
     ]);
     $basePath = $stmt->fetchColumn(0);
     if (empty($basePath)) {
@@ -1293,7 +1293,7 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
 {
     $defaultOptions = [
         'charset' => 'UTF-8',
-        'mode' => 'create'
+        'mode' => 'create',
     ];
     $options = array_merge($defaultOptions, $options);
 
@@ -1484,7 +1484,7 @@ function checkExistDbFunction($dataDb, $functionName)
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         'schema' => 'public',
-        'functionName' => $functionName
+        'functionName' => $functionName,
     ]);
     return ($stmt->fetchColumn(0) > 0);
 }
@@ -1582,7 +1582,7 @@ function getGeometryColumnInfo($dataDb, $schema, $table)
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         'schema' => $schema,
-        'table' => $table
+        'table' => $table,
     ]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -1593,7 +1593,7 @@ function checkAutoUpdatersColumns($dataDb, $schema, $table, $autoUpdaters)
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         'schema' => $schema,
-        'table' => $table
+        'table' => $table,
     ]);
 
     $pointx = null;

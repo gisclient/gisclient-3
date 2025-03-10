@@ -141,7 +141,7 @@ class SavedFilterHandler
             $values['mapset_name'],
             $values['layer_id'],
             $values['saved_filter_scope'],
-            $values['saved_filter_data']
+            $values['saved_filter_data'],
         ]);
         return $this->database->lastInsertId(DB_SCHEMA . ".saved_filter_saved_filter_id_seq");
     }
@@ -169,7 +169,7 @@ class SavedFilterHandler
             $values['saved_filter_name'],
             $values['saved_filter_scope'],
             $values['saved_filter_data'],
-            $id
+            $id,
         ]);
         return $id;
     }

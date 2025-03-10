@@ -97,7 +97,7 @@ class GCService
 
             // Get Symfony to interface with the existing session
             $sessionHandler = new PdoSessionHandler(\GCApp::getDB(), [
-                'db_table' => 'gisclient_34.sessions'
+                'db_table' => 'gisclient_34.sessions',
             ]);
             $sessionStorage = new NativeSessionStorage([], $sessionHandler);
             if (defined('GC_SESSION_NAME')) {

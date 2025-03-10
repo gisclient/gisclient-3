@@ -328,7 +328,7 @@ class OwsHandler
                 [$layerGroup] = explode('.', $layerGroup, 1);  // Extract layer group
                 $stmt->execute([
                     'mapset_name' => $objRequest->getValueByName('map'),
-                    'layergroup_name' => $layerGroup
+                    'layergroup_name' => $layerGroup,
                 ]);
                 if (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
                     $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');

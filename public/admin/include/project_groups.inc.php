@@ -12,7 +12,7 @@ $sql = "select groupname as group_name,case when coalesce(project_name,'')='' th
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'project' => $project
+        'project' => $project,
     ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -20,7 +20,7 @@ try {
                 array_push($data, [
                     'project_name' => $project,
                     'group_name' => $row['group_name'],
-                    'presente' => $row['presente']
+                    'presente' => $row['presente'],
                 ]);
             }
         }

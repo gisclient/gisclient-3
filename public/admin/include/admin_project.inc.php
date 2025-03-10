@@ -28,7 +28,7 @@ if (is_array($results) && count($results) > 0) {
         $data[] = [
             "presente" => $val["presente"],
             "project_name" => $val["project_name"],
-            "username" => $val["username"]
+            "username" => $val["username"],
         ];
     }
 } else {

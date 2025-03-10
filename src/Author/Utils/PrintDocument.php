@@ -14,47 +14,47 @@ class PrintDocument
         'vertical' => [
             'A4' => [
                 'w' => 17,
-                'h' => 22.5
+                'h' => 22.5,
             ],
             'A3' => [
                 'w' => 25.8,
-                'h' => 35
+                'h' => 35,
             ],
             'A2' => [
                 'w' => 38,
-                'h' => 52
+                'h' => 52,
             ],
             'A1' => [
                 'w' => 55,
-                'h' => 76
+                'h' => 76,
             ],
             'A0' => [
                 'w' => 80,
-                'h' => 111
-            ]
+                'h' => 111,
+            ],
         ],
         'horizontal' => [
             'A4' => [
                 'w' => 25.8,
-                'h' => 14
+                'h' => 14,
             ],
             'A3' => [
                 'w' => 38,
-                'h' => 22.5
+                'h' => 22.5,
             ],
             'A2' => [
                 'w' => 55,
-                'h' => 34
+                'h' => 34,
             ],
             'A1' => [
                 'w' => 80,
-                'h' => 52
+                'h' => 52,
             ],
             'A0' => [
                 'w' => 115,
-                'h' => 77
-            ]
-        ]
+                'h' => 77,
+            ],
+        ],
     ];
 
     private $wmsMergeUrl = '/services/gcWMSMerge.php';
@@ -268,7 +268,7 @@ class PrintDocument
         $pdfFile = runFOP($dom, $xslFile, [
             'tmp_path' => $this->options['TMP_PATH'],
             'prefix' => 'GCPrintMap-',
-            'out_name' => $this->options['TMP_PATH'] . 'PrintMap-' . date('Ymd-His') . '.pdf'
+            'out_name' => $this->options['TMP_PATH'] . 'PrintMap-' . date('Ymd-His') . '.pdf',
         ]);
         $this->deleteOldTmpFiles();
         return $this->options['TMP_URL'] . '?filename=' . basename($pdfFile);
@@ -310,7 +310,7 @@ class PrintDocument
                 'REQUEST' => 'GetLegendGraphic',
                 'ICONW' => 24,
                 'ICONH' => 16,
-                'GCLEGENDTEXT' => 0
+                'GCLEGENDTEXT' => 0,
             ]);
             if (defined("GC_SESSION_NAME")) {
                 $gcService = \GCService::instance();
@@ -343,7 +343,7 @@ class PrintDocument
                         $themes[$wms['options']['theme_id']] = [
                             'id' => $wms['options']['theme_id'],
                             'title' => $wms['options']['theme_title'],
-                            'layers' => []
+                            'layers' => [],
                         ];
                     }
                     $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
@@ -363,7 +363,7 @@ class PrintDocument
                         $group = [
                             'id' => $layerName,
                             'title' => $oLayer->getMetaData('ows_title'),
-                            'layers' => []
+                            'layers' => [],
                         ];
                         for ($n = 0; $n < $oLayer->numclasses; $n++) {
                             $oClass = $oLayer->getClass($n);
@@ -373,7 +373,7 @@ class PrintDocument
                             }
                             array_push($group['layers'], [
                                 'url' => $layerName . '-' . $n,
-                                'title' => $oClass->title
+                                'title' => $oClass->title,
                             ]);
                         }
                         array_push($theme['groups'], $group);
@@ -383,7 +383,7 @@ class PrintDocument
             unset($theme);
         }
         return [
-            'themes' => $themes
+            'themes' => $themes,
         ];
     }
 
@@ -406,13 +406,13 @@ class PrintDocument
             $themeArray = [
                 'id' => $theme['id'],
                 'title' => $theme['title'],
-                'groups' => []
+                'groups' => [],
             ];
             foreach ($theme['groups'] as $group) {
                 $groupArray = [
                     'id' => $group['id'],
                     'title' => $group['title'],
-                    'layers' => []
+                    'layers' => [],
                 ];
                 if (empty($group['layers'])) {
                     continue;
@@ -448,7 +448,7 @@ class PrintDocument
                     imagepng($dest, $this->options['TMP_PATH'] . $filename);
                     array_push($groupArray['layers'], [
                         'title' => $layer['title'],
-                        'img' => $this->options['TMP_URL'] . '?filename=' . $filename
+                        'img' => $this->options['TMP_URL'] . '?filename=' . $filename,
                     ]);
                 }
                 array_push($themeArray['groups'], $groupArray);
@@ -506,7 +506,7 @@ class PrintDocument
     {
         $dimension = [
             'w' => $this->dimensions[$this->options['direction']][$this->options['format']]['w'],
-            'h' => $this->dimensions[$this->options['direction']][$this->options['format']]['h']
+            'h' => $this->dimensions[$this->options['direction']][$this->options['format']]['h'],
         ];
 
         $this->imageSize = [

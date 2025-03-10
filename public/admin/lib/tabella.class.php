@@ -191,7 +191,7 @@ class Tabella
         //se passo un array questo è l'array di POST altrimenti è il filtro - per default filtra su idpratica se settato
         if (is_array($data)) {
             $this->array_dati = [
-                0 => $data
+                0 => $data,
             ];
             $this->num_record = count($data);
             $this->curr_record = 0;

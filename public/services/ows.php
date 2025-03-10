@@ -168,7 +168,7 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
         
         // get layers to populate session with GISCLIENT_USER_LAYER
         GCApp::getLayerAuthorizationChecker()->getLayers([
-            'mapset_name' => $oMap->getMetaData('ows_title') // use ows_title to avoid mapset with language key
+            'mapset_name' => $oMap->getMetaData('ows_title'), // use ows_title to avoid mapset with language key
         ]);
     }
 }

@@ -38,7 +38,7 @@ $sql = 'select relation_id, catalog.catalog_id, catalog_path, relation_name, rel
 
 $stmt = $db->prepare($sql);
 $stmt->execute([
-    'relation_id' => $_REQUEST['relation_id']
+    'relation_id' => $_REQUEST['relation_id'],
 ]);
 $relation = $stmt->fetch(PDO::FETCH_ASSOC);
 if (empty($relation)) {
@@ -71,14 +71,14 @@ $sql = 'select ' . implode(', ', $fieldsName) . ' from ' . $layerSchema . '.' . 
 $stmt = $layerDataDb->prepare($sql);
 
 $stmt->execute([
-    'value' => $_REQUEST['f_key_value']
+    'value' => $_REQUEST['f_key_value'],
 ]);
 $results = [
     'fields' => $fields,
-    'results' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+    'results' => $stmt->fetchAll(PDO::FETCH_ASSOC),
 ];
 
 replaceNullWithBlank($results['results']);
 $ajax->success([
-    'data' => $results
+    'data' => $results,
 ]);

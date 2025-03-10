@@ -16,8 +16,8 @@ $result = [
     'data_objects' => [],
     'step' => 1,
     'fields' => [
-        'file' => 'File'
-    ]
+        'file' => 'File',
+    ],
 ];
 $n = 0;
 
@@ -28,10 +28,10 @@ if ($handle = opendir($path)) {
             continue;
         }
         $result['data'][$n] = [
-            'file' => $entry
+            'file' => $entry,
         ];
         $result['data_objects'][$n] = [
-            'filename' => $entry
+            'filename' => $entry,
         ];
         $n++;
     }

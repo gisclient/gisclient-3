@@ -80,7 +80,7 @@ class GWGCMap
         LayerGroup::VMAP_LAYER_TYPE => "http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3",
         LayerGroup::YMAP_LAYER_TYPE => "http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers",
         LayerGroup::OSM_LAYER_TYPE => "http://openstreetmap.org/openlayers/OpenStreetMap.js",
-        LayerGroup::GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?"
+        LayerGroup::GMAP_LAYER_TYPE => "http://maps.google.com/maps/api/js?",
     ];
 
     private $i18n;
@@ -190,7 +190,7 @@ class GWGCMap
                 floatval($ext[0]),
                 floatval($ext[1]),
                 floatval($ext[2]),
-                floatval($ext[3])
+                floatval($ext[3]),
             ];
         }
 
@@ -244,7 +244,7 @@ class GWGCMap
         $sql = 'select mapset_name, mapset_title from ' . DB_SCHEMA . '.mapset where project_name = :project';
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            'project' => $this->projectName
+            'project' => $this->projectName,
         ]);
         $mapConfig['mapsets'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         
@@ -288,7 +288,7 @@ class GWGCMap
         $mapTmp->free();
 
         $allUserLayers = $this->layerAuthChecker->getLayers([
-            'mapset_name' => $this->mapsetName
+            'mapset_name' => $this->mapsetName,
         ]);
         $authorizedLayers = $allUserLayers['authorized_layers'];
         $userLayers = $allUserLayers['map_layers'];
@@ -361,10 +361,10 @@ class GWGCMap
             $row = $rowset[$i];
             if (!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'theme', $row['theme_id'], [
-                    'theme_title', 'copyright_string'
+                    'theme_title', 'copyright_string',
                 ]);
                 $row = $this->i18n->translateRow($row, 'layergroup', $row['layergroup_id'], [
-                    'layergroup_title', 'sld'
+                    'layergroup_title', 'sld',
                 ]);
             }
 
@@ -520,7 +520,7 @@ class GWGCMap
                                 "layer" => $layergroupName,
                                 "title" => $layergroupTitle,
                                 "visibility" => $row["status"] == 1,
-                                "order" => $layerOrder
+                                "order" => $layerOrder,
                             ];
                         } else {
                             //Layergroup con singoli layer distinti (DA FORZARE SE ASSOCIATO A UNA FEATURETYPE?????)
@@ -532,7 +532,7 @@ class GWGCMap
                                 }
                                 $arr = [
                                     "layer" => $userLayer["name"],
-                                    "title" => $userLayer["title"]
+                                    "title" => $userLayer["title"],
                                 ];
                                 if ($userLayer["minScale"]) {
                                     $arr["minScale"] = floatval($userLayer["minScale"]);
@@ -548,7 +548,7 @@ class GWGCMap
                                 "title" => $layergroupTitle,
                                 "visibility" => $row["status"] == 1,
                                 "order" => $layerOrder,
-                                "nodes" => $nodes
+                                "nodes" => $nodes,
                             ];
                         }
 
@@ -599,7 +599,7 @@ class GWGCMap
                             array_push($aLayer["parameters"]["layers"], $userLayer["name"]);
                             $arr = [
                                 "layer" => $userLayer["name"],
-                                "title" => $userLayer["title"]
+                                "title" => $userLayer["title"],
                             ];
                             if ($userLayer["minScale"]) {
                                 $arr["minScale"] = floatval($userLayer["minScale"]);
@@ -925,7 +925,7 @@ class GWGCMap
                             'class_id' => $classIndex,
                             'class_name' => $class->name,
                             'class_title' => $class->name,
-                            'legendtype_id' => 1
+                            'legendtype_id' => 1,
                         ];
                     }
                 }
@@ -970,7 +970,7 @@ class GWGCMap
             "multilinestring" => "MultiLineStringPropertyType",
             "polygon" => "PolygonPropertyType",
             "multipolygon" => "MultiPolygonPropertyType",
-            "geometry" => "GeometryPropertyType"
+            "geometry" => "GeometryPropertyType",
         ];
         
         $featureTypesLinks = $this->getFeatureTypesLinks();
@@ -1016,10 +1016,10 @@ class GWGCMap
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if (!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'layer', $row['layer_id'], [
-                    'layer_title', 'classitem', 'labelitem'
+                    'layer_title', 'classitem', 'labelitem',
                 ]);
                 $row = $this->i18n->translateRow($row, 'field', $row['field_id'], [
-                    'field_name', 'field_header'
+                    'field_name', 'field_header',
                 ]);
             }
     
@@ -1105,16 +1105,16 @@ class GWGCMap
                     $featureTypes[$index][$typeName]["symbolizer"] = [
                         "Point" => [
                             "fillColor" => "$color",
-                            "pointRadius" => $size
-                        ]
+                            "pointRadius" => $size,
+                        ],
                     ];
                 }
                 if ($row["layertype_id"] == 2 || $row["layertype_id"] == 3) {
                     $featureTypes[$index][$typeName]["symbolizer"] = [
                         "Line" => [
                             "strokeColor" => "$color",
-                            "strokeWidth" => $size
-                        ]
+                            "strokeWidth" => $size,
+                        ],
                     ];
                 }
             }
@@ -1132,8 +1132,8 @@ class GWGCMap
                     $featureTypes[$index][$typeName]["properties"] = [
                         [
                             "name" => $row['data_geom'],
-                            "type" => $wfsGeometryType[$row['data_type']]
-                        ]
+                            "type" => $wfsGeometryType[$row['data_type']],
+                        ],
                     ];
                 }
 
@@ -1166,7 +1166,7 @@ class GWGCMap
                     "searchType" => intval($row["searchtype_id"]),
                     'editable' => $userCanEdit ? intval($row['field_editable']) : 0,
                     "resultType" => intval($row["resultype_id"]),
-                    'isPrimaryKey' => $isPrimaryKey
+                    'isPrimaryKey' => $isPrimaryKey,
                 ];
 
                 if ($row["relation_name"]) {
@@ -1184,7 +1184,7 @@ class GWGCMap
                         'catalog' => $row['catalog_id'],
                         'table' => $row['lookup_table'],
                         'id' => $row['lookup_id'],
-                        'name' => $row['lookup_name']
+                        'name' => $row['lookup_name'],
                     ];
                 }
 
@@ -1211,7 +1211,7 @@ class GWGCMap
             " where mapset_layergroup.mapset_name=:mapset_name ORDER BY link_order;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':mapset_name' => $this->mapsetName
+            ':mapset_name' => $this->mapsetName,
         ]);
         $links = [];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
@@ -1222,7 +1222,7 @@ class GWGCMap
                 'name' => $row["link_name"],
                 'url' => $row['link_def'],
                 'width' => $row['winw'],
-                'height' => $row['winh']
+                'height' => $row['winh'],
             ];
         }
         return $links;
@@ -1242,7 +1242,7 @@ class GWGCMap
         ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':mapset_name' => $this->mapsetName
+            ':mapset_name' => $this->mapsetName,
         ]);
         $rowset = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $selgroupArray = [];
@@ -1453,7 +1453,7 @@ class GWGCMap
                 "RIGHT JOIN spatial_ref_sys USING (srid) WHERE project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name' => $this->projectName
+            ':project_name' => $this->projectName,
         ]);
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             //me ne faccio qualcosa del nome????
@@ -1495,7 +1495,7 @@ class GWGCMap
         $stmt->execute([
             ':username' => \GCApp::getAuthenticationHandler()->getToken()->getUsername(),
             ':mapset_name' => $this->mapsetName,
-            ':id' => $contextId
+            ':id' => $contextId,
         ]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!empty($row)) {

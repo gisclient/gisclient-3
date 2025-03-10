@@ -15,7 +15,7 @@ try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
         'project' => $project,
-        'mapset' => $mapset
+        'mapset' => $mapset,
     ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -27,7 +27,7 @@ try {
                     'theme_title' => $row['theme_title'],
                     'status' => $row['status'],
                     'hide' => $row['hide'],
-                    'refmap' => $row['refmap']
+                    'refmap' => $row['refmap'],
                 ]);
             }
         }

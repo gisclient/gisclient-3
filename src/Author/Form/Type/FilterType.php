@@ -23,7 +23,7 @@ class FilterType extends AbstractType
             ->add('saved_filter_name', TextType::class, [
                 'constraints' => [
                     new Constraints\Required(),
-                    new Constraints\NotBlank()
+                    new Constraints\NotBlank(),
                 ],
             ])
             ->add('mapset_name', TextType::class, [
@@ -40,8 +40,8 @@ class FilterType extends AbstractType
                             if ($data === false) {
                                 $context->addViolation('The mapset does not exists!');
                             }
-                        }
-                    ])
+                        },
+                    ]),
                 ],
             ])
             ->add('layer_id', TextType::class, [
@@ -65,21 +65,21 @@ class FilterType extends AbstractType
                             if ($data === false) {
                                 $context->addViolation('The layer is not enabled on this mapset!');
                             }
-                        }
-                    ])
+                        },
+                    ]),
                 ],
             ])
             ->add('saved_filter_scope', TextType::class, [
                 'constraints' => [
                     new Constraints\Required(),
-                    new Constraints\NotBlank()
+                    new Constraints\NotBlank(),
                 ],
             ])
             ->add('saved_filter_data', TextType::class, [
                 'allow_extra_fields' => true,
                 'constraints' => [
                     new Constraints\Required(),
-                    new Constraints\NotBlank()
+                    new Constraints\NotBlank(),
                 ],
             ])
         ;

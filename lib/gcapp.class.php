@@ -182,7 +182,7 @@ class GCApp
         $sql = 'select catalog_path from ' . DB_SCHEMA . '.catalog where catalog_name=:catalog_name';
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            'catalog_name' => $catalogName
+            'catalog_name' => $catalogName,
         ]);
         return $stmt->fetchColumn(0);
     }
@@ -200,7 +200,7 @@ class GCApp
         }
         return [
             'inQuery' => implode(',', $inArr),
-            'parameters' => $params
+            'parameters' => $params,
         ];
     }
     
@@ -214,7 +214,7 @@ class GCApp
                 $stmt->execute([
                     'scm' => $schema,
                     'tbl' => $table,
-                    'pkey' => $pkey
+                    'pkey' => $pkey,
                 ]);
             } else {
                 $sql = "select $dbschema.new_pkey(:scm, :tbl, :pkey, :start);";
@@ -223,7 +223,7 @@ class GCApp
                     'scm' => $schema,
                     'tbl' => $table,
                     'pkey' => $pkey,
-                    'start' => $start
+                    'start' => $start,
                 ]);
             }
         } catch (Exception $e) {
@@ -259,7 +259,7 @@ class GCApp
             ' where schema_name = :schema ';
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
-            'schema' => $schema
+            'schema' => $schema,
         ]);
         return ($stmt->rowCount() > 0);
     }
@@ -271,7 +271,7 @@ class GCApp
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
             ':schema' => $schema,
-            ':table' => $tableName
+            ':table' => $tableName,
         ]);
         return ($stmt->rowCount() > 0);
     }
@@ -285,7 +285,7 @@ class GCApp
         $stmt->execute([
             ':schema' => $schema,
             ':table' => $tableName,
-            ':column' => $columnName
+            ':column' => $columnName,
         ]);
         $result = $stmt->fetchColumn(0);
         return !empty($result);
@@ -299,7 +299,7 @@ class GCApp
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
             ':schema' => $schema,
-            ':table' => $tableName
+            ':table' => $tableName,
         ]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
     }
@@ -313,7 +313,7 @@ class GCApp
         $stmt = $db->prepare($sql);
         $stmt->execute([
             'schema' => $schema,
-            'table' => $tableName
+            'table' => $tableName,
         ]);
         return $stmt->fetchColumn(0);
     }
@@ -372,7 +372,7 @@ class GCAuthor
         4 => 39370.1,
         5 => 39.3701,
         6 => 63360,
-        7 => 4374754
+        7 => 4374754,
     ];
     public static $gMapResolutions = [156543.0339, 78271.51695, 39135.758475, 19567.8792375, 9783.93961875, 4891.969809375, 2445.9849046875, 1222.99245234375, 611.496226171875, 305.7481130859375, 152.87405654296876, 76.43702827148438, 38.21851413574219, 19.109257067871095, 9.554628533935547, 4.777314266967774, 2.388657133483887, 1.1943285667419434, 0.5971642833709717, 0.29858214168548586, 0.14929107084274293, 0.07464553542137146, 0.03527776, 0.01763888];
     public static $defaultScaleList = [500000000, 5000000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2000, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50];
@@ -382,7 +382,7 @@ class GCAuthor
         "inches" => 1,
         "km" => 39370.1,
         "mi" => 63360,
-        "dd" => 4374754
+        "dd" => 4374754,
     ];
 
     private static $lang;
@@ -499,7 +499,7 @@ class GCAuthor
             'group_1n' => true, //se false, vengono inclusi i campi della secondaria, di conseguenza i records non sono più raggruppati per i campi della primaria (se, per esempio, si vogliono visualizzare i dati della secondaria in tabella),
             'show_relation' => null, //se voglio visualizzare i dati di una sola secondaria, popolo questo con il nome della relazione da visualizzare
             'getGeomAs' => null, // se text, viene usato st_astext, altrimenti nulla (astext serve per le interrogazioni, nulla serve per il mapfile)
-            'srid' => null //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
+            'srid' => null, //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
         ];
         $options = array_merge($defaultOptions, $options);
         
@@ -624,7 +624,7 @@ class GCAuthor
         $typesMap = [
             1 => ['varchar', 'text', 'char', 'bool', 'bpchar'],
             2 => ['int', 'int2', 'int4', 'int8', 'float', 'float4', 'float8', 'serial4', 'serial8'],
-            3 => ['date', 'timestamp', 'timestamptz']
+            3 => ['date', 'timestamp', 'timestamptz'],
         ];
         foreach ($typesMap as $typeId => $types) {
             if (in_array($dbType, $types)) {
@@ -708,7 +708,7 @@ class GCAuthor
                 WHERE project_name = :project";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            "project" => $project
+            "project" => $project,
         ]);
 
         return $stmt->fetchColumn();
@@ -804,220 +804,220 @@ class GCAuthor
     private static $translations = [
         'yes' => [
             'it' => 'Si',
-            'de' => 'Ja'
+            'de' => 'Ja',
         ],
         'no' => [
             'it' => 'No',
-            'de' => 'Nein'
+            'de' => 'Nein',
         ],
         'button_edit' => [
             'it' => 'Modifica',
-            'de' => 'Ändern'
+            'de' => 'Ändern',
         ],
         'button_new' => [
             'it' => 'Nuovo',
-            'de' => 'Neu'
+            'de' => 'Neu',
         ],
         'button_back' => [
             'it' => 'Indietro',
-            'de' => 'Zurück'
+            'de' => 'Zurück',
         ],
         'button_save' => [
             'it' => 'Salva',
-            'de' => 'Speichern'
+            'de' => 'Speichern',
         ],
         'button_cancel' => [
             'it' => 'Annulla',
-            'de' => 'Abbrechen'
+            'de' => 'Abbrechen',
         ],
         'button_publish' => [
             'it' => 'Pubblica',
-            'de' => 'Herausgeben'
+            'de' => 'Herausgeben',
         ],
         'button_delete' => [
             'it' => 'Elimina',
-            'de' => 'Löschen'
+            'de' => 'Löschen',
         ],
         'button_export' => [
             'it' => 'Esporta',
-            'de' => 'Exportieren'
+            'de' => 'Exportieren',
         ],
         'button_import' => [
             'it' => 'Importa',
-            'de' => 'Importieren'
+            'de' => 'Importieren',
         ],
         'close' => [
             'it' => 'Chiudi',
-            'de' => 'Schließen'
+            'de' => 'Schließen',
         ],
         'title' => [
             'it' => 'Titolo',
-            'de' => 'Titel'
+            'de' => 'Titel',
         ],
         'name' => [
             'it' => 'Nome',
-            'de' => 'Name'
+            'de' => 'Name',
         ],
         'description' => [
             'it' => 'Descrizione',
-            'de' => 'Beschreibung'
+            'de' => 'Beschreibung',
         ],
         'nodata' => [
             'it' => 'Nessun Dato Presente',
-            'de' => 'Keine Daten'
+            'de' => 'Keine Daten',
         ],
         'undefined' => [
             'it' => 'Non definito',
-            'de' => 'Nicht definiert'
+            'de' => 'Nicht definiert',
         ],
         'table' => [
             'it' => 'Tabella',
-            'de' => 'Tabelle'
+            'de' => 'Tabelle',
         ],
         'column' => [
             'it' => 'Colonna',
-            'de' => 'Spalte'
+            'de' => 'Spalte',
         ],
         'field' => [
             'it' => 'Campo',
-            'de' => 'Feld'
+            'de' => 'Feld',
         ],
         'group' => [
             'it' => 'Gruppo',
-            'de' => 'Gruppe'
+            'de' => 'Gruppe',
         ],
         'pkey' => [
             'it' => 'Campo chiave',
-            'de' => 'Primärschlüssel'
+            'de' => 'Primärschlüssel',
         ],
         'format' => [
             'it' => 'Formato',
-            'de' => 'Format'
+            'de' => 'Format',
         ],
         'image' => [
             'it' => 'Immagine',
-            'de' => 'Bild'
+            'de' => 'Bild',
         ],
         'symbol' => [
             'it' => 'Simbolo',
-            'de' => 'Symbol'
+            'de' => 'Symbol',
         ],
         'category' => [
             'it' => 'Categoria',
-            'de' => 'Art'
+            'de' => 'Art',
         ],
         'position' => [
             'it' => 'Posizione',
-            'de' => 'Position'
+            'de' => 'Position',
         ],
         'save_to_temp' => [
             'it' => 'Salva in un mapfile temporaneo',
-            'de' => 'In einem temporären Mapfile abspeichern'
+            'de' => 'In einem temporären Mapfile abspeichern',
         ],
         'auto_refresh_mapfiles' => [
             'it' => 'Rigenera automaticamente i mapfiles',
-            'de' => 'Mapset automatisch aktualisieren'
+            'de' => 'Mapset automatisch aktualisieren',
         ],
         'save' => [
             'it' => 'Salva',
-            'de' => 'Speichern'
+            'de' => 'Speichern',
         ],
         'all' => [
             'it' => 'Tutti',
-            'de' => 'Alles'
+            'de' => 'Alles',
         ],
         'online_maps' => [
             'it' => 'Mappe online',
-            'de' => 'Online-Karten'
+            'de' => 'Online-Karten',
         ],
         'ogc_services' => [
             'it' => 'Servizi OGC',
-            'de' => 'OGC Dienste'
+            'de' => 'OGC Dienste',
         ],
         'update' => [
             'it' => 'Aggiorna',
-            'de' => 'Aktualisieren'
+            'de' => 'Aktualisieren',
         ],
         'temporary' => [
             'it' => 'temp.',
-            'de' => 'temporär'
+            'de' => 'temporär',
         ],
         'public' => [
             'it' => 'pubblici',
-            'de' => 'öffentlich'
+            'de' => 'öffentlich',
         ],
         'theme' => [
             'it' => 'Tema',
-            'de' => 'Thema'
+            'de' => 'Thema',
         ],
         'layergroup' => [
             'it' => 'Layergroup',
-            'de' => 'Layergruppe'
+            'de' => 'Layergruppe',
         ],
         'layer' => [
             'it' => 'Layer',
-            'de' => 'Layer'
+            'de' => 'Layer',
         ],
         'lookup_id' => [
             'it' => 'Campo chiave lookup',
-            'de' => 'Schlüsselfeld in der Nachschlagetabelle'
+            'de' => 'Schlüsselfeld in der Nachschlagetabelle',
         ],
         'lookup_name' => [
             'it' => 'Campo descrizione lookup',
-            'de' => 'Beschreibungsfeld in der Nachschlagetabelle'
+            'de' => 'Beschreibungsfeld in der Nachschlagetabelle',
         ],
         'confirm_delete' => [
             'it' => 'Sei sicuro di voler eliminare il record?',
-            'de' => 'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'
+            'de' => 'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?',
         ],
         'translations' => [
             'it' => 'Traduzioni',
-            'de' => 'Übersetzungen'
+            'de' => 'Übersetzungen',
         ],
         'List of available Maps' => [
             'it' => 'Elenco delle mappe disponibili',
-            'de' => 'Verfügbare Karten'
+            'de' => 'Verfügbare Karten',
         ],
         'Username' => [
             'it' => 'Nome Utente',
-            'de' => 'Benutzername'
+            'de' => 'Benutzername',
         ],
         'Password' => [
             'it' => 'Password',
-            'de' => 'Kennwort'
+            'de' => 'Kennwort',
         ],
         'project' => [
             'it' => 'Progetto',
-            'de' => 'Projekt'
+            'de' => 'Projekt',
         ],
         'symbology' => [
             'it' => 'Simbologia',
-            'de' => 'Symbole'
+            'de' => 'Symbole',
         ],
         'filename' => [
             'it' => 'Nome File',
-            'de' => 'Datei Name'
+            'de' => 'Datei Name',
         ],
         'delete_file' => [
             'it' => 'Elimina File',
-            'de' => 'Datei Löschen'
+            'de' => 'Datei Löschen',
         ],
         'new_name' => [
             'it' => 'Nuovo Nome',
-            'de' => 'Neue Name'
+            'de' => 'Neue Name',
         ],
         'file_list' => [
             'it' => 'Elenco File',
-            'de' => 'Datei Liste'
+            'de' => 'Datei Liste',
         ],
         'error_query' => [
             'it' => 'Impossibile eseguire la richiesta',
-            'de' => 'Abfrage kann nicht ausgeführt werden'
+            'de' => 'Abfrage kann nicht ausgeführt werden',
         ],
         'import_done' => [
             'it' => 'Procedura di importazione Terminata Correttamente.',
-            'de' => 'Importvorgang korrekt abgeschlossen.'
-        ]
+            'de' => 'Importvorgang korrekt abgeschlossen.',
+        ],
     ];
 }
 

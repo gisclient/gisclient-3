@@ -56,7 +56,7 @@ $maxExtent = [
     $mapConfig['xc'] - $resolutions[0] * TILE_SIZE,
     $mapConfig['yc'] - $resolutions[0] * TILE_SIZE,
     $mapConfig['xc'] + $resolutions[0] * TILE_SIZE,
-    $mapConfig['yc'] + $resolutions[0] * TILE_SIZE
+    $mapConfig['yc'] + $resolutions[0] * TILE_SIZE,
 ];
 
 if (!defined('OPENLAYERS')) {

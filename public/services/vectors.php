@@ -12,7 +12,7 @@ function outputError($msg)
 {
     header("Status: 500 Internal Server Error");
     die(json_encode([
-        'error' => $msg
+        'error' => $msg,
     ]));
 }
 

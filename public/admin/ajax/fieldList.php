@@ -41,8 +41,8 @@ $result = [
     'data_objects' => [],
     'step' => 1,
     'fields' => [
-        'field' => GCAuthor::t('field')
-    ]
+        'field' => GCAuthor::t('field'),
+    ],
 ];
 $n = 0;
 
@@ -77,15 +77,15 @@ $sql = "SELECT column_name from information_schema.columns " .
 $stmt = $dataDb->prepare($sql);
 $stmt->execute([
     ':schema' => $schema,
-    ':table' => $data
+    ':table' => $data,
 ]);
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $result['data'][$n] = [
-        'field' => $row['column_name']
+        'field' => $row['column_name'],
     ];
     $result['data_objects'][$n] = [
-        $selectedField => $row['column_name']
+        $selectedField => $row['column_name'],
     ];
     $n++;
 }

@@ -8,19 +8,19 @@ $gcService->startSession();
 if (empty($_REQUEST['features'])) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'missing features'
+        'error' => 'missing features',
     ]));
 }
 if (empty($_REQUEST['projection'])) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'missing projection'
+        'error' => 'missing projection',
     ]));
 }
 if (empty($_REQUEST['buffer'])) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'missing buffer'
+        'error' => 'missing buffer',
     ]));
 }
 
@@ -28,14 +28,14 @@ if (empty($_REQUEST['buffer'])) {
 if (empty($auth) || empty($srid) || !is_numeric($srid)) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'invalid projection'
+        'error' => 'invalid projection',
     ]));
 }
 
 if (!is_numeric($_REQUEST['buffer'])) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'invalid buffer'
+        'error' => 'invalid buffer',
     ]));
 }
 
@@ -45,7 +45,7 @@ $sql = "select st_astext(st_buffer(st_geomfromtext(:geom, :srid), :buffer))";
 $params = [
     'geom' => $_REQUEST['features'],
     'srid' => $srid,
-    'buffer' => $_REQUEST['buffer']
+    'buffer' => $_REQUEST['buffer'],
 ];
 try {
     $stmt = $db->prepare($sql);
@@ -57,7 +57,7 @@ try {
         'error' => 'buffer error',
         'sql' => $sql,
         'params' => $params,
-        'message' => $e->getMessage()
+        'message' => $e->getMessage(),
     ]));
 }
 if (empty($bufferedGeoms)) {
@@ -65,11 +65,11 @@ if (empty($bufferedGeoms)) {
         'result' => 'error',
         'error' => 'empty buffered geoms',
         'sql' => $sql,
-        'params' => $params
+        'params' => $params,
     ]));
 }
 
 die(json_encode([
     'result' => 'ok',
-    'geometries' => $bufferedGeoms
+    'geometries' => $bufferedGeoms,
 ]));

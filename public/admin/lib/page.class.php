@@ -27,7 +27,7 @@ class page
         "view" => 0,
         "edit" => 1,
         "new" => 2,
-        "list" => 3
+        "list" => 3,
     ];
     public $mode;
     public $livello;
@@ -82,7 +82,7 @@ class page
             $this->array_levels[$v["id"]] = [
                 "name" => $v["name"],
                 "parent" => $v["parent"],
-                "leaf" => $v["leaf"]
+                "leaf" => $v["leaf"],
             ];
         }
     }
@@ -196,7 +196,7 @@ class page
             // see obive FIXME: $this->navTreeValues[$lvl_name]=$lvl_header;
             $livelli[$lvl_id] = [
                 "val" => $lvl_id,
-                "key" => $lvl_name
+                "key" => $lvl_name,
             ];
         }
         unset($this->tableList);
@@ -681,7 +681,7 @@ class page
                     $filter = $tab["parent_name"] . "_id = " . $this->db->quote($this->parametri[$tab["parent_name"]]);
                     $tb->tag = [
                         "pkey" => "link",
-                        "pkey_value" => 0
+                        "pkey_value" => 0,
                     ];
                 }
                 $tb->set_dati($filter);

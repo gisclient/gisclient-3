@@ -13,7 +13,7 @@ $sql = "SELECT X.groupname,CASE WHEN (SELECT count(*)=0 FROM " . DB_SCHEMA . ".f
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'qtfield_id' => $qtfield
+        'qtfield_id' => $qtfield,
     ]);
     
     if ($stmt->rowCount() > 0) {
@@ -22,7 +22,7 @@ try {
                 array_push($data, [
                     'presente' => $row['presente'],
                     'groupname' => $row['groupname'],
-                    'editable' => $row['editable']
+                    'editable' => $row['editable'],
                 ]);
             }
         }

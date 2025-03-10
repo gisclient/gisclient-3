@@ -31,7 +31,7 @@ if ($_REQUEST["REQUEST"] == "PrintMap") {
     $_REQUEST["options"] = $fileContent;
     require_once 'gcWMSMerge.php';
     die(json_encode([
-        "file" => $mapConfig['file_name']
+        "file" => $mapConfig['file_name'],
     ]));
 }
 
@@ -43,7 +43,7 @@ if ($_REQUEST["REQUEST"] == "GetLayers") {
     $params = [
         ':project' => $_REQUEST['PROJECT'],
         ':mapset' => $_REQUEST['MAPSET'],
-        ':username' => $authHandler->isAuthenticated() ? $authHandler->getToken()->getUsername() : 'GUEST'
+        ':username' => $authHandler->isAuthenticated() ? $authHandler->getToken()->getUsername() : 'GUEST',
     ];
     $stmt = $db->prepare($sql);
     try {
@@ -56,7 +56,7 @@ if ($_REQUEST["REQUEST"] == "GetLayers") {
         $layers[] = $row;
     }
     die(json_encode([
-        'layers' => $layers
+        'layers' => $layers,
     ]));
 }
 
@@ -75,7 +75,7 @@ if ($_REQUEST["REQUEST"] == "DeleteLayer") {
     }
     
     die(json_encode([
-        'result' => 'OK'
+        'result' => 'OK',
     ]));
 }
 
@@ -83,20 +83,20 @@ $geomTypes = [
     'Point' => [
         'db_type' => 'POINT',
         'db_field' => 'point_geom',
-        'ms_type' => MS_LAYER_POINT
+        'ms_type' => MS_LAYER_POINT,
     ],
     'LineString' => [
         'db_type' => 'LINESTRING',
         'db_field' => 'line_geom',
         'ms_type' => MS_LAYER_LINE,
-        'label_function' => 'st_endpoint'
+        'label_function' => 'st_endpoint',
     ],
     'Polygon' => [
         'db_type' => 'POLYGON',
         'db_field' => 'polygon_geom',
         'ms_type' => MS_LAYER_POLYGON,
-        'label_function' => 'st_centroid'
-    ]
+        'label_function' => 'st_centroid',
+    ],
 ];
 
 if (empty($_REQUEST['SRS'])) {
@@ -155,7 +155,7 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
             ':redline_id' => $redlineId,
             ':redline_title' => $redlineTitle,
             ':note' => !empty($feature['properties']['note']) ? $feature['properties']['note'] : null,
-            ':color' => !empty($feature['properties']['color']) ? $feature['properties']['color'] : null
+            ':color' => !empty($feature['properties']['color']) ? $feature['properties']['color'] : null,
         ];
         try {
             $stmt->execute($params);
@@ -171,7 +171,7 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
 
         try {
             $stmt->execute([
-                ':id' => $rowId
+                ':id' => $rowId,
             ]);
         } catch (Exception $e) {
             outputError($e->getMessage() . "\n\n--" . $rowId);
@@ -182,7 +182,7 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
     if ($inserted) {
         die(json_encode([
             'redlineId' => $redlineId,
-            'redlineTitle' => $redlineTitle
+            'redlineTitle' => $redlineTitle,
         ]));
     } else {
         outputError('Invalid format');
@@ -310,7 +310,7 @@ function outputError($msg)
 {
     header("Status: 500 Internal Server Error");
     die(json_encode([
-        'error' => $msg
+        'error' => $msg,
     ]));
     //die("error\n".$msg);
 }
@@ -363,9 +363,9 @@ function getProjParams($srid)
     $projectInfo = [
         $_REQUEST['PROJECT'] => [
             "PROJPARAMS" => [
-                $srid => $projString
-            ]
-        ]
+                $srid => $projString,
+            ],
+        ],
     ];
     \GCService::instance()->set('PROJECT', $projectInfo);
 }

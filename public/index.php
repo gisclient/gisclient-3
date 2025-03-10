@@ -32,7 +32,7 @@ while ($row = $res->fetch()) {
         "template" => $row["template"],
         "extent" => $row["mapset_extent"],
         'private' => $row['private'],
-        'project_title' => $row["project_title"]
+        'project_title' => $row["project_title"],
     ];
 }
 

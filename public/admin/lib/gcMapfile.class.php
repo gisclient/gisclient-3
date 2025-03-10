@@ -78,7 +78,7 @@ class gcMapfile
             $sql = 'select project_name from ' . DB_SCHEMA . '.mapset where mapset_name=:mapset';
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
-                'mapset' => $keyvalue
+                'mapset' => $keyvalue,
             ]);
             $projectName = $stmt->fetchColumn(0);
         } elseif ($keytype == "project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO OPPURE UNICO MAPFILE PER PROGETTO
@@ -205,7 +205,7 @@ class gcMapfile
                         ':maxx' => $ext[2],
                         ':maxy' => $ext[3],
                         ':fromsrid' => $aLayer["mapset_srid"],
-                        ':tosrid' => $oFeatureData['data_srid']
+                        ':tosrid' => $oFeatureData['data_srid'],
                     ]);
                     $extent = $stmt->fetchColumn(0);
                 } else {
@@ -275,7 +275,7 @@ class gcMapfile
                         'cache' => $this->_getCacheType($mapName . '_' . $aLayer['theme_name']),
                         'layergroups' => [],
                         'theme_name' => $aLayer['theme_name'],
-                        'theme_title' => $aLayer['theme_title']
+                        'theme_title' => $aLayer['theme_title'],
                     ];
                 }
                 array_push($this->mpxCaches[$mapName][$cacheName]['layergroups'], $aLayer['layergroup_name']);
@@ -288,18 +288,18 @@ class gcMapfile
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]] = [
                                 "name" => $aLayer["theme_name"],
                                 "title" => $aLayer["theme_title"],
-                                "layers" => []
+                                "layers" => [],
                             ];
                         }
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = [
                                 "name" => $aLayer["layergroup_name"],
-                                "title" => $aLayer["layergroup_title"]
+                                "title" => $aLayer["layergroup_title"],
                             ];
                         }
                         if ($aLayer["layergroup_single"] == 1) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["sources"] = [
-                                "mapserver_source:" . $aLayer["layergroup_name"]
+                                "mapserver_source:" . $aLayer["layergroup_name"],
                             ];
                         } else {
                             if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) {
@@ -308,7 +308,7 @@ class gcMapfile
                             array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], [
                                 "name" => $aLayer["layergroup_name"] . "." . $aLayer["layer_name"],
                                 "title" => empty($aLayer["layer_title"]) ? $aLayer["layer_name"] : $aLayer["layer_title"],
-                                "sources" => ["mapserver_source:" . $aLayer["layergroup_name"] . "." . $aLayer["layer_name"]]
+                                "sources" => ["mapserver_source:" . $aLayer["layergroup_name"] . "." . $aLayer["layer_name"]],
                             ]);
                         }
                         if (!in_array($aLayer["layergroup_name"], $defaultLayers[$mapName]) && ($aLayer["isbaselayer"] == 0) && ($aLayer["layergroup_status"] == 1)) {
@@ -317,19 +317,19 @@ class gcMapfile
                     } elseif (in_array($aLayer["owstype_id"], [
                         LayerGroup::WMS_CACHE_LAYER_TYPE,
                         LayerGroup::WMTS_LAYER_TYPE,
-                        LayerGroup::TMS_LAYER_TYPE
+                        LayerGroup::TMS_LAYER_TYPE,
                     ])) {
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]])) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]] = [
                                 "name" => $aLayer["theme_name"],
                                 "title" => $aLayer["theme_title"],
-                                "layers" => []
+                                "layers" => [],
                             ];
                         }
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = [
                                 "name" => $aLayer["layergroup_name"],
-                                "title" => $aLayer["layergroup_title"]
+                                "title" => $aLayer["layergroup_title"],
                             ];
                         }
                         //echo $aLayer["layergroup_name"];
@@ -343,7 +343,7 @@ class gcMapfile
                                 "minimize_meta_requests" => true,
                                 "request_format" => $aLayer["outputformat_mimetype"],
                                 "cache" => $this->_getCacheType($mapName . '_' . $aLayer["theme_name"] . '.' . $aLayer["layergroup_name"]),
-                                "grids" => array_keys($this->epsgList)
+                                "grids" => array_keys($this->epsgList),
                                 //'grids'=>array("epsg3857")                //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                             ];
                         }
@@ -368,13 +368,13 @@ class gcMapfile
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]] = [
                                 "name" => $aLayer["theme_name"],
                                 "title" => $aLayer["theme_title"],
-                                "layers" => []
+                                "layers" => [],
                             ];
                         }
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]])) {
                             $this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]] = [
                                 "name" => $aLayer["layergroup_name"],
-                                "title" => $aLayer["layergroup_title"]
+                                "title" => $aLayer["layergroup_title"],
                             ];
                         }
                         if (empty($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"])) {
@@ -385,7 +385,7 @@ class gcMapfile
                             array_push($this->mpxLayers[$mapName][$aLayer["theme_name"]]["layers"][$aLayer["layergroup_name"]]["layers"], [
                                 "name" => $aLayer["layergroup_name"] . "." . $aLayer["layer_name"],
                                 "title" => empty($aLayer["layer_title"]) ? $aLayer["layer_name"] : $aLayer["layer_title"],
-                                "sources" => ["mapserver_source:" . $aLayer["layergroup_name"]]
+                                "sources" => ["mapserver_source:" . $aLayer["layergroup_name"]],
                             ]);
                         }
                     }
@@ -440,7 +440,7 @@ class gcMapfile
                             $layersToAdd[$cache['theme_name'] . '_tiles'] = [
                                 'name' => $cache['theme_name'] . '_tiles',
                                 'title' => $cache['theme_title'],
-                                'sources' => [$cacheName]
+                                'sources' => [$cacheName],
                             ];
                             unset($cache['theme_name'], $cache['theme_title']);
                         };
@@ -459,13 +459,13 @@ class gcMapfile
                     'minimize_meta_requests' => true,
                     //'cache'=>$this->_getCacheType($mapName), //non serve duplicare la cache
                     'disable_storage' => true,
-                    'grids' => array_keys($this->epsgList)
+                    'grids' => array_keys($this->epsgList),
                     //'grids'=>array("epsg3857")//PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
                 ];
                 $this->mpxLayers[$mapName][$mapName . "_tiles"] = [
                     'name' => $mapName . "_tiles",
                     'title' => $mapName . "_tiles",
-                    'sources' => [$mapName . "_cache"]
+                    'sources' => [$mapName . "_cache"],
                 ];
 
                 //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
@@ -701,7 +701,7 @@ END #MAP";
     public function _getCacheType($fileName)
     {
         $ret = [
-            'type' => MAPPROXY_CACHE_TYPE
+            'type' => MAPPROXY_CACHE_TYPE,
         ];
         if (MAPPROXY_CACHE_TYPE == 'mbtiles') {
             $ret["filename"] = $fileName . '.mbtiles';
@@ -799,7 +799,7 @@ END";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':projectName' => $this->projectName
+            ':projectName' => $this->projectName,
         ]);
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!empty($res)) {
@@ -817,7 +817,7 @@ END";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':mapName' => $mapName
+            ':mapName' => $mapName,
         ]);
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!empty($res)) {
@@ -930,7 +930,7 @@ END";
         $stmt = $this->db->prepare($sql);
 
         $stmt->execute([
-            ':srid' => $srid
+            ':srid' => $srid,
         ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $x = $row["xc"];
@@ -944,7 +944,7 @@ END";
             0 => round($x - $extent, $precision),
             1 => round($y - $extent, $precision),
             2 => round($x + $extent, $precision),
-            3 => round($y + $extent, $precision)
+            3 => round($y + $extent, $precision),
         ];
     }
 
@@ -999,7 +999,7 @@ END";
             $tmpList[$srs] = [
                 'um' => $row["um"],
                 'xc' => $row["xc"],
-                'yc' => $row["yc"]
+                'yc' => $row["yc"],
             ];
         };
 
@@ -1007,7 +1007,7 @@ END";
         $grids = [];
         foreach ($this->epsgList as $key => $srs) {
             $grids[$key] = [
-                "srs" => $srs
+                "srs" => $srs,
             ];
             $grids[$key]["res"] = [];
             $convFact = GCAuthor::$aInchesPerUnit[$tmpList[$key]["um"]] * MAP_DPI;
@@ -1055,14 +1055,14 @@ END";
             'services' => [
                 'tms' => [
                     'use_grid_names' => false,
-                    'origin' => 'nw'
+                    'origin' => 'nw',
                 ],
                 'kml' => [
-                    'use_grid_names' => false
+                    'use_grid_names' => false,
                 ],
                 'wmts' => [
                     'restful' => true,
-                    'kvp' => true
+                    'kvp' => true,
                 ],
                 'wms' => [
                     'srs' => array_values($this->epsgList),
@@ -1072,12 +1072,12 @@ END";
                         'online_resource' => GISCLIENT_OWS_URL . "?project=" . $this->projectName . "&amp;map=" . $mapName,
                         'contact' => [
                             //ma serve sta roba?!?!
-                            'person' => 'Roberto'
+                            'person' => 'Roberto',
                         ],
                         'access_constraints' => 'None',
-                        'fees' => 'None'
-                    ]
-                ]
+                        'fees' => 'None',
+                    ],
+                ],
             ],
             'sources' => [
                 'mapserver_wms_source' => [
@@ -1088,49 +1088,49 @@ END";
                         'map' => ROOT_PATH . 'map/' . $this->projectName . "/" . $mapName . ".map",
                         'format' => 'image/png',
                         'transparent' => true,
-                        'exceptions' => 'inimage'
+                        'exceptions' => 'inimage',
                     ],
                     'coverage' => [
                         'bbox' => $this->mapsetExtent,
-                        'srs' => 'EPSG:' . $this->mapsetSrid
+                        'srs' => 'EPSG:' . $this->mapsetSrid,
                     ],
                     'image' => [
                         'transparent_color' => '#ffffff',
-                        'transparent_color_tolerance' => 0
-                    ]
+                        'transparent_color_tolerance' => 0,
+                    ],
                 ],
                 'mapserver_source' => [
                     'type' => 'mapserver',
                     'req' => [
                         'transparent' => true,
                         'map' => ROOT_PATH . 'map/' . $this->projectName . "/" . $mapName . ".map",
-                        'exceptions' => 'inimage'
+                        'exceptions' => 'inimage',
                     ],
                     'coverage' => [
                         'bbox' => $this->mapsetExtent,
-                        'srs' => 'EPSG:' . $this->mapsetSrid
+                        'srs' => 'EPSG:' . $this->mapsetSrid,
                     ],
                     'image' => [
                         'transparent_color' => '#ffffff',
-                        'transparent_color_tolerance' => 0
+                        'transparent_color_tolerance' => 0,
                     ],
                     'mapserver' => [
                         'binary' => MAPSERVER_BINARY_PATH,
-                        'working_dir' => ROOT_PATH . 'map/' . $this->projectName
-                    ]
+                        'working_dir' => ROOT_PATH . 'map/' . $this->projectName,
+                    ],
 
-                ]
+                ],
             ],
             'globals' => [
                 'srs' => [
-                    'proj_data_dir' => PROJ_LIB
+                    'proj_data_dir' => PROJ_LIB,
                 ],
                 'cache' => [
                     'base_dir' => MAPPROXY_CACHE_PATH . $this->projectName . '/',
                     'lock_dir' => MAPPROXY_CACHE_PATH . 'locks/',
-                    'tile_lock_dir' => MAPPROXY_CACHE_PATH . 'tile_locks/'
-                ]
-            ]
+                    'tile_lock_dir' => MAPPROXY_CACHE_PATH . 'tile_locks/',
+                ],
+            ],
         ];
 
         if (defined('MAPPROXY_DEMO') && MAPPROXY_DEMO) {
@@ -1191,14 +1191,14 @@ END";
         $config = [
             'seeds' => [
                 'offline' => [
-                    'caches' => array_keys($caches)
-                ]
-            ]
+                    'caches' => array_keys($caches),
+                ],
+            ],
         ];
 
         foreach ($caches as $cache => $value) {
             $config['seeds'][$mapName . '_' . basename($cache, '_cache')] = [
-                'caches' => [$cache]
+                'caches' => [$cache],
             ];
         }
 

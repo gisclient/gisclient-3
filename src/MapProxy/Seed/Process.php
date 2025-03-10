@@ -46,7 +46,7 @@ class Process implements OfflineProcessInterface
             "--proxy-conf=" . $task->getMapConfig(),
             "--concurrency=1",
             "--seed-conf=" . $task->getSeedConfig(),
-            "--seed=" . $task->getTaskName()
+            "--seed=" . $task->getTaskName(),
         ];
         if ($runInBackground) {
             $commandLine[] = ">";

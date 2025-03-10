@@ -24,7 +24,7 @@ foreach ($db->query($sql, PDO::FETCH_ASSOC) as $row) {
         $stmt = $db->prepare($sql);
         $stmt->execute([
             'extent' => implode(' ', $extent),
-            'id' => $row['layer_id']
+            'id' => $row['layer_id'],
         ]);
     }
 }

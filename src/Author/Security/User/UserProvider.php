@@ -99,7 +99,7 @@ class UserProvider implements UserProviderInterface
         ';
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            'user' => $username
+            'user' => $username,
         ]);
         // make a call to your webservice here
         $userData = $stmt->fetch(\PDO::FETCH_ASSOC);

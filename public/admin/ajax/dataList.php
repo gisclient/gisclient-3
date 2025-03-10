@@ -31,8 +31,8 @@ switch ($catalogData["connection_type"]) {
             'data_objects' => [],
             'step' => null,
             'fields' => [
-                'file' => 'File'
-            ]
+                'file' => 'File',
+            ],
         ];
         $n = 0;
         
@@ -54,10 +54,10 @@ switch ($catalogData["connection_type"]) {
         if (!empty($_REQUEST['directory'])) { // siamo in una sottocartella, includi anche il back
             $navDir = $_REQUEST['directory'];
             $result['data'][$n] = [
-                'file' => '..'
+                'file' => '..',
             ];
             $result['data_objects'][$n] = [
-                'directory' => $navDir . '../'
+                'directory' => $navDir . '../',
             ];
             $n++;
         }
@@ -67,10 +67,10 @@ switch ($catalogData["connection_type"]) {
         sort($directories);
         foreach ($directories as $directory) {
             $result['data'][$n] = [
-                'file' => $directory
+                'file' => $directory,
             ];
             $result['data_objects'][$n] = [
-                'directory' => $navDir . addFinalSlash($directory)
+                'directory' => $navDir . addFinalSlash($directory),
             ];
             $n++;
         }
@@ -84,11 +84,11 @@ switch ($catalogData["connection_type"]) {
             sort($files);
             foreach ($files as $file) {
                 $result['data'][$n] = [
-                    'file' => $file
+                    'file' => $file,
                 ];
                 $result['data_objects'][$n] = [
                     'data' => $file,
-                    'is_final_step' => 1
+                    'is_final_step' => 1,
                 ];
                 $n++;
             }
@@ -98,7 +98,7 @@ switch ($catalogData["connection_type"]) {
         $result = [
             'steps' => 2,
             'data' => [],
-            'data_objects' => []
+            'data_objects' => [],
         ];
         $n = 0;
     
@@ -107,7 +107,7 @@ switch ($catalogData["connection_type"]) {
         if (empty($_REQUEST["step"])) { //selezione tabella
             $result['fields'] = [
                 'table' => GCAuthor::t('table'),
-                'column' => GCAuthor::t('column')
+                'column' => GCAuthor::t('column'),
             ];
             $result['step'] = 1;
             
@@ -125,13 +125,13 @@ switch ($catalogData["connection_type"]) {
                     'data' => $row['table'],
                     'data_geom' => $row['column'],
                     'data_type' => $row['type'],
-                    'data_srid' => $row['srid']
+                    'data_srid' => $row['srid'],
                 ];
                 $n++;
             }
         } else { // selezione pkey
             $result['fields'] = [
-                'pkey' => GCAuthor::t('pkey')
+                'pkey' => GCAuthor::t('pkey'),
             ];
             $result['step'] = 2;
             
@@ -139,7 +139,7 @@ switch ($catalogData["connection_type"]) {
             $stmt = $dataDb->prepare($sql);
             $stmt->execute([
                 ':schema' => $schema,
-                ':table' => $_REQUEST['data']
+                ':table' => $_REQUEST['data'],
             ]);
             $dbTableName = $stmt->fetchColumn(0);
             if ($dbTableName != $_REQUEST['data']) {
@@ -151,7 +151,7 @@ switch ($catalogData["connection_type"]) {
             $stmt->execute([
                 ':schema' => $schema,
                 ':table' => $_REQUEST['data'],
-                ':column' => $_REQUEST['data_geom']
+                ':column' => $_REQUEST['data_geom'],
             ]);
             $dbColumnName = $stmt->fetchColumn(0);
             if ($dbColumnName != $_REQUEST['data_geom']) {
@@ -169,11 +169,11 @@ switch ($catalogData["connection_type"]) {
             $stmt = $dataDb->prepare($sql);
             $stmt->execute([
                 ':schema' => $schema,
-                ':table' => $_REQUEST['data']
+                ':table' => $_REQUEST['data'],
             ]);
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $result['data'][$n] = [
-                    'pkey' => $row['column_name']
+                    'pkey' => $row['column_name'],
                 ];
                 $result['data_objects'][$n] = [
                     'data_unique' => $row['column_name'],
@@ -190,7 +190,7 @@ switch ($catalogData["connection_type"]) {
         $result = [
             'steps' => 2,
             'data' => [],
-            'data_objects' => []
+            'data_objects' => [],
         ];
         $n = 0;
         
@@ -199,13 +199,13 @@ switch ($catalogData["connection_type"]) {
             $result['fields'] = [
                 'group' => GCAuthor::t('group'),
                 'name' => GCAuthor::t('name'),
-                'title' => GCAuthor::t('title')
+                'title' => GCAuthor::t('title'),
             ];
             
             $defaultParameters = [
                 "SERVICE" => "WMS",
                 "REQUEST" => "GetCapabilities",
-                'VERSION' => '1.1.1'
+                'VERSION' => '1.1.1',
             ];
             $urlComponents = parse_url($catalogData["catalog_path"]);
             if (!empty($urlComponents['query'])) {
@@ -246,13 +246,13 @@ switch ($catalogData["connection_type"]) {
                 'server_version' => $data["@attributes"]["version"],
                 'format' => current($data["Capability"]["Request"]["GetMap"]["Format"]),
                 'formatlist' => implode(' ', $data["Capability"]["Request"]["GetMap"]["Format"]),
-                'epsglist' => implode(' ', $lThemeSRS)
+                'epsglist' => implode(' ', $lThemeSRS),
             ];
             $mdBuilder = new WMSMetadataBuilder($mdEntries);
             
             foreach ($theme['Layer'] as $layergroup) {
                 $layer = [
-                    'group' => $layergroup['Name']
+                    'group' => $layergroup['Name'],
                 ];
                 $availableSrids = $lThemeSRS;
                 if (!empty($layergroup['SRS'])) {
@@ -275,7 +275,7 @@ switch ($catalogData["connection_type"]) {
                         $mdBuilder->setName($layer['group']);
                         $result['data_objects'][$n] = [
                             'metadata' => $mdBuilder->getMetadata(),
-                            'available_srids' => $availableSrids
+                            'available_srids' => $availableSrids,
                         ];
                         $n++;
                     }
@@ -284,7 +284,7 @@ switch ($catalogData["connection_type"]) {
         } else {
             $result['step'] = 2;
             $result['fields'] = [
-                'srid' => 'SRID'
+                'srid' => 'SRID',
             ];
             
             if (empty($_REQUEST['available_srids'])) {
@@ -293,10 +293,10 @@ switch ($catalogData["connection_type"]) {
             
             foreach ($_REQUEST['available_srids'] as $srid) {
                 $result['data'][$n] = [
-                    'srid' => $srid
+                    'srid' => $srid,
                 ];
                 $result['data_objects'][$n] = [
-                    'data_srid' => substr($srid, strpos($srid, ':') + 1)
+                    'data_srid' => substr($srid, strpos($srid, ':') + 1),
                 ];
                 $n++;
             }
@@ -307,7 +307,7 @@ switch ($catalogData["connection_type"]) {
             'steps' => 1,
             'step' => 1,
             'data' => [],
-            'data_objects' => []
+            'data_objects' => [],
         ];
         $n = 0;
         
@@ -315,13 +315,13 @@ switch ($catalogData["connection_type"]) {
         $result['fields'] = [
             'name' => GCAuthor::t('name'),
             'title' => GCAuthor::t('title'),
-            'srid' => 'SRID'
+            'srid' => 'SRID',
         ];
         
         $defaultParameters = [
             "SERVICE" => "WFS",
             "REQUEST" => "GetCapabilities",
-            'VERSION' => '1.0.0'
+            'VERSION' => '1.0.0',
         ];
         $urlComponents = parse_url($catalogData["catalog_path"]);
         if (!empty($urlComponents['query'])) {
@@ -357,7 +357,7 @@ switch ($catalogData["connection_type"]) {
             $result['data'][$n] = [
                 'name' => $featureType['Name'],
                 'title' => $featureType['Title'],
-                'srid' => $featureType['SRS']
+                'srid' => $featureType['SRS'],
             ];
             $result['data_objects'][$n] = [
                 'data_srid' => substr($featureType['SRS'], strpos($featureType['SRS'], ':') + 1),
@@ -366,7 +366,7 @@ switch ($catalogData["connection_type"]) {
                     '"wfs_request_method" "GET"' . "\n" .
                     '"wfs_typename" "' . $featureType['Name'] . '"' . "\n" .
                     '"wfs_server_version" "1.0.0"' . "\n" .
-                    '"wfs_version" "1.0.0"' . "\n"
+                    '"wfs_version" "1.0.0"' . "\n",
             ];
             $n++;
         }

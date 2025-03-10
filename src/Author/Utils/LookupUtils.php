@@ -36,7 +36,7 @@ class LookupUtils
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
             ':schema' => $schema,
-            ':table' => $table
+            ':table' => $table,
         ]);
         $dbTableName = $stmt->fetchColumn(0);
         if ($dbTableName != $table) {
@@ -49,7 +49,7 @@ class LookupUtils
         $stmt->execute([
             ':schema' => $schema,
             ':table' => $table,
-            ':column' => $columnForValue
+            ':column' => $columnForValue,
         ]);
         $dbColumnName = $stmt->fetchColumn(0);
         if ($dbColumnName != $columnForValue) {
@@ -62,7 +62,7 @@ class LookupUtils
         $stmt->execute([
             ':schema' => $schema,
             ':table' => $table,
-            ':column' => $columnForLabel
+            ':column' => $columnForLabel,
         ]);
         $dbColumnName = $stmt->fetchColumn(0);
         if ($dbColumnName != $columnForLabel) {

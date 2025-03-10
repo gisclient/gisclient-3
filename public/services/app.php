@@ -114,7 +114,7 @@ try {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
         $response = new JsonResponse([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], $e->getStatusCode(), $e->getHeaders());
     } else {
         $response = new Response($e->getMessage(), $e->getStatusCode(), $e->getHeaders());
@@ -123,7 +123,7 @@ try {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
         $response = new JsonResponse([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
     } else {
         $response = new Response('An error occurred: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);

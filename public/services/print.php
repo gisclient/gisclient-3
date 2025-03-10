@@ -34,7 +34,7 @@ try {
         $pages = $printMap->getDimensions();
         $ajax->success([
             'box' => $box,
-            'pages' => $pages
+            'pages' => $pages,
         ]);
     }
 
@@ -62,5 +62,5 @@ try {
 }
 $ajax->success([
     'file' => $file,
-    'format' => $_REQUEST['format']
+    'format' => $_REQUEST['format'],
 ]);

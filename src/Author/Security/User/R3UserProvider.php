@@ -127,7 +127,7 @@ class R3UserProvider implements UserProviderInterface
         ";
         $params = [
             'user' => $username,
-            'status' => 'E'
+            'status' => 'E',
         ];
         if ($domain !== null) {
             $sql .= " AND users.do_id=:domain";
@@ -147,7 +147,7 @@ class R3UserProvider implements UserProviderInterface
                 'credentials_checker' => $userData['credentials_checker'],
                 'credentials_config' => $this->stringToOptions($userData['credentials_config']),
                 'us_db_role_name' => $userData['us_db_role_name'],
-                'object_types_using_geojson' => json_decode($userData['object_types_using_geojson'], true)
+                'object_types_using_geojson' => json_decode($userData['object_types_using_geojson'], true),
             ];
 
             $user = new User(

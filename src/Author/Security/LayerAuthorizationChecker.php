@@ -47,19 +47,19 @@ class LayerAuthorizationChecker
         if (isset($filter['mapset_name'])) {
             $sqlFilter = 'mapset_name = :mapset_name';
             $sqlValues = [
-                ':mapset_name' => $filter['mapset_name']
+                ':mapset_name' => $filter['mapset_name'],
             ];
             $sql = 'select project_name from ' . DB_SCHEMA . '.mapset where mapset_name=:mapset_name';
         } elseif (isset($filter['theme_name'])) {
             $sqlFilter = 'theme_name = :theme_name';
             $sqlValues = [
-                ':theme_name' => $filter['theme_name']
+                ':theme_name' => $filter['theme_name'],
             ];
             $sql = 'select project_name from ' . DB_SCHEMA . '.theme where theme_name=:theme_name';
         } elseif (isset($filter['project_name'])) {
             $sqlFilter = 'project_name = :project_name';
             $sqlValues = [
-                ':project_name' => $filter['project_name']
+                ':project_name' => $filter['project_name'],
             ];
             $sql = 'select project_name from ' . DB_SCHEMA . '.project where project_name=:project_name';
         } else {
@@ -143,7 +143,7 @@ class LayerAuthorizationChecker
             $layerAuthorizations[$row['project_name']][$featureType] = [
                 'WMS' => $row['wms'],
                 'WFS' => $row['wfs'],
-                'WFST' => $row['wfst']
+                'WFST' => $row['wfst'],
             ];
 
             if (!empty($row['layer_id'])) {
@@ -161,7 +161,7 @@ class LayerAuthorizationChecker
                 $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = [
                     "name" => $row['layergroup_name'],
                     "title" => $row['layergroup_title'],
-                    "grouptitle" => $row['layergroup_title']
+                    "grouptitle" => $row['layergroup_title'],
                 ];
             } else {
                 array_push($result['map_layers'][$row['theme_name']][$row['layergroup_name']], [
@@ -170,7 +170,7 @@ class LayerAuthorizationChecker
                     "grouptitle" => $row['layergroup_title'],
                     "minScale" => $row['minscale'],
                     "maxScale" => $row['maxscale'],
-                    "hidden" => $row['hidden']
+                    "hidden" => $row['hidden'],
                 ]);
             }
         };

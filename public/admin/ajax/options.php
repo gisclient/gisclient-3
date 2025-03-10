@@ -24,12 +24,12 @@ foreach (['auto_refresh_mapfiles', 'save_to_tmp_map'] as $key) {
     $gcService->set($key, $value);
     $stmtDelete->execute([
         'key' => $key,
-        'username' => $userName
+        'username' => $userName,
     ]);
     $stmtInsert->execute([
         'username' => $userName,
         'key' => $key,
-        'value' => $value
+        'value' => $value,
     ]);
 }
 
@@ -37,5 +37,5 @@ foreach (['auto_refresh_mapfiles', 'save_to_tmp_map'] as $key) {
 $gcService->saveAndClose();
 
 echo json_encode([
-    'result' => 'ok'
+    'result' => 'ok',
 ]);

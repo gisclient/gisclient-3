@@ -101,7 +101,7 @@ class MapData implements OfflineDataInterface
         return [
             [
                 'file' => $mapConfig,
-                'filename' => 'config.json'
+                'filename' => 'config.json',
             ],
         ];
     }

@@ -24,7 +24,7 @@ $db = GCApp::getDB();
 $sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter from ' . DB_SCHEMA . '.layer inner join ' . DB_SCHEMA . '.catalog  using (catalog_id) inner join ' . DB_SCHEMA . '.field using(layer_id) where field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute([
-    'field_id' => $_REQUEST['field_id']
+    'field_id' => $_REQUEST['field_id'],
 ]);
 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -42,7 +42,7 @@ $sTable = $datalayerSchema . "." . $datalayerTable;
 $sql = 'select field.field_id, field_name, field_filter, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from ' . DB_SCHEMA . '.field left join ' . DB_SCHEMA . '.relation using (relation_id) left join ' . DB_SCHEMA . '.catalog using (catalog_id) where field.field_id=:field_id';
 $stmt = $db->prepare($sql);
 $stmt->execute([
-    'field_id' => $_REQUEST['field_id']
+    'field_id' => $_REQUEST['field_id'],
 ]);
 $field = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -70,7 +70,7 @@ if (isset($fieldFilterId) && isset($_REQUEST["filtervalue"])) {
     $sql = 'select field.field_id, field_name, field_filter, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from ' . DB_SCHEMA . '.field left join ' . DB_SCHEMA . '.relation using (relation_id) left join ' . DB_SCHEMA . '.catalog using (catalog_id) where field.field_id=:field_id';
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'field_id' => $fieldFilterId
+        'field_id' => $fieldFilterId,
     ]);
     $fieldFilter = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -152,5 +152,5 @@ try {
 }
 
 $ajax->success([
-    'data' => $results
+    'data' => $results,
 ]);

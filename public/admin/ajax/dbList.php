@@ -30,7 +30,7 @@ switch ($selectedField) {
     case 'field_format':
         $result['fields'] = [
             'format' => GCAuthor::t('format'),
-            'description' => GCAuthor::t('description')
+            'description' => GCAuthor::t('description'),
         ];
         
         $sql = "select fieldformat_name, fieldformat_format from " . DB_SCHEMA . ".e_fieldformat order by fieldformat_order;";
@@ -38,10 +38,10 @@ switch ($selectedField) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $result['data'][] = [
                 'format' => $row['fieldformat_format'],
-                'description' => $row['fieldformat_name']
+                'description' => $row['fieldformat_name'],
             ];
             $result['data_objects'][] = [
-                'field_format' => $row['fieldformat_format']
+                'field_format' => $row['fieldformat_format'],
             ];
         }
         break;
@@ -49,7 +49,7 @@ switch ($selectedField) {
         $result['enable_replace'] = true;
         $result['fields'] = [
             'format' => GCAuthor::t('format'),
-            'description' => GCAuthor::t('description')
+            'description' => GCAuthor::t('description'),
         ];
         
         $sql = "select formula_name, formula_format from " . DB_SCHEMA . ".e_formula order by formula_order;";
@@ -57,10 +57,10 @@ switch ($selectedField) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $result['data'][] = [
                 'format' => $row['formula_format'],
-                'description' => $row['formula_name']
+                'description' => $row['formula_name'],
             ];
             $result['data_objects'][] = [
-                'formula' => $row['formula_format']
+                'formula' => $row['formula_format'],
             ];
         }
         break;
@@ -82,18 +82,18 @@ switch ($selectedField) {
         $result['fields'] = [
             'image' => GCAuthor::t('image'),
             'symbol' => GCAuthor::t('symbol'),
-            'category' => GCAuthor::t('category')
+            'category' => GCAuthor::t('category'),
         ];
         $result['fields']['font'] = 'Font';
         $result['fields']['position'] = GCAuthor::t('position');
         foreach ($smbList['values'] as $symbol) {
             $result['data'][] = array_merge($symbol, [
-                'image' => '<img src="../services/symbol.php?table=symbol_ttf&font=' . urlencode($symbol["font"]) . '&id=' . urlencode($symbol["symbol"]) . '">'
+                'image' => '<img src="../services/symbol.php?table=symbol_ttf&font=' . urlencode($symbol["font"]) . '&id=' . urlencode($symbol["symbol"]) . '">',
             ]);
             $result['data_objects'][] = [
                 'fk_symbol_ttf_name' => $symbol['symbol'],
                 'label_font' => $symbol['font'],
-                'label_position' => $symbol['position']
+                'label_position' => $symbol['position'],
             ];
         }
         break;
@@ -118,14 +118,14 @@ switch ($selectedField) {
         $result['fields'] = [
             'image' => GCAuthor::t('image'),
             'symbol' => GCAuthor::t('symbol'),
-            'category' => GCAuthor::t('category')
+            'category' => GCAuthor::t('category'),
         ];
         foreach ($smbList['values'] as $symbol) {
             $result['data'][] = array_merge($symbol, [
-                'image' => '<img src="../services/symbol.php?table=symbol&id=' . urlencode($symbol['symbol']) . '">'
+                'image' => '<img src="../services/symbol.php?table=symbol&id=' . urlencode($symbol['symbol']) . '">',
             ]);
             $result['data_objects'][] = [
-                'symbol_name' => $symbol['symbol']
+                'symbol_name' => $symbol['symbol'],
             ];
         }
         break;
@@ -139,25 +139,25 @@ switch ($selectedField) {
             'image' => GCAuthor::t('image'),
             'symbol' => GCAuthor::t('symbol'),
             'category' => GCAuthor::t('category'),
-            'actions' => 'Cancella'
+            'actions' => 'Cancella',
         ];
         foreach ($smbList['values'] as $symbol) {
             $result['data'][] = array_merge(
                 $symbol,
                 [
                     'image' => '<img src="../services/symbol.php?table=symbol&id=' . urlencode($symbol['symbol']) . '">',
-                    'actions' => '<button class="delete_symbol">Cancella</button>'
+                    'actions' => '<button class="delete_symbol">Cancella</button>',
                 ]
             );
             $result['data_objects'][] = [
-                'symbol_name' => $symbol['symbol']
+                'symbol_name' => $symbol['symbol'],
             ];
         }
         break;
     
     case 'table_name':
         $result['fields'] = [
-            'table' => GCAuthor::t('table')
+            'table' => GCAuthor::t('table'),
         ];
         
         if (empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_REQUEST['catalog_id'] < 1) {
@@ -185,10 +185,10 @@ switch ($selectedField) {
         
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $result['data'][] = [
-                'table' => $row['table_name']
+                'table' => $row['table_name'],
             ];
             $result['data_objects'][] = [
-                'table_name' => $row['table_name']
+                'table_name' => $row['table_name'],
             ];
         }
         break;

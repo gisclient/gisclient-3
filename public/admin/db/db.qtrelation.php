@@ -46,7 +46,7 @@ if (!$save->hasErrors) {
                     'resultype_id' => 1,
                     'datatype_id' => $dataType,
                     'layer_id' => $save->parent_flds['layer'],
-                    'qtrelation_id' => $save->data['qtrelation_id']
+                    'qtrelation_id' => $save->data['qtrelation_id'],
                 ];
                 $sql = "insert into " . DB_SCHEMA . ".qtfield (" .
                     implode(',', array_keys($params)) . ") values (" .

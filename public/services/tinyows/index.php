@@ -53,7 +53,7 @@ if ($autoUpdateUser) {
 $descriptorspec = [
     0 => ["pipe", "r"],  // stdin is a pipe that the child will read from
     1 => ["pipe", "w"],  // stdout is a pipe that the child will write to
-    2 => ["file", DEBUG_DIR . "tinyows-errors.txt", "a"] // stderr is a file to write to
+    2 => ["file", DEBUG_DIR . "tinyows-errors.txt", "a"], // stderr is a file to write to
 ];
 
 $envVars = [
@@ -70,7 +70,7 @@ $sql = 'select project_name from ' . DB_SCHEMA . '.theme
 $stmt = $db->prepare($sql);
 $stmt->execute([
     ':lg_name' => $layergroupName,
-    ':l_name' => $layerName
+    ':l_name' => $layerName,
 ]);
 $projectName = $stmt->fetchColumn(0);
 if (empty($projectName)) {
@@ -86,7 +86,7 @@ if (!$gcService->has('GISCLIENT_USER_LAYER')) {
         $authHandler->login(Request::createFromGlobals());
         if ($authHandler->isAuthenticated()) {
             $authHandler->setAuthorizedLayers([
-                'project_name' => $projectName
+                'project_name' => $projectName,
             ]);
         }
     }
@@ -148,7 +148,7 @@ if ($autoUpdateUser) {
         $sql = 'insert into ' . CURRENT_EDITING_USER_TABLE . ' (id, username) values (1, :username)';
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
-            'username' => $userName
+            'username' => $userName,
         ]);
         print_debug('inserted user ' . $userName, null, 'tinyows');
     } catch (Exception $e) {

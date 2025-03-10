@@ -43,7 +43,7 @@ class gcFeature
         104 => 'max',
         105 => 'count',
         106 => 'variance',
-        107 => 'stddev'
+        107 => 'stddev',
     ];
     public $resultHeaders = [];
     public $owsUrl;
@@ -227,7 +227,7 @@ class gcFeature
             'database' => $dbName,
             'name' => $this->aFeature['data'],
             'feature' => $this->aFeature['layergroup_name'] . '.' . $this->aFeature['layer_name'],
-            'title' => $this->aFeature['layer_name']
+            'title' => $this->aFeature['layer_name'],
         ];
     }
 
@@ -271,7 +271,7 @@ class gcFeature
             4 => "kilometers",
             5 => "meters",
             6 => "miles",
-            7 => "nauticalmiles"
+            7 => "nauticalmiles",
         ];
         $aGCLayerType = [
             1 => "POINT",
@@ -280,7 +280,7 @@ class gcFeature
             4 => "RASTER",
             5 => "ANNOTATION",
             10 => 'RASTER',
-            11 => 'CHART'
+            11 => 'CHART',
         ]; //10 TILERASTER
         $layText = [];
         $layText[] = "LAYER";
@@ -636,7 +636,7 @@ class gcFeature
             1 => "Point",
             2 => "Line",
             3 => "Polygon",
-            4 => "Point"
+            4 => "Point",
         ];
         $ageometryType = [
             "point" => "point",
@@ -644,7 +644,7 @@ class gcFeature
             "linestring" => "line",
             "multilinestring" => "multiline",
             "polygon" => "polygon",
-            "multipolygon" => "multipolygon"
+            "multipolygon" => "multipolygon",
         ];
         $metaText = '';
         $aMeta["ows_title"] = empty($this->aFeature["layer_title"]) ? $this->aFeature["layer_name"] : $this->aFeature["layer_title"];
@@ -923,7 +923,7 @@ class gcFeature
                 "table" => $relationName,
                 "schema" => $relationSchema,
                 "connection_string" => $relationConnStr,
-                "data_type" => $field["data_type"]
+                "data_type" => $field["data_type"],
             ];
         }
         return $result;

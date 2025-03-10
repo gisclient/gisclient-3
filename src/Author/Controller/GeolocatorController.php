@@ -24,7 +24,7 @@ class GeolocatorController
         print_debug($errorMessage, null, 'download');
         $data = [
             'result' => 'error',
-            'error' => $errorMessage
+            'error' => $errorMessage,
         ];
         return new JsonResponse($data, $httpStatus);
     }
@@ -66,7 +66,7 @@ class GeolocatorController
         $stmt = $database->prepare($sql);
         $stmt->execute([
             'name' => $config['catalogname'],
-            'mapset' => $mapset
+            'mapset' => $mapset,
         ]);
         $catalogPath = $stmt->fetchColumn(0);
         if (empty($catalogPath)) {
@@ -121,7 +121,7 @@ class GeolocatorController
         ';
         $stmt = $database->prepare($sql);
         $stmt->execute([
-            'id' => $id
+            'id' => $id,
         ]);
         $result = $stmt->fetchColumn(0);
         return $result;

@@ -18,7 +18,7 @@ if (!empty($username)) {
         ';
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'user' => $username
+        'user' => $username,
     ]);
         
     $userGroups = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -33,7 +33,7 @@ foreach ($groups as $group) {
         array_push($data, [
             'username' => $username,
             'groupname' => $group['groupname'],
-            'presente' => $presente
+            'presente' => $presente,
         ]);
     }
 }

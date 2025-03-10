@@ -38,12 +38,12 @@ switch ($_REQUEST['action']) {
             array_push($files, [
                 'layer' => $name,
                 'name' => $cache['cache']['filename'],
-                'size' => formatBytes($size)
+                'size' => formatBytes($size),
             ]);
         }
 
         $ajax->success([
-            'files' => $files
+            'files' => $files,
         ]);
         break;
     case 'empty':

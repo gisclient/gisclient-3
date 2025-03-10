@@ -64,7 +64,7 @@ $gMapMaxZoomLevels = [
     'YAHOO_MAP_SAT' => 21,
     'Mapnik' => 21,
     'Osmarender' => 21,
-    'CycleMap' => 17
+    'CycleMap' => 17,
 ];
 
 

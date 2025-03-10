@@ -101,8 +101,8 @@ class SavedFilterData implements OfflineDataInterface
             'status' => 'ok',
             'data' => [
                 'rows' => $rows,
-                'total' => count($rows)
-            ]
+                'total' => count($rows),
+            ],
         ];
         $savedFilter = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
         $fs->dumpFile($savedFilter, json_encode($filters));
@@ -110,7 +110,7 @@ class SavedFilterData implements OfflineDataInterface
         return [
             [
                 'file' => $savedFilter,
-                'filename' => 'saved_filter.json'
+                'filename' => 'saved_filter.json',
             ],
         ];
     }

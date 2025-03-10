@@ -8,7 +8,7 @@ class GCExport
     protected $exportUrl;
     protected $errorPath;
     protected $exportExtensions = [
-        'shp' => ['shp', 'dbf', 'shx', 'prj', 'cpg']
+        'shp' => ['shp', 'dbf', 'shx', 'prj', 'cpg'],
     ];
     
     public function __construct($db, $type, array $options = [])
@@ -32,7 +32,7 @@ class GCExport
             'extent' => null,
             'srid' => null,
             'add_to_zip' => null,
-            'return_url' => true
+            'return_url' => true,
         ];
         $options = array_merge($defaultOptions, $options);
         
@@ -138,7 +138,7 @@ class GCExport
     protected function exportShp(array $config, array $options = [])
     {
         $defaultOptions = [
-            'name' => $config['table']
+            'name' => $config['table'],
         ];
         $options = array_merge($defaultOptions, $options);
         
@@ -237,7 +237,7 @@ class GCExport
         include_once 'include/php-excel.class.php';
 
         $defaultOptions = [
-            'name' => $config['table']
+            'name' => $config['table'],
         ];
         $options = array_merge($defaultOptions, $options);
         
@@ -549,7 +549,7 @@ class GCExportKml
                 'layer' => $layer,
                 'schema' => $schema,
                 'table' => $table,
-                'options' => $options
+                'options' => $options,
             ]
         );
     }

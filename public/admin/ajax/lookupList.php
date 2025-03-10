@@ -26,14 +26,14 @@ $dataDb = GCApp::getDataDB($catalogData['catalog_path']);
 $result = [
     'steps' => 3,
     'data' => [],
-    'data_objects' => []
+    'data_objects' => [],
 ];
 $n = 0;
 
 if (empty($_REQUEST['step'])) {
     $result['step'] = 1;
     $result['fields'] = [
-        'table' => GCAuthor::t('table')
+        'table' => GCAuthor::t('table'),
     ];
     
     $sql = "SELECT c.relname AS table
@@ -43,7 +43,7 @@ if (empty($_REQUEST['step'])) {
     try {
         $stmt = $dataDb->prepare($sql);
         $stmt->execute([
-            'schema' => $schema
+            'schema' => $schema,
         ]);
     } catch (Exception $e) {
         $ajax->error();
@@ -52,21 +52,21 @@ if (empty($_REQUEST['step'])) {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $result['data'][$n] = $row;
         $result['data_objects'][$n] = [
-            'lookup_table' => $row['table']
+            'lookup_table' => $row['table'],
         ];
         $n++;
     }
 } elseif ($_REQUEST['step'] == 2) {
     $result['step'] = 2;
     $result['fields'] = [
-        'lookup_id' => GCAuthor::t('lookup_id')
+        'lookup_id' => GCAuthor::t('lookup_id'),
     ];
     
     $sql = 'select table_name from information_schema.tables where table_schema=:schema and table_name=:table';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         ':schema' => $schema,
-        ':table' => $_REQUEST['lookup_table']
+        ':table' => $_REQUEST['lookup_table'],
     ]);
     $dbTableName = $stmt->fetchColumn(0);
     if ($dbTableName != $_REQUEST['lookup_table']) {
@@ -77,7 +77,7 @@ if (empty($_REQUEST['step'])) {
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         ':schema' => $schema,
-        ':table' => $_REQUEST['lookup_table']
+        ':table' => $_REQUEST['lookup_table'],
     ]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $result['data'][$n] = $row;
@@ -87,14 +87,14 @@ if (empty($_REQUEST['step'])) {
 } elseif ($_REQUEST['step'] == 3) {
     $result['step'] = 3;
     $result['fields'] = [
-        'lookup_name' => GCAuthor::t('lookup_name')
+        'lookup_name' => GCAuthor::t('lookup_name'),
     ];
     
     $sql = 'select table_name from information_schema.tables where table_schema=:schema and table_name=:table';
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         ':schema' => $schema,
-        ':table' => $_REQUEST['lookup_table']
+        ':table' => $_REQUEST['lookup_table'],
     ]);
     $dbTableName = $stmt->fetchColumn(0);
     if ($dbTableName != $_REQUEST['lookup_table']) {
@@ -105,7 +105,7 @@ if (empty($_REQUEST['step'])) {
     $stmt = $dataDb->prepare($sql);
     $stmt->execute([
         ':schema' => $schema,
-        ':table' => $_REQUEST['lookup_table']
+        ':table' => $_REQUEST['lookup_table'],
     ]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $result['data'][$n] = $row;

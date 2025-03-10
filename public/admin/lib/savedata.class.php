@@ -172,7 +172,7 @@ class saveData
                 if ($this->newId && $this->oldId && $this->newId != $this->oldId) {
                     $tree = $this->_copy_object($p->array_levels, $idlevel, $idcopy, [
                         "key" => $parent[0],
-                        "value" => $p->parametri[$parent[0]]
+                        "value" => $p->parametri[$parent[0]],
                     ], $idlevel, 1, $newName);
                 } else {
                     $tree = $this->_copy_object($p->array_levels, $idlevel, $idcopy, null, null, 0, $newName);
@@ -468,7 +468,7 @@ class saveData
         if (count($arr_id)) {
             $sqlparams = [
                 'structName1' => $struct["name"],
-                'structName2' => $struct["name"]
+                'structName2' => $struct["name"],
             ];
             $sql = "SELECT column_name FROM information_schema.columns WHERE table_name='"
                 . $struct["name"] . "' and table_schema='" . DB_SCHEMA
@@ -513,7 +513,7 @@ class saveData
                 $idx = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, $struct["name"], $struct["name"] . '_id');
                 $parent[$lev][$id] = [
                     "key" => $struct["name"],
-                    "value" => $idx
+                    "value" => $idx,
                 ];
                 // PDO: $list_values cannot be quoted/made into a bound parameter because it holds a list of column names
                 $sql = "INSERT INTO " . DB_SCHEMA . "." . $struct["name"] . "(" . $struct["name"] . "_id,$list_flds) SELECT $idx,$list_value FROM " . DB_SCHEMA . "." . $struct["name"] . " WHERE " . $struct["name"] . "_id=:id;";
@@ -521,7 +521,7 @@ class saveData
                 try {
                     $stmt = $this->db->prepare($sql);
                     $result = $stmt->execute([
-                        'id' => $id
+                        'id' => $id,
                     ]);
                 } catch (Exception $e) {
                     GCError::registerException($e);
@@ -539,7 +539,7 @@ class saveData
                 try {
                     $stmt = $this->db->prepare($sql);
                     $result = $stmt->execute([
-                        'id' => $id
+                        'id' => $id,
                     ]);
                     $rows = $stmt->fetchAll();
                 } catch (Exception $e) {
@@ -580,7 +580,7 @@ class saveData
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
                 'tableName' => $this->table,
-                'tableSchema' => $this->schema
+                'tableSchema' => $this->schema,
             ]);
         } catch (Exception $e) {
             GCError::registerException($e);
@@ -679,7 +679,7 @@ class saveData
             }
         } else {
             $this->pkeys = [
-                "id" => ""
+                "id" => "",
             ];
         }
         //ACQUISIZIONE DELLE DEFINIZIONI DEI CAMPI
@@ -690,7 +690,7 @@ class saveData
                 $def = array_pad(explode(';', $r), 4, '');
                 $this->fields[] = [
                     "field" => trim($def[1]),
-                    "type" => trim($def[3])
+                    "type" => trim($def[3]),
                 ];
             }
         }

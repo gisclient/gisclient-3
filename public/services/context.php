@@ -44,7 +44,7 @@ switch ($_REQUEST['action']) {
         $stmt = $db->prepare($sql);
         $stmt->execute([
             ':username' => $authHandler->getToken()->getUserName(),
-            ':mapset' => $_REQUEST['mapset']
+            ':mapset' => $_REQUEST['mapset'],
         ]);
         
         $contextes = [];
@@ -52,7 +52,7 @@ switch ($_REQUEST['action']) {
             array_push($contextes, $row);
         }
         $ajax->success([
-            'contextes' => $contextes
+            'contextes' => $contextes,
         ]);
         break;
 
@@ -65,7 +65,7 @@ switch ($_REQUEST['action']) {
         if ($_REQUEST['action'] == 'replace') {
             $sql = 'delete from ' . DB_SCHEMA . '.usercontext where username=?';
             $db->prepare($sql)->execute([
-                $authHandler->getToken()->getUserName()
+                $authHandler->getToken()->getUserName(),
             ]);
         }
         
@@ -77,7 +77,7 @@ switch ($_REQUEST['action']) {
                 ':username' => $authHandler->getToken()->getUserName(),
                 ':mapset' => $_REQUEST['mapset'],
                 ':title' => $_REQUEST['title'],
-                ':context' => $context
+                ':context' => $context,
             ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -93,7 +93,7 @@ switch ($_REQUEST['action']) {
         $sql = "select username from " . DB_SCHEMA . ".usercontext where usercontext_id=:id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':id' => $_REQUEST['id']
+            ':id' => $_REQUEST['id'],
         ]);
         if ($stmt->fetchColumn(0) != $authHandler->getToken()->getUserName()) {
             $ajax->error('Permission denied');
@@ -103,7 +103,7 @@ switch ($_REQUEST['action']) {
         try {
             $stmt = $db->prepare($sql);
             $stmt->execute([
-                ':id' => $_REQUEST['id']
+                ':id' => $_REQUEST['id'],
             ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -118,7 +118,7 @@ switch ($_REQUEST['action']) {
             $param = $authHandler->getToken()->getUserName();
             if (null === $param) {
                 $ajax->success([
-                    'context' => []
+                    'context' => [],
                 ]);
             }
         } else {
@@ -129,7 +129,7 @@ switch ($_REQUEST['action']) {
         $stmt->execute([$param]);
         if ($stmt->rowCount() == 0) {
             $ajax->success([
-                'context' => []
+                'context' => [],
             ]);
         }
         
@@ -138,7 +138,7 @@ switch ($_REQUEST['action']) {
         $ajax->success([
             'context' => $context['context'],
             'title' => $context['title'],
-            'mapset' => $context['mapset_name']
+            'mapset' => $context['mapset_name'],
         ]);
         break;
 }

@@ -15,7 +15,7 @@ class GCLog
             [
                 ':user' => $user,
                 ':action' => $action,
-                ':info' => $info
+                ':info' => $info,
             ]
         );
     }

@@ -28,7 +28,7 @@ class DownloadController
         print_debug($errorMessage, null, 'download');
         $data = [
             'result' => 'error',
-            'error' => $errorMessage
+            'error' => $errorMessage,
         ];
         return new JsonResponse($data, $httpStatus);
     }
@@ -55,7 +55,7 @@ class DownloadController
 
         $options = [
             'image_format' => 'gtiff',
-            'output_format' => 'geotiff'
+            'output_format' => 'geotiff',
         ];
 
         if ($format == 'png') {

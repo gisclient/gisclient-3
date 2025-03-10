@@ -20,7 +20,7 @@ class SavedFilterController
         return new JsonResponse([
             'status' => 'error',
             'message' => 'Bad Request',
-            'errors' => $errors
+            'errors' => $errors,
         ], JsonResponse::HTTP_BAD_REQUEST);
     }
 
@@ -29,7 +29,7 @@ class SavedFilterController
         $handler = $this->getHandler();
 
         $ret = [
-            'status' => 'ok'
+            'status' => 'ok',
         ];
         if ($id > 0) {
             $ret['data'] = $handler->getSavedFilter($id);
@@ -51,8 +51,8 @@ class SavedFilterController
             'status' => 'ok',
             'data' => [
                 'rows' => $rows,
-                'totals' => count($rows)
-            ]
+                'totals' => count($rows),
+            ],
         ]);
     }
 

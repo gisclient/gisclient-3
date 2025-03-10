@@ -27,14 +27,14 @@ if (isset($_POST["esporta"])) {
                     $array_levels[$v["id"]] = [
                         "name" => $v["name"],
                         "parent" => $v["parent"],
-                        "leaf" => $v["leaf"]
+                        "leaf" => $v["leaf"],
                     ];
                 }
             } catch (Exception $e) {
                 die("<p>Impossibile eseguire la query : $sql</p>");
             }
             $r = _export($fName, $_POST["livello"], $project, $structure, 1, '', [
-                "$l" => $objId
+                "$l" => $objId,
             ]);
                 
             $message = "$overwrite_message <br> FILE <a href=\"#\" onclick=\"javascript:openFile('" . ADMIN_PATH . "export/$fName')\">$fName<a/> ESPORTATO CORRETTAMENTE";

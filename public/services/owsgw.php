@@ -34,7 +34,7 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
     
     curl_setopt($curl, CURLOPT_POSTFIELDS, [
-        'file' => '@/tmp/postrequest.xml'
+        'file' => '@/tmp/postrequest.xml',
     ]);
     $return = curl_exec($curl);
     if (!$return) {
@@ -171,12 +171,12 @@ if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empt
             if (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
                 // get layers to populate session with GISCLIENT_USER_LAYER
                 GCApp::getLayerAuthorizationChecker()->getLayers([
-                    'project_name' => $objRequest->getValueByName('map')
+                    'project_name' => $objRequest->getValueByName('map'),
                 ]);
             } else {
                 // get layers to populate session with GISCLIENT_USER_LAYER
                 GCApp::getLayerAuthorizationChecker()->getLayers([
-                    'mapset_name' => $objRequest->getValueByName('map')
+                    'mapset_name' => $objRequest->getValueByName('map'),
                 ]);
             }
         }

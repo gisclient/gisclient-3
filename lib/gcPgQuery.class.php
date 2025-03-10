@@ -44,7 +44,7 @@ class PgQuery
         104 => 'max',
         105 => 'count',
         106 => 'variance',
-        107 => 'stddev'
+        107 => 'stddev',
     ];
     public $resultHeaders = [];
     public $isGraph = 0;
@@ -79,7 +79,7 @@ class PgQuery
 
         $stmt = $db->prepare($sqlField);
         $stmt->execute([
-            'layer_id' => $request['layer_id']
+            'layer_id' => $request['layer_id'],
         ]);
         $qRelation = [];
         $qField = [];
@@ -165,7 +165,7 @@ class PgQuery
 
         $stmt = $db->prepare($sqlTemplate);
         $stmt->execute([
-            'layer_id' => $request['layer_id']
+            'layer_id' => $request['layer_id'],
         ]);
         //Tutti i query template dei modelli di ricerca interessati
         $allTemplates = [];
@@ -203,7 +203,7 @@ class PgQuery
 
         $options = [
             'include_1n_relations' => true,
-            'getGeomAs' => 'text'
+            'getGeomAs' => 'text',
         ];
         if (!empty($this->request['srid'])) {
             $options['srid'] = $this->request['srid'];

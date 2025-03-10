@@ -9,7 +9,7 @@ $sql = "SELECT DISTINCT catalog_id,catalog_name as name FROM " . DB_SCHEMA . ".c
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'project' => $project
+        'project' => $project,
     ]);
     if ($stmt->rowCount() > 0) {
         $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);

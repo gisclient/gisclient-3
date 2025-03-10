@@ -13,7 +13,7 @@ $sql = "select X.*,Y.wms,Y.wfs,Y.wfst,case when coalesce(Y.groupname,'')='' then
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'layer' => $layer
+        'layer' => $layer,
     ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -23,7 +23,7 @@ try {
                     'groupname' => $row['groupname'],
                     'wms' => $row['wms'],
                     'wfs' => $row['wfs'],
-                    'wfst' => $row['wfst']
+                    'wfst' => $row['wfst'],
                 ]);
             }
         }

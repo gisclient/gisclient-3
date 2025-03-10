@@ -26,14 +26,14 @@ class AutocompleteController
             return new JsonResponse(
                 [
                     "result" => "ok",
-                    "data" => $results
+                    "data" => $results,
                 ]
             );
         } catch (HttpException $e) {
             return new JsonResponse(
                 [
                     "result" => "error",
-                    "error" => $e->getMessage()
+                    "error" => $e->getMessage(),
                 ],
                 $e->getStatusCode()
             );
@@ -41,7 +41,7 @@ class AutocompleteController
             return new JsonResponse(
                 [
                     "result" => "error",
-                    "error" => $e->getMessage()
+                    "error" => $e->getMessage(),
                 ],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
@@ -71,7 +71,7 @@ class AutocompleteController
             where field_id=:id';
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            'id' => $fieldId
+            'id' => $fieldId,
         ]);
         $field = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (empty($field)) {
@@ -85,7 +85,7 @@ class AutocompleteController
                 inner join ' . DB_SCHEMA . '.relation using(catalog_id)
                 where relation_id = :id';
             $params = [
-                'id' => $field['relation_id']
+                'id' => $field['relation_id'],
             ];
             $isLayer = false;
         } else {
@@ -94,7 +94,7 @@ class AutocompleteController
                 inner join ' . DB_SCHEMA . '.layer using(catalog_id)
                 where layer_id = :id';
             $params = [
-                'id' => $field['layer_id']
+                'id' => $field['layer_id'],
             ];
         }
         $stmt = $db->prepare($sql);
@@ -120,7 +120,7 @@ class AutocompleteController
                     [
                         'i18nf_id' => $i18nFieldId,
                         'pkey' => $field['field_id'],
-                        'lang' => $lang
+                        'lang' => $lang,
                     ]
                 );
                 $localized = $stmt->fetchColumn(0);
@@ -164,7 +164,7 @@ class AutocompleteController
         return [
             "db" => \GCApp::getDataDB($catalog['catalog_path']),
             "query" => $sql,
-            "params" => $params
+            "params" => $params,
         ];
     }
 }

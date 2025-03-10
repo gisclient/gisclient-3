@@ -7,7 +7,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
     $layerId = $_REQUEST["layer"];
     $param = [
         "mode" => "",
-        "modo" => ""
+        "modo" => "",
     ];
     $save = new saveData($param);
     $_db = GCApp::getDB();
@@ -15,7 +15,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
     try {
         $stmt = $_db->prepare($sql);
         $stmt->execute([
-            'layerId' => $layerId
+            'layerId' => $layerId,
         ]);
     } catch (Exception $e) {
         GCError::registerException($e);
@@ -36,7 +36,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
             'classTitle' => $cls['class_title'],
             'expr' => $cls['expression'],
             'legendType' => $cls['legend_type'],
-            'ordr' => $order
+            'ordr' => $order,
         ];
         try {
             $stmt = $_db->prepare($sql);
@@ -55,7 +55,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
             'styleId' => $styleId,
             'classId' => $classId,
             'styleName' => $style["style_name"],
-            'color' => $color
+            'color' => $color,
         ];
         try {
             $stmt = $_db->prepare($sql);
@@ -87,7 +87,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
         try {
             $stmt = $_db->prepare($sql);
             $stmt->execute([
-                'catId' => $_POST["dati"]["catalog_id"]
+                'catId' => $_POST["dati"]["catalog_id"],
             ]);
             $catalog = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -112,7 +112,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute([
                     ':schema' => $schema,
-                    ':table' => $_POST["dati"]["data"]
+                    ':table' => $_POST["dati"]["data"],
                 ]);
                 $rows = $stmt->fetchAll();
             } catch (Exception $e) {
@@ -132,7 +132,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
                         ':searchtype_id' => 1, //FD: soluzione migliore?
                         ':resultype_id' => 4, // nascosto di default
                         ':datatype_id' => $dataType,
-                        ':layer_id' => $save->data['layer_id']
+                        ':layer_id' => $save->data['layer_id'],
                     ];
                     $sql = "insert into " . DB_SCHEMA . ".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
 						values (:field_id, :field_name, :field_header, :searchtype_id, :resultype_id, :datatype_id, :layer_id)";

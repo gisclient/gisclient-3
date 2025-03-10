@@ -27,7 +27,7 @@ if (!$row) {
 
 try {
     deliverFile(ROOT_PATH . 'import/doc/' . $row['doc_id'], [
-        'name' => $row['doc_name']
+        'name' => $row['doc_name'],
     ]);
 } catch (Exception $e) {
     die($e->getMessage());
@@ -83,7 +83,7 @@ function getMimeFromFileExt($ext)
         'video/quicktime' => ['qt', 'mov'],
         'video/x-msvideo' => 'avi',
         // MS Office 2007
-        'application/vnd.openxmlformats' => ['docx', 'pptx', 'xlsx']
+        'application/vnd.openxmlformats' => ['docx', 'pptx', 'xlsx'],
     ];
 
     if (isset($ext[0]) && $ext[0] == '.') {
@@ -128,7 +128,7 @@ function deliverFile($fileName, $opt = [])
         'header' => [],
         'die' => true,
         'cacheable' => false,
-        'cache_ttl' => 30 * 60 * 60
+        'cache_ttl' => 30 * 60 * 60,
     ];
 
     $opt = array_merge($defaultOpt, $opt);

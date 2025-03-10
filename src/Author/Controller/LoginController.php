@@ -15,7 +15,7 @@ class LoginController
     public function refreshAction()
     {
         return new JsonResponse([
-            'status' => 'ok'
+            'status' => 'ok',
         ]);
     }
 
@@ -32,7 +32,7 @@ class LoginController
             exit();
         } else {
             return new JsonResponse([
-                'status' => 'ok'
+                'status' => 'ok',
             ]);
         }
     }
@@ -49,7 +49,7 @@ class LoginController
         $authHandler->logout();
 
         return new JsonResponse([
-            'status' => 'ok'
+            'status' => 'ok',
         ]);
     }
 }

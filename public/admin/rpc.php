@@ -53,7 +53,7 @@ switch ($azione) {
                     "name" => 'class_' . ($i + 1),
                     "title" => $ris["val"],
                     "condition" => "([$field[name]] = '$ris[val]')",
-                    "legend_type" => 1
+                    "legend_type" => 1,
                 ];
                 $startC[0] += $delta_r;
                 $startC[1] += $delta_g;
@@ -75,7 +75,7 @@ switch ($azione) {
                             "name" => "class_" . ($i + 1),
                             "title" => "class " . ($i + 1),
                             "condition" => "",
-                            "legend_type" => 1
+                            "legend_type" => 1,
                         ];
                         $startC[0] += $delta_r;
                         $startC[1] += $delta_g;
@@ -116,7 +116,7 @@ switch ($azione) {
                             //$startV.' - '.$endV,
                             "condition" => "(([$field[name]] > $startV) AND ([$field[name]] < $endV))",
                             "name" => "classe " . ($i + 1),
-                            "legend_type" => "1"
+                            "legend_type" => "1",
                         ];
                         $startV = $endV;
                     }
@@ -158,14 +158,14 @@ switch ($azione) {
         try {
             $stmt = $db->prepare($sql);
             $stmt->execute([
-                'val' => $id
+                'val' => $id,
             ]);
             $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $opt = [];
             foreach ($ris as $v) {
                 array_push($opt, [
                     'id' => $v['id'],
-                    'name' => $v['title']
+                    'name' => $v['title'],
                 ]);
             }
             $res = json_encode($opt) . ",'$table'";

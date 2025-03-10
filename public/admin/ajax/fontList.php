@@ -17,14 +17,14 @@ $result = [
     'steps' => 1,
     'data' => [],
     'data_objects' => [],
-    'step' => 1
+    'step' => 1,
 ];
 
 $result['fields'] = [
     'image' => GCAuthor::t('image'),
     'symbol' => GCAuthor::t('symbol'),
     'code' => GCAuthor::t('code'),
-    'name' => GCAuthor::t('name')
+    'name' => GCAuthor::t('name'),
 ];
 
 for ($i = 33; $i <= 126; $i++) {
@@ -32,7 +32,7 @@ for ($i = 33; $i <= 126; $i++) {
     $like = '%FONT "' . $fontName . '"%CHARACTER "&#' . $i . ';"';
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        ':like' => $like
+        ':like' => $like,
     ]);
     $name = $stmt->fetchColumn();
 
@@ -40,7 +40,7 @@ for ($i = 33; $i <= 126; $i++) {
         'image' => '',
         'symbol' => chr($i),
         'code' => $i,
-        'name' => '<input type="text" value="' . $name . '" name="char' . $i . '" style="text-transform:uppercase;">'
+        'name' => '<input type="text" value="' . $name . '" name="char' . $i . '" style="text-transform:uppercase;">',
     ];
 }
 

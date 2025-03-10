@@ -8,21 +8,21 @@ $gcService->startSession();
 if (empty($_REQUEST['project']) || empty($_REQUEST['map']) || empty($_REQUEST['feature_type']) || empty($_REQUEST['primary_key'])) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'Missing mandatory fields'
+        'error' => 'Missing mandatory fields',
     ]));
 }
 
 if (empty($_REQUEST['action']) || !in_array($_REQUEST['action'], ['edit', 'delete', 'new'])) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'Missing or invalid action'
+        'error' => 'Missing or invalid action',
     ]));
 }
 
 if (empty($_REQUEST['primary_key']) || ($_REQUEST['action'] == 'edit' && empty($_REQUEST['primary_key_value']))) {
     die(json_encode([
         'result' => 'error',
-        'error' => 'Missing primary key data'
+        'error' => 'Missing primary key data',
     ]));
 }
 
@@ -48,11 +48,11 @@ try {
 } catch (Exception $e) {
     die(json_encode([
         'result' => 'error',
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
     ]));
 }
 die(json_encode([
-    'result' => 'ok'
+    'result' => 'ok',
 ]));
 
 class GCEditFeature
@@ -76,7 +76,7 @@ class GCEditFeature
         $stmt = $db->prepare($sql);
         $stmt->execute([
             ':layer_name' => $layerName,
-            ':project_name' => $project
+            ':project_name' => $project,
         ]);
         $layerData = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -187,7 +187,7 @@ class GCEditFeature
         $params = [
             ':wkt' => $geomData['wkt'],
             ':srid' => $srid,
-            ':GisClient_pkey_value' => $id
+            ':GisClient_pkey_value' => $id,
         ];
         $stmt->execute($params);
     }

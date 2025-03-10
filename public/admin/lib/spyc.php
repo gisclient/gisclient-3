@@ -689,12 +689,12 @@ if (!class_exists('Spyc')) {
                 if ($first_character == "'") {
                     return strtr(substr($value, 1, -1), [
                         '\'\'' => '\'',
-                        '\\\'' => '\''
+                        '\\\'' => '\'',
                     ]);
                 }
                 return strtr(substr($value, 1, -1), [
                     '\\"' => '"',
-                    '\\\'' => '\''
+                    '\\\'' => '\'',
                 ]);
             }
 
@@ -724,7 +724,7 @@ if (!class_exists('Spyc')) {
                 $value = trim(implode(': ', $array));
                 $value = $this->_toType($value);
                 return [
-                    $key => $value
+                    $key => $value,
                 ];
             }
 
@@ -961,7 +961,7 @@ if (!class_exists('Spyc')) {
 
             foreach ($array as $k => $_) {
                 $this->addArray([
-                    $k => $_
+                    $k => $_,
                 ], $indent);
                 $this->path = $CommonGroupPath;
             }
@@ -1018,7 +1018,7 @@ if (!class_exists('Spyc')) {
             } elseif ($key || $key === '' || $key === '0') {
                 if (!is_array($_arr)) {
                     $_arr = [
-                        $key => $value
+                        $key => $value,
                     ];
                 } else {
                     $_arr[$key] = $value;
@@ -1249,7 +1249,7 @@ if (!class_exists('Spyc')) {
             $key = self::unquote(trim(substr($line, 1, -1)));
             $array[$key] = [];
             $this->delayedPath = [
-                strpos($line, (string) $key) + $this->indent => $key
+                strpos($line, (string) $key) + $this->indent => $key,
             ];
             return [$array];
         }

@@ -111,7 +111,7 @@ if ($objRequest->getvaluebyname('layer')) {
                 'width' => $iconW,
                 'height' => $iconH,
                 'layer' => $oLayer->getMetaData('wms_name'),
-                'version' => $oLayer->getMetaData('wms_server_version')
+                'version' => $oLayer->getMetaData('wms_server_version'),
             ];
             
             $gcService = \GCService::instance();
@@ -130,7 +130,7 @@ if ($objRequest->getvaluebyname('layer')) {
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_BINARYTRANSFER => true,
                 CURLOPT_SSL_VERIFYPEER => 0,
-                CURLOPT_SSL_VERIFYHOST => 0
+                CURLOPT_SSL_VERIFYHOST => 0,
             ];
             $ch = curl_init();
             curl_setopt_array($ch, $options);

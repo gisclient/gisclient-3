@@ -15,11 +15,11 @@ class GCAjax
     {
         if (isset($_REQUEST["callback"])) {
             die($_REQUEST["callback"] . "(" . json_encode(array_merge([
-                'result' => 'ok'
+                'result' => 'ok',
             ], $data)) . ")");
         } else {
             die(json_encode(array_merge([
-                'result' => 'ok'
+                'result' => 'ok',
             ], $data)));
         }
     }
@@ -29,12 +29,12 @@ class GCAjax
         if (isset($_REQUEST["callback"])) {
             die($_REQUEST["callback"] . "(" . json_encode([
                 'result' => 'error',
-                'error' => $error
+                'error' => $error,
             ]) . ")");
         } else {
             die(json_encode([
                 'result' => 'error',
-                'error' => $error
+                'error' => $error,
             ]));
         }
     }

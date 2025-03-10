@@ -18,7 +18,7 @@ class GCi18n
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':project_name' => $projectName,
-            ':language_id' => $languageId
+            ':language_id' => $languageId,
         ]);
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -93,7 +93,7 @@ class GCLocalization
         " where table_name=:level ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':level' => $level
+            ':level' => $level,
         ]);
         if ($stmt->rowCount() < 1) {
             return false;
@@ -102,7 +102,7 @@ class GCLocalization
         " where project_name=:project_name ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name' => $this->project
+            ':project_name' => $this->project,
         ]);
         return ($stmt->rowCount() > 0);
     }
@@ -221,7 +221,7 @@ class GCLocalization
         " where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name' => $this->project
+            ':project_name' => $this->project,
         ]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (!isset($this->translations[$row['language_id']])) {
@@ -245,7 +245,7 @@ class GCLocalization
         " or e.language_id = :language_id ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':language_id' => $this->getDefaultLanguageId()
+            ':language_id' => $this->getDefaultLanguageId(),
         ]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $this->languages[$row['language_id']] = $row['language_name'];
@@ -257,7 +257,7 @@ class GCLocalization
         $sql = "select default_language_id from " . DB_SCHEMA . ".project where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name' => $this->project
+            ':project_name' => $this->project,
         ]);
         $this->defaultLanguageId = $stmt->fetchColumn(0);
     }

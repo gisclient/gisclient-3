@@ -16,9 +16,9 @@ class SymbolController
             'Content-type' => 'image/png',
             'Cache-Control' => [
                 'no-store, no-cache, must-revalidate', // HTTP/1.1
-                'post-check=0, pre-check=0'
+                'post-check=0, pre-check=0',
             ],
-            'Pragma' => 'no-cache' // HTTP/1.0
+            'Pragma' => 'no-cache', // HTTP/1.0
         ];
     }
     

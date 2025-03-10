@@ -27,7 +27,7 @@ try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
         'selgroup_id' => $selgroup,
-        'project' => $project
+        'project' => $project,
     ]);
     
     if ($stmt->rowCount() > 0) {
@@ -39,7 +39,7 @@ try {
                     'layer_id' => $row['layer_id'],
                     'presente' => $row['presente'],
                     'layer_name' => $row['layer_name'],
-                    'layergroup_name' => $row['layergroup_name']
+                    'layergroup_name' => $row['layergroup_name'],
                 ]);
             }
         }

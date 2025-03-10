@@ -14,7 +14,7 @@ $sql = "SELECT X.*,Y.edit, case when coalesce(Y.groupname,'')='' then 0 else 1 e
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'mapset' => $mapset
+        'mapset' => $mapset,
     ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -22,7 +22,7 @@ try {
                 array_push($data, [
                     'presente' => $row['presente'],
                     'groupname' => $row['groupname'],
-                    'edit' => $row['edit']
+                    'edit' => $row['edit'],
                 ]);
             }
         }

@@ -102,7 +102,7 @@ class ThemeLegendData implements OfflineDataInterface
         return [
             [
                 'file' => $themeLegend,
-                'filename' => sprintf('%s.png', $layer->getName())
+                'filename' => sprintf('%s.png', $layer->getName()),
             ],
         ];
     }

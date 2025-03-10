@@ -59,7 +59,7 @@ class PreAuthenticationToken implements TokenInterface
     {
         return serialize([
             is_object($this->user) ? clone $this->user : $this->user,
-            $this->authenticated
+            $this->authenticated,
         ]);
     }
 

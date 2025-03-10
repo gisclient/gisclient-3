@@ -84,7 +84,7 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
         ];
 
         $target = $request->query->get('target');
@@ -107,7 +107,7 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
         ];
 
         $target = $request->query->get('target');
@@ -130,7 +130,7 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
         ];
 
         $target = $request->query->get('target');

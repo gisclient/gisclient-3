@@ -34,32 +34,32 @@ class MapImage
         'MultiPolygon' => [
             'db_type' => 'MULTIPOLYGON',
             'db_field' => 'multipolygon_geom',
-            'ms_type' => MS_LAYER_POLYGON
+            'ms_type' => MS_LAYER_POLYGON,
         ],
         'Polygon' => [
             'db_type' => 'POLYGON',
             'db_field' => 'polygon_geom',
-            'ms_type' => MS_LAYER_POLYGON
+            'ms_type' => MS_LAYER_POLYGON,
         ],
         'Point' => [
             'db_type' => 'POINT',
             'db_field' => 'point_geom',
-            'ms_type' => MS_LAYER_POINT
+            'ms_type' => MS_LAYER_POINT,
         ],
         'MultiPoint' => [
             'db_type' => 'MULTIPOINT',
             'db_field' => 'multipoint_geom',
-            'ms_type' => MS_LAYER_POINT
+            'ms_type' => MS_LAYER_POINT,
         ],
         'LineString' => [
             'db_type' => 'LINESTRING',
             'db_field' => 'linestring_geom',
-            'ms_type' => MS_LAYER_LINE
+            'ms_type' => MS_LAYER_LINE,
         ],
         'MultiLineString' => [
             'db_type' => 'MULTILINESTRING',
             'db_field' => 'multilinestring_geom',
-            'ms_type' => MS_LAYER_LINE
+            'ms_type' => MS_LAYER_LINE,
         ],
     ];
     
@@ -77,7 +77,7 @@ class MapImage
             'request_type' => 'get-map',
             'TMP_PATH' => ROOT_PATH . 'tmp/files/',
             'TMP_URL' => $baseUrl . '/services/download.php',
-            'dpi' => 72
+            'dpi' => 72,
         ];
         $this->options = array_merge($defaultOptions, $options);
         
@@ -192,7 +192,7 @@ class MapImage
             $request = [
                 'URL' => $url,
                 'SERVICE' => $service,
-                'PARAMETERS' => $parameters
+                'PARAMETERS' => $parameters,
             ];
             if ($service === 'WMTS') {
                 if (isset($tile['layer'])) {
@@ -216,12 +216,12 @@ class MapImage
             $parameters = [
                 'LAYERS' => $this->vectorId,
                 'VERSION' => '1.1.1',
-                'FORMAT' => 'image/png'
+                'FORMAT' => 'image/png',
             ];
             array_push($this->wmsList, [
                 'URL' => $url,
                 'SERVICE' => 'WMS',
-                'PARAMETERS' => $parameters
+                'PARAMETERS' => $parameters,
             ]);
         }
     }
@@ -263,7 +263,7 @@ class MapImage
             'resolution' => $this->options['dpi'],
             'file_name' => $this->options['TMP_PATH'] . $this->imageFileName,
             'format' => $this->options['image_format'],
-            'GC_SESSION_ID' => $gcService->getSession()->getId()
+            'GC_SESSION_ID' => $gcService->getSession()->getId(),
         ]);
         $gcService->saveAndClose();
 
@@ -278,7 +278,7 @@ class MapImage
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, [
-            'options' => $requestParameters
+            'options' => $requestParameters,
         ]);
 
         // SS: 2017-16-15: Don't check SSL certificate
@@ -388,7 +388,7 @@ class MapImage
                     'table' => $tableName,
                     'srid' => PRINT_VECTORS_SRID,
                     'column' => $type['db_field'],
-                    'type' => $type['db_type']
+                    'type' => $type['db_type'],
                 ]);
             }
             $sql = 'GRANT SELECT ON TABLE ' . $schema . '.' . $tableName . ' TO ' . MAP_USER;
@@ -421,7 +421,7 @@ class MapImage
                 $stmt->execute([
                     'print_id' => $printId,
                     'geom' => $feature['geometry'],
-                    'srid' => PRINT_VECTORS_SRID
+                    'srid' => PRINT_VECTORS_SRID,
                 ]);
             }
         }

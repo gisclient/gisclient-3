@@ -49,20 +49,20 @@ if (!$save->hasErrors && $save->action == "salva") {
                     if ($lGrp["Style"]["Name"] && $lGrp["Style"]["Title"]) {
                         $lGroup[$i]["layer"][0] = [
                             "name" => $lGrp["Style"]["Name"],
-                            "title" => $lGrp["Style"]["Title"]
+                            "title" => $lGrp["Style"]["Title"],
                         ];
                     } else {
                         for ($j = 0; $j < count($lGrp["Style"]); $j++) {
                             $lGroup[$i]["layer"][$j] = [
                                 "name" => $lGrp["Style"][$j]["Name"],
-                                "title" => $lGrp["Style"][$j]["Title"]
+                                "title" => $lGrp["Style"][$j]["Title"],
                             ];
                         }
                     }
                 } else {
                     $lGroup[$i]["layer"][0] = [
                         "name" => $lGrp["Name"],
-                        "title" => $lGrp["Title"]
+                        "title" => $lGrp["Title"],
                     ];
                 }
                 for ($j = 0; $j < count($lGroup[$i]["layer"]); $j++) {
