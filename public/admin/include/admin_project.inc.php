@@ -17,7 +17,7 @@ if (!$authHandler->isAdmin()) {
     return;
 }
 $project = $prm["project"];
-    
+
 $db = GCApp::getDB();
 $JOIN = ($this->mode == 0) ? (" INNER JOIN ") : (" LEFT JOIN ");
 $sql = "select distinct '$project' as project_name,user_group.username,case when (coalesce(X.username,'')<>'') then 1 else 0 end as presente from " . USER_SCHEMA . ".user_group $JOIN (SELECT username FROM " . DB_SCHEMA . ".project_admin WHERE project_name='$project') X on (user_group.username=X.username) where coalesce(user_group.username,'')<>'' order by user_group.username";

@@ -5,14 +5,17 @@ use PHPUnit\Framework\TestCase;
 include_once __DIR__ . "/../../config/config.php";
 include_once __DIR__ . "/../lib/HttpUtils.php";
 
-class LoginTest extends TestCase {
+class LoginTest extends TestCase
+{
     private $cookieJar;
     
-    public function __construct() {
+    public function __construct()
+    {
         $this->cookieJar = ROOT_PATH . 'tmp/files/test_cookies.txt';
     }
     
-    public function testLoginFailure() {
+    public function testLoginFailure()
+    {
         if (file_exists($this->cookieJar)) {
             unlink($this->cookieJar);
         }
@@ -27,7 +30,8 @@ class LoginTest extends TestCase {
         $this->assertTrue(strpos($loginResult[1], 'LogOut') === false);
     }
     
-    public function testLogin() {
+    public function testLogin()
+    {
         if (file_exists($this->cookieJar)) {
             unlink($this->cookieJar);
         }

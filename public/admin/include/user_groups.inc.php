@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 
 $db = \GCApp::getDB();
-        
+
 $sql = 'SELECT groupname, description FROM ' . DB_SCHEMA . '.groups';
 $groups = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 if (!isset($data) || !is_array($data)) {
@@ -43,5 +43,5 @@ if (empty($data)) {
 }
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
-    
+
 $button = "modifica";
