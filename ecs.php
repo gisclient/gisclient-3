@@ -30,7 +30,6 @@ return ECSConfig::configure()
         __DIR__ . '/var/cache/ecs'
     )
     ->withSkip([
-        \PhpCsFixer\Fixer\ControlStructure\NoBreakCommentFixer::class,
         \PhpCsFixer\Fixer\ControlStructure\TrailingCommaInMultilineFixer::class,
         \PhpCsFixer\Fixer\FunctionNotation\FunctionDeclarationFixer::class,
     ])

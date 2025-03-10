@@ -107,6 +107,7 @@ class saveData
                 array_pop($p->parametri);
                 $p->mode = $p->arr_mode["list"];
                 
+                // no break
             case "cancella":
                 $flt = [];
                 $sqlParams = [];
