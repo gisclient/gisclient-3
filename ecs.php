@@ -30,7 +30,6 @@ return ECSConfig::configure()
         __DIR__ . '/var/cache/ecs'
     )
     ->withSkip([
-        \PhpCsFixer\Fixer\Casing\ConstantCaseFixer::class,
         \PhpCsFixer\Fixer\ClassNotation\ClassDefinitionFixer::class,
         \PhpCsFixer\Fixer\ControlStructure\ElseifFixer::class,
         \PhpCsFixer\Fixer\ControlStructure\NoBreakCommentFixer::class,
