@@ -23,5 +23,5 @@ if (in_array(strtolower($_POST["azione"]), $arr_action)) {
     array_pop($p->parametri);
     array_pop($param);
 }
-    
+
 $p->get_conf();

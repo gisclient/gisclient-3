@@ -146,14 +146,14 @@ if (isset($p->parametri['project'])) {
         var currentLevel = '<?php echo $p->livello ?>';
         <?php
         $errors = GCError::get();
-        if (!empty($errors)) {
-            foreach ($errors as &$error) {
-                $error = str_replace(['"', "\n"], ['\"', '<br>'], $error);
-            }
-            unset($error);
-            ?>var errors = ["<?php echo implode('","', $errors); ?>"];
+if (!empty($errors)) {
+    foreach ($errors as &$error) {
+        $error = str_replace(['"', "\n"], ['\"', '<br>'], $error);
+    }
+    unset($error);
+    ?>var errors = ["<?php echo implode('","', $errors); ?>"];
             <?php
-        } ?>
+} ?>
     </script>
     <script type="text/javascript" src="js/opentype/opentype.min.js"></script>
 </head>
@@ -178,16 +178,16 @@ if (isset($p->parametri['project'])) {
         <div class="ui-layout-south">
             GisClient<span class="color">Author</span>
             <?php
-            $sql = "SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
-            $version = $db->query($sql)->fetchColumn(0);
-            echo sprintf("{$version} - 2009 - %d", date('Y'));
-            if (function_exists('ms_GetVersionInt')) {
-                $msVersion = ms_GetVersionInt();
-                $msVersionMajor = (int) ($msVersion / 10000);
-                $msVersionMinor = (int) (($msVersion - $msVersionMajor * 10000) / 100);
-                echo " | MapServer {$msVersionMajor}.{$msVersionMinor}";
-            }
-            ?>
+    $sql = "SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
+$version = $db->query($sql)->fetchColumn(0);
+echo sprintf("{$version} - 2009 - %d", date('Y'));
+if (function_exists('ms_GetVersionInt')) {
+    $msVersion = ms_GetVersionInt();
+    $msVersionMajor = (int) ($msVersion / 10000);
+    $msVersionMinor = (int) (($msVersion - $msVersionMajor * 10000) / 100);
+    echo " | MapServer {$msVersionMajor}.{$msVersionMinor}";
+}
+?>
         </div>
     </div>
     </div>

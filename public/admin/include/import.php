@@ -1,24 +1,24 @@
 <?php
 
-    require_once __DIR__ . '/../../../bootstrap.php';
-    error_reporting(E_ERROR | E_PARSE);
+require_once __DIR__ . '/../../../bootstrap.php';
+error_reporting(E_ERROR | E_PARSE);
 
-    $db = GCApp::getDB();
-    $sql = "SELECT project_name FROM " . DB_SCHEMA . ".project;";
+$db = GCApp::getDB();
+$sql = "SELECT project_name FROM " . DB_SCHEMA . ".project;";
 try {
     $ris = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     echo "<p>" . GCAuthor::t('error_query') . " : $sql</p>";
 }
 
-    $opt[] = "<option value=\"-1\">Seleziona ===></option>";
-    $opt[] = "<option value=\"0\">Tutti</option>";
+$opt[] = "<option value=\"-1\">Seleziona ===></option>";
+$opt[] = "<option value=\"0\">Tutti</option>";
 for ($i = 0; $i < count($ris); $i++) {
     $pr = $ris[$i];
     $opt[] = "<option value=\"$pr[project_name]\">$pr[project_name]</option>";
 }
-    $prm = $this->parametri;
-    $pr = $this->parametri["project"];
+$prm = $this->parametri;
+$pr = $this->parametri["project"];
 if ($_POST["livello"] == "qt" && !$_POST["importa"]) {
     $sql = "SELECT layer_id,layer_name FROM " . DB_SCHEMA . ".layergroup INNER JOIN " . DB_SCHEMA . ".layer USING(layergroup_id) WHERE theme_id=:theme_id order by layer_name";
     $stmt = $db->prepare($sql);

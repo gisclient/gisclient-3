@@ -1,8 +1,8 @@
 <?php
 error_reporting(E_ERROR | E_PARSE);
 
-    $db = GCApp::getDB();
-    $fName = '';
+$db = GCApp::getDB();
+$fName = '';
 if (isset($_POST["esporta"])) {
     $array_levels = [];
     include_once ADMIN_PATH . "lib/export.php";
@@ -41,14 +41,14 @@ if (isset($_POST["esporta"])) {
         }
     }
     
-        $resultForm = "<DIV id=\"result\">
+    $resultForm = "<DIV id=\"result\">
 		<p style=\"color:red;\"><b>$message</b></p>
 	<form name=\"file\" id=\"file\" target=\"_new\" method=\"POST\">
 		
 	</form>
 </DIV>";
 }
-    
+
 ?>
     <script>
         function openFile(f){

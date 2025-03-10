@@ -4,8 +4,8 @@ require_once __DIR__ . '/../../../bootstrap.php';
 
 $db = \GCApp::getDB();
 
-    $groupname = $this->parametri["groups"] ?? [];
-    
+$groupname = $this->parametri["groups"] ?? [];
+
 if (!empty($groupname)) {
     if (!isset($data) || !is_array($data)) {
         $data = [];
@@ -27,6 +27,6 @@ if (empty($data)) {
 }
 
 
-    $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
-    $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
-    $button = ($this->currentMode == 'view') ? ("modifica") : ("nuovo");
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
+$button = ($this->currentMode == 'view') ? ("modifica") : ("nuovo");

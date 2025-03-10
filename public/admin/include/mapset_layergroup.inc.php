@@ -38,7 +38,7 @@ try {
     $msg = "<b style=\"color:red\">Errore</b> " . $e->getMessage();
 }
 
-    
+
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
 $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
 $button = "modifica";

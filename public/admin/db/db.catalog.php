@@ -12,9 +12,9 @@ if ($save->action == "salva" && !$save->hasErrors && ($_POST["dati"]["catalog_pa
         if (!$db2) {
             die("Impossibile connettersi al database $connStr");
         }
-            setDBPermission($db2, 'public', MAP_USER, 'SELECT', 'GRANT');
-            setDBPermission($db2, 'public', MAP_USER, 'EXECUTE', 'GRANT');
-            setDBPermission($db2, $schema, MAP_USER, 'SELECT', 'GRANT');
-            setDBPermission($db2, $schema, MAP_USER, 'EXECUTE', 'GRANT');
+        setDBPermission($db2, 'public', MAP_USER, 'SELECT', 'GRANT');
+        setDBPermission($db2, 'public', MAP_USER, 'EXECUTE', 'GRANT');
+        setDBPermission($db2, $schema, MAP_USER, 'SELECT', 'GRANT');
+        setDBPermission($db2, $schema, MAP_USER, 'EXECUTE', 'GRANT');
     }
 }

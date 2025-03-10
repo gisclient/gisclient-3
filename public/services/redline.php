@@ -367,5 +367,5 @@ function getProjParams($srid)
             ]
         ]
     ];
-        \GCService::instance()->set('PROJECT', $projectInfo);
+    \GCService::instance()->set('PROJECT', $projectInfo);
 }

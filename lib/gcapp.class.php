@@ -77,11 +77,11 @@ class GCApp
         return $factory;
     }
         
-        /**
-         * Get user provider
-         *
-         * @return UserProviderInterface
-         */
+    /**
+     * Get user provider
+     *
+     * @return UserProviderInterface
+     */
     public static function getUserProvider()
     {
         if (empty(self::$userProvider)) {
@@ -98,14 +98,14 @@ class GCApp
         return self::$userProvider;
     }
         
-        /**
-         * Get authentication handler
-         *
-         * @param  UserProviderInterface       $userProvider
-         * @param  GuardAuthenticatorInterface $guard
-         * @param  boolean                     $force
-         * @return AuthenticationHandler
-         */
+    /**
+     * Get authentication handler
+     *
+     * @param  UserProviderInterface       $userProvider
+     * @param  GuardAuthenticatorInterface $guard
+     * @param  boolean                     $force
+     * @return AuthenticationHandler
+     */
     public static function getAuthenticationHandler(
         UserProviderInterface $userProvider = null,
         GuardAuthenticatorInterface $guard = null,
@@ -124,11 +124,11 @@ class GCApp
         return self::$authenticationHandler;
     }
         
-        /**
-         * Get authentication handler
-         *
-         * @return LayerAuthorizationChecker
-         */
+    /**
+     * Get authentication handler
+     *
+     * @return LayerAuthorizationChecker
+     */
     public static function getLayerAuthorizationChecker()
     {
         if (empty(self::$layerAuthorizationChecker)) {
@@ -209,22 +209,22 @@ class GCApp
         $db = GCApp::getDB();
         try {
             if (is_null($start)) {
-                    $sql = "select $dbschema.new_pkey(:scm, :tbl, :pkey);";
-                    $stmt = $db->prepare($sql);
-                    $stmt->execute([
-                        'scm' => $schema,
-                        'tbl' => $table,
-                        'pkey' => $pkey
-                    ]);
+                $sql = "select $dbschema.new_pkey(:scm, :tbl, :pkey);";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([
+                    'scm' => $schema,
+                    'tbl' => $table,
+                    'pkey' => $pkey
+                ]);
             } else {
-                 $sql = "select $dbschema.new_pkey(:scm, :tbl, :pkey, :start);";
-                 $stmt = $db->prepare($sql);
-                 $stmt->execute([
-                     'scm' => $schema,
-                     'tbl' => $table,
-                     'pkey' => $pkey,
-                     'start' => $start
-                 ]);
+                $sql = "select $dbschema.new_pkey(:scm, :tbl, :pkey, :start);";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([
+                    'scm' => $schema,
+                    'tbl' => $table,
+                    'pkey' => $pkey,
+                    'start' => $start
+                ]);
             }
         } catch (Exception $e) {
             GCError::registerException($e);
@@ -586,7 +586,7 @@ class GCAuthor
 
                     $joinList = [];
                     foreach ($rel['join_field'] as $joinField) {
-                           $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
+                        $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
                     }
 
                     $joinFields = implode(" AND ", $joinList);
@@ -650,7 +650,7 @@ class GCAuthor
             } else {
                 self::$lang = (!empty($_REQUEST["language"])) ? $_REQUEST["language"] : substr($langs[0], 0, 2);
             }
-                        \GCService::instance()->set('AUTHOR_LANGUAGE', self::$lang);
+            \GCService::instance()->set('AUTHOR_LANGUAGE', self::$lang);
         }
         return self::$lang;
     }

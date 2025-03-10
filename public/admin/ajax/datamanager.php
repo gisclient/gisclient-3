@@ -66,10 +66,10 @@ if (empty($_REQUEST['action'])) {
 }
 
 if (!is_dir(IMPORT_PATH)) {
-     $ajax->error(IMPORT_PATH . ' is not a directory');
+    $ajax->error(IMPORT_PATH . ' is not a directory');
 }
 if (!is_writable(IMPORT_PATH)) {
-     $ajax->error(IMPORT_PATH . ' is not writable');
+    $ajax->error(IMPORT_PATH . ' is not writable');
 }
 
 switch ($_REQUEST['action']) {
@@ -1172,23 +1172,23 @@ switch ($_REQUEST['action']) {
         $ajax->success();
         break;
 
-    /*case 'check-upload-folder':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
-        $targetDir = addFinalSlash($_REQUEST['directory']);
+        /*case 'check-upload-folder':
+            checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
+            $targetDir = addFinalSlash($_REQUEST['directory']);
 
-        if (strtolower($targetDir) != $targetDir || !simpleCharsOnly(str_replace('/', '', $targetDir))) {
-            $ajax->success(array('data'=>'Invalid directory name (Allowed characters are a-z 0-9 _)'));
-        }
-
-        $basePath = filesPathFromCatalog($_REQUEST['catalog_id']);
-
-        if (!is_dir($basePath.$targetDir)) {
-            if (!mkdir($basePath.$targetDir)) {
-                $ajax->success(array('data'=>'Unable to create directory'));
+            if (strtolower($targetDir) != $targetDir || !simpleCharsOnly(str_replace('/', '', $targetDir))) {
+                $ajax->success(array('data'=>'Invalid directory name (Allowed characters are a-z 0-9 _)'));
             }
-        }
-        $ajax->success(array('data'=>'ok'));
-        break;*/
+
+            $basePath = filesPathFromCatalog($_REQUEST['catalog_id']);
+
+            if (!is_dir($basePath.$targetDir)) {
+                if (!mkdir($basePath.$targetDir)) {
+                    $ajax->success(array('data'=>'Unable to create directory'));
+                }
+            }
+            $ajax->success(array('data'=>'ok'));
+            break;*/
 
     default:
         $ajax->error("action {$_REQUEST['action']} can not be handled");

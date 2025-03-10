@@ -30,8 +30,8 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
     
     curl_setopt($curl, CURLOPT_POSTFIELDS, [
         'file' => '@/tmp/postrequest.xml'
@@ -111,7 +111,7 @@ if (!empty($_REQUEST['GCFILTERS'])) {
 
         @$oLayer = $oMap->getLayerByName($layerName);
         if ($oLayer) {
-                    OwsHandler::applyGCFilter($oLayer, $gcFilter);
+            OwsHandler::applyGCFilter($oLayer, $gcFilter);
         }
         //print_debug($oLayer->getFilterString());
     }
@@ -158,8 +158,8 @@ if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empt
             $authHandler->login(Request::createFromGlobals());
         } else {
             if (!isset($_SERVER['PHP_AUTH_USER'])) {
-                    header('WWW-Authenticate: Basic realm="Gisclient"');
-                    header('HTTP/1.0 401 Unauthorized');
+                header('WWW-Authenticate: Basic realm="Gisclient"');
+                header('HTTP/1.0 401 Unauthorized');
             } else {
                 $guard = new BasicAuthAuthenticator();
                 $authHandler = \GCApp::getAuthenticationHandler(null, $guard);

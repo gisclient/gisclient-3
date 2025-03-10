@@ -286,5 +286,5 @@ switch ($data['export_format']) {
             'result' => 'ok',
             'file' => PUBLIC_URL . 'services/download.php?filename=' . $filename
         ]));
-    break;
+        break;
 }

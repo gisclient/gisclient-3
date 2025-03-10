@@ -542,7 +542,7 @@ class GCMap
                         }
                         if ($row["layergroup_single"] == 1) {
                             //if ($row["status"] == 1) {
-                                array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
+                            array_push($this->mapLayers[$idx]["parameters"]["layers"], $layergroupName);
                             //}
                             $node = [
                                 "layer" => $layergroupName,
@@ -556,7 +556,7 @@ class GCMap
                             $layers = [];
                             foreach ($userLayers[$themeName][$layergroupName] as $userLayer) {
                                 //if ($row["status"] == 1) {
-                                    array_push($this->mapLayers[$idx]["parameters"]["layers"], $userLayer["name"]);
+                                array_push($this->mapLayers[$idx]["parameters"]["layers"], $userLayer["name"]);
                                 //}
                                 $arr = [
                                     "layer" => $userLayer["name"],
@@ -904,13 +904,13 @@ class GCMap
             unset($aLayer);
 
             //OVERVIEW: FD add overview and legend  DA VEDERE PER FD
-/*          if($row['refmap']){
-                $aLayers[$themeName][$layergroupName]['overview'] = $row['refmap'];
-                if($row['hide'] == 1) $aLayers[$themeName][$layergroupName]['hide'] = 1;
-                if($this->getLegend) {
-                    $aLayers[$themeName][$layergroupName]['legend'] = $this->getLegendArray($row['layergroup_id']);
-                }
-            }*/
+            /*          if($row['refmap']){
+                            $aLayers[$themeName][$layergroupName]['overview'] = $row['refmap'];
+                            if($row['hide'] == 1) $aLayers[$themeName][$layergroupName]['hide'] = 1;
+                            if($this->getLegend) {
+                                $aLayers[$themeName][$layergroupName]['legend'] = $this->getLegendArray($row['layergroup_id']);
+                            }
+                        }*/
         }
     }
     

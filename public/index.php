@@ -71,13 +71,13 @@ foreach ($mapset as $key => $map) {
             $newTable .= '<td width="1"></td>';
         }
         if ($authHandler->isAuthenticated() && defined('PRIVATE_MAP_URL')) {
-                                $newTable .= '<td width="1"><a href="' . $privateLink . '" class="private" target="_blank">Private map</a></td>';
+            $newTable .= '<td width="1"><a href="' . $privateLink . '" class="private" target="_blank">Private map</a></td>';
         }
         $newTable .= '					
 							<td class="data">' . $map[$j]["title"] . '</td>
 						</tr>';
     }
-            $newTable .= '
+    $newTable .= '
 			</table>
 		</div>
 	';
@@ -168,7 +168,7 @@ if (!$authHandler->isAuthenticated()) {
                 <label>&nbsp;</label>
                 <?php if (isset($message)) echo "<span class=\"alert\">".$message."</span>";?>
             </div>*/
-            ?>
+?>
             <div class="formRow">
                 <label><?php echo GCAuthor::t('Username'); ?>:</label>
                 <input name="username" type="text" id="username" value="" tabindex=1 <?php echo $usrEnabled?>>
@@ -186,9 +186,9 @@ if (!$authHandler->isAuthenticated()) {
         GisClient<span class="color">Author </span>
         <?php
         $sql = "SELECT version_name FROM {$dbSchema}.vista_version ORDER BY version_id DESC LIMIT 1";
-        $res = $db->query($sql);
-        echo $res->fetchColumn(0);
-        ?>
+$res = $db->query($sql);
+echo $res->fetchColumn(0);
+?>
     </div>
 </div>
 </body>

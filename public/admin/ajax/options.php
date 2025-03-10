@@ -21,16 +21,16 @@ $stmtInsert = $db->prepare('
 $userName = $authHandler->getToken()->getUserName();
 foreach (['auto_refresh_mapfiles', 'save_to_tmp_map'] as $key) {
     $value = (isset($_POST[$key]) && $_POST[$key] == 'checked');
-        $gcService->set($key, $value);
+    $gcService->set($key, $value);
     $stmtDelete->execute([
         'key' => $key,
         'username' => $userName
     ]);
-        $stmtInsert->execute([
-            'username' => $userName,
-            'key' => $key,
-            'value' => $value
-        ]);
+    $stmtInsert->execute([
+        'username' => $userName,
+        'key' => $key,
+        'value' => $value
+    ]);
 }
 
 // close the session, because all relevant data are already writte into it

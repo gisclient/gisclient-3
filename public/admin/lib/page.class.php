@@ -1,12 +1,12 @@
 <?php
 
-    include_once ADMIN_PATH . "lib/tabella_h.class.php";
-    include_once ADMIN_PATH . "lib/tabella_v.class.php";
-    include_once ADMIN_PATH . "lib/savedata.class.php";
-    include_once ADMIN_PATH . "lib/export.php";
+include_once ADMIN_PATH . "lib/tabella_h.class.php";
+include_once ADMIN_PATH . "lib/tabella_v.class.php";
+include_once ADMIN_PATH . "lib/savedata.class.php";
+include_once ADMIN_PATH . "lib/export.php";
         
-        use GisClient\Author\Security\AuthenticationHandler;
-    
+use GisClient\Author\Security\AuthenticationHandler;
+
 class page
 {
     public const MODE_VIEW = 0;
@@ -14,12 +14,12 @@ class page
     public const MODE_EDIT = 1;
     public const MODE_NEW = 2;
                 
-            /**
-             * Authentication handler
-             *
-             * @var AuthenticationHandler
-             */
-            private $authHandler;
+    /**
+     * Authentication handler
+     *
+     * @var AuthenticationHandler
+     */
+    private $authHandler;
         
     public $parametri; // Elenco dei parametri
     public $tableList; // Elenco delle tabelle da disegnare
@@ -52,7 +52,7 @@ class page
              */
     public function __construct(AuthenticationHandler $authHandler, array $param = [])
     {
-                $this->authHandler = $authHandler;
+        $this->authHandler = $authHandler;
         //Recupero Le Chiavi Primarie
         $pk = _getPKeys();
         $this->primary_keys = $pk["pkey"];
@@ -66,18 +66,18 @@ class page
             die("Impossibile connettersi al database " . DB_NAME);
         }
         //Ricostruisco L'albero
-                    $sql = "select e_level.id,e_level.name,coalesce(e_level.parent_id,0) as parent,X.name as parent_name,e_level.leaf 
+        $sql = "select e_level.id,e_level.name,coalesce(e_level.parent_id,0) as parent,X.name as parent_name,e_level.leaf 
                             from " . DB_SCHEMA . ".e_level left join " . DB_SCHEMA . ".e_level X on (e_level.parent_id=X.id)  
                             order by e_level.depth asc;";
-                    $stmt = $this->db->prepare($sql);
-                    $success = $stmt->execute();
+        $stmt = $this->db->prepare($sql);
+        $success = $stmt->execute();
 
         if (!$success) {
             print_debug($sql, null, "page_obj");
         }
 
-                    print_debug($sql, null, "conf");
-                    $ris = $stmt->fetchAll();
+        print_debug($sql, null, "conf");
+        $ris = $stmt->fetchAll();
         foreach ($ris as $v) {
             $this->array_levels[$v["id"]] = [
                 "name" => $v["name"],
@@ -143,7 +143,7 @@ class page
     // Metodo che prende le configurazioni della pagina da Database
     public function get_conf()
     {
-                    $sqlParam = [];
+        $sqlParam = [];
         if (!$this->livello) {
             $lev = "root";
         } else {
@@ -156,7 +156,7 @@ class page
             $sqlParam[':mode'] = $this->mode;
             $filter_mode = '(mode=:mode)';
         }
-                    $sql = "select e_form.name as form_name,e_form.save_data,config_file,tab_type,form_destination,e_form.parent_level,foo.parent_name,e_level.name as level,e_form.js as javascript,order_fld,coalesce(foo.depth,-1) 
+        $sql = "select e_form.name as form_name,e_form.save_data,config_file,tab_type,form_destination,e_form.parent_level,foo.parent_name,e_level.name as level,e_form.js as javascript,order_fld,coalesce(foo.depth,-1) 
                             from " . DB_SCHEMA . ".form_level left join " . DB_SCHEMA . ".e_form on (form_level.form=e_form.id) 
                             left join " . DB_SCHEMA . ".e_level on (e_form.level_destination=e_level.id) 
                             left join " . DB_SCHEMA . ".e_level as foo on (form_level.level=foo.id) 
@@ -166,29 +166,29 @@ class page
                             and :admintype <= e_level.admintype_id 
                             order by e_level.depth,order_fld;";
 
-                    $sqlParam[':lev'] = $lev;
-                    $sqlParam[':admintype'] = $this->admintype;
+        $sqlParam[':lev'] = $lev;
+        $sqlParam[':admintype'] = $this->admintype;
             
-                    print_debug($sql, null, "conf");
-                    print_debug($sqlParam, null, "conf");
-                    $stmt = $this->db->prepare($sql);
-                    $success = $stmt->execute($sqlParam);
+        print_debug($sql, null, "conf");
+        print_debug($sqlParam, null, "conf");
+        $stmt = $this->db->prepare($sql);
+        $success = $stmt->execute($sqlParam);
             
         if (!$success) {
             print_debug($sql, null, 'error');
             echo "<p>Errore nella configurazione del sistema</p>";
             exit;
         }
-                    $res = $stmt->fetchAll();
+        $res = $stmt->fetchAll();
             
-                    // FIXME: column menu_field does not exist
-                    // $sql="select id as val,name as key,menu_field as field from ".DB_SCHEMA.".e_level order by id";
-                    $sql = "select id as val,name as key from " . DB_SCHEMA . ".e_level order by \"order\"";
+        // FIXME: column menu_field does not exist
+        // $sql="select id as val,name as key,menu_field as field from ".DB_SCHEMA.".e_level order by id";
+        $sql = "select id as val,name as key from " . DB_SCHEMA . ".e_level order by \"order\"";
                        
-                    $stmt = $this->db->prepare($sql);
-                    $success = $stmt->execute();
+        $stmt = $this->db->prepare($sql);
+        $success = $stmt->execute();
 
-                $arr_livelli = $stmt->fetchAll();
+        $arr_livelli = $stmt->fetchAll();
         foreach ($arr_livelli as $value) {
             [$lvl_id, $lvl_name] = array_values($value);
             $this->navTreeValues[$lvl_name] = 'XXX';
@@ -199,7 +199,7 @@ class page
                 "key" => $lvl_name
             ];
         }
-                unset($this->tableList);
+        unset($this->tableList);
             
         for ($i = 0; $i < count($res); $i++) {
             $res[$i]["parent_level"] = $livelli[$res[$i]["parent_level"]] ?? null;
@@ -210,7 +210,7 @@ class page
     //Metodo che scrive il menu di navigazione
     public function writeMenuChild()
     {
-  //Da Fare!!!!!!
+        //Da Fare!!!!!!
     }
         
     public function writeMenuNav()
@@ -363,9 +363,9 @@ class page
     public function get_idLivello($lev = "")
     {
         if (!$lev) {
-                            $sql = "SELECT id FROM " . DB_SCHEMA . ".e_level WHERE name=:livello";
-                            $stmt = $this->db->prepare($sql);
-                            $success = $stmt->execute([$this->livello]);
+            $sql = "SELECT id FROM " . DB_SCHEMA . ".e_level WHERE name=:livello";
+            $stmt = $this->db->prepare($sql);
+            $success = $stmt->execute([$this->livello]);
 
             if ($success) {
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -618,7 +618,7 @@ class page
                     $b = "nuovo";
                     $tb->set_titolo($tb->FileTitle, $b, $prm);
                     $tb->get_titolo($frm);
-                        echo "<p><b>" . GCAuthor::t('nodata') . "</b></p>";
+                    echo "<p><b>" . GCAuthor::t('nodata') . "</b></p>";
                 }
                 break;
                     

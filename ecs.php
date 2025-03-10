@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
-use PhpCsFixer\Fixer\Whitespace\StatementIndentationFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return ECSConfig::configure()
@@ -31,7 +30,6 @@ return ECSConfig::configure()
         __DIR__ . '/var/cache/ecs'
     )
     ->withSkip([
-        StatementIndentationFixer::class,
         \PhpCsFixer\Fixer\Basic\BracesPositionFixer::class,
         \PhpCsFixer\Fixer\Casing\ConstantCaseFixer::class,
         \PhpCsFixer\Fixer\ClassNotation\ClassDefinitionFixer::class,

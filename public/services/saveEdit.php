@@ -153,7 +153,7 @@ class GCEditFeature
         $sql = "insert into " . $this->schema . "." . $this->table .
                 " (" . implode(',', array_keys($columns)) . ") " .
                 " values (" . implode(',', array_keys($params)) . ") ";
-                //echo $sql;
+        //echo $sql;
         $stmt = $this->dataDB->prepare($sql);
         
         foreach ($params as $key => $val) {
@@ -199,15 +199,15 @@ class GCEditFeature
     
     private function checkPermission($project, $map, $featureType)
     {
-            $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
+        $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
         if (empty($layerAuthorizations)) {
-                    return false;
+            return false;
         }
         if (!isset($layerAuthorizations[$project]) || !isset($layerAuthorizations[$project][$map]) || !isset($layerAuthorizations[$project][$map][$featureType])) {
-                    return false;
+            return false;
         }
         if (empty($layerAuthorizations[$project][$map][$featureType]['WFST'])) {
-                    return false;
+            return false;
         }
         return true;
     }

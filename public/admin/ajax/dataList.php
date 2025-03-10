@@ -178,7 +178,7 @@ switch ($catalogData["connection_type"]) {
                 $result['data_objects'][$n] = [
                     'data_unique' => $row['column_name'],
                 ];
-                                // add data_extent only when requested
+                // add data_extent only when requested
                 if (isset($_REQUEST['data_extent'])) {
                     $result['data_objects'][$n]['data_extent'] = implode(' ', $extent);
                 }

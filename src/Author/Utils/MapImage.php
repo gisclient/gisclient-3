@@ -235,8 +235,8 @@ class MapImage
         if ($this->options['image_format'] == 'jpeg') {
             $extension = 'jepg';
         }
-    //    if(empty($this->options["rotation"]))
-    //        $this->options["rotation"] = 0;
+        //    if(empty($this->options["rotation"]))
+        //        $this->options["rotation"] = 0;
         $this->imageFileName = \GCApp::getUniqueRandomTmpFilename(
             $this->options['TMP_PATH'],
             'gc_mapimage',

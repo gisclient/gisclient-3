@@ -352,7 +352,7 @@ class saveData
                             foreach ($this->parent_flds as $key => $value) {
                                 $pkeys = $this->getPKeys($key, $this->schema);
                                 for ($i = 0; $i < count($pkeys); $i++) {
-                                        $Dati[$pkeys[$i]] = $value;
+                                    $Dati[$pkeys[$i]] = $value;
                                 }
                             }
                         }
@@ -433,7 +433,7 @@ class saveData
         $this->hasErrors = false;
         
         if ($this->refreshMapfiles && \GCService::instance()->get('auto_refresh_mapfiles') === true) {
-                    $publish = !(\GCService::instance()->get('save_to_tmp_map') === true);
+            $publish = !(\GCService::instance()->get('save_to_tmp_map') === true);
             if (!empty($p->parametri['project']) && !empty($p->parametri['mapset'])) {
                 GCAuthor::refreshMapfile($p->parametri['project'], $p->parametri['mapset'], $publish);
             } elseif (!empty($p->parametri['project'])) {

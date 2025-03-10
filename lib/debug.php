@@ -23,7 +23,7 @@ function print_debug($t = "", $db = null, $file = null)
     if (!$file) {
         $nomefile = DEBUG_DIR . "standard.debug";
     } else {
-                $nomefile = DEBUG_DIR . $file . ".debug";
+        $nomefile = DEBUG_DIR . $file . ".debug";
     }
     $size = (file_exists($nomefile)) ? filesize($nomefile) : 0;
     $f = ($size > 100000) ? (fopen($nomefile, "w+")) : (fopen($nomefile, "a+"));

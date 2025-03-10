@@ -59,7 +59,7 @@ switch ($_REQUEST['action']) {
     case 'replace':
     case 'create':
         if (empty($_REQUEST['context'])) {
-                    $ajax->error('Empty context');
+            $ajax->error('Empty context');
         }
         $context = json_encode($_REQUEST['context']);
         if ($_REQUEST['action'] == 'replace') {
@@ -87,7 +87,7 @@ switch ($_REQUEST['action']) {
     
     case 'delete':
         if (empty($_REQUEST['id'])) {
-                    $ajax->error('Empty id');
+            $ajax->error('Empty id');
         }
         
         $sql = "select username from " . DB_SCHEMA . ".usercontext where usercontext_id=:id";
@@ -96,7 +96,7 @@ switch ($_REQUEST['action']) {
             ':id' => $_REQUEST['id']
         ]);
         if ($stmt->fetchColumn(0) != $authHandler->getToken()->getUserName()) {
-                    $ajax->error('Permission denied');
+            $ajax->error('Permission denied');
         }
         
         $sql = "delete from " . DB_SCHEMA . ".usercontext where usercontext_id=:id";
@@ -115,7 +115,7 @@ switch ($_REQUEST['action']) {
         $field = 'usercontext_id';
         if (empty($_REQUEST['id'])) {
             $field = 'username';
-                        $param = $authHandler->getToken()->getUserName();
+            $param = $authHandler->getToken()->getUserName();
             if (null === $param) {
                 $ajax->success([
                     'context' => []

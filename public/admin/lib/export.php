@@ -11,7 +11,7 @@ function _writeHeader($pr, $lev, $name, $file)
 }
 function _getChild($lev, $export)
 {
-       //FUNZIONE CHE RECUPERA I FIGLI DEL LIVELLO
+    //FUNZIONE CHE RECUPERA I FIGLI DEL LIVELLO
     $db = GCApp::getDB();
     
     if ($export) {
@@ -40,7 +40,7 @@ function _getFieldName($level)
 }
 function _getFieldValue($table, $fld, $pk, $pkVal)
 {
-        // SI PUO' ANCHE MODIFICARE PER FAR RESTITUIRE UNA LISTA DI CAMPI
+    // SI PUO' ANCHE MODIFICARE PER FAR RESTITUIRE UNA LISTA DI CAMPI
     $db = GCApp::getDB();
     
     $params = [];
@@ -156,8 +156,8 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
             }
         }
         //if($out){
-            //echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
-            $sql = str_replace($out[0], $newid[$out[1]][$out[2]], $sql);
+        //echo "<p>Sostituzione di $out[0] con ".$newid[$out[1]][$out[2]]." in :<br>$sql</p>";
+        $sql = str_replace($out[0], $newid[$out[1]][$out[2]], $sql);
         //}
         fwrite($handle, str_replace("\'", "\\''", $sql) . "\n");
         $out = [];
@@ -291,18 +291,18 @@ function _isPKey($fld, $pk, $lev = "")
     foreach ($pk as $key => $arr) {
         if (count($arr) == 1) {
             if ($arr[0] == $fld) {
-                    return true;
+                return true;
             }
         }
     }
     if (count($arr) > 1) {
         for ($i = 0; $i < count($arr); $i++) {
             if ($arr[$i] == $fld) {
-                        return true;
+                return true;
             }
         }
     }
-        return false;
+    return false;
 }
 function _export($fileName = "export.sql", $currentLevel, $projName, $structure, $start = 0, $startName, $parentValue, &$valutatedKey = null, &$Errors = [])
 {
@@ -415,7 +415,7 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
                     $values[$key] = ($key == $startName) ? ("'@OBJECTNAME@'") : (($valutatedKey[$key][$val]) ? ("'@KEY[$lev][$val]@'") : ("@FOREIGNKEY" . $tree . "@"));
                 }
             } elseif ($key == $startName) {                                              //CAMPO NOME NOME DEL LIVELLO DI PARTENZA
-                    $values[$key] = "'@OBJECTNAME@'";
+                $values[$key] = "'@OBJECTNAME@'";
             } else {
                 $values[$key] = ($val) ? ($db->quote(trim(str_replace(chr(13), "\\n", $val))) . "::" . $fldType[$key]) : ((!isset($val)) ? ("null::" . $fldType[$key]) : (($val === '') ? ('\'\'') : ("0::" . $fldType[$key])));
                 //echo "<p>".$values[$key]."</p>";
@@ -489,15 +489,15 @@ function _exportNew($fileName = "export.sql", $arr, $lev, $project, $start = 0, 
             $filter[] = $pkey[$el["name"]][$i] . "='" . $parentValue[$pkey[$el["name"]][$i]] . "'";
         }
     }
-        $filter = (count($filter)) ? (implode(' AND ', $filter)) : ('');
-        $sql = "SELECT * FROM " . DB_SCHEMA . ".$struct[name] WHERE $filter;";
+    $filter = (count($filter)) ? (implode(' AND ', $filter)) : ('');
+    $sql = "SELECT * FROM " . DB_SCHEMA . ".$struct[name] WHERE $filter;";
         
     if (!$db->sql_query($sql)) {
         echo "<p>Errore $sql</p>";
     }
-        $recordSet = $db->sql_fetchrowset();
-        $child = _getChild($lev, 1);
-        echo $startName;
+    $recordSet = $db->sql_fetchrowset();
+    $child = _getChild($lev, 1);
+    echo $startName;
     for ($i = 0; $i < count($recordSet); $i++) {    //RISULTATI DA INSERIRE NEL FILE
         $rec = $recordSet[$i];
         $j = 0;
@@ -588,7 +588,7 @@ function _exportNew($fileName = "export.sql", $arr, $lev, $project, $start = 0, 
         }
         $values = [];    //Svuoto Array deli Valori
     }
-        ini_set('max_execution_time', $standardTime);
-        ini_set('memory_limit', $standardMem);
-        return $struct;
+    ini_set('max_execution_time', $standardTime);
+    ini_set('memory_limit', $standardMem);
+    return $struct;
 }

@@ -26,7 +26,7 @@ class Tabella_h extends Tabella
 
     public function set_color($intestazione, $font_intestazione, $titolo, $font_titolo)
     {
-    // ************ da fare********************usare class?????
+        // ************ da fare********************usare class?????
         //aggiungere stile
         $this->colore_colonne = $intestazione;
         $this->color_head_font = $font_intestazione;
@@ -53,7 +53,7 @@ class Tabella_h extends Tabella
                 $retval = "<td>$valore</td>\n";
                 break;
 
-        //  Modificato Marco
+                //  Modificato Marco
             case "ora":
                 $valore = number_format($valore, 2, ':', '');
                 if ($valore != 0) {
@@ -93,7 +93,7 @@ class Tabella_h extends Tabella
                     $retval = "<td>---</td>\n";
                 }
                 break;
-        // Fine Modifica
+                // Fine Modifica
             case "data":
                 $data = $this->date_format(stripslashes($valore));
                 $retval = "<td>$data</td>\n";
@@ -180,7 +180,7 @@ class Tabella_h extends Tabella
                 break;
 
 
-            break;
+                break;
             case "noyes":
             case "yesno":
                 ($valore == 0) ? ($yn = GCAuthor::t('no')) : ($yn = GCAuthor::t('yes'));
@@ -218,7 +218,7 @@ class Tabella_h extends Tabella
                 $retval = "<td  align=\"center\" valign=\"middle\"  width=\"$w\"  class=\"printhide\" ><img src=\"images/$img\" border=\"0\"></td>\n";
 
                 break;
-            //Genera un array di text indicizzati su id
+                //Genera un array di text indicizzati su id
             case "text_box":
                 $data = $this->date_format(stripslashes($valore));
                 $nome .= "[" . $this->array_dati[$row]["id"] . "]";
@@ -229,7 +229,7 @@ class Tabella_h extends Tabella
                 $p_image = $this->img_punto;
                 $retval = "<td align=\"center\" valign=\"middle\" width=\"$w\"><img src=\"images/$p_image.gif\" border=\"0\"></td>\n";
                 break;
-            //crea  un array di text area con associata un'immagine che permette di visualizzare le text area. Di default è nascosta
+                //crea  un array di text area con associata un'immagine che permette di visualizzare le text area. Di default è nascosta
             case "nota":
                 $nome .= "[" . $this->array_dati[$row]["id"] . "]";
                 $imm = "imm_" . $nome;
@@ -327,14 +327,14 @@ class Tabella_h extends Tabella
             for ($j = 0; $j < $ncols; $j++) {
                 $tabella .= "\t\t\t\t" . $this->get_cella($i, $j);
             }
-             $tabella .= "\t\t\t</tr>\n";
-             //$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";
+            $tabella .= "\t\t\t</tr>\n";
+            //$tabella.="\t\t\t<tr>\n\t\t\t\t<td colspan=\"$ncols\"><img src=\"images/gray_light.gif\" height=\"1\" width=\"99%\"></td>\n\t\t\t</tr>\n";
         }
 
         if ($this->num_record == 0) {
             $tabella .= "\t\t\t<tr>\n";//CICLO SULLE COLONNE
             $tabella .= "<td colspan=\"" . $ncols . "\"><p><b>$message</b></p></td>";
-             $tabella .= "\t\t\t</tr>\n";
+            $tabella .= "\t\t\t</tr>\n";
         }
         //fine righe di dettaglio
         $tabella .= "\t\t</table></div>\n";
@@ -396,15 +396,15 @@ class Tabella_h extends Tabella
                 $this->connettidb();
             }
             print_debug($sql, null, "fkey");
-                        $stmt = $this->db->prepare($sql);
-                        $success = $stmt->execute();
+            $stmt = $this->db->prepare($sql);
+            $success = $stmt->execute();
 
             if (!$success) {
-                            print_debug("Errore Chiave Esterna\n" . $sql, null, "error");
+                print_debug("Errore Chiave Esterna\n" . $sql, null, "error");
             }
 
-                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                        return $row[$campo];
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row[$campo];
         }
     }
 }

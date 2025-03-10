@@ -854,13 +854,13 @@ class GWGCMap
             unset($aLayer);
 
             //OVERVIEW: FD add overview and legend  DA VEDERE PER FD
-/*          if($row['refmap']){
-                $aLayers[$themeName][$layergroupName]['overview'] = $row['refmap'];
-                if($row['hide'] == 1) $aLayers[$themeName][$layergroupName]['hide'] = 1;
-                if($this->getLegend) {
-                    $aLayers[$themeName][$layergroupName]['legend'] = $this->getLegendArray($row['layergroup_id']);
-                }
-            }*/
+            /*          if($row['refmap']){
+                            $aLayers[$themeName][$layergroupName]['overview'] = $row['refmap'];
+                            if($row['hide'] == 1) $aLayers[$themeName][$layergroupName]['hide'] = 1;
+                            if($this->getLegend) {
+                                $aLayers[$themeName][$layergroupName]['legend'] = $this->getLegendArray($row['layergroup_id']);
+                            }
+                        }*/
         }
     }
     

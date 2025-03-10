@@ -6,7 +6,7 @@ class Tabella_v extends Tabella
 {
     public $errors;
     public $error_flag = 0;
-//var $rigagrigia="\t<tr>\n\t\t<td><img src=\"images/gray_light.gif\" height=\"1\" width=\"100%\"></td>\n\t</tr>\n";
+    //var $rigagrigia="\t<tr>\n\t\t<td><img src=\"images/gray_light.gif\" height=\"1\" width=\"100%\"></td>\n\t</tr>\n";
     public $rigagrigia = "";
     public $tabella_elenco;//tabella dove prendo le opzioni per il tipo elenco
 
@@ -20,10 +20,10 @@ class Tabella_v extends Tabella
         $this->errors = $err;
         $this->error_flag = 1;
     }
-/*MODIFICA LOCK STATI AGGIUNTO PARAMETRO frozen*/
+    /*MODIFICA LOCK STATI AGGIUNTO PARAMETRO frozen*/
     public function get_controllo($label, $tipo, $w, $campo, $mode, $action = '', $frozen = 0)
     {
-    //restituisce il controllo in funzione di tipo letto dal configfile e lo riempie con i dati il valore w può contenere più informazioni
+        //restituisce il controllo in funzione di tipo letto dal configfile e lo riempie con i dati il valore w può contenere più informazioni
         $retval = '';
         $class = 'textbox';
         $help = '';
@@ -216,7 +216,7 @@ class Tabella_v extends Tabella
                     $js = "onclick=\"javascript:return confirm('Sei sicuro di voler copiare il record?');\"";
                 }
                 if (!$mode || $mode == "all" || $this->mode == $mode) {
-                //$retval="\n\t\t\t<input  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:".$w."px;display:$display\" type=\"submit\" value=\"$label\" $js />";
+                    //$retval="\n\t\t\t<input  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:".$w."px;display:$display\" type=\"submit\" value=\"$label\" $js />";
                     $retval = "\n\t\t\t<button  name=\"$campo\"  id=\"$campo\" class=\"hexfield\" style=\"width:" . $w . "px;display:$display\" type=\"submit\" value=\"$action\" $js>$label</button>";
                 }
                 break;
@@ -272,7 +272,7 @@ class Tabella_v extends Tabella
 
     public function get_dato($tipo, $w, $campo)
     {
-    //restituisce il dato come stringa
+        //restituisce il dato come stringa
         $retval = '';
         $dati = $this->array_dati[$this->curr_record] ?? [];
         switch ($tipo) {
@@ -307,8 +307,8 @@ class Tabella_v extends Tabella
                 }
                 break;
             case "valuta":
-            //setto la valuta aggiungendo il metodo setvaluta alla classe tabella e poi la uso qui
-            //echo("<br>Formatto valuta : $dati[$campo]<br>");
+                //setto la valuta aggiungendo il metodo setvaluta alla classe tabella e poi la uso qui
+                //echo("<br>Formatto valuta : $dati[$campo]<br>");
                 $retval = "€ " . number_format($dati[$campo], 2, ',', '.');
                 break;
             case "superficie":
@@ -335,7 +335,7 @@ class Tabella_v extends Tabella
                 $retval = $this->get_chiave_esterna($dati[$campo], "id", $size[1], "opzione");
                 //$retval=$this->elenco_selectdb($dati[$campo],"id",$flt,"opzione");
                 break;
-            //case "selectdb":
+                //case "selectdb":
             case "chiave_esterna":      //Restituisce il campo descrittivo di un elenco
                 $size = explode("#", $w);
                 //$retval=$this->get_chiave_esterna($size[1],$dati[$campo],$size[2]);
@@ -353,7 +353,7 @@ class Tabella_v extends Tabella
                 break;
             case "image":
                 if ($dati[$campo]) {
-                                $size = explode("#", $w);
+                    $size = explode("#", $w);
                     if (strpos($size[0], 'x') !== false) {
                         $dim = explode("x", $size[0]);
                         $style = "style=\"width:" . $dim[0] . "px;height:" . $dim[1] . "px;\"";
@@ -379,12 +379,12 @@ class Tabella_v extends Tabella
         return $this->date_format($data);
     }
 
-//MODIFICA LOCK STATI AGGIUNTO PARAMETRO $frozen_cols ARRAY DI CAMPI CONGELATI
-//function get_riga_edit($nriga){
+    //MODIFICA LOCK STATI AGGIUNTO PARAMETRO $frozen_cols ARRAY DI CAMPI CONGELATI
+    //function get_riga_edit($nriga){
     public function get_riga_edit($nriga, $frozen_cols = [])
     {
-    //prendo una riga che può essere fatta da uno,  due o più colonne
-    // restituisce la riga in modalità edit con label controllo associato
+        //prendo una riga che può essere fatta da uno,  due o più colonne
+        // restituisce la riga in modalità edit con label controllo associato
         $riga = $this->tab_config[$nriga];
         $lbl = "";
         $ctr = '';
@@ -404,7 +404,7 @@ class Tabella_v extends Tabella
 
     public function get_riga_view($nriga)
     {
-    // restituisce la riga in modalità view
+        // restituisce la riga in modalità view
         $riga = $this->tab_config[$nriga];
         $testo_riga = '';
         for ($i = 0; $i < count($riga); $i++) {
@@ -424,7 +424,7 @@ class Tabella_v extends Tabella
 
     public function edita($param = [])
     {
-    //if($this->error_flag==1)
+        //if($this->error_flag==1)
         //echo ("I campi evidenziati in rosso non sono validi");
         //crea la tabella di editing
         $nrighe = $this->num_col;
@@ -456,7 +456,7 @@ class Tabella_v extends Tabella
 
     public function tab($curr = 0)
     {
-    //crea la tabella per l'elenco in consultazione
+        //crea la tabella per l'elenco in consultazione
         $nrighe = $this->num_col;
         $span = 2 * $nrighe;
         $tabella = "<table class=\"stiletabella\">\n";
@@ -491,11 +491,11 @@ class Tabella_v extends Tabella
     }
 
 
-//########################## ELENCHI ########################
+    //########################## ELENCHI ########################
 
     public function elenco_select($tabella, $sep, $selezionato)
     {
-    // dal file tab crea la lista di opzioni per il controllo SELECT
+        // dal file tab crea la lista di opzioni per il controllo SELECT
 
 
         if (!file_exists($tabella)) {
@@ -518,7 +518,7 @@ class Tabella_v extends Tabella
 
     public function elenco_selectdb($tabella, $selezionato, $filtro)
     {
-    // dalla tabella crea la lista di opzioni per il controllo SELECT
+        // dalla tabella crea la lista di opzioni per il controllo SELECT
 
         if (!isset($this->db)) {
             $this->connettidb();
@@ -576,9 +576,9 @@ class Tabella_v extends Tabella
 
     public function elenco_selectfield($campo, $selezionato, $filtro)
     {
-    // dalla tabella crea la lista di opzioni per il controllo SELECT
-    //Utilizzata x ora solo sulla tabella per il calcolo degli oneri
-    //Temporanea fino alla costruzione dell'interfaccia di gestione configurazione tabella oneri
+        // dalla tabella crea la lista di opzioni per il controllo SELECT
+        //Utilizzata x ora solo sulla tabella per il calcolo degli oneri
+        //Temporanea fino alla costruzione dell'interfaccia di gestione configurazione tabella oneri
 
         $tabella = $this->tabella_elenco;
         if (!isset($this->db)) {
@@ -662,16 +662,16 @@ class Tabella_v extends Tabella
             if (!isset($this->db)) {
                 $this->connettidb();
             }
-                print_debug($sql, null, "fkey");
-                $stmt = $this->db->prepare($sql);
-                $success = $stmt->execute();
+            print_debug($sql, null, "fkey");
+            $stmt = $this->db->prepare($sql);
+            $success = $stmt->execute();
 
             if (!$success) {
                 print_debug("Errore Chiave Esterna\n" . $sql, null, "error");
             }
 
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                return $row[$campo];
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row[$campo];
         }
     }
 }//end class

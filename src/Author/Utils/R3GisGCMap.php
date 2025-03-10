@@ -216,10 +216,10 @@ class R3GisGCMap
         
         if ($this->onlyPublicLayers) {
             // force a recolulation of the visible layers
-                    $allUserLayers = $this->layerAuthChecker->getLayers([
-                        'mapset_name' => $mapsetName,
-                        'show_as_public' => 1
-                    ]);
+            $allUserLayers = $this->layerAuthChecker->getLayers([
+                'mapset_name' => $mapsetName,
+                'show_as_public' => 1
+            ]);
             $this->authorizedLayers = [];
         } else {
             $allUserLayers = $this->layerAuthChecker->getLayers([
@@ -528,7 +528,7 @@ class R3GisGCMap
                     $this->activeBaseLayer = $layerId;
                 }
             } elseif ($layerType == LayerGroup::TMS_LAYER_TYPE) {//TMS
-                            $layerOptions["layers"] = $row['layers'];
+                $layerOptions["layers"] = $row['layers'];
 
                             
                 $layerUrl = $row["url"] ?? $tiles_cache_url . $this->projectName;
@@ -569,7 +569,7 @@ class R3GisGCMap
                 $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
                 $aLayers[$themeName][$layergroupName]["options"] = $layerOptions;
             } elseif ($layerType == LayerGroup::WMTS_LAYER_TYPE) {//TMS
-                            $layerOptions["layers"] = $row['layers'];
+                $layerOptions["layers"] = $row['layers'];
 
                             
                 $layerUrl = $row["url"] ?? $tiles_cache_url . $this->projectName;

@@ -42,10 +42,10 @@
                 <form id="user_options">
                 <input type="checkbox" name="save_to_tmp_map" <?php if ($gcService->get('save_to_tmp_map') === true) {
                     echo 'checked="checked"';
-                                                              } ?> value="1"> <?php echo GCAuthor::t('save_to_temp') ?><br />
+                } ?> value="1"> <?php echo GCAuthor::t('save_to_temp') ?><br />
                 <input type="checkbox" name="auto_refresh_mapfiles" <?php if ($gcService->get('auto_refresh_mapfiles') === true) {
                     echo 'checked="checked"';
-                                                                    } ?> value="1"> <?php echo GCAuthor::t('auto_refresh_mapfiles') ?><br />
+                } ?> value="1"> <?php echo GCAuthor::t('auto_refresh_mapfiles') ?><br />
                 <button name="save"><?php echo GCAuthor::t('save'); ?></button>
                 <div class="logs" style="color:red;"></div>
                 </form>
@@ -69,8 +69,8 @@
                     $showSingleWmsLayers = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
                     $showWfstLayers = defined('TINYOWS_PATH');
                     
-                if ($showSingleWmsLayers || $showWfstLayers) {
-                    ?>
+                    if ($showSingleWmsLayers || $showWfstLayers) {
+                        ?>
                 <br><br>
                 <table border="1" cellpadding="3" class="stiletabella">
                 
@@ -81,10 +81,10 @@
                     <th><?php echo GCAuthor::t('FeatureType'); ?></th>
                     <th nowrap><?php if ($showWfstLayers) {
                         echo GCAuthor::t('WFS-T');
-                               } ?>&nbsp;</th>
+                    } ?>&nbsp;</th>
                     <th nowrap>&nbsp;<?php if ($showSingleWmsLayers) {
                         echo GCAuthor::t('WMS');
-                                     } ?></th>
+                    } ?></th>
                 </tr>
                     <?php
                     if (isset($layerList)) {
@@ -113,7 +113,7 @@
                             echo "</tr>";
                         }
                     }
-                    ?>
+                        ?>
                 </table>
                 <?php } ?>
             </div>
@@ -171,7 +171,7 @@
                         </tr>';
                     }
                 }
-                ?>
+                    ?>
                 </table>
             </div>
 
@@ -183,18 +183,18 @@
                     <th><?php echo GCAuthor::t('download') ?></th>
                 </tr>
                 <?php
-                if (isset($mapsets)) {
-                    foreach ($mapsets as $mapset) {
-                        ?>
+                    if (isset($mapsets)) {
+                        foreach ($mapsets as $mapset) {
+                            ?>
                 <tr>
                     <td><?php echo "{$mapset['mapset_title']} ({$mapset['mapset_name']})" ?></td>
                     <td style="text-align:center;"><a href="#" data-action="create" data-map="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('create') ?></a></td>
                     <td style="text-align:center;"><a href="#" data-action="download" data-map="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('download') ?></a></td>
                 </tr>
                         <?php
+                        }
                     }
-                }
-                ?>
+                    ?>
                 </table>
             </script>
             <script type="text/template" id="offline_theme">

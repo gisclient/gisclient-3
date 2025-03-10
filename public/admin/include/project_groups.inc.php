@@ -2,13 +2,13 @@
 
 require_once __DIR__ . '/../../../bootstrap.php';
     
-    $db = GCApp::getDB();
-    $project = $this->parametri["project"];
-    $JOIN = ($this->mode == 0) ? (" INNER JOIN ") : (" LEFT JOIN ");
-    $data = [];
+$db = GCApp::getDB();
+$project = $this->parametri["project"];
+$JOIN = ($this->mode == 0) ? (" INNER JOIN ") : (" LEFT JOIN ");
+$data = [];
     
-    $sql = "select groupname as group_name,case when coalesce(project_name,'')='' then 0 else 1 end as presente from (select 'Authenticated Users' as groupname UNION select distinct groupname from " . USER_SCHEMA . ".groups) X $JOIN (select * from " . DB_SCHEMA . ".project_groups where project_name=:project) Y on (groupname=group_name) order by group_name";
-    
+$sql = "select groupname as group_name,case when coalesce(project_name,'')='' then 0 else 1 end as presente from (select 'Authenticated Users' as groupname UNION select distinct groupname from " . USER_SCHEMA . ".groups) X $JOIN (select * from " . DB_SCHEMA . ".project_groups where project_name=:project) Y on (groupname=group_name) order by group_name";
+
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
@@ -32,7 +32,7 @@ try {
 }
     
         
-    $btn[] = "\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Annulla\">";
-    $btn[] = "<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Salva\">";
-    $btn[] = "<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'group');\">\n";
-    $button = "modifica";
+$btn[] = "\n\t<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Annulla\">";
+$btn[] = "<input type=\"submit\" name=\"azione\" class=\"hexfield\" style=\"margin-right:5px;margin-left:5px;\" value=\"Salva\">";
+$btn[] = "<input type=\"button\" name=\"azione\" class=\"hexfield\" style=\"width:130px;margin-right:5px;margin-left:5px;\" value=\"Seleziona Tutti\" onclick=\"javascript:selectAll(this,'group');\">\n";
+$button = "modifica";

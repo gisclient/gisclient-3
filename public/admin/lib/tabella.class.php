@@ -28,7 +28,7 @@ class Tabella
     public $tabelladb; //nome della tabella o vista sul db dalla quale estraggo i dati
     //var $campi_obb; // array con l'elenco dei campi obbligatori (non serve qui)
     public $tab_config; //vettore che definisce la configurazione della tabella. La dimensione corrisponde al numero di righe per le tabelle H o al numero di colonne per le tabelle V
-                     //ogni elemento è un vettore con un elemento per la tabella V e un numero di elementi pari al numero di campi sulla stessa riga per le tabelle H
+    //ogni elemento è un vettore con un elemento per la tabella V e un numero di elementi pari al numero di campi sulla stessa riga per le tabelle H
     public $num_col; // numero di colonne di tab_config
     public $elenco_campi;//elenco dei campi per la select
     public $pkeys;//elenco delle primary keys
@@ -44,7 +44,7 @@ class Tabella
 
     public function __construct($config_file, $mode = "standard")
     {
-    // ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
+        // ******LETTURA FILE DI CONFIGURAZIONE e impostazione layout della tabella
         //  NUOVA MODALITA
         
         $mylang = GCAuthor::getLang();
@@ -138,11 +138,11 @@ class Tabella
         $mode = null;
         
         if ($this->button_menu == "modifica") {
-                $mode = "edit";
-                $butt = GCAuthor::t('button_edit');
+            $mode = "edit";
+            $butt = GCAuthor::t('button_edit');
         } elseif ($this->button_menu == "nuovo") {
-                $mode = "new";
-                $butt = GCAuthor::t('button_new');
+            $mode = "new";
+            $butt = GCAuthor::t('button_new');
         } elseif ($this->button_menu == "valida") {
             $mode = "edit";
             $butt = GCAuthor::t('button_edit');
@@ -217,7 +217,7 @@ class Tabella
                             ' FROM ' . $this->schemadb . '.' . $this->tabelladb .
                             ' ' . $data . ' ' . $order . ';';
             }
-                        print_debug($this->config_file . "\n" . $sql, null, "tabella");
+            print_debug($this->config_file . "\n" . $sql, null, "tabella");
             try {
                 $stmt = $this->db->prepare($sql);
                 $success = $stmt->execute();
@@ -270,7 +270,7 @@ class Tabella
     }
     public function date_format($stringa_data)
     {
-    //formatta la data in giorno-mese-anno
+        //formatta la data in giorno-mese-anno
         if ($stringa_data) {
             $ar = preg_split('#[\/\.\-]#m', $stringa_data);
             $stringa_data = $ar[0] . "-" . $ar[1] . "-" . $ar[2];

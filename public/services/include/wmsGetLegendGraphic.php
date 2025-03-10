@@ -45,21 +45,21 @@ if ($objRequest->getvaluebyname('layer')) {
 
 
     $legend = false;
-/*  if(isset($_REQUEST["RULE"])){
-        //SE RULE E' FORMATA DA NOME_LIVELLO:NOME_CLASSE PRENDO LA SOLA CLASSE ALTRIMENTI CREO UNA LEGENDA CON TUTTE LE ICONE DELLE CLASSI DEL LIVELLO
-        $rule=$_REQUEST["RULE"];
-        if(strpos($rule,':')>0) {//USARE REGEXP!!!!
-            $v=explode(":",$rule);
-            $ruleLayerName=$v[0];
-            $ruleClassName=$v[1];
-            $legend=false;
+    /*  if(isset($_REQUEST["RULE"])){
+            //SE RULE E' FORMATA DA NOME_LIVELLO:NOME_CLASSE PRENDO LA SOLA CLASSE ALTRIMENTI CREO UNA LEGENDA CON TUTTE LE ICONE DELLE CLASSI DEL LIVELLO
+            $rule=$_REQUEST["RULE"];
+            if(strpos($rule,':')>0) {//USARE REGEXP!!!!
+                $v=explode(":",$rule);
+                $ruleLayerName=$v[0];
+                $ruleClassName=$v[1];
+                $legend=false;
+            }
+            else{
+                $ruleLayerName=$rule;
+                $legend = false;
+            }
         }
-        else{
-            $ruleLayerName=$rule;
-            $legend = false;
-        }
-    }
-  */
+      */
     $gcLegendText = true;
     if (isset($_REQUEST['GCLEGENDTEXT']) && $_REQUEST['GCLEGENDTEXT'] == 0) {
         $gcLegendText = false;
@@ -153,7 +153,7 @@ if ($objRequest->getvaluebyname('layer')) {
             for ($clno = 0; $clno < $numCls; $clno++) {
                 $oClass = $oLayer->getClass($clno);
                 $className = $oClass->name;
-//                if($oClass->title) $oClass->set('name',$oClass->title);
+                //                if($oClass->title) $oClass->set('name',$oClass->title);
                 
                 if ($oClass->getMetaData("gc_no_image") == 1) {
                     $classToRemove[] = $oClass->title;

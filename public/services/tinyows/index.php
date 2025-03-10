@@ -74,7 +74,7 @@ $stmt->execute([
 ]);
 $projectName = $stmt->fetchColumn(0);
 if (empty($projectName)) {
-        throw new Exception("Missing project name for layergroup $layergroupName and layer $layerName");
+    throw new Exception("Missing project name for layergroup $layergroupName and layer $layerName");
 }
 
 if (!$gcService->has('GISCLIENT_USER_LAYER')) {
@@ -83,11 +83,11 @@ if (!$gcService->has('GISCLIENT_USER_LAYER')) {
         header('WWW-Authenticate: Basic realm="Gisclient"');
         header('HTTP/1.0 401 Unauthorized');
     } else {
-            $authHandler->login(Request::createFromGlobals());
+        $authHandler->login(Request::createFromGlobals());
         if ($authHandler->isAuthenticated()) {
-                    $authHandler->setAuthorizedLayers([
-                        'project_name' => $projectName
-                    ]);
+            $authHandler->setAuthorizedLayers([
+                'project_name' => $projectName
+            ]);
         }
     }
 }
@@ -97,7 +97,7 @@ $layerAuthorizations = $gcService->get('GISCLIENT_USER_LAYER');
 if (!empty($layerAuthorizations[$project][$typeName]['WFST'])) {
     $authorized = true;
 } else {
-        print_debug(var_export($layerAuthorizations, true), null, 'tinyows');
+    print_debug(var_export($layerAuthorizations, true), null, 'tinyows');
 }
 
 if (!$authorized) {

@@ -349,7 +349,7 @@ function html2rgb($color)
 
 
 /*-----------------------------------------------------------------------------------------------  Funzioni di prova per estrarre i dati per i grafici dall'ARRAY DATA  -----------------------------------------------------------------------------*/
-    //TODO ||||||||||||||||||||||||||!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//TODO ||||||||||||||||||||||||||!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function NameReplace($name)
 {
     $search = explode(",", " ,ç,æ,œ,á,é,í,ó,ú,à,è,ì,ò,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u,.");
@@ -368,10 +368,10 @@ function NameReplace($name)
 
 function niceName($name)
 {
-        $name = preg_replace('/\s+/', '_', $name);
-        $name = preg_replace('/_{2,}/', '_', $name);
-        $name = preg_replace('/^_+/', '', $name);
-        $name = preg_replace('/_+$/', '', $name);
+    $name = preg_replace('/\s+/', '_', $name);
+    $name = preg_replace('/_{2,}/', '_', $name);
+    $name = preg_replace('/^_+/', '', $name);
+    $name = preg_replace('/_+$/', '', $name);
     $name = NameReplace($name);
     $name = preg_replace('/[^a-z0-9_]+/i', '', $name);
     return $name;

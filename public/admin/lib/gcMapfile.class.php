@@ -70,17 +70,17 @@ class gcMapfile
         $sqlParams = [];
         
         if ($keytype == "mapset") {    //GENERO IL MAPFILE PER IL MAPSET
-                $filter = "mapset.mapset_name=:keyvalue";
-                $joinMapset = "INNER JOIN " . DB_SCHEMA . ".mapset using (project_name) INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (mapset_name,layergroup_id)";
-                $fieldsMapset = "mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private";
-                $sqlParams['keyvalue'] = $keyvalue;
+            $filter = "mapset.mapset_name=:keyvalue";
+            $joinMapset = "INNER JOIN " . DB_SCHEMA . ".mapset using (project_name) INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (mapset_name,layergroup_id)";
+            $fieldsMapset = "mapset_layergroup.status as layergroup_status, mapset_name,mapset_title,mapset_extent,mapset_srid,mapset.maxscale as mapset_maxscale,mapset_def,mapset.private AS mapset_private";
+            $sqlParams['keyvalue'] = $keyvalue;
                 
-                $sql = 'select project_name from ' . DB_SCHEMA . '.mapset where mapset_name=:mapset';
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute([
-                    'mapset' => $keyvalue
-                ]);
-                $projectName = $stmt->fetchColumn(0);
+            $sql = 'select project_name from ' . DB_SCHEMA . '.mapset where mapset_name=:mapset';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'mapset' => $keyvalue
+            ]);
+            $projectName = $stmt->fetchColumn(0);
         } elseif ($keytype == "project") { //GENERO TUTTI I MAPFILE PER IL PROGETTO OPPURE UNICO MAPFILE PER PROGETTO
             $filter = "project.project_name=:keyvalue";
             if (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
@@ -93,21 +93,21 @@ class gcMapfile
             $sqlParams['keyvalue'] = $keyvalue;
             $projectName = $keyvalue;
         } elseif ($keytype == "layergroup") { //GENERO IL MAPFILE PER IL LAYERGROUP NEL SISTEMA DI RIF DEL PROGETTO (PREVIEW)
-                $filter = "layergroup.layergroup_id=:keyvalue";
-                $joinMapset = "";
-                $fieldsMapset = "1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";
-                $sqlParams['keyvalue'] = $keyvalue;
+            $filter = "layergroup.layergroup_id=:keyvalue";
+            $joinMapset = "";
+            $fieldsMapset = "1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";
+            $sqlParams['keyvalue'] = $keyvalue;
         } elseif ($keytype == "layer") { //GENERO IL MAPFILE PER IL LAYER NEL SISTEMA DI RIF DEL PROGETTO. CHIAVE UNIVOCA: MAPSET.LAYERGROUP.LAYER
             //echo "[$keytype=$keyvalue]";
-                $filter = "(mapset.mapset_name || '.' || layergroup.layergroup_name || '.' || layer.layer_name)=:keyvalue";
-                $joinMapset = "INNER JOIN " . DB_SCHEMA . ".mapset using (project_name) INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (mapset_name,layergroup_id)";
-                $fieldsMapset = "1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";
-                $sqlParams['keyvalue'] = $keyvalue;
+            $filter = "(mapset.mapset_name || '.' || layergroup.layergroup_name || '.' || layer.layer_name)=:keyvalue";
+            $joinMapset = "INNER JOIN " . DB_SCHEMA . ".mapset using (project_name) INNER JOIN " . DB_SCHEMA . ".mapset_layergroup using (mapset_name,layergroup_id)";
+            $fieldsMapset = "1 as layergroup_status, layergroup_name as mapset_name,layergroup_title as mapset_title,project.max_extent_scale as mapset_maxscale,layer.data_srid as mapset_srid,layer.data_extent as mapset_extent";
+            $sqlParams['keyvalue'] = $keyvalue;
         } elseif ($keytype = "print") { //GENERO UN MAPFILE PER LA STAMPA
-                $fieldsMapset = "1 AS dummy";
-                $_in = GCApp::prepareInStatement($keyvalue);
-                $sqlParams = $_in['parameters'];
-                $inQuery = $_in['inQuery'];
+            $fieldsMapset = "1 AS dummy";
+            $_in = GCApp::prepareInStatement($keyvalue);
+            $sqlParams = $_in['parameters'];
+            $inQuery = $_in['inQuery'];
 
             $this->printMap = true;
             $filter = "project_name||'.'||theme_name||'.'||layergroup_name in (" . $inQuery . ")";
@@ -149,7 +149,7 @@ class gcMapfile
 
         if (!empty($this->languageId)) {
             // inizializzo l'oggetto i18n per le traduzioni
-              $this->i18n = new GCi18n($aLayer["project_name"], $this->languageId);
+            $this->i18n = new GCi18n($aLayer["project_name"], $this->languageId);
         }
 
         //SCALA MASSIMA DEL PROGETTO
@@ -469,20 +469,20 @@ class gcMapfile
                 ];
 
                 //PER LA RIPROIEZIONE MA SEMBRA TROPPO LENTO
-/*              foreach($this->mpxCaches[$mapName] as $cacheName => $cache) {
-                    $this->mpxCaches[$mapName][$cacheName."_output"] = array(
-                        'sources'=>array($cacheName),
-                        'disable_storage'=>true,
-                        'grids'=>array_keys($this->epsgList)
-                    );
-                }
-*/
+                /*              foreach($this->mpxCaches[$mapName] as $cacheName => $cache) {
+                                    $this->mpxCaches[$mapName][$cacheName."_output"] = array(
+                                        'sources'=>array($cacheName),
+                                        'disable_storage'=>true,
+                                        'grids'=>array_keys($this->epsgList)
+                                    );
+                                }
+                */
                 //$this->_writeMapProxyConfig($mpxLayers,$this->mpxCaches);
                 $this->_writeMapProxyConfig($mapName);
                 $this->_writeMapProxySeed($mapName);
             }
         }
-//echo "[mapname=$mapName]\n";
+        //echo "[mapname=$mapName]\n";
         return $mapName;
     }
     
@@ -762,7 +762,7 @@ END";
         $sql = "select distinct e_outputformat.* from " . DB_SCHEMA . ".e_outputformat;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
-       // print_debug($sql);
+        // print_debug($sql);
         $numResults = $stmt->rowCount();
         if ($numResults > 0) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -867,16 +867,16 @@ END";
 
     public function _getSymbolText($aSymbols)
     {
-                $_in = GCApp::prepareInStatement($aSymbols);
-                $sqlParams = $_in['parameters'];
-                $inQuery = $_in['inQuery'];
+        $_in = GCApp::prepareInStatement($aSymbols);
+        $sqlParams = $_in['parameters'];
+        $inQuery = $_in['inQuery'];
 
-                $sql = "select * from " . DB_SCHEMA . ".symbol 
+        $sql = "select * from " . DB_SCHEMA . ".symbol 
                     where symbol_name in (" . $inQuery . ");";
                     
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute($sqlParams);
-                $res = $stmt->fetchAll();
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($sqlParams);
+        $res = $stmt->fetchAll();
 
         $smbText = [];
         for ($i = 0; $i < count($res); $i++) {

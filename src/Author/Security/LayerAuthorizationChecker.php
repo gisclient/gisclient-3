@@ -134,7 +134,7 @@ class LayerAuthorizationChecker
             
         $stmt = $this->db->prepare($sql);
         $stmt->execute($sqlValues);
-//echo nl2br($sql) . "<br>" . print_r($sqlValues, true) . "<br>";
+        //echo nl2br($sql) . "<br>" . print_r($sqlValues, true) . "<br>";
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $featureType = $row['layergroup_name'] . "." . $row['layer_name'];
             if (!isset($layerAuthorizations[$row['project_name']])) {

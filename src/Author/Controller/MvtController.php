@@ -93,11 +93,11 @@ class MvtController
             FROM mvt_data_set
         ";
 
-            $data = null;
+        $data = null;
 
-            $stmtMvt = $db->prepare($sqlMvt);
-            $stmtMvt->bindColumn('mvt', $data);
-            $stmtMvt->execute();
+        $stmtMvt = $db->prepare($sqlMvt);
+        $stmtMvt->bindColumn('mvt', $data);
+        $stmtMvt->execute();
         if (!$stmtMvt->fetch()) {
             throw new \Exception("Could not load data from db");
         }
