@@ -28,10 +28,10 @@ class SymbolCreator
         $symbol = new Symbol($table);
         switch ($symbol->table) {
             case 'class':
-                $symbol->filter = "class.class_id=".$this->database->quote($id);
+                $symbol->filter = "class.class_id=" . $this->database->quote($id);
                 break;
             case 'symbol':
-                $symbol->filter = "symbol.symbol_name=".$this->database->quote($id);
+                $symbol->filter = "symbol.symbol_name=" . $this->database->quote($id);
                 break;
         }
 

@@ -47,21 +47,21 @@ class LayerAuthorizationChecker
         if (isset($filter['mapset_name'])) {
             $sqlFilter = 'mapset_name = :mapset_name';
             $sqlValues = [
-                ':mapset_name'=>$filter['mapset_name']
+                ':mapset_name' => $filter['mapset_name']
             ];
-            $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset_name';
+            $sql = 'select project_name from ' . DB_SCHEMA . '.mapset where mapset_name=:mapset_name';
         } elseif (isset($filter['theme_name'])) {
             $sqlFilter = 'theme_name = :theme_name';
             $sqlValues = [
-                ':theme_name'=>$filter['theme_name']
+                ':theme_name' => $filter['theme_name']
             ];
-            $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
+            $sql = 'select project_name from ' . DB_SCHEMA . '.theme where theme_name=:theme_name';
         } elseif (isset($filter['project_name'])) {
             $sqlFilter = 'project_name = :project_name';
             $sqlValues = [
-                ':project_name'=>$filter['project_name']
+                ':project_name' => $filter['project_name']
             ];
-            $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
+            $sql = 'select project_name from ' . DB_SCHEMA . '.project where project_name=:project_name';
         } else {
             return false;
         }
@@ -81,18 +81,18 @@ class LayerAuthorizationChecker
             if (!empty($groups)) {
                 $in = [];
                 foreach ($groups as $k => $groupId) {
-                    array_push($in, ':group_param_'.$k);
-                    $sqlValues[':group_param_'.$k] = $groupId;
+                    array_push($in, ':group_param_' . $k);
+                    $sqlValues[':group_param_' . $k] = $groupId;
                 }
                 $groupFilter = ' AND COALESCE (groupname, \'**NOGROUP**\')
-                    IN (\'**NOGROUP**\' ,'.implode(',', $in).') ';
+                    IN (\'**NOGROUP**\' ,' . implode(',', $in) . ') ';
             } else {
                 $groupFilter = ' AND 1=2 ';
             }
         }
         
         if (empty($filter['show_as_public'])) {
-            $authClause = '(private=1 '.$groupFilter.' ) OR (coalesce(private,0)=0)';
+            $authClause = '(private=1 ' . $groupFilter . ' ) OR (coalesce(private,0)=0)';
         } else {
             //$authClause = '(coalesce(layer.private,0)=0 AND mapset.private=0)';
             $authClause = '(coalesce(private,0)=0)';
@@ -108,13 +108,13 @@ class LayerAuthorizationChecker
                 case when coalesce(layer.private,1) = 1 then wfs else 1 end as wfs,
                 case when coalesce(layer.private,1) = 1 then wfst else 1 end as wfst,
                 layer_order
-            FROM ".DB_SCHEMA.".theme
-            INNER JOIN  ".DB_SCHEMA.".layergroup USING (theme_id)
-            INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING (layergroup_id)
+            FROM " . DB_SCHEMA . ".theme
+            INNER JOIN  " . DB_SCHEMA . ".layergroup USING (theme_id)
+            INNER JOIN " . DB_SCHEMA . ".mapset_layergroup USING (layergroup_id)
             INNER JOIN (
                 SELECT *
-                FROM ".DB_SCHEMA.".mapset
-                LEFT JOIN ".DB_SCHEMA.".mapset_groups USING (mapset_name)
+                FROM " . DB_SCHEMA . ".mapset
+                LEFT JOIN " . DB_SCHEMA . ".mapset_groups USING (mapset_name)
                 WHERE " .
                     $authClause
                 . ") AS mapset USING (mapset_name)
@@ -122,28 +122,28 @@ class LayerAuthorizationChecker
                 SELECT
                     layer.layer_id, layergroup_id, layer.layer_name, layer_title,
                     layer.maxscale, layer.minscale, layer.hidden, layer.private, layer_order,
-                    COALESCE(wms, ".((int)$isAdmin).") AS wms,
-                    COALESCE(wfs, ".((int)$isAdmin).") AS wfs,
-                    COALESCE(wfst, ".((int)$isAdmin).") AS wfst
-                FROM ".DB_SCHEMA.".layer
-                LEFT JOIN ".DB_SCHEMA.".layer_groups USING (layer_id) 
+                    COALESCE(wms, " . ((int)$isAdmin) . ") AS wms,
+                    COALESCE(wfs, " . ((int)$isAdmin) . ") AS wfs,
+                    COALESCE(wfst, " . ((int)$isAdmin) . ") AS wfst
+                FROM " . DB_SCHEMA . ".layer
+                LEFT JOIN " . DB_SCHEMA . ".layer_groups USING (layer_id) 
                 WHERE " .
                     $authClause
                 . ") as layer USING (layergroup_id)
-            WHERE (".$sqlFilter.") ORDER BY layer.layer_order DESC;";
+            WHERE (" . $sqlFilter . ") ORDER BY layer.layer_order DESC;";
             
         $stmt = $this->db->prepare($sql);
         $stmt->execute($sqlValues);
 //echo nl2br($sql) . "<br>" . print_r($sqlValues, true) . "<br>";
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-            $featureType = $row['layergroup_name'].".".$row['layer_name'];
+            $featureType = $row['layergroup_name'] . "." . $row['layer_name'];
             if (!isset($layerAuthorizations[$row['project_name']])) {
                 $layerAuthorizations[$row['project_name']] = [];
             }
             $layerAuthorizations[$row['project_name']][$featureType] = [
                 'WMS' => $row['wms'],
-                'WFS'=>$row['wfs'],
-                'WFST'=>$row['wfst']
+                'WFS' => $row['wfs'],
+                'WFST' => $row['wfst']
             ];
 
             if (!empty($row['layer_id'])) {
@@ -157,7 +157,7 @@ class LayerAuthorizationChecker
             if (!isset($result['map_layers'][$row['theme_name']][$row['layergroup_name']])) {
                 $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = [];
             }
-            if ($row['layergroup_single']==1) {
+            if ($row['layergroup_single'] == 1) {
                 $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = [
                     "name" => $row['layergroup_name'],
                     "title" => $row['layergroup_title'],

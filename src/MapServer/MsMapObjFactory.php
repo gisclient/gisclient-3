@@ -18,11 +18,11 @@ class MsMapObjFactory
      */
     public function create($project, $map, $temporary = false, $lang = null)
     {
-        $mapFileDir = ROOT_PATH.'map';
-        $mapFileBasename = $map.'.map';
+        $mapFileDir = ROOT_PATH . 'map';
+        $mapFileBasename = $map . '.map';
         
         // check project directory
-        $projectDir = $mapFileDir.DIRECTORY_SEPARATOR.$project;
+        $projectDir = $mapFileDir . DIRECTORY_SEPARATOR . $project;
         if (strpos(realpath($projectDir), (string) realpath($mapFileDir)) !== 0) {
             // if the the project directory is not a subdir of map/, something
             // bad is happening
@@ -36,7 +36,7 @@ class MsMapObjFactory
         
         // check if using mapfile for another language
         if (!is_null($lang)) {
-            $mapFileWithLang = $projectDir.DIRECTORY_SEPARATOR.$map.'_'.$lang.'.map';
+            $mapFileWithLang = $projectDir . DIRECTORY_SEPARATOR . $map . '_' . $lang . '.map';
             if (strpos(realpath($mapFileWithLang), (string) realpath($projectDir)) !== 0) {
                 print_debug(sprintf(
                     'mapfile "%s" is not in project dir "%s"',
@@ -44,17 +44,17 @@ class MsMapObjFactory
                     realpath($projectDir)
                 ), null, 'system');
             } else {
-                $mapFileBasename = $map.'_'.$lang.'.map';
+                $mapFileBasename = $map . '_' . $lang . '.map';
             }
         }
         
         // check if using temporary mapfile
         if ($temporary) {
-            $mapFileBasename = 'tmp.'.$mapFileBasename;
+            $mapFileBasename = 'tmp.' . $mapFileBasename;
         }
 
         // check if mapfile is in project dir
-        $mapFile = $projectDir.DIRECTORY_SEPARATOR.$mapFileBasename;
+        $mapFile = $projectDir . DIRECTORY_SEPARATOR . $mapFileBasename;
         if (strpos(realpath($mapFile), (string) realpath($projectDir)) !== 0) {
             // if the the map is not in the project dir, something
             // bad is happening
@@ -69,18 +69,18 @@ class MsMapObjFactory
         // check if mapfile is readable
         if (!is_readable($mapFile)) {
             // map file not found
-            print_debug('mapfile ' .$mapFile. ' not readable', null, 'system');
+            print_debug('mapfile ' . $mapFile . ' not readable', null, 'system');
             throw new \Exception('Invalid MAP name');
         }
 
         $oMap = ms_newMapObjFromString(file_get_contents($mapFile));
-        print_debug('opened mapfile "' .realpath($mapFile). '": '.get_class($oMap), null, 'system');
+        print_debug('opened mapfile "' . realpath($mapFile) . '": ' . get_class($oMap), null, 'system');
         
         // update metadata
         $url = OwsHandler::currentPageURL();
-        $onlineResource = $url.'?project='.$project.'&map='.$map.'&tmp='.$temporary;
+        $onlineResource = $url . '?project=' . $project . '&map=' . $map . '&tmp=' . $temporary;
         if (!is_null($lang)) {
-            $onlineResource .= '&lang='.$lang;
+            $onlineResource .= '&lang=' . $lang;
         }
         $oMap->setMetaData("ows_onlineresource", $onlineResource);
         

@@ -3,7 +3,7 @@
 use GisClient\Author\Symbol;
 use PHPUnit\Framework\TestCase;
 
-include_once __DIR__."/../../bootstrap.php";
+include_once __DIR__ . "/../../bootstrap.php";
 
 class SymbolTest extends TestCase
 {
@@ -19,7 +19,7 @@ class SymbolTest extends TestCase
         $symbol = new Symbol('symbol');
         $symbolList = $symbol->getList(true);
         foreach ($symbolList['values'] as $symbolInfo) {
-            $symbol->filter="symbol.symbol_name='{$symbolInfo['symbol']}'";
+            $symbol->filter = "symbol.symbol_name='{$symbolInfo['symbol']}'";
             $img = $symbol->createIcon();
             $this->assertNotNull($img);
         }

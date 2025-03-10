@@ -16,14 +16,14 @@ if (!defined('GC_SESSION_NAME')) {
 }
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
-if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
+if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=') !== false) || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
     include "./include/putrequest.php";
     exit(0);
 }
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-    $url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
+    $url = MAPSERVER_URL . 'map=' . ROOT_PATH . 'map/' . $_REQUEST['PROJECT'] . '/' . $_REQUEST['MAP'] . '.map';
     $postFields = file_get_contents('php://input');
     $owsHandler = new OwsHandler();
     $owsHandler->post($url, $postFields);
@@ -70,7 +70,7 @@ if (!empty($skippedParams['transparent'])) {
 }
 if (isset($skippedParams['transparent'])) {
     if (is_string($skippedParams['transparent'])) {
-        print_debug('apply transparent="' .stripslashes($skippedParams['transparent']). '"', null, 'system');
+        print_debug('apply transparent="' . stripslashes($skippedParams['transparent']) . '"', null, 'system');
         $objRequest->setParameter('transparent', stripslashes($skippedParams['transparent']));
         unset($skippedParams['transparent']);
     }
@@ -185,7 +185,7 @@ if (!empty($format)) {
         if ($numOutputFormats > 0) {
             echo "<strong>List of available formats</strong>:";
             echo "<ul>";
-            for ($fidx=0; $fidx<$numOutputFormats; $fidx++) {
+            for ($fidx = 0; $fidx < $numOutputFormats; $fidx++) {
                 echo sprintf('<li>%s</li>', $oMap->getOutputFormat($fidx)->name);
             }
             echo "</ul>";
@@ -220,12 +220,12 @@ if ($objRequest->getvaluebyname('srs')) {
     $srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
     if (count($srsParts) == 7) {
         // e.g.: 'urn:ogc:def:crs:EPSG::4306'
-        $srs = $srsParts[4].':'.$srsParts[6];
+        $srs = $srsParts[4] . ':' . $srsParts[6];
     } elseif (count($srsParts) == 2) {
         // e.g.: 'EPSG:4306'
-        $srs = $srsParts[0].':'.$srsParts[1];
+        $srs = $srsParts[0] . ':' . $srsParts[1];
     }
-    $oMap->setProjection("+init=".strtolower($srs));
+    $oMap->setProjection("+init=" . strtolower($srs));
 }
 
 if (!empty($_REQUEST['GCFILTERS'])) {
@@ -233,8 +233,8 @@ if (!empty($_REQUEST['GCFILTERS'])) {
     throw new \Exception("Scream test - should not be used anymore");
 
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
-    for ($i=0; $i<count($v); $i++) {
-        [$layerName, $gcFilter]=explode('@', $v[$i]);
+    for ($i = 0; $i < count($v); $i++) {
+        [$layerName, $gcFilter] = explode('@', $v[$i]);
 
         $oLayer = $oMap->getLayerByName($layerName);
         if ($oLayer) {
@@ -324,7 +324,7 @@ $oMap->owsdispatch($objRequest);
 $contenttype = ms_iostripstdoutbuffercontenttype();
 /* Send response with appropriate header */
 if (substr($contenttype, 0, 6) == 'image/') {
-    header('Content-Type: '. $contenttype);
+    header('Content-Type: ' . $contenttype);
 
     // Prevent apache to zip imnage
     ini_set('zlib.output_compression', 0);

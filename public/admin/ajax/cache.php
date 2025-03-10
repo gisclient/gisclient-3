@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -19,7 +19,7 @@ switch ($_REQUEST['action']) {
     case 'list':
         $files = [];
 
-        $configFile = MAPPROXY_CONFIG_PATH.$_REQUEST['project'].'.yaml';
+        $configFile = MAPPROXY_CONFIG_PATH . $_REQUEST['project'] . '.yaml';
         if (!file_exists($configFile)) {
             $ajax->success($files);
         }
@@ -29,28 +29,28 @@ switch ($_REQUEST['action']) {
         $config = yaml_parse($content);
 
         foreach ($config['caches'] as $name => $cache) {
-            $file = TILES_CACHE.$_REQUEST['project'].'/'.$cache['cache']['filename'];
+            $file = TILES_CACHE . $_REQUEST['project'] . '/' . $cache['cache']['filename'];
             if (!file_exists($file)) {
                 continue;
             }
             $size = filesize($file);
             
             array_push($files, [
-                'layer'=>$name,
-                'name'=>$cache['cache']['filename'],
-                'size'=>formatBytes($size)
+                'layer' => $name,
+                'name' => $cache['cache']['filename'],
+                'size' => formatBytes($size)
             ]);
         }
 
         $ajax->success([
-            'files'=>$files
+            'files' => $files
         ]);
         break;
     case 'empty':
         if (empty($_REQUEST['file'])) {
             $ajax->error();
         }
-        $file = TILES_CACHE.$_REQUEST['project'].'/'.$_REQUEST['file'];
+        $file = TILES_CACHE . $_REQUEST['project'] . '/' . $_REQUEST['file'];
         if (!file_exists($file)) {
             $ajax->error('File does not exist');
         }

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/ajax.class.php';
 
 use GisClient\Author\Utils\PrintDocument;
 
@@ -33,8 +33,8 @@ try {
         $box = $printMap->getBox();
         $pages = $printMap->getDimensions();
         $ajax->success([
-            'box'=>$box,
-            'pages'=>$pages
+            'box' => $box,
+            'pages' => $pages
         ]);
     }
 
@@ -61,6 +61,6 @@ try {
     $ajax->error($e->getMessage());
 }
 $ajax->success([
-    'file'=>$file,
-    'format'=>$_REQUEST['format']
+    'file' => $file,
+    'format' => $_REQUEST['format']
 ]);

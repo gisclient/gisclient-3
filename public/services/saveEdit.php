@@ -47,8 +47,8 @@ try {
     }
 } catch (Exception $e) {
     die(json_encode([
-        'result'=>'error',
-        'error'=>$e->getMessage()
+        'result' => 'error',
+        'error' => $e->getMessage()
     ]));
 }
 die(json_encode([
@@ -68,15 +68,15 @@ class GCEditFeature
         [, $layerName] = $this->splitFeatureType($featureType);
         
         $db = GCApp::getDB();
-        $sql = "select data, data_unique, data_geom, catalog_path from ".DB_SCHEMA.".layer ".
-            " inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
-            " inner join ".DB_SCHEMA.".theme using(theme_id) ".
-            " inner join ".DB_SCHEMA.".catalog using(catalog_id) ".
+        $sql = "select data, data_unique, data_geom, catalog_path from " . DB_SCHEMA . ".layer " .
+            " inner join " . DB_SCHEMA . ".layergroup using(layergroup_id) " .
+            " inner join " . DB_SCHEMA . ".theme using(theme_id) " .
+            " inner join " . DB_SCHEMA . ".catalog using(catalog_id) " .
             " where layer_name = :layer_name and theme.project_name = :project_name ";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':layer_name'=>$layerName,
-            ':project_name'=>$project
+            ':layer_name' => $layerName,
+            ':project_name' => $project
         ]);
         $layerData = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -100,8 +100,8 @@ class GCEditFeature
     
     public function delete($id)
     {
-        $sql = "delete from ".$this->schema.".".$this->table.
-            " where ".$this->primaryKey." = :id ";
+        $sql = "delete from " . $this->schema . "." . $this->table .
+            " where " . $this->primaryKey . " = :id ";
         $stmt = $this->dataDB->prepare($sql);
         $stmt->execute([$id]);
     }
@@ -115,13 +115,13 @@ class GCEditFeature
         $updates = [];
         $params = [];
         foreach ($data as $key => $val) {
-            array_push($updates, $key.'=:'.$key);
-            $params[':'.$key] = $val;
+            array_push($updates, $key . '=:' . $key);
+            $params[':' . $key] = $val;
         }
         
-        $sql = "update ".$this->schema.".".$this->table.
-            " set ".implode(',', $updates).
-            " where ".$this->primaryKey." = :GisClient_pkey_value ";
+        $sql = "update " . $this->schema . "." . $this->table .
+            " set " . implode(',', $updates) .
+            " where " . $this->primaryKey . " = :GisClient_pkey_value ";
         $params[':GisClient_pkey_value'] = $id;
         
         $stmt = $this->dataDB->prepare($sql);
@@ -145,14 +145,14 @@ class GCEditFeature
         $params = [];
         $n = 0;
         foreach ($data as $key => $val) {
-            $columns[':gcpdo_col_'.$n] = $key;
-            $params[':'.$key] = $val;
+            $columns[':gcpdo_col_' . $n] = $key;
+            $params[':' . $key] = $val;
             $n++;
         }
         
-        $sql = "insert into ".$this->schema.".".$this->table.
-                " (" . implode(',', array_keys($columns)). ") ".
-                " values (". implode(',', array_keys($params)). ") ";
+        $sql = "insert into " . $this->schema . "." . $this->table .
+                " (" . implode(',', array_keys($columns)) . ") " .
+                " values (" . implode(',', array_keys($params)) . ") ";
                 //echo $sql;
         $stmt = $this->dataDB->prepare($sql);
         
@@ -180,9 +180,9 @@ class GCEditFeature
         } else {
             $srid = $geomData['srid'];
         }
-        $sql = "update ".$this->schema.".".$this->table.
-            " set ".$this->geomField." = st_geomfromtext(:wkt, :srid) ".
-            " where ".$this->primaryKey." = :GisClient_pkey_value ";
+        $sql = "update " . $this->schema . "." . $this->table .
+            " set " . $this->geomField . " = st_geomfromtext(:wkt, :srid) " .
+            " where " . $this->primaryKey . " = :GisClient_pkey_value ";
         $stmt = $this->dataDB->prepare($sql);
         $params = [
             ':wkt' => $geomData['wkt'],

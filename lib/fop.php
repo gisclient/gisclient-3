@@ -36,12 +36,12 @@ class EFOPError extends Exception
 function runFOP(DOMDocument $dom, $xslFileName, $opt = [])
 {
     $defaultOpt = [
-        'format'=>'pdf',
-        'purge'=>true,
-        'cmd'=>defined('GC_FOP_CMD') ? GC_FOP_CMD : '',
-        'tmp_path'=>ROOT_PATH.'tmp/files/',
-        'out_name'=>'',
-        'prefix'=>'fop-',
+        'format' => 'pdf',
+        'purge' => true,
+        'cmd' => defined('GC_FOP_CMD') ? GC_FOP_CMD : '',
+        'tmp_path' => ROOT_PATH . 'tmp/files/',
+        'out_name' => '',
+        'prefix' => 'fop-',
     ];
     
     $opt = array_merge($defaultOpt, $opt);

@@ -32,7 +32,7 @@ class GeolocatorController
     private function getGeolocatorConfig($mapset, $lang = null)
     {
         $database = \GCApp::getDB();
-        $sql = "SELECT geolocator FROM ".DB_SCHEMA.".mapset WHERE mapset_name=?";
+        $sql = "SELECT geolocator FROM " . DB_SCHEMA . ".mapset WHERE mapset_name=?";
         $stmt = $database->prepare($sql);
         $stmt->execute([$mapset]);
         $geolocatorConfig = $stmt->fetchColumn(0);
@@ -47,7 +47,7 @@ class GeolocatorController
 
         $result = $geolocatorConfig[$mapset] ?? null;
         if ($lang !== null) {
-            $mapset = $mapset.'_'.$lang;
+            $mapset = $mapset . '_' . $lang;
         }
 
         return $geolocatorConfig[$mapset] ?? $result;
@@ -58,8 +58,8 @@ class GeolocatorController
         $database = \GCApp::getDB();
 
         $sql = 'SELECT catalog_path
-                FROM '.DB_SCHEMA.'.catalog
-                INNER JOIN '.DB_SCHEMA.'.mapset USING(project_name)
+                FROM ' . DB_SCHEMA . '.catalog
+                INNER JOIN ' . DB_SCHEMA . '.mapset USING(project_name)
                 WHERE catalog_name=:name
                 AND mapset_name=:mapset
         ';
@@ -84,23 +84,23 @@ class GeolocatorController
         $key = str_replace('%%', '%', trim($key));
         
         $sql = 'SELECT ' .
-                    $config['namefield'].' AS name, ' .
-                    $config['idfield'].' AS id ' .
-                'FROM '.$config['tablename'].' '.
-                'WHERE '.$config['namefield'].' ILIKE :key
+                    $config['namefield'] . ' AS name, ' .
+                    $config['idfield'] . ' AS id ' .
+                'FROM ' . $config['tablename'] . ' ' .
+                'WHERE ' . $config['namefield'] . ' ILIKE :key
         ';
         if (!empty($config['where'])) {
-            $sql .= ' AND '.$config['where'];
+            $sql .= ' AND ' . $config['where'];
         }
         if (!empty($config['order'])) {
-            $sql .= ' ORDER BY '.$config['order'];
+            $sql .= ' ORDER BY ' . $config['order'];
         }
         $sql .= ' LIMIT :limit ';
         $sql .= ' OFFSET :offset';
 
         $stmt = $database->prepare($sql);
         $stmt->execute([
-            'key'=>'%'.$key.'%',
+            'key' => '%' . $key . '%',
             'limit' => $limit,
             'offset' => $offset,
         ]);
@@ -115,9 +115,9 @@ class GeolocatorController
     {
         $database = $this->getDatabaseFromConfig($config, $mapset);
 
-        $sql = 'SELECT st_astext(ST_Force2D('.$config['geomfield'].'))
-                FROM '.$config['tablename'].' 
-                WHERE '.$config['idfield'].' = :id
+        $sql = 'SELECT st_astext(ST_Force2D(' . $config['geomfield'] . '))
+                FROM ' . $config['tablename'] . ' 
+                WHERE ' . $config['idfield'] . ' = :id
         ';
         $stmt = $database->prepare($sql);
         $stmt->execute([

@@ -14,7 +14,7 @@ class ClientController
     {
         return [
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT', // Date in the past
-            'Last-Modified' => gmdate("D, d M Y H:i:s").' GMT', // always modified
+            'Last-Modified' => gmdate("D, d M Y H:i:s") . ' GMT', // always modified
             'Cache-Control' => 'no-cache, must-revalidate', // HTTP/1.1
             'Pragma' => 'no-cache', // HTTP/1.0
             'Content-Type' => 'application/json; Charset=UTF-8',

@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../bootstrap.php';
 
 
-header("Content-Type: text/html; Charset=".CHAR_SET);
+header("Content-Type: text/html; Charset=" . CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
 header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -20,29 +20,29 @@ if (!empty($_REQUEST["logout"])) {
 }
 
 $db = GCApp::getDB();
-$dbSchema=DB_SCHEMA;
-$sql="SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title,private FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";
+$dbSchema = DB_SCHEMA;
+$sql = "SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title,private FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";
 $res = $db->query($sql);
 
-$mapset=[];
+$mapset = [];
 while ($row = $res->fetch()) {
-    $mapset[$row["project_name"]][]=[
-        "name"=>$row["mapset_name"],
-        "title"=>$row["mapset_title"],
-        "template"=>$row["template"],
-        "extent"=>$row["mapset_extent"],
-        'private'=>$row['private'],
-        'project_title'=>$row["project_title"]
+    $mapset[$row["project_name"]][] = [
+        "name" => $row["mapset_name"],
+        "title" => $row["mapset_title"],
+        "template" => $row["template"],
+        "extent" => $row["mapset_extent"],
+        'private' => $row['private'],
+        'project_title' => $row["project_title"]
     ];
 }
 
 $newTable = '';
 foreach ($mapset as $key => $map) {
-    $newTable.='
+    $newTable .= '
 		<div>
-			<div class="tableHeader ui-widget ui-widget-header ui-corner-top">'.GCAuthor::t('project').': '.$map[0]['project_title'].'</div>
+			<div class="tableHeader ui-widget ui-widget-header ui-corner-top">' . GCAuthor::t('project') . ': ' . $map[0]['project_title'] . '</div>
 			<table class="stiletabella">';
-    for ($j=0; $j<count($map); $j++) {
+    for ($j = 0; $j < count($map); $j++) {
         if (!$authHandler->isAuthenticated() && $map[$j]['private'] == 1) {
             continue;
         }
@@ -51,56 +51,56 @@ foreach ($mapset as $key => $map) {
         if (!empty($map[$j]['template'])) {
             $publicLink .= $map[$j]['template'];
         }
-        $separator = strpos($publicLink, '?')?'&':'?';
-        $publicLink .= $separator.'mapset='.$map[$j]['name'];
+        $separator = strpos($publicLink, '?') ? '&' : '?';
+        $publicLink .= $separator . 'mapset=' . $map[$j]['name'];
 
         if (defined('PRIVATE_MAP_URL')) {
             $privateLink = PRIVATE_MAP_URL;
             if (!empty($map[$j]['template'])) {
                 $privateLink .= $map[$j]['template'];
             }
-            $separator = strpos($privateLink, '?')?'&':'?';
-            $privateLink .= $separator.'mapset='.$map[$j]['name'];
+            $separator = strpos($privateLink, '?') ? '&' : '?';
+            $privateLink .= $separator . 'mapset=' . $map[$j]['name'];
         }
 
-        $newTable.='
+        $newTable .= '
 						<tr>';
         if (empty($map[$j]['private'])) {
-            $newTable .= '<td width="1"><a href="'.$publicLink.'" class="view" target="_blank">Public map</a></td>';
+            $newTable .= '<td width="1"><a href="' . $publicLink . '" class="view" target="_blank">Public map</a></td>';
         } else {
             $newTable .= '<td width="1"></td>';
         }
         if ($authHandler->isAuthenticated() && defined('PRIVATE_MAP_URL')) {
-                                $newTable .= '<td width="1"><a href="'.$privateLink.'" class="private" target="_blank">Private map</a></td>';
+                                $newTable .= '<td width="1"><a href="' . $privateLink . '" class="private" target="_blank">Private map</a></td>';
         }
         $newTable .= '					
-							<td class="data">'.$map[$j]["title"].'</td>
+							<td class="data">' . $map[$j]["title"] . '</td>
 						</tr>';
     }
-            $newTable.='
+            $newTable .= '
 			</table>
 		</div>
 	';
 }
 
 if (!$authHandler->isAuthenticated()) {
-    $logTitle="Login";
-    $logJs="javascript:return encript_pwd('password','frm_enter');";
-    $logout=0;
-    $btn="Login";
-    $usrEnabled="";
-    $pwdEnabled="";
+    $logTitle = "Login";
+    $logJs = "javascript:return encript_pwd('password','frm_enter');";
+    $logout = 0;
+    $btn = "Login";
+    $usrEnabled = "";
+    $pwdEnabled = "";
 } else {
     if (!empty($_REQUEST['to'])) {
-        header('Location: '.$_REQUEST['to']);
+        header('Location: ' . $_REQUEST['to']);
         die();
     }
-    $logTitle="Logout";
-    $logJs="";
-    $logout=1;
-    $btn="Esci";
-    $usrEnabled="disabled";
-    $pwdEnabled="disabled";
+    $logTitle = "Logout";
+    $logJs = "";
+    $logout = 1;
+    $btn = "Esci";
+    $usrEnabled = "disabled";
+    $pwdEnabled = "disabled";
 }
 ?>
 <!DOCTYPE HTML>
@@ -151,7 +151,7 @@ if (!$authHandler->isAuthenticated()) {
 <body>
 <div id="container">
     <div class="ui-layout-north">
-        <?php include ADMIN_PATH."inc/inc.admin.page_header.php"; ?>
+        <?php include ADMIN_PATH . "inc/inc.admin.page_header.php"; ?>
     </div>
     <div class="ui-layout-center">
         <h2><?php echo GCAuthor::t('List of available Maps'); ?></h2>
@@ -185,7 +185,7 @@ if (!$authHandler->isAuthenticated()) {
     <div class="ui-layout-south">
         GisClient<span class="color">Author </span>
         <?php
-        $sql="SELECT version_name FROM {$dbSchema}.vista_version ORDER BY version_id DESC LIMIT 1";
+        $sql = "SELECT version_name FROM {$dbSchema}.vista_version ORDER BY version_id DESC LIMIT 1";
         $res = $db->query($sql);
         echo $res->fetchColumn(0);
         ?>

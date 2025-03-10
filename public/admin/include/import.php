@@ -4,78 +4,78 @@
     error_reporting(E_ERROR | E_PARSE);
 
     $db = GCApp::getDB();
-    $sql="SELECT project_name FROM ".DB_SCHEMA.".project;";
+    $sql = "SELECT project_name FROM " . DB_SCHEMA . ".project;";
 try {
     $ris = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
+    echo "<p>" . GCAuthor::t('error_query') . " : $sql</p>";
 }
 
-    $opt[]="<option value=\"-1\">Seleziona ===></option>";
-    $opt[]="<option value=\"0\">Tutti</option>";
-for ($i=0; $i<count($ris); $i++) {
-    $pr=$ris[$i];
-    $opt[]="<option value=\"$pr[project_name]\">$pr[project_name]</option>";
+    $opt[] = "<option value=\"-1\">Seleziona ===></option>";
+    $opt[] = "<option value=\"0\">Tutti</option>";
+for ($i = 0; $i < count($ris); $i++) {
+    $pr = $ris[$i];
+    $opt[] = "<option value=\"$pr[project_name]\">$pr[project_name]</option>";
 }
-    $prm=$this->parametri;
-    $pr=$this->parametri["project"];
-if ($_POST["livello"]=="qt" && !$_POST["importa"]) {
-    $sql="SELECT layer_id,layer_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id) WHERE theme_id=:theme_id order by layer_name";
+    $prm = $this->parametri;
+    $pr = $this->parametri["project"];
+if ($_POST["livello"] == "qt" && !$_POST["importa"]) {
+    $sql = "SELECT layer_id,layer_name FROM " . DB_SCHEMA . ".layergroup INNER JOIN " . DB_SCHEMA . ".layer USING(layergroup_id) WHERE theme_id=:theme_id order by layer_name";
     $stmt = $db->prepare($sql);
     try {
         $stmt->execute([
-            'theme_id'=>$this->parametri["theme"]
+            'theme_id' => $this->parametri["theme"]
         ]);
     } catch (Exception $e) {
-        echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
+        echo "<p>" . GCAuthor::t('error_query') . " : $sql</p>";
     }
     $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-    for ($i=0; $i<count($ris); $i++) {
-        $lay=$ris[$i];
-        $opt2[]="<option value=\"$lay[layer_id]\">$lay[layer_name]</option>";
+    for ($i = 0; $i < count($ris); $i++) {
+        $lay = $ris[$i];
+        $opt2[] = "<option value=\"$lay[layer_id]\">$lay[layer_name]</option>";
     }
 }
 
 if ($_POST["importa"]) {
-    include_once ADMIN_PATH."lib/export.php";
-    $objId=$_POST["obj_id"];
-    $level=$_POST["level"];
-    $project=$_POST["project"];
-    $livello=$this->livello;
-    $fName=$_POST["filename"];
-    $newName=$_POST["name"];
-    $layer=$_POST["layer"];
-    if ($project!='') {
-        $sql="SELECT project_name FROM ".DB_SCHEMA.".project WHERE project_name=:project";
+    include_once ADMIN_PATH . "lib/export.php";
+    $objId = $_POST["obj_id"];
+    $level = $_POST["level"];
+    $project = $_POST["project"];
+    $livello = $this->livello;
+    $fName = $_POST["filename"];
+    $newName = $_POST["name"];
+    $layer = $_POST["layer"];
+    if ($project != '') {
+        $sql = "SELECT project_name FROM " . DB_SCHEMA . ".project WHERE project_name=:project";
         $stmt = $db->prepare($sql);
         try {
             $stmt->execute([
-                'project'=>$project
+                'project' => $project
             ]);
         } catch (Exception $e) {
-            echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
+            echo "<p>" . GCAuthor::t('error_query') . " : $sql</p>";
         }
         $projectName = $stmt->fetchColumn(0);
     } else {
-        $projectName=$_POST["name"];
+        $projectName = $_POST["name"];
     }
-    if (!file_exists(ADMIN_PATH."export/$fName")) {
-        $message="File non Esiste.";
+    if (!file_exists(ADMIN_PATH . "export/$fName")) {
+        $message = "File non Esiste.";
     } else {
-        $parentId=[$objId];
+        $parentId = [$objId];
         if ($layer) {
-            $layer=$_POST["layer"];
-            $objId=$_POST["obj_id"];
+            $layer = $_POST["layer"];
+            $objId = $_POST["obj_id"];
         }
-        $error=import(ADMIN_PATH."export/$fName", $objId, $projectName, $newName, $layer);
+        $error = import(ADMIN_PATH . "export/$fName", $objId, $projectName, $newName, $layer);
 
 
         if (!$error) {
-            echo "<p>".GCAuthor::t('import_done')."</p>";
+            echo "<p>" . GCAuthor::t('import_done') . "</p>";
         } else {
-            $mex="<ul><li>".implode("</li><li>", $error)."</li></ul>";
+            $mex = "<ul><li>" . implode("</li><li>", $error) . "</li></ul>";
             echo $mex;
         }
     }
@@ -93,7 +93,7 @@ if ($_POST["importa"]) {
             </SELECT>
         </td>
     </tr>-->
-<?php if ($_POST["livello"]=="qt") {?>
+<?php if ($_POST["livello"] == "qt") {?>
     <tr>
         <td class="label ui-widget ui-state-default"><font color="#FFFFFF"><b><?php echo GCAuthor::t('layer'); ?></b></font></td>
         <td colspan="2">

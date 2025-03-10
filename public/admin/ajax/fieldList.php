@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/functions.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/functions.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -36,30 +36,30 @@ if (!empty($_REQUEST['relation_id'])) {
 }
 
 $result = [
-    'steps'=>1,
-    'data'=>[],
-    'data_objects'=>[],
-    'step'=>1,
-    'fields'=>[
-        'field'=>GCAuthor::t('field')
+    'steps' => 1,
+    'data' => [],
+    'data_objects' => [],
+    'step' => 1,
+    'fields' => [
+        'field' => GCAuthor::t('field')
     ]
 ];
 $n = 0;
 
 if (!empty($relationId)) {
-    $sql="select catalog_path, connection_type, relation.table_name from ".DB_SCHEMA.".relation left join ".DB_SCHEMA.".catalog  USING (catalog_id) where relation_id = ?";
+    $sql = "select catalog_path, connection_type, relation.table_name from " . DB_SCHEMA . ".relation left join " . DB_SCHEMA . ".catalog  USING (catalog_id) where relation_id = ?";
     $stmt = $db->prepare($sql);
     $stmt->execute([$relationId]);
     $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
     $data = $catalogData['table_name'];
 } elseif (!empty($layerId)) {
-    $sql = "select catalog_path, connection_type, layer.data from ".DB_SCHEMA.".layer left join ".DB_SCHEMA.".catalog USING (catalog_id) where layer_id=?";
+    $sql = "select catalog_path, connection_type, layer.data from " . DB_SCHEMA . ".layer left join " . DB_SCHEMA . ".catalog USING (catalog_id) where layer_id=?";
     $stmt = $db->prepare($sql);
     $stmt->execute([$layerId]);
     $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
     $data = $catalogData['data'];
 } else {
-    $sql="select catalog_path,connection_type from ".DB_SCHEMA.".catalog  where catalog_id=?";
+    $sql = "select catalog_path,connection_type from " . DB_SCHEMA . ".catalog  where catalog_id=?";
     $stmt = $db->prepare($sql);
     $stmt->execute([$catalogId]);
     $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -76,13 +76,13 @@ $sql = "SELECT column_name from information_schema.columns " .
         " ORDER BY ordinal_position";
 $stmt = $dataDb->prepare($sql);
 $stmt->execute([
-    ':schema'=>$schema,
-    ':table'=>$data
+    ':schema' => $schema,
+    ':table' => $data
 ]);
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $result['data'][$n] = [
-        'field'=>$row['column_name']
+        'field' => $row['column_name']
     ];
     $result['data_objects'][$n] = [
         $selectedField => $row['column_name']

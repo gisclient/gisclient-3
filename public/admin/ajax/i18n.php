@@ -1,9 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ADMIN_PATH."lib/ParseXml.class.php";
-include_once ADMIN_PATH."lib/export.php";
-include_once ROOT_PATH."lib/i18n.php";
+include_once ADMIN_PATH . "lib/ParseXml.class.php";
+include_once ADMIN_PATH . "lib/export.php";
+include_once ROOT_PATH . "lib/i18n.php";
 
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Cache-Control: post-check=0, pre-check=0', false);
@@ -32,16 +32,16 @@ if (empty($_REQUEST['p_key'])) {
 
 $xml = new ParseXml();
 $xml->LoadFile(PK_FILE);
-$struct=$xml->ToArray();
+$struct = $xml->ToArray();
 
 if (!isset($struct[$level])) {
     errorJson('Invalid level');
 }
 
-$sql = 'delete from '.DB_SCHEMA.'.localization where project_name = :project and i18nf_id = :field_id and pkey_id = :pkey_id';
+$sql = 'delete from ' . DB_SCHEMA . '.localization where project_name = :project and i18nf_id = :field_id and pkey_id = :pkey_id';
 $emptyTranslations = $db->prepare($sql);
 
-$sql = 'insert into '.DB_SCHEMA.'.localization (project_name, i18nf_id, pkey_id, language_id, "value") 
+$sql = 'insert into ' . DB_SCHEMA . '.localization (project_name, i18nf_id, pkey_id, language_id, "value") 
     values (:project, :field_id, :pkey_value, :lang_id, :translation)';
 $insertTranslation = $db->prepare($sql);
 
@@ -51,18 +51,18 @@ if (isset($_POST['translations'])) {
     }
     foreach ($_POST['translations'] as $fieldId => $translations) {
         $emptyTranslations->execute([
-            'project'=>$project,
-            'field_id'=>$fieldId,
-            'pkey_id'=>$_REQUEST['p_key']
+            'project' => $project,
+            'field_id' => $fieldId,
+            'pkey_id' => $_REQUEST['p_key']
         ]);
         
         foreach ($translations as $languageId => $translation) {
             $insertTranslation->execute([
-                'project'=>$project,
-                'field_id'=>$fieldId,
-                'pkey_value'=>$_REQUEST['p_key'],
-                'lang_id'=>$languageId,
-                'translation'=>$translation
+                'project' => $project,
+                'field_id' => $fieldId,
+                'pkey_value' => $_REQUEST['p_key'],
+                'lang_id' => $languageId,
+                'translation' => $translation
             ]);
         }
     }
@@ -90,10 +90,10 @@ if (isset($_POST['translations'])) {
         array_push($fieldNames, $field['field_name']);
     }
 
-    $sql = "select ".implode(',', $fieldNames)." from ".DB_SCHEMA.".$level where ".$struct[$level]['pkey']." = :pkey_value";
+    $sql = "select " . implode(',', $fieldNames) . " from " . DB_SCHEMA . ".$level where " . $struct[$level]['pkey'] . " = :pkey_value";
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'pkey_value'=>$_REQUEST['p_key']
+        'pkey_value' => $_REQUEST['p_key']
     ]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     foreach ($row as $key => $val) {
@@ -114,15 +114,15 @@ if (isset($_POST['translations'])) {
 function errorJson($error = 'System error')
 {
     die(json_encode([
-        'result'=>'error',
-        'error'=>$error
+        'result' => 'error',
+        'error' => $error
     ]));
 }
 
 function successJson($responseData = [])
 {
     die(json_encode([
-        'result'=>'ok',
-        'data'=>$responseData
+        'result' => 'ok',
+        'data' => $responseData
     ]));
 }

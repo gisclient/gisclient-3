@@ -33,7 +33,7 @@ class FilterType extends AbstractType
                     new Constraints\Callback([
                         'callback' => function ($value, $context): void {
                             $db = \GCApp::getDB();
-                            $sql = "SELECT * FROM ".DB_SCHEMA.".mapset WHERE mapset_name=?";
+                            $sql = "SELECT * FROM " . DB_SCHEMA . ".mapset WHERE mapset_name=?";
                             $stmt = $db->prepare($sql);
                             $stmt->execute([$value]);
                             $data = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -54,9 +54,9 @@ class FilterType extends AbstractType
 
                             $db = \GCApp::getDB();
                             $sql = "
-                                SELECT * FROM ".DB_SCHEMA.".mapset
-                                INNER JOIN ".DB_SCHEMA.".mapset_layergroup USING(mapset_name)
-                                INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id)
+                                SELECT * FROM " . DB_SCHEMA . ".mapset
+                                INNER JOIN " . DB_SCHEMA . ".mapset_layergroup USING(mapset_name)
+                                INNER JOIN " . DB_SCHEMA . ".layer USING(layergroup_id)
                                 WHERE mapset_name=? AND layer_id=?
                             ";
                             $stmt = $db->prepare($sql);
@@ -92,9 +92,9 @@ class FilterType extends AbstractType
                     if ($layerId !== null) {
                         $db = \GCApp::getDB();
                         $sql = "
-                            SELECT project_name||'.'||layergroup_name||'.'||layer_name FROM ".DB_SCHEMA.".theme
-                            INNER JOIN ".DB_SCHEMA.".layergroup USING(theme_id)
-                            INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id)
+                            SELECT project_name||'.'||layergroup_name||'.'||layer_name FROM " . DB_SCHEMA . ".theme
+                            INNER JOIN " . DB_SCHEMA . ".layergroup USING(theme_id)
+                            INNER JOIN " . DB_SCHEMA . ".layer USING(layergroup_id)
                             WHERE layer_id=?
                         ";
                         $stmt = $db->prepare($sql);
@@ -120,9 +120,9 @@ class FilterType extends AbstractType
 
                     $db = \GCApp::getDB();
                     $sql = "
-                        SELECT layer_id FROM ".DB_SCHEMA.".theme
-                        INNER JOIN ".DB_SCHEMA.".layergroup USING(theme_id)
-                        INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id)
+                        SELECT layer_id FROM " . DB_SCHEMA . ".theme
+                        INNER JOIN " . DB_SCHEMA . ".layergroup USING(theme_id)
+                        INNER JOIN " . DB_SCHEMA . ".layer USING(layergroup_id)
                         WHERE project_name=? AND layergroup_name=? AND layer_name=?
                     ";
                     $stmt = $db->prepare($sql);

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/ajax.class.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -40,11 +40,11 @@ if (!in_array($_REQUEST['action'], ['get', 'delete']) && empty($_REQUEST['mapset
 
 switch ($_REQUEST['action']) {
     case 'list':
-        $sql = "select usercontext_id as id, title from ".DB_SCHEMA.".usercontext where username=:username and mapset_name=:mapset order by id desc";
+        $sql = "select usercontext_id as id, title from " . DB_SCHEMA . ".usercontext where username=:username and mapset_name=:mapset order by id desc";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':username'=>$authHandler->getToken()->getUserName(),
-            ':mapset'=>$_REQUEST['mapset']
+            ':username' => $authHandler->getToken()->getUserName(),
+            ':mapset' => $_REQUEST['mapset']
         ]);
         
         $contextes = [];
@@ -52,7 +52,7 @@ switch ($_REQUEST['action']) {
             array_push($contextes, $row);
         }
         $ajax->success([
-            'contextes'=>$contextes
+            'contextes' => $contextes
         ]);
         break;
 
@@ -63,21 +63,21 @@ switch ($_REQUEST['action']) {
         }
         $context = json_encode($_REQUEST['context']);
         if ($_REQUEST['action'] == 'replace') {
-            $sql = 'delete from '.DB_SCHEMA.'.usercontext where username=?';
+            $sql = 'delete from ' . DB_SCHEMA . '.usercontext where username=?';
             $db->prepare($sql)->execute([
                 $authHandler->getToken()->getUserName()
             ]);
         }
         
-        $sql = "insert into ".DB_SCHEMA.".usercontext (username, mapset_name, title, context) ".
+        $sql = "insert into " . DB_SCHEMA . ".usercontext (username, mapset_name, title, context) " .
             " values (:username, :mapset, :title, :context) ";
         try {
             $stmt = $db->prepare($sql);
             $stmt->execute([
-                ':username'=>$authHandler->getToken()->getUserName(),
-                ':mapset'=>$_REQUEST['mapset'],
-                ':title'=>$_REQUEST['title'],
-                ':context'=>$context
+                ':username' => $authHandler->getToken()->getUserName(),
+                ':mapset' => $_REQUEST['mapset'],
+                ':title' => $_REQUEST['title'],
+                ':context' => $context
             ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -90,20 +90,20 @@ switch ($_REQUEST['action']) {
                     $ajax->error('Empty id');
         }
         
-        $sql = "select username from ".DB_SCHEMA.".usercontext where usercontext_id=:id";
+        $sql = "select username from " . DB_SCHEMA . ".usercontext where usercontext_id=:id";
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':id'=>$_REQUEST['id']
+            ':id' => $_REQUEST['id']
         ]);
         if ($stmt->fetchColumn(0) != $authHandler->getToken()->getUserName()) {
                     $ajax->error('Permission denied');
         }
         
-        $sql = "delete from ".DB_SCHEMA.".usercontext where usercontext_id=:id";
+        $sql = "delete from " . DB_SCHEMA . ".usercontext where usercontext_id=:id";
         try {
             $stmt = $db->prepare($sql);
             $stmt->execute([
-                ':id'=>$_REQUEST['id']
+                ':id' => $_REQUEST['id']
             ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -118,27 +118,27 @@ switch ($_REQUEST['action']) {
                         $param = $authHandler->getToken()->getUserName();
             if (null === $param) {
                 $ajax->success([
-                    'context'=>[]
+                    'context' => []
                 ]);
             }
         } else {
             $param = $_REQUEST['id'];
         }
-        $sql = "select mapset_name, title, context from ".DB_SCHEMA.".usercontext where $field = ?";
+        $sql = "select mapset_name, title, context from " . DB_SCHEMA . ".usercontext where $field = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute([$param]);
         if ($stmt->rowCount() == 0) {
             $ajax->success([
-                'context'=>[]
+                'context' => []
             ]);
         }
         
         $context = $stmt->fetch(PDO::FETCH_ASSOC);
         $context['context'] = json_decode($context['context']);
         $ajax->success([
-            'context'=>$context['context'],
-            'title'=>$context['title'],
-            'mapset'=>$context['mapset_name']
+            'context' => $context['context'],
+            'title' => $context['title'],
+            'mapset' => $context['mapset_name']
         ]);
         break;
 }

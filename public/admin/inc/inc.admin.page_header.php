@@ -57,9 +57,9 @@
                     if (isset($mapsets)) {
                         foreach ($mapsets as $mapset) {
                             echo '<tr>
-                                <td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
-                                <td align="center"><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
-                                <td align="center"><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
+                                <td>' . $mapset['mapset_title'] . ' (' . $mapset['mapset_name'] . ')</td>
+                                <td align="center"><a href="../services/ows.php?project=' . $mapset['project_name'] . '&map=' . $mapset['mapset_name'] . '&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
+                                <td align="center"><a href="../services/ows.php?project=' . $mapset['project_name'] . '&map=' . $mapset['mapset_name'] . '&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
                             </tr>';
                         }
                     }
@@ -164,10 +164,10 @@
                 if (isset($mapsets)) {
                     foreach ($mapsets as $mapset) {
                         echo '<tr>
-                            <td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
+                            <td>' . $mapset['mapset_title'] . ' (' . $mapset['mapset_name'] . ')</td>
                             <td></td>
-                            <td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
-                            <td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
+                            <td style="text-align:center;"><a data-action="view_map" href="' . $mapset['url'] . '&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="' . $mapset['mapset_name'] . '">' . GCAuthor::t('update') . '</a></td>
+                            <td style="text-align:center;"><a data-action="view_map" href="' . $mapset['url'] . '" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="' . $mapset['mapset_name'] . '">' . GCAuthor::t('update') . '</a></td>
                         </tr>';
                     }
                 }

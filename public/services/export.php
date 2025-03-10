@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once ROOT_PATH.'lib/ajax.class.php';
-require_once ROOT_PATH.'lib/export.php';
+require_once ROOT_PATH . 'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/export.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -18,7 +18,7 @@ if (($data = json_decode($inputJSONText, true)) === null) {
 $layerAuthChecker = GCApp::getLayerAuthorizationChecker();
 if (isset($data['mapset'])) {
     $layers = $layerAuthChecker->getLayers([
-        'mapset_name'=> $data['mapset']
+        'mapset_name' => $data['mapset']
     ]);
 }
 // close the session, because all relevant data are already writte into it
@@ -46,21 +46,21 @@ switch ($data['export_format']) {
                 $dbParams = GCApp::getDataDBParams($catalogPath);
                 $dataDb = GCApp::getDataDB($catalogPath);
                 array_push($tables, [
-                    'tablename'=>$table['table'],
-                    'schema'=>$dbParams['schema'],
-                    'dbName'=>$dbParams['db_name'],
-                    'db'=>$dataDb
+                    'tablename' => $table['table'],
+                    'schema' => $dbParams['schema'],
+                    'dbName' => $dbParams['db_name'],
+                    'db' => $dataDb
                 ]);
             } elseif (isset($table['layer'])) {
-                $sql = 'select catalog_path, layer.data as tablename, layer_id from '.DB_SCHEMA.'.catalog 
-                    inner join '.DB_SCHEMA.'.layer using(catalog_id)
-                    inner join '.DB_SCHEMA.'.layergroup using(layergroup_id)
+                $sql = 'select catalog_path, layer.data as tablename, layer_id from ' . DB_SCHEMA . '.catalog 
+                    inner join ' . DB_SCHEMA . '.layer using(catalog_id)
+                    inner join ' . DB_SCHEMA . '.layergroup using(layergroup_id)
                     where layergroup_name = :layergroup and layer_name = :layer';
                 $stmt = $db->prepare($sql);
                 [$layergroup, $layer] = explode('.', $table['layer']);
                 $stmt->execute([
-                    'layergroup'=>$layergroup,
-                    'layer'=>$layer
+                    'layergroup' => $layergroup,
+                    'layer' => $layer
                 ]);
                 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
                 
@@ -71,10 +71,10 @@ switch ($data['export_format']) {
                 $dbParams = GCApp::getDataDBParams($layer['catalog_path']);
                 $dataDb = GCApp::getDataDB($layer['catalog_path']);
                 array_push($tables, [
-                    'tablename'=>$layer['tablename'],
-                    'schema'=>$dbParams['schema'],
-                    'dbName'=>$dbParams['db_name'],
-                    'db'=>$dataDb
+                    'tablename' => $layer['tablename'],
+                    'schema' => $dbParams['schema'],
+                    'dbName' => $dbParams['db_name'],
+                    'db' => $dataDb
                 ]);
             }
         }
@@ -99,11 +99,11 @@ switch ($data['export_format']) {
             $sql = 'select st_setsrid(st_makebox2d(st_point(:p0, :p1), st_point(:p2, :p3)), :srid)';
             $stmt = $db->prepare($sql);
             $stmt->execute([
-                'p0'=>$data['extent'][0],
-                'p1'=>$data['extent'][1],
-                'p2'=>$data['extent'][2],
-                'p3'=>$data['extent'][3],
-                'srid'=>$srid
+                'p0' => $data['extent'][0],
+                'p1' => $data['extent'][1],
+                'p2' => $data['extent'][2],
+                'p3' => $data['extent'][3],
+                'srid' => $srid
             ]);
             $extent = $stmt->fetchColumn(0);
             
@@ -117,39 +117,39 @@ switch ($data['export_format']) {
                     continue;
                 }
                 unset($columns[$geomColIndex]);
-                $tmpTableName = 'export_'.$table['tablename'].'_'.$gcService->getSession()->getId().'_'.random_int(0, 999999);
-                $sql = 'create table '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName.' as '.
-                    ' select '.implode(', ', $columns).', st_intersection(the_geom, :geom) as the_geom '.
-                    ' from '.$dbParams['schema'].'.'.$table['tablename'].
+                $tmpTableName = 'export_' . $table['tablename'] . '_' . $gcService->getSession()->getId() . '_' . random_int(0, 999999);
+                $sql = 'create table ' . GC_EXPORT_TMP_SCHEMA . '.' . $tmpTableName . ' as ' .
+                    ' select ' . implode(', ', $columns) . ', st_intersection(the_geom, :geom) as the_geom ' .
+                    ' from ' . $dbParams['schema'] . '.' . $table['tablename'] .
                     ' where st_intersects(the_geom, :geom) ';
                 $stmt = $table['db']->prepare($sql);
                 $stmt->execute([
-                    'geom'=>$extent
+                    'geom' => $extent
                 ]);
                 
-                $sql = 'select count(*) from '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName;
+                $sql = 'select count(*) from ' . GC_EXPORT_TMP_SCHEMA . '.' . $tmpTableName;
                 $count = $table['db']->query($sql)->fetchColumn(0);
                 if (empty($count)) {
-                    $table['db']->exec('drop table '.GC_EXPORT_TMP_SCHEMA.'.'.$tmpTableName);
+                    $table['db']->exec('drop table ' . GC_EXPORT_TMP_SCHEMA . '.' . $tmpTableName);
                     continue;
                 }
                 
-                $sql = 'insert into geometry_columns(f_table_catalog, f_table_schema, f_table_name, f_geometry_column, coord_dimension, srid, type) '.
-                    ' select f_table_catalog, :tmp_table_schema, :tmp_table_name, f_geometry_column, 2, srid, type from geometry_columns '.
+                $sql = 'insert into geometry_columns(f_table_catalog, f_table_schema, f_table_name, f_geometry_column, coord_dimension, srid, type) ' .
+                    ' select f_table_catalog, :tmp_table_schema, :tmp_table_name, f_geometry_column, 2, srid, type from geometry_columns ' .
                     ' where f_table_schema = :schema and f_table_name = :table';
                 $stmt = $table['db']->prepare($sql);
                 $stmt->execute([
-                    'tmp_table_schema'=>GC_EXPORT_TMP_SCHEMA,
-                    'tmp_table_name'=>$tmpTableName,
-                    'schema'=>$table['schema'],
-                    'table'=>$table['tablename']
+                    'tmp_table_schema' => GC_EXPORT_TMP_SCHEMA,
+                    'tmp_table_name' => $tmpTableName,
+                    'schema' => $table['schema'],
+                    'table' => $table['tablename']
                 ]);
                 array_push($exportTables, [
-                    'db'=>$table['dbName'],
-                    'db_instance'=>$table['db'],
-                    'table'=>$tmpTableName,
-                    'schema'=>GC_EXPORT_TMP_SCHEMA,
-                    'name'=>$table['tablename']
+                    'db' => $table['dbName'],
+                    'db_instance' => $table['db'],
+                    'table' => $tmpTableName,
+                    'schema' => GC_EXPORT_TMP_SCHEMA,
+                    'name' => $table['tablename']
                 ]);
             }
         } else {
@@ -158,11 +158,11 @@ switch ($data['export_format']) {
                     continue;
                 }
                 array_push($exportTables, [
-                    'db'=>$table['dbName'],
-                    'db_instance'=>$table['db'],
-                    'table'=>$table['tablename'],
-                    'schema'=>$table['schema'],
-                    'name'=>$table['tablename']
+                    'db' => $table['dbName'],
+                    'db_instance' => $table['db'],
+                    'table' => $table['tablename'],
+                    'schema' => $table['schema'],
+                    'name' => $table['tablename']
                 ]);
             }
         }
@@ -172,9 +172,9 @@ switch ($data['export_format']) {
             foreach ($exportTables as $table) {
                 $export = new GCExport($table['db_instance'], 'shp');
                 $zipFile = $export->export([$table], [
-                    'name'=>'export',
-                    'add_to_zip'=>$zipFile,
-                    'return_url'=>false
+                    'name' => 'export',
+                    'add_to_zip' => $zipFile,
+                    'return_url' => false
                 ]);
             }
             $zipFile = $export->getExportUrl() . $zipFile;
@@ -183,28 +183,28 @@ switch ($data['export_format']) {
             foreach ($exportTables as $table) {
                 $export = new GCExport($table['db_instance'], 'dxf');
                 $zipFile = $export->export([$table], [
-                    'name'=>$table['name'],
-                    'add_to_zip'=>$zipFile,
-                    'return_url'=>false,
-                    'extent'=>$data['extent'],
-                    'srid'=>$srid
+                    'name' => $table['name'],
+                    'add_to_zip' => $zipFile,
+                    'return_url' => false,
+                    'extent' => $data['extent'],
+                    'srid' => $srid
                 ]);
             }
         }
         $zipFile = $export->getExportUrl() . $zipFile;
         if (!empty($data['extent'])) {
             foreach ($exportTables as $table) {
-                $dataDb->exec('drop table '.GC_EXPORT_TMP_SCHEMA.'.'.$table['table']);
+                $dataDb->exec('drop table ' . GC_EXPORT_TMP_SCHEMA . '.' . $table['table']);
                 $sql = 'delete from geometry_columns where f_table_schema=:tmp_schema and f_table_name=:tmp_table';
                 $stmt = $db->prepare($sql);
                 $stmt->execute([
-                    'tmp_schema'=>GC_EXPORT_TMP_SCHEMA,
-                    'tmp_table'=>$table['table']
+                    'tmp_schema' => GC_EXPORT_TMP_SCHEMA,
+                    'tmp_table' => $table['table']
                 ]);
             }
         }
         $ajax->success([
-            'file'=>$zipFile
+            'file' => $zipFile
         ]);
         break;
     case 'xls':
@@ -269,7 +269,7 @@ switch ($data['export_format']) {
         }
 
         if (empty($data['feature_type'])) {
-            $filename = GCApp::getUniqueRandomTmpFilename(ROOT_PATH.'tmp/files', 'export', 'xls');
+            $filename = GCApp::getUniqueRandomTmpFilename(ROOT_PATH . 'tmp/files', 'export', 'xls');
         } else {
             $parts = explode('.', $data['feature_type']);
             if (count($parts) > 1) {
@@ -278,13 +278,13 @@ switch ($data['export_format']) {
                 $filename = $parts[0];
             }
             
-            $filename .= '_'.date('Y-m-d_H-i').'_'.random_int(0, 999).'.xls';
+            $filename .= '_' . date('Y-m-d_H-i') . '_' . random_int(0, 999) . '.xls';
         }
         $content = $excel->generateXML();
-        file_put_contents(ROOT_PATH.'tmp/files/'.$filename, $content);
+        file_put_contents(ROOT_PATH . 'tmp/files/' . $filename, $content);
         die(json_encode([
-            'result'=>'ok',
-            'file'=>PUBLIC_URL.'services/download.php?filename='.$filename
+            'result' => 'ok',
+            'file' => PUBLIC_URL . 'services/download.php?filename=' . $filename
         ]));
     break;
 }

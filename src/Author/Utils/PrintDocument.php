@@ -11,48 +11,48 @@ class PrintDocument
     private $tiles = [];
 
     private $dimensions = [
-        'vertical'=>[
-            'A4'=>[
-                'w'=>17,
-                'h'=>22.5
-            ],
-            'A3'=>[
-                'w'=>25.8,
-                'h'=>35
-            ],
-            'A2'=>[
-                'w'=>38,
-                'h'=>52
-            ],
-            'A1'=>[
-                'w'=>55,
-                'h'=>76
-            ],
-            'A0'=>[
-                'w'=>80,
-                'h'=>111
-            ]
-        ],
-        'horizontal'=>[
+        'vertical' => [
             'A4' => [
-                'w'=>25.8,
-                'h'=>14
+                'w' => 17,
+                'h' => 22.5
             ],
             'A3' => [
-                'w'=>38,
-                'h'=>22.5
+                'w' => 25.8,
+                'h' => 35
             ],
             'A2' => [
-                'w'=>55,
-                'h'=>34
+                'w' => 38,
+                'h' => 52
             ],
             'A1' => [
-                'w'=>80,
-                'h'=>52
+                'w' => 55,
+                'h' => 76
             ],
             'A0' => [
-                'w'=>115,
-                'h'=>77
+                'w' => 80,
+                'h' => 111
+            ]
+        ],
+        'horizontal' => [
+            'A4' => [
+                'w' => 25.8,
+                'h' => 14
+            ],
+            'A3' => [
+                'w' => 38,
+                'h' => 22.5
+            ],
+            'A2' => [
+                'w' => 55,
+                'h' => 34
+            ],
+            'A1' => [
+                'w' => 80,
+                'h' => 52
+            ],
+            'A0' => [
+                'w' => 115,
+                'h' => 77
             ]
         ]
     ];
@@ -86,13 +86,13 @@ class PrintDocument
             'format' => 'A4',
             'dpi' => 72,
             'direction' => 'vertical',
-            'TMP_PATH' => ROOT_PATH.'tmp/files/',
-            'TMP_URL' => $this->baseUrl.'/services/download.php',
+            'TMP_PATH' => ROOT_PATH . 'tmp/files/',
+            'TMP_URL' => $this->baseUrl . '/services/download.php',
             'legend' => null,
             'scale_mode' => 'auto',
-            'image_format'=>'png',
+            'image_format' => 'png',
             'srid' => null,
-            'auth_name'=>'EPSG',
+            'auth_name' => 'EPSG',
         ];
         
         $options = [];
@@ -142,7 +142,7 @@ class PrintDocument
                     $options['auth_name'] = $sridParts[4];
                     $options['srid'] = $sridParts[6];
                 } else {
-                    throw new \Exception("Could not parse ".$_REQUEST['srid']." as srid");
+                    throw new \Exception("Could not parse " . $_REQUEST['srid'] . " as srid");
                 }
             }
         }
@@ -159,7 +159,7 @@ class PrintDocument
             $this->options['TMP_PATH'] .= '/';
         }
         if (!is_dir($this->options['TMP_PATH']) || !is_writeable($this->options['TMP_PATH'])) {
-            throw new \RuntimeException('unexisting or not writeable print tmp directory '.$this->options['TMP_PATH']);
+            throw new \RuntimeException('unexisting or not writeable print tmp directory ' . $this->options['TMP_PATH']);
         }
         
         if (defined('GC_PRINT_IMAGE_SIZE_INI') && file_exists(GC_PRINT_IMAGE_SIZE_INI)) {
@@ -185,7 +185,7 @@ class PrintDocument
                 throw new \Exception('For auto scale mode, the extend must be provided');
             }
         }
-        $this->wmsMergeUrl = $this->baseUrl.$this->wmsMergeUrl;
+        $this->wmsMergeUrl = $this->baseUrl . $this->wmsMergeUrl;
         
         $this->db = \GCApp::getDB();
         
@@ -203,7 +203,7 @@ class PrintDocument
             $this->documentElements['map-date'] = $_REQUEST['date'];
         }
         if (!empty($_REQUEST['northArrow']) && $_REQUEST['northArrow'] != 'null') {
-            $this->documentElements['north-arrow'] = GC_PRINT_TPL_URL.$_REQUEST['northArrow'];
+            $this->documentElements['north-arrow'] = GC_PRINT_TPL_URL . $_REQUEST['northArrow'];
         }
         if (!empty($_REQUEST['copyrightString']) && $_REQUEST['copyrightString'] != 'null') {
             $this->documentElements['copyright-string'] = $_REQUEST['copyrightString'];
@@ -226,15 +226,15 @@ class PrintDocument
     
     public function setLogo($logo, $position = 'sx')
     {
-        $this->documentElements['map-logo-'.$position] = $logo;
+        $this->documentElements['map-logo-' . $position] = $logo;
     }
     
     public function printMapHTML()
     {
         $xslFile = $_REQUEST["template"] ?? 'print_map_html';//DEFAULT HTML TEMPLATE
-        $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";
+        $xslFile = GC_PRINT_TPL_DIR . $xslFile . ".xsl";
         if (!file_exists($xslFile)) {
-            throw new \RuntimeException('XSL file ('.$xslFile.') not found');
+            throw new \RuntimeException('XSL file (' . $xslFile . ') not found');
         }
         
 
@@ -246,19 +246,19 @@ class PrintDocument
         $xsl->importStyleSheet($tmpdoc);
 
         $content = $xsl->transformToXML($dom);
-        $filename = 'printmap_'.random_int(0, 99999999).'.html';
-        $mapHtmlFile = $this->options['TMP_PATH'].$filename;
+        $filename = 'printmap_' . random_int(0, 99999999) . '.html';
+        $mapHtmlFile = $this->options['TMP_PATH'] . $filename;
         if (false === file_put_contents($mapHtmlFile, $content)) {
             throw new \RuntimeException("Could not write to $mapHtmlFile");
         }
         $this->deleteOldTmpFiles();
-        return $this->options['TMP_URL'].'?filename='.$filename;
+        return $this->options['TMP_URL'] . '?filename=' . $filename;
     }
     
     public function printMapPDF()
     {
         $xslFile = $_REQUEST["template"] ?? 'print_map';//DEFAULT PDF TEMPLATE
-        $xslFile = GC_PRINT_TPL_DIR.$xslFile.".xsl";
+        $xslFile = GC_PRINT_TPL_DIR . $xslFile . ".xsl";
         if (!file_exists($xslFile)) {
             throw new \RuntimeException("XSL file '$xslFile'not found");
         }
@@ -266,12 +266,12 @@ class PrintDocument
         //$xml = $dom->saveXML();
 
         $pdfFile = runFOP($dom, $xslFile, [
-            'tmp_path'=>$this->options['TMP_PATH'],
-            'prefix'=>'GCPrintMap-',
-            'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'
+            'tmp_path' => $this->options['TMP_PATH'],
+            'prefix' => 'GCPrintMap-',
+            'out_name' => $this->options['TMP_PATH'] . 'PrintMap-' . date('Ymd-His') . '.pdf'
         ]);
         $this->deleteOldTmpFiles();
-        return $this->options['TMP_URL'].'?filename='.basename($pdfFile);
+        return $this->options['TMP_URL'] . '?filename=' . basename($pdfFile);
     }
 
     public function getDimensions()
@@ -305,8 +305,8 @@ class PrintDocument
                 continue;
             }
             $legendGraphicRequest = array_merge($wms['PARAMETERS'], [
-                'url'=>(!empty($wms['URL'])?$wms['URL']:$wms['baseURL']),
-                'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
+                'url' => (!empty($wms['URL']) ? $wms['URL'] : $wms['baseURL']),
+                'PROJECT' => $wms['PARAMETERS']['PROJECT'],
                 'REQUEST' => 'GetLegendGraphic',
                 'ICONW' => 24,
                 'ICONH' => 16,
@@ -341,9 +341,9 @@ class PrintDocument
                 if (isset($wms['options']['theme_id'])) {
                     if (!isset($themes[$wms['options']['theme_id']])) {
                         $themes[$wms['options']['theme_id']] = [
-                            'id'=>$wms['options']['theme_id'],
-                            'title'=>$wms['options']['theme_title'],
-                            'layers'=>[]
+                            'id' => $wms['options']['theme_id'],
+                            'title' => $wms['options']['theme_title'],
+                            'layers' => []
                         ];
                     }
                     $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
@@ -352,7 +352,7 @@ class PrintDocument
         }
 
         if (!empty($project) && !empty($mapset)) {
-            $oMap = ms_newMapObjFromString(file_get_contents(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map'));
+            $oMap = ms_newMapObjFromString(file_get_contents(ROOT_PATH . 'map/' . $project . '/' . $mapset . '.map'));
             foreach ($themes as &$theme) {
                 $theme['groups'] = [];
                 foreach ($theme['layers'] as $layergroupName) {
@@ -361,9 +361,9 @@ class PrintDocument
                         $oLayer = $oMap->getLayer($index);
                         $layerName = $oLayer->name;
                         $group = [
-                            'id'=>$layerName,
-                            'title'=>$oLayer->getMetaData('ows_title'),
-                            'layers'=>[]
+                            'id' => $layerName,
+                            'title' => $oLayer->getMetaData('ows_title'),
+                            'layers' => []
                         ];
                         for ($n = 0; $n < $oLayer->numclasses; $n++) {
                             $oClass = $oLayer->getClass($n);
@@ -372,8 +372,8 @@ class PrintDocument
                                 continue;
                             }
                             array_push($group['layers'], [
-                                'url'=>$layerName.'-'.$n,
-                                'title'=>$oClass->title
+                                'url' => $layerName . '-' . $n,
+                                'title' => $oClass->title
                             ]);
                         }
                         array_push($theme['groups'], $group);
@@ -383,7 +383,7 @@ class PrintDocument
             unset($theme);
         }
         return [
-            'themes'=>$themes
+            'themes' => $themes
         ];
     }
 
@@ -404,21 +404,21 @@ class PrintDocument
                 continue;
             }
             $themeArray = [
-                'id'=>$theme['id'],
-                'title'=>$theme['title'],
-                'groups'=>[]
+                'id' => $theme['id'],
+                'title' => $theme['title'],
+                'groups' => []
             ];
             foreach ($theme['groups'] as $group) {
                 $groupArray = [
-                    'id'=>$group['id'],
-                    'title'=>$group['title'],
-                    'layers'=>[]
+                    'id' => $group['id'],
+                    'title' => $group['title'],
+                    'layers' => []
                 ];
                 if (empty($group['layers'])) {
                     continue;
                 }
                 foreach ($group['layers'] as $key => $layer) {
-                    $tmpFileId = $theme['id'].'-'.$group['id'];
+                    $tmpFileId = $theme['id'] . '-' . $group['id'];
                     if (!isset($legendImages[$layer['url']])) {
                         if (isset($group['sld'])) {
                             $sld = $group['sld'];
@@ -442,13 +442,13 @@ class PrintDocument
                     // TODO: add some check if the image is high enough to be sliced
                     $source = imagecreatefrompng($legendImages[$layer['url']]);
                     $dest = imagecreatetruecolor(24, 16);
-                    $offset = $key*16;
+                    $offset = $key * 16;
                     imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
-                    $filename = $tmpFileId.'-'.$key.'.png';
-                    imagepng($dest, $this->options['TMP_PATH'].$filename);
+                    $filename = $tmpFileId . '-' . $key . '.png';
+                    imagepng($dest, $this->options['TMP_PATH'] . $filename);
                     array_push($groupArray['layers'], [
                         'title' => $layer['title'],
-                        'img' => $this->options['TMP_URL'].'?filename='.$filename
+                        'img' => $this->options['TMP_URL'] . '?filename=' . $filename
                     ]);
                 }
                 array_push($themeArray['groups'], $groupArray);
@@ -465,14 +465,14 @@ class PrintDocument
         unset($request['url']);
         $queryString = http_build_query($request);
         if (!empty($sld)) {
-            $queryString .= '&SLD='.$sld;
+            $queryString .= '&SLD=' . $sld;
         }
-        return $this->getLegendImage($url.'?'.$queryString, $tmpFileId);
+        return $this->getLegendImage($url . '?' . $queryString, $tmpFileId);
     }
     
     private function getLegendImage($url, $tmpFileId)
     {
-        $dest = $this->options['TMP_PATH'].$tmpFileId.'.png';
+        $dest = $this->options['TMP_PATH'] . $tmpFileId . '.png';
         $finalUrl = self::addPrefixToRelativeUrl($url);
 
         UrlChecker::checkUrl($finalUrl, LIMIT_SLD_URL_TO_SAME_HOST);
@@ -491,7 +491,7 @@ class PrintDocument
         curl_setopt_array($ch, $options);
 
         if (false === curl_exec($ch)) {
-            $errMsg = "Call to $finalUrl returned with error ".curl_error($ch);
+            $errMsg = "Call to $finalUrl returned with error " . curl_error($ch);
             throw new \RuntimeException($errMsg);
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
@@ -505,8 +505,8 @@ class PrintDocument
     private function calculateSizes()
     {
         $dimension = [
-            'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'],
-            'h'=>$this->dimensions[$this->options['direction']][$this->options['format']]['h']
+            'w' => $this->dimensions[$this->options['direction']][$this->options['format']]['w'],
+            'h' => $this->dimensions[$this->options['direction']][$this->options['format']]['h']
         ];
 
         $this->imageSize = [
@@ -548,7 +548,7 @@ class PrintDocument
         $dom_layout = $dom_map->appendChild(new \DOMElement('page-layout'));
         
         $direction = ($this->options['direction'] == 'vertical') ? 'P' : 'L';
-        $layout = $this->options['format'].$direction;
+        $layout = $this->options['format'] . $direction;
         
         $dom_layout->appendChild(new \DOMText($layout));
 
@@ -559,7 +559,7 @@ class PrintDocument
         $dom_height->appendChild(new \DOMText($this->documentSize['h']));
 
         $dom_img = $dom_map->appendChild(new \DOMElement('map-img'));
-        $mapImgUrl = $this->options['TMP_PATH'].$this->imageFileName;
+        $mapImgUrl = $this->options['TMP_PATH'] . $this->imageFileName;
         $dom_img->appendChild(new \DOMText($mapImgUrl));
 
         if (isset($this->documentElements['map-date'])) {
@@ -626,7 +626,7 @@ class PrintDocument
         }
         
         $xmlContent = $dom->saveXML();
-        $xmlFile = $this->options['TMP_PATH'].'print.xml';
+        $xmlFile = $this->options['TMP_PATH'] . 'print.xml';
         if (false === file_put_contents($xmlFile, $xmlContent)) {
             throw new \RuntimeException("Could not write to $xmlFile");
         }
@@ -660,9 +660,9 @@ class PrintDocument
     public static function addPrefixToRelativeUrl($url)
     {
         if (defined('PRINT_RELATIVE_URL_PREFIX') && !preg_match("/^(http|https):\/\//", $url, $matches)) {
-            return PRINT_RELATIVE_URL_PREFIX.$url;
+            return PRINT_RELATIVE_URL_PREFIX . $url;
         } elseif (!preg_match("/^(http|https):\/\//", $url, $matches)) {
-            throw new \Exception('Undefined PRINT_RELATIVE_URL_PREFIX, cannot add to '.$url);
+            throw new \Exception('Undefined PRINT_RELATIVE_URL_PREFIX, cannot add to ' . $url);
         }
         if (defined('PRINT_FORCE_HTTP') && PRINT_FORCE_HTTP == true) {
             $url = str_replace('https://', 'http://', $url);

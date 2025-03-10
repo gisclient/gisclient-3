@@ -40,7 +40,7 @@
 <div id="container_login">
     <div class="ui-layout-north">
         <?php
-        include ADMIN_PATH."inc/inc.admin.page_header.php";
+        include ADMIN_PATH . "inc/inc.admin.page_header.php";
         ?>
     </div>
     <div class="ui-layout-center">
@@ -50,7 +50,7 @@
             <div class="formRow">
                 <label>&nbsp;</label>
                 <?php if (isset($message)) {
-                    echo "<span class=\"alert\">".$message."</span>";
+                    echo "<span class=\"alert\">" . $message . "</span>";
                 }?>
             </div>
             <div class="formRow">

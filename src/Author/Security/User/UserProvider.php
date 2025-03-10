@@ -47,12 +47,12 @@ class UserProvider implements UserProviderInterface
         $projects = [];
         
         $sql = '
-            SELECT * FROM '.DB_SCHEMA.'.project_admin 
+            SELECT * FROM ' . DB_SCHEMA . '.project_admin 
             WHERE username = :username
         ';
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            'username'=>$userName,
+            'username' => $userName,
         ]);
         foreach ($stmt as $project) {
             $projects[] = $project['project_name'];
@@ -72,12 +72,12 @@ class UserProvider implements UserProviderInterface
         $groups = [];
         
         $sql = '
-            SELECT groupname FROM '.DB_SCHEMA.'.user_group 
+            SELECT groupname FROM ' . DB_SCHEMA . '.user_group 
             WHERE username = :username
         ';
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            'username'=>$userName,
+            'username' => $userName,
         ]);
         foreach ($stmt as $group) {
             $groups[] = $group['groupname'];
@@ -94,12 +94,12 @@ class UserProvider implements UserProviderInterface
         $sql = '
             SELECT
                 username, enc_pwd AS password, nome, cognome
-            FROM '.DB_SCHEMA.'.users
+            FROM ' . DB_SCHEMA . '.users
             WHERE username=:user
         ';
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            'user'=>$username
+            'user' => $username
         ]);
         // make a call to your webservice here
         $userData = $stmt->fetch(\PDO::FETCH_ASSOC);

@@ -48,7 +48,7 @@ class Process implements OfflineProcessInterface
     public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
         if (!($task instanceof Task)) {
-            throw new \Exception('The given task does not match the required class: '.Task::class);
+            throw new \Exception('The given task does not match the required class: ' . Task::class);
         }
 
         $commandLine = array_merge(

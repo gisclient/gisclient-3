@@ -17,25 +17,25 @@ function getWmsParameters(array $layerParameters)
 {
     $query = '';
     if (!empty($layerParameters['PROJECT'])) {
-        $query .= 'PROJECT='.$layerParameters['PROJECT'];
+        $query .= 'PROJECT=' . $layerParameters['PROJECT'];
     }
     if (!empty($layerParameters['MAP'])) {
-        $query .= '&MAP='.$layerParameters['MAP'];
+        $query .= '&MAP=' . $layerParameters['MAP'];
     }
     if (!empty($layerParameters['TIME'])) {
-        $query .= '&TIME='.$layerParameters['TIME'];
+        $query .= '&TIME=' . $layerParameters['TIME'];
     }
     if (!empty($layerParameters['PREV_TIME'])) {
-        $query .= '&PREV_TIME='.$layerParameters['PREV_TIME'];
+        $query .= '&PREV_TIME=' . $layerParameters['PREV_TIME'];
     }
     if (!empty($layerParameters['REDLINEID'])) {
-        $query .= '&REDLINEID='.$layerParameters['REDLINEID'];
+        $query .= '&REDLINEID=' . $layerParameters['REDLINEID'];
     }
     if (!empty($layerParameters['LANG'])) {
-        $query .= '&LANG='.$layerParameters['LANG'];
+        $query .= '&LANG=' . $layerParameters['LANG'];
     }
     if (isset($layerParameters['LABELREQUIRES'])) {
-        $query .= '&LABELREQUIRES='.$layerParameters['LABELREQUIRES'];
+        $query .= '&LABELREQUIRES=' . $layerParameters['LABELREQUIRES'];
     }
     
     return $query;
@@ -67,7 +67,7 @@ function cleanWMSRequest($url)
     if (isset($urlParts['user'])) {
         $cleanUrl .= $urlParts['user'];
         if (isset($urlParts['pass'])) {
-            $cleanUrl .= ':'. $urlParts['pass'];
+            $cleanUrl .= ':' . $urlParts['pass'];
         }
         $cleanUrl .= '@';
     }
@@ -78,7 +78,7 @@ function cleanWMSRequest($url)
         $cleanUrl .= $urlParts['path'];
     }
     if (isset($urlParts['query'])) {
-        $cleanUrl .= '?'.$urlParts['query'];
+        $cleanUrl .= '?' . $urlParts['query'];
     }
     if (isset($urlParts['fragment'])) {
         $cleanUrl .= $urlParts['fragment'];
@@ -93,7 +93,7 @@ function cleanWMSRequest($url)
 $mapConfig = json_decode($_REQUEST['options'], true);
 
 ms_ResetErrorList();
-$oMap=ms_newMapObj('');
+$oMap = ms_newMapObj('');
 if (defined('PROJ_LIB')) {
     $oMap->setConfigOption("PROJ_LIB", PROJ_LIB);
 }
@@ -104,12 +104,12 @@ print_debug($mapConfig, null, 'mapconfig');
 $sridParts = explode(':', strtolower($mapConfig['srs']));
 if (count($sridParts) == 2) {
     // e.g.: EPSG:4306
-    $srs = $sridParts[0].':'.$sridParts[1];
+    $srs = $sridParts[0] . ':' . $sridParts[1];
 } elseif (count($sridParts) == 7) {
     // e.g.: urn:ogc:def:crs:EPSG::4306
-    $srs = $sridParts[4].':'.$sridParts[6];
+    $srs = $sridParts[4] . ':' . $sridParts[6];
 } else {
-    throw new Exception("Could not parse ".$_REQUEST['srid']." as srid");
+    throw new Exception("Could not parse " . $_REQUEST['srid'] . " as srid");
 }
 
 $oMap->setProjection("init={$srs}");
@@ -168,7 +168,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
         }
         
         $oLay = ms_newLayerObj($oMap);
-        $oLay->set('name', 'print_layer_'.$key);
+        $oLay->set('name', 'print_layer_' . $key);
         $oLay->set('type', MS_LAYER_RASTER);
         if ($enableDebug) {
             $oLay->set('debug', 5);
@@ -192,10 +192,10 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 }
 
                 if (!empty($sessionId)) {
-                    $query .= '&GC_SESSION_ID='.$sessionId;
+                    $query .= '&GC_SESSION_ID=' . $sessionId;
                 }
                 if (!empty($mapConfig['resolution'])) {
-                    $query.= '&RESOLUTION='.$mapConfig['resolution'];
+                    $query .= '&RESOLUTION=' . $mapConfig['resolution'];
                 }
                 $layerNames = '';
                 if (!empty($layer['PARAMETERS']['LAYERS'])) {
@@ -207,7 +207,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 }
                 
                 $oLay->setConnectionType(MS_WMS);
-                $oLay->set('connection', cleanWMSRequest($url.$query));
+                $oLay->set('connection', cleanWMSRequest($url . $query));
                 if (isset($layer['PARAMETERS']['OPACITY']) && $layer['PARAMETERS']['OPACITY'] != 100) {
                     $oLay->set('opacity', $layer['PARAMETERS']['OPACITY']);
                     $oLay->setMetaData("wms_force_separate_request", 1);
@@ -222,9 +222,9 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 
                 break;
             case 'WMTS':
-                $mapfileDir = ROOT_PATH.'map/';
-                $projectDir = $mapfileDir.$layer['PROJECT'].'/';
-                $gdalWms = $projectDir.$layer['LAYER'].'.gdal_wms.xml';
+                $mapfileDir = ROOT_PATH . 'map/';
+                $projectDir = $mapfileDir . $layer['PROJECT'] . '/';
+                $gdalWms = $projectDir . $layer['LAYER'] . '.gdal_wms.xml';
                 
                 if (!file_exists($gdalWms)) {
                     throw new Exception("configuration file for gdal_wms not found: {$gdalWms}");
@@ -244,9 +244,9 @@ if (isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['forma
     $scalebarSize = [200, 3];
     $fontSize = 7;
     if (!empty($mapConfig['resolution'])) {
-        $scalebarSize[0] = round($scalebarSize[0] * ($mapConfig['resolution']/72));
-        $scalebarSize[1] = round($scalebarSize[1] * ($mapConfig['resolution']/72));
-        $fontSize = round($fontSize * ($mapConfig['resolution']/72));
+        $scalebarSize[0] = round($scalebarSize[0] * ($mapConfig['resolution'] / 72));
+        $scalebarSize[1] = round($scalebarSize[1] * ($mapConfig['resolution'] / 72));
+        $fontSize = round($fontSize * ($mapConfig['resolution'] / 72));
     }
     $scalebar = '
 	  SCALEBAR
@@ -256,7 +256,7 @@ if (isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['forma
 		BACKGROUNDCOLOR 100 100 100
 		IMAGECOLOR 255 255 255
 		OUTLINECOLOR 0 0 0
-		SIZE '.$scalebarSize[0].' '.$scalebarSize[1].'
+		SIZE ' . $scalebarSize[0] . ' ' . $scalebarSize[1] . '
 		STYLE 0
 		TRANSPARENT ON
 		POSTLABELCACHE TRUE
@@ -264,7 +264,7 @@ if (isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['forma
 		  COLOR 0 0 0
 		  FONT "verdana"
 		  TYPE truetype
-		  SIZE '.$fontSize.'
+		  SIZE ' . $fontSize . '
 		END  # Label
 	  END  # Reference
 	';

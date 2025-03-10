@@ -3,8 +3,8 @@
 use GisClient\Author\Symbol;
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/functions.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/functions.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -19,48 +19,48 @@ if (empty($_REQUEST['selectedField'])) {
 $selectedField = $_REQUEST['selectedField'];
 
 $result = [
-    'steps'=>1,
-    'data'=>[],
-    'data_objects'=>[],
-    'step'=>1,
-    'enable_replace'=>false,        // Enable replacement (eg in formula list we replace the marker with the field name)
+    'steps' => 1,
+    'data' => [],
+    'data_objects' => [],
+    'step' => 1,
+    'enable_replace' => false,        // Enable replacement (eg in formula list we replace the marker with the field name)
 ];
 
 switch ($selectedField) {
     case 'field_format':
         $result['fields'] = [
-            'format'=>GCAuthor::t('format'),
-            'description'=>GCAuthor::t('description')
+            'format' => GCAuthor::t('format'),
+            'description' => GCAuthor::t('description')
         ];
         
-        $sql="select fieldformat_name, fieldformat_format from ".DB_SCHEMA.".e_fieldformat order by fieldformat_order;";
+        $sql = "select fieldformat_name, fieldformat_format from " . DB_SCHEMA . ".e_fieldformat order by fieldformat_order;";
         $stmt = $db->query($sql);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $result['data'][] = [
-                'format'=>$row['fieldformat_format'],
-                'description'=>$row['fieldformat_name']
+                'format' => $row['fieldformat_format'],
+                'description' => $row['fieldformat_name']
             ];
             $result['data_objects'][] = [
-                'field_format'=>$row['fieldformat_format']
+                'field_format' => $row['fieldformat_format']
             ];
         }
         break;
     case 'formula':
         $result['enable_replace'] = true;
         $result['fields'] = [
-            'format'=>GCAuthor::t('format'),
-            'description'=>GCAuthor::t('description')
+            'format' => GCAuthor::t('format'),
+            'description' => GCAuthor::t('description')
         ];
         
-        $sql="select formula_name, formula_format from ".DB_SCHEMA.".e_formula order by formula_order;";
+        $sql = "select formula_name, formula_format from " . DB_SCHEMA . ".e_formula order by formula_order;";
         $stmt = $db->query($sql);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $result['data'][] = [
-                'format'=>$row['formula_format'],
-                'description'=>$row['formula_name']
+                'format' => $row['formula_format'],
+                'description' => $row['formula_name']
             ];
             $result['data_objects'][] = [
-                'formula'=>$row['formula_format']
+                'formula' => $row['formula_format']
             ];
         }
         break;
@@ -69,31 +69,31 @@ switch ($selectedField) {
     
     case "class_symbol_ttf":
     case "symbol_ttf_name":
-        if ($selectedField=="symbol_ttf_name" && empty($_REQUEST["label_font"])) {
+        if ($selectedField == "symbol_ttf_name" && empty($_REQUEST["label_font"])) {
             $ajax->error('missing parameter label_font');
         }
                 
         $smb = new Symbol("symbol_ttf");
         if (!empty($_REQUEST["label_font"])) {
-            $smb->filter = "font_name='".$_REQUEST["label_font"]."'";
+            $smb->filter = "font_name='" . $_REQUEST["label_font"] . "'";
         }
         $smbList = $smb->getList(true);
         
         $result['fields'] = [
-            'image'=>GCAuthor::t('image'),
-            'symbol'=>GCAuthor::t('symbol'),
-            'category'=>GCAuthor::t('category')
+            'image' => GCAuthor::t('image'),
+            'symbol' => GCAuthor::t('symbol'),
+            'category' => GCAuthor::t('category')
         ];
         $result['fields']['font'] = 'Font';
         $result['fields']['position'] = GCAuthor::t('position');
         foreach ($smbList['values'] as $symbol) {
             $result['data'][] = array_merge($symbol, [
-                'image'=>'<img src="../services/symbol.php?table=symbol_ttf&font='.urlencode($symbol["font"]).'&id='.urlencode($symbol["symbol"]).'">'
+                'image' => '<img src="../services/symbol.php?table=symbol_ttf&font=' . urlencode($symbol["font"]) . '&id=' . urlencode($symbol["symbol"]) . '">'
             ]);
             $result['data_objects'][] = [
-                'fk_symbol_ttf_name'=>$symbol['symbol'],
-                'label_font'=>$symbol['font'],
-                'label_position'=>$symbol['position']
+                'fk_symbol_ttf_name' => $symbol['symbol'],
+                'label_font' => $symbol['font'],
+                'label_position' => $symbol['position']
             ];
         }
         break;
@@ -104,28 +104,28 @@ switch ($selectedField) {
         if ($selectedField == "symbol_name") {
             $filters = [];
             if (!empty($_REQUEST["label_font"])) {
-                $filters[] = "font_name='".$_REQUEST["label_font"]."'";
+                $filters[] = "font_name='" . $_REQUEST["label_font"] . "'";
             }
             if (!empty($_REQUEST["type"]) && strtoupper($_REQUEST["type"]) == 'PIXMAP') {
                 $filters[] = 'symbol_def ~* E\'.*TYPE\\\\s+PIXMAP.*\'';
             }
             if (count($filters) > 0) {
-                $smb->filter = '('.implode(') AND (', $filters).')';
+                $smb->filter = '(' . implode(') AND (', $filters) . ')';
             }
         }
         $smbList = $smb->getList(true);
         
         $result['fields'] = [
-            'image'=>GCAuthor::t('image'),
-            'symbol'=>GCAuthor::t('symbol'),
-            'category'=>GCAuthor::t('category')
+            'image' => GCAuthor::t('image'),
+            'symbol' => GCAuthor::t('symbol'),
+            'category' => GCAuthor::t('category')
         ];
         foreach ($smbList['values'] as $symbol) {
             $result['data'][] = array_merge($symbol, [
-                'image'=>'<img src="../services/symbol.php?table=symbol&id='.urlencode($symbol['symbol']).'">'
+                'image' => '<img src="../services/symbol.php?table=symbol&id=' . urlencode($symbol['symbol']) . '">'
             ]);
             $result['data_objects'][] = [
-                'symbol_name'=>$symbol['symbol']
+                'symbol_name' => $symbol['symbol']
             ];
         }
         break;
@@ -136,35 +136,35 @@ switch ($selectedField) {
         $smbList = $smb->getList(true);
         
         $result['fields'] = [
-            'image'=>GCAuthor::t('image'),
-            'symbol'=>GCAuthor::t('symbol'),
-            'category'=>GCAuthor::t('category'),
-            'actions'=>'Cancella'
+            'image' => GCAuthor::t('image'),
+            'symbol' => GCAuthor::t('symbol'),
+            'category' => GCAuthor::t('category'),
+            'actions' => 'Cancella'
         ];
         foreach ($smbList['values'] as $symbol) {
             $result['data'][] = array_merge(
                 $symbol,
                 [
-                    'image'=>'<img src="../services/symbol.php?table=symbol&id='.urlencode($symbol['symbol']).'">',
+                    'image' => '<img src="../services/symbol.php?table=symbol&id=' . urlencode($symbol['symbol']) . '">',
                     'actions' => '<button class="delete_symbol">Cancella</button>'
                 ]
             );
             $result['data_objects'][] = [
-                'symbol_name'=>$symbol['symbol']
+                'symbol_name' => $symbol['symbol']
             ];
         }
         break;
     
     case 'table_name':
         $result['fields'] = [
-            'table'=>GCAuthor::t('table')
+            'table' => GCAuthor::t('table')
         ];
         
         if (empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_REQUEST['catalog_id'] < 1) {
             $ajax->error('catalog_id');
         }
         
-        $sql = "select catalog_path, connection_type from ".DB_SCHEMA.".catalog where catalog_id=?";
+        $sql = "select catalog_path, connection_type from " . DB_SCHEMA . ".catalog where catalog_id=?";
         $stmt = $db->prepare($sql);
         $stmt->execute([$_REQUEST['catalog_id']]);
         $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -185,10 +185,10 @@ switch ($selectedField) {
         
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $result['data'][] = [
-                'table'=>$row['table_name']
+                'table' => $row['table_name']
             ];
             $result['data_objects'][] = [
-                'table_name'=>$row['table_name']
+                'table_name' => $row['table_name']
             ];
         }
         break;

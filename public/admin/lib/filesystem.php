@@ -12,13 +12,13 @@ function elenco_file($p, $ext = '', $fname = '')
     }
     if ($dh = opendir($p)) {
         while (($file = readdir($dh)) !== false) {
-            if (is_dir(addFinalSlash($p).$file)) {
+            if (is_dir(addFinalSlash($p) . $file)) {
                 continue;
             }
             if (!empty($ext)) {
                 $parts = explode('.', $file);
                 if (count($parts) > 1) {
-                    $extension = $parts[count($parts)-1];
+                    $extension = $parts[count($parts) - 1];
                     if (!in_array(strtolower($extension), $ext)) {
                         continue;
                     }
@@ -37,8 +37,8 @@ function elenco_dir($p)
     if (is_dir($p)) {
         if ($dh = opendir($p)) {
             while (($file = readdir($dh)) !== false) {
-                if (is_dir($p."/".$file) && !in_array($file, [".", ".."])) {
-                    $elenco[]=$file;
+                if (is_dir($p . "/" . $file) && !in_array($file, [".", ".."])) {
+                    $elenco[] = $file;
                 }
             }
             closedir($dh);
@@ -49,20 +49,20 @@ function elenco_dir($p)
 
 function new_file_name($file)
 {
-    $arr=explode(".", $file);
+    $arr = explode(".", $file);
     if (is_array($arr)) {
-        $ext=array_pop($arr);
-        $ext=".".$ext;
-        $filename=implode(".", $arr);
+        $ext = array_pop($arr);
+        $ext = "." . $ext;
+        $filename = implode(".", $arr);
     } else {
-        $ext="";
-        $filename=$file;
+        $ext = "";
+        $filename = $file;
     }
-    $index="";
-    $i=0;
-    while (file_exists($filename.$index.$ext)) {
+    $index = "";
+    $i = 0;
+    while (file_exists($filename . $index . $ext)) {
         $i++;
-        $index=".$i";
+        $index = ".$i";
     }
-    return $filename.$index.$ext;
+    return $filename . $index . $ext;
 }

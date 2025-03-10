@@ -69,7 +69,7 @@ class OwsHandler
                 // There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
                 if (strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS'] == 1)) {
                     $check = true;
-                } elseif (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1 )) {
+                } elseif (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1)) {
                     $check = true;
                 }
             }
@@ -237,7 +237,7 @@ class OwsHandler
         $sldContent = curl_exec($ch);
 
         if ($sldContent === false) {
-            throw new \RuntimeException("Call to {$sldUrl} return with error:". var_export(curl_error($ch), true));
+            throw new \RuntimeException("Call to {$sldUrl} return with error:" . var_export(curl_error($ch), true));
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
             throw new \RuntimeException("Call to {$sldUrl} return HTTP code $httpCode");
@@ -327,8 +327,8 @@ class OwsHandler
             foreach ($layerList as $layerGroup) {
                 [$layerGroup] = explode('.', $layerGroup, 1);  // Extract layer group
                 $stmt->execute([
-                    'mapset_name'=>$objRequest->getValueByName('map'),
-                    'layergroup_name'=>$layerGroup
+                    'mapset_name' => $objRequest->getValueByName('map'),
+                    'layergroup_name' => $layerGroup
                 ]);
                 if (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
                     $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');

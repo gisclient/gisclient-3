@@ -14,12 +14,12 @@ class GCAjax
     public function success($data = [])
     {
         if (isset($_REQUEST["callback"])) {
-            die($_REQUEST["callback"]."(".json_encode(array_merge([
-                'result'=>'ok'
-            ], $data)).")");
+            die($_REQUEST["callback"] . "(" . json_encode(array_merge([
+                'result' => 'ok'
+            ], $data)) . ")");
         } else {
             die(json_encode(array_merge([
-                'result'=>'ok'
+                'result' => 'ok'
             ], $data)));
         }
     }
@@ -27,14 +27,14 @@ class GCAjax
     public function error($error = 'System Error')
     {
         if (isset($_REQUEST["callback"])) {
-            die($_REQUEST["callback"]."(".json_encode([
-                'result'=>'error',
-                'error'=>$error
-            ]).")");
+            die($_REQUEST["callback"] . "(" . json_encode([
+                'result' => 'error',
+                'error' => $error
+            ]) . ")");
         } else {
             die(json_encode([
-                'result'=>'error',
-                'error'=>$error
+                'result' => 'error',
+                'error' => $error
             ]));
         }
     }

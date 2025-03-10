@@ -54,8 +54,8 @@ class DownloadController
         // procedure checking required/optional, type and value range
 
         $options = [
-            'image_format'=>'gtiff',
-            'output_format'=>'geotiff'
+            'image_format' => 'gtiff',
+            'output_format' => 'geotiff'
         ];
 
         if ($format == 'png') {
@@ -107,7 +107,7 @@ class DownloadController
             $scaleWidth = (int)$pixPerMetreFromDPI * ($options['extent'][2] - $options['extent'][0]) / $viewSize[0];
             $scaleHeight = (int)$pixPerMetreFromDPI * ($options['extent'][3] - $options['extent'][1]) / $viewSize[1];
 
-            $options['scale'] = ($scaleWidth < $scaleHeight)? $scaleWidth : $scaleHeight;
+            $options['scale'] = ($scaleWidth < $scaleHeight) ? $scaleWidth : $scaleHeight;
         }
 
         if (!empty($center)) {
@@ -150,13 +150,13 @@ class DownloadController
         }
 
         try {
-            $imagePath = ROOT_PATH.'tmp/files';
-            $response = new BinaryFileResponse($imagePath.'/'.$filename);
+            $imagePath = ROOT_PATH . 'tmp/files';
+            $response = new BinaryFileResponse($imagePath . '/' . $filename);
             $response->setContentDisposition('attachment', $filename);
             $response->deleteFileAfterSend(true);
             return $response;
         } catch (FileNotFoundException $e) {
-            return $this->createErrorResponse('File not found "'.$filename.'"', BinaryFileResponse::HTTP_NOT_FOUND);
+            return $this->createErrorResponse('File not found "' . $filename . '"', BinaryFileResponse::HTTP_NOT_FOUND);
         }
     }
 }

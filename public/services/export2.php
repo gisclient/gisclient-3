@@ -1,8 +1,8 @@
 <?php
 
 require_once '../../bootstrap.php';
-require_once ROOT_PATH.'lib/ajax.class.php';
-require_once ROOT_PATH.'lib/export.php';
+require_once ROOT_PATH . 'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/export.php';
 
 use GisClient\Author\Db;
 use GisClient\Author\Layer;
@@ -38,9 +38,9 @@ foreach ($data as $expConf) {
         . " WHERE project_name = :project AND layergroup_name = :layergroup and layer_name = :layer ";
     $stmt = $db->getDb()->prepare($sql);
     $stmt->execute([
-        'project'=>$projectName,
-        'layergroup'=>$layergroupName,
-        'layer'=>$layerName
+        'project' => $projectName,
+        'layergroup' => $layergroupName,
+        'layer' => $layerName
     ]);
     $layerId = $stmt->fetchColumn(0);
 
@@ -171,5 +171,5 @@ if (isset($exports['kml'])) {
 
 
 $ajax->success([
-    'file'=> $url
+    'file' => $url
 ]);

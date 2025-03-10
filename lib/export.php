@@ -8,7 +8,7 @@ class GCExport
     protected $exportUrl;
     protected $errorPath;
     protected $exportExtensions = [
-        'shp'=>['shp', 'dbf', 'shx', 'prj', 'cpg']
+        'shp' => ['shp', 'dbf', 'shx', 'prj', 'cpg']
     ];
     
     public function __construct($db, $type, array $options = [])
@@ -115,7 +115,7 @@ class GCExport
             $openZipFlag = ZIPARCHIVE::CREATE;
         }
         $options['add_to_zip'] = $zipName;
-        $zipPath = $this->exportPath.$zipName;
+        $zipPath = $this->exportPath . $zipName;
         if ($zip->open($zipPath, $openZipFlag) !== true) {
             throw new Exception('Error creating zip file');
         }
@@ -131,7 +131,7 @@ class GCExport
             unlink($realName);
         }
         
-        $return = $options['return_url'] ? $this->exportUrl.$zipName : $zipName;
+        $return = $options['return_url'] ? $this->exportUrl . $zipName : $zipName;
         return $return;
     }
     
@@ -143,8 +143,8 @@ class GCExport
         $options = array_merge($defaultOptions, $options);
         
         $fileName = $this->getFileName($options['name']);
-        $filePath = $this->exportPath.$fileName;
-        $errorFile = $this->errorPath.$fileName . '.err';
+        $filePath = $this->exportPath . $fileName;
+        $errorFile = $this->errorPath . $fileName . '.err';
 
         $select = '';
         if (isset($options['fields'])) {
@@ -174,7 +174,7 @@ class GCExport
         
         $cmd = 'pgsql2shp -f ' . escapeshellarg($filePath . '.shp')
             . ' -h ' . DB_HOST . ' -p ' . DB_PORT . ' -u ' . DB_USER . ' -P ' . DB_PWD
-            . ' '.escapeshellarg($config['db'])
+            . ' ' . escapeshellarg($config['db'])
             . " \"SELECT {$select} FROM {$config['schema']}.{$config['table']}\""
             . ' 2> ' . escapeshellarg($errorFile);
 
@@ -185,7 +185,7 @@ class GCExport
         if ($retVal != 0) {
             $error = file_get_contents($errorFile);
             file_put_contents($errorFile, $cmd, FILE_APPEND);
-            throw new Exception('Postgres to SHP error: '.$error);
+            throw new Exception('Postgres to SHP error: ' . $error);
         }
         // charset related operations
         if (($dbfFile = fopen($filePath . '.dbf', "r+")) === false) {
@@ -211,7 +211,7 @@ class GCExport
         $files = [];
         foreach ($this->exportExtensions['shp'] as $ext) {
             if (file_exists($filePath . '.' . $ext)) {
-                $files[$options['name'] . '.' . $ext] = $filePath.'.'.$ext;
+                $files[$options['name'] . '.' . $ext] = $filePath . '.' . $ext;
             }
         }
         return $files;
@@ -242,7 +242,7 @@ class GCExport
         $options = array_merge($defaultOptions, $options);
         
         $fileName = $this->getFileName($options['name']);
-        $filePath = $this->exportPath.$fileName;
+        $filePath = $this->exportPath . $fileName;
 
         $excel = new Excel_XML();
 
@@ -290,7 +290,7 @@ class GCExport
     
     protected function deleteOldFiles()
     {
-        $files = glob($this->exportPath.'*');
+        $files = glob($this->exportPath . '*');
         foreach ($files as $file) {
             $isold = (time() - filectime($file)) > 5 * 60 * 60;
             if (is_file($file) && $isold) {
@@ -514,9 +514,9 @@ class GCExportKml
             foreach ($layer->getStyleClasses() as $class) {
                 $styleName = $layer->getName() . '.' . $class->getName();
                 foreach ($class->getStyles() as $style) {
-                    $color = $style->getColor()? $this->getKMLColor($style->getColor() . ' ' . $opacity) : 'ff000000';
-                    $backgroundColor = $style->getBackgroundColor()? $this->getKMLColor($style->getBackgroundColor() . ' ' . $opacity) : '';
-                    $outlineColor = $style->getOutlineColor()? $this->getKMLColor($style->getOutlineColor() . ' ' . $opacity) : '';
+                    $color = $style->getColor() ? $this->getKMLColor($style->getColor() . ' ' . $opacity) : 'ff000000';
+                    $backgroundColor = $style->getBackgroundColor() ? $this->getKMLColor($style->getBackgroundColor() . ' ' . $opacity) : '';
+                    $outlineColor = $style->getOutlineColor() ? $this->getKMLColor($style->getOutlineColor() . ' ' . $opacity) : '';
                     $size = $style->getSize() ?: 1;
 
                     $bgColor = $backgroundColor ?: $color;

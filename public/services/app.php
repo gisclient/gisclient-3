@@ -32,7 +32,7 @@ function getFirewall(Request $request)
                 return $firewall;
             }
         } else {
-            throw new \Exception('No pattern defined for this firewall '.$firewallName);
+            throw new \Exception('No pattern defined for this firewall ' . $firewallName);
         }
     }
 

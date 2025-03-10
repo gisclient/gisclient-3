@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 
-include __DIR__."/../../config/config.db.php";
+include __DIR__ . "/../../config/config.db.php";
 
 class AppTest extends TestCase {
     public function testConnection() {

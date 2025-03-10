@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/Font.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/Font.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -22,7 +22,7 @@ switch ($_REQUEST['action']) {
         } else {
             $font_name = $_REQUEST['font_name'];
             $symbols = $_REQUEST['symbols'];
-            for ($i=0; $i < count($symbols); $i++) {
+            for ($i = 0; $i < count($symbols); $i++) {
                 if (empty($symbols[$i]['action'])) {
                     $ajax->error('missing parameter action');
                 } elseif (empty($symbols[$i]['symbol_code'])) {

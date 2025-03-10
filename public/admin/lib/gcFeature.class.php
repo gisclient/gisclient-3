@@ -406,7 +406,7 @@ class gcFeature
                 case MS_SHAPEFILE: //Local folder shape and raster
                     $filePath = $this->aFeature["filePath"];
                     if (substr($filePath, -1) != "/") {
-                        $filePath.="/";
+                        $filePath .= "/";
                     }
                     $layText[] = "DATA \"" . $filePath . $this->aFeature["data"] . "\"";
                     break;
@@ -596,9 +596,9 @@ class gcFeature
                         //aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore è vuoto
                         $keyList = [];
                         foreach ($rel["join_field"] as $jF) {
-                            $keyList[] = DATALAYER_ALIAS_TABLE.".".$jF[0];
+                            $keyList[] = DATALAYER_ALIAS_TABLE . "." . $jF[0];
                         }
-                        $fieldList[] = implode("||','||", $keyList)." as $relationAliasTable";
+                        $fieldList[] = implode("||','||", $keyList) . " as $relationAliasTable";
 
                         $groupBy = ' GROUP BY  ' . implode(', ', $groupByFieldList) . ', ' . $datalayerGeom;
                         $fieldList[] = ' count(' . $relationAliasTable . '.' . $rel['join_field'][0][1] . ') as num_' . $idrel;
@@ -749,9 +749,9 @@ class gcFeature
         if (ms_GetVersionInt() < 60000) {
             // MapServer 5
             if (!empty($aClass["class_text"])) {
-                $clsText[]="TEXT (". $aClass["class_text"].")";
+                $clsText[] = "TEXT (" . $aClass["class_text"] . ")";
             } elseif (!empty($aClass["smbchar"])) {//simbolo true type
-                $clsText[]="TEXT (". $aClass["smbchar"].")";
+                $clsText[] = "TEXT (" . $aClass["smbchar"] . ")";
             }
         }
 

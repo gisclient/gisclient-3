@@ -8,7 +8,7 @@ class HttpUtils {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		// curl_setopt($ch, CURLOPT_HEADER, true);
+        // curl_setopt($ch, CURLOPT_HEADER, true);
         if (!is_null($cookieFile)) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
@@ -24,7 +24,7 @@ class HttpUtils {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		
+        
         if (!is_null($cookieFile)) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);

@@ -5,46 +5,46 @@ $db = GCApp::getDB();
 $ris = null;
 $optCatalog = [];
 
-$sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name=:project order by catalog_name;";
+$sql = "SELECT DISTINCT catalog_id,catalog_name as name FROM " . DB_SCHEMA . ".catalog WHERE project_name=:project order by catalog_name;";
 try {
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        'project'=>$project
+        'project' => $project
     ]);
     if ($stmt->rowCount() > 0) {
         $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
-        $optCatalog[]="<option value=\"-1\">Nessun Catalogo</option>";
+        $optCatalog[] = "<option value=\"-1\">Nessun Catalogo</option>";
     }
 } catch (Exception $e) {
-    $optCatalog[]="<option value=\"-1\">Nessun Catalogo</option>";
+    $optCatalog[] = "<option value=\"-1\">Nessun Catalogo</option>";
 }
 
 if ($ris) {
-    $optCatalog[]="<option value=\"0\">Seleziona ===></option>";
+    $optCatalog[] = "<option value=\"0\">Seleziona ===></option>";
     foreach ($ris as $val) {
-        $optCatalog[]="<option value=\"$val[catalog_id]\">$val[name]</option>";
+        $optCatalog[] = "<option value=\"$val[catalog_id]\">$val[name]</option>";
     }
 }
 
-$ext=explode(",", CATALOG_EXT);
+$ext = explode(",", CATALOG_EXT);
 foreach ($ext as $e) {
-    if ($e!="SHP") {
-        $extension[]=$e;
+    if ($e != "SHP") {
+        $extension[] = $e;
     }
 }
 
 if (isset($_POST["importa"])) {
-    include_once ADMIN_PATH."lib/export.php";
+    include_once ADMIN_PATH . "lib/export.php";
     extract($_POST);
     if (!$srid) {
-        $srid=-1;
+        $srid = -1;
     }
-    $error=import_raster($rasterdir, $extension, $objId, $catalog_id, $srid, $filtro, $delete);
+    $error = import_raster($rasterdir, $extension, $objId, $catalog_id, $srid, $filtro, $delete);
     if (!$error) {
         echo "<p>Procedura di importazione Terminata Correttamente.</p>";
     } else {
-        $mex="<ul><li>".implode("</li><li>", $error)."</li></ul>";
+        $mex = "<ul><li>" . implode("</li><li>", $error) . "</li></ul>";
         echo $mex;
     }
 }

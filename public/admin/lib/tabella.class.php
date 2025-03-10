@@ -7,11 +7,11 @@ Descrizione della classe e dei metodi
 class Tabella
 {
     // costanti che definiscono i file immagine
-    public $testo_titolo="#FFFFFF";
-    public $sfondo_titolo="#728bb8";
-    public $sfondo_label="#728bb8";
-    public $testo_label="#FFFFFF";
-    public $stile="stiletabella";
+    public $testo_titolo = "#FFFFFF";
+    public $sfondo_titolo = "#728bb8";
+    public $sfondo_label = "#728bb8";
+    public $testo_label = "#FFFFFF";
+    public $stile = "stiletabella";
     public $idpratica;
     public $titolo; //stringa del titolo puo essere il titolo esplicito o il nome del campo che contiene il titolo
     public $button_menu;//pulsante da inserire nella riga di intestazione della tabella "nuovo" o "modifica"
@@ -36,7 +36,7 @@ class Tabella
     public $elenco_modelli;//elenco dei modelli di stampa da proporre nel form separati da virgola(posso non mettere nulla e lasciare all'utente ogni volta libera scelta)
     
     public $db;//puntatore a connessione a db da vedere se usare classe di interfaccia.....
-    public $display_number=-1;
+    public $display_number = -1;
 
     public $function_param;
     public $FileTitle;
@@ -50,57 +50,57 @@ class Tabella
         $mylang = GCAuthor::getLang();
         $rel_dir = GCAuthor::getTabDir();
         
-        $tmp=parse_ini_file(ROOT_PATH.$rel_dir.$config_file, true);
-        $data_mode=($mode=="list")?($mode):("standard");
-        $data=$tmp[$data_mode];
-        $this->mode=($mode=="list")?("view"):($mode);
-        $this->FileTitle=(!empty($tmp["title"][$mode]))?$tmp["title"][$mode]:0;
+        $tmp = parse_ini_file(ROOT_PATH . $rel_dir . $config_file, true);
+        $data_mode = ($mode == "list") ? ($mode) : ("standard");
+        $data = $tmp[$data_mode];
+        $this->mode = ($mode == "list") ? ("view") : ($mode);
+        $this->FileTitle = (!empty($tmp["title"][$mode])) ? $tmp["title"][$mode] : 0;
         
         //ACQUISIZIONE DELLA TABELLA E DELLO SCHEMA
         if (preg_match("|([\w]+)[.]{1}([\w()]+)|i", trim($data["table"]), $tmp)) {
-            $this->tabelladb=$tmp[2];
-            $this->schemadb=$tmp[1];
+            $this->tabelladb = $tmp[2];
+            $this->schemadb = $tmp[1];
         } else {
-            $this->tabelladb=trim($data["table"]);
-            $this->schemadb=DB_SCHEMA;
+            $this->tabelladb = trim($data["table"]);
+            $this->schemadb = DB_SCHEMA;
         }
         
-        $pkeys=(trim($data["pkey"]))?(explode(";", trim($data["pkey"]))):(["id"]);
+        $pkeys = (trim($data["pkey"])) ? (explode(";", trim($data["pkey"]))) : (["id"]);
         
-        $campi=$pkeys;
-        for ($i=0; $i<count($pkeys); $i++) {
-            $this->pkeys[$pkeys[$i]]="";
+        $campi = $pkeys;
+        for ($i = 0; $i < count($pkeys); $i++) {
+            $this->pkeys[$pkeys[$i]] = "";
         }
         
-        $ncol=count($data["dato"]);
-        for ($i=0; $i<$ncol; $i++) {//comincio da 1 perchè sulla prima riga ho il nome della tabella e i campi obbligatori
-            $d=$data["dato"][$i];
+        $ncol = count($data["dato"]);
+        for ($i = 0; $i < $ncol; $i++) {//comincio da 1 perchè sulla prima riga ho il nome della tabella e i campi obbligatori
+            $d = $data["dato"][$i];
             //if (strtoupper(CHAR_SET) != 'UTF-8') $d = iconv($d, 'UTF-8', CHAR_SET.'//TRANSLIT');
             if (strtoupper(CHAR_SET) != 'UTF-8') {
-                $d=utf8_decode($d);
+                $d = utf8_decode($d);
             }
-            $row[]=explode('|', $d);//array di configurazione delle tabelle
+            $row[] = explode('|', $d);//array di configurazione delle tabelle
         }
-        $tmp_ncol=$ncol;
-        $tmp_nrow=0;
-        for ($i=0; $i<$tmp_ncol; $i++) {
-            $tmp_nrow=max($tmp_nrow, count($row[$i]));
-            for ($j=0; $j<count($row[$i]); $j++) { //ogni elemento può avere un numero di elementi arbitrario
-                [, $campo, , $tipo]=array_pad(explode(';', $row[$i][$j]), 4, null);
-                $tipo=trim($tipo);
-                if (($tipo!="submit") && ($tipo!="button")) {
+        $tmp_ncol = $ncol;
+        $tmp_nrow = 0;
+        for ($i = 0; $i < $tmp_ncol; $i++) {
+            $tmp_nrow = max($tmp_nrow, count($row[$i]));
+            for ($j = 0; $j < count($row[$i]); $j++) { //ogni elemento può avere un numero di elementi arbitrario
+                [, $campo, , $tipo] = array_pad(explode(';', $row[$i][$j]), 4, null);
+                $tipo = trim($tipo);
+                if (($tipo != "submit") && ($tipo != "button")) {
                     if (!in_array($campo, $campi) && $campo) {
-                        $campi[]=$campo;
+                        $campi[] = $campo;
                     }
                 }
             }
         }
-        $this->function_param=(!empty($data["fun_prm"]))?explode("#", $data["fun_prm"]):[];
-        $this->num_col=$ncol;
-        $this->elenco_campi=implode(",", $campi);
-        $this->tab_config=$row;
-        $this->config_file=$config_file;
-        $this->order_fld=(!empty($data["order_fld"]))?implode(",", explode("#", $data["order_fld"])):[];
+        $this->function_param = (!empty($data["fun_prm"])) ? explode("#", $data["fun_prm"]) : [];
+        $this->num_col = $ncol;
+        $this->elenco_campi = implode(",", $campi);
+        $this->tab_config = $row;
+        $this->config_file = $config_file;
+        $this->order_fld = (!empty($data["order_fld"])) ? implode(",", explode("#", $data["order_fld"])) : [];
     }
     
     public function get_idpratica()
@@ -110,78 +110,78 @@ class Tabella
     
     public function set_titolo($titolo, $menu = 0, $hidden = 0, $display_first = 0)
     {
-        $this->titolo=$titolo;
+        $this->titolo = $titolo;
         if ($menu) {
-            $this->button_menu=$menu;
+            $this->button_menu = $menu;
         }
         if ($hidden) {
-            $this->array_hidden=$hidden;
+            $this->array_hidden = $hidden;
         }
-        if ($display_first>0) {
-            $this->display_number=$display_first;
+        if ($display_first > 0) {
+            $this->display_number = $display_first;
         }
     }
     
     public function get_titolo($self = null)
     {
         if (is_null($self)) {
-            $self=$_SERVER["PHP_SELF"];
+            $self = $_SERVER["PHP_SELF"];
         }
         //testo titolo
         if (isset($this->array_dati[$this->curr_record][$this->titolo])) {
-            $titolo=$this->array_dati[$this->curr_record][$this->titolo];//se il titolo è dato dal campo
+            $titolo = $this->array_dati[$this->curr_record][$this->titolo];//se il titolo è dato dal campo
         } else {
-            $titolo=$this->titolo;//altrimenti il titolo è la stringa passata
+            $titolo = $this->titolo;//altrimenti il titolo è la stringa passata
         }
         
         //pulsante di menù
         $mode = null;
         
-        if ($this->button_menu=="modifica") {
+        if ($this->button_menu == "modifica") {
                 $mode = "edit";
                 $butt = GCAuthor::t('button_edit');
-        } elseif ($this->button_menu=="nuovo") {
-                $mode="new";
+        } elseif ($this->button_menu == "nuovo") {
+                $mode = "new";
                 $butt = GCAuthor::t('button_new');
-        } elseif ($this->button_menu=="valida") {
-            $mode="edit";
+        } elseif ($this->button_menu == "valida") {
+            $mode = "edit";
             $butt = GCAuthor::t('button_edit');
         }
         
         
-        $riga_titolo="<b>$titolo</b>";
+        $riga_titolo = "<b>$titolo</b>";
         if (isset($butt)) {
-            $riga_titolo.="<button>$butt</button>";
+            $riga_titolo .= "<button>$butt</button>";
         }
     
         //campi nascosti del form
         if (isset($this->array_hidden)) {
             $hidden = '';
             foreach ($this->array_hidden as $key => $value) {
-                $nome=$key;
-                if ($value=='' && isset($this->array_dati[$this->curr_record][$nome])) {
-                    $value=$this->array_dati[$this->curr_record][$nome];//se non ho passato un valore vado a prenderlo nel record
+                $nome = $key;
+                if ($value == '' && isset($this->array_dati[$this->curr_record][$nome])) {
+                    $value = $this->array_dati[$this->curr_record][$nome];//se non ho passato un valore vado a prenderlo nel record
                 }
-                $hidden.="<input type=\"hidden\" name=\"$nome\" value=\"$value\">\n\t";
+                $hidden .= "<input type=\"hidden\" name=\"$nome\" value=\"$value\">\n\t";
             }
         }
     
         if ($this->idpratica) { // se ho già l'id pratica lo passo
-            $hidden.="<input type=\"hidden\" name=\"pratica\" value=\"".$this->idpratica."\">";
+            $hidden .= "<input type=\"hidden\" name=\"pratica\" value=\"" . $this->idpratica . "\">";
         }
     
-        $tabella_titolo="
+        $tabella_titolo = "
 		<div class=\"tableHeader ui-widget ui-widget-header ui-corner-top\">";
         if ($mode) {
-            $tabella_titolo.="<form method=\"post\" target=\"_parent\" action=\".\">";
+            $tabella_titolo .= "<form method=\"post\" target=\"_parent\" action=\".\">";
         }
-        $tabella_titolo.="<input type=\"hidden\" name=\"mode\" value=\"$mode\">
+        $tabella_titolo .= "<input type=\"hidden\" name=\"mode\" value=\"$mode\">
 				$hidden
 				$riga_titolo";
         if ($mode) {
-            $tabella_titolo.="</form>";
+            $tabella_titolo .= "</form>";
         }
-        $tabella_titolo.="</div>\n";
+        $tabella_titolo .= "</div>\n";
                 
         print $tabella_titolo;
     }
@@ -190,66 +190,66 @@ class Tabella
     {
         //se passo un array questo è l'array di POST altrimenti è il filtro - per default filtra su idpratica se settato
         if (is_array($data)) {
-            $this->array_dati=[
-                0=>$data
+            $this->array_dati = [
+                0 => $data
             ];
-            $this->num_record=count($data);
-            $this->curr_record=0;
+            $this->num_record = count($data);
+            $this->curr_record = 0;
         } else {
             if ($data) {
-                $data='WHERE '.$data;
+                $data = 'WHERE ' . $data;
             }
             if (!isset($this->db)) {
                 $this->connettidb();
             }
             if ($this->order_fld) {
-                $order='ORDER BY '.$this->order_fld;
+                $order = 'ORDER BY ' . $this->order_fld;
             }
-            $tb=$this->tabelladb;
+            $tb = $this->tabelladb;
             if (strpos($tb, "()") > 0) {
-                $tb=str_replace("()", "", $tb);
-                $param=implode("','", $this->function_param);
-                $sql='SELECT '.$this->elenco_campi.
-                    ' FROM '.$this->schemadb.'.'.$tb."('$param')".
-                    ' '.$data.' '.$order;
+                $tb = str_replace("()", "", $tb);
+                $param = implode("','", $this->function_param);
+                $sql = 'SELECT ' . $this->elenco_campi .
+                    ' FROM ' . $this->schemadb . '.' . $tb . "('$param')" .
+                    ' ' . $data . ' ' . $order;
             } else {
-                $sql='SELECT '.$this->elenco_campi.
-                            ' FROM '.$this->schemadb.'.'.$this->tabelladb.
-                            ' '.$data.' '.$order.';';
+                $sql = 'SELECT ' . $this->elenco_campi .
+                            ' FROM ' . $this->schemadb . '.' . $this->tabelladb .
+                            ' ' . $data . ' ' . $order . ';';
             }
-                        print_debug($this->config_file."\n".$sql, null, "tabella");
+                        print_debug($this->config_file . "\n" . $sql, null, "tabella");
             try {
                 $stmt = $this->db->prepare($sql);
                 $success = $stmt->execute();
-                $this->array_dati=$stmt->fetchAll();
-                if (count($this->array_dati)==1) {
+                $this->array_dati = $stmt->fetchAll();
+                if (count($this->array_dati) == 1) {
                     foreach ($this->pkeys as $key => $val) {
                         if ($this->array_dati[0][$key]) {
-                            $this->pkeys_value[$key]=$this->array_dati[0][$key];
+                            $this->pkeys_value[$key] = $this->array_dati[0][$key];
                         }
                     }
                 } else {
-                    for ($i=0; $i<count($this->array_dati); $i++) {
+                    for ($i = 0; $i < count($this->array_dati); $i++) {
                         foreach ($this->pkeys as $key => $val) {
                             if ($this->array_dati[$i][$key]) {
-                                $this->pkeys_value[$key]=$this->array_dati[$i][$key];
+                                $this->pkeys_value[$key] = $this->array_dati[$i][$key];
                             }
                         }
                     }
                 }
-                $this->num_record=$stmt->rowCount();
+                $this->num_record = $stmt->rowCount();
             } catch (Exception $e) {
                 print_debug($sql, null, "errors");
             }
-            $this->curr_record=0;
-            return  $this->num_record;
+            $this->curr_record = 0;
+            return $this->num_record;
         }
     }
     public function set_multiple_data($data)
     {
         if (is_array($data)) {
-            for ($i=0; $i<count($data); $i++) {
-                $this->array_dati[$i]=$data[$i];/*
+            for ($i = 0; $i < count($data); $i++) {
+                $this->array_dati[$i] = $data[$i];/*
                 for($j=0;$j<count($this->pkeys);$j++) {
                     if (isset($data[$i]) && isset($this->pkeys[$j]) && isset($data[$i][$this->pkeys[$j]])) {
                         $this->pkeys_value[$i][$j]=$data[$i][$this->pkeys[$j]];
@@ -259,28 +259,28 @@ class Tabella
                  
                 foreach ($this->pkeys as $key => $val) {
                     if (isset($data[$i]) && isset($key) && isset($data[$i][$key])) {
-                        $this->pkeys_value[$i][$key]=$data[$i][$key];
+                        $this->pkeys_value[$i][$key] = $data[$i][$key];
                     }
                 }
             }
         }
         
-        $this->num_record=count($data);
-        $this->curr_record=0;
+        $this->num_record = count($data);
+        $this->curr_record = 0;
     }
     public function date_format($stringa_data)
     {
     //formatta la data in giorno-mese-anno
         if ($stringa_data) {
-            $ar= preg_split('#[\/\.\-]#m', $stringa_data);
-            $stringa_data=$ar[0]."-".$ar[1]."-".$ar[2];
+            $ar = preg_split('#[\/\.\-]#m', $stringa_data);
+            $stringa_data = $ar[0] . "-" . $ar[1] . "-" . $ar[2];
         }
         return $stringa_data;
     }
     
     public function set_db($db)
     {
-        $this->db=$db;
+        $this->db = $db;
     }
     
     public function get_db()

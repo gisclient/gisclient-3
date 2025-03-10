@@ -2,16 +2,16 @@
 
 use GisClient\Author\Symbol;
 
-if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
-    require_once ADMIN_PATH."lib/functions.php";
-    $layerId=$_REQUEST["layer"];
-    $param=[
-        "mode"=>"",
-        "modo"=>""
+if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"] == 1) {
+    require_once ADMIN_PATH . "lib/functions.php";
+    $layerId = $_REQUEST["layer"];
+    $param = [
+        "mode" => "",
+        "modo" => ""
     ];
-    $save=new saveData($param);
+    $save = new saveData($param);
     $_db = GCApp::getDB();
-    $sql="DELETE FROM ".DB_SCHEMA.".class WHERE layer_id=:layerId";
+    $sql = "DELETE FROM " . DB_SCHEMA . ".class WHERE layer_id=:layerId";
     try {
         $stmt = $_db->prepare($sql);
         $stmt->execute([
@@ -22,12 +22,12 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
     }
     
         
-    for ($i=0; $i<count($_REQUEST["dati"]["class"]); $i++) {
-        $cls=$_REQUEST["dati"]["class"][$i];
-        $style=$_REQUEST["dati"]["style"][$i];
+    for ($i = 0; $i < count($_REQUEST["dati"]["class"]); $i++) {
+        $cls = $_REQUEST["dati"]["class"][$i];
+        $style = $_REQUEST["dati"]["style"][$i];
         $classId = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'class', 'class_id');
-        $order = ($i+1)*10;
-        $sql="INSERT INTO ".DB_SCHEMA.".class(class_id,layer_id,class_name,class_title,expression,legendtype_id,class_order) 
+        $order = ($i + 1) * 10;
+        $sql = "INSERT INTO " . DB_SCHEMA . ".class(class_id,layer_id,class_name,class_title,expression,legendtype_id,class_order) 
 			VALUES(:layerId, :className, :classTitle, :expr, :legendType, :ordr)";
         $sqlParams = [
             'classId' => $classId,
@@ -47,9 +47,9 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
         }
                 
         $styleId = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'style', 'style_id');
-        $tmp=html2rgb("#".$style["color"]);
-        $color=implode(" ", $tmp);
-        $sql="INSERT INTO ".DB_SCHEMA.".style(style_id,class_id,style_name,color,outlinecolor,width) 
+        $tmp = html2rgb("#" . $style["color"]);
+        $color = implode(" ", $tmp);
+        $sql = "INSERT INTO " . DB_SCHEMA . ".style(style_id,class_id,style_name,color,outlinecolor,width) 
 			VALUES(:styleId, :classId, :styleName, :color,'0 0 0',1)";
         $sqlParams = [
             'styleId' => $styleId,
@@ -67,23 +67,23 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
         if (!$db->sql_query($sql)) {
             print_debug($sql, null, 'TEST.LAYER');
         } else {
-            $smb=new Symbol("class");
-            $smb->table='class';
-            $smb->filter="class.class_id=$classId";
+            $smb = new Symbol("class");
+            $smb->table = 'class';
+            $smb->filter = "class.class_id=$classId";
             $smb->createIcon();
         }
     }
     $save->hasErrors = true;
-    $save->action="classify";
+    $save->action = "classify";
 } else {
-    $save=new saveData($_POST);
-    $p=$save->performAction($p);
+    $save = new saveData($_POST);
+    $p = $save->performAction($p);
     
     $_db = GCApp::getDB();
     if ($save->action == "salva" && !$save->hasErrors) {
-        require_once(ADMIN_PATH."lib/functions.php");
+        require_once(ADMIN_PATH . "lib/functions.php");
 
-        $sql = "select catalog_path, connection_type from ".DB_SCHEMA.".catalog where catalog_id=:catId";
+        $sql = "select catalog_path, connection_type from " . DB_SCHEMA . ".catalog where catalog_id=:catId";
         try {
             $stmt = $_db->prepare($sql);
             $stmt->execute([
@@ -95,7 +95,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
             print_debug($sql, null, "elenco");
         }
 
-        if ($catalog["connection_type"]==6) {
+        if ($catalog["connection_type"] == 6) {
             $dataDb = GCApp::getDataDB($catalog["catalog_path"]);
             $schema = GCApp::getDataDBSchema($catalog['catalog_path']);
             $table = $_POST["dati"]["data"];
@@ -134,7 +134,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
                         ':datatype_id' => $dataType,
                         ':layer_id' => $save->data['layer_id']
                     ];
-                    $sql = "insert into ".DB_SCHEMA.".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
+                    $sql = "insert into " . DB_SCHEMA . ".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
 						values (:field_id, :field_name, :field_header, :searchtype_id, :resultype_id, :datatype_id, :layer_id)";
                     try {
                         $stmt = $_db->prepare($sql);

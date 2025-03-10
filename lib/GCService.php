@@ -53,22 +53,22 @@ class GCService
         
     public function has($name)
     {
-        return $this->session->has(self::SESSION_KEY_PREFIX.$name);
+        return $this->session->has(self::SESSION_KEY_PREFIX . $name);
     }
     
     public function get($name, $default = null)
     {
-        return $this->session->get(self::SESSION_KEY_PREFIX.$name, $default);
+        return $this->session->get(self::SESSION_KEY_PREFIX . $name, $default);
     }
     
     public function set($name, $value)
     {
-        $this->session->set(self::SESSION_KEY_PREFIX.$name, $value);
+        $this->session->set(self::SESSION_KEY_PREFIX . $name, $value);
     }
     
     public function remove($name)
     {
-        $this->session->remove(self::SESSION_KEY_PREFIX.$name);
+        $this->session->remove(self::SESSION_KEY_PREFIX . $name);
     }
 
     public function saveAndClose()

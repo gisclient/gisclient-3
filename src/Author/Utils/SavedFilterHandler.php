@@ -80,7 +80,7 @@ class SavedFilterHandler
 
     public function getSavedFilter($id)
     {
-        $sql = "SELECT * FROM ".DB_SCHEMA.".saved_filter WHERE saved_filter_id = ?";
+        $sql = "SELECT * FROM " . DB_SCHEMA . ".saved_filter WHERE saved_filter_id = ?";
         $stmt = $this->database->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -104,10 +104,10 @@ class SavedFilterHandler
 
         $sql = "
         SELECT saved_filter.*, layergroup_name||'.'||layer_name AS layer_id 
-            FROM ".DB_SCHEMA.".saved_filter 
-            INNER JOIN ".DB_SCHEMA.".layer USING(layer_id)
-            INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id)
-            INNER JOIN ".DB_SCHEMA.".theme USING(theme_id)
+            FROM " . DB_SCHEMA . ".saved_filter 
+            INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id)
+            INNER JOIN " . DB_SCHEMA . ".layergroup USING(layergroup_id)
+            INNER JOIN " . DB_SCHEMA . ".theme USING(theme_id)
             WHERE mapset_name=? AND (username = ? OR saved_filter_scope = 'all')
         ";
         // TODO: support group scope!!
@@ -130,7 +130,7 @@ class SavedFilterHandler
     {
         // save data
         $sql = "
-        INSERT INTO ".DB_SCHEMA.".saved_filter (
+        INSERT INTO " . DB_SCHEMA . ".saved_filter (
             username, saved_filter_name, mapset_name, layer_id, 
             saved_filter_scope, saved_filter_data
         ) VALUES (?, ?, ?, ?, ?, ?) ";
@@ -143,7 +143,7 @@ class SavedFilterHandler
             $values['saved_filter_scope'],
             $values['saved_filter_data']
         ]);
-        return $this->database->lastInsertId(DB_SCHEMA.".saved_filter_saved_filter_id_seq");
+        return $this->database->lastInsertId(DB_SCHEMA . ".saved_filter_saved_filter_id_seq");
     }
 
     /**
@@ -157,7 +157,7 @@ class SavedFilterHandler
     {
         // save data
         $sql = "
-        UPDATE ".DB_SCHEMA.".saved_filter SET
+        UPDATE " . DB_SCHEMA . ".saved_filter SET
             saved_filter_name=?, 
             saved_filter_scope=?,
             saved_filter_data=?
@@ -182,7 +182,7 @@ class SavedFilterHandler
      */
     public function delete($id)
     {
-        $sql = "DELETE FROM ".DB_SCHEMA.".saved_filter WHERE saved_filter_id=? ";
+        $sql = "DELETE FROM " . DB_SCHEMA . ".saved_filter WHERE saved_filter_id=? ";
         $stmt = $this->database->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->rowCount() === 1;

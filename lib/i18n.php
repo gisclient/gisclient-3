@@ -11,14 +11,14 @@ class GCi18n
         $this->languageId = $languageId;
         $this->db = GCApp::getDB();
 
-        $sql = "select table_name, field_name, pkey_id, value from ".
-        DB_SCHEMA.".i18n_field inner join ".DB_SCHEMA.".localization using(i18nf_id) ".
-        " where project_name=:project_name and language_id=:language_id ".
+        $sql = "select table_name, field_name, pkey_id, value from " .
+        DB_SCHEMA . ".i18n_field inner join " . DB_SCHEMA . ".localization using(i18nf_id) " .
+        " where project_name=:project_name and language_id=:language_id " .
         " order by table_name, pkey_id, field_name ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name'=>$projectName,
-            ':language_id'=>$languageId
+            ':project_name' => $projectName,
+            ':language_id' => $languageId
         ]);
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -89,20 +89,20 @@ class GCLocalization
         if (empty($this->project)) {
             return false;
         }
-        $sql = "select i18nf_id from ".DB_SCHEMA.".i18n_field ".
+        $sql = "select i18nf_id from " . DB_SCHEMA . ".i18n_field " .
         " where table_name=:level ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':level'=>$level
+            ':level' => $level
         ]);
         if ($stmt->rowCount() < 1) {
             return false;
         }
-        $sql = "select language_id from ".DB_SCHEMA.".project_languages ".
+        $sql = "select language_id from " . DB_SCHEMA . ".project_languages " .
         " where project_name=:project_name ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name'=>$this->project
+            ':project_name' => $this->project
         ]);
         return ($stmt->rowCount() > 0);
     }
@@ -217,11 +217,11 @@ class GCLocalization
 
     private function loadTranslations()
     {
-        $sql = "select i18nf_id, pkey_id, language_id, value from ".DB_SCHEMA.".localization ".
+        $sql = "select i18nf_id, pkey_id, language_id, value from " . DB_SCHEMA . ".localization " .
         " where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name'=>$this->project
+            ':project_name' => $this->project
         ]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (!isset($this->translations[$row['language_id']])) {
@@ -240,12 +240,12 @@ class GCLocalization
 
     private function loadLanguages()
     {
-        $sql = "select e.language_id, language_name from ".DB_SCHEMA.".e_language e ".
-        " inner join ".DB_SCHEMA.".project_languages pl on e.language_id = pl.language_id ".
+        $sql = "select e.language_id, language_name from " . DB_SCHEMA . ".e_language e " .
+        " inner join " . DB_SCHEMA . ".project_languages pl on e.language_id = pl.language_id " .
         " or e.language_id = :language_id ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':language_id'=>$this->getDefaultLanguageId()
+            ':language_id' => $this->getDefaultLanguageId()
         ]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $this->languages[$row['language_id']] = $row['language_name'];
@@ -254,17 +254,17 @@ class GCLocalization
 
     private function loadDefaultLanguageId()
     {
-        $sql = "select default_language_id from ".DB_SCHEMA.".project where project_name=:project_name";
+        $sql = "select default_language_id from " . DB_SCHEMA . ".project where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':project_name'=>$this->project
+            ':project_name' => $this->project
         ]);
         $this->defaultLanguageId = $stmt->fetchColumn(0);
     }
 
     private function loadI18nFields()
     {
-        $sql = "select i18nf_id, table_name, field_name from ".DB_SCHEMA.".i18n_field";
+        $sql = "select i18nf_id, table_name, field_name from " . DB_SCHEMA . ".i18n_field";
         $stmt = $this->db->query($sql);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (!isset($this->i18nFields[$row['table_name']])) {

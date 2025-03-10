@@ -67,16 +67,16 @@ class MapImage
     {
         $this->baseUrl = $baseUrl;
         $defaultOptions = [
-            'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale
-            'extent'=>[],
-            'center'=>[],
-            'vectors'=>null,
-            'image_format'=>'png', // or gtiff
-            'auth_name'=>'EPSG',
-            'scalebar'=>true,
-            'request_type'=>'get-map',
-            'TMP_PATH' => ROOT_PATH.'tmp/files/',
-            'TMP_URL' => $baseUrl.'/services/download.php',
+            'scale_mode' => 'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale
+            'extent' => [],
+            'center' => [],
+            'vectors' => null,
+            'image_format' => 'png', // or gtiff
+            'auth_name' => 'EPSG',
+            'scalebar' => true,
+            'request_type' => 'get-map',
+            'TMP_PATH' => ROOT_PATH . 'tmp/files/',
+            'TMP_URL' => $baseUrl . '/services/download.php',
             'dpi' => 72
         ];
         $this->options = array_merge($defaultOptions, $options);
@@ -85,7 +85,7 @@ class MapImage
         $this->imageSize = $imageSize;
         $this->db = \GCApp::getDB();
         $this->srid = $srid;
-        $this->wmsMergeUrl = PrintDocument::addPrefixToRelativeUrl($baseUrl.'/'.$this->wmsMergeUrl);
+        $this->wmsMergeUrl = PrintDocument::addPrefixToRelativeUrl($baseUrl . '/' . $this->wmsMergeUrl);
         if ($this->options['scale_mode'] == 'user') {
             if (empty($this->options['center']) || empty($this->options['scale'])) {
                 throw new \Exception('Missing center or scale');
@@ -130,7 +130,7 @@ class MapImage
         if (empty($this->imageFileName)) {
             $this->getMapImage();
         }
-        return $this->options['TMP_URL'].'?filename='.$this->imageFileName;
+        return $this->options['TMP_URL'] . '?filename=' . $this->imageFileName;
     }
     
     public function getImageFileName()
@@ -150,7 +150,7 @@ class MapImage
     {
         foreach ($this->tiles as $key => $tile) {
             if (is_array($tile['url'])) {
-                $tile['url']=$tile['url'][0];
+                $tile['url'] = $tile['url'][0];
             }
             $url = trim($tile['url'], '?');
             $url = PrintDocument::addPrefixToRelativeUrl($url);
@@ -190,9 +190,9 @@ class MapImage
             }
             
             $request = [
-                'URL'=>$url,
-                'SERVICE'=>$service,
-                'PARAMETERS'=>$parameters
+                'URL' => $url,
+                'SERVICE' => $service,
+                'PARAMETERS' => $parameters
             ];
             if ($service === 'WMTS') {
                 if (isset($tile['layer'])) {
@@ -211,17 +211,17 @@ class MapImage
         }
         
         if (!empty($this->vectorId)) {
-            $url = $this->baseUrl.'/services/vectors.php';
+            $url = $this->baseUrl . '/services/vectors.php';
             $url = PrintDocument::addPrefixToRelativeUrl($url);
             $parameters = [
-                'LAYERS'=>$this->vectorId,
-                'VERSION'=>'1.1.1',
-                'FORMAT'=>'image/png'
+                'LAYERS' => $this->vectorId,
+                'VERSION' => '1.1.1',
+                'FORMAT' => 'image/png'
             ];
             array_push($this->wmsList, [
-                'URL'=>$url,
-                'SERVICE'=>'WMS',
-                'PARAMETERS'=>$parameters
+                'URL' => $url,
+                'SERVICE' => 'WMS',
+                'PARAMETERS' => $parameters
             ]);
         }
     }
@@ -253,16 +253,16 @@ class MapImage
 
         $gcService = \GCService::instance();
         $requestParameters = json_encode([
-            'layers'=>$this->wmsList,
-            'size'=>$this->imageSize,
+            'layers' => $this->wmsList,
+            'size' => $this->imageSize,
             //'rotation'=>$this->options["rotation"],
-            'extent'=>$this->extent,
-            'srs'=>$this->options['auth_name'].':'.$this->srid,
+            'extent' => $this->extent,
+            'srs' => $this->options['auth_name'] . ':' . $this->srid,
             'scalebar' => $this->options['scalebar'],
-            'save_image'=> $saveImage,
-            'resolution'=>$this->options['dpi'],
-            'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
-            'format'=>$this->options['image_format'],
+            'save_image' => $saveImage,
+            'resolution' => $this->options['dpi'],
+            'file_name' => $this->options['TMP_PATH'] . $this->imageFileName,
+            'format' => $this->options['image_format'],
             'GC_SESSION_ID' => $gcService->getSession()->getId()
         ]);
         $gcService->saveAndClose();
@@ -278,7 +278,7 @@ class MapImage
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, [
-            'options'=>$requestParameters
+            'options' => $requestParameters
         ]);
 
         // SS: 2017-16-15: Don't check SSL certificate
@@ -293,7 +293,7 @@ class MapImage
         }
 
         if (!$saveImage) {
-            $filename = $this->options['TMP_PATH'].$this->imageFileName;
+            $filename = $this->options['TMP_PATH'] . $this->imageFileName;
             if (false === file_put_contents($filename, $mapImage)) {
                 throw new \Exception("Could not save map image to $filename");
             }
@@ -317,9 +317,9 @@ class MapImage
         $heightRatio = $extentSize[1] / $imageSize[1];
         
         if ($widthRatio >= $heightRatio) {
-            $extentSize[1] *= ($widthRatio/$heightRatio);
+            $extentSize[1] *= ($widthRatio / $heightRatio);
         } else {
-            $extentSize[0] *= ($heightRatio/$widthRatio);
+            $extentSize[0] *= ($heightRatio / $widthRatio);
         }
         
         $adaptedExtend = [
@@ -335,8 +335,8 @@ class MapImage
     protected function paperSize(array $imageSize, $dpi)
     {
         return [
-            $imageSize[0] / ($dpi * 100/2.54),
-            $imageSize[1] / ($dpi * 100/2.54),
+            $imageSize[0] / ($dpi * 100 / 2.54),
+            $imageSize[1] / ($dpi * 100 / 2.54),
         ];
     }
     
@@ -344,7 +344,7 @@ class MapImage
     {
         $paperSize = $this->paperSize($imageSize, $dpi);
         
-        $extentWidth = $scale *  $paperSize[0];
+        $extentWidth = $scale * $paperSize[0];
         $extentHeight = $scale * $paperSize[1];
 
         $extent = [
@@ -372,9 +372,9 @@ class MapImage
         $db = \GCApp::getDB();
         
         if (!\GCApp::tableExists($db, $schema, $tableName)) {
-            $sql = 'create sequence '.$schema.'.'.$tableName.'_print_id_seq ';
+            $sql = 'create sequence ' . $schema . '.' . $tableName . '_print_id_seq ';
             $db->exec($sql);
-            $sql = 'create table '.$schema.'.'.$tableName.' (
+            $sql = 'create table ' . $schema . '.' . $tableName . ' (
                 gid serial,
                 print_id integer,
                 insert_time timestamp without time zone not null default now()
@@ -384,20 +384,20 @@ class MapImage
             $addGeometryColumn = $db->prepare($sql);
             foreach (self::$vectorTypes as $type) {
                 $addGeometryColumn->execute([
-                    'schema'=>$schema,
-                    'table'=>$tableName,
-                    'srid'=>PRINT_VECTORS_SRID,
-                    'column'=>$type['db_field'],
-                    'type'=>$type['db_type']
+                    'schema' => $schema,
+                    'table' => $tableName,
+                    'srid' => PRINT_VECTORS_SRID,
+                    'column' => $type['db_field'],
+                    'type' => $type['db_type']
                 ]);
             }
-            $sql = 'GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER;
-            $sql = 'ALTER SEQUENCE '.$schema.'.'.$tableName.'_print_id_seq OWNED BY '.$tableName.'.print_id';
-            $sql = 'ALTER TABLE  '.$schema.'.'.$tableName.' ADD PRIMARY KEY (gid)';
+            $sql = 'GRANT SELECT ON TABLE ' . $schema . '.' . $tableName . ' TO ' . MAP_USER;
+            $sql = 'ALTER SEQUENCE ' . $schema . '.' . $tableName . '_print_id_seq OWNED BY ' . $tableName . '.print_id';
+            $sql = 'ALTER TABLE  ' . $schema . '.' . $tableName . ' ADD PRIMARY KEY (gid)';
             $db->exec($sql);
         }
         
-        $sql = "select nextval('".$schema.".".$tableName."_print_id_seq')";
+        $sql = "select nextval('" . $schema . "." . $tableName . "_print_id_seq')";
         $printId = $db->query($sql)->fetchColumn(0);
         
         $vectors = [];
@@ -414,14 +414,14 @@ class MapImage
         
         foreach ($vectors as $type => $features) {
             $field = self::$vectorTypes[$type]['db_field'];
-            $sql = 'insert into '.$schema.'.'.$tableName.' (print_id, '.$field.') 
+            $sql = 'insert into ' . $schema . '.' . $tableName . ' (print_id, ' . $field . ') 
                 values (:print_id, st_transform(st_geomfromtext(:geom,' . $this->srid . '), :srid::INTEGER))';
             $stmt = $db->prepare($sql);
             foreach ($features as $feature) {
                 $stmt->execute([
-                    'print_id'=>$printId,
-                    'geom'=>$feature['geometry'],
-                    'srid'=>PRINT_VECTORS_SRID
+                    'print_id' => $printId,
+                    'geom' => $feature['geometry'],
+                    'srid' => PRINT_VECTORS_SRID
                 ]);
             }
         }
@@ -445,7 +445,7 @@ class MapImage
         
         $db = \GCApp::getDB();
         
-        $sql = 'delete from '.$schema.'.'.$tableName." where (insert_time + interval '1 day') < NOW()";
+        $sql = 'delete from ' . $schema . '.' . $tableName . " where (insert_time + interval '1 day') < NOW()";
         $db->exec($sql);
     }
 }

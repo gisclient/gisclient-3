@@ -27,7 +27,7 @@ if (empty($data)) {
     $msg = "Nessun Utente definito";
 }
 
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
 
-$button=($this->currentMode=='view')?("modifica"):("nuovo");
+$button = ($this->currentMode == 'view') ? ("modifica") : ("nuovo");

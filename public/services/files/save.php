@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/functions.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/functions.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -53,7 +53,7 @@ if (!move_uploaded_file($_FILES[$key]['tmp_name'], $filePath)) {
 }
 
 $result['name'] = $newName;
-file_put_contents(DEBUG_DIR.'upload.txt', var_export($_REQUEST, true)."\n".var_export($_FILES, true)."\n".$newName."\n\n");
+file_put_contents(DEBUG_DIR . 'upload.txt', var_export($_REQUEST, true) . "\n" . var_export($_FILES, true) . "\n" . $newName . "\n\n");
 $ajax->success($result);
 
 function getUniqueFileName($path, $fileName, $ext)
@@ -63,7 +63,7 @@ function getUniqueFileName($path, $fileName, $ext)
         throw new Exception("Can't create unique file in {$path} for {$fileName}");
     }
     $numRec++;
-    if (!file_exists($path.$fileName.'.'.$ext)) {
+    if (!file_exists($path . $fileName . '.' . $ext)) {
         return $fileName;
     }
     

@@ -53,8 +53,8 @@ class ParseXml
     function LoadRemote($url, $timeout = 5)
     {
         $this->xmlFile = $url;
-        $p=parse_url($url);
-        if ($p['scheme']=='http') {
+        $p = parse_url($url);
+        if ($p['scheme'] == 'http') {
             $host = $p['host'];
             $pos = $p['path'];
             $pos .= isset($p['query']) ? sprintf("?%s", $p['query']) : '';
@@ -73,7 +73,7 @@ class ParseXml
     function Set(array $set)
     {
         foreach ($set as $attribute => $value) {
-            if ($attribute=='charsetOutput') {
+            if ($attribute == 'charsetOutput') {
                 $value = strtoupper($value);
             }
             $this->$attribute = $value;
@@ -87,7 +87,7 @@ class ParseXml
      */
     function ConvertCharset($string)
     {
-        if ('UTF-8'!=$this->charsetOutput) {
+        if ('UTF-8' != $this->charsetOutput) {
             if (function_exists("iconv")) {
                 $string = iconv('UTF-8', $this->charsetOutput, $string);
             } elseif (function_exists("mb_convert_encoding")) {
@@ -133,7 +133,7 @@ class ParseXml
         } else {
             if (is_object($object) && ($var = get_object_vars($object)) !== false) {
                 foreach ($var as $key => $value) {
-                    $return[$key] = ($key && ($value==null)) ? null : $this->Object2array($value);
+                    $return[$key] = ($key && ($value == null)) ? null : $this->Object2array($value);
                 }
             } else {
                 return $this->ConvertCharset((string)$object);

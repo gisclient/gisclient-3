@@ -38,7 +38,7 @@ class SessionTokenStorage implements TokenStorageInterface
         }
 
         if (!$this->session->has(self::TOKEN_ID)) {
-            throw new \Exception('The token with ID '.self::TOKEN_ID.' does not exist.');
+            throw new \Exception('The token with ID ' . self::TOKEN_ID . ' does not exist.');
         }
 
         return unserialize($this->session->get(self::TOKEN_ID));

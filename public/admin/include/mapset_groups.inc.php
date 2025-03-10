@@ -8,7 +8,7 @@ $db = GCApp::getDB();
 $data = [];
 
 $schema = DB_SCHEMA;
-$JOIN = ($this->mode == 0)? (" INNER JOIN ") : (" LEFT JOIN ");
+$JOIN = ($this->mode == 0) ? (" INNER JOIN ") : (" LEFT JOIN ");
 $sql = "SELECT X.*,Y.edit, case when coalesce(Y.groupname,'')='' then 0 else 1 end as presente FROM (SELECT distinct groupname FROM {$schema}.groups ORDER BY groupname) X LEFT JOIN (SELECT * FROM {$schema}.mapset_groups WHERE mapset_name=:mapset)  Y using (groupname)";
 
 try {
@@ -35,6 +35,6 @@ try {
     $msg = "<b style=\"color:red\">Errore</b>";
 }
     
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
 $button = "modifica";

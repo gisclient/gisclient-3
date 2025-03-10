@@ -12,7 +12,7 @@ if (!empty($groupname)) {
     }
         
     $sql = '
-            SELECT groupname, description FROM '.DB_SCHEMA.'.groups
+            SELECT groupname, description FROM ' . DB_SCHEMA . '.groups
             WHERE groupname=:group
         ';
     $stmt = $db->prepare($sql);
@@ -27,6 +27,6 @@ if (empty($data)) {
 }
 
 
-    $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
-    $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
-    $button=($this->currentMode=='view')?("modifica"):("nuovo");
+    $btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
+    $btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
+    $button = ($this->currentMode == 'view') ? ("modifica") : ("nuovo");

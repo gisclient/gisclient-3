@@ -9,12 +9,12 @@ $authHandler = GCApp::getAuthenticationHandler();
 $db = \GCApp::getDB();
 
 $stmtDelete = $db->prepare('
-    DELETE FROM '.DB_SCHEMA.'.users_options
+    DELETE FROM ' . DB_SCHEMA . '.users_options
     WHERE option_key=:key AND username=:username
 ');
 
 $stmtInsert = $db->prepare('
-    INSERT INTO '.DB_SCHEMA.'.users_options (username, option_key, option_value)
+    INSERT INTO ' . DB_SCHEMA . '.users_options (username, option_key, option_value)
     VALUES (:username, :key, :value)
 ');
 
@@ -37,5 +37,5 @@ foreach (['auto_refresh_mapfiles', 'save_to_tmp_map'] as $key) {
 $gcService->saveAndClose();
 
 echo json_encode([
-    'result'=>'ok'
+    'result' => 'ok'
 ]);

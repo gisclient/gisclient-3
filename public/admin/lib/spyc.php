@@ -345,7 +345,7 @@ if (!class_exists('Spyc')) {
             ) {
                 $value = $this->_doLiteralBlock($value, $indent);
             } else {
-                $value  = $this->_doFolding($value, $indent);
+                $value = $this->_doFolding($value, $indent);
             }
 
             if ($value === []) {
@@ -377,14 +377,14 @@ if (!class_exists('Spyc')) {
             //if (is_int($key) && $key - 1 == $previous_key && $first_key===0) {
             if (is_array($source_array) && array_keys($source_array) === range(0, count($source_array) - 1)) {
               // It's a sequence
-                $string = $spaces.'- '.$value."\n";
+                $string = $spaces . '- ' . $value . "\n";
             } else {
               // if ($first_key===0)  throw new Exception('Keys are all screwy.  The first one was zero, now it\'s "'. $key .'"');
               // It's mapped
                 if (strpos($key, ":") !== false || strpos($key, "#") !== false) {
                     $key = '"' . $key . '"';
                 }
-                $string = rtrim($spaces.$key.': '.$value)."\n";
+                $string = rtrim($spaces . $key . ': ' . $value) . "\n";
             }
             return $string;
         }
@@ -414,10 +414,10 @@ if (!class_exists('Spyc')) {
                 unset($exploded[0]);
             }
             $indent += $this->_dumpIndent;
-            $spaces   = str_repeat(' ', $indent);
+            $spaces = str_repeat(' ', $indent);
             foreach ($exploded as $line) {
                 $line = trim($line);
-                if (strpos($line, '"') === 0 && strrpos($line, '"') == (strlen($line)-1) || strpos($line, "'") === 0 && strrpos($line, "'") == (strlen($line)-1)) {
+                if (strpos($line, '"') === 0 && strrpos($line, '"') == (strlen($line) - 1) || strpos($line, "'") === 0 && strrpos($line, "'") == (strlen($line) - 1)) {
                     $line = substr($line, 1, -1);
                 }
                 $newValue .= "\n" . $spaces . ($line);
@@ -439,7 +439,7 @@ if (!class_exists('Spyc')) {
                 $indent += $this->_dumpIndent;
                 $indent = str_repeat(' ', $indent);
                 $wrapped = wordwrap($value, $this->_dumpWordWrap, "\n$indent");
-                $value   = ">\n".$indent.$wrapped;
+                $value = ">\n" . $indent . $wrapped;
             } else {
                 if ($this->setting_dump_force_quotes && is_string($value) && $value !== self::REMPTY) {
                     $value = '"' . $value . '"';
@@ -474,7 +474,7 @@ if (!class_exists('Spyc')) {
         private function isTranslationWord($value)
         {
             return (
-            self::isTrueWord($value)  ||
+            self::isTrueWord($value) ||
             self::isFalseWord($value) ||
             self::isNullWord($value)
             );
@@ -559,8 +559,8 @@ if (!class_exists('Spyc')) {
                 if ($literalBlockStyle) {
                     $line = rtrim($line, $literalBlockStyle . " \n");
                     $literalBlock = '';
-                    $line .= ' '.$this->LiteralPlaceHolder;
-                    $literal_block_indent = strlen($Source[$i+1]) - strlen(ltrim($Source[$i+1]));
+                    $line .= ' ' . $this->LiteralPlaceHolder;
+                    $literal_block_indent = strlen($Source[$i + 1]) - strlen(ltrim($Source[$i + 1]));
                     while (++$i < $cnt && $this->literalBlockContinues($Source[$i], $this->indent)) {
                         $literalBlock = $this->addLiteralLine($literalBlock, $Source[$i], $literalBlockStyle, $literal_block_indent);
                     }
@@ -687,14 +687,14 @@ if (!class_exists('Spyc')) {
             if ($is_quoted) {
                 $value = str_replace('\n', "\n", $value);
                 if ($first_character == "'") {
-                    return strtr(substr($value, 1, -1),  [
+                    return strtr(substr($value, 1, -1), [
                         '\'\'' => '\'',
-                        '\\\''=> '\''
+                        '\\\'' => '\''
                     ]);
                 }
-                return strtr(substr($value, 1, -1),  [
+                return strtr(substr($value, 1, -1), [
                     '\\"' => '"',
-                    '\\\''=> '\''
+                    '\\\'' => '\''
                 ]);
             }
 
@@ -710,16 +710,16 @@ if (!class_exists('Spyc')) {
                 }
                 $explode = $this->_inlineEscape($innerValue);
               // Propagate value array
-                $value  = [];
+                $value = [];
                 foreach ($explode as $v) {
                     $value[] = $this->_toType($v);
                 }
                 return $value;
             }
 
-            if (strpos($value, ': ')!==false && $first_character != '{') {
+            if (strpos($value, ': ') !== false && $first_character != '{') {
                 $array = explode(': ', $value);
-                $key   = trim($array[0]);
+                $key = trim($array[0]);
                 array_shift($array);
                 $value = trim(implode(': ', $array));
                 $value = $this->_toType($value);
@@ -805,7 +805,7 @@ if (!class_exists('Spyc')) {
             $regex = '/("")|(\'\')/';
             if (preg_match_all($regex, $inline, $strings)) {
                 $saved_empties = $strings[0];
-                $inline  = preg_replace($regex, 'YAMLEmpty', $inline);
+                $inline = preg_replace($regex, 'YAMLEmpty', $inline);
             }
             unset($regex);
 
@@ -813,7 +813,7 @@ if (!class_exists('Spyc')) {
             $regex = '/(?:(")|(?:\'))((?(1)[^"]+|[^\']+))(?(1)"|\')/';
             if (preg_match_all($regex, $inline, $strings)) {
                 $saved_strings = $strings[0];
-                $inline  = preg_replace($regex, 'YAMLString', $inline);
+                $inline = preg_replace($regex, 'YAMLString', $inline);
             }
             unset($regex);
 
@@ -849,7 +849,7 @@ if (!class_exists('Spyc')) {
                     foreach ($explode as $key => $value) {
                         if (strpos($value, 'YAMLSeq') !== false) {
                             foreach ($seqs as $seqk => $seq) {
-                                $explode[$key] = str_replace(('YAMLSeq'.$seqk.'s'), $seq, $value);
+                                $explode[$key] = str_replace(('YAMLSeq' . $seqk . 's'), $seq, $value);
                                 $value = $explode[$key];
                             }
                         }
@@ -861,7 +861,7 @@ if (!class_exists('Spyc')) {
                     foreach ($explode as $key => $value) {
                         if (strpos($value, 'YAMLMap') !== false) {
                             foreach ($maps as $mapk => $map) {
-                                $explode[$key] = str_replace(('YAMLMap'.$mapk.'s'), $map, $value);
+                                $explode[$key] = str_replace(('YAMLMap' . $mapk . 's'), $map, $value);
                                 $value = $explode[$key];
                             }
                         }
@@ -1011,21 +1011,21 @@ if (!class_exists('Spyc')) {
             // Adding string or numeric key to the innermost level or $this->arr.
             if (is_string($key) && $key == '<<') {
                 if (!is_array($_arr)) {
-                    $_arr =  [];
+                    $_arr = [];
                 }
 
                 $_arr = array_merge($_arr, $value);
             } elseif ($key || $key === '' || $key === '0') {
                 if (!is_array($_arr)) {
-                    $_arr =  [
-                        $key=>$value
+                    $_arr = [
+                        $key => $value
                     ];
                 } else {
                     $_arr[$key] = $value;
                 }
             } else {
                 if (!is_array($_arr)) {
-                    $_arr =  [$value];
+                    $_arr = [$value];
                     $key = 0;
                 } else {
                     $_arr[] = $value;
@@ -1038,7 +1038,7 @@ if (!class_exists('Spyc')) {
             $reverse_history[0] = $_arr;
             $cnt = count($reverse_history) - 1;
             for ($i = 0; $i < $cnt; $i++) {
-                $reverse_history[$i+1][$reverse_path[$i]] = $reverse_history[$i];
+                $reverse_history[$i + 1][$reverse_path[$i]] = $reverse_history[$i];
             }
             $this->result = $reverse_history[$cnt];
 
@@ -1246,7 +1246,7 @@ if (!class_exists('Spyc')) {
         private function returnMappedSequence($line)
         {
             $array = [];
-            $key         = self::unquote(trim(substr($line, 1, -1)));
+            $key = self::unquote(trim(substr($line, 1, -1)));
             $array[$key] = [];
             $this->delayedPath = [
                 strpos($line, (string) $key) + $this->indent => $key
@@ -1258,7 +1258,7 @@ if (!class_exists('Spyc')) {
         {
             if (strchr('[{"\'', (string) $value[0]) === false) {
                 if (strchr($value, ': ') !== false) {
-                    throw new Exception('Too many keys: '.$value);
+                    throw new Exception('Too many keys: ' . $value);
                 }
             }
         }
@@ -1267,7 +1267,7 @@ if (!class_exists('Spyc')) {
         {
             $this->checkKeysInValue($line);
             $array = [];
-            $key         = self::unquote(trim(substr($line, 0, -1)));
+            $key = self::unquote(trim(substr($line, 0, -1)));
             $array[$key] = '';
             return $array;
         }
@@ -1296,12 +1296,12 @@ if (!class_exists('Spyc')) {
               // If the key is in double quotes pull it out
                 if (($line[0] == '"' || $line[0] == "'") && preg_match('/^(["\'](.*)["\'](\s)*:)/', $line, $matches)) {
                     $value = trim(str_replace($matches[1], '', $line));
-                    $key   = $matches[2];
+                    $key = $matches[2];
                 } else {
                   // Do some guesswork as to the key and the value
                     $explode = explode(': ', $line);
-                    $key     = trim(array_shift($explode));
-                    $value   = trim(implode(': ', $explode));
+                    $key = trim(array_shift($explode));
+                    $value = trim(implode(': ', $explode));
                     $this->checkKeysInValue($value);
                 }
               // Set the type of the value.  Int, string, etc
@@ -1311,7 +1311,7 @@ if (!class_exists('Spyc')) {
                 }
                 $array[$key] = $value;
             } else {
-                $array =  [$line];
+                $array = [$line];
             }
             return $array;
         }
@@ -1323,8 +1323,8 @@ if (!class_exists('Spyc')) {
                 return [[]]; // Weird %)
             }
             $array = [];
-            $value   = trim(substr($line, 1));
-            $value   = $this->_toType($value);
+            $value = trim(substr($line, 1));
+            $value = $this->_toType($value);
             if ($this->isArrayElement($value)) {
                 $value = $this->returnArrayElement($value);
             }
@@ -1339,16 +1339,16 @@ if (!class_exists('Spyc')) {
             if (strpos($line, '&') === false && strpos($line, '*') === false) {
                 return false; // Please die fast ;-)
             }
-            if ($line[0] == '&' && preg_match('/^(&['.$symbolsForReference.']+)/', $line, $matches)) {
+            if ($line[0] == '&' && preg_match('/^(&[' . $symbolsForReference . ']+)/', $line, $matches)) {
                 return $matches[1];
             }
-            if ($line[0] == '*' && preg_match('/^(\*['.$symbolsForReference.']+)/', $line, $matches)) {
+            if ($line[0] == '*' && preg_match('/^(\*[' . $symbolsForReference . ']+)/', $line, $matches)) {
                 return $matches[1];
             }
-            if (preg_match('/(&['.$symbolsForReference.']+)$/', $line, $matches)) {
+            if (preg_match('/(&[' . $symbolsForReference . ']+)$/', $line, $matches)) {
                 return $matches[1];
             }
-            if (preg_match('/(\*['.$symbolsForReference.']+$)/', $line, $matches)) {
+            if (preg_match('/(\*[' . $symbolsForReference . ']+$)/', $line, $matches)) {
                 return $matches[1];
             }
             if (preg_match('#^\s*<<\s*:\s*(\*[^\s]+).*$#', $line, $matches)) {

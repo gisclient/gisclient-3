@@ -12,7 +12,7 @@ function outputError($msg)
 {
     header("Status: 500 Internal Server Error");
     die(json_encode([
-        'error'=>$msg
+        'error' => $msg
     ]));
 }
 
@@ -27,10 +27,10 @@ if (!defined('PRINT_VECTORS_TABLE') || !defined('PRINT_VECTORS_SRID')) {
 $tableName = PRINT_VECTORS_TABLE;
 $schema = defined('PRINT_VECTORS_SCHEMA') ? PRINT_VECTORS_SCHEMA : 'public';
 
-if (!file_exists(ROOT_PATH.'config/printVectorsSLD.xml')) {
+if (!file_exists(ROOT_PATH . 'config/printVectorsSLD.xml')) {
     outputError('Missing SLD');
 }
-$sld = file_get_contents(ROOT_PATH.'config/printVectorsSLD.xml');
+$sld = file_get_contents(ROOT_PATH . 'config/printVectorsSLD.xml');
 
 $enableDebug = false;
 $logfile = "/tmp/mapfile.vector.debug";
@@ -63,9 +63,9 @@ if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST
     }
     $geomFields = [];
     foreach ($geomTypes as $type) {
-        array_push($geomFields, 'st_transform('. $type['db_field'] . ", $mapSRID) as " . $type['db_field']);
+        array_push($geomFields, 'st_transform(' . $type['db_field'] . ", $mapSRID) as " . $type['db_field']);
     }
-    $sql = "select ".implode(",", $geomFields)." from $schema.$tableName".
+    $sql = "select " . implode(",", $geomFields) . " from $schema.$tableName" .
         " where print_id = ?";
     $stmt = $db->prepare($sql);
     $stmt->execute([$_REQUEST['LAYERS']]);
@@ -82,7 +82,7 @@ if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST
     if (empty($types)) { // empty geom, che facciamo?
     }
 
-    $oMap=ms_newMapObj('');
+    $oMap = ms_newMapObj('');
         
         // set MAXSIZE of mapfile to the value defined in the configuration
     if (defined('MAPFILE_MAX_SIZE')) {
@@ -98,12 +98,12 @@ if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST
 
     $oMap->extent->setextent($aExtent[0], $aExtent[1], $aExtent[2], $aExtent[3]);
     $oMap->setSize(intval($_REQUEST['WIDTH']), intval($_REQUEST['HEIGHT']));
-    $oMap->setProjection("init=".strtolower($_REQUEST['SRS']));
+    $oMap->setProjection("init=" . strtolower($_REQUEST['SRS']));
     if ($enableDebug) {
         $oMap->set('debug', 5);
         $oMap->setconfigoption('MS_ERRORFILE', $logfile);
     }
-    $onlineUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL.'services/vectors.php');
+    $onlineUrl = PrintDocument::addPrefixToRelativeUrl(PUBLIC_URL . 'services/vectors.php');
     $mapfileBase = <<<EOMAP
     WEB
         METADATA
@@ -135,7 +135,7 @@ EOMAP;
 
     $oMap->selectOutputFormat('png');
     
-    $oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
+    $oMap->setFontSet(ROOT_PATH . 'fonts/fonts.list');
     
     $nId = ms_newsymbolobj($oMap, "CIRCLE");
     $oSymbol = $oMap->getsymbolobjectbyid($nId);
@@ -153,17 +153,17 @@ EOMAP;
     $layersToInclude = [];
     
     foreach ($types as $type) {
-        array_push($layersToInclude, 'printvectors_'.$type['db_type']);
+        array_push($layersToInclude, 'printvectors_' . $type['db_type']);
         $oLay = ms_newLayerObj($oMap);
-        $oLay->set('name', 'printvectors_'.$type['db_type']);
+        $oLay->set('name', 'printvectors_' . $type['db_type']);
         $oLay->set('group', 'printvectors');
         $oLay->set('type', $type['ms_type']);
         $oLay->setConnectionType(MS_POSTGIS);
-        $oLay->set('connection', "user=".DB_USER." password=".DB_PWD." dbname=".DB_NAME." host=".DB_HOST." port=".DB_PORT);
-        $data = "the_geom from (select gid, print_id, ".$type['db_field']." as the_geom from $schema.$tableName) as foo using unique gid using srid=".PRINT_VECTORS_SRID;
+        $oLay->set('connection', "user=" . DB_USER . " password=" . DB_PWD . " dbname=" . DB_NAME . " host=" . DB_HOST . " port=" . DB_PORT);
+        $data = "the_geom from (select gid, print_id, " . $type['db_field'] . " as the_geom from $schema.$tableName) as foo using unique gid using srid=" . PRINT_VECTORS_SRID;
         $oLay->set('data', $data);
-        $oLay->setFilter("print_id=".$_REQUEST['LAYERS']);
-        $oLay->setProjection("init=epsg:".PRINT_VECTORS_SRID);
+        $oLay->setFilter("print_id=" . $_REQUEST['LAYERS']);
+        $oLay->setProjection("init=epsg:" . PRINT_VECTORS_SRID);
         $oLay->set('opacity', 50);
         $oLay->set('sizeunits', MS_PIXELS);
         $oLay->set('status', MS_ON);
@@ -173,7 +173,7 @@ EOMAP;
     $objRequest->setParameter('LAYERS', implode(",", $layersToInclude));
     
     if ($enableDebug) {
-        $oMap->save(DEBUG_DIR."printvectors.map");
+        $oMap->save(DEBUG_DIR . "printvectors.map");
     }
     
     ms_ioinstallstdouttobuffer();

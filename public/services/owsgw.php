@@ -14,7 +14,7 @@ $gcService = GCService::instance();
 $gcService->startSession();
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
-if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
+if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=') !== false) || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
     include("./include/putrequest.php");
     die();
 }
@@ -22,14 +22,14 @@ if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 // ADESSO NON SERVE PIU SECONDO ME!
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-	$url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
-	
-	$fileContent = file_get_contents('php://input');
-	file_put_contents('/tmp/postrequest.xml', $fileContent);
-	UrlChecker::checkUrl($url);
-	$curl = curl_init();
-	curl_setopt($curl, CURLOPT_URL, $url);
-	curl_setopt($curl, CURLOPT_POST, true);
+    $url = MAPSERVER_URL . 'map=' . ROOT_PATH . 'map/' . $_REQUEST['PROJECT'] . '/' . $_REQUEST['MAP'] . '.map';
+    
+    $fileContent = file_get_contents('php://input');
+    file_put_contents('/tmp/postrequest.xml', $fileContent);
+    UrlChecker::checkUrl($url);
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
     
@@ -67,13 +67,13 @@ if (!empty($resolution) && $resolution != 72) {
 
 $projectName = $oMap->getMetaData("project_name");
 // visto che mapserver non riesce a scaricare il file sld, lo facciamo noi, con l'url nel parametro SLD_BODY o SLD
-if (!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'], -4)=='.xml') {
+if (!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'], -4) == '.xml') {
     $sldContent = file_get_contents($_REQUEST['SLD_BODY']);
     if ($sldContent !== false) {
         $objRequest->setParameter('SLD_BODY', $sldContent);
         $oMap->applySLD($sldContent); // for getlegendgraphic
     }
-} else if(!empty($_REQUEST['SLD'])) {
+} else if (!empty($_REQUEST['SLD'])) {
     $ch = curl_init($_REQUEST['SLD']);
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -99,15 +99,15 @@ if ($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getval
     $objRequest->setParameter("srs", $oMap->getMetaData($objRequest->getvaluebyname('srs')));
 }
 if ($objRequest->getvaluebyname('srs')) {
-    $oMap->setProjection($projString="+init=".strtolower($objRequest->getvaluebyname('srs')));
+    $oMap->setProjection($projString = "+init=" . strtolower($objRequest->getvaluebyname('srs')));
 }
 
 if (!empty($_REQUEST['GCFILTERS'])) {
     // Security issue? If still used somewhere, reevaluate
     throw new \Exception("Scream test - should not be used anymore");
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
-    for ($i=0; $i<count($v); $i++) {
-        [$layerName, $gcFilter]=explode('@', $v[$i]);
+    for ($i = 0; $i < count($v); $i++) {
+        [$layerName, $gcFilter] = explode('@', $v[$i]);
 
         @$oLayer = $oMap->getLayerByName($layerName);
         if ($oLayer) {
@@ -219,7 +219,7 @@ if (!empty($layersParameter)) {
                 $filter = $layer->getFilterString();
                 $filter = trim($filter, '"');
                 if (!empty($filter)) {
-                    $filter = $filter.' AND ('.$layerAuthorizations[$layer->name].')';
+                    $filter = $filter . ' AND (' . $layerAuthorizations[$layer->name] . ')';
                 } else {
                     $filter = $layerAuthorizations[$layer->name];
                 }
@@ -307,7 +307,7 @@ if ($ctt[0] == 'image') {
     }
     */
 
-    header('Content-type: image/'. $ctt[1]);
+    header('Content-type: image/' . $ctt[1]);
     
     // Cache part 2
     if ($owsCacheTTL > 0) {
@@ -343,7 +343,7 @@ function checkLayer($project, $service, $layerName)
     if (null !== ($layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER'))) {
         if (!empty($layerAuthorizations[$project][$layerName])) {
             $layerAuth = $layerAuthorizations[$project][$layerName];
-            if ((strtoupper($service) == 'WMS' && ($layerAuth['WMS']==1)) || (strtoupper($service) == 'WFS' && ($layerAuth['WFS']==1 ))) {
+            if ((strtoupper($service) == 'WMS' && ($layerAuth['WMS'] == 1)) || (strtoupper($service) == 'WFS' && ($layerAuth['WFS'] == 1))) {
                 $check = true;
             }
         }
