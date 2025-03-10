@@ -73,7 +73,7 @@ if (!empty($_REQUEST['SLD_BODY']) && substr($_REQUEST['SLD_BODY'], -4) == '.xml'
         $objRequest->setParameter('SLD_BODY', $sldContent);
         $oMap->applySLD($sldContent); // for getlegendgraphic
     }
-} else if (!empty($_REQUEST['SLD'])) {
+} elseif (!empty($_REQUEST['SLD'])) {
     $ch = curl_init($_REQUEST['SLD']);
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
