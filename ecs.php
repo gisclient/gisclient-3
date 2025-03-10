@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use PhpCsFixer\Fixer\CastNotation\ShortScalarCastFixer;
 use PhpCsFixer\Fixer\ClassNotation\VisibilityRequiredFixer;
 use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
 use PhpCsFixer\Fixer\Operator\NewWithParenthesesFixer;
@@ -34,7 +33,6 @@ return ECSConfig::configure()
         __DIR__ . '/var/cache/ecs'
     )
     ->withSkip([
-        ShortScalarCastFixer::class,
         VisibilityRequiredFixer::class,
         NewWithParenthesesFixer::class,
         StatementIndentationFixer::class,

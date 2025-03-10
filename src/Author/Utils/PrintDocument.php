@@ -127,7 +127,7 @@ class PrintDocument
             $options['dpi'] = (int) $_REQUEST['dpi'];
         }
         if (!empty($_REQUEST['rotation']) && is_numeric($_REQUEST['rotation'])) {
-            $options['rotation'] = (double) $_REQUEST['rotation'];
+            $options['rotation'] = (float) $_REQUEST['rotation'];
         }
         if (!empty($_REQUEST['srid'])) {
             $options['srid'] = $_REQUEST['srid'];
