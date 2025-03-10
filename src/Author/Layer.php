@@ -104,9 +104,6 @@ class Layer extends AbstractLayerLevel
         return $links;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChildren()
     {
         return [];

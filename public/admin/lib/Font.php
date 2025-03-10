@@ -2,7 +2,6 @@
 
 /**
  * Handle user definable user font
- *
  */
 class Font
 {

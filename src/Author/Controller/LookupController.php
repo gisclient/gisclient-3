@@ -11,7 +11,6 @@ class LookupController
     /**
      * Get the symbol image
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function getLookupAction(Request $request)

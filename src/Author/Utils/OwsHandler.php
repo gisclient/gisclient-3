@@ -145,7 +145,6 @@ class OwsHandler
      * operations depend on axis order, while others don't
      *
      * @param type $filter
-     * @param array $invertedAxisOrderSrids
      * @return string
      */
     public function pruneSrsFromFilter($filter, array $invertedAxisOrderSrids)

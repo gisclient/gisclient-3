@@ -13,8 +13,6 @@ class UserProvider implements UserProviderInterface
     
     /**
      * Constructor
-     *
-     * @param \PDO $db
      */
     public function __construct(\PDO $db)
     {
@@ -86,9 +84,6 @@ class UserProvider implements UserProviderInterface
         return $groups;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function loadUserByUsername($username)
     {
         $sql = '

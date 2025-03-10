@@ -28,7 +28,7 @@ class ParseXml
     }
     
     /**
-     * @param String xmlString xml string to parsing
+     * @param string xmlString xml string to parsing
      */
     public function LoadString($xmlString)
     {
@@ -36,7 +36,7 @@ class ParseXml
     }
     
     /**
-     * @param String Path and file name which you want to parsing,
+     * @param string Path and file name which you want to parsing,
      *  Also, if �fopen wrappers�  is activated, you can fetch a remote document, but timeout not be supported.
      */
     public function LoadFile($file)
@@ -108,7 +108,7 @@ class ParseXml
     }
     
     /**
-     * @return Array Result of parsing.
+     * @return array Result of parsing.
      */
     public function ToArray()
     {
@@ -120,8 +120,8 @@ class ParseXml
     }
     
     /**
-     * @param Object object Objects you want convert to array.
-     * @return Array
+     * @param object object Objects you want convert to array.
+     * @return array
      */
     public function Object2array($object)
     {

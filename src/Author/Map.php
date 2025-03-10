@@ -77,17 +77,11 @@ class Map implements LayerLevelInterface
         return explode(' ', $this->get('mapset_extent'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChildren()
     {
         return $this->getThemes();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getMap()
     {
         return $this;

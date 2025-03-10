@@ -41,9 +41,6 @@ class Theme extends AbstractLayerLevel
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChildren()
     {
         return $this->getLayerGroups();

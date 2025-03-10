@@ -1253,11 +1253,6 @@ function filesPathFromCatalog($catalogId)
     return addFinalSlash($basePath);
 }
 
-/**
- *
- * @param array $request
- * @param array $mandatoryFields
- */
 function checkMissingParameters($ajax, array $request, array $mandatoryFields)
 {
     $missingKeys = array_diff($mandatoryFields, array_keys($request));
@@ -1271,7 +1266,6 @@ function checkMissingParameters($ajax, array $request, array $mandatoryFields)
  * Delete all files with share the same basename as the file
  *
  * @param string $fileFullPath
- * @param array $groupExtensions
  * @throws Exception
  */
 function deleteFilegroupByExtension($fileFullPath, array $groupExtensions)

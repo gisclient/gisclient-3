@@ -59,7 +59,6 @@ class SavedFilterController
     /**
      * Create a new saved filter
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function createAction(Request $request)
@@ -84,7 +83,6 @@ class SavedFilterController
      * Modify a saved filter
      *
      * @param integer $id
-     * @param Request $request
      * @return JsonResponse
      */
     public function modifyAction($id, Request $request)

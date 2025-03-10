@@ -27,7 +27,6 @@ class ClientController
      *
      * @deprecated change to gcmapConfigAction
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function gcmapAction(Request $request)
@@ -77,7 +76,6 @@ class ClientController
     /**
      * Get the initialization object to create the map
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function gcmapConfigAction(Request $request)

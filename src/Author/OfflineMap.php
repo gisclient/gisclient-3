@@ -32,7 +32,6 @@ class OfflineMap
      * Run the operation on the offline data format
      *
      * @param string $operation
-     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
     private function run($operation, LayerLevelInterface $layer, $only = null)
@@ -57,7 +56,6 @@ class OfflineMap
     /**
      * Start offline data generation
      *
-     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
     public function start(LayerLevelInterface $layer, $only = null)
@@ -68,7 +66,6 @@ class OfflineMap
     /**
      * Stop offline data generation
      *
-     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
     public function stop(LayerLevelInterface $layer, $only = null)
@@ -79,7 +76,6 @@ class OfflineMap
     /**
      * Delete offline data
      *
-     * @param LayerLevelInterface $layer
      * @param string|null $only
      */
     public function clear(LayerLevelInterface $layer, $only = null)
@@ -90,7 +86,6 @@ class OfflineMap
     /**
      * Get current status of offline data
      *
-     * @param LayerLevelInterface $layer
      * @return array
      */
     public function status(LayerLevelInterface $layer)
@@ -162,9 +157,7 @@ class OfflineMap
     /**
      * Create zip containing the offline data
      *
-     * @param LayerLevelInterface $layer
      * @param string $zipFile
-     * @param array $formats
      */
     public function createZip(LayerLevelInterface $layer, $zipFile, array $formats = [])
     {

@@ -40,7 +40,6 @@ class Process implements OfflineProcessInterface
     /**
      * Get Command to run
      *
-     * @param OfflineTaskInterface $task
      * @param boolean $runInBackground
      * @param boolean $asArray
      * @return string|array

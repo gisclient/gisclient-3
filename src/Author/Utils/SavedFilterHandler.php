@@ -123,7 +123,6 @@ class SavedFilterHandler
     /**
      * Add new saved filter for current user
      *
-     * @param array $values
      * @return integer
      */
     public function add(array $values)
@@ -150,7 +149,6 @@ class SavedFilterHandler
      * Modify saved filter for current user
      *
      * @param integer $id
-     * @param array $values
      * @return integer
      */
     public function modify($id, array $values)

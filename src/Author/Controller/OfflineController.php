@@ -76,7 +76,6 @@ class OfflineController implements ContainerAwareInterface
      *
      * @param string $project
      * @param string $map
-     * @param Request $request
      * @return JsonResponse
      */
     public function startAction($project, $map, Request $request)
@@ -99,7 +98,6 @@ class OfflineController implements ContainerAwareInterface
      *
      * @param string $project
      * @param string $map
-     * @param Request $request
      * @return JsonResponse
      */
     public function stopAction($project, $map, Request $request)
@@ -122,7 +120,6 @@ class OfflineController implements ContainerAwareInterface
      *
      * @param string $project
      * @param string $map
-     * @param Request $request
      * @return JsonResponse
      */
     public function clearAction($project, $map, Request $request)

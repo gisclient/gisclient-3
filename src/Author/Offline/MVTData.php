@@ -18,17 +18,11 @@ class MVTData extends AbstractOfflineData
         $this->logDir = $logDir;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return 'mvt';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(LayerLevelInterface $layer)
     {
         if (!($layer instanceof Layer)) {

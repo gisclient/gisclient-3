@@ -13,9 +13,6 @@ class TokenAuthenticator implements GuardAuthenticatorInterface
 {
     public const SALT = 'r3gis';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getToken(Request $request)
     {
         $username = $request->headers->get('x-username');
@@ -30,25 +27,16 @@ class TokenAuthenticator implements GuardAuthenticatorInterface
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUser(TokenInterface $token, UserProviderInterface $userProvider)
     {
         return $userProvider->loadUserByUsername($token->getUsername());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkCredentials(TokenInterface $token, UserInterface $user)
     {
         return md5($user->getUsername() . self::SALT . $user->getPassword()) === $token->getCredentials();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createAuthenticatedToken(UserInterface $user)
     {
         return new PostAuthenticationToken($user);

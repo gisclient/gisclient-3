@@ -22,7 +22,6 @@ class LoginController
     /**
      * Route for Username/Password Authenticator
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function loginAction(Request $request)
@@ -40,7 +39,6 @@ class LoginController
     /**
      * Route to logout
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function logoutAction(Request $request)

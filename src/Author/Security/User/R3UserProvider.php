@@ -13,8 +13,6 @@ class R3UserProvider implements UserProviderInterface
 
     /**
      * Constructor
-     *
-     * @param \PDO $db
      */
     public function __construct(\PDO $db)
     {
@@ -99,9 +97,6 @@ class R3UserProvider implements UserProviderInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function loadUserByUsername($username)
     {
         $domain = null;

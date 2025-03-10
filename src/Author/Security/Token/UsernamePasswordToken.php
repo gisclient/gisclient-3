@@ -39,25 +39,16 @@ class UsernamePasswordToken implements TokenInterface
         $this->credentials = $credentials;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials()
     {
         return $this->credentials;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUser()
     {
         return $this->user;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername()
     {
         if ($this->user instanceof UserInterface) {
@@ -67,25 +58,16 @@ class UsernamePasswordToken implements TokenInterface
         return (string) $this->user;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function isAuthenticated()
     {
         return $this->authenticated;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAuthenticated($isAuthenticated)
     {
         throw new \Exception("Can't authenticate a username/password token.");
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize()
     {
         return serialize([
@@ -94,9 +76,6 @@ class UsernamePasswordToken implements TokenInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function unserialize($serialized)
     {
         [$this->user, $this->authenticated] = unserialize($serialized);

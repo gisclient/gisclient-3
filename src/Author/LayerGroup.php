@@ -65,9 +65,6 @@ class LayerGroup extends AbstractLayerLevel
         return $this->get('outputformat_id');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChildren()
     {
         return $this->getLayers();

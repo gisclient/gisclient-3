@@ -39,45 +39,30 @@ abstract class AbstractOfflineData implements OfflineDataInterface
         return $this->offlineDataPath;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCommand(LayerLevelInterface $layer)
     {
         $process = $this->getProcess();
         return $process->getCommand($this->getTask($layer), false, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function start(LayerLevelInterface $layer, $runInBackground = true)
     {
         $process = $this->getProcess();
         $process->start($this->getTask($layer), $runInBackground);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function stop(LayerLevelInterface $layer)
     {
         $process = $this->getProcess();
         $process->stop($this->getTask($layer));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function clear(LayerLevelInterface $layer)
     {
         $task = $this->getTask($layer);
         $task->cleanup();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getState(LayerLevelInterface $layer)
     {
         if (!$this->exists($layer)) {
@@ -92,25 +77,16 @@ abstract class AbstractOfflineData implements OfflineDataInterface
         return self::IS_STOPPED;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getProgress(LayerLevelInterface $layer)
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function exists(LayerLevelInterface $layer)
     {
         return file_exists($this->getOfflineDataFile($layer));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getOfflineFiles(LayerLevelInterface $layer)
     {
         return [

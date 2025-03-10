@@ -25,7 +25,6 @@ class SymbolController
     /**
      * Get the symbol image
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function getSymbolAction(Request $request)

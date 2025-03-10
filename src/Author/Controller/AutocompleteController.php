@@ -12,7 +12,6 @@ class AutocompleteController
     /**
      * Autocomplete for fields in advanced search
      *
-     * @param  Request $request
      * @return JsonResponse
      */
     public function autocompleteAction(Request $request)

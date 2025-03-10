@@ -194,8 +194,6 @@ class gcFeature
     
     /**
      * Set feature data
-     *
-     * @param array $aFeature
      */
     public function setFeatureData(array $aFeature)
     {

@@ -101,8 +101,6 @@ class GCApp
     /**
      * Get authentication handler
      *
-     * @param  UserProviderInterface       $userProvider
-     * @param  GuardAuthenticatorInterface $guard
      * @param  boolean                     $force
      * @return AuthenticationHandler
      */

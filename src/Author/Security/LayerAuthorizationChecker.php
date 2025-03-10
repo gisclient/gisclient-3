@@ -22,9 +22,6 @@ class LayerAuthorizationChecker
     
     /**
      * Constructor
-     *
-     * @param \PDO $db
-     * @param UserInterface $user
      */
     public function __construct(\PDO $db, UserInterface $user)
     {
@@ -35,7 +32,6 @@ class LayerAuthorizationChecker
     /**
      * Get map and authorized layers
      *
-     * @param array $filter
      * @return boolean
      */
     public function getLayers(array $filter)

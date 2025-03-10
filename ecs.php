@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
+use Symplify\CodingStandard\Fixer\Commenting\RemoveUselessDefaultCommentFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return ECSConfig::configure()
@@ -19,12 +20,17 @@ return ECSConfig::configure()
         false,
         false,
         false,
+        true,
+        true,
         true
     )
 
     // add a single rule
     ->withRules([
         NoUnusedImportsFixer::class,
+    ])
+    ->withSkip([
+        RemoveUselessDefaultCommentFixer::class,
     ])
     ->withCache(
         __DIR__ . '/var/cache/ecs'

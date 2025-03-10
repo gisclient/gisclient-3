@@ -46,10 +46,8 @@ class page
     private $admintype;
         
     /**
-             * Constructor
-             *
-             * @param array $param
-             */
+     * Constructor
+     */
     public function __construct(AuthenticationHandler $authHandler, array $param = [])
     {
         $this->authHandler = $authHandler;
@@ -646,7 +644,6 @@ class page
     /**
      * Metodo che scrive il formulario in modalita EDIT
      *
-     * @param array $tab
      * @param type $el
      * @param type $prm
      *

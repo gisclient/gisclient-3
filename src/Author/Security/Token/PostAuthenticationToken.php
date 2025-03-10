@@ -24,7 +24,6 @@ class PostAuthenticationToken implements TokenInterface
      * Constructor
      *
      * @param string $user
-     * @param string $credentials
      */
     public function __construct($user)
     {
@@ -32,25 +31,16 @@ class PostAuthenticationToken implements TokenInterface
         $this->setAuthenticated(true);
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials()
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUser()
     {
         return $this->user;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername()
     {
         if ($this->user instanceof UserInterface) {
@@ -60,25 +50,16 @@ class PostAuthenticationToken implements TokenInterface
         return (string) $this->user;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function isAuthenticated()
     {
         return $this->authenticated;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAuthenticated($isAuthenticated)
     {
         $this->authenticated = (bool)$isAuthenticated;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize()
     {
         return serialize([
@@ -87,9 +68,6 @@ class PostAuthenticationToken implements TokenInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function unserialize($serialized)
     {
         [$this->user, $this->authenticated] = unserialize($serialized);

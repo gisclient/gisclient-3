@@ -12,49 +12,31 @@ class PreAuthenticationToken implements TokenInterface
     private $authenticated = false;
     private $user = null;
     
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials()
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUser()
     {
         return null;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername()
     {
         return null;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function isAuthenticated()
     {
         return $this->authenticated;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAuthenticated($isAuthenticated)
     {
         throw new \Exception("The pre-authentication token is never authenticated.");
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize()
     {
         return serialize([
@@ -63,9 +45,6 @@ class PreAuthenticationToken implements TokenInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function unserialize($serialized)
     {
         [$this->user, $this->authenticated] = unserialize($serialized);

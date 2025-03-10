@@ -29,7 +29,6 @@ interface OfflineDataInterface
     /**
      * Check if theme supports this offline format
      *
-     * @param LayerLevelInterface $layer
      * @return boolean
      */
     public function supports(LayerLevelInterface $layer);
@@ -38,7 +37,6 @@ interface OfflineDataInterface
      * Check if offline data already exists for the theme
      *  could be different foreach map, because of the extent
      *
-     * @param LayerLevelInterface $layer
      * @return string
      */
     public function exists(LayerLevelInterface $layer);
@@ -46,32 +44,23 @@ interface OfflineDataInterface
     /**
      * Start generation of offline data
      *
-     * @param LayerLevelInterface $layer
      * @param boolean $runInBackground
-     * @return void
      */
     public function start(LayerLevelInterface $layer, $runInBackground = true);
 
     /**
      * Stop generation of offline data
-     *
-     * @param LayerLevelInterface $layer
-     * @return void
      */
     public function stop(LayerLevelInterface $layer);
 
     /**
      * Delete offline data
-     *
-     * @param LayerLevelInterface $layer
-     * @return void
      */
     public function clear(LayerLevelInterface $layer);
 
     /**
      * Get current state of offline data
      *
-     * @param LayerLevelInterface $layer
      * @return string
      */
     public function getState(LayerLevelInterface $layer);
@@ -79,7 +68,6 @@ interface OfflineDataInterface
     /**
      * Get current progress of offline data generation
      *
-     * @param LayerLevelInterface $layer
      * @return int|null
      */
     public function getProgress(LayerLevelInterface $layer);
@@ -87,7 +75,6 @@ interface OfflineDataInterface
     /**
      * Get list of offline files
      *
-     * @param LayerLevelInterface $layer
      * @return string[]
      */
     public function getOfflineFiles(LayerLevelInterface $layer);

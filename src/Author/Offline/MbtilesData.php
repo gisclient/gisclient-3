@@ -22,17 +22,11 @@ class MbtilesData extends AbstractOfflineData
         $this->logDir = $logDir;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return 'mbtiles';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(LayerLevelInterface $layer)
     {
         return ($layer instanceof Theme);
@@ -57,9 +51,6 @@ class MbtilesData extends AbstractOfflineData
         return new SeedTask($layer->getMap(), $this->mapPath, $this->getOfflineDataFile($layer), $this->logDir);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getProgress(LayerLevelInterface $layer)
     {
         return $this->getTask($layer)->getProgress();

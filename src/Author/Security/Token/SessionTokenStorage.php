@@ -28,9 +28,6 @@ class SessionTokenStorage implements TokenStorageInterface
         $this->session = $session;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getToken()
     {
         if (!$this->session->isStarted()) {
@@ -44,9 +41,6 @@ class SessionTokenStorage implements TokenStorageInterface
         return unserialize($this->session->get(self::TOKEN_ID));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setToken(TokenInterface $token = null)
     {
         if (!$this->session->isStarted()) {
@@ -56,9 +50,6 @@ class SessionTokenStorage implements TokenStorageInterface
         $this->session->set(self::TOKEN_ID, serialize($token));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasToken()
     {
         if (!$this->session->isStarted()) {
@@ -68,9 +59,6 @@ class SessionTokenStorage implements TokenStorageInterface
         return $this->session->has(self::TOKEN_ID);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function removeToken()
     {
         if (!$this->session->isStarted()) {

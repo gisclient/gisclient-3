@@ -11,9 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class UsernamePasswordAuthenticator implements GuardAuthenticatorInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getToken(Request $request)
     {
         if ($request->getMethod() === 'POST' &&
@@ -30,25 +27,16 @@ class UsernamePasswordAuthenticator implements GuardAuthenticatorInterface
         return null;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getUser(TokenInterface $token, UserProviderInterface $userProvider)
     {
         return $userProvider->loadUserByUsername($token->getUsername());
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function checkCredentials(TokenInterface $token, UserInterface $user)
     {
         return $user->getPassword() === $token->getCredentials();
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function createAuthenticatedToken(UserInterface $user)
     {
         return new PostAuthenticationToken($user);

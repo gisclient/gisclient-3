@@ -37,9 +37,6 @@ class AuthenticationHandler
     
     /**
      * Constructor
-     *
-     * @param SessionInterface $session
-     * @param UserProviderInterface $userProvider
      */
     public function __construct(
         SessionInterface $session,
@@ -53,8 +50,6 @@ class AuthenticationHandler
     
     /**
      * Execute login
-     *
-     * @param Request $request
      */
     public function login(Request $request)
     {
