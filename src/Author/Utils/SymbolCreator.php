@@ -2,10 +2,6 @@
 
 namespace GisClient\Author\Utils;
 
-use Symfony\Component\HttpFoundation\HeaderBag;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Symbol;
 
 class SymbolCreator

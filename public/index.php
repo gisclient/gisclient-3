@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../bootstrap.php';
 
-use Symfony\Component\HttpFoundation\Request;
 
 header("Content-Type: text/html; Charset=".CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");

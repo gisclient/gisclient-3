@@ -50,7 +50,6 @@ return ECSConfig::configure()
         VisibilityRequiredFixer::class,
         MethodArgumentSpaceFixer::class,
         NoSpacesAfterFunctionNameFixer::class,
-        NoUnusedImportsFixer::class,
         OrderedImportsFixer::class,
         SingleSpaceAroundConstructFixer::class,
         BlankLineAfterNamespaceFixer::class,

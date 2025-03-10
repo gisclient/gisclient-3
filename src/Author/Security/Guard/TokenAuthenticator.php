@@ -2,7 +2,6 @@
 
 namespace GisClient\Author\Security\Guard;
 
-use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Token\PostAuthenticationToken;
 use GisClient\Author\Security\Token\TokenInterface;
 use GisClient\Author\Security\Token\UsernamePasswordToken;

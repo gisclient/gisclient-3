@@ -6,7 +6,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use GisClient\Author\Layer;
 use GisClient\GDAL\Export\Process as GDALProcess;
 use GisClient\GDAL\Export\SQLite\Task as SQLiteTask;

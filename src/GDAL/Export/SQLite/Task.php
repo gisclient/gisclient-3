@@ -3,7 +3,6 @@
 namespace GisClient\GDAL\Export\SQLite;
 
 use GisClient\Author\Layer;
-use GisClient\Author\Catalog;
 use GisClient\Author\Db;
 
 class Task implements \GisClient\GDAL\Export\Task

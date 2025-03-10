@@ -6,9 +6,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Utils\GCMap;
-use GisClient\Author\Utils\GWGCMap;
 use GisClient\Author\Utils\R3GisGCMap;
-use GisClient\Author\Utils\SenchaTouchUtils;
 
 class ClientController
 {

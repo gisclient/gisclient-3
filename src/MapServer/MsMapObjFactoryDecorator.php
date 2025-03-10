@@ -6,7 +6,6 @@ use DOMDocument;
 use DOMXPath;
 use Exception;
 use GisClient\Author\Utils\UrlChecker;
-use GisClient\MapServer\MsMapObjFactory;
 use LogicException;
 
 /**
