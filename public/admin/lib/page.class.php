@@ -24,10 +24,15 @@ class page
         
     public $parametri; // Elenco dei parametri
     public $tableList; // Elenco delle tabelle da disegnare
-    public $arr_mode=array("view"=>0,"edit"=>1,"new"=>2,"list"=>3);
+    public $arr_mode=[
+        "view"=>0,
+        "edit"=>1,
+        "new"=>2,
+        "list"=>3
+    ];
     public $mode;
     public $livello;
-    public $array_levels=array();
+    public $array_levels=[];
     public $db;    // Connessione ad DB postegres
     public $tb;            // Oggetto Tabella
     public $save;          //Oggetto SaveData
@@ -46,7 +51,7 @@ class page
              *
              * @param array $param
              */
-    public function __construct(AuthenticationHandler $authHandler, array $param = array())
+    public function __construct(AuthenticationHandler $authHandler, array $param = [])
     {
                 $this->authHandler = $authHandler;
         //Recupero Le Chiavi Primarie
@@ -75,7 +80,11 @@ class page
                     print_debug($sql, null, "conf");
                     $ris=$stmt->fetchAll();
         foreach ($ris as $v) {
-            $this->array_levels[$v["id"]]=array("name"=>$v["name"],"parent"=>$v["parent"],"leaf"=>$v["leaf"]);
+            $this->array_levels[$v["id"]]=[
+                "name"=>$v["name"],
+                "parent"=>$v["parent"],
+                "leaf"=>$v["leaf"]
+            ];
         }
     }
     private function _get_frm_parameter()
@@ -116,7 +125,7 @@ class page
         if (is_null($this->parametri)) {
             return;
         }
-        $tmp=array();
+        $tmp=[];
         foreach ($this->parametri as $key => $val) {
             $ris=$this->_get_pkey($key);
             foreach ($ris as $val) {
@@ -135,7 +144,7 @@ class page
     // Metodo che prende le configurazioni della pagina da Database
     public function get_conf()
     {
-                    $sqlParam = array();
+                    $sqlParam = [];
         if (!$this->livello) {
             $lev="root";
         } else {
@@ -186,7 +195,10 @@ class page
             $this->navTreeValues[$lvl_name] = 'XXX';
             // list($lvl_id,$lvl_name,$lvl_header)=array_values($value);
             // see obive FIXME: $this->navTreeValues[$lvl_name]=$lvl_header;
-            $livelli[$lvl_id]=array("val"=>$lvl_id,"key"=>$lvl_name);
+            $livelli[$lvl_id]=[
+                "val"=>$lvl_id,
+                "key"=>$lvl_name
+            ];
         }
                 unset($this->tableList);
             
@@ -212,10 +224,10 @@ class page
         $lbl="<a class=\"link_label\" href=\"#\" onclick=\"javascript:navigate([],[])\">Admin</a>";
         $n_elem=count($this->parametri);
         if ($n_elem>0) {
-            $lvl=array();
-            $val=array();
+            $lvl=[];
+            $val=[];
             foreach ($this->parametri as $key => $value) {
-                $sqlParam = array();
+                $sqlParam = [];
                 array_push($lvl, $key);
                 array_push($val, $value);
                 $pk=$this->_get_pkey($key);
@@ -223,7 +235,7 @@ class page
                 if (($this->mode==2 || !isset($this->navTreeValues[$key]["standard"])) && $key==$this->livello) {
                     $navTreeTitle=trim($this->navTreeValues[$key]["constant"], "'");
                 } else {
-                    $filter=array();
+                    $filter=[];
                     $i=0;
                     foreach ($pk as $v) {
                         $value=$this->_get_pkey_value($v);
@@ -237,7 +249,7 @@ class page
                     $xml->LoadFile(PK_FILE);
                     $struct=$xml->ToArray();
                     $table=$struct[$key]["table"];
-                    $schema=(in_array($key, array("users","groups","user_group")))?(USER_SCHEMA):(DB_SCHEMA);
+                    $schema=(in_array($key, ["users", "groups", "user_group"]))?(USER_SCHEMA):(DB_SCHEMA);
                     $sql = "SELECT coalesce(CAST(".$this->navTreeValues[$key]["standard"]." AS varchar),'') as val 
 							FROM ".$schema.".".$table;
                     if (!empty($filter)) {
@@ -291,9 +303,9 @@ class page
         $this->livello=(!empty($p["livello"]))?($p["livello"]):("");
         if (!empty($p["azione"])) {
             $this->action=strtolower($p["azione"]);
-            if (in_array($this->action, array("esporta", "esporta test", "importa raster", "importa catalogo"))) {
+            if (in_array($this->action, ["esporta", "esporta test", "importa raster", "importa catalogo"])) {
                 $this->mode=$this->arr_mode["edit"];
-            } elseif (in_array($this->action, array("importa", "wizard wms", "classifica"))) {
+            } elseif (in_array($this->action, ["importa", "wizard wms", "classifica"])) {
                 $this->mode=$this->arr_mode["new"];
             }
         }
@@ -356,7 +368,7 @@ class page
         if (!$lev) {
                             $sql="SELECT id FROM ".DB_SCHEMA.".e_level WHERE name=:livello";
                             $stmt = $this->db->prepare($sql);
-                            $success = $stmt->execute(array($this->livello));
+                            $success = $stmt->execute([$this->livello]);
 
             if ($success) {
                 $row=$stmt->fetch(PDO::FETCH_ASSOC);
@@ -373,7 +385,7 @@ class page
     }
     function _getChild()
     {
-        $out=array();
+        $out=[];
         foreach ($this->array_levels as $key => $val) {
             if ($val["parent"]==$this->livello) {
                 $out[]=$val;
@@ -400,7 +412,7 @@ class page
     private function writeMessage($msg)
     {
         if (!empty($this->errors["generic"]) || !empty($msg["generic"]) || $this->notice) {
-            $generic=array();
+            $generic=[];
             for ($i=0; $i<count($this->notice); $i++) {
                 if ($this->notice[$i]) {
                     $generic[]=$this->notice[$i];
@@ -535,7 +547,7 @@ class page
                 for ($j=0; $j<count($tb->function_param); $j++) {
                     $tb->function_param[$j]=$this->parametri[$tb->function_param[$j]];
                 }
-                $data=array();
+                $data=[];
                 $enabled=1;
                 if ($tab["save_data"]) {
                     include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
@@ -585,7 +597,7 @@ class page
 
                 $e=array_pop($this->levKey);
                 if (is_null($e)) {
-                    $e = array();
+                    $e = [];
                 }
                 foreach ($e as $k => $v) {
                     //$flt[]="$k='".addslashes($v)."'";
@@ -615,7 +627,7 @@ class page
                     
             case 50: // MODALITA' VIEW Inclusione File(TABELLA V)
                 $tb=new Tabella_v($tab["config_file"].".tab", "view");
-                $data=array();
+                $data=[];
                 include_once ADMIN_PATH."include/".$tab["save_data"].".inc.php";
                     
                 if (trim($tab["form_destination"])) {
@@ -670,7 +682,10 @@ class page
                 $tb->mode="edit";
                 if ($tab["level"]=="layer_link") {
                     $filter=$tab["parent_name"]."_id = ".$this->db->quote($this->parametri[$tab["parent_name"]]);
-                    $tb->tag=array("pkey"=>"link","pkey_value"=>0);
+                    $tb->tag=[
+                        "pkey"=>"link",
+                        "pkey_value"=>0
+                    ];
                 }
                 $tb->set_dati($filter);
                 $tb->elenco();
@@ -1012,7 +1027,7 @@ class page
     }
         
     // Metodo che costruisce la pagina
-    public function writePage(array $err = array())
+    public function writePage(array $err = [])
     {
 
         //Stampa errori generici e messaggi se ci sono
@@ -1152,7 +1167,7 @@ class page
                     echo "<script>\n\t".$tab["javascript"]."('".$tab["form_name"]."');\n</script> \n";
                 }
             }
-            $arr_keys=(count($this->parametri))?(array_keys($this->parametri)):(array());
+            $arr_keys=(count($this->parametri))?(array_keys($this->parametri)):([]);
 
             if (($this->mode==self::MODE_VIEW || $this->mode==self::MODE_LIST) && !empty($arr_keys[0])) {
                 $tmp=$this->parametri;

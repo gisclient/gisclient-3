@@ -24,7 +24,7 @@ jsonArray(
 )
 */
 
-if (empty($_REQUEST['action']) || !in_array($_REQUEST['action'], array('list', 'create', 'replace', 'delete', 'get'))) {
+if (empty($_REQUEST['action']) || !in_array($_REQUEST['action'], ['list', 'create', 'replace', 'delete', 'get'])) {
     $ajax->error('Invalid action');
 }
 
@@ -42,16 +42,18 @@ switch ($_REQUEST['action']) {
     case 'list':
         $sql = "select usercontext_id as id, title from ".DB_SCHEMA.".usercontext where username=:username and mapset_name=:mapset order by id desc";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(
-                    ':username'=>$authHandler->getToken()->getUserName(),
-                    ':mapset'=>$_REQUEST['mapset']
-                ));
+        $stmt->execute([
+            ':username'=>$authHandler->getToken()->getUserName(),
+            ':mapset'=>$_REQUEST['mapset']
+        ]);
         
-        $contextes = array();
+        $contextes = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             array_push($contextes, $row);
         }
-        $ajax->success(array('contextes'=>$contextes));
+        $ajax->success([
+            'contextes'=>$contextes
+        ]);
         break;
 
     case 'replace':
@@ -62,21 +64,21 @@ switch ($_REQUEST['action']) {
         $context = json_encode($_REQUEST['context']);
         if ($_REQUEST['action'] == 'replace') {
             $sql = 'delete from '.DB_SCHEMA.'.usercontext where username=?';
-            $db->prepare($sql)->execute(array(
-                            $authHandler->getToken()->getUserName()
-                        ));
+            $db->prepare($sql)->execute([
+                $authHandler->getToken()->getUserName()
+            ]);
         }
         
         $sql = "insert into ".DB_SCHEMA.".usercontext (username, mapset_name, title, context) ".
             " values (:username, :mapset, :title, :context) ";
         try {
             $stmt = $db->prepare($sql);
-            $stmt->execute(array(
-                            ':username'=>$authHandler->getToken()->getUserName(),
-                            ':mapset'=>$_REQUEST['mapset'],
-                            ':title'=>$_REQUEST['title'],
-                            ':context'=>$context
-                        ));
+            $stmt->execute([
+                ':username'=>$authHandler->getToken()->getUserName(),
+                ':mapset'=>$_REQUEST['mapset'],
+                ':title'=>$_REQUEST['title'],
+                ':context'=>$context
+            ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
         }
@@ -90,7 +92,9 @@ switch ($_REQUEST['action']) {
         
         $sql = "select username from ".DB_SCHEMA.".usercontext where usercontext_id=:id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':id'=>$_REQUEST['id']));
+        $stmt->execute([
+            ':id'=>$_REQUEST['id']
+        ]);
         if ($stmt->fetchColumn(0) != $authHandler->getToken()->getUserName()) {
                     $ajax->error('Permission denied');
         }
@@ -98,7 +102,9 @@ switch ($_REQUEST['action']) {
         $sql = "delete from ".DB_SCHEMA.".usercontext where usercontext_id=:id";
         try {
             $stmt = $db->prepare($sql);
-            $stmt->execute(array(':id'=>$_REQUEST['id']));
+            $stmt->execute([
+                ':id'=>$_REQUEST['id']
+            ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
         }
@@ -111,20 +117,28 @@ switch ($_REQUEST['action']) {
             $field = 'username';
                         $param = $authHandler->getToken()->getUserName();
             if (null === $param) {
-                $ajax->success(array('context'=>array()));
+                $ajax->success([
+                    'context'=>[]
+                ]);
             }
         } else {
             $param = $_REQUEST['id'];
         }
         $sql = "select mapset_name, title, context from ".DB_SCHEMA.".usercontext where $field = ?";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array($param));
+        $stmt->execute([$param]);
         if ($stmt->rowCount() == 0) {
-            $ajax->success(array('context'=>array()));
+            $ajax->success([
+                'context'=>[]
+            ]);
         }
         
         $context = $stmt->fetch(PDO::FETCH_ASSOC);
         $context['context'] = json_decode($context['context']);
-        $ajax->success(array('context'=>$context['context'], 'title'=>$context['title'], 'mapset'=>$context['mapset_name']));
+        $ajax->success([
+            'context'=>$context['context'],
+            'title'=>$context['title'],
+            'mapset'=>$context['mapset_name']
+        ]);
         break;
 }

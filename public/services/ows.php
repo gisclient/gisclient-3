@@ -36,8 +36,8 @@ if (defined('DEBUG') && DEBUG == true) {
 }
 
 $objRequest = ms_newOwsrequestObj();
-$skippedParams = array();
-$invertedAxisOrderSrids = array(2176,2177,2178,6382,6707,6708,6709,31465,31466,31467,31468,31254,31255,31256,31257,31258,31259);
+$skippedParams = [];
+$invertedAxisOrderSrids = [2176, 2177, 2178, 6382, 6707, 6708, 6709, 31465, 31466, 31467, 31468, 31254, 31255, 31256, 31257, 31258, 31259];
 
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
@@ -47,7 +47,7 @@ foreach ($_REQUEST as $k => $v) {
     //
     // transparent handling is delayed in order to check, if the target format
     // really supports tranparent pixels
-    if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
+    if (in_array(strtolower($k), ['sld', 'filter', 'transparent'])) {
         $skippedParams[strtolower($k)] = $v;
         continue;
     }
@@ -125,7 +125,7 @@ $oMap = $mapObjFactory->from($objRequest);
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
     $hasPrivateLayers = false;
-    $layersArray = array();
+    $layersArray = [];
     if ($isGetLegendGraphicRequest) {
         // Get layer from request without change $layersParameter value
         $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $objRequest->getValueByName('layer'));  // not layers
@@ -167,9 +167,9 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
         $oMap = $mapObjFactory->from($objRequest);
         
         // get layers to populate session with GISCLIENT_USER_LAYER
-        GCApp::getLayerAuthorizationChecker()->getLayers(array(
+        GCApp::getLayerAuthorizationChecker()->getLayers([
             'mapset_name' => $oMap->getMetaData('ows_title') // use ows_title to avoid mapset with language key
-        ));
+        ]);
     }
 }
 
@@ -203,7 +203,7 @@ if (!empty($resolution) && $resolution != 72) {
 
 // APPLY SLD FOR WMS REQUEST
 if (strtolower($objRequest->getValueByName('service')) == 'wms' &&
-    in_array($requestRequest, array('getlegendgraphic', 'getmap'))) {
+    in_array($requestRequest, ['getlegendgraphic', 'getmap'])) {
     $db = GCApp::getDB();
     $i18n = new GCi18n($project, $objRequest->getvaluebyname('lang'));
     OwsHandler::applyWmsSld($db, $i18n, $oMap, $objRequest);
@@ -247,8 +247,8 @@ if (!empty($layersParameter)) {
     $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     
     // stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
-    $layersToRemove = array();
-    $layersToInclude = array();
+    $layersToRemove = [];
+    $layersToInclude = [];
     foreach ($layersArray as $layer) {
         //espressione per le label (0 le rimuove)
         $labelrequires = $objRequest->getvaluebyname('labelrequires');

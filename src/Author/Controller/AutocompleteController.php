@@ -25,25 +25,25 @@ class AutocompleteController
             $stmt->execute($q["params"]);
             $results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
             return new JsonResponse(
-                array(
-                "result" => "ok",
-                "data" => $results
-                )
+                [
+                    "result" => "ok",
+                    "data" => $results
+                ]
             );
         } catch (HttpException $e) {
             return new JsonResponse(
-                array(
+                [
                     "result" => "error",
                     "error" => $e->getMessage()
-                ),
+                ],
                 $e->getStatusCode()
             );
         } catch (\Exception $e) {
             return new JsonResponse(
-                array(
+                [
                     "result" => "error",
                     "error" => $e->getMessage()
-                ),
+                ],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -71,7 +71,9 @@ class AutocompleteController
             from '.DB_SCHEMA.'.field
             where field_id=:id';
         $stmt = $db->prepare($sql);
-        $stmt->execute(array('id'=>$fieldId));
+        $stmt->execute([
+            'id'=>$fieldId
+        ]);
         $field = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (empty($field)) {
             throw new \Exception("Field $fieldId does not exist.");
@@ -83,14 +85,18 @@ class AutocompleteController
                 from '.DB_SCHEMA.'.catalog
                 inner join '.DB_SCHEMA.'.relation using(catalog_id)
                 where relation_id = :id';
-            $params = array('id'=>$field['relation_id']);
+            $params = [
+                'id'=>$field['relation_id']
+            ];
             $isLayer = false;
         } else {
             $sql = 'select catalog.project_name, catalog_path, data as table, data_filter
                 from '.DB_SCHEMA.'.catalog
                 inner join '.DB_SCHEMA.'.layer using(catalog_id)
                 where layer_id = :id';
-            $params = array('id'=>$field['layer_id']);
+            $params = [
+                'id'=>$field['layer_id']
+            ];
         }
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
@@ -112,11 +118,11 @@ class AutocompleteController
                     where i18nf_id=:i18nf_id and pkey_id=:pkey and language_id=:lang';
                 $stmt = $db->prepare($sql);
                 $stmt->execute(
-                    array(
-                    'i18nf_id'=>$i18nFieldId,
-                    'pkey'=>$field['field_id'],
-                    'lang'=>$lang
-                    )
+                    [
+                        'i18nf_id'=>$i18nFieldId,
+                        'pkey'=>$field['field_id'],
+                        'lang'=>$lang
+                    ]
                 );
                 $localized = $stmt->fetchColumn(0);
                 if ($localized) {
@@ -127,8 +133,8 @@ class AutocompleteController
 
         $schema = \GCApp::getDataDBSchema($catalog['catalog_path']);
 
-        $constraints = array();
-        $params = array();
+        $constraints = [];
+        $params = [];
 
         $fieldName = $field['field_name'];
         $alias = 'aliastable';
@@ -156,10 +162,10 @@ class AutocompleteController
         }
         $sql .= ' order by '.$fieldName . ' LIMIT '.$maxNumResults;
 
-        return array(
+        return [
             "db" => \GCApp::getDataDB($catalog['catalog_path']),
             "query"=> $sql,
             "params" => $params
-        );
+        ];
     }
 }

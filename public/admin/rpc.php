@@ -47,14 +47,14 @@ switch ($azione) {
             for ($i=0; $i<$totClass; $i++) {
                 $ris=$results[$i];
                 $colors = sprintf('%02X', $startC[0]) . sprintf('%02X', $startC[1]) . sprintf('%02X', $startC[2]);
-                $res[]=array(
+                $res[]=[
                     "val"=>$ris["val"],
                     "color"=>$colors,
                     "name"=>'class_'.($i+1),
                     "title"=>$ris["val"],
                     "condition"=>"([$field[name]] = '$ris[val]')",
                     "legend_type"=>1
-                    );
+                ];
                 $startC[0] += $delta_r;
                 $startC[1] += $delta_g;
                 $startC[2] += $delta_b;
@@ -69,15 +69,14 @@ switch ($azione) {
                         $ris=$results[$i];
                             
                         $colors = sprintf('%02X', $startC[0]) . sprintf('%02X', $startC[1]) . sprintf('%02X', $startC[2]);
-                        $res[]=array(
+                        $res[]=[
                             "val"=>"classe ".($i+1),
                             "color"=>$colors,
                             "name"=>"class_".($i+1),
                             "title"=>"class ".($i+1),
                             "condition"=>"",
                             "legend_type"=>1
-                            
-                        );
+                        ];
                         $startC[0] += $delta_r;
                         $startC[1] += $delta_g;
                         $startC[2] += $delta_b;
@@ -110,14 +109,15 @@ switch ($azione) {
                         $stmt = $dataDb->query($sql);
                         $endV = $stmt->fetchColumn(0);
                         
-                        $res[]=array(
+                        $res[]=[
                             "val"=>$startV.' - '.$endV,
                             "color"=>$colors,
-                            "title"=>'class '.($i+1),//$startV.' - '.$endV,
+                            "title"=>'class '.($i+1),
+                            //$startV.' - '.$endV,
                             "condition"=>"(([$field[name]] > $startV) AND ([$field[name]] < $endV))",
                             "name"=>"classe ".($i+1),
                             "legend_type"=>"1"
-                        );
+                        ];
                         $startV=$endV;
                     }
                     
@@ -157,11 +157,16 @@ switch ($azione) {
         $sql="SELECT $fld FROM ".DB_SCHEMA.".$table WHERE $fk=:val order by 2;";
         try {
             $stmt = $db->prepare($sql);
-            $stmt->execute(array('val'=>$id));
+            $stmt->execute([
+                'val'=>$id
+            ]);
             $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $opt = array();
+            $opt = [];
             foreach ($ris as $v) {
-                array_push($opt, array('id'=>$v['id'], 'name'=>$v['title']));
+                array_push($opt, [
+                    'id'=>$v['id'],
+                    'name'=>$v['title']
+                ]);
             }
             $res = json_encode($opt).",'$table'";
         } catch (Exception $e) {

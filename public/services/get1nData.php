@@ -37,7 +37,9 @@ $sql = 'select relation_id, catalog.catalog_id, catalog_path, relation_name, rel
     from '.DB_SCHEMA.'.relation inner join '.DB_SCHEMA.'.catalog using(catalog_id) inner join '.DB_SCHEMA.'.layer using(layer_id) where relation_id = :relation_id';
 
 $stmt = $db->prepare($sql);
-$stmt->execute(array('relation_id'=>$_REQUEST['relation_id']));
+$stmt->execute([
+    'relation_id'=>$_REQUEST['relation_id']
+]);
 $relation = $stmt->fetch(PDO::FETCH_ASSOC);
 if (empty($relation)) {
     $ajax->error('Invalid relation_id');
@@ -49,7 +51,7 @@ if (empty($fields)) {
     $ajax->error('No fields defined');
 }
 
-$fieldsName = array();
+$fieldsName = [];
 foreach ($fields as $field) {
     array_push($fieldsName, 't_'.$field['relation_id'].'.'.$field['field_name']);
 }
@@ -68,11 +70,15 @@ $sql = 'select '.implode(', ', $fieldsName).' from '.$layerSchema.'.'.$layerTabl
 
 $stmt = $layerDataDb->prepare($sql);
 
-$stmt->execute(array('value'=>$_REQUEST['f_key_value']));
-$results = array(
+$stmt->execute([
+    'value'=>$_REQUEST['f_key_value']
+]);
+$results = [
     'fields'=>$fields,
     'results'=>$stmt->fetchAll(PDO::FETCH_ASSOC)
-);
+];
 
 replaceNullWithBlank($results['results']);
-$ajax->success(array('data'=>$results));
+$ajax->success([
+    'data'=>$results
+]);

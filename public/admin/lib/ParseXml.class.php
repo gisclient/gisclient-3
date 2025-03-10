@@ -124,7 +124,7 @@ class ParseXml
      */
     function Object2array($object)
     {
-        $return = array();
+        $return = [];
         if (is_array($object)) {
             foreach ($object as $key => $value) {
                 $return[$key] = $this->Object2array($value);

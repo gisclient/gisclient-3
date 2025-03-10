@@ -77,10 +77,10 @@ class User implements UserInterface
         $password = null,
         $nome = null,
         $cognome = null,
-        array $roles = array(),
-        array $projects = array(),
-        array $groups = array(),
-        array $extras = array()
+        array $roles = [],
+        array $projects = [],
+        array $groups = [],
+        array $extras = []
     ) {
         $this->username = $username;
         $this->password = $password;

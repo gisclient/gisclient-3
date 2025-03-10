@@ -65,7 +65,7 @@ class Tabella
             $this->schemadb=DB_SCHEMA;
         }
         
-        $pkeys=(trim($data["pkey"]))?(explode(";", trim($data["pkey"]))):(array("id"));
+        $pkeys=(trim($data["pkey"]))?(explode(";", trim($data["pkey"]))):(["id"]);
         
         $campi=$pkeys;
         for ($i=0; $i<count($pkeys); $i++) {
@@ -95,12 +95,12 @@ class Tabella
                 }
             }
         }
-        $this->function_param=(!empty($data["fun_prm"]))?explode("#", $data["fun_prm"]):array();
+        $this->function_param=(!empty($data["fun_prm"]))?explode("#", $data["fun_prm"]):[];
         $this->num_col=$ncol;
         $this->elenco_campi=implode(",", $campi);
         $this->tab_config=$row;
         $this->config_file=$config_file;
-        $this->order_fld=(!empty($data["order_fld"]))?implode(",", explode("#", $data["order_fld"])):array();
+        $this->order_fld=(!empty($data["order_fld"]))?implode(",", explode("#", $data["order_fld"])):[];
     }
     
     public function get_idpratica()
@@ -192,7 +192,9 @@ class Tabella
         
         //se passo un array questo è l'array di POST altrimenti è il filtro - per default filtra su idpratica se settato
         if (is_array($data)) {
-            $this->array_dati=array(0=>$data);
+            $this->array_dati=[
+                0=>$data
+            ];
             $this->num_record=count($data);
             $this->curr_record=0;
         } else {

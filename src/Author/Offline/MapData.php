@@ -99,7 +99,10 @@ class MapData implements OfflineDataInterface
         $mapConfig = $this->tmpService->create(sprintf('offline_%s', $this->getName()));
         $fs->dumpFile($mapConfig, json_encode($objMapset->mapConfig));
         return [
-            ['file' => $mapConfig, 'filename' => 'config.json'],
+            [
+                'file' => $mapConfig,
+                'filename' => 'config.json'
+            ],
         ];
     }
 }

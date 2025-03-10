@@ -5,16 +5,18 @@ use GisClient\Author\Symbol;
 if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
     require_once ADMIN_PATH."lib/functions.php";
     $layerId=$_REQUEST["layer"];
-    $param=array(
+    $param=[
         "mode"=>"",
         "modo"=>""
-    );
+    ];
     $save=new saveData($param);
     $_db = GCApp::getDB();
     $sql="DELETE FROM ".DB_SCHEMA.".class WHERE layer_id=:layerId";
     try {
         $stmt = $_db->prepare($sql);
-        $stmt->execute(array('layerId' => $layerId));
+        $stmt->execute([
+            'layerId' => $layerId
+        ]);
     } catch (Exception $e) {
         GCError::registerException($e);
     }
@@ -27,13 +29,15 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
         $order = ($i+1)*10;
         $sql="INSERT INTO ".DB_SCHEMA.".class(class_id,layer_id,class_name,class_title,expression,legendtype_id,class_order) 
 			VALUES(:layerId, :className, :classTitle, :expr, :legendType, :ordr)";
-        $sqlParams = array('classId' => $classId,
+        $sqlParams = [
+            'classId' => $classId,
             'layerId' => $layerId,
             'className' => $cls['class_name'],
             'classTitle' => $cls['class_title'],
             'expr' => $cls['expression'],
             'legendType' => $cls['legend_type'],
-            'ordr' => $order);
+            'ordr' => $order
+        ];
         try {
             $stmt = $_db->prepare($sql);
             $stmt->execute($sqlParams);
@@ -47,10 +51,12 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
         $color=implode(" ", $tmp);
         $sql="INSERT INTO ".DB_SCHEMA.".style(style_id,class_id,style_name,color,outlinecolor,width) 
 			VALUES(:styleId, :classId, :styleName, :color,'0 0 0',1)";
-        $sqlParams = array('styleId' => $styleId,
+        $sqlParams = [
+            'styleId' => $styleId,
             'classId' => $classId,
             'styleName' => $style["style_name"],
-            'color' => $color);
+            'color' => $color
+        ];
         try {
             $stmt = $_db->prepare($sql);
             $stmt->execute($sqlParams);
@@ -80,7 +86,9 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
         $sql = "select catalog_path, connection_type from ".DB_SCHEMA.".catalog where catalog_id=:catId";
         try {
             $stmt = $_db->prepare($sql);
-            $stmt->execute(array('catId' => $_POST["dati"]["catalog_id"]));
+            $stmt->execute([
+                'catId' => $_POST["dati"]["catalog_id"]
+            ]);
             $catalog = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             GCError::registerException($e);
@@ -102,7 +110,10 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
             $sql = "SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_schema=:schema AND table_name=:table";
             try {
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array(':schema' => $schema, ':table' => $_POST["dati"]["data"]));
+                $stmt->execute([
+                    ':schema' => $schema,
+                    ':table' => $_POST["dati"]["data"]
+                ]);
                 $rows = $stmt->fetchAll();
             } catch (Exception $e) {
                 GCError::registerException($e);
@@ -114,7 +125,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
                     if (!$dataType) {
                         continue;
                     }
-                    $sqlParams = array(
+                    $sqlParams = [
                         ':field_id' => $newid,
                         ':field_name' => $row['column_name'],
                         ':field_header' => $row['column_name'],
@@ -122,7 +133,7 @@ if (in_array('classify', array_keys($_REQUEST)) && $_REQUEST["classify"]==1) {
                         ':resultype_id' => 4, // nascosto di default
                         ':datatype_id' => $dataType,
                         ':layer_id' => $save->data['layer_id']
-                    );
+                    ];
                     $sql = "insert into ".DB_SCHEMA.".field (field_id, field_name, field_header, searchtype_id, resultype_id, datatype_id, layer_id) 
 						values (:field_id, :field_name, :field_header, :searchtype_id, :resultype_id, :datatype_id, :layer_id)";
                     try {

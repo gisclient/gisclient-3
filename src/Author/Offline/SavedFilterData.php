@@ -108,7 +108,10 @@ class SavedFilterData implements OfflineDataInterface
         $fs->dumpFile($savedFilter, json_encode($filters));
 
         return [
-            ['file' => $savedFilter, 'filename' => 'saved_filter.json'],
+            [
+                'file' => $savedFilter,
+                'filename' => 'saved_filter.json'
+            ],
         ];
     }
 }

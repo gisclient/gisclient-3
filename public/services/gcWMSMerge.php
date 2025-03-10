@@ -48,7 +48,7 @@ function getWmsParameters(array $layerParameters)
 function cleanWMSRequest($url)
 {
     // this list should propably include all WMS parameters
-    $bannedParameters = array('version');
+    $bannedParameters = ['version'];
     $urlParts = parse_url($url);
     if (isset($urlParts['query'])) {
         parse_str($urlParts['query'], $queryParts);
@@ -241,7 +241,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
 }
 
 if (isset($mapConfig['scalebar']) && $mapConfig['scalebar'] && $mapConfig['format'] != 'gtiff') {
-    $scalebarSize = array(200, 3);
+    $scalebarSize = [200, 3];
     $fontSize = 7;
     if (!empty($mapConfig['resolution'])) {
         $scalebarSize[0] = round($scalebarSize[0] * ($mapConfig['resolution']/72));

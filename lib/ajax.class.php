@@ -11,12 +11,16 @@ class GCAjax
             header("Pragma: no-cache"); // HTTP/1.0
     }
     
-    public function success($data = array())
+    public function success($data = [])
     {
         if (isset($_REQUEST["callback"])) {
-            die($_REQUEST["callback"]."(".json_encode(array_merge(array('result'=>'ok'), $data)).")");
+            die($_REQUEST["callback"]."(".json_encode(array_merge([
+                'result'=>'ok'
+            ], $data)).")");
         } else {
-            die(json_encode(array_merge(array('result'=>'ok'), $data)));
+            die(json_encode(array_merge([
+                'result'=>'ok'
+            ], $data)));
         }
     }
     
@@ -24,9 +28,15 @@ class GCAjax
     {
 
         if (isset($_REQUEST["callback"])) {
-            die($_REQUEST["callback"]."(".json_encode(array('result'=>'error', 'error'=>$error)).")");
+            die($_REQUEST["callback"]."(".json_encode([
+                'result'=>'error',
+                'error'=>$error
+            ]).")");
         } else {
-            die(json_encode(array('result'=>'error', 'error'=>$error)));
+            die(json_encode([
+                'result'=>'error',
+                'error'=>$error
+            ]));
         }
     }
 }

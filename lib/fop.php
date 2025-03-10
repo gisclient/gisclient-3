@@ -34,16 +34,16 @@ class EFOPError extends Exception
  *
  * @return string      name of the PDF file on an empty string when errors are encountered
  */
-function runFOP(DOMDocument $dom, $xslFileName, $opt = array())
+function runFOP(DOMDocument $dom, $xslFileName, $opt = [])
 {
-    $defaultOpt = array(
+    $defaultOpt = [
         'format'=>'pdf',
         'purge'=>true,
         'cmd'=>defined('GC_FOP_CMD') ? GC_FOP_CMD : '',
         'tmp_path'=>ROOT_PATH.'tmp/files/',
         'out_name'=>'',
-    'prefix'=>'fop-',
-    );
+        'prefix'=>'fop-',
+    ];
     
     $opt = array_merge($defaultOpt, $opt);
     
@@ -62,7 +62,7 @@ function runFOP(DOMDocument $dom, $xslFileName, $opt = array())
     if ($dom === null) {
         throw new EFOPError('Invalid dom');
     }
-    if (!in_array($opt['format'], array('pdf', 'rtf', 'txt', 'svg'))) {
+    if (!in_array($opt['format'], ['pdf', 'rtf', 'txt', 'svg'])) {
         throw new EFOPError('Unsupported format "' . $opt['format'] . '"');
     }
     if ($opt['cmd'] == '') {
@@ -99,7 +99,7 @@ function runFOP(DOMDocument $dom, $xslFileName, $opt = array())
         $logFileName
     );
 
-    $stdout = array();
+    $stdout = [];
     exec($cmd, $stdout, $retval);
     
     if ($retval != 0) {

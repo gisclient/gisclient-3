@@ -37,7 +37,7 @@ if ($objRequest->getvaluebyname('layer')) {
     $ruleLayerName=false;
     $ruleClassName=false;
 
-    $iconsArray = array();
+    $iconsArray = [];
     $iconW=$_REQUEST["ICONW"] ?? 250;
     $iconH=$_REQUEST["ICONH"] ?? 24;
     $totWidth = $objRequest->getvaluebyname('width') ?: 250;
@@ -65,7 +65,7 @@ if ($objRequest->getvaluebyname('layer')) {
         $iconW=24;
     }
 
-    $layers = array();
+    $layers = [];
     
     // QGIS set the layers list
     $layerNames = explode(',', $objRequest->getvaluebyname('layer'));
@@ -103,7 +103,7 @@ if ($objRequest->getvaluebyname('layer')) {
             } elseif (substr($url, 0, -1) != '&' && substr($url, 0, -1) != '?') {
                 $url .= '&';
             }
-            $params = array(
+            $params = [
                 'request'=>'getlegendgraphic',
                 'service'=>'wms',
                 'format'=>'image/png',
@@ -111,7 +111,7 @@ if ($objRequest->getvaluebyname('layer')) {
                 'height'=>$iconH,
                 'layer'=>$oLayer->getMetaData('wms_name'),
                 'version'=>$oLayer->getMetaData('wms_server_version')
-            );
+            ];
             
             $gcService = \GCService::instance();
             
@@ -123,14 +123,14 @@ if ($objRequest->getvaluebyname('layer')) {
 
             UrlChecker::checkUrl($urlWmsRequest);
 			
-            $options = array(
+            $options = [
                 CURLOPT_URL => $urlWmsRequest,
                 CURLOPT_HEADER => 0,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_BINARYTRANSFER => true,
                 CURLOPT_SSL_VERIFYPEER => 0,
                 CURLOPT_SSL_VERIFYHOST => 0
-            );
+            ];
             $ch = curl_init();
             curl_setopt_array($ch, $options);
             $result = curl_exec($ch);
@@ -148,7 +148,7 @@ if ($objRequest->getvaluebyname('layer')) {
             $numCls = $oLayer->numclasses;
 
             //verifica sulle classi
-            $classToRemove=array();
+            $classToRemove=[];
             for ($clno=0; $clno < $numCls; $clno++) {
                 $oClass = $oLayer->getClass($clno);
                 $className = $oClass->name;
@@ -266,7 +266,7 @@ if (!$legend) {
         if (!$img) {
             continue;
         }
-        $size = array(imagesx($img), imagesy($img));
+        $size = [imagesx($img), imagesy($img)];
         imagealphablending($img, true);
         imagesavealpha($img, true);
         $temp = imagecreatetruecolor($w, $h);

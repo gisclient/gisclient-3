@@ -11,7 +11,9 @@ $gcService->startSession();
 function outputError($msg)
 {
     header("Status: 500 Internal Server Error");
-    die(json_encode(array('error'=>$msg)));
+    die(json_encode([
+        'error'=>$msg
+    ]));
 }
 
 
@@ -59,16 +61,16 @@ if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST
     if (empty($_REQUEST['LAYERS'])) {
         outputError('Missing layers');
     }
-    $geomFields = array();
+    $geomFields = [];
     foreach ($geomTypes as $type) {
         array_push($geomFields, 'st_transform('. $type['db_field'] . ", $mapSRID) as " . $type['db_field']);
     }
     $sql = "select ".implode(",", $geomFields)." from $schema.$tableName".
         " where print_id = ?";
     $stmt = $db->prepare($sql);
-    $stmt->execute(array($_REQUEST['LAYERS']));
+    $stmt->execute([$_REQUEST['LAYERS']]);
     $redline = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $types = array();
+    $types = [];
     foreach ($redline as $row) {
         foreach ($geomTypes as $index => $type) {
             if (!empty($row[$type['db_field']]) && !in_array($geomTypes[$index], $types)) {
@@ -148,7 +150,7 @@ EOMAP;
     $aPoints[1] = 1;
     $oSymbol->setpoints($aPoints);
 
-    $layersToInclude = array();
+    $layersToInclude = [];
     
     foreach ($types as $type) {
         array_push($layersToInclude, 'printvectors_'.$type['db_type']);

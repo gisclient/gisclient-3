@@ -25,12 +25,16 @@ $dbSchema=DB_SCHEMA;
 $sql="SELECT distinct mapset_name,mapset_title,mapset_extent,project_name,template,project_title,private FROM $dbSchema.mapset INNER JOIN $dbSchema.project using(project_name) order by mapset_title,mapset_name;";
 $res = $db->query($sql);
 
-$mapset=array();
+$mapset=[];
 while ($row = $res->fetch()) {
-    $mapset[$row["project_name"]][]=array("name"=>$row["mapset_name"],
-        "title"=>$row["mapset_title"],"template"=>$row["template"],
-        "extent"=>$row["mapset_extent"],'private'=>$row['private'],
-        'project_title'=>$row["project_title"]);
+    $mapset[$row["project_name"]][]=[
+        "name"=>$row["mapset_name"],
+        "title"=>$row["mapset_title"],
+        "template"=>$row["template"],
+        "extent"=>$row["mapset_extent"],
+        'private'=>$row['private'],
+        'project_title'=>$row["project_title"]
+    ];
 }
 
 $newTable = '';

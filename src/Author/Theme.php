@@ -15,7 +15,7 @@ class Theme extends AbstractLayerLevel
 
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.theme WHERE theme_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($id));
+            $stmt->execute([$id]);
             $data = $stmt->fetch();
             if (!empty($data)) {
                 $this->data = $data;
@@ -51,7 +51,7 @@ class Theme extends AbstractLayerLevel
 
     public function getLayerGroups()
     {
-        $layerGroups = array();
+        $layerGroups = [];
 
         $sql = "SELECT l.layergroup_id FROM {$this->db->getParams()['schema']}.layergroup l ";
         if (isset($this->mapName)) {
@@ -62,7 +62,7 @@ class Theme extends AbstractLayerLevel
         $sql .= "WHERE theme_id = ?";
 
         $stmt = $this->db->getDb()->prepare($sql);
-        $stmt->execute(array($this->data['theme_id']));
+        $stmt->execute([$this->data['theme_id']]);
         while ($layergroup_id = $stmt->fetchColumn(0)) {
             $layerGroup = new LayerGroup($layergroup_id);
             $layerGroup->setMap($this->getMap());

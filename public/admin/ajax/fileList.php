@@ -10,7 +10,15 @@ $gcService->startSession();
 $ajax = new GCAjax();
 
 
-$result = array('steps'=>1, 'data'=>array(), 'data_objects'=>array(), 'step'=>1, 'fields'=>array('file'=>'File'));
+$result = [
+    'steps'=>1,
+    'data'=>[],
+    'data_objects'=>[],
+    'step'=>1,
+    'fields'=>[
+        'file'=>'File'
+    ]
+];
 $n = 0;
 
 $path = ADMIN_PATH.'export/';
@@ -19,8 +27,12 @@ if ($handle = opendir($path)) {
         if ($entry == "." || $entry == "..") {
             continue;
         }
-        $result['data'][$n] = array('file'=>$entry);
-        $result['data_objects'][$n] = array('filename'=>$entry);
+        $result['data'][$n] = [
+            'file'=>$entry
+        ];
+        $result['data_objects'][$n] = [
+            'filename'=>$entry
+        ];
         $n++;
     }
     closedir($handle);

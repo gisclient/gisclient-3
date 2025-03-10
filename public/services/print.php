@@ -32,7 +32,10 @@ try {
     if (!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
         $box = $printMap->getBox();
         $pages = $printMap->getDimensions();
-        $ajax->success(array('box'=>$box, 'pages'=>$pages));
+        $ajax->success([
+            'box'=>$box,
+            'pages'=>$pages
+        ]);
     }
 
     if (!empty($_REQUEST['lang'])) {
@@ -57,4 +60,7 @@ try {
 } catch (Exception $e) {
     $ajax->error($e->getMessage());
 }
-$ajax->success(array('file'=>$file, 'format'=>$_REQUEST['format']));
+$ajax->success([
+    'file'=>$file,
+    'format'=>$_REQUEST['format']
+]);

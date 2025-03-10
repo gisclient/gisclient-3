@@ -22,9 +22,6 @@ return RectorConfig::configure()
         // PHPUnitSetList::PHPUNIT_CODE_QUALITY,
         // SymfonySetList::SYMFONY_CODE_QUALITY,
     ])
-    ->withSkip([
-        LongArrayToShortArrayRector::class, // temporarily to avoid lots of code change just for this - execute late together with ecs (to avoid long single line array)
-    ])
     ->withCache(
         __DIR__ . '/var/cache/rector',
         FileCacheStorage::class

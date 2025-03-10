@@ -28,7 +28,7 @@ $sql = "select project_name, theme_name, project_srid, xc, yc, max_extent_scale,
     " where layergroup_id = ?";
 
 $stmt = $db->prepare($sql);
-$stmt->execute(array($layergroupId));
+$stmt->execute([$layergroupId]);
 
 $mapConfig = $stmt->fetch(PDO::FETCH_ASSOC);
 if (empty($mapConfig['project_srid'])) {
@@ -45,19 +45,19 @@ $layerTitle = $mapConfig['layergroup_title'];
 $layerName = $mapConfig['layergroup_name'];
 
 $scales = explode(',', SCALE);
-$resolutions = array();
+$resolutions = [];
 foreach ($scales as $scale) {
     if ($scale > $mapConfig['max_extent_scale']) {
         continue;
     }
     array_push($resolutions, $scale / (39.3701*MAP_DPI));
 }
-$maxExtent = array(
+$maxExtent = [
     $mapConfig['xc'] - $resolutions[0] * TILE_SIZE,
     $mapConfig['yc'] - $resolutions[0] * TILE_SIZE,
     $mapConfig['xc'] + $resolutions[0] * TILE_SIZE,
     $mapConfig['yc'] + $resolutions[0] * TILE_SIZE
-);
+];
 
 if (!defined('OPENLAYERS')) {
     // FIXME: handle error in more sensible way

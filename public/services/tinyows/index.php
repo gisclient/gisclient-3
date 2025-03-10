@@ -38,7 +38,7 @@ $autoUpdateUser = (defined('LAST_EDIT_USER_COL_NAME') && LAST_EDIT_USER_COL_NAME
 if ($autoUpdateUser) {
     $xml = simplexml_load_file($configFile);
     $connection = $xml->pg->attributes();
-    $params = array();
+    $params = [];
     foreach ($connection as $k => $v) {
         $params[$k] = (string)$v;
     }
@@ -50,16 +50,16 @@ if ($autoUpdateUser) {
 }
 
 
-$descriptorspec = array(
-   0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
-   1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
-   2 => array("file", DEBUG_DIR."tinyows-errors.txt", "a") // stderr is a file to write to
-);
+$descriptorspec = [
+    0 => ["pipe", "r"],  // stdin is a pipe that the child will read from
+    1 => ["pipe", "w"],  // stdout is a pipe that the child will write to
+    2 => ["file", DEBUG_DIR."tinyows-errors.txt", "a"] // stderr is a file to write to
+];
 
-$envVars = array(
+$envVars = [
     'TINYOWS_CONFIG_FILE' => $configFile,
     'REQUEST_METHOD' => $requestMethod,
-);
+];
 
 $db = GCApp::getDB();
 [$layergroupName, $layerName] = explode('.', $typeName);
@@ -68,7 +68,10 @@ $sql = 'select project_name from '.DB_SCHEMA.'.theme
 	inner join '.DB_SCHEMA.'.layer using(layergroup_id)
 	where layergroup_name=:lg_name and layer_name=:l_name';
 $stmt = $db->prepare($sql);
-$stmt->execute(array(':lg_name'=>$layergroupName, ':l_name'=>$layerName));
+$stmt->execute([
+    ':lg_name'=>$layergroupName,
+    ':l_name'=>$layerName
+]);
 $projectName = $stmt->fetchColumn(0);
 if (empty($projectName)) {
         throw new Exception("Missing project name for layergroup $layergroupName and layer $layerName");
@@ -82,9 +85,9 @@ if (!$gcService->has('GISCLIENT_USER_LAYER')) {
     } else {
             $authHandler->login(Request::createFromGlobals());
         if ($authHandler->isAuthenticated()) {
-                    $authHandler->setAuthorizedLayers(array(
+                    $authHandler->setAuthorizedLayers([
                         'project_name' => $projectName
-                    ));
+                    ]);
         }
     }
 }
@@ -117,7 +120,7 @@ if ($requestMethod == 'GET') {
 }
 
 print_debug("envVars:\n".var_export($envVars, true), null, 'tinyows');
-$pipes = array();
+$pipes = [];
 
 if ($autoUpdateUser) {
     if (!defined('CURRENT_EDITING_USER_TABLE')) {
@@ -144,9 +147,9 @@ if ($autoUpdateUser) {
         $userName = $authHandler->getToken()->getUsername();
         $sql = 'insert into '.CURRENT_EDITING_USER_TABLE.' (id, username) values (1, :username)';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(
+        $stmt->execute([
             'username' => $userName
-        ));
+        ]);
         print_debug('inserted user '.$userName, null, 'tinyows');
     } catch (Exception $e) {
         print_debug('cannot insert into '.CURRENT_EDITING_USER_TABLE.', maybe there is still an user there!', null, 'tinyows');

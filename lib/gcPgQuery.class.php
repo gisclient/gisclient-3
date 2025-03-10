@@ -34,11 +34,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 class PgQuery
 {
 
-    public $allQueryResults = array();
-    public $allQueryExtent = array();
+    public $allQueryResults = [];
+    public $allQueryExtent = [];
     public $mapToUpdate=0;
-    public $aggregateFunction = array(101=>'sum',102=>'avg',103=>'min',104=>'max',105=>'count',106=>'variance',107=>'stddev');
-    public $resultHeaders = array();
+    public $aggregateFunction = [
+        101=>'sum',
+        102=>'avg',
+        103=>'min',
+        104=>'max',
+        105=>'count',
+        106=>'variance',
+        107=>'stddev'
+    ];
+    public $resultHeaders = [];
     public $isGraph = 0;
     public $request;
     public $templates;
@@ -70,9 +78,11 @@ class PgQuery
         order by field_order;";
 
         $stmt = $db->prepare($sqlField);
-        $stmt->execute(array('layer_id'=>$request['layer_id']));
-        $qRelation = array();
-        $qField = array();
+        $stmt->execute([
+            'layer_id'=>$request['layer_id']
+        ]);
+        $qRelation = [];
+        $qField = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $Id=$row["layer_id"];
             $fieldId=$row["field_id"];
@@ -89,17 +99,17 @@ class PgQuery
             $qField[$Id][$fieldId]["search_function"]=(isset($row["search_function"]))?trim($row["search_function"]):'';
             $qField[$Id][$fieldId]["relation"]=$row["relation_id"];
             $qField[$Id][$fieldId]["column_width"]=$row["column_width"];
-            $f=array();
+            $f=[];
             if (!empty($row['relation_id'])) {
                 $relationId = $row['relation_id'];
                 if (($row["data_field_1"])&&($row["table_field_1"])) {
-                    $f[]=array(trim($row["data_field_1"]),trim($row["table_field_1"]));
+                    $f[]=[trim($row["data_field_1"]), trim($row["table_field_1"])];
                 }
                 if (($row["data_field_2"])&&($row["table_field_2"])) {
-                    $f[]=array(trim($row["data_field_2"]),trim($row["table_field_2"]));
+                    $f[]=[trim($row["data_field_2"]), trim($row["table_field_2"])];
                 }
                 if (($row["data_field_3"])&&($row["table_field_3"])) {
-                    $f[]=array(trim($row["data_field_3"]),trim($row["table_field_3"]));
+                    $f[]=[trim($row["data_field_3"]), trim($row["table_field_3"])];
                 }
                 $qRelation[$Id][$relationId]["join_field"]=$f;
                 $qRelation[$Id][$relationId]["name"]=trim($row["relation_name"]);
@@ -127,7 +137,7 @@ class PgQuery
         var_export($qRelation); */
         //Aggiungo eventuali hyperlink relativi ai query_template
 
-        $qLink = array();
+        $qLink = [];
         /*
         if (false) { //FD: lasciamo un attimo via i link...
             $sqlLink="select link.id,link.link_id,link_def,link.link_name,winw,winh,link_order from $dbschema.link inner join $dbschema.mapset_link using (link_id) inner join $dbschema.link using (link_id) where mapset_name = '". $_REQUEST["mapset"]."' and resultype_id in (".$this->resultype.",3) and link.id $sqlQt order by link_order;";
@@ -154,15 +164,17 @@ class PgQuery
         print_debug($sqlTemplate, null, 'template');
 
         $stmt = $db->prepare($sqlTemplate);
-        $stmt->execute(array('layer_id'=>$request['layer_id']));
+        $stmt->execute([
+            'layer_id'=>$request['layer_id']
+        ]);
         //Tutti i query template dei modelli di ricerca interessati
-        $allTemplates = array();
+        $allTemplates = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $layerId=$row["layer_id"];
             $allTemplates[$layerId]=$row;
             $allTemplates[$layerId]["field"]= $qField[$layerId] ?? null;
             $allTemplates[$layerId]["relation"]= $qRelation[$layerId] ?? null;
-            $allTemplates[$layerId]["link"]=(isset($qLink[$layerId]))?array_values($qLink[$layerId]):array();
+            $allTemplates[$layerId]["link"]=(isset($qLink[$layerId]))?array_values($qLink[$layerId]):[];
         }
 
         /*         echo 'AllTemplates<br><pre>';
@@ -189,7 +201,10 @@ class PgQuery
         $aTemplate['table_schema'] = $datalayerSchema;
         $aTemplate['fields'] = $aTemplate['field']; //temporaneo
 
-        $options = array('include_1n_relations'=>true, 'getGeomAs'=>'text');
+        $options = [
+            'include_1n_relations'=>true,
+            'getGeomAs'=>'text'
+        ];
         if (!empty($this->request['srid'])) {
             $options['srid'] = $this->request['srid'];
         }
@@ -202,7 +217,7 @@ class PgQuery
 
         $queryString = GCAuthor::buildFeatureQuery($aTemplate, $options);
 
-        $params = array();
+        $params = [];
         $whereClause = null;
 
         if (!empty($this->request['query'])) {

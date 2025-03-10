@@ -17,7 +17,7 @@ class PreAuthenticationToken implements TokenInterface
      */
     public function getCredentials()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -57,10 +57,10 @@ class PreAuthenticationToken implements TokenInterface
      */
     public function serialize()
     {
-        return serialize(array(
+        return serialize([
             is_object($this->user) ? clone $this->user : $this->user,
             $this->authenticated
-        ));
+        ]);
     }
 
     /**

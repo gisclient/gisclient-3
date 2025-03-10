@@ -100,7 +100,10 @@ class ThemeLegendData implements OfflineDataInterface
         $fs->dumpFile($themeLegend, $symbolCreator->createSymbol('symbol', $layer->getSymbolName()));
 
         return [
-            ['file' => $themeLegend, 'filename' => sprintf('%s.png', $layer->getName())],
+            [
+                'file' => $themeLegend,
+                'filename' => sprintf('%s.png', $layer->getName())
+            ],
         ];
     }
 }

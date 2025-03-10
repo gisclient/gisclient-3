@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 
 $layer=$this->parametri["layer"];
-$data = array();
+$data = [];
 
 $db = GCApp::getDB();
 
@@ -12,25 +12,27 @@ $sql="select X.*,Y.wms,Y.wfs,Y.wfst,case when coalesce(Y.groupname,'')='' then 0
 
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('layer'=>$layer));
+    $stmt->execute([
+        'layer'=>$layer
+    ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if ($this->mode!=0 || $row['presente']==1) {
-                array_push($data, array(
+                array_push($data, [
                     'presente'=>$row['presente'],
                     'groupname'=>$row['groupname'],
                     'wms'=>$row['wms'],
                     'wfs'=>$row['wfs'],
                     'wfst'=>$row['wfst']
-                ));
+                ]);
             }
         }
     } else {
-        $data=array();
+        $data=[];
         $msg="Nessun layer definito nel mapset";
     }
 } catch (Exception $e) {
-    $data=array();
+    $data=[];
     $msg="<b style=\"color:red\">Errore</b>";
 }
 

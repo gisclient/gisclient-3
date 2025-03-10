@@ -37,7 +37,9 @@ if (!$containerConfigCache->isFresh()) {
 
     $dumper = new PhpDumper($containerBuilder);
     $containerConfigCache->write(
-        $dumper->dump(['class' => 'GisclientCachedContainer']),
+        $dumper->dump([
+            'class' => 'GisclientCachedContainer'
+        ]),
         $containerBuilder->getResources()
     );
 }

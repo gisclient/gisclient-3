@@ -5,21 +5,23 @@ require_once __DIR__ . '/../../../bootstrap.php';
     $db = GCApp::getDB();
     $project=$this->parametri["project"];
     $JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
-    $data=array();
+    $data=[];
     
     $sql="select groupname as group_name,case when coalesce(project_name,'')='' then 0 else 1 end as presente from (select 'Authenticated Users' as groupname UNION select distinct groupname from ".USER_SCHEMA.".groups) X $JOIN (select * from ".DB_SCHEMA.".project_groups where project_name=:project) Y on (groupname=group_name) order by group_name";
     
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('project'=>$project));
+    $stmt->execute([
+        'project'=>$project
+    ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if ($this->mode!=0 || $row['presente']==1) {
-                array_push($data, array(
+                array_push($data, [
                     'project_name'=>$project,
                     'group_name'=>$row['group_name'],
                     'presente'=>$row['presente']
-                ));
+                ]);
             }
         }
     } else {

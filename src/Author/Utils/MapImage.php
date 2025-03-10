@@ -8,21 +8,21 @@ class MapImage
 
     protected $wmsMergeUrl = 'services/gcWMSMerge.php';
 
-    protected $tiles = array();
+    protected $tiles = [];
 
-    protected $extent = array();
+    protected $extent = [];
 
-    protected $wmsList = array();
+    protected $wmsList = [];
 
-    protected $imageSize = array();
+    protected $imageSize = [];
 
-    protected $mapSize = array();
+    protected $mapSize = [];
 
     protected $db = null;
 
     protected $vectorId = null;
 
-    protected $options = array();
+    protected $options = [];
 
     protected $imageFileName = null;
 
@@ -30,7 +30,7 @@ class MapImage
 
     protected $scale;
     
-    public static $vectorTypes = array(
+    public static $vectorTypes = [
         'MultiPolygon' => [
             'db_type' => 'MULTIPOLYGON',
             'db_field' => 'multipolygon_geom',
@@ -61,15 +61,15 @@ class MapImage
             'db_field' => 'multilinestring_geom',
             'ms_type' => MS_LAYER_LINE
         ],
-    );
+    ];
     
     public function __construct($baseUrl, $tiles, array $imageSize, $srid, array $options)
     {
         $this->baseUrl = $baseUrl;
-        $defaultOptions = array(
+        $defaultOptions = [
             'scale_mode'=>'auto', //'auto' calculate extent from bbox, if 'user', calculate extent from center/scale
-            'extent'=>array(),
-            'center'=>array(),
+            'extent'=>[],
+            'center'=>[],
             'vectors'=>null,
             'image_format'=>'png', // or gtiff
             'auth_name'=>'EPSG',
@@ -78,7 +78,7 @@ class MapImage
             'TMP_PATH' => ROOT_PATH.'tmp/files/',
             'TMP_URL' => $baseUrl.'/services/download.php',
             'dpi' => 72
-        );
+        ];
         $this->options = array_merge($defaultOptions, $options);
         
         $this->tiles = $tiles;
@@ -161,7 +161,7 @@ class MapImage
                 $service = 'WMS';
             }
             
-            $parameters = array();
+            $parameters = [];
             if (isset($tile['parameters'])) {
                 foreach ($tile['parameters'] as $key => $val) {
                     $parameters[strtoupper($key)] = $val;
@@ -172,7 +172,7 @@ class MapImage
             // ???????????????????????????? MAH ???????????????????
             $parsedUrl = parse_url($url);
             if (!empty($parsedUrl['query'])) {
-                $urlParams = array();
+                $urlParams = [];
                 parse_str($parsedUrl['query'], $urlParams);
                 foreach ($urlParams as $key => $val) {
                     unset($urlParams[$key]);
@@ -189,7 +189,11 @@ class MapImage
                 $parameters['LABELREQUIRES'] = $tile['labelrequires'];
             }
             
-            $request = array('URL'=>$url, 'SERVICE'=>$service, 'PARAMETERS'=>$parameters);
+            $request = [
+                'URL'=>$url,
+                'SERVICE'=>$service,
+                'PARAMETERS'=>$parameters
+            ];
             if ($service === 'WMTS') {
                 if (isset($tile['layer'])) {
                     $request['LAYER'] = $tile['layer'];
@@ -209,12 +213,16 @@ class MapImage
         if (!empty($this->vectorId)) {
             $url = $this->baseUrl.'/services/vectors.php';
             $url = PrintDocument::addPrefixToRelativeUrl($url);
-            $parameters = array(
+            $parameters = [
                 'LAYERS'=>$this->vectorId,
                 'VERSION'=>'1.1.1',
                 'FORMAT'=>'image/png'
-            );
-            array_push($this->wmsList, array('URL'=>$url, 'SERVICE'=>'WMS', 'PARAMETERS'=>$parameters));
+            ];
+            array_push($this->wmsList, [
+                'URL'=>$url,
+                'SERVICE'=>'WMS',
+                'PARAMETERS'=>$parameters
+            ]);
         }
     }
     
@@ -244,7 +252,7 @@ class MapImage
         }
 
         $gcService = \GCService::instance();
-        $requestParameters = json_encode(array(
+        $requestParameters = json_encode([
             'layers'=>$this->wmsList,
             'size'=>$this->imageSize,
             //'rotation'=>$this->options["rotation"],
@@ -256,7 +264,7 @@ class MapImage
             'file_name'=>$this->options['TMP_PATH'].$this->imageFileName,
             'format'=>$this->options['image_format'],
             'GC_SESSION_ID' => $gcService->getSession()->getId()
-        ));
+        ]);
         $gcService->saveAndClose();
 
 
@@ -269,7 +277,9 @@ class MapImage
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, array('options'=>$requestParameters));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, [
+            'options'=>$requestParameters
+        ]);
 
         // SS: 2017-16-15: Don't check SSL certificate
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -293,15 +303,15 @@ class MapImage
     
     protected function adaptExtentToSize(array $extent, array $imageSize)
     {
-        $extentCenter = array(
+        $extentCenter = [
             0.5 * ($extent[0] + $extent[2]),
             0.5 * ($extent[1] + $extent[3]),
-        );
+        ];
         
-        $extentSize = array(
+        $extentSize = [
             $extent[2] - $extent[0],
             $extent[3] - $extent[1],
-        );
+        ];
         
         $widthRatio = $extentSize[0] / $imageSize[0];
         $heightRatio = $extentSize[1] / $imageSize[1];
@@ -312,22 +322,22 @@ class MapImage
             $extentSize[0] *= ($heightRatio/$widthRatio);
         }
         
-        $adaptedExtend = array(
+        $adaptedExtend = [
             $extentCenter[0] - 0.5 * $extentSize[0],
             $extentCenter[1] - 0.5 * $extentSize[1],
             $extentCenter[0] + 0.5 * $extentSize[0],
             $extentCenter[1] + 0.5 * $extentSize[1],
-        );
+        ];
         
         return $adaptedExtend;
     }
     
     protected function paperSize(array $imageSize, $dpi)
     {
-        return array(
+        return [
             $imageSize[0] / ($dpi * 100/2.54),
             $imageSize[1] / ($dpi * 100/2.54),
-        );
+        ];
     }
     
     protected function calculateExtent(array $center, array $imageSize, $dpi, $scale)
@@ -337,12 +347,12 @@ class MapImage
         $extentWidth = $scale *  $paperSize[0];
         $extentHeight = $scale * $paperSize[1];
 
-        $extent = array(
+        $extent = [
             $center[0] - 0.5 * $extentWidth,
             $center[1] - 0.5 * $extentHeight,
             $center[0] + 0.5 * $extentWidth,
             $center[1] + 0.5 * $extentHeight,
-        );
+        ];
         return $extent;
     }
     
@@ -373,13 +383,13 @@ class MapImage
             $sql = 'select addgeometrycolumn(:schema, :table, :column, :srid, :type, 2)';
             $addGeometryColumn = $db->prepare($sql);
             foreach (self::$vectorTypes as $type) {
-                $addGeometryColumn->execute(array(
+                $addGeometryColumn->execute([
                     'schema'=>$schema,
                     'table'=>$tableName,
                     'srid'=>PRINT_VECTORS_SRID,
                     'column'=>$type['db_field'],
                     'type'=>$type['db_type']
-                ));
+                ]);
             }
             $sql = 'GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER;
             $sql = 'ALTER SEQUENCE '.$schema.'.'.$tableName.'_print_id_seq OWNED BY '.$tableName.'.print_id';
@@ -390,14 +400,14 @@ class MapImage
         $sql = "select nextval('".$schema.".".$tableName."_print_id_seq')";
         $printId = $db->query($sql)->fetchColumn(0);
         
-        $vectors = array();
+        $vectors = [];
         foreach ($this->options['vectors'] as $vector) {
             $type = $vector['type'];
             if (!isset(self::$vectorTypes[$type])) {
                 continue;
             }
             if (!isset($vectors[$type])) {
-                $vectors[$type] = array();
+                $vectors[$type] = [];
             }
             array_push($vectors[$type], $vector);
         }
@@ -408,11 +418,11 @@ class MapImage
                 values (:print_id, st_transform(st_geomfromtext(:geom,' . $this->srid . '), :srid::INTEGER))';
             $stmt = $db->prepare($sql);
             foreach ($features as $feature) {
-                $stmt->execute(array(
+                $stmt->execute([
                     'print_id'=>$printId,
                     'geom'=>$feature['geometry'],
                     'srid'=>PRINT_VECTORS_SRID
-                ));
+                ]);
             }
         }
         

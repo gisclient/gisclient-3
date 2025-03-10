@@ -11,15 +11,15 @@ if (isset($this->parametri["users"])) {
 
 if (!empty($username)) {
     if (!isset($data) || !is_array($data)) {
-        $data = array();
+        $data = [];
     }
     $userProvider = new UserProvider(\GCApp::getDB());
     $user = $userProvider->loadUserByUsername($username);
-    array_push($data, array(
+    array_push($data, [
         'username' => $user->getUsername(),
         'nome' => $user->getNome(),
         'cognome' => $user->getCognome(),
-    ));
+    ]);
 }
 
 if (empty($data)) {

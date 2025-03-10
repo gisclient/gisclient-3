@@ -9,17 +9,17 @@ if (!$save->hasErrors) {
         $db = GCApp::getDB();
         $sql = "select connection_type, catalog_path from ".DB_SCHEMA.".catalog where catalog_id=?";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array($save->data['catalog_id']));
+        $stmt->execute([$save->data['catalog_id']]);
         $catalog = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($catalog['connection_type'] == 6) {
             [$connStr, $schema]=connAdminInfofromPath($catalog["catalog_path"]);
             
             $table_name = $save->data['table_name'];
             
-            $alreadyInserted = array();
+            $alreadyInserted = [];
             $sql = "select qtfield_name from ".DB_SCHEMA.".qtfield where layer_id=?";
             $stmt = $db->prepare($sql);
-            $stmt->execute(array($save->parent_flds['layer']));
+            $stmt->execute([$save->parent_flds['layer']]);
             while ($array = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 array_push($alreadyInserted, $array['qtfield_name']);
             }
@@ -37,7 +37,7 @@ if (!$save->hasErrors) {
                 if (!$dataType) {
                     continue;
                 }
-                $params = array(
+                $params = [
                     'qtfield_id'=>$newid,
                     'qtfield_name'=>"'".$array['column_name']."'",
                     'field_header'=>"'".$array['column_name']."'",
@@ -46,7 +46,7 @@ if (!$save->hasErrors) {
                     'datatype_id'=>$dataType,
                     'layer_id'=>$save->parent_flds['layer'],
                     'qtrelation_id'=>$save->data['qtrelation_id']
-                );
+                ];
                 $sql = "insert into ".DB_SCHEMA.".qtfield (".
                     implode(',', array_keys($params)).") values (".
                     implode(',', $params).")";

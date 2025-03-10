@@ -33,7 +33,7 @@ class Tabella_v extends Tabella
         $yselected = '';
         $nselected = '';
         $wpx = '';
-        $dati=$this->array_dati[$this->curr_record] ?? array();
+        $dati=$this->array_dati[$this->curr_record] ?? [];
         $err=$this->errors[$campo] ?? null;
         $dato=$dati[$campo] ?? null;
         if (isset($err)) {
@@ -210,9 +210,9 @@ class Tabella_v extends Tabella
                 break;
 
             case "submit":
-                if (in_array(strtolower($label), array("cancella","elimina"))) {
+                if (in_array(strtolower($label), ["cancella", "elimina"])) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
-                } elseif (in_array(strtolower($label), array("copia"))) {
+                } elseif (in_array(strtolower($label), ["copia"])) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler copiare il record?');\"";
                 }
                 if (!$mode || $mode=="all" || $this->mode==$mode) {
@@ -274,7 +274,7 @@ class Tabella_v extends Tabella
     {
     //restituisce il dato come stringa
         $retval = '';
-        $dati=$this->array_dati[$this->curr_record] ?? array();
+        $dati=$this->array_dati[$this->curr_record] ?? [];
         switch ($tipo) {
             case "idriga":
                 $retval="";
@@ -381,7 +381,7 @@ class Tabella_v extends Tabella
 
 //MODIFICA LOCK STATI AGGIUNTO PARAMETRO $frozen_cols ARRAY DI CAMPI CONGELATI
 //function get_riga_edit($nriga){
-    function get_riga_edit($nriga, $frozen_cols = array())
+    function get_riga_edit($nriga, $frozen_cols = [])
     {
     //prendo una riga che può essere fatta da uno,  due o più colonne
     // restituisce la riga in modalità edit con label controllo associato
@@ -399,7 +399,7 @@ class Tabella_v extends Tabella
             }
             $ctr.=$this->get_controllo($label, $tipo, $w, $campo, $mode, $action);
         }
-        return array($lbl,$ctr);
+        return [$lbl, $ctr];
     }
 
     function get_riga_view($nriga)
@@ -414,7 +414,7 @@ class Tabella_v extends Tabella
                     $label="<b>".str_replace("<br>", "&nbsp;&nbsp;", $label).":&nbsp;</b>";
                 }
                 $dato=$this->get_dato(trim($tipo), $w, $campo);
-                if ($label.$dato && !(in_array($tipo, array("submit","button")))) {
+                if ($label.$dato && !(in_array($tipo, ["submit", "button"]))) {
                     $testo_riga.=$label.$dato."&nbsp;&nbsp;&nbsp;&nbsp;";
                 }
             }
@@ -422,7 +422,7 @@ class Tabella_v extends Tabella
         return $testo_riga;
     }
 
-    function edita($param = array())
+    function edita($param = [])
     {
     //if($this->error_flag==1)
         //echo ("I campi evidenziati in rosso non sono validi");

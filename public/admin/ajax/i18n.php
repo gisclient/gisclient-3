@@ -50,20 +50,20 @@ if (isset($_POST['translations'])) {
         errorJson('Invalid data');
     }
     foreach ($_POST['translations'] as $fieldId => $translations) {
-        $emptyTranslations->execute(array(
+        $emptyTranslations->execute([
             'project'=>$project,
             'field_id'=>$fieldId,
             'pkey_id'=>$_REQUEST['p_key']
-        ));
+        ]);
         
         foreach ($translations as $languageId => $translation) {
-            $insertTranslation->execute(array(
+            $insertTranslation->execute([
                 'project'=>$project,
                 'field_id'=>$fieldId,
                 'pkey_value'=>$_REQUEST['p_key'],
                 'lang_id'=>$languageId,
                 'translation'=>$translation
-            ));
+            ]);
         }
     }
     successJson();
@@ -73,28 +73,28 @@ if (isset($_POST['translations'])) {
     $defaultLanguageId = $localization->getDefaultLanguageId();
     $fields = $localization->getI18nFields($level);
     
-    $responseData = array(
+    $responseData = [
         'defaultLanguage' => $defaultLanguageId,
         'languages' => $languages,
         'fields' => $fields,
-        'translations' => array()
-    );
+        'translations' => []
+    ];
     if (empty($fields)) {
         successJson($responseData);
     }
 
-    $defaultLanguageData = array();
+    $defaultLanguageData = [];
     
-    $fieldNames = array();
+    $fieldNames = [];
     foreach ($fields as $fieldId => $field) {
         array_push($fieldNames, $field['field_name']);
     }
 
     $sql = "select ".implode(',', $fieldNames)." from ".DB_SCHEMA.".$level where ".$struct[$level]['pkey']." = :pkey_value";
     $stmt = $db->prepare($sql);
-    $stmt->execute(array(
+    $stmt->execute([
         'pkey_value'=>$_REQUEST['p_key']
-    ));
+    ]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     foreach ($row as $key => $val) {
         $defaultLanguageData[$key] = $val;
@@ -113,10 +113,16 @@ if (isset($_POST['translations'])) {
 
 function errorJson($error = 'System error')
 {
-    die(json_encode(array('result'=>'error','error'=>$error)));
+    die(json_encode([
+        'result'=>'error',
+        'error'=>$error
+    ]));
 }
 
-function successJson($responseData = array())
+function successJson($responseData = [])
 {
-    die(json_encode(array('result'=>'ok', 'data'=>$responseData)));
+    die(json_encode([
+        'result'=>'ok',
+        'data'=>$responseData
+    ]));
 }

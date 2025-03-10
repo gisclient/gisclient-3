@@ -28,7 +28,9 @@ class SavedFilterController
     {
         $handler = $this->getHandler();
 
-        $ret = ['status' => 'ok'];
+        $ret = [
+            'status' => 'ok'
+        ];
         if ($id > 0) {
             $ret['data'] = $handler->getSavedFilter($id);
         }

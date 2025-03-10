@@ -23,7 +23,9 @@ if ($_POST["livello"]=="qt" && !$_POST["importa"]) {
     $sql="SELECT layer_id,layer_name FROM ".DB_SCHEMA.".layergroup INNER JOIN ".DB_SCHEMA.".layer USING(layergroup_id) WHERE theme_id=:theme_id order by layer_name";
     $stmt = $db->prepare($sql);
     try {
-        $stmt->execute(array('theme_id'=>$this->parametri["theme"]));
+        $stmt->execute([
+            'theme_id'=>$this->parametri["theme"]
+        ]);
     } catch (Exception $e) {
         echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
     }
@@ -49,7 +51,9 @@ if ($_POST["importa"]) {
         $sql="SELECT project_name FROM ".DB_SCHEMA.".project WHERE project_name=:project";
         $stmt = $db->prepare($sql);
         try {
-            $stmt->execute(array('project'=>$project));
+            $stmt->execute([
+                'project'=>$project
+            ]);
         } catch (Exception $e) {
             echo "<p>".GCAuthor::t('error_query')." : $sql</p>";
         }
@@ -60,7 +64,7 @@ if ($_POST["importa"]) {
     if (!file_exists(ADMIN_PATH."export/$fName")) {
         $message="File non Esiste.";
     } else {
-        $parentId=array($objId);
+        $parentId=[$objId];
         if ($layer) {
             $layer=$_POST["layer"];
             $objId=$_POST["obj_id"];

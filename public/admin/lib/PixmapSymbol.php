@@ -30,7 +30,7 @@ class PixmapSymbol
         $fileInfo = getimagesize($base64);
 
         // verify extension
-        $validMimeType = array('image/png','image/gif');
+        $validMimeType = ['image/png', 'image/gif'];
         $mimeType = $fileInfo['mime'];
         
         if (false === in_array($mimeType, $validMimeType)) {

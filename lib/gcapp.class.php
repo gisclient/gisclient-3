@@ -34,7 +34,7 @@ class GCApp
     private static $layerAuthorizationChecker;
     
     private static $db;
-    private static $dataDBs = array();
+    private static $dataDBs = [];
 
     /**
      * Get database instance
@@ -169,10 +169,10 @@ class GCApp
         if (!empty($param)) {
             return self::$dataDBs[$path]->$param;
         } else {
-            return array(
-            'schema'=>self::$dataDBs[$path]->schema,
-            'db_name'=>self::$dataDBs[$path]->dbName,
-            );
+            return [
+                'schema'=>self::$dataDBs[$path]->schema,
+                'db_name'=>self::$dataDBs[$path]->dbName,
+            ];
         }
     }
     
@@ -182,7 +182,9 @@ class GCApp
         
         $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_name=:catalog_name';
         $stmt = $db->prepare($sql);
-        $stmt->execute(array('catalog_name'=>$catalogName));
+        $stmt->execute([
+            'catalog_name'=>$catalogName
+        ]);
         return $stmt->fetchColumn(0);
     }
 
@@ -190,15 +192,18 @@ class GCApp
     {
 
         $i = 0;
-        $params = array();
-        $inArr = array();
+        $params = [];
+        $inArr = [];
         foreach ($values as $v) {
             $pkey = sprintf(":key%d", $i);
             $inArr[] = $pkey;
             $params[$pkey] = $v;
             $i++;
         }
-        return array('inQuery' => implode(',', $inArr), 'parameters' => $params);
+        return [
+            'inQuery' => implode(',', $inArr),
+            'parameters' => $params
+        ];
     }
     
     public static function getNewPKey($dbschema, $schema, $table, $pkey, $start = null)
@@ -209,11 +214,20 @@ class GCApp
             if (is_null($start)) {
                     $sql="select $dbschema.new_pkey(:scm, :tbl, :pkey);";
                     $stmt = $db->prepare($sql);
-                    $stmt->execute(array('scm' => $schema, 'tbl' => $table, 'pkey' => $pkey));
+                    $stmt->execute([
+                        'scm' => $schema,
+                        'tbl' => $table,
+                        'pkey' => $pkey
+                    ]);
             } else {
                  $sql="select $dbschema.new_pkey(:scm, :tbl, :pkey, :start);";
                  $stmt = $db->prepare($sql);
-                 $stmt->execute(array('scm' => $schema, 'tbl' => $table, 'pkey' => $pkey, 'start' => $start));
+                 $stmt->execute([
+                     'scm' => $schema,
+                     'tbl' => $table,
+                     'pkey' => $pkey,
+                     'start' => $start
+                 ]);
             }
         } catch (Exception $e) {
             GCError::registerException($e);
@@ -247,7 +261,9 @@ class GCApp
         $sql = 'select schema_name from information_schema.schemata '.
             ' where schema_name = :schema ';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('schema'=>$schema));
+        $stmt->execute([
+            'schema'=>$schema
+        ]);
         return ($stmt->rowCount() > 0);
     }
     
@@ -256,7 +272,10 @@ class GCApp
         $sql = "select table_name from information_schema.tables ".
             " where table_schema=:schema and table_name=:table ";
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName));
+        $stmt->execute([
+            ':schema'=>$schema,
+            ':table'=>$tableName
+        ]);
         return ($stmt->rowCount() > 0);
     }
     
@@ -266,7 +285,11 @@ class GCApp
                 "WHERE table_schema=:schema AND table_name=:table " .
                 " AND column_name = :column ";
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName, ':column'=>$columnName));
+        $stmt->execute([
+            ':schema'=>$schema,
+            ':table'=>$tableName,
+            ':column'=>$columnName
+        ]);
         $result = $stmt->fetchColumn(0);
         return !empty($result);
     }
@@ -277,7 +300,10 @@ class GCApp
                 "WHERE table_schema=:schema AND table_name=:table " .
                 " ORDER BY ordinal_position";
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema, ':table'=>$tableName));
+        $stmt->execute([
+            ':schema'=>$schema,
+            ':table'=>$tableName
+        ]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
     }
     
@@ -288,7 +314,10 @@ class GCApp
             inner join information_schema.key_column_usage k on c.constraint_schema = k.constraint_schema and c.constraint_name = k.constraint_name
             where c.table_schema = :schema and c.table_name = :table and c.constraint_type = 'PRIMARY KEY'";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array('schema'=>$schema, 'table'=>$tableName));
+        $stmt->execute([
+            'schema'=>$schema,
+            'table'=>$tableName
+        ]);
         return $stmt->fetchColumn(0);
     }
     
@@ -340,13 +369,28 @@ class GCDataDB
 class GCAuthor
 {
     // Da OL 2.13 static public $aInchesPerUnit = array(1=>39.3701,2=>12,3=>1,4=>39370.1,5=>39.370,6=>63360,7=>4374754);
-    public static $aInchesPerUnit_old = array(1=>39.3701,2=>12,3=>1,4=>39370.1,5=>39.3701,6=>63360,7=>4374754);
-    public static $gMapResolutions = array(156543.0339,78271.51695,39135.758475,19567.8792375,9783.93961875,4891.969809375,2445.9849046875,1222.99245234375,611.496226171875,305.7481130859375,152.87405654296876,76.43702827148438,38.21851413574219,19.109257067871095,9.554628533935547,4.777314266967774,2.388657133483887,1.1943285667419434,0.5971642833709717,0.29858214168548586,0.14929107084274293,0.07464553542137146,0.03527776,0.01763888);
-    public static $defaultScaleList = array(500000000,5000000,1000000,500000,250000,100000,50000,25000,10000,5000,2000,1000,900,800,700,600,500,400,300,200,100,50);
-    public static $aInchesPerUnit = array("m"=>39.3701, "ft"=>12, "inches"=>1,"km"=>39370.1, "mi"=>63360, "dd"=>4374754);
+    public static $aInchesPerUnit_old = [
+        1=>39.3701,
+        2=>12,
+        3=>1,
+        4=>39370.1,
+        5=>39.3701,
+        6=>63360,
+        7=>4374754
+    ];
+    public static $gMapResolutions = [156543.0339, 78271.51695, 39135.758475, 19567.8792375, 9783.93961875, 4891.969809375, 2445.9849046875, 1222.99245234375, 611.496226171875, 305.7481130859375, 152.87405654296876, 76.43702827148438, 38.21851413574219, 19.109257067871095, 9.554628533935547, 4.777314266967774, 2.388657133483887, 1.1943285667419434, 0.5971642833709717, 0.29858214168548586, 0.14929107084274293, 0.07464553542137146, 0.03527776, 0.01763888];
+    public static $defaultScaleList = [500000000, 5000000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2000, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50];
+    public static $aInchesPerUnit = [
+        "m"=>39.3701,
+        "ft"=>12,
+        "inches"=>1,
+        "km"=>39370.1,
+        "mi"=>63360,
+        "dd"=>4374754
+    ];
 
     private static $lang;
-    private static $errors = array();
+    private static $errors = [];
     
     public static function registerError($msg)
     {
@@ -452,15 +496,15 @@ class GCAuthor
         }
     }
     
-    public static function buildFeatureQuery($aFeature, array $options = array())
+    public static function buildFeatureQuery($aFeature, array $options = [])
     {
-        $defaultOptions = array(
+        $defaultOptions = [
             'include_1n_relations'=>false, //se true, le relazioni 1-n vengono incluse nella query (se, per esempio, si vuole filtrare su un campo della secondaria)
             'group_1n'=>true, //se false, vengono inclusi i campi della secondaria, di conseguenza i records non sono più raggruppati per i campi della primaria (se, per esempio, si vogliono visualizzare i dati della secondaria in tabella),
             'show_relation'=>null, //se voglio visualizzare i dati di una sola secondaria, popolo questo con il nome della relazione da visualizzare
             'getGeomAs'=>null, // se text, viene usato st_astext, altrimenti nulla (astext serve per le interrogazioni, nulla serve per il mapfile)
             'srid'=>null //se non null, viene confrontato con lo srid della feature e, se necessario, viene utilizzato st_transform()
-        );
+        ];
         $options = array_merge($defaultOptions, $options);
         
 
@@ -485,8 +529,8 @@ class GCAuthor
 
         //Elenco dei campi definiti
         if ($aFeature["fields"]) {
-            $fieldList = array();
-            $groupByFieldList = array();
+            $fieldList = [];
+            $groupByFieldList = [];
 
             foreach ($aFeature["fields"] as $aField) {
                 //se non vogliamo la relazione 1-n nella query (es. WMS) oppure se non vogliamo visualizzare i dati della secondaria ma solo usarli per il filtro (es. interrogazioni su mappa), non mettiamo i campi della secondaria
@@ -544,7 +588,7 @@ class GCAuthor
                     }
 
 
-                    $joinList = array();
+                    $joinList = [];
                     foreach ($rel['join_field'] as $joinField) {
                            $joinList[] = DATALAYER_ALIAS_TABLE . '.' . $joinField[0] . ' = ' . $relationAliasTable . '.' . $joinField[1];
                     }
@@ -581,11 +625,11 @@ class GCAuthor
     
     public static function GCTypeFromDbType($dbType)
     {
-        $typesMap = array(
-            1 => array('varchar','text','char','bool','bpchar'),
-            2 => array('int','int2','int4','int8','float','float4','float8','serial4','serial8'),
-            3 => array('date','timestamp','timestamptz')
-        );
+        $typesMap = [
+            1 => ['varchar', 'text', 'char', 'bool', 'bpchar'],
+            2 => ['int', 'int2', 'int4', 'int8', 'float', 'float4', 'float8', 'serial4', 'serial8'],
+            3 => ['date', 'timestamp', 'timestamptz']
+        ];
         foreach ($typesMap as $typeId => $types) {
             if (in_array($dbType, $types)) {
                 return $typeId;
@@ -600,7 +644,7 @@ class GCAuthor
             if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
                 $langs=explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
             } else {
-                $langs=array('it', 'en', 'de');
+                $langs=['it', 'en', 'de'];
             }
             
             if (\GCService::instance()->has('AUTHOR_LANGUAGE')) {
@@ -644,7 +688,7 @@ class GCAuthor
         
         $sql = "select mapset_name, mapset_title, template, project_name from ".DB_SCHEMA.".mapset where project_name=?";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array($project));
+        $stmt->execute([$project]);
         $mapsets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($mapsets as &$mapset) {
             $url = defined('MAP_URL') ? MAP_URL : '';
@@ -667,7 +711,9 @@ class GCAuthor
                 FROM ".DB_SCHEMA.".project
                 WHERE project_name = :project";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array("project" => $project));
+        $stmt->execute([
+            "project" => $project
+        ]);
 
         return $stmt->fetchColumn();
     }
@@ -681,10 +727,10 @@ class GCAuthor
                 WHERE project_name = :project AND mapset_name = :mapset";
         $stmt = $db->prepare($sql);
         $stmt->execute(
-            array(
-            "project" => $project,
-            "mapset" => $mapset,
-            )
+            [
+                "project" => $project,
+                "mapset" => $mapset,
+            ]
         );
 
         return $stmt->fetchColumn();
@@ -714,7 +760,7 @@ class GCAuthor
                     GROUP BY project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type
                     ORDER BY theme_title, layergroup_title, layer_title";
             $stmt = $db->prepare($sql);
-            $stmt->execute(array($project));
+            $stmt->execute([$project]);
         } else {
             $sql = "SELECT theme.project_name, theme_title, layergroup_title, layer_title, 
                            layergroup_name || '.' || layer_name AS feature_type,
@@ -730,7 +776,7 @@ class GCAuthor
                     GROUP BY theme.project_name, theme_title, layergroup_title, layer_title, layer_id, feature_type
                     ORDER BY theme_title, layergroup_title, layer_title";
             $stmt = $db->prepare($sql);
-            $stmt->execute(array($project, $mapset));
+            $stmt->execute([$project, $mapset]);
         }
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -759,67 +805,229 @@ class GCAuthor
         }
     }
     
-    private static $translations = array(
-    'yes' => array('it'=>'Si','de'=>'Ja'),
-    'no' => array('it'=>'No', 'de'=>'Nein'),
-    'button_edit' => array('it'=>'Modifica', 'de'=>'Ändern'),
-    'button_new' => array('it'=>'Nuovo', 'de'=>'Neu'),
-    'button_back' => array('it'=>'Indietro', 'de'=>'Zurück'),
-    'button_save' => array('it'=>'Salva', 'de'=>'Speichern'),
-    'button_cancel' => array('it'=>'Annulla', 'de'=>'Abbrechen'),
-    'button_publish' => array('it'=>'Pubblica', 'de'=>'Herausgeben'),
-    'button_delete' => array('it'=>'Elimina', 'de'=>'Löschen'),
-        'button_export' => array('it'=>'Esporta', 'de'=>'Exportieren'),
-    'button_import' => array('it'=>'Importa', 'de'=>'Importieren'),
-    'close' => array('it'=>'Chiudi', 'de'=>'Schließen'),
-    'title'=>array('it'=>'Titolo', 'de'=>'Titel'),
-    'name'=>array('it'=>'Nome', 'de'=>'Name'),
-    'description'=>array('it'=>'Descrizione', 'de'=>'Beschreibung'),
-    'nodata' => array('it'=>'Nessun Dato Presente', 'de'=>'Keine Daten'),
-    'undefined'=>array('it'=>'Non definito', 'de'=>'Nicht definiert'),
-    'table'=>array('it'=>'Tabella', 'de'=>'Tabelle'),
-    'column'=>array('it'=>'Colonna', 'de'=>'Spalte'),
-    'field'=>array('it'=>'Campo', 'de'=>'Feld'),
-    'group'=>array('it'=>'Gruppo', 'de'=>'Gruppe'),
-    'pkey'=>array('it'=>'Campo chiave', 'de'=>'Primärschlüssel'),
-    'format'=>array('it'=>'Formato', 'de'=>'Format'),
-    'image'=>array('it'=>'Immagine', 'de'=>'Bild'),
-    'symbol'=>array('it'=>'Simbolo', 'de'=>'Symbol'),
-    'category'=>array('it'=>'Categoria', 'de'=>'Art'),
-    'position'=>array('it'=>'Posizione', 'de'=>'Position'),
-    'save_to_temp'=>array('it'=>'Salva in un mapfile temporaneo', 'de'=>'In einem temporären Mapfile abspeichern'),
-    'auto_refresh_mapfiles'=>array('it'=>'Rigenera automaticamente i mapfiles', 'de'=>'Mapset automatisch aktualisieren'),
-    'save'=>array('it'=>'Salva', 'de'=>'Speichern'),
-    'all'=>array('it'=>'Tutti', 'de'=>'Alles'),
-    'online_maps'=>array('it'=>'Mappe online', 'de'=>'Online-Karten'),
-    'ogc_services'=>array('it'=>'Servizi OGC', 'de'=>'OGC Dienste'),
-    'update'=>array('it'=>'Aggiorna', 'de'=>'Aktualisieren'),
-    'temporary'=>array('it'=>'temp.', 'de'=>'temporär'),
-    'public'=>array('it'=>'pubblici', 'de'=>'öffentlich'),
-    'theme'=>array('it'=>'Tema', 'de'=>'Thema'),
-    'layergroup'=>array('it'=>'Layergroup', 'de'=>'Layergruppe'),
-    'layer'=>array('it'=>'Layer', 'de'=>'Layer'),
-    'lookup_id'=>array('it'=>'Campo chiave lookup', 'de'=>'Schlüsselfeld in der Nachschlagetabelle'),
-    'lookup_name'=>array('it'=>'Campo descrizione lookup', 'de'=>'Beschreibungsfeld in der Nachschlagetabelle'),
-    'confirm_delete'=>array('it'=>'Sei sicuro di voler eliminare il record?', 'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'),
-    'translations'=>array('it'=>'Traduzioni', 'de'=>'Übersetzungen'),
-    'List of available Maps'=>array('it'=>'Elenco delle mappe disponibili', 'de'=>'Verfügbare Karten'),
-    'Username'=>array('it'=>'Nome Utente', 'de'=>'Benutzername'),
-    'Password'=>array('it'=>'Password', 'de'=>'Kennwort'),
-    'project'=>array('it'=>'Progetto', 'de'=>'Projekt'),
-    'symbology'=>array('it'=>'Simbologia', 'de'=>'Symbole'),
-        'filename'=>array('it'=>'Nome File', 'de'=>'Datei Name'),
-        'delete_file'=>array('it'=>'Elimina File', 'de'=>'Datei Löschen'),
-        'new_name'=>array('it'=>'Nuovo Nome', 'de'=>'Neue Name'),
-        'file_list'=>array('it'=>'Elenco File', 'de'=>'Datei Liste'),
-        'error_query'=>array('it'=>'Impossibile eseguire la richiesta', 'de'=>'Abfrage kann nicht ausgeführt werden'),
-        'import_done'=>array('it'=>'Procedura di importazione Terminata Correttamente.', 'de'=>'Importvorgang korrekt abgeschlossen.')
-    );
+    private static $translations = [
+        'yes' => [
+            'it'=>'Si',
+            'de'=>'Ja'
+        ],
+        'no' => [
+            'it'=>'No',
+            'de'=>'Nein'
+        ],
+        'button_edit' => [
+            'it'=>'Modifica',
+            'de'=>'Ändern'
+        ],
+        'button_new' => [
+            'it'=>'Nuovo',
+            'de'=>'Neu'
+        ],
+        'button_back' => [
+            'it'=>'Indietro',
+            'de'=>'Zurück'
+        ],
+        'button_save' => [
+            'it'=>'Salva',
+            'de'=>'Speichern'
+        ],
+        'button_cancel' => [
+            'it'=>'Annulla',
+            'de'=>'Abbrechen'
+        ],
+        'button_publish' => [
+            'it'=>'Pubblica',
+            'de'=>'Herausgeben'
+        ],
+        'button_delete' => [
+            'it'=>'Elimina',
+            'de'=>'Löschen'
+        ],
+        'button_export' => [
+            'it'=>'Esporta',
+            'de'=>'Exportieren'
+        ],
+        'button_import' => [
+            'it'=>'Importa',
+            'de'=>'Importieren'
+        ],
+        'close' => [
+            'it'=>'Chiudi',
+            'de'=>'Schließen'
+        ],
+        'title'=>[
+            'it'=>'Titolo',
+            'de'=>'Titel'
+        ],
+        'name'=>[
+            'it'=>'Nome',
+            'de'=>'Name'
+        ],
+        'description'=>[
+            'it'=>'Descrizione',
+            'de'=>'Beschreibung'
+        ],
+        'nodata' => [
+            'it'=>'Nessun Dato Presente',
+            'de'=>'Keine Daten'
+        ],
+        'undefined'=>[
+            'it'=>'Non definito',
+            'de'=>'Nicht definiert'
+        ],
+        'table'=>[
+            'it'=>'Tabella',
+            'de'=>'Tabelle'
+        ],
+        'column'=>[
+            'it'=>'Colonna',
+            'de'=>'Spalte'
+        ],
+        'field'=>[
+            'it'=>'Campo',
+            'de'=>'Feld'
+        ],
+        'group'=>[
+            'it'=>'Gruppo',
+            'de'=>'Gruppe'
+        ],
+        'pkey'=>[
+            'it'=>'Campo chiave',
+            'de'=>'Primärschlüssel'
+        ],
+        'format'=>[
+            'it'=>'Formato',
+            'de'=>'Format'
+        ],
+        'image'=>[
+            'it'=>'Immagine',
+            'de'=>'Bild'
+        ],
+        'symbol'=>[
+            'it'=>'Simbolo',
+            'de'=>'Symbol'
+        ],
+        'category'=>[
+            'it'=>'Categoria',
+            'de'=>'Art'
+        ],
+        'position'=>[
+            'it'=>'Posizione',
+            'de'=>'Position'
+        ],
+        'save_to_temp'=>[
+            'it'=>'Salva in un mapfile temporaneo',
+            'de'=>'In einem temporären Mapfile abspeichern'
+        ],
+        'auto_refresh_mapfiles'=>[
+            'it'=>'Rigenera automaticamente i mapfiles',
+            'de'=>'Mapset automatisch aktualisieren'
+        ],
+        'save'=>[
+            'it'=>'Salva',
+            'de'=>'Speichern'
+        ],
+        'all'=>[
+            'it'=>'Tutti',
+            'de'=>'Alles'
+        ],
+        'online_maps'=>[
+            'it'=>'Mappe online',
+            'de'=>'Online-Karten'
+        ],
+        'ogc_services'=>[
+            'it'=>'Servizi OGC',
+            'de'=>'OGC Dienste'
+        ],
+        'update'=>[
+            'it'=>'Aggiorna',
+            'de'=>'Aktualisieren'
+        ],
+        'temporary'=>[
+            'it'=>'temp.',
+            'de'=>'temporär'
+        ],
+        'public'=>[
+            'it'=>'pubblici',
+            'de'=>'öffentlich'
+        ],
+        'theme'=>[
+            'it'=>'Tema',
+            'de'=>'Thema'
+        ],
+        'layergroup'=>[
+            'it'=>'Layergroup',
+            'de'=>'Layergruppe'
+        ],
+        'layer'=>[
+            'it'=>'Layer',
+            'de'=>'Layer'
+        ],
+        'lookup_id'=>[
+            'it'=>'Campo chiave lookup',
+            'de'=>'Schlüsselfeld in der Nachschlagetabelle'
+        ],
+        'lookup_name'=>[
+            'it'=>'Campo descrizione lookup',
+            'de'=>'Beschreibungsfeld in der Nachschlagetabelle'
+        ],
+        'confirm_delete'=>[
+            'it'=>'Sei sicuro di voler eliminare il record?',
+            'de'=>'Sind Sie sicher, dass sie diesen Eintrag löschen wollen?'
+        ],
+        'translations'=>[
+            'it'=>'Traduzioni',
+            'de'=>'Übersetzungen'
+        ],
+        'List of available Maps'=>[
+            'it'=>'Elenco delle mappe disponibili',
+            'de'=>'Verfügbare Karten'
+        ],
+        'Username'=>[
+            'it'=>'Nome Utente',
+            'de'=>'Benutzername'
+        ],
+        'Password'=>[
+            'it'=>'Password',
+            'de'=>'Kennwort'
+        ],
+        'project'=>[
+            'it'=>'Progetto',
+            'de'=>'Projekt'
+        ],
+        'symbology'=>[
+            'it'=>'Simbologia',
+            'de'=>'Symbole'
+        ],
+        'filename'=>[
+            'it'=>'Nome File',
+            'de'=>'Datei Name'
+        ],
+        'delete_file'=>[
+            'it'=>'Elimina File',
+            'de'=>'Datei Löschen'
+        ],
+        'new_name'=>[
+            'it'=>'Nuovo Nome',
+            'de'=>'Neue Name'
+        ],
+        'file_list'=>[
+            'it'=>'Elenco File',
+            'de'=>'Datei Liste'
+        ],
+        'error_query'=>[
+            'it'=>'Impossibile eseguire la richiesta',
+            'de'=>'Abfrage kann nicht ausgeführt werden'
+        ],
+        'import_done'=>[
+            'it'=>'Procedura di importazione Terminata Correttamente.',
+            'de'=>'Importvorgang korrekt abgeschlossen.'
+        ]
+    ];
 }
 
 class GCError
 {
-    private static $errors = array();
+    private static $errors = [];
     
     public static function register($msg)
     {
@@ -841,10 +1049,10 @@ class GCUtils
 {
     public static function parseBox($box)
     {
-        $split = explode(',', str_replace(array('BOX(',')'), '', $box));
+        $split = explode(',', str_replace(['BOX(', ')'], '', $box));
         [$l, $b] = explode(' ', $split[0]);
         [$r, $t] = explode(' ', $split[1]);
-        return array($l, $b, $r, $t);
+        return [$l, $b, $r, $t];
     }
     
     public static function deleteOldFiles($path)

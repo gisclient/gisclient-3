@@ -53,10 +53,10 @@ class DownloadController
         // TODO: handle request parameteers in a more systematic way, suing a single
         // procedure checking required/optional, type and value range
 
-        $options = array(
+        $options = [
             'image_format'=>'gtiff',
             'output_format'=>'geotiff'
-        );
+        ];
 
         if ($format == 'png') {
             $options['image_format'] = 'png';
@@ -114,10 +114,10 @@ class DownloadController
             $options['center'] = $center;
         }
 
-        $imageSize = array(
+        $imageSize = [
             0 => (int)$pixPerMetreFromDPI * ($options['extent'][2] - $options['extent'][0]) / $options['scale'],
             1 => (int)$pixPerMetreFromDPI * ($options['extent'][3] - $options['extent'][1]) / $options['scale'],
-        );
+        ];
 
         if (isset($scalebar)) {
             $options['scalebar'] = $scalebar;

@@ -3,12 +3,14 @@
 require_once __DIR__ . '/../../../bootstrap.php';
 $db = GCApp::getDB();
 $ris = null;
-$optCatalog = array();
+$optCatalog = [];
 
 $sql="SELECT DISTINCT catalog_id,catalog_name as name FROM ".DB_SCHEMA.".catalog WHERE project_name=:project order by catalog_name;";
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('project'=>$project));
+    $stmt->execute([
+        'project'=>$project
+    ]);
     if ($stmt->rowCount() > 0) {
         $ris = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {

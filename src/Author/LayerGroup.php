@@ -32,7 +32,7 @@ class LayerGroup extends AbstractLayerLevel
 
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.layergroup WHERE layergroup_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($id));
+            $stmt->execute([$id]);
             $data = $stmt->fetch();
             if (!empty($data)) {
                 $this->data = $data;
@@ -77,11 +77,11 @@ class LayerGroup extends AbstractLayerLevel
     {
         $layers = null;
         if (!empty($this->data)) {
-            $layers = array();
+            $layers = [];
 
             $sql = "SELECT layer_id FROM {$this->db->getParams()['schema']}.layer WHERE layergroup_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($this->data['layergroup_id']));
+            $stmt->execute([$this->data['layergroup_id']]);
             while ($layer_id = $stmt->fetchColumn(0)) {
                 $layer = new Layer($layer_id);
                 $layer->setMap($this->getMap());

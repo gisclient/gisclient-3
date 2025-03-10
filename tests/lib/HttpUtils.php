@@ -17,7 +17,7 @@ class HttpUtils {
         $result = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        return array($httpStatus, $result);
+        return [$httpStatus, $result];
     }
 
     static public function get($url, $cookieFile = NULL) {
@@ -33,7 +33,7 @@ class HttpUtils {
         $result = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        return array($httpStatus, $result);
+        return [$httpStatus, $result];
     }
 
     static public function put($url, $data, $cookieFile = NULL) {
@@ -54,6 +54,6 @@ class HttpUtils {
         $result = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        return array($httpStatus, $result);
+        return [$httpStatus, $result];
     }
 }

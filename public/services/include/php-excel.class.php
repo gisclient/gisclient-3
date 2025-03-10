@@ -44,7 +44,7 @@ class Excel_XML
      * Lines to output in the excel document
      * @var array
      */
-    private $lines = array();
+    private $lines = [];
 
     /**
      * Used encoding

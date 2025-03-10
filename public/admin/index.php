@@ -32,8 +32,8 @@ header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Pragma: no-cache");
 
-$Errors = array();
-$Notice = array();
+$Errors = [];
+$Notice = [];
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -54,9 +54,9 @@ if (!$authHandler->isAuthenticated()) {
 
 include ADMIN_PATH . "lib/page.class.php";
 
-$param = array();
-$arr_action = array("salva", "aggiungi", "cancella", "elimina", "genera mappa", "copia", "sposta");
-$arr_noaction = array("chiudi", "annulla", "avvia importazione");
+$param = [];
+$arr_action = ["salva", "aggiungi", "cancella", "elimina", "genera mappa", "copia", "sposta"];
+$arr_noaction = ["chiudi", "annulla", "avvia importazione"];
 if (!empty($_REQUEST["parametri"])) {
     $param = $_REQUEST["parametri"];
 }
@@ -90,7 +90,7 @@ $db = GCApp::getDB();
 if (defined('USE_DATA_IMPORT') && USE_DATA_IMPORT == true && $p->livello == 'catalog' && $p->mode == 0) {
     $sql = 'select connection_type from ' . DB_SCHEMA . '.catalog where catalog_id=?';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array($p->parametri['catalog']));
+    $stmt->execute([$p->parametri['catalog']]);
     $catalogType = $stmt->fetchColumn(0);
     if ($catalogType == 6) {
         $initDataManager = 'true';
@@ -99,13 +99,13 @@ if (defined('USE_DATA_IMPORT') && USE_DATA_IMPORT == true && $p->livello == 'cat
 
 $initPreviewMap = 'false';
 $previewMapUrl = 'previewmap/';
-if (in_array($p->livello, array('layer', 'layergroup')) && $p->mode == 0) {
+if (in_array($p->livello, ['layer', 'layergroup']) && $p->mode == 0) {
     $initPreviewMap = 'true';
 }
 $isAuthor = true;
 
 $initOgcServices = 'false';
-$layerList = array();
+$layerList = [];
 if (isset($p->parametri['project'])) {
     $mapsets = GCAuthor::getMapsets($p->parametri['project']);
     $layerList = GCAuthor::getLayerList($p->parametri['project']);
@@ -149,7 +149,7 @@ if (isset($p->parametri['project'])) {
         $errors = GCError::get();
         if (!empty($errors)) {
             foreach ($errors as &$error) {
-                $error = str_replace(array('"', "\n"), array('\"', '<br>'), $error);
+                $error = str_replace(['"', "\n"], ['\"', '<br>'], $error);
             }
             unset($error);
             ?>var errors = ["<?php echo implode('","', $errors); ?>"];

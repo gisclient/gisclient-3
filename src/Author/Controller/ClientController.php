@@ -14,14 +14,14 @@ class ClientController
 {
     private function getOutputHeaders()
     {
-        return array(
+        return [
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT', // Date in the past
             'Last-Modified' => gmdate("D, d M Y H:i:s").' GMT', // always modified
             'Cache-Control' => 'no-cache, must-revalidate', // HTTP/1.1
             'Pragma' => 'no-cache', // HTTP/1.0
             'Content-Type' => 'application/json; Charset=UTF-8',
             'Access-Control-Allow-Origin' => '*',
-        );
+        ];
     }
     
     /**
@@ -37,10 +37,10 @@ class ClientController
         // check for required queryString parameter
         $mapset = $request->query->get('mapset');
         if (empty($mapset)) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 'error' => 200,
                 'message' => 'No mapset name',
-            ), JsonResponse::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
         
         $getLegend = $request->query->get('legend', 0) == 1;
@@ -87,10 +87,10 @@ class ClientController
         // check for required queryString parameter
         $mapset = $request->query->get('mapset');
         if (empty($mapset)) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 'error' => 200,
                 'message' => 'No mapset name',
-            ), JsonResponse::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
         
         $getLegend = $request->query->get('legend', 0) == 1;

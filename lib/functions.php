@@ -23,7 +23,7 @@ function connInfofromPath($sPath)
             $connString = $pathInfo[0];
         }
     }
-    return array($connString,$datalayerSchema);
+    return [$connString, $datalayerSchema];
 }
 
 function connAdminInfofromPath($sPath)
@@ -41,7 +41,7 @@ function connAdminInfofromPath($sPath)
         $connString = $pathInfo[0];
     }
 
-    return array($connString,$datalayerSchema);
+    return [$connString, $datalayerSchema];
 }
 
 function setDBPermission($db, $sk, $usr, $type, $mode, $table = '')

@@ -39,13 +39,13 @@ class Symbol
             LEGEND_LINE_WIDTH,
             LEGEND_POLYGON_WIDTH,
         ];
-        $aClass = array();
+        $aClass = [];
         
         if ($this->table=='class') {
             //lettera A per le icone dei testi
-            $aSymbol = array(
+            $aSymbol = [
                 "SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND"
-            );
+            ];
             
             $sql="SELECT
                     class.class_id, layertype_ms, style_id,
@@ -83,7 +83,7 @@ class Symbol
                     $aClass[$row["class_id"]]["style"][]=$aStyle;
                 }
                 if ($row["symbol_name"]) {
-                    $smbText=array();
+                    $smbText=[];
                     $smbText[]="SYMBOL";
                     $smbText[]="\tNAME \"".$row["symbol_name"]."\"";
                     if ($row["symbol_type"]) {
@@ -142,12 +142,12 @@ class Symbol
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $aClass[$row["symbol_name"]]["icontype"]=$row["icontype"];
-                $aStyle=array();
+                $aStyle=[];
                 $aStyle["symbol"]=$row["symbol_name"];
-                $aStyle["color"]=array(0,0,0);
+                $aStyle["color"]=[0, 0, 0];
                 $aStyle["size"]=$this->symbolSize[$row["icontype"]];
                 $aClass[$row["symbol_name"]]["style"][]=$aStyle;
-                $smbText=array();
+                $smbText=[];
                 $smbText[]="SYMBOL";
                 $smbText[]="\tNAME \"".$row["symbol_name"]."\"";
                 if ($row["symbol_type"]) {
@@ -217,7 +217,7 @@ class Symbol
             $smbSize=$this->symbolSize[$class["icontype"]];
         }
             
-        $style=$class["style"] ?? array();
+        $style=$class["style"] ?? [];
         //print_array($class);
         //Aggiungo gli stili
         for ($i=0; $i<count($style); $i++) {
@@ -263,7 +263,7 @@ class Symbol
     private function createMapFile($aSymbol)
     {
         //creazione del file di simboli
-        $mapText=array();
+        $mapText=[];
         $mapText[] = "MAP";
         $mapText[] = "EXTENT 0 0 180 180";
         $mapText[] = implode("\n", $aSymbol);
@@ -293,7 +293,7 @@ class Symbol
     {
         $dbSchema=DB_SCHEMA;
         $table=$this->table;
-        $values=array();
+        $values=[];
         if ($table=='class') {
             $sql = "SELECT
                         project_name as project, theme_name as theme, layergroup_name as layergroup,
@@ -308,21 +308,21 @@ class Symbol
                 $sql.=" where ".$this->filter;
             }
             $sql.="  order by 1,2,3,4,5";
-            $headers = array("Image","Class","Layer","Layergroup","Theme","Project");
-            $values=array();
+            $headers = ["Image", "Class", "Layer", "Layergroup", "Theme", "Project"];
+            $values=[];
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
-                    $values[] = array(
+                    $values[] = [
                         "table=class&id=".$row["class_id"],
                         $row["class"],
                         $row["layer"],
                         $row["layergroup"],
                         $row["theme"],
                         $row["project"]
-                    );
+                    ];
                 } else {
                     array_push($values, $row);
                 }
@@ -339,19 +339,22 @@ class Symbol
                 $sql.=" where ".$this->filter;
             }
             $sql.="  order by symbolcategory_name, symbol_name";
-            $headers = array("Image","Symbol","Category");
+            $headers = ["Image", "Symbol", "Category"];
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
-                    $values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
+                    $values[]=["table=symbol&id=".$row["symbol"], $row["symbol"], $row["category"]];
                 } else {
                     array_push($values, $row);
                 }
             }
         }
 
-        return array("headers"=>$headers,"values"=>$values);
+        return [
+            "headers"=>$headers,
+            "values"=>$values
+        ];
     }
     
     

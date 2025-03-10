@@ -137,7 +137,9 @@ foreach ($layers as $layer) {
     echo "\n\n".'layer '.$layer['data'].' - '.$layer['layer_title']."\n";
 
     try {
-        $insertQTField->execute(array('layer'=>$layer['layer_id']));
+        $insertQTField->execute([
+            'layer'=>$layer['layer_id']
+        ]);
     } catch (Exception $e) {
         echo 'Caught exception: ',  $e->getMessage(), "\n";
     }
@@ -151,12 +153,14 @@ foreach ($layers as $layer) {
 
         //se il campo è un CLASSITEM, LABELITEM, LABELSIZEITEM
         if (!$used) {
-            $used = in_array($field, array($layer['classitem'], $layer['labelitem'], $layer['labelsizeitem']));
+            $used = in_array($field, [$layer['classitem'], $layer['labelitem'], $layer['labelsizeitem']]);
         }
 
         //se il campo è usato nelle classi o negli stili del layer
         if (!$used) {
-            $getClasses->execute(array('layer'=>$layer['layer_id']));
+            $getClasses->execute([
+                'layer'=>$layer['layer_id']
+            ]);
 
 
             $styles = $getClasses->fetchAll(PDO::FETCH_ASSOC);
@@ -186,19 +190,19 @@ foreach ($layers as $layer) {
 
         //se è usato, lo inserisco se non è già nella teballa field
         if ($used) {
-            $fieldExists->execute(array(
+            $fieldExists->execute([
                 'layer'=>$layer['layer_id'],
                 'field_name'=>$field
-            ));
+            ]);
             $exists = $fieldExists->fetchColumn(0);
 
             if (empty($exists)) {
-                $insertField->execute(array(
+                $insertField->execute([
                     'field_id'=>GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, 'field', 'field_id', 1),
                     'layer_id'=>$layer['layer_id'],
                     'field_name'=>$field,
                     'field_header'=>$field,
-                ));
+                ]);
                 echo 'campo '.$field.' di '.$layer['data'].' inserito'."\n";
             } else {
                 echo $field.' già inserito'."\n";

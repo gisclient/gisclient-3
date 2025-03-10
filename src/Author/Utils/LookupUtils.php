@@ -27,14 +27,17 @@ class LookupUtils
     {
         $sql = 'select catalog_path from '.DB_SCHEMA.'.catalog where catalog_id=?';
         $stmt = $this->database->prepare($sql);
-        $stmt->execute(array($catalogId));
+        $stmt->execute([$catalogId]);
         $catalogPath = $stmt->fetchColumn(0);
         [, $schema]=connAdminInfofromPath($catalogPath);
         $dataDb = \GCApp::getDataDB($catalogPath);
         
         $sql = 'select table_name from information_schema.tables where table_schema=:schema and table_name=:table';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema, ':table'=>$table));
+        $stmt->execute([
+            ':schema'=>$schema,
+            ':table'=>$table
+        ]);
         $dbTableName = $stmt->fetchColumn(0);
         if ($dbTableName != $table) {
             throw new \Exception(sprintf('Table "%s" does not exists', $table));
@@ -43,7 +46,11 @@ class LookupUtils
         $sql = 'select column_name from information_schema.columns
             where table_schema=:schema and table_name=:table and column_name=:column';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema, ':table'=>$table, ':column'=>$columnForValue));
+        $stmt->execute([
+            ':schema'=>$schema,
+            ':table'=>$table,
+            ':column'=>$columnForValue
+        ]);
         $dbColumnName = $stmt->fetchColumn(0);
         if ($dbColumnName != $columnForValue) {
             throw new \Exception(sprintf('Column "%s" does not exists', $columnForValue));
@@ -52,7 +59,11 @@ class LookupUtils
         $sql = 'select column_name from information_schema.columns
             where table_schema=:schema and table_name=:table and column_name=:column';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema, ':table'=>$table, ':column'=>$columnForLabel));
+        $stmt->execute([
+            ':schema'=>$schema,
+            ':table'=>$table,
+            ':column'=>$columnForLabel
+        ]);
         $dbColumnName = $stmt->fetchColumn(0);
         if ($dbColumnName != $columnForLabel) {
             throw new \Exception(sprintf('Column "%s" does not exists', $columnForLabel));
@@ -61,7 +72,7 @@ class LookupUtils
         $sql = 'select '.$columnForValue.' as id, '.$columnForLabel.' as name
             from '.$schema.'.'.$table.' order by '.$columnForLabel;
         $rows = $dataDb->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        $data = array();
+        $data = [];
         foreach ($rows as $row) {
             $data[$row['id']] = $row['name'];
         }

@@ -128,7 +128,10 @@ class R3UserProvider implements UserProviderInterface
             )
             WHERE us_login=:user AND us_status=:status
         ";
-        $params = ['user' => $username, 'status' => 'E'];
+        $params = [
+            'user' => $username,
+            'status' => 'E'
+        ];
         if ($domain !== null) {
             $sql .= " AND users.do_id=:domain";
             $params['domain'] = $domain;

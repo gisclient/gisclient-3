@@ -8,51 +8,81 @@ class PrintDocument
 
     private $options;
 
-    private $tiles = array();
+    private $tiles = [];
 
-    private $dimensions = array(
-        'vertical'=>array(
-            'A4'=>array('w'=>17,'h'=>22.5),
-            'A3'=>array('w'=>25.8,'h'=>35),
-            'A2'=>array('w'=>38,'h'=>52),
-            'A1'=>array('w'=>55,'h'=>76),
-            'A0'=>array('w'=>80,'h'=>111)
-        ),
-        'horizontal'=>array(
-            'A4' => array('w'=>25.8,'h'=>14),
-            'A3' => array('w'=>38,'h'=>22.5),
-            'A2' => array('w'=>55,'h'=>34),
-            'A1' => array('w'=>80,'h'=>52),
-            'A0' => array('w'=>115,'h'=>77)
-        )
-    );
+    private $dimensions = [
+        'vertical'=>[
+            'A4'=>[
+                'w'=>17,
+                'h'=>22.5
+            ],
+            'A3'=>[
+                'w'=>25.8,
+                'h'=>35
+            ],
+            'A2'=>[
+                'w'=>38,
+                'h'=>52
+            ],
+            'A1'=>[
+                'w'=>55,
+                'h'=>76
+            ],
+            'A0'=>[
+                'w'=>80,
+                'h'=>111
+            ]
+        ],
+        'horizontal'=>[
+            'A4' => [
+                'w'=>25.8,
+                'h'=>14
+            ],
+            'A3' => [
+                'w'=>38,
+                'h'=>22.5
+            ],
+            'A2' => [
+                'w'=>55,
+                'h'=>34
+            ],
+            'A1' => [
+                'w'=>80,
+                'h'=>52
+            ],
+            'A0' => [
+                'w'=>115,
+                'h'=>77
+            ]
+        ]
+    ];
 
     private $wmsMergeUrl = '/services/gcWMSMerge.php';
 
-    private $wmsList = array();
+    private $wmsList = [];
 
-    private $imageSize = array();
+    private $imageSize = [];
 
-    private $documentSize = array();
+    private $documentSize = [];
 
-    private $documentElements = array();
+    private $documentElements = [];
 
     private $imageFileName = '';
 
-    private $legendArray = array();
+    private $legendArray = [];
 
-    private $vectors = array();
+    private $vectors = [];
 
     private $db = null;
 
-    private $getLegendGraphicWmsList = array();
+    private $getLegendGraphicWmsList = [];
 
     private $getLegendGraphicRequest;
     
     public function __construct($baseUrl)
     {
         $this->baseUrl = $baseUrl;
-        $defaultOptions = array(
+        $defaultOptions = [
             'format' => 'A4',
             'dpi' => 72,
             'direction' => 'vertical',
@@ -63,9 +93,9 @@ class PrintDocument
             'image_format'=>'png',
             'srid' => null,
             'auth_name'=>'EPSG',
-        );
+        ];
         
-        $options = array();
+        $options = [];
 
         if (!empty($_REQUEST['tiles']) && is_array($_REQUEST['tiles'])) {
             $this->tiles = $_REQUEST['tiles'];
@@ -90,7 +120,7 @@ class PrintDocument
         if (!empty($_REQUEST['printFormat'])) {
             $options['format'] = $_REQUEST['printFormat'];
         }
-        if (!empty($_REQUEST['direction']) && in_array($_REQUEST['direction'], array('horizontal', 'vertical'))) {
+        if (!empty($_REQUEST['direction']) && in_array($_REQUEST['direction'], ['horizontal', 'vertical'])) {
             $options['direction'] = $_REQUEST['direction'];
         }
         if (!empty($_REQUEST['dpi']) && is_numeric($_REQUEST['dpi'])) {
@@ -235,11 +265,11 @@ class PrintDocument
         $dom = $this->buildDOM(true);
         //$xml = $dom->saveXML();
 
-        $pdfFile = runFOP($dom, $xslFile, array(
+        $pdfFile = runFOP($dom, $xslFile, [
             'tmp_path'=>$this->options['TMP_PATH'],
             'prefix'=>'GCPrintMap-',
             'out_name'=>$this->options['TMP_PATH'].'PrintMap-'.date('Ymd-His').'.pdf'
-        ));
+        ]);
         $this->deleteOldTmpFiles();
         return $this->options['TMP_URL'].'?filename='.basename($pdfFile);
     }
@@ -274,14 +304,14 @@ class PrintDocument
             if ($wms['PARAMETERS']['SERVICE'] == 'REDLINE') {
                 continue;
             }
-            $legendGraphicRequest = array_merge($wms['PARAMETERS'], array(
+            $legendGraphicRequest = array_merge($wms['PARAMETERS'], [
                 'url'=>(!empty($wms['URL'])?$wms['URL']:$wms['baseURL']),
                 'PROJECT'=>$wms['PARAMETERS']['PROJECT'],
                 'REQUEST' => 'GetLegendGraphic',
                 'ICONW' => 24,
                 'ICONH' => 16,
                 'GCLEGENDTEXT' => 0
-            ));
+            ]);
             if (defined("GC_SESSION_NAME")) {
                 $gcService = \GCService::instance();
                 $legendGraphicRequest['GC_SESSION_ID'] = $gcService->getSession()->getId();
@@ -295,7 +325,7 @@ class PrintDocument
     protected function getLegendsFromMapfile()
     {
         $project = $mapset = null;
-        $themes = array();
+        $themes = [];
 
         foreach ($this->tiles as $wms) {
             if (!empty($wms['parameters']['PROJECT']) && empty($project)) {
@@ -310,11 +340,11 @@ class PrintDocument
             foreach ($wms['parameters']['LAYERS'] as $layerName) {
                 if (isset($wms['options']['theme_id'])) {
                     if (!isset($themes[$wms['options']['theme_id']])) {
-                        $themes[$wms['options']['theme_id']] = array(
+                        $themes[$wms['options']['theme_id']] = [
                             'id'=>$wms['options']['theme_id'],
                             'title'=>$wms['options']['theme_title'],
-                            'layers'=>array()
-                        );
+                            'layers'=>[]
+                        ];
                     }
                     $themes[$wms['options']['theme_id']]['layers'][] = $layerName;
                 }
@@ -324,27 +354,27 @@ class PrintDocument
         if (!empty($project) && !empty($mapset)) {
             $oMap = ms_newMapObjFromString(file_get_contents(ROOT_PATH.'map/'.$project.'/'.$mapset.'.map'));
             foreach ($themes as &$theme) {
-                $theme['groups'] = array();
+                $theme['groups'] = [];
                 foreach ($theme['layers'] as $layergroupName) {
                     $layerIndexes = $oMap->getLayersIndexByGroup($layergroupName);
                     foreach ($layerIndexes as $index) {
                         $oLayer = $oMap->getLayer($index);
                         $layerName = $oLayer->name;
-                        $group = array(
+                        $group = [
                             'id'=>$layerName,
                             'title'=>$oLayer->getMetaData('ows_title'),
-                            'layers'=>array()
-                        );
+                            'layers'=>[]
+                        ];
                         for ($n = 0; $n < $oLayer->numclasses; $n++) {
                             $oClass = $oLayer->getClass($n);
                             $exclude = $oClass->getMetaData('gc_no_image');
                             if (!empty($exclude)) {
                                 continue;
                             }
-                            array_push($group['layers'], array(
+                            array_push($group['layers'], [
                                 'url'=>$layerName.'-'.$n,
                                 'title'=>$oClass->title
-                            ));
+                            ]);
                         }
                         array_push($theme['groups'], $group);
                     }
@@ -352,7 +382,9 @@ class PrintDocument
             }
             unset($theme);
         }
-        return array('themes'=>$themes);
+        return [
+            'themes'=>$themes
+        ];
     }
 
     protected function buildLegendArray()
@@ -362,7 +394,7 @@ class PrintDocument
         }
         $this->buildLegendGraphicWmsList();
 
-        $legendImages = array();
+        $legendImages = [];
         if (!is_array($this->options['legend'])) {
             $this->options['legend'] = $this->getLegendsFromMapfile();
         }
@@ -371,9 +403,17 @@ class PrintDocument
             if (empty($theme['groups'])) {
                 continue;
             }
-            $themeArray = array('id'=>$theme['id'],'title'=>$theme['title'],'groups'=>array());
+            $themeArray = [
+                'id'=>$theme['id'],
+                'title'=>$theme['title'],
+                'groups'=>[]
+            ];
             foreach ($theme['groups'] as $group) {
-                $groupArray = array('id'=>$group['id'],'title'=>$group['title'],'layers'=>array());
+                $groupArray = [
+                    'id'=>$group['id'],
+                    'title'=>$group['title'],
+                    'layers'=>[]
+                ];
                 if (empty($group['layers'])) {
                     continue;
                 }
@@ -406,10 +446,10 @@ class PrintDocument
                     imagecopy($dest, $source, 0, 0, 0, $offset, 24, 16);
                     $filename = $tmpFileId.'-'.$key.'.png';
                     imagepng($dest, $this->options['TMP_PATH'].$filename);
-                    array_push($groupArray['layers'], array(
+                    array_push($groupArray['layers'], [
                         'title' => $layer['title'],
                         'img' => $this->options['TMP_URL'].'?filename='.$filename
-                    ));
+                    ]);
                 }
                 array_push($themeArray['groups'], $groupArray);
             }
@@ -440,14 +480,14 @@ class PrintDocument
         if (false === ($fp = fopen($dest, "wb"))) {
             throw new \RuntimeException("Unable to open file $dest in write mode");
         }
-        $options = array(
+        $options = [
             CURLOPT_FILE => $fp,
             CURLOPT_HEADER => 0,
             CURLOPT_FOLLOWLOCATION => 1,
             CURLOPT_TIMEOUT => 60,
             CURLOPT_SSL_VERIFYPEER => 0,
             CURLOPT_SSL_VERIFYHOST => 0,
-            );
+        ];
         curl_setopt_array($ch, $options);
 
         if (false === curl_exec($ch)) {
@@ -464,15 +504,15 @@ class PrintDocument
     
     private function calculateSizes()
     {
-        $dimension = array(
+        $dimension = [
             'w'=>$this->dimensions[$this->options['direction']][$this->options['format']]['w'],
             'h'=>$this->dimensions[$this->options['direction']][$this->options['format']]['h']
-        );
+        ];
 
-        $this->imageSize = array(
+        $this->imageSize = [
             (int)round($dimension['w'] * ($this->options['dpi'] / 2.54)),
             (int)round($dimension['h'] * ($this->options['dpi'] / 2.54)),
-        );
+        ];
         $this->documentSize = $dimension;
     }
     

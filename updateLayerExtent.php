@@ -16,12 +16,15 @@ foreach($db->query($sql, PDO::FETCH_ASSOC) as $row) {
         echo 'ERROR: '.$e->getMessage()." <br> \n";
         continue;
     }
-    $extent = array();
+    $extent = [];
     if(!empty($box)) {
         $extent = GCUtils::parseBox($box);
         $sql = 'update '.DB_SCHEMA.'.layer set data_extent = :extent where layer_id = :id';
         $stmt = $db->prepare($sql);
-        $stmt->execute(array('extent'=>implode(' ', $extent), 'id'=>$row['layer_id']));
+        $stmt->execute([
+            'extent'=>implode(' ', $extent),
+            'id'=>$row['layer_id']
+        ]);
     }
 }
 $db->rollback();

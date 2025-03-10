@@ -7,7 +7,7 @@ $gcService->startSession();
 
 $authHandler = \GCApp::getAuthenticationHandler();
 
-if (!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], array('GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayers', 'PrintMap'))) {
+if (!isset($_REQUEST['REQUEST']) || !in_array($_REQUEST['REQUEST'], ['GetMap', 'SaveLayer', 'DeleteLayer', 'GetLayers', 'PrintMap'])) {
     die("REQUEST unknown");
 }
 
@@ -30,7 +30,9 @@ if ($_REQUEST["REQUEST"] == "PrintMap") {
     $fileContent = file_get_contents('php://input');
     $_REQUEST["options"] = $fileContent;
     require_once 'gcWMSMerge.php';
-    die(json_encode(array("file"=>$mapConfig['file_name'])));
+    die(json_encode([
+        "file"=>$mapConfig['file_name']
+    ]));
 }
 
 $db = GCApp::getDB();
@@ -38,29 +40,31 @@ $db = GCApp::getDB();
 //elenco dei layer di redline per l'utente corrente
 if ($_REQUEST["REQUEST"] == "GetLayers") {
     $sql = "SELECT DISTINCT redline_id, redline_title FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE project=:project AND mapset=:mapset AND username=:username ORDER BY redline_id;";
-    $params = array(
+    $params = [
         ':project'=>$_REQUEST['PROJECT'],
         ':mapset'=>$_REQUEST['MAPSET'],
         ':username'=>$authHandler->isAuthenticated() ? $authHandler->getToken()->getUsername() : 'GUEST'
-    );
+    ];
     $stmt = $db->prepare($sql);
     try {
         $stmt->execute($params);
     } catch (Exception $e) {
         //outputError($e->getMessage());
     }
-    $layers = array();
+    $layers = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $layers[]=$row;
     }
-    die(json_encode(array('layers'=>$layers)));
+    die(json_encode([
+        'layers'=>$layers
+    ]));
 }
 
 if ($_REQUEST["REQUEST"] == "DeleteLayer") {
     $sql = "DELETE FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE redline_id=?;";
     $stmt = $db->prepare($sql);
     try {
-        $stmt->execute(array($_REQUEST['REDLINEID']));
+        $stmt->execute([$_REQUEST['REDLINEID']]);
     } catch (Exception $e) {
         outputError($e->getMessage());
     }
@@ -70,21 +74,37 @@ if ($_REQUEST["REQUEST"] == "DeleteLayer") {
         @unlink($fileName);
     }
     
-    die(json_encode(array('result'=>'OK')));
+    die(json_encode([
+        'result'=>'OK'
+    ]));
 }
 
-$geomTypes = array(
-    'Point'=>array('db_type'=>'POINT', 'db_field'=>'point_geom', 'ms_type'=>MS_LAYER_POINT),
-    'LineString'=>array('db_type'=>'LINESTRING', 'db_field'=>'line_geom', 'ms_type'=>MS_LAYER_LINE, 'label_function'=>'st_endpoint'),
-    'Polygon'=>array('db_type'=>'POLYGON', 'db_field'=>'polygon_geom', 'ms_type'=>MS_LAYER_POLYGON, 'label_function'=>'st_centroid')
-);
+$geomTypes = [
+    'Point'=>[
+        'db_type'=>'POINT',
+        'db_field'=>'point_geom',
+        'ms_type'=>MS_LAYER_POINT
+    ],
+    'LineString'=>[
+        'db_type'=>'LINESTRING',
+        'db_field'=>'line_geom',
+        'ms_type'=>MS_LAYER_LINE,
+        'label_function'=>'st_endpoint'
+    ],
+    'Polygon'=>[
+        'db_type'=>'POLYGON',
+        'db_field'=>'polygon_geom',
+        'ms_type'=>MS_LAYER_POLYGON,
+        'label_function'=>'st_centroid'
+    ]
+];
 
 if (empty($_REQUEST['SRS'])) {
     outputError('Missing geometry srid');
 }
 $parts = explode(':', $_REQUEST["SRS"]);
 $mapSRID = $parts[1];
-$SRS_params = array();
+$SRS_params = [];
 if ($mapSRID != REDLINE_SRID) {
     $projectInfo = $gcService->get('PROJECT');
     if (!isset($projectInfo[$_REQUEST['PROJECT']]["PROJPARAMS"][$mapSRID])) {
@@ -128,7 +148,7 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
         }
         $sql = "insert into ".REDLINE_SCHEMA.".".REDLINE_TABLE." (project, mapset, username, redline_id, redline_title, date, note, color) values (:project, :mapset, :username, :redline_id, :redline_title, now(), :note, :color)";
         $stmt = $db->prepare($sql);
-        $params = array(
+        $params = [
             ':project'=>$_REQUEST['PROJECT'],
             ':mapset'=>$_REQUEST['MAPSET'],
             ':username'=>$authHandler->isAuthenticated() ? $authHandler->getToken()->getUsername() : 'GUEST',
@@ -136,7 +156,7 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
             ':redline_title'=>$redlineTitle,
             ':note'=>!empty($feature['properties']['note']) ? $feature['properties']['note'] : null,
             ':color'=>!empty($feature['properties']['color']) ? $feature['properties']['color'] : null
-        );
+        ];
         try {
             $stmt->execute($params);
         } catch (Exception $e) {
@@ -150,7 +170,9 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
         $stmt = $db->prepare($sql);
 
         try {
-            $stmt->execute(array(':id'=>$rowId));
+            $stmt->execute([
+                ':id'=>$rowId
+            ]);
         } catch (Exception $e) {
             outputError($e->getMessage()."\n\n--".$rowId);
         }
@@ -158,7 +180,10 @@ if ($_REQUEST["REQUEST"] == "SaveLayer") {
     }
 
     if ($inserted) {
-        die(json_encode(array('redlineId'=>$redlineId, 'redlineTitle'=>$redlineTitle)));
+        die(json_encode([
+            'redlineId'=>$redlineId,
+            'redlineTitle'=>$redlineTitle
+        ]));
     } else {
         outputError('Invalid format');
     }
@@ -169,16 +194,16 @@ if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST
     if (empty($_REQUEST['REDLINEID'])) {
         die("MANCA ID");
     }
-    $geomFields = array();
+    $geomFields = [];
     foreach ($geomTypes as $type) {
         array_push($geomFields, $type['db_field']);
     }
     $sql = "select ".implode(',', $geomFields).", note, color from ".REDLINE_SCHEMA.".".REDLINE_TABLE.
         " where redline_id = ?";
     $stmt = $db->prepare($sql);
-    $stmt->execute(array($_REQUEST['REDLINEID']));
+    $stmt->execute([$_REQUEST['REDLINEID']]);
     $redline = $stmt->fetch(PDO::FETCH_ASSOC);
-    $types = array();
+    $types = [];
     foreach ($geomTypes as $index => $type) {
         if (!empty($redline[$type['db_field']])) {
             array_push($types, $geomTypes[$index]);
@@ -284,7 +309,9 @@ if ($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST
 function outputError($msg)
 {
     header("Status: 500 Internal Server Error");
-    die(json_encode(array('error'=>$msg)));
+    die(json_encode([
+        'error'=>$msg
+    ]));
     //die("error\n".$msg);
 }
 
@@ -293,7 +320,7 @@ function parseGeoJSONGeomtry($geom, $mapSRID)
     global $geomTypes,$SRS_params;
     
     $wkt = "st_geomfromtext('".$geomTypes[$geom['type']]['db_type']."(";
-    $points = array();
+    $points = [];
     $coordinates = $geom['coordinates'];
     if ($geom['type'] == 'Polygon') {
         $coordinates = $geom['coordinates'][0];
@@ -327,18 +354,18 @@ function getProjParams($srid)
     $sql="SELECT proj4text,projparam FROM spatial_ref_sys LEFT JOIN ".DB_SCHEMA.".project_srs using(srid)
             WHERE srid = $srid AND (project_name IS NULL OR project_name = ?);";
     $stmt = $db->prepare($sql);
-    $stmt->execute(array($_REQUEST['PROJECT']));
+    $stmt->execute([$_REQUEST['PROJECT']]);
     $projparams = $stmt->fetch(PDO::FETCH_ASSOC);
     $projString = $projparams["proj4text"];
     if (strpos($projString, "towgs84") === false && !empty($projparams["projparam"])) {
         $projString .="+towgs84=".$projparams["projparam"];
     }
     $projectInfo = [
-            $_REQUEST['PROJECT'] => [
-                "PROJPARAMS" => [
-                    $srid => $projString
-                ]
+        $_REQUEST['PROJECT'] => [
+            "PROJPARAMS" => [
+                $srid => $projString
             ]
-        ];
+        ]
+    ];
         \GCService::instance()->set('PROJECT', $projectInfo);
 }

@@ -50,13 +50,13 @@ die();
 function getMimeFromFileExt($ext)
 {
 
-    $mimes = array(
+    $mimes = [
         'application/pdf' => 'pdf',
         'application/zip' => 'zip',
-        'application/msword' => array('doc', 'dot'),
-        'application/vnd.ms-excel' => array('xla', 'xlc', 'xlm', 'xls', 'xlt', 'xlw'),
-        'application/vnd.ms-powerpoint' => array('pot', 'pps', 'ppt'),
-        'application/postscript' => array('ai', 'eps', 'ps'),
+        'application/msword' => ['doc', 'dot'],
+        'application/vnd.ms-excel' => ['xla', 'xlc', 'xlm', 'xls', 'xlt', 'xlw'],
+        'application/vnd.ms-powerpoint' => ['pot', 'pps', 'ppt'],
+        'application/postscript' => ['ai', 'eps', 'ps'],
         'application/rtf' => 'rtf',
         'application/vnd.google-earth.kml+xml' => 'kml',
         'application/vnd.google-earth.kmz' => 'kmz',
@@ -68,25 +68,25 @@ function getMimeFromFileExt($ext)
         'application/x-tar' => 'tar',
         'application/x-javascript' => 'js',
         'application/x-shockwave-flash' => 'swf',
-        'audio/mid' => array('mid', 'rmi'),
+        'audio/mid' => ['mid', 'rmi'],
         'audio/x-wav' => 'wav',
         'audio/mpeg' => 'mp3',
         'image/gif' => 'gif',
         'image/bmp' => 'bmp',
         'image/pipeg' => 'jfif',
         'image/svg+xml' => 'svg',
-        'image/tiff' => array('tif', 'tiff'),
-        'image/png' => array('png', 'png16', 'png24', 'png32'),
-        'image/jpeg' => array('jpe', 'jpeg', 'jpg'),
-        'text/plain' => array('txt', 'c', 'h', 'php', 'php3', 'php4'),
-        'text/html' => array('htm', 'html', 'stm'),
+        'image/tiff' => ['tif', 'tiff'],
+        'image/png' => ['png', 'png16', 'png24', 'png32'],
+        'image/jpeg' => ['jpe', 'jpeg', 'jpg'],
+        'text/plain' => ['txt', 'c', 'h', 'php', 'php3', 'php4'],
+        'text/html' => ['htm', 'html', 'stm'],
         'text/css' => 'css',
-        'video/mpeg' => array('mp2', 'mpa', 'mpe', 'mpeg', 'mpg', 'mpv2'),
-        'video/quicktime' => array('qt', 'mov'),
+        'video/mpeg' => ['mp2', 'mpa', 'mpe', 'mpeg', 'mpg', 'mpv2'],
+        'video/quicktime' => ['qt', 'mov'],
         'video/x-msvideo' => 'avi',
         // MS Office 2007
-        'application/vnd.openxmlformats' => array('docx', 'pptx', 'xlsx')
-    );
+        'application/vnd.openxmlformats' => ['docx', 'pptx', 'xlsx']
+    ];
 
     if (isset($ext[0]) && $ext[0] == '.') {
         $ext = substr($ext, 1);
@@ -119,20 +119,20 @@ function getMimeFromFileExt($ext)
  *                       cacheable:    If true don't send the cache header
  *                       cache_ttl:    Time to live of a cacheable object (cacheable must be true)
  */
-function deliverFile($fileName, $opt = array())
+function deliverFile($fileName, $opt = [])
 {
 
-    $defaultOpt = array(
+    $defaultOpt = [
         'format' => '',
         'name' => '',
         'purge' => false,
         'mime' => '',
         'disposition' => 'inline',
-        'header' => array(),
+        'header' => [],
         'die' => true,
         'cacheable' => false,
         'cache_ttl' => 30 * 60 * 60
-    );
+    ];
 
     $opt = array_merge($defaultOpt, $opt);
 
@@ -154,7 +154,7 @@ function deliverFile($fileName, $opt = array())
     }
 
     // Problem with some version of IE
-    $ieProblemExt = array('zip');  // File
+    $ieProblemExt = ['zip'];  // File
     if (in_array($opt['format'], $ieProblemExt)) {
         // Don't do double compression on zip files!
         if (ini_get('zlib.output_compression')) {

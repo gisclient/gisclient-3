@@ -25,12 +25,12 @@ if (!$save->hasErrors && $save->action=="salva") {
         // $serviceName=$data["Service"]["Name"];
         // $serviceTitle=$data["Service"]["Title"];
         // $serviceAbstract=$data["Service"]["Abstract"];
-        $formats=(is_array($data["Capability"]["Request"]["GetMap"]["Format"]))?($data["Capability"]["Request"]["GetMap"]["Format"]):(array($data["Capability"]["Request"]["GetMap"]["Format"]));           // Formati Disponibili
+        $formats=(is_array($data["Capability"]["Request"]["GetMap"]["Format"]))?($data["Capability"]["Request"]["GetMap"]["Format"]):([$data["Capability"]["Request"]["GetMap"]["Format"]]);           // Formati Disponibili
         $formatsList = implode(",", $formats);
         $format=$formats[0];
         $theme=$data["Capability"]["Layer"];
         // $lThemeTitle=$theme["Title"];
-        $lThemeSRS=(is_array($theme["SRS"]))?($theme["SRS"]):(array($theme["SRS"]));
+        $lThemeSRS=(is_array($theme["SRS"]))?($theme["SRS"]):([$theme["SRS"]]);
         $epsgList = implode(" ", $lThemeSRS);
         $lGroup = [];
         for ($i=0; $i<count($theme["Layer"]); $i++) {
@@ -46,14 +46,23 @@ if (!$save->hasErrors && $save->action=="salva") {
                 $lGroup[$i]["maxscale"]=$lGrp["ScaleHint"]["@attributes"]["max"][0] ?: "null";
                 if ($lGrp["Style"]) {
                     if ($lGrp["Style"]["Name"] && $lGrp["Style"]["Title"]) {
-                        $lGroup[$i]["layer"][0]=array("name"=>$lGrp["Style"]["Name"],"title"=>$lGrp["Style"]["Title"]);
+                        $lGroup[$i]["layer"][0]=[
+                            "name"=>$lGrp["Style"]["Name"],
+                            "title"=>$lGrp["Style"]["Title"]
+                        ];
                     } else {
                         for ($j=0; $j<count($lGrp["Style"]); $j++) {
-                            $lGroup[$i]["layer"][$j]=array("name"=>$lGrp["Style"][$j]["Name"],"title"=>$lGrp["Style"][$j]["Title"]);
+                            $lGroup[$i]["layer"][$j]=[
+                                "name"=>$lGrp["Style"][$j]["Name"],
+                                "title"=>$lGrp["Style"][$j]["Title"]
+                            ];
                         }
                     }
                 } else {
-                    $lGroup[$i]["layer"][0]=array("name"=>$lGrp["Name"],"title"=>$lGrp["Title"]);
+                    $lGroup[$i]["layer"][0]=[
+                        "name"=>$lGrp["Name"],
+                        "title"=>$lGrp["Title"]
+                    ];
                 }
                 for ($j=0; $j<count($lGroup[$i]["layer"]); $j++) {
                     $layer=$lGroup[$i]["layer"][$j];

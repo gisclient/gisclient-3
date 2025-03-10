@@ -29,7 +29,7 @@ class UserProvider implements UserProviderInterface
      */
     private function getRoles($userName)
     {
-        $roles = array('ROLE_USER');
+        $roles = ['ROLE_USER'];
         if ($userName === SUPER_USER) {
             $roles[] = 'ROLE_ADMIN';
         }
@@ -44,16 +44,16 @@ class UserProvider implements UserProviderInterface
      */
     private function getProjects($userName)
     {
-        $projects = array();
+        $projects = [];
         
         $sql = '
             SELECT * FROM '.DB_SCHEMA.'.project_admin 
             WHERE username = :username
         ';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(
+        $stmt->execute([
             'username'=>$userName,
-        ));
+        ]);
         foreach ($stmt as $project) {
             $projects[] = $project['project_name'];
         }
@@ -69,16 +69,16 @@ class UserProvider implements UserProviderInterface
      */
     private function getGroups($userName)
     {
-        $groups = array();
+        $groups = [];
         
         $sql = '
             SELECT groupname FROM '.DB_SCHEMA.'.user_group 
             WHERE username = :username
         ';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(
+        $stmt->execute([
             'username'=>$userName,
-        ));
+        ]);
         foreach ($stmt as $group) {
             $groups[] = $group['groupname'];
         }
@@ -98,9 +98,9 @@ class UserProvider implements UserProviderInterface
             WHERE username=:user
         ';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(
+        $stmt->execute([
             'user'=>$username
-        ));
+        ]);
         // make a call to your webservice here
         $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
         

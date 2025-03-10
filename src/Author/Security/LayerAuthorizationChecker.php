@@ -40,21 +40,27 @@ class LayerAuthorizationChecker
      */
     public function getLayers(array $filter)
     {
-        $result = array(
-            'authorized_layers' => array(),
-            'map_layers' => array(),
-        );
+        $result = [
+            'authorized_layers' => [],
+            'map_layers' => [],
+        ];
         if (isset($filter['mapset_name'])) {
             $sqlFilter = 'mapset_name = :mapset_name';
-            $sqlValues = array(':mapset_name'=>$filter['mapset_name']);
+            $sqlValues = [
+                ':mapset_name'=>$filter['mapset_name']
+            ];
             $sql = 'select project_name from '.DB_SCHEMA.'.mapset where mapset_name=:mapset_name';
         } elseif (isset($filter['theme_name'])) {
             $sqlFilter = 'theme_name = :theme_name';
-            $sqlValues = array(':theme_name'=>$filter['theme_name']);
+            $sqlValues = [
+                ':theme_name'=>$filter['theme_name']
+            ];
             $sql = 'select project_name from '.DB_SCHEMA.'.theme where theme_name=:theme_name';
         } elseif (isset($filter['project_name'])) {
             $sqlFilter = 'project_name = :project_name';
-            $sqlValues = array(':project_name'=>$filter['project_name']);
+            $sqlValues = [
+                ':project_name'=>$filter['project_name']
+            ];
             $sql = 'select project_name from '.DB_SCHEMA.'.project where project_name=:project_name';
         } else {
             return false;
@@ -73,7 +79,7 @@ class LayerAuthorizationChecker
         if (!$isAdmin) {
             $groups = $this->user->getGroups();
             if (!empty($groups)) {
-                $in = array();
+                $in = [];
                 foreach ($groups as $k => $groupId) {
                     array_push($in, ':group_param_'.$k);
                     $sqlValues[':group_param_'.$k] = $groupId;
@@ -92,7 +98,7 @@ class LayerAuthorizationChecker
             $authClause = '(coalesce(private,0)=0)';
         }
         
-        $layerAuthorizations = array();
+        $layerAuthorizations = [];
         $sql = "
             SELECT
                 theme.project_name, theme_name, layergroup_name, layergroup_single,
@@ -146,26 +152,26 @@ class LayerAuthorizationChecker
        
             // create arrays if not exists
             if (!isset($result['map_layers'][$row['theme_name']])) {
-                $result['map_layers'][$row['theme_name']] = array();
+                $result['map_layers'][$row['theme_name']] = [];
             }
             if (!isset($result['map_layers'][$row['theme_name']][$row['layergroup_name']])) {
-                $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = array();
+                $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = [];
             }
             if ($row['layergroup_single']==1) {
-                $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = array(
+                $result['map_layers'][$row['theme_name']][$row['layergroup_name']] = [
                     "name" => $row['layergroup_name'],
                     "title" => $row['layergroup_title'],
                     "grouptitle" => $row['layergroup_title']
-                );
+                ];
             } else {
-                array_push($result['map_layers'][$row['theme_name']][$row['layergroup_name']], array(
+                array_push($result['map_layers'][$row['theme_name']][$row['layergroup_name']], [
                     "name" => $featureType,
                     "title" => $row['layer_title'] ?: $row['layer_name'],
                     "grouptitle" => $row['layergroup_title'],
                     "minScale" => $row['minscale'],
                     "maxScale" => $row['maxscale'],
                     "hidden" => $row['hidden']
-                ));
+                ]);
             }
         };
         //echo "<br><br>\n";

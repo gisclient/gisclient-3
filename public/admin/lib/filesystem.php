@@ -3,9 +3,9 @@
 function elenco_file($p, $ext = '', $fname = '')
 {
     if (!empty($ext) && is_string($ext)) {
-        $ext = array($ext);
+        $ext = [$ext];
     }
-    $files = array();
+    $files = [];
     if (!is_dir($p)) {
         return false;
     }
@@ -32,11 +32,11 @@ function elenco_file($p, $ext = '', $fname = '')
 
 function elenco_dir($p)
 {
-    $elenco = array();
+    $elenco = [];
     if (is_dir($p)) {
         if ($dh = opendir($p)) {
             while (($file = readdir($dh)) !== false) {
-                if (is_dir($p."/".$file) && !in_array($file, array(".",".."))) {
+                if (is_dir($p."/".$file) && !in_array($file, [".", ".."])) {
                     $elenco[]=$file;
                 }
             }

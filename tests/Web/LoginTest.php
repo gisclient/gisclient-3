@@ -18,11 +18,11 @@ class LoginTest extends TestCase {
 			unlink($this->cookieJar);
 		}
 		
-		$postParameters = array(
-			'username' => 'admin',
-			'password' => 'wrongpassword',
-			'azione'   => 'Entra',
-		);
+		$postParameters = [
+    'username' => 'admin',
+		    'password' => 'wrongpassword',
+		    'azione'   => 'Entra',
+];
 		$loginResult = HttpUtils::post(PUBLIC_URL.'index.php', $postParameters, $this->cookieJar);
 		$this->assertEquals($loginResult[0], 200);
 		$this->assertTrue(strpos($loginResult[1], 'LogOut') === false);
@@ -34,11 +34,11 @@ class LoginTest extends TestCase {
 			unlink($this->cookieJar);
 		}
 		
-		$postParameters = array(
-			'username' => 'admin',
-			'password' => 'gisclient',
-			'azione'   => 'Entra',
-		);
+		$postParameters = [
+    'username' => 'admin',
+		    'password' => 'gisclient',
+		    'azione'   => 'Entra',
+];
 		$loginResult = HttpUtils::post(PUBLIC_URL.'index.php', $postParameters, $this->cookieJar);
 		$this->assertEquals($loginResult[0], 200);
 		$this->assertTrue(strpos($loginResult[1], 'LogOut') !== false);

@@ -7,7 +7,7 @@ $ajax = new GCAjax();
 if (empty($_REQUEST['field_id'])) {
     $ajax->error('Undefined fieldId');
 }
-$params = array();
+$params = [];
 if (!empty($_REQUEST['suggest'])) {
     $inputString = '%' . $_REQUEST['suggest'] . '%';
     $params['input_string'] = $inputString;
@@ -23,13 +23,15 @@ $db = GCApp::getDB();
 //qt_filter -> data_filter
 $sql = 'select catalog_path, layer.data, layer.data_unique, layer.data_filter from '.DB_SCHEMA.'.layer inner join '.DB_SCHEMA.'.catalog  using (catalog_id) inner join '.DB_SCHEMA.'.field using(layer_id) where field_id=:field_id';
 $stmt = $db->prepare($sql);
-$stmt->execute(array('field_id'=>$_REQUEST['field_id']));
+$stmt->execute([
+    'field_id'=>$_REQUEST['field_id']
+]);
 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $dataDb = GCApp::getDataDB($layer['catalog_path']);
 $datalayerSchema = GCApp::getDataDBSchema($layer['catalog_path']);
 $datalayerTable = $layer["data"];
-$filters = array(); //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
+$filters = []; //in futuro si possono rimettere i campi filtrati per altri campi, filtri da sessione etc
 if (!empty($layer['data_filter'])) {
     array_push($filters, $layer['data_filter']);
 }
@@ -39,7 +41,9 @@ $sTable = $datalayerSchema.".".$datalayerTable;
 /* Recupero i dati del campo */
 $sql = 'select field.field_id, field_name, field_filter, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.field left join '.DB_SCHEMA.'.relation using (relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where field.field_id=:field_id';
 $stmt = $db->prepare($sql);
-$stmt->execute(array('field_id'=>$_REQUEST['field_id']));
+$stmt->execute([
+    'field_id'=>$_REQUEST['field_id']
+]);
 $field = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (empty($field['relation_id'])) {
@@ -65,7 +69,9 @@ if (isset($fieldFilterId) && isset($_REQUEST["filtervalue"])) {
     /* Recupero i dati del campo filtro */
     $sql = 'select field.field_id, field_name, field_filter, catalog_path,  relation.relation_name, relation_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, catalog_path, formula from '.DB_SCHEMA.'.field left join '.DB_SCHEMA.'.relation using (relation_id) left join '.DB_SCHEMA.'.catalog using (catalog_id) where field.field_id=:field_id';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('field_id'=>$fieldFilterId));
+    $stmt->execute([
+        'field_id'=>$fieldFilterId
+    ]);
     $fieldFilter = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!empty($fieldFilter['relation_id'])) {
@@ -83,7 +89,7 @@ if (!empty($field["relation_id"])) {//il campo oggetto di autosuggest è su tabe
         $fieldName = $field['relation_name'] . '.' . $fieldName;
     }
     
-    $joinList = array();
+    $joinList = [];
     
     if ($field["data_field_1"] && $field["table_field_1"]) {
         $joinList[] = DATALAYER_ALIAS_TABLE.".".$field["data_field_1"]."=\"".$field["relation_name"]."\".".$field["table_field_1"];
@@ -103,7 +109,7 @@ if (!empty($fieldFilter["relation_id"])) {//il campo oggetto di autosuggest è s
         $fieldFilterName = $fieldFilter['relation_name'] . '.' . $fieldFilterName;
     }
     
-    $joinList = array();
+    $joinList = [];
     
     if ($fieldFilter["data_field_1"] && $fieldFilter["table_field_1"]) {
         $joinList[] = DATALAYER_ALIAS_TABLE.".".$fieldFilter["data_field_1"]."=\"".$fieldFilter["relation_name"]."\".".$fieldFilter["table_field_1"];
@@ -145,4 +151,6 @@ try {
     $ajax->error($e->getMessage());
 }
 
-$ajax->success(array('data'=>$results));
+$ajax->success([
+    'data'=>$results
+]);

@@ -4,7 +4,7 @@ error_reporting(E_ERROR | E_PARSE);
     $db = GCApp::getDB();
     $fName='';
 if (isset($_POST["esporta"])) {
-    $array_levels = array();
+    $array_levels = [];
     include_once ADMIN_PATH."lib/export.php";
     $level=$_POST["level"];
     $project=$_POST["project"];
@@ -24,12 +24,18 @@ if (isset($_POST["esporta"])) {
                 $stmt = $db->query($sql);
                 //secondo me questo array_levels non serve a niente...
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    $array_levels[$v["id"]]=array("name"=>$v["name"],"parent"=>$v["parent"],"leaf"=>$v["leaf"]);
+                    $array_levels[$v["id"]]=[
+                        "name"=>$v["name"],
+                        "parent"=>$v["parent"],
+                        "leaf"=>$v["leaf"]
+                    ];
                 }
             } catch (Exception $e) {
                 die("<p>Impossibile eseguire la query : $sql</p>");
             }
-            $r=_export($fName, $_POST["livello"], $project, $structure, 1, '', array("$l"=>$objId));
+            $r=_export($fName, $_POST["livello"], $project, $structure, 1, '', [
+                "$l"=>$objId
+            ]);
                 
             $message="$overwrite_message <br> FILE <a href=\"#\" onclick=\"javascript:openFile('".ADMIN_PATH."export/$fName')\">$fName<a/> ESPORTATO CORRETTAMENTE";
         }

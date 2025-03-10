@@ -18,13 +18,13 @@ if (($data = json_decode($inputJSONText, true)) === null) {
 }
 
 if (!is_array($data)) {
-    $data = array($data);
+    $data = [$data];
 }
 
-$exports = array();
+$exports = [];
 foreach ($data as $expConf) {
     if (!isset($exports[$expConf['export_format']])) {
-        $exports[$expConf['export_format']] = array();
+        $exports[$expConf['export_format']] = [];
     }
     $projectName = $expConf['project_name'];
     $featureType = $expConf['feature_type'];
@@ -36,18 +36,18 @@ foreach ($data as $expConf) {
         . " INNER JOIN {$db->getParams()['schema']}.theme USING(theme_id) "
         . " WHERE project_name = :project AND layergroup_name = :layergroup and layer_name = :layer ";
     $stmt = $db->getDb()->prepare($sql);
-    $stmt->execute(array(
+    $stmt->execute([
         'project'=>$projectName,
         'layergroup'=>$layergroupName,
         'layer'=>$layerName
-    ));
+    ]);
     $layerId = $stmt->fetchColumn(0);
 
     $layer = new Layer($layerId);
     $catalog = $layer->getCatalog();
     $layerDb = new Db($catalog);
 
-    $fields = array();
+    $fields = [];
     $layerFields = $layer->getFields();
     foreach ($expConf['fields'] as $eField) {
         foreach ($layerFields as $lField) {
@@ -62,7 +62,7 @@ foreach ($data as $expConf) {
 
     $where = 'true';
     if (isset($expConf['data'])) {
-        $ids = array();
+        $ids = [];
         foreach ($expConf['data'] as $key) {
             if (isset($key[$layer->getPrimaryColumn()])) {
                 array_push($ids, $db->getDb()->quote($key[$layer->getPrimaryColumn()]));
@@ -91,8 +91,8 @@ foreach ($data as $expConf) {
 
     $expConf['srid'] = $layer->getGeomSrid();
 
-    array_push($exports[$expConf['export_format']], array(
-        'config' => array(
+    array_push($exports[$expConf['export_format']], [
+        'config' => [
             'db' => $layerDb->getParams()['db_name'],
             'db_instance' => $layerDb->getDb(),
             'table' => $viewName,
@@ -100,21 +100,21 @@ foreach ($data as $expConf) {
             'name' => $layer->getName(),
             'pk' => $layer->getPrimaryColumn(),
             'geom' => $layer->getGeomColumn()
-        ),
+        ],
         'extras' => $expConf
-    ));
+    ]);
 }
 
 $zipFile = null;
 if (isset($exports['shp'])) {
     foreach ($exports['shp'] as $exp) {
         $export = new \GCExport($exp['config']['db_instance'], 'shp');
-        $url = $export->export(array($exp['config']), array(
+        $url = $export->export([$exp['config']], [
             'name' => 'export_shp',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
             'fields' => $exp['extras']['fields']
-        ));
+        ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
@@ -123,14 +123,14 @@ if (isset($exports['shp'])) {
 if (isset($exports['dxf'])) {
     foreach ($exports['dxf'] as $exp) {
         $export = new \GCExport($exp['config']['db_instance'], 'dxf');
-        $url = $export->export(array($exp['config']), array(
+        $url = $export->export([$exp['config']], [
             'name' => 'export_dxf',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
             'extent' => $exp['extras']['extent'],
             'srid' => $exp['extras']['srid'],
             'layer' => $exp['extras']['layer']
-        ));
+        ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
@@ -139,12 +139,12 @@ if (isset($exports['dxf'])) {
 if (isset($exports['xls'])) {
     foreach ($exports['xls'] as $exp) {
         $export = new \GCExport($exp['config']['db_instance'], 'xls');
-        $url = $export->export(array($exp['config']), array(
+        $url = $export->export([$exp['config']], [
             'name' => 'export_xls',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
             'fields' => $exp['extras']['fields']
-        ));
+        ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
@@ -153,7 +153,7 @@ if (isset($exports['xls'])) {
 if (isset($exports['kml'])) {
     foreach ($exports['kml'] as $exp) {
         $export = new \GCExport($exp['config']['db_instance'], 'kml');
-        $url = $export->export(array($exp['config']), array(
+        $url = $export->export([$exp['config']], [
             'name' => 'export_kml',
             'add_to_zip' => &$zipFile,
             'return_url' => true,
@@ -161,7 +161,7 @@ if (isset($exports['kml'])) {
             'extent' => $exp['extras']['extent'],
             'srid' => $exp['extras']['srid'],
             'layer' => $exp['extras']['layer']
-        ));
+        ]);
 
         $db->getDb()->query("DROP VIEW IF EXISTS {$exp['config']['schema']}.{$exp['config']['table']}");
     }
@@ -169,4 +169,6 @@ if (isset($exports['kml'])) {
 
 
 
-$ajax->success(array('file'=> $url));
+$ajax->success([
+    'file'=> $url
+]);

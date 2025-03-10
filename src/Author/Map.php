@@ -13,14 +13,14 @@ class Map implements LayerLevelInterface
 
         $sql = "SELECT COUNT(*) FROM {$this->db->getParams()['schema']}.project WHERE project_name = ?";
         $stmt = $this->db->getDb()->prepare($sql);
-        $stmt->execute(array($projectName));
+        $stmt->execute([$projectName]);
         if ($stmt->fetchColumn(0) !== 1) {
             throw new \Exception("Error: project '$projectName' not found", 1);
         }
 
         $sql = "SELECT * FROM {$this->db->getParams()['schema']}.mapset WHERE project_name = ? AND mapset_name = ?";
         $stmt = $this->db->getDb()->prepare($sql);
-        $stmt->execute(array($projectName, $mapName));
+        $stmt->execute([$projectName, $mapName]);
         $data = $stmt->fetch();
         if (!empty($data)) {
             $this->data = $data;
@@ -95,11 +95,11 @@ class Map implements LayerLevelInterface
 
     public function getLayerGroups()
     {
-        $layerGroups = array();
+        $layerGroups = [];
 
         $sql = "SELECT layergroup_id FROM {$this->db->getParams()['schema']}.mapset_layergroup WHERE mapset_name = ?";
         $stmt = $this->db->getDb()->prepare($sql);
-        $stmt->execute(array($this->data['mapset_name']));
+        $stmt->execute([$this->data['mapset_name']]);
         while ($layergroup_id = $stmt->fetchColumn(0)) {
             $layerGroup = new LayerGroup($layergroup_id);
             $layerGroup->setMap($this);
@@ -111,7 +111,7 @@ class Map implements LayerLevelInterface
 
     public function getThemes()
     {
-        $themes = array();
+        $themes = [];
 
         $sql = "SELECT DISTINCT theme_id "
             . " FROM {$this->db->getParams()['schema']}.theme "
@@ -123,7 +123,7 @@ class Map implements LayerLevelInterface
             . ") "
             . " AND project_name = ?";
         $stmt = $this->db->getDb()->prepare($sql);
-        $stmt->execute(array($this->data['mapset_name'], $this->data['project_name']));
+        $stmt->execute([$this->data['mapset_name'], $this->data['project_name']]);
         while ($theme_id = $stmt->fetchColumn(0)) {
             $theme = new Theme($theme_id, $this->data['mapset_name']);
             $theme->setMap($this);

@@ -133,7 +133,7 @@ class Tabella_h extends Tabella
                 $retval="<td align=\"center\" valign=\"middle\" width=\"7\"><input width=\"7\" type=\"radio\" name=\"$id\" value=\"$nome\" $selezionato></td>\n";
                 break;
             case "radio_sino":
-                $selected=($valore>0)?(array("checked","")):(array("","checked"));
+                $selected=($valore>0)?(["checked", ""]):(["", "checked"]);
                 $val=($valore>0)?(1):(-1);
                 $size=explode("#", $this->def_col[$col][2]);
                 $id=$this->array_dati[$row][$size[1]];
@@ -165,8 +165,8 @@ class Tabella_h extends Tabella
                 break;
             case "delete":
                 #echo '<pre>'; var_export($this); die();
-                $pkeys = array();
-                $values = array();
+                $pkeys = [];
+                $values = [];
                 //print_array($this->pkeys);print $row;
                 foreach ($this->pkeys as $pkey => $value) {
                     array_push($pkeys, $pkey);
@@ -266,9 +266,9 @@ class Tabella_h extends Tabella
                 break;
 
             case "submit":
-                if (in_array(strtolower($nome), array("cancella","elimina"))) {
+                if (in_array(strtolower($nome), ["cancella", "elimina"])) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
-                } elseif (in_array(strtolower($nome), array("copia"))) {
+                } elseif (in_array(strtolower($nome), ["copia"])) {
                     $js="onclick=\"javascript:return confirm('Sei sicuro di voler copiare il record?');\"";
                 }
                 $retval="\n\t\t\t<input  name=\"$nome\"  id=\"$nome\" class=\"hexfield\" style=\"width:".$w."px;\" type=\"submit\" value=\"$nome\" $js >";

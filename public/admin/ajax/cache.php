@@ -17,7 +17,7 @@ if (empty($_REQUEST['project'])) {
 
 switch ($_REQUEST['action']) {
     case 'list':
-        $files = array();
+        $files = [];
 
         $configFile = MAPPROXY_CONFIG_PATH.$_REQUEST['project'].'.yaml';
         if (!file_exists($configFile)) {
@@ -35,14 +35,16 @@ switch ($_REQUEST['action']) {
             }
             $size = filesize($file);
             
-            array_push($files, array(
+            array_push($files, [
                 'layer'=>$name,
                 'name'=>$cache['cache']['filename'],
                 'size'=>formatBytes($size)
-            ));
+            ]);
         }
 
-        $ajax->success(array('files'=>$files));
+        $ajax->success([
+            'files'=>$files
+        ]);
         break;
     case 'empty':
         if (empty($_REQUEST['file'])) {
@@ -67,7 +69,7 @@ switch ($_REQUEST['action']) {
 
 function formatBytes($bytes, $precision = 2)
 {
-    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
     $bytes = max($bytes, 0);
     $pow = floor(($bytes ? log($bytes) : 0) / log(1024));

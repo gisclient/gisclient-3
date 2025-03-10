@@ -4,11 +4,11 @@ require_once __DIR__ . '/../../../bootstrap.php';
 
 $db = \GCApp::getDB();
 
-    $groupname = $this->parametri["groups"] ?? array();
+    $groupname = $this->parametri["groups"] ?? [];
     
 if (!empty($groupname)) {
     if (!isset($data) || !is_array($data)) {
-        $data = array();
+        $data = [];
     }
         
     $sql = '
@@ -16,9 +16,9 @@ if (!empty($groupname)) {
             WHERE groupname=:group
         ';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array(
+    $stmt->execute([
         'group' => $groupname
-    ));
+    ]);
         
     array_push($data, $stmt->fetch(\PDO::FETCH_ASSOC));
 }

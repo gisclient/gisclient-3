@@ -64,7 +64,9 @@ class Font
         $selectSymbolName = "SELECT symbol_name FROM {$this->dbSchema}.symbol WHERE symbol_def LIKE :like";
         $like = '%FONT "' . $fontName . '"%CHARACTER "&#'. $symbolCode .';"';
         $stmt = $this->db->prepare($selectSymbolName);
-        $stmt->execute(array(':like'=>$like));
+        $stmt->execute([
+            ':like'=>$like
+        ]);
         $name = $stmt->fetchColumn();
 
         if ($name === $symbolName) {
@@ -104,7 +106,9 @@ class Font
         $selectSymbolName = "SELECT symbol_name FROM {$this->dbSchema}.symbol WHERE symbol_def LIKE :like";
         $like = '%FONT "' . $fontName . '"%CHARACTER "&#'. $symbolCode .';"';
         $stmt = $this->db->prepare($selectSymbolName);
-        $stmt->execute(array(':like'=>$like));
+        $stmt->execute([
+            ':like'=>$like
+        ]);
         $name = $stmt->fetchColumn();
 
         if (false !== $name) {

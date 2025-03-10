@@ -16,11 +16,11 @@ $stmt = $db->prepare($sql);
 
 [$layergroupName, $layerName] = explode('.', $_REQUEST['featureType']);
 
-$stmt->execute(array(
+$stmt->execute([
     'mapset_name'=>$_REQUEST['mapsetName'],
     'layergroup_name'=>$layergroupName,
     'layer_name'=>$layerName
-));
+]);
 
 $request['layer_id'] = $stmt->fetchColumn(0);
 

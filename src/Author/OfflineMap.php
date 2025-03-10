@@ -95,7 +95,7 @@ class OfflineMap
      */
     public function status(LayerLevelInterface $layer)
     {
-        $result = array();
+        $result = [];
 
         $category = strtolower(substr(strrchr(get_class($layer), '\\'), 1));
         if (!isset($result[$category])) {

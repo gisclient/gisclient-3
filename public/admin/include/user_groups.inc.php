@@ -7,7 +7,7 @@ $db = \GCApp::getDB();
     $sql = 'SELECT groupname, description FROM '.DB_SCHEMA.'.groups';
     $groups = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 if (!isset($data) || !is_array($data)) {
-    $data = array();
+    $data = [];
 }
 
     $username = $this->parametri["users"] ?? null;
@@ -17,24 +17,24 @@ if (!empty($username)) {
             WHERE username=:user
         ';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array(
+    $stmt->execute([
         'user'=>$username
-    ));
+    ]);
         
     $userGroups = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
 }
 if (empty($userGroups)) {
-    $userGroups = array();
+    $userGroups = [];
 }
     
 foreach ($groups as $group) {
     $presente = (int)in_array($group['groupname'], $userGroups);
     if (!empty($this->mode) || !empty($presente)) {
-        array_push($data, array(
+        array_push($data, [
             'username'=>$username,
             'groupname'=>$group['groupname'],
             'presente'=>$presente
-        ));
+        ]);
     }
 }
     

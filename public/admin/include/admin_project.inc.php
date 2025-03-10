@@ -24,7 +24,11 @@ if (!$authHandler->isAdmin()) {
 
 if (is_array($results) && count($results)>0) {
     foreach ($results as $val) {
-        $data[]=array("presente"=>$val["presente"],"project_name"=>$val["project_name"],"username"=>$val["username"]);
+        $data[]=[
+            "presente"=>$val["presente"],
+            "project_name"=>$val["project_name"],
+            "username"=>$val["username"]
+        ];
     }
 } else {
     $msg=(!defined('USER_SCHEMA'))?("Utenti non previsti"):("Nessun dato presente");

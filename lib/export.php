@@ -7,11 +7,11 @@ class GCExport
     protected $exportPath;
     protected $exportUrl;
     protected $errorPath;
-    protected $exportExtensions = array(
-        'shp'=>array('shp','dbf','shx','prj','cpg')
-    );
+    protected $exportExtensions = [
+        'shp'=>['shp', 'dbf', 'shx', 'prj', 'cpg']
+    ];
     
-    public function __construct($db, $type, array $options = array())
+    public function __construct($db, $type, array $options = [])
     {
         $this->type = $type;
         $this->db = $db;
@@ -25,22 +25,22 @@ class GCExport
         return $this->exportUrl;
     }
     
-    public function export($tables, array $options = array())
+    public function export($tables, array $options = [])
     {
-        $defaultOptions = array(
+        $defaultOptions = [
             'name' => 'export',
             'extent' => null,
             'srid' => null,
             'add_to_zip' => null,
             'return_url' => true
-        );
+        ];
         $options = array_merge($defaultOptions, $options);
         
-        $files = array();
+        $files = [];
         
         if ($this->type == 'shp') {
             foreach ($tables as $tableSpec) {
-                $exportOptions = array();
+                $exportOptions = [];
                 if (!empty($options['fields'])) {
                     $exportOptions['fields'] = $options['fields'];
                 }
@@ -69,7 +69,7 @@ class GCExport
             $files[$options['name'] . '.dxf'] = $this->exportPath . $dxfFile;
         } elseif ($this->type == 'xls') {
             foreach ($tables as $tableSpec) {
-                $exportOptions = array();
+                $exportOptions = [];
                 if (!empty($options['fields'])) {
                     $exportOptions['fields'] = $options['fields'];
                 }
@@ -82,7 +82,7 @@ class GCExport
             }
         } elseif ($this->type == 'kml') {
             foreach ($tables as $tableSpec) {
-                $exportOptions = array();
+                $exportOptions = [];
                 if (!empty($options['fields'])) {
                     $exportOptions['fields'] = $options['fields'];
                 }
@@ -135,11 +135,11 @@ class GCExport
         return $return;
     }
     
-    protected function exportShp(array $config, array $options = array())
+    protected function exportShp(array $config, array $options = [])
     {
-        $defaultOptions = array(
+        $defaultOptions = [
             'name' => $config['table']
-        );
+        ];
         $options = array_merge($defaultOptions, $options);
         
         $fileName = $this->getFileName($options['name']);
@@ -148,7 +148,7 @@ class GCExport
 
         $select = '';
         if (isset($options['fields'])) {
-            $columns = array();
+            $columns = [];
             if (isset($options['layer'])) {
                 array_push($columns, $options['layer']->getGeomColumn());
             } else {
@@ -178,7 +178,7 @@ class GCExport
             . " \"SELECT {$select} FROM {$config['schema']}.{$config['table']}\""
             . ' 2> ' . escapeshellarg($errorFile);
 
-        $pgsql2shpOutput = array();
+        $pgsql2shpOutput = [];
         $retVal = -1;
         
         exec($cmd, $pgsql2shpOutput, $retVal);
@@ -208,7 +208,7 @@ class GCExport
         fclose($dbfFile);
         file_put_contents($filePath . '.cpg', 'UTF-8');
         
-        $files = array();
+        $files = [];
         foreach ($this->exportExtensions['shp'] as $ext) {
             if (file_exists($filePath . '.' . $ext)) {
                 $files[$options['name'] . '.' . $ext] = $filePath.'.'.$ext;
@@ -232,13 +232,13 @@ class GCExport
         }
     }
 
-    protected function exportXls($config, array $options = array())
+    protected function exportXls($config, array $options = [])
     {
         include_once 'include/php-excel.class.php';
 
-        $defaultOptions = array(
+        $defaultOptions = [
             'name' => $config['table']
-        );
+        ];
         $options = array_merge($defaultOptions, $options);
         
         $fileName = $this->getFileName($options['name']);
@@ -308,7 +308,7 @@ class GCExport
 
 class GCExportGml
 {
-    protected $gmlLayers = array();
+    protected $gmlLayers = [];
     protected $extent;
     protected $srid;
     protected $db;
@@ -372,8 +372,8 @@ class GCExportKml
     protected $db;
     protected $extent;
     protected $srid;
-    protected $layers = array();
-    protected $styles = array();
+    protected $layers = [];
+    protected $styles = [];
 
     public function __construct($db, $extent, $srid)
     {
@@ -422,7 +422,7 @@ class GCExportKml
         foreach ($this->layers as $layerConf) {
             $layer = $layerConf['layer'];
 
-            $headers = array();
+            $headers = [];
             if (isset($layerConf['options']['fields'])) {
                 foreach ($layerConf['options']['fields'] as $field) {
                     $headers[$field['field_name']] = $field['title'];
@@ -545,12 +545,12 @@ class GCExportKml
     {
         array_push(
             $this->layers,
-            array(
+            [
                 'layer' => $layer,
                 'schema' => $schema,
                 'table' => $table,
                 'options' => $options
-            )
+            ]
         );
     }
 

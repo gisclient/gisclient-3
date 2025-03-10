@@ -31,15 +31,24 @@ class RlsAutocompleteController extends AutocompleteController
             $stmt = $dataDb->prepare($q["query"]);
             $stmt->execute($q["params"]);
             $results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-            return new JsonResponse(["result" => "ok", "data" => $results]);
+            return new JsonResponse([
+                "result" => "ok",
+                "data" => $results
+            ]);
         } catch (HttpException $e) {
             return new JsonResponse(
-                ["result" => "error", "error" => $e->getMessage()],
+                [
+                    "result" => "error",
+                    "error" => $e->getMessage()
+                ],
                 $e->getStatusCode()
             );
         } catch (\Exception $e) {
             return new JsonResponse(
-                ["result" => "error", "error" => $e->getMessage()],
+                [
+                    "result" => "error",
+                    "error" => $e->getMessage()
+                ],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }

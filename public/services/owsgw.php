@@ -32,7 +32,9 @@ if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' &
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
     
-    curl_setopt($curl, CURLOPT_POSTFIELDS, array('file' => '@/tmp/postrequest.xml'));
+    curl_setopt($curl, CURLOPT_POSTFIELDS, [
+        'file' => '@/tmp/postrequest.xml'
+    ]);
     $return = curl_exec($curl);
     if (!$return) {
         var_export(curl_error($curl));
@@ -167,14 +169,14 @@ if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empt
         if ($authHandler->isAuthenticated()) {
             if (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
                 // get layers to populate session with GISCLIENT_USER_LAYER
-                GCApp::getLayerAuthorizationChecker()->getLayers(array(
+                GCApp::getLayerAuthorizationChecker()->getLayers([
                     'project_name' => $objRequest->getValueByName('map')
-                ));
+                ]);
             } else {
                 // get layers to populate session with GISCLIENT_USER_LAYER
-                GCApp::getLayerAuthorizationChecker()->getLayers(array(
+                GCApp::getLayerAuthorizationChecker()->getLayers([
                     'mapset_name' => $objRequest->getValueByName('map')
-                ));
+                ]);
             }
         }
     }
@@ -187,8 +189,8 @@ if (!empty($layersParameter)) {
     $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     
     // stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
-    $layersToRemove = array();
-    $layersToInclude = array();
+    $layersToRemove = [];
+    $layersToInclude = [];
     foreach ($layersArray as $layer) {
         //layer aggiunto x highlight
         $highlight = $objRequest->getvaluebyname('highlight');

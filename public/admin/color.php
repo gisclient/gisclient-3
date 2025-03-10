@@ -36,12 +36,12 @@ for ($col_r=0; $col_r<256; $col_r+=51) {
             $cell[]="<td bgcolor=\"#$color\" class='color' onclick=\"set_color('#$color')\"  >&nbsp;</td>";
             if ((($i % 27)==0) && ($i>1)) {
                 $row[]=implode("\n\t\t", $cell);
-                $cell=array();
+                $cell=[];
             }
         }
     }
 }
-$cell=array();
+$cell=[];
 for ($col=16; $col<256; $col+=9) {
     $red = strtoupper(dechex($col));
     $green = strtoupper(dechex($col));

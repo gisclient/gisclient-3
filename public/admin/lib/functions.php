@@ -49,12 +49,27 @@ define('SECONDARY_FIELD_LINK', 99);
 
 
 
-$gMapMaxZoomLevels = array('G_HYBRID_MAP'=>19,'G_NORMAL_MAP'=>21,'G_PHYSICAL_MAP'=>15,'G_SATELLITE_MAP'=>19,'VEMapStyle.Road'=>21,'VEMapStyle.Aerial'=>21,'VEMapStyle.Shaded'=>21,'VEMapStyle.Hybrid'=>21,'YAHOO_MAP_HYB'=>21,'YAHOO_MAP_REG'=>21,'YAHOO_MAP_SAT'=>21,'Mapnik'=>21,'Osmarender'=>21,'CycleMap'=>17);
+$gMapMaxZoomLevels = [
+    'G_HYBRID_MAP'=>19,
+    'G_NORMAL_MAP'=>21,
+    'G_PHYSICAL_MAP'=>15,
+    'G_SATELLITE_MAP'=>19,
+    'VEMapStyle.Road'=>21,
+    'VEMapStyle.Aerial'=>21,
+    'VEMapStyle.Shaded'=>21,
+    'VEMapStyle.Hybrid'=>21,
+    'YAHOO_MAP_HYB'=>21,
+    'YAHOO_MAP_REG'=>21,
+    'YAHOO_MAP_SAT'=>21,
+    'Mapnik'=>21,
+    'Osmarender'=>21,
+    'CycleMap'=>17
+];
 
 
 function array_limit($aList, $maxVal = false, $minVal = false)
 {
-    $ar=array();
+    $ar=[];
     foreach ($aList as $val) {
         if ($maxVal && $val>=$maxVal) {
             $ar[]=$val;
@@ -82,7 +97,7 @@ function getResolutions($srid, $convFact, $maxRes = false, $minRes = false)
 {
     //se mercatore sferico setto le risoluzioni di google altrimenti uso quelle predefinite dall'elenco scale
 
-    $aRes=array();
+    $aRes=[];
     if (($srid==900913)|($srid==3857)) {
         $aRes = array_limit(array_slice(GCAuthor::$gMapResolutions, GMAP_MIN_ZOOM_LEVEL), $maxRes, $minRes);
     } else {
@@ -97,7 +112,7 @@ function getResolutions($srid, $convFact, $maxRes = false, $minRes = false)
 function getExtent($xCenter, $yCenter, $Resolution)
 {
     //4tiles
-    $aExtent=array();
+    $aExtent=[];
     $aExtent[0] = $xCenter - $Resolution * TILE_SIZE ;
     $aExtent[1] = $yCenter - $Resolution * TILE_SIZE ;
     $aExtent[2] = $xCenter + $Resolution * TILE_SIZE ;
@@ -155,7 +170,7 @@ function connInfofromPath($sPath)
             $connString = $pathInfo[0];
         }
     }
-    return array($connString,$datalayerSchema);
+    return [$connString, $datalayerSchema];
 }
 
 function connAdminInfofromPath($sPath)
@@ -173,7 +188,7 @@ function connAdminInfofromPath($sPath)
         $connString = $pathInfo[0];
     }
 
-    return array($connString,$datalayerSchema);
+    return [$connString, $datalayerSchema];
 }
 
 function setDBPermission($db, $sk, $usr, $type, $mode, $table = '')
@@ -191,7 +206,7 @@ function setDBPermission($db, $sk, $usr, $type, $mode, $table = '')
 
             $sql="select udt_schema,udt_name from information_schema.parameters where specific_name='".$ris[$i]["specific_name"]."' and parameter_mode='IN' and specific_schema='$sk' order by ordinal_position";
 
-            $fld=array();
+            $fld=[];
             $result=pg_query($db, $sql);
             if (!$result) {
                 echo "<p><b style=\"color:red\">Errore nella query:<br>$sql</b></p>";
@@ -305,11 +320,11 @@ function html2rgb($color)
     }
 
     if (strlen($color) == 6) {
-        [$r, $g, $b] = array($color[0].$color[1],
-                                 $color[2].$color[3],
-                                 $color[4].$color[5]);
+        [$r, $g, $b] = [$color[0].$color[1],
+            $color[2].$color[3],
+            $color[4].$color[5]];
     } elseif (strlen($color) == 3) {
-        [$r, $g, $b] = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
+        [$r, $g, $b] = [$color[0].$color[0], $color[1].$color[1], $color[2].$color[2]];
     } else {
         return false;
     }
@@ -318,7 +333,7 @@ function html2rgb($color)
     $g = hexdec($g);
     $b = hexdec($b);
 
-    return array($r, $g, $b);
+    return [$r, $g, $b];
 }
 
 
@@ -386,9 +401,9 @@ if (!function_exists('http_build_url')) {
     // @param    mixed            Same as the first argument
     // @param    int                A bitmask of binary or'ed HTTP_URL constants (Optional)HTTP_URL_REPLACE is the default
     // @param    array            If set, it will be filled with the parts of the composed url like parse_url() would return
-    function http_build_url($url, $parts = array(), $flags = HTTP_URL_REPLACE, &$new_url = false)
+    function http_build_url($url, $parts = [], $flags = HTTP_URL_REPLACE, &$new_url = false)
     {
-        $keys = array('user','pass','port','path','query','fragment');
+        $keys = ['user', 'pass', 'port', 'path', 'query', 'fragment'];
 
         // HTTP_URL_STRIP_ALL becomes all the HTTP_URL_STRIP_Xs
         if ($flags & HTTP_URL_STRIP_ALL) {

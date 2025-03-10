@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../../bootstrap.php';
 $qtfield=$this->parametri["field"];
 $project=$this->parametri["project"];
 $db = GCApp::getDB();
-$data = array();
+$data = [];
 
 $JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
 
@@ -11,16 +11,18 @@ $sql="SELECT X.groupname,CASE WHEN (SELECT count(*)=0 FROM ".DB_SCHEMA.".field_g
 
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('qtfield_id'=>$qtfield));
+    $stmt->execute([
+        'qtfield_id'=>$qtfield
+    ]);
     
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if ($this->mode!=0 || $row['presente']==1) {
-                array_push($data, array(
+                array_push($data, [
                     'presente'=>$row['presente'],
                     'groupname'=>$row['groupname'],
                     'editable'=>$row['editable']
-                ));
+                ]);
             }
         }
     } else {

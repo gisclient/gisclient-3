@@ -18,7 +18,7 @@ class Catalog
 
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.catalog WHERE catalog_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($id));
+            $stmt->execute([$id]);
             $data = $stmt->fetch();
             if (!empty($data)) {
                 $this->data = $data;

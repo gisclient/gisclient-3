@@ -105,13 +105,13 @@ if (!class_exists('Spyc')) {
         private $path;
         private $result;
         private $LiteralPlaceHolder = '___YAML_Literal_Block___';
-        private $SavedGroups = array();
+        private $SavedGroups = [];
         private $indent;
       /**
        * Path modifier that should be applied after adding current element.
        * @var array
        */
-        private $delayedPath = array();
+        private $delayedPath = [];
 
       /**#@+
       * @access public
@@ -287,7 +287,7 @@ if (!class_exists('Spyc')) {
             }
             if (is_array($value)) {
                 if (empty($value)) {
-                    return $this->_dumpNode($key, array(), $indent, $previous_key, $first_key, $source_array);
+                    return $this->_dumpNode($key, [], $indent, $previous_key, $first_key, $source_array);
                 }
               // It has children.  What to do?
               // Make it the right kind of item
@@ -349,7 +349,7 @@ if (!class_exists('Spyc')) {
                 $value  = $this->_doFolding($value, $indent);
             }
 
-            if ($value === array()) {
+            if ($value === []) {
                 $value = '[ ]';
             }
             if ($value === "") {
@@ -456,19 +456,19 @@ if (!class_exists('Spyc')) {
 
         private function isTrueWord($value)
         {
-            $words = self::getTranslations(array('true', 'on', 'yes', 'y'));
+            $words = self::getTranslations(['true', 'on', 'yes', 'y']);
             return in_array($value, $words, true);
         }
 
         private function isFalseWord($value)
         {
-            $words = self::getTranslations(array('false', 'off', 'no', 'n'));
+            $words = self::getTranslations(['false', 'off', 'no', 'n']);
             return in_array($value, $words, true);
         }
 
         private function isNullWord($value)
         {
-            $words = self::getTranslations(array('null', '~'));
+            $words = self::getTranslations(['null', '~']);
             return in_array($value, $words, true);
         }
 
@@ -507,9 +507,9 @@ if (!class_exists('Spyc')) {
      */
         private static function getTranslations(array $words)
         {
-            $result = array();
+            $result = [];
             foreach ($words as $i) {
-                $result = array_merge($result, array(ucfirst($i), strtoupper($i), strtolower($i)));
+                $result = array_merge($result, [ucfirst($i), strtoupper($i), strtolower($i)]);
             }
             return $result;
         }
@@ -531,15 +531,15 @@ if (!class_exists('Spyc')) {
         private function loadWithSource($Source)
         {
             if (empty($Source)) {
-                return array();
+                return [];
             }
             if ($this->setting_use_syck_is_possible && function_exists('syck_load')) {
                 $array = syck_load(implode("\n", $Source));
-                return is_array($array) ? $array : array();
+                return is_array($array) ? $array : [];
             }
 
-            $this->path = array();
-            $this->result = array();
+            $this->path = [];
+            $this->result = [];
 
             $cnt = count($Source);
             for ($i = 0; $i < $cnt; $i++) {
@@ -590,7 +590,7 @@ if (!class_exists('Spyc')) {
                     $this->path[$indent] = $delayedPath;
                 }
 
-                $this->delayedPath = array();
+                $this->delayedPath = [];
             }
             return $this->result;
         }
@@ -622,14 +622,14 @@ if (!class_exists('Spyc')) {
         private function _parseLine($line)
         {
             if (!$line) {
-                return array();
+                return [];
             }
             $line = trim($line);
             if (!$line) {
-                return array();
+                return [];
             }
 
-            $array = array();
+            $array = [];
 
             $group = $this->nodeContainsGroup($line);
             if ($group) {
@@ -688,9 +688,15 @@ if (!class_exists('Spyc')) {
             if ($is_quoted) {
                 $value = str_replace('\n', "\n", $value);
                 if ($first_character == "'") {
-                    return strtr(substr($value, 1, -1), array ('\'\'' => '\'', '\\\''=> '\''));
+                    return strtr(substr($value, 1, -1),  [
+                        '\'\'' => '\'',
+                        '\\\''=> '\''
+                    ]);
                 }
-                return strtr(substr($value, 1, -1), array ('\\"' => '"', '\\\''=> '\''));
+                return strtr(substr($value, 1, -1),  [
+                    '\\"' => '"',
+                    '\\\''=> '\''
+                ]);
             }
 
             if (strpos($value, ' #') !== false && !$is_quoted) {
@@ -701,11 +707,11 @@ if (!class_exists('Spyc')) {
               // Take out strings sequences and mappings
                 $innerValue = trim(substr($value, 1, -1));
                 if ($innerValue === '') {
-                    return array();
+                    return [];
                 }
                 $explode = $this->_inlineEscape($innerValue);
               // Propagate value array
-                $value  = array();
+                $value  = [];
                 foreach ($explode as $v) {
                     $value[] = $this->_toType($v);
                 }
@@ -718,19 +724,21 @@ if (!class_exists('Spyc')) {
                 array_shift($array);
                 $value = trim(implode(': ', $array));
                 $value = $this->_toType($value);
-                return array($key => $value);
+                return [
+                    $key => $value
+                ];
             }
 
             if ($first_character == '{' && $last_character == '}') {
                 $innerValue = trim(substr($value, 1, -1));
                 if ($innerValue === '') {
-                    return array();
+                    return [];
                 }
               // Inline Mapping
               // Take out strings sequences and mappings
                 $explode = $this->_inlineEscape($innerValue);
               // Propagate value array
-                $array = array();
+                $array = [];
                 foreach ($explode as $v) {
                     $SubArr = $this->_toType($v);
                     if (empty($SubArr)) {
@@ -789,10 +797,10 @@ if (!class_exists('Spyc')) {
             // pure mappings and mappings with sequences inside can't go very
             // deep.  This needs to be fixed.
 
-            $seqs = array();
-            $maps = array();
-            $saved_strings = array();
-            $saved_empties = array();
+            $seqs = [];
+            $maps = [];
+            $saved_strings = [];
+            $saved_empties = [];
 
             // Check for empty strings
             $regex = '/("")|(\'\')/';
@@ -953,7 +961,9 @@ if (!class_exists('Spyc')) {
             }
 
             foreach ($array as $k => $_) {
-                $this->addArray(array($k => $_), $indent);
+                $this->addArray([
+                    $k => $_
+                ], $indent);
                 $this->path = $CommonGroupPath;
             }
             return true;
@@ -987,7 +997,7 @@ if (!class_exists('Spyc')) {
 
 
 
-            $history = array();
+            $history = [];
             // Unfolding inner array tree.
             $history[] = $_arr = $this->result;
             foreach ($this->path as $k) {
@@ -1003,19 +1013,21 @@ if (!class_exists('Spyc')) {
             // Adding string or numeric key to the innermost level or $this->arr.
             if (is_string($key) && $key == '<<') {
                 if (!is_array($_arr)) {
-                    $_arr = array ();
+                    $_arr =  [];
                 }
 
                 $_arr = array_merge($_arr, $value);
             } elseif ($key || $key === '' || $key === '0') {
                 if (!is_array($_arr)) {
-                    $_arr = array ($key=>$value);
+                    $_arr =  [
+                        $key=>$value
+                    ];
                 } else {
                     $_arr[$key] = $value;
                 }
             } else {
                 if (!is_array($_arr)) {
-                    $_arr = array ($value);
+                    $_arr =  [$value];
                     $key = 0;
                 } else {
                     $_arr[] = $value;
@@ -1125,7 +1137,7 @@ if (!class_exists('Spyc')) {
         private function getParentPathByIndent($indent)
         {
             if ($indent == 0) {
-                return array();
+                return [];
             }
             $linePath = $this->path;
             do {
@@ -1143,7 +1155,7 @@ if (!class_exists('Spyc')) {
 
 
             if ($indent == 0) {
-                $this->path = array();
+                $this->path = [];
             }
             if (empty($this->path)) {
                 return true;
@@ -1237,11 +1249,13 @@ if (!class_exists('Spyc')) {
 
         private function returnMappedSequence($line)
         {
-            $array = array();
+            $array = [];
             $key         = self::unquote(trim(substr($line, 1, -1)));
-            $array[$key] = array();
-            $this->delayedPath = array(strpos($line, (string) $key) + $this->indent => $key);
-            return array($array);
+            $array[$key] = [];
+            $this->delayedPath = [
+                strpos($line, (string) $key) + $this->indent => $key
+            ];
+            return [$array];
         }
 
         private function checkKeysInValue($value)
@@ -1256,7 +1270,7 @@ if (!class_exists('Spyc')) {
         private function returnMappedValue($line)
         {
             $this->checkKeysInValue($line);
-            $array = array();
+            $array = [];
             $key         = self::unquote(trim(substr($line, 0, -1)));
             $array[$key] = '';
             return $array;
@@ -1279,7 +1293,7 @@ if (!class_exists('Spyc')) {
 
         private function returnKeyValuePair($line)
         {
-            $array = array();
+            $array = [];
             $key = '';
             if (strpos($line, ': ')) {
               // It's a key/value pair most likely
@@ -1301,7 +1315,7 @@ if (!class_exists('Spyc')) {
                 }
                 $array[$key] = $value;
             } else {
-                $array = array ($line);
+                $array =  [$line];
             }
             return $array;
         }
@@ -1310,9 +1324,9 @@ if (!class_exists('Spyc')) {
         private function returnArrayElement($line)
         {
             if (strlen($line) <= 1) {
-                return array(array()); // Weird %)
+                return [[]]; // Weird %)
             }
-            $array = array();
+            $array = [];
             $value   = trim(substr($line, 1));
             $value   = $this->_toType($value);
             if ($this->isArrayElement($value)) {

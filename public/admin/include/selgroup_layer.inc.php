@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../../bootstrap.php';
 $project=$this->parametri["project"];
 $selgroup=$this->parametri["selgroup"];
 $db = GCApp::getDB();
-$data = array();
+$data = [];
 
 $JOIN=($this->mode==0)?(" INNER JOIN "):(" , ");
 $JOINFIELD=($this->mode==0)?(" USING (layer_id) "):("");
@@ -25,19 +25,22 @@ queryable=1 and A.project_name=:project order by theme_title,layergroup_name,lay
 
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('selgroup_id'=>$selgroup, 'project'=>$project));
+    $stmt->execute([
+        'selgroup_id'=>$selgroup,
+        'project'=>$project
+    ]);
     
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if ($this->mode!=0 || $row['presente']==1) {
-                array_push($data, array(
+                array_push($data, [
                     'theme_title'=>$row['theme_title'],
                     'selgroup_id'=>$row['selgroup_id'],
                     'layer_id'=>$row['layer_id'],
                     'presente'=>$row['presente'],
                     'layer_name'=>$row['layer_name'],
                     'layergroup_name'=>$row['layergroup_name']
-                ));
+                ]);
             }
         }
     } else {

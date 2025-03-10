@@ -14,7 +14,7 @@ if (!defined('UPLOADED_FILES_PRIVATE_PATH')) {
     $ajax->error('undefined upload path');
 }
 
-$result = array();
+$result = [];
 
 $key = $_REQUEST['key'];
 if (empty($key)) {
