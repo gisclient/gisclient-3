@@ -155,7 +155,7 @@ if (!class_exists('Spyc')) {
      */
         public static function YAMLLoad($input)
         {
-            $Spyc = new Spyc;
+            $Spyc = new Spyc();
             return $Spyc->_load($input);
         }
 
@@ -180,7 +180,7 @@ if (!class_exists('Spyc')) {
      */
         public static function YAMLLoadString($input)
         {
-            $Spyc = new Spyc;
+            $Spyc = new Spyc();
             return $Spyc->_loadString($input);
         }
 
@@ -207,7 +207,7 @@ if (!class_exists('Spyc')) {
      */
         public static function YAMLDump($array, $indent = false, $wordwrap = false, $no_opening_dashes = false)
         {
-            $spyc = new Spyc;
+            $spyc = new Spyc();
             return $spyc->dump($array, $indent, $wordwrap, $no_opening_dashes);
         }
 

@@ -32,7 +32,7 @@ class TemporaryFileService
      */
     public function __construct($tmpDir)
     {
-        $this->filesystem = new Filesystem;
+        $this->filesystem = new Filesystem();
         $this->tmpDir = $tmpDir;
     }
     

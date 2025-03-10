@@ -105,7 +105,7 @@ class GCExport
             }
         }
                 
-        $zip = new ZipArchive;
+        $zip = new ZipArchive();
         
         if ($options['add_to_zip']) {
             $zipName = $options['add_to_zip'];
