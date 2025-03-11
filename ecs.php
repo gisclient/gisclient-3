@@ -30,7 +30,7 @@ return ECSConfig::configure()
         NoUnusedImportsFixer::class,
     ])
     ->withSkip([
-        RemoveUselessDefaultCommentFixer::class,
+        RemoveUselessDefaultCommentFixer::class, // Might remove useful comments
     ])
     ->withCache(
         __DIR__ . '/var/cache/ecs'
