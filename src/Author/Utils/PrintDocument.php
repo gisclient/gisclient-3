@@ -601,6 +601,8 @@ class PrintDocument
 
                 $dom_icon = $dom_group->appendChild(new \DOMElement('group-icon'));
                 $dom_icon->appendChild(new \DOMText(''));
+
+                $dom_grp_block = null;
                 
                 foreach ($theme['groups'] as $group) {
                     foreach ($group['layers'] as $layer) {

@@ -1,6 +1,6 @@
 parameters:
     phpVersion: 70400
-    level: 0
+    level: 1
     paths:
         - src
         - lib
@@ -8,8 +8,12 @@ parameters:
         - tests
     tmpDir: var/cache/phpstan
     bootstrapFiles:
+        # for constants
+        - config/config.php.sample
         # stub for mapscript functions
         - stubs/mapscript-stubs.php
     ignoreErrors:
         # docs say it returns void, but it's used to fetch a string, so very unclear
         - '#Result of function ms_iogetstdoutbufferstring \(void\) is used.#'
+        # docs say 2 parameters, phpstan has wrong definition(?)
+        - '#Function ms_newMapObjFromString invoked with 2 parameters, 1 required.#'

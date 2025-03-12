@@ -144,14 +144,13 @@ class OwsHandler
      * list of inverted axis SRIDs. This is a temporarily hack, since some
      * operations depend on axis order, while others don't
      *
-     * @param type $filter
      * @return string
      */
     public function pruneSrsFromFilter($filter, array $invertedAxisOrderSrids)
     {
         $filterHasChanged = false;
+        $filterDoc = new \DOMDocument();
         if (!empty($filter)) {
-            $filterDoc = new \DOMDocument();
             $filterDoc->loadXML($filter);
             $xpath = new \DOMXPath($filterDoc);
             // find all elements with an attribute srsName

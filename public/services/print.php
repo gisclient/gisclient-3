@@ -61,6 +61,6 @@ try {
     $ajax->error($e->getMessage());
 }
 $ajax->success([
-    'file' => $file,
+    'file' => $file ?? null,
     'format' => $_REQUEST['format'],
 ]);

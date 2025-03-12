@@ -79,6 +79,8 @@ class Task implements \GisClient\GDAL\Export\Task
             $char = fgetc($f);
         }
 
+        $buffer = "";
+
         /**
          * Read until the start of file or first newline char
          */

@@ -47,7 +47,7 @@ class ClientController
         // choose customer gcmap
         $jsonformat = $request->query->get('jsonformat');
         if (empty($jsonformat)) {
-            $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
+            $objMapset = new GCMap($mapset, $getLegend, $languageId);
         } else {
             $objMapset = new R3GisGCMap(
                 trim(PUBLIC_URL, '/'),
@@ -91,9 +91,8 @@ class ClientController
         
         $getLegend = $request->query->get('legend', 0) == 1;
         $languageId = $request->query->get('lang');
-        $showAsPublic = $request->query->get('show_as_public') == 1;
-        
-        $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
+
+        $objMapset = new GCMap($mapset, $getLegend, $languageId);
         
         // get output
         $jsonformat = $request->query->get('jsonformat');

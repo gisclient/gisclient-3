@@ -173,8 +173,8 @@ class gcFeature
         } else {
             $aFeature["filePath"] = trim($aFeature["base_path"]) . trim($aFeature["catalog_path"]);
         }
-        $aFeature["relation"] = $qRelation ?? null;
-        $aFeature["fields"] = $qField ?? null;
+        $aFeature["relation"] = $qRelation;
+        $aFeature["fields"] = $qField;
         $aFeature["link"] = [];
         $aFeature["tileindex"] = false;
 

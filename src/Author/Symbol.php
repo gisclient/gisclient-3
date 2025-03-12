@@ -194,7 +194,7 @@ class Symbol
         // quando viene renderizzata l'immaginetta preview della classe nell'author,
         //  abbiamo sempre una sola classe da visualizzare e bisogna ritornarla a chi chiama questa funzione
         // negli altri casi boh?
-        if ($this->filter) {
+        if ($this->filter && isset($image_data)) {
             return $image_data;
         }
 
@@ -222,7 +222,9 @@ class Symbol
         //Aggiungo gli stili
         for ($i = 0; $i < count($style); $i++) {
             $oStyle = ms_newStyleObj($oClass);
-            $oStyle->set("size", $smbSize);
+            if (!empty($smbSize)) {
+                $oStyle->set("size", $smbSize);
+            }
             if (!empty($style[$i]['symbol'])) {
                 $oStyle->set('symbolname', $style[$i]['symbol']);
             }
@@ -294,6 +296,7 @@ class Symbol
         $dbSchema = DB_SCHEMA;
         $table = $this->table;
         $values = [];
+        $headers = [];
         if ($table == 'class') {
             $sql = "SELECT
                         project_name as project, theme_name as theme, layergroup_name as layergroup,

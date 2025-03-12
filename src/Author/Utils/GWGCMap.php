@@ -623,7 +623,7 @@ class GWGCMap
                     //TEMI SINGOLA IMMAGINE: PRENDO LA CONFIGURAZIONE DEL PRIMO LIVELLO WMS
                     $layerParameters = [];
 
-                    if (!$mapproxy_url) {
+                    if (!isset($mapproxy_url)) {
                         break; // or continue 2?
                     }
                     $aLayer["url"] = $mapproxy_url . "/service";
@@ -744,7 +744,7 @@ class GWGCMap
                             "/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}." .
                             $row['outputformat_extension'];
                     } else {
-                        if (!$mapproxy_url) {
+                        if (!isset($mapproxy_url)) {
                             break; // or continue 2?
                         }
                         $layerParameters["requestEncoding"] = "REST";
@@ -798,7 +798,7 @@ class GWGCMap
                         $aLayer["url"] = $row["url"];
                         $layerOptions["layername"] = empty($row["layers"]) ? '' : $row["layers"];
                     } else {
-                        if (!$mapproxy_url) {
+                        if (!isset($mapproxy_url)) {
                             break; // or continue 2?
                         }
                         $aLayer["url"] = $mapproxy_url . "/tms/";
