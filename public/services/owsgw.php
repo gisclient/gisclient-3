@@ -141,6 +141,7 @@ if ($objRequest->getValueByName('service') == 'WMS') {
 
 if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
     $hasPrivateLayers = false;
+    $layersArray = [];
     if (!empty($layersParameter)) {
         $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     }
@@ -167,7 +168,7 @@ if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empt
             }
         }
 
-        if ($authHandler->isAuthenticated()) {
+        if (isset($authHandler) && $authHandler->isAuthenticated()) {
             if (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
                 // get layers to populate session with GISCLIENT_USER_LAYER
                 GCApp::getLayerAuthorizationChecker()->getLayers([

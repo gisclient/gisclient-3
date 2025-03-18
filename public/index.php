@@ -54,6 +54,7 @@ foreach ($mapset as $key => $map) {
         $separator = strpos($publicLink, '?') ? '&' : '?';
         $publicLink .= $separator . 'mapset=' . $map[$j]['name'];
 
+        $privateLink = '';
         if (defined('PRIVATE_MAP_URL')) {
             $privateLink = PRIVATE_MAP_URL;
             if (!empty($map[$j]['template'])) {

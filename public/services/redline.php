@@ -30,6 +30,11 @@ if ($_REQUEST["REQUEST"] == "PrintMap") {
     $fileContent = file_get_contents('php://input');
     $_REQUEST["options"] = $fileContent;
     require_once 'gcWMSMerge.php';
+    if (!isset($mapConfig)) {
+        $mapConfig = [
+            "file_name" => null,
+        ];
+    }
     die(json_encode([
         "file" => $mapConfig['file_name'],
     ]));

@@ -64,7 +64,7 @@ switch ($data['export_format']) {
                 ]);
                 $layer = $stmt->fetch(PDO::FETCH_ASSOC);
                 
-                if (empty($layer) || !in_array($layer['layer_id'], $layers['authorized_layers'])) {
+                if (!isset($layers) || empty($layer) || !in_array($layer['layer_id'], $layers['authorized_layers'])) {
                     continue;
                 }
                 

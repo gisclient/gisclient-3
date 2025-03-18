@@ -140,6 +140,7 @@ class Symbol
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
+            $aSymbol = [];
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $aClass[$row["symbol_name"]]["icontype"] = $row["icontype"];
                 $aStyle = [];

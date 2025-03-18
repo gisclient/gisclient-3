@@ -5,6 +5,7 @@ include_once ADMIN_PATH . "lib/functions.php";
 include_once ADMIN_PATH . "lib/gcFeature.class.php";
 $azione = $_REQUEST["azione"];
 $db = GCApp::getDB();
+$res = "";
 switch ($azione) {
     case "classify_save":
         include_once ADMIN_PATH . "lib/savedata.class.php";
@@ -39,6 +40,7 @@ switch ($azione) {
         $totClass = $stmt->rowCount();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
+        $res = [];
         if (!$totClass) {
             $delta_r = ($endC[0] - $startC[0]) / ($totClass - 1);
             $delta_g = ($endC[1] - $startC[1]) / ($totClass - 1);

@@ -171,5 +171,5 @@ if (isset($exports['kml'])) {
 
 
 $ajax->success([
-    'file' => $url,
+    'file' => $url ?? null,
 ]);
