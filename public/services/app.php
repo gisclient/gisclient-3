@@ -4,19 +4,20 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once ADMIN_PATH . 'lib/functions.php';
 
+use GisClient\Author\Security\AuthenticationHandler;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
-use Symfony\Component\Routing\Router;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\Router;
 use Symfony\Component\Yaml\Yaml;
-use GisClient\Author\Security\AuthenticationHandler;
 
 function getFirewall(Request $request)
 {
@@ -107,7 +108,7 @@ try {
     }
     
     $response = call_user_func_array($controller, $arguments);
-} catch (Routing\Exception\ResourceNotFoundException $e) {
+} catch (ResourceNotFoundException $e) {
     $response = new Response('Not Found', Response::HTTP_NOT_FOUND);
 } catch (HttpException $e) {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
@@ -116,7 +117,11 @@ try {
             'message' => $e->getMessage()
         ], $e->getStatusCode(), $e->getHeaders());
     } else {
-        $response = new Response($e->getMessage(), $e->getStatusCode(), $e->getHeaders());
+        $response = new Response(
+            $e->getMessage(),
+            $e->getStatusCode(),
+            array_merge($e->getHeaders(), ['content-type' => 'text/plain'])
+        );
     }
 } catch (Exception $e) {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
@@ -125,7 +130,11 @@ try {
             'message' => $e->getMessage()
         ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
     } else {
-        $response = new Response('An error occurred: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        $response = new Response(
+            'An error occurred: ' . $e->getMessage(),
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            ['content-type' => 'text/plain']
+        );
     }
 }
 
