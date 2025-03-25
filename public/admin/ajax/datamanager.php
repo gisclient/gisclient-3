@@ -103,11 +103,10 @@ switch ($_REQUEST['action']) {
     case 'upload-csv':
     case 'upload-shp':
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
-        //$name = $_FILES['fileToUpload']['name'];
-        $name2 = $_REQUEST['filename'];
+        $name = basename($_REQUEST['filename']);
 
         //$targetFile = IMPORT_PATH . $name;
-        $targetFile = IMPORT_PATH . $name2;
+        $targetFile = IMPORT_PATH . $name;
         $com = fopen($targetFile, "ab");
 
         // Read binary input stream and append it to temp file
@@ -124,7 +123,7 @@ switch ($_REQUEST['action']) {
         fclose($com);
         echo str_replace($_SERVER['DOCUMENT_ROOT'], '', $targetFile);
 
-        $log->log($authHandler->getToken()->getUserName(), 'UPLOAD', 'file: ' . $_REQUEST['filename']);
+        $log->log($authHandler->getToken()->getUserName(), 'UPLOAD', 'file: ' . $name);
         break;
 
     case 'upload-raster':
@@ -138,7 +137,7 @@ switch ($_REQUEST['action']) {
         }
 
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
-        $targetFile = $basePath.$targetDir.$_REQUEST['filename'];
+        $targetFile = $basePath . $targetDir . basename($_REQUEST['filename']);
         $com = fopen($targetFile, "ab");
 
         // Read binary input stream and append it to temp file
@@ -163,7 +162,7 @@ switch ($_REQUEST['action']) {
 
         $parent_id = $_REQUEST['parent_id']? $_REQUEST['parent_id'] : null;
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
-        $name = $_REQUEST['filename'];
+        $name = basename($_REQUEST['filename']);
 
         $checkSql = "SELECT doc_id FROM " . DB_SCHEMA . ".document WHERE doc_parent_id = ? AND doc_name = ? AND doc_type = ?";
 
