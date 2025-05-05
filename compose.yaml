@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgis/postgis:17-3.5-alpine
+    restart: unless-stopped
+    env_file:
+      - path: .env.dist
+        required: true
+      - path: .env
+        required: false
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ./docker/postgresql/initdb:/docker-entrypoint-initdb.d:ro
+      - postgresql17:/var/lib/postgresql/data
+
+  author-be:
+    build:
+      context: .
+      target: dev
+      dockerfile: docker/backend/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: .
+        target: /app/author
+      - type: volume
+        source: vendor
+        target: /app/author/vendor
+      - type: volume
+        source: var
+        target: /app/author/var
+      - type: volume
+        source: fonts
+        target: /app/author/fonts
+    depends_on:
+      - db
+
+  author-fe:
+    build:
+      context: .
+      target: dev
+      dockerfile: docker/frontend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env.dist
+        required: true
+      - path: .env
+        required: false
+    ports:
+      - 80:8080
+    depends_on:
+      - author-be
+
+volumes:
+  postgresql17:
+  fonts:
+  var:
+  vendor:

@@ -1,5 +1,4 @@
 <?php
-
 //Impostazioni database Postgresql
 define('DB_NAME', getenv('DB_DBNAME'));
 define('DB_SCHEMA', 'gisclient_34');
@@ -11,8 +10,8 @@ define('DB_USER', getenv('DB_USER')); //Superutente
 define('DB_PWD', getenv('DB_PASSWORD'));
 
 //Utente scritto sul file .map
-define('MAP_USER', getenv('DB_USER'));
-define('MAP_PWD', getenv('DB_PASSWORD'));
+define('MAP_USER', getenv('MAP_USER'));
+define('MAP_PWD', getenv('MAP_PASSWORD'));
 
 // user with manager permission (can create new users and groups)
 define('SUPER_USER', 'admin');
