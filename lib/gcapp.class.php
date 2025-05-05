@@ -52,7 +52,8 @@ class GCApp
                 self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             } catch (Exception $e) {
-                die('GCApp:Impossibile connettersi al database');
+                header('HTTP/1.1 500 Internal Server Error');
+                die("GCApp: Can't connect to database " . DB_NAME . ": {$e->getMessage()}");
             }
         }
         return self::$db;
