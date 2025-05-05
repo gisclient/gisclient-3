@@ -218,6 +218,7 @@ if ($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getval
 }
 if ($objRequest->getvaluebyname('srs')) {
     $srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
+    $srs = "";
     if (count($srsParts) == 7) {
         // e.g.: 'urn:ogc:def:crs:EPSG::4306'
         $srs = $srsParts[4] . ':' . $srsParts[6];

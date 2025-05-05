@@ -159,10 +159,10 @@ if ($autoUpdateUser) {
 
 $process = proc_open(TINYOWS_EXEC, $descriptorspec, $pipes, TINYOWS_PATH, $envVars);
 if (is_resource($process)) {
-    if ($envVars['REQUEST_METHOD'] == 'POST') {
+    if ($envVars['REQUEST_METHOD'] == 'POST' && !empty($fileContent)) {
         fwrite($pipes[0], $fileContent);
-        fclose($pipes[0]);
     }
+    fclose($pipes[0]);
     $response = stream_get_contents($pipes[1]);
     fclose($pipes[1]);
     $return = proc_close($process);

@@ -117,7 +117,11 @@ try {
             'message' => $e->getMessage(),
         ], $e->getStatusCode(), $e->getHeaders());
     } else {
-        $response = new Response($e->getMessage(), $e->getStatusCode(), $e->getHeaders());
+        $response = new Response(
+            $e->getMessage(),
+            $e->getStatusCode(),
+            array_merge($e->getHeaders(), ['content-type' => 'text/plain'])
+        );
     }
 } catch (Exception $e) {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
@@ -126,7 +130,11 @@ try {
             'message' => $e->getMessage(),
         ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
     } else {
-        $response = new Response('An error occurred: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        $response = new Response(
+            'An error occurred: ' . $e->getMessage(),
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            ['content-type' => 'text/plain']
+        );
     }
 }
 
