@@ -7,13 +7,7 @@ This version apply a MapServer patch to take advantage of the PostgreSQL Row Lev
 
 ## Clone the repo
 
-**NOTE**: git lfs must bi installed. To check if it is installed run `git lfs install`. If you don't see a message indicating that git lfs install was successful, try to install it:
-
-On MacOS using brew: `brew install git-lfs`
-
-On Ubuntu: `sudo apt-get install git-lfs`
-
-To download the lfs files run inside the repository `git lfs pull`
+**NOTE**: git lfs must be installed. To check if it is installed run `git lfs install`. If you don't see a message indicating that git lfs install was successful, try to install it: `sudo apt install git-lfs`
 
 ## Run with docker compose
 
