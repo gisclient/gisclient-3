@@ -14,7 +14,7 @@ This version apply a MapServer patch to take advantage of the PostgreSQL Row Lev
 Use docker compose to run the GisClient backend, frontend and a PostgreSQL database:
 
 ```
-docked compose up
+docker compose up
 ```
 
 Open a browser and go to [http://127.0.0.1/author/](http://127.0.0.1/author/)
