@@ -114,7 +114,7 @@ class R3GisGCMap
         $stmt->execute(array($mapsetName));
         
         if ($stmt->rowCount() == 0) {
-            $msg = "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
+            $msg = "Il mapset \"{$mapsetName}\" non esiste";
             print_debug($msg.': '.$stmt->queryString, null, 'service');
             throw new \Exception($msg);
         }
