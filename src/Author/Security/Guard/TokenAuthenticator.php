@@ -15,7 +15,7 @@ class TokenAuthenticator implements GuardAuthenticatorInterface
 
     public function getToken(Request $request)
     {
-        $username = $request->headers->get('x-username');
+        $username = urldecode($request->headers->get('x-username'));
         if ($request->headers->has('x-domain')) {
             $username .= '@' . $request->headers->get('x-domain');
         }
