@@ -116,8 +116,8 @@ class UserProvider implements UserProviderInterface
             );
         }
 
-        throw new \Exception(
-            sprintf('Username "%s" does not exist.', $username)
-        );
+        // should be a UserNotFoundException and caught higher up and converted to a generic login error
+        // but this is a quick fix to avoid leaking existence of users
+        throw new \Exception('Invalid user username/password');
     }
 }

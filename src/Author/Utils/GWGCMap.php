@@ -106,13 +106,11 @@ class GWGCMap
         $stmt->execute([$mapsetName]);
 
         if ($stmt->rowCount() == 0) {
-            echo "Il mapset \"{$mapsetName}\" non esiste<br /><br />\n\n";
-            echo "{$stmt->queryString}<br />\n";
-            //echo "{$sql}<br />\n";
+            header('content-type: text/plain');
+            echo "Il mapset \"{$mapsetName}\" non esiste";
             die();
         }
 
-        
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!empty($languageId)) {
