@@ -120,7 +120,9 @@ try {
         $response = new Response(
             $e->getMessage(),
             $e->getStatusCode(),
-            array_merge($e->getHeaders(), ['content-type' => 'text/plain'])
+            array_merge($e->getHeaders(), [
+                'content-type' => 'text/plain',
+            ])
         );
     }
 } catch (Exception $e) {
@@ -133,7 +135,9 @@ try {
         $response = new Response(
             'An error occurred: ' . $e->getMessage(),
             Response::HTTP_INTERNAL_SERVER_ERROR,
-            ['content-type' => 'text/plain']
+            [
+                'content-type' => 'text/plain',
+            ]
         );
     }
 }
