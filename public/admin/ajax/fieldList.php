@@ -75,6 +75,7 @@ $result = [
 ];
 $n = 0;
 
+$data = null;
 if (!empty($relationId)) {
     $sql = "select catalog_path, connection_type, relation.table_name from " . DB_SCHEMA . ".relation left join " . DB_SCHEMA . ".catalog  USING (catalog_id) where relation_id = ?";
     $stmt = $db->prepare($sql);
@@ -87,14 +88,17 @@ if (!empty($relationId)) {
     $stmt->execute([$layerId]);
     $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
     $data = $catalogData['data'];
-} else {
+} elseif (!empty($catalogId)) {
     $sql = "select catalog_path,connection_type from " . DB_SCHEMA . ".catalog  where catalog_id=?";
     $stmt = $db->prepare($sql);
     $stmt->execute([$catalogId]);
     $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 }
-if ($catalogData['connection_type'] != 6) {
+
+$postgisConnectionType = 6;
+if (empty($catalogData) || $catalogData['connection_type'] != $postgisConnectionType) {
     $ajax->error('not implemented');
+    die;
 }
 
 [, $schema] = connAdminInfofromPath($catalogData["catalog_path"]);

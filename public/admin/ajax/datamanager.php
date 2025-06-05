@@ -657,7 +657,7 @@ switch ($_REQUEST['action']) {
                 $ajax->error("File '$filePath' does not exist");
             }
             if (false === @unlink($filePath)) {
-                $ajax->error("File '$filePath' could not be removed, $php_errormsg");
+                $ajax->error("File '$filePath' could not be removed");
             }
         } else {
             $ajax->error("file type '{$_REQUEST['file_type']}' can not be handled");
@@ -1291,6 +1291,7 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
     $options = array_merge($defaultOptions, $options);
 
     $index = '';
+    $mode = '';
     switch ($options['mode']) {
         case 'create':
             $mode = '-c';
@@ -1336,7 +1337,7 @@ function simpleCharsOnly($string)
 /**
  * Recursively remove directory
  *
- * @param type $dir
+ * @param string $dir
  */
 function rrmdir($dir)
 {
@@ -1359,7 +1360,7 @@ function rrmdir($dir)
     }
     reset($objects);
     if (false === @rmdir($dir)) {
-        throw new Exception("Could not remove directory '$dir/$object'");
+        throw new Exception("Could not remove directory '$dir'");
     }
 }
 

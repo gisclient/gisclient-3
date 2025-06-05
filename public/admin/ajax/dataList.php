@@ -52,6 +52,7 @@ $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 
 [, $schema] = connAdminInfofromPath($catalogData["catalog_path"]);
 
+$result = [];
 switch ($catalogData["connection_type"]) {
     case 1:     //Local Folder
         $result = [

@@ -11,7 +11,7 @@ class GCExport
         'shp' => ['shp', 'dbf', 'shx', 'prj', 'cpg'],
     ];
     
-    public function __construct($db, $type, array $options = [])
+    public function __construct($db, $type)
     {
         $this->type = $type;
         $this->db = $db;
