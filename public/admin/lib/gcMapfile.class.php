@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 use GisClient\Author\LayerGroup;
+use Symfony\Component\Yaml\Yaml;
 
 class gcMapfile
 {
@@ -1167,10 +1168,7 @@ END";
         
         //$content = yaml_emit($config,YAML_UTF8_ENCODING);
 
-        print_debug($config, null, 'yaml');
-        $Spyc = new Spyc();
-        $Spyc->setting_dump_force_quotes = true;
-        $content = $Spyc->YAMLDump($config, 1, 0);
+        $content = Yaml::dump($config, 2, 1);
 
         //file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
         //AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
@@ -1209,9 +1207,7 @@ END";
             ];
         }
 
-        $Spyc = new Spyc();
-        $Spyc->setting_dump_force_quotes = true;
-        $content = $Spyc->YAMLDump($config, 1, 0);
+        $content = Yaml::dump($config, 2, 1);
 
         $mapfileDir = ROOT_PATH . 'map/';
         $projectDir = $mapfileDir . $this->projectName . '/';
