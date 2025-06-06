@@ -122,6 +122,9 @@ HEALTHCHECK NONE
 FROM prod AS dev
 
 USER 0
+ARG UID=48
+ARG GID=48
 RUN dnf --nodocs update -y \
 	&& dnf --nodocs install -y binutils curl gzip procps telnet vim \
 	&& dnf clean all
+USER ${UID}

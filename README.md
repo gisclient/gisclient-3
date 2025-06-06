@@ -14,6 +14,10 @@ This version apply a MapServer patch to take advantage of the PostgreSQL Row Lev
 Use docker compose to run the GisClient backend, frontend and a PostgreSQL database:
 
 ```
+# if you have permission problems, you need the following environment variables (add them in ~/.bashrc for example):
+# export USER_ID=$(id -u)
+# export GROUP_ID=$(id -g)
+# these variables change the id of the php-fpm user
 docker compose up
 ```
 

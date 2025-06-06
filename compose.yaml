@@ -20,6 +20,9 @@ services:
       context: .
       target: dev
       dockerfile: docker/backend/Dockerfile
+      args:
+        UID: ${USER_ID:-48}
+        GID: ${GROUP_ID:-48}
     restart: unless-stopped
     volumes:
       - type: bind
