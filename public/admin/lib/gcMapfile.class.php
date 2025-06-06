@@ -1168,7 +1168,7 @@ END";
         
         //$content = yaml_emit($config,YAML_UTF8_ENCODING);
 
-        $content = Yaml::dump($config, 2, 1);
+        $content = Yaml::dump($config, 5, 1);
 
         //file_put_contents(MAPPROXY_FILES.$mapName.'.yaml', $content);
         //AGGIUNGO I LIVELLI WMS (che non hanno layer definiti nella tabella layer)
@@ -1207,7 +1207,7 @@ END";
             ];
         }
 
-        $content = Yaml::dump($config, 2, 1);
+        $content = Yaml::dump($config, 5, 1);
 
         $mapfileDir = ROOT_PATH . 'map/';
         $projectDir = $mapfileDir . $this->projectName . '/';
