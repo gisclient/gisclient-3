@@ -497,6 +497,7 @@ class Tabella_v extends Tabella
     {
         // dal file tab crea la lista di opzioni per il controllo SELECT
 
+        $retval = "";
 
         if (!file_exists($tabella)) {
             $retval = "\n<option value=\"\">File dei Fonts non Esistente</option>";
@@ -525,6 +526,7 @@ class Tabella_v extends Tabella
         }
         $sql = 'SELECT id,opzione FROM ' . $this->schemadb . '.' . $tabella;
         if (is_array($filtro)) {
+            $arrfiltro = [];
             for ($i = 0; $i < count($filtro); $i++) {
                 if (isset($this->array_dati[$this->curr_record][$filtro[$i]]) && $this->array_dati[$this->curr_record][$filtro[$i]]) {
                     $value = $this->array_dati[$this->curr_record][$filtro[$i]];
@@ -602,6 +604,7 @@ class Tabella_v extends Tabella
 
         $nopt = count($ar_elenco) / 2;
         $i = 0;
+        $retval = "";
         while ($i < count($ar_elenco)) {
             $desc = $ar_elenco[$i];
             $i++;
@@ -614,6 +617,7 @@ class Tabella_v extends Tabella
     }
     public function elenco_file($dir, $ext = "")
     {
+        $elenco = [];
         if (is_dir($dir)) {
             $elenco[] = "<option value=\"\">Seleziona ====></option>";
             if ($dh = opendir($dir)) {

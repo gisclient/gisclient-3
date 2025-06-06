@@ -73,6 +73,7 @@ class Tabella
         }
         
         $ncol = count($data["dato"]);
+        $row = [];
         for ($i = 0; $i < $ncol; $i++) {//comincio da 1 perchè sulla prima riga ho il nome della tabella e i campi obbligatori
             $d = $data["dato"][$i];
             //if (strtoupper(CHAR_SET) != 'UTF-8') $d = iconv($d, 'UTF-8', CHAR_SET.'//TRANSLIT');
@@ -154,9 +155,9 @@ class Tabella
             $riga_titolo .= "<button>$butt</button>";
         }
     
+        $hidden = "";
         //campi nascosti del form
         if (isset($this->array_hidden)) {
-            $hidden = '';
             foreach ($this->array_hidden as $key => $value) {
                 $nome = $key;
                 if ($value == '' && isset($this->array_dati[$this->curr_record][$nome])) {

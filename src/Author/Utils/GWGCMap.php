@@ -1406,9 +1406,7 @@ class GWGCMap
                     $aRes[] = GOOGLE_MAX_RESOLUTION / 2 ** $lev;
                 }
             } else {
-                if (isset($mapsetScales)) {
-                    $scaleList = preg_split("/[" . $this->coordSep . "]+/", $mapsetScales);
-                } elseif (defined('DEFAULT_SCALE_LIST')) {
+                if (defined('DEFAULT_SCALE_LIST')) {
                     $scaleList = preg_split("/[" . $this->coordSep . "]+/", DEFAULT_SCALE_LIST);
                 } else {
                     $scaleList = \GCAuthor::$defaultScaleList;

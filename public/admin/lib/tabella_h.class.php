@@ -40,6 +40,7 @@ class Tabella_h extends Tabella
         $w = $this->def_col[$col][2];//larghezza del campo
         $tipo = trim($this->def_col[$col][3]);//tipo del campo
 
+        $retval = "";
         switch ($tipo) {//tipo campo in configfile
             case "hidden":
                 $retval = "";
@@ -190,6 +191,7 @@ class Tabella_h extends Tabella
             case "delete":
                 $id = $this->array_dati[$row][$nome];
                 $keys = array_keys($this->pkeys);
+                $prm = [];
                 foreach ($keys as $key) {
                     $prm[] = "{pkey:'$key',pkvalue:'" . $this->array_dati[$row][$key] . "'}";
                 }
@@ -266,6 +268,7 @@ class Tabella_h extends Tabella
                 break;
 
             case "submit":
+                $js = "";
                 if (in_array(strtolower($nome), ["cancella", "elimina"])) {
                     $js = "onclick=\"javascript:return confirm('Sei sicuro di voler eliminare il record?');\"";
                 } elseif (in_array(strtolower($nome), ["copia"])) {

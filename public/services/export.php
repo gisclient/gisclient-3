@@ -32,6 +32,8 @@ switch ($data['export_format']) {
         }
         
         $tables = [];
+        $dbParams = null;
+        $dataDb = null;
         foreach ($data['tables'] as $table) {
             $dataDb = null;
             if (isset($table['table'])) {
@@ -80,6 +82,7 @@ switch ($data['export_format']) {
         }
         
         $exportTables = [];
+        $srid = null;
         if (!empty($data['extent'])) {
             if (!defined('GC_EXPORT_TMP_SCHEMA')) {
                 $ajax->error('Undefined export tmp schema');
@@ -167,8 +170,9 @@ switch ($data['export_format']) {
             }
         }
         
+        $export = null;
+        $zipFile = null;
         if ($data['export_format'] == 'shp') {
-            $zipFile = null;
             foreach ($exportTables as $table) {
                 $export = new GCExport($table['db_instance'], 'shp');
                 $zipFile = $export->export([$table], [

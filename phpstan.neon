@@ -24,3 +24,5 @@ parameters:
         - '#Result of function ms_iogetstdoutbufferstring \(void\) is used.#'
         # docs say 2 parameters, phpstan has wrong definition(?)
         - '#Function ms_newMapObjFromString invoked with 2 parameters, 1 required.#'
+        # TODO understand where the constants come from, how to resolve without ignoring, if possible
+        - '#Constant (BINGKEY|GC_EXPORT_CATALOG|GC_EXPORT_TMP_SCHEMA|GMAP_MIN_ZOOM_LEVEL|MAPPROXY_CONFIG_PATH|MS_MYGIS|MS_SUCCESS|MS_TRUETYPE|UPLOADED_FILES_PRIVATE_PATH) not found.#'
