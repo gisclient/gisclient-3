@@ -404,8 +404,8 @@ class saveData
                 }
                 if (!$this->hasErrors) {
                     try {
-                        $sql = $sql ?? '';
-                        $sqlparams = $sqlparams ?? [];
+                        $sql ??= '';
+                        $sqlparams ??= [];
                         $stmt = $this->db->prepare($sql);
                         $result = $stmt->execute($sqlparams);
                         print_debug($sql, null, "save.class");
