@@ -21,10 +21,10 @@ Use docker compose to run the GisClient backend, frontend and a PostgreSQL datab
 docker compose up
 ```
 
-Open a browser and go to [http://127.0.0.1/author/](http://127.0.0.1/author/)
+Open a browser and go to [http://127.0.0.1:8080/author/](http://127.0.0.1:8080/author/)
 
-To generate a working map enter inside the UI on [http://127.0.0.1/author/](http://127.0.0.1/author/), press on the "Author" button, go to the default project, and regenerate the map.
-You can open a gis client like qGIS, and add a WMS or WFS with this URL: [http://127.0.0.1/author/services/ows.php?project=default&map=default&](http://127.0.0.1/author/services/ows.php?project=default&map=default&request=getcapabilities&service=WMS&version=1.1.1)
+To generate a working map enter inside the UI on [http://127.0.0.1:8080/author/](http://127.0.0.1:8080/author/), press on the "Author" button, go to the default project, and regenerate the map.
+You can open a gis client like qGIS, and add a WMS or WFS with this URL: [http://127.0.0.1:8080/author/services/ows.php?project=default&map=default&](http://127.0.0.1:8080/author/services/ows.php?project=default&map=default&request=getcapabilities&service=WMS&version=1.1.1)
 
 Defaults:
 
