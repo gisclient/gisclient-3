@@ -68,6 +68,7 @@ class gcMapfile
     public function writeMap($keytype, $keyvalue)
     {
         $sqlParams = [];
+        $joinMapset = "";
         
         if ($keytype == "mapset") {    //GENERO IL MAPFILE PER IL MAPSET
             $filter = "mapset.mapset_name=:keyvalue";
@@ -169,11 +170,14 @@ class gcMapfile
         $this->_setMapProjections();
         $oFeature->srsParams = $this->srsParams;
 
+        $mapName = "";
         if ($this->printMap) {
             $mapName = time() . '_print';
         }
         
         $defaultLayers = [];
+        $mapTitle = [];
+        $mapMaxScale = [];
         foreach ($res as $aLayer) {
             if ($this->target == 'layer') {
                 $mapName = "{$aLayer["mapset_name"]}.{$aLayer["layer_name"]}";
@@ -838,6 +842,9 @@ END";
         $stmt->execute([$this->projectName]);
 
         $numResults = $stmt->rowCount();
+        $iconW = 20; // default icon width
+        $iconH = 10; // default icon height
+        $fontSize = 10; // default font size
         if ($numResults > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (trim($row['imagelabel_font']) != '') {

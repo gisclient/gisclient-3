@@ -11,6 +11,7 @@ error_reporting(E_ERROR | E_PARSE);
 
 //print_array($_REQUEST);
 $file_config = $_REQUEST["config"];
+$titolo = "";
 switch ($file_config) {
     case "wms_server":
         $titolo = "Parametri del Layer del Servizo WMS Server";

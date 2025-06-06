@@ -162,6 +162,7 @@ class saveData
             case "copia":
                 //print_array($this);
                 $idcopy = [$this->newId];
+                $idlevel = null;
                 foreach ($p->array_levels as $key => $value) {
                     if ($p->livello == $value["name"]) {
                         $idlevel = $key;
@@ -267,6 +268,7 @@ class saveData
                             foreach ($this->parent_flds as $key => $value) {
                                 $parentKeys = $this->getPKeys($key, DB_SCHEMA);
                                 
+                                $pk = null;
                                 foreach ($parentKeys as $pk) {
                                     for ($i = 0; $i < count($Dati); $i++) {
                                         $Dati[$i][$pk] = $value;
@@ -402,6 +404,8 @@ class saveData
                 }
                 if (!$this->hasErrors) {
                     try {
+                        $sql = $sql ?? '';
+                        $sqlparams = $sqlparams ?? [];
                         $stmt = $this->db->prepare($sql);
                         $result = $stmt->execute($sqlparams);
                         print_debug($sql, null, "save.class");
@@ -452,6 +456,7 @@ class saveData
         if (!$arr[$lev]["leaf"]) {
             $sql = "SELECT id,name,leaf FROM " . DB_SCHEMA . ".e_level WHERE export>0 AND parent_id=?;";
             print_debug($sql, null, "save.class");
+            $stmt = null;
             try {
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute([$lev]);
@@ -465,6 +470,9 @@ class saveData
         } else {
             $child = [];
         }
+
+        $list_flds = "";
+        $list_value = "";
         if (count($arr_id)) {
             $sqlparams = [
                 'structName1' => $struct["name"],
@@ -492,6 +500,8 @@ class saveData
                 $this->hasErrors = true;
             }
             
+            $flds = [];
+            $value = [];
             foreach ($tmp as $v) {
                 $flds[] = $v["column_name"];
                 if ($parent_fld["value"] && ($v["column_name"] == $arr[$arr[$lev]["parent"]]["name"] . "_id" || $v["column_name"] == $arr[$arr[$lev]["parent"]]["name"] . "_name")) {
@@ -508,6 +518,7 @@ class saveData
         }
         
         // INSERISCO GLI ELEMENTI DI QUESTO LIVELLO
+        $parent = [];
         if ($arr_id) {
             foreach ($arr_id as $id) {
                 $idx = GCApp::getNewPKey(DB_SCHEMA, DB_SCHEMA, $struct["name"], $struct["name"] . '_id');

@@ -22,7 +22,8 @@ switch ($_REQUEST['action']) {
         if (empty($_REQUEST['mode'])) {
             $ajax->error('missing mode');
         }
-        
+
+        $parentLevels = [];
         try {
             $parentLevels = GCLevels::getParents($_REQUEST['level'], [
                 'use_copy_limits' => true,
@@ -57,6 +58,7 @@ switch ($_REQUEST['action']) {
         ]);
         break;
     case 'get-data':
+        $parent = null;
         try {
             $parent = GCLevels::getParent($_REQUEST['level']);
         } catch (Exception $e) {

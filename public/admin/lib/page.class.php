@@ -444,7 +444,8 @@ class page
                 for ($j = 0; $j < count($tb->function_param); $j++) {
                     $tb->function_param[$j] = $this->parametri[$tb->function_param[$j]];
                 }
-                    
+
+                $flt = [];
                 foreach ($this->pageKeys as $key) {
                     if ($el["value"]) {
                         $flt[] = "$key = " . $this->db->quote($el["value"]);
@@ -479,6 +480,7 @@ class page
                 for ($j = 0; $j < count($tb->function_param); $j++) {
                     $tb->function_param[$j] = $this->parametri[$tb->function_param[$j]];
                 }
+                $flt = [];
                 foreach ($this->pageKeys as $key) {
                     if ($el["value"]) {
                         $flt[] = "$key = " . $this->db->quote($el["value"]);
@@ -505,6 +507,7 @@ class page
             case 3: // Elenco con un solo valore(TABELLA H)
                 $prm["livello"] = $tab["level"];
                 $prm["parametri[][" . $tab["level"] . "]"] = "-1";
+                $filter = "";
                 if (is_array($el) && $el["value"]) {
                     $filter = $tab["parent_name"] . "_name = " . $this->db->quote($el["value"]);
                 }
@@ -560,6 +563,7 @@ class page
             case 5:
                 $prm["livello"] = $tab["level"];
                 $prm["parametri[][" . $tab["level"] . "]"] = "";
+                $filter = "";
                 if (is_array($el) && $el["value"] && $tab["parent_name"]) {
                     $filter = $tab["parent_name"] . "_name = " . $this->db->quote($el["value"]);
                 }
@@ -594,6 +598,7 @@ class page
                 if (is_null($e)) {
                     $e = [];
                 }
+                $flt = [];
                 foreach ($e as $k => $v) {
                     //$flt[]="$k='".addslashes($v)."'";
                     $flt[] = "$k=" . $this->db->quote($v);
@@ -633,7 +638,7 @@ class page
                 for ($j = 0; $j < count($tb->pkeys); $j++) {
                     $tb->pkeys_value[$j] = isset($tb->pkeys[$j]) ? $this->_get_pkey_value($tb->pkeys[$j]) : null;
                 }
-                $tb->set_titolo($tb->FileTitle, $button, $prm);
+                $tb->set_titolo($tb->FileTitle, 0, $prm);
                 $tb->get_titolo($frm);
                 $tb->tab();
                 break;
@@ -659,6 +664,7 @@ class page
                 $prm["mode"] = "new";
 
                 $tb = new Tabella_h($tab["config_file"] . ".tab", "list");
+                $flt = [];
                 foreach ($tb->pkeys as $key => $value) {
                     if ($el["value"]) {
                         $flt[] = "$key = " . $this->db->quote($el["value"]);
@@ -699,6 +705,7 @@ class page
                 echo "<form name=\"frm_data\" id=\"frm_data\" enctype=\"multipart/form-data\" action=\".\" method=\"POST\">";
                 $tb->set_titolo($tb->FileTitle, "", $prm);
                 $tb->tag = $tab["level"];
+                $filter = "";
                 switch ($tab["level"]) {
                     case "mapset_layergroup":
                         $param = "layergroup";
@@ -780,6 +787,7 @@ class page
                 $j = 0;
                 $e = array_pop($this->levKey);
                 $j = 0;
+                $flt = [];
                 foreach ($e as $k => $v) {
                     $flt[] = "$k=" . $this->db->quote($v);
                     $prm["pkey[$j]"] = $k;
@@ -826,6 +834,7 @@ class page
                     $prm["pkey_value[$j]"] = $this->_get_pkey_value($tb->pkeys[$j]);
                 }
                 $e = array_pop($this->levKey);
+                $flt = [];
                 foreach ($e as $k => $v) {
                     $flt[] = "$k=" . $this->db->quote($v);
                 }
@@ -881,6 +890,7 @@ class page
                 for ($j = 0; $j < count($tb->function_param); $j++) {
                     $tb->function_param[$j] = $this->parametri[$tb->function_param[$j]];
                 }
+                $btn = [];
                 switch ($tb->tabelladb) {
                     case "vista_mapset_layergroup":
                         $filtro = "mapset_id in (0," . $this->parametri["mapset"] . ") and project_id=" . $this->parametri["project"] . " ORDER BY layergroup_name;";
@@ -951,16 +961,15 @@ class page
                 //$tb->set_titolo($tab["title"],"",$prm);
                 $tb->set_titolo($tb->FileTitle, "", $prm);
                 $tb->get_titolo();
+                $data = [];
                 if (is_array($data) && !$data && !$msg) {
                     $data = $filter;
                 }
                     
                 $tb->set_multiple_data($data);
                 $tb->elenco($msg);
-                if (count($btn)) {
-                    $button = implode("\n\t", $btn);
-                }
-                echo "<hr>$button";
+
+                echo "<hr>";
                 echo "<input type=\"hidden\" name=\"save_type\" value=\"multiple\">";
                 echo "</form>";
                 break;
@@ -1147,7 +1156,9 @@ class page
                                 $this->write_page_param($this->parametri);
                                 $this->write_parameter();
                                 echo "</form>";
-                                echo $resultForm;
+                                if (isset($resultForm)) {
+                                    echo $resultForm;
+                                }
                                 break;
                             default:
                                 $this->writeNewForm($tab, $el, $prm);

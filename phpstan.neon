@@ -6,6 +6,13 @@ parameters:
         - lib
         - public
         - tests
+    excludePaths:
+        analyse:
+            # some difficult to analyse files because they are included - lots of "$x might not be defined" because it's defined in the file that includes
+            - public/admin/db
+            - public/admin/inc
+            - public/admin/include
+            - public/services/include
     tmpDir: var/cache/phpstan
     bootstrapFiles:
         # for constants

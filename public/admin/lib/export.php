@@ -106,6 +106,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
                 } elseif ($out[$k][1] == "[catalog][]") {
                     $newVal = "-1";
                 } else {
+                    $fld = "";
                     if (preg_match_all('|(\[(.+)\]\[(.*)\])+|Ui', $str, $out1, PREG_SET_ORDER)) {
                         $fld = $out1[0][2] . "." . $out1[0][2] . "_id";
                         for ($j = 0; $j < count($out1); $j++) {
@@ -118,6 +119,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
                     $tables[] = DB_SCHEMA . '.project';
                     $sqlVal = "SELECT $fld as val FROM " . implode(",", array_unique($tables)) . " WHERE " . implode(' AND ', array_unique($flt)) . ";";
                     
+                    $newVal = "";
                     try {
                         $newVal = $db->query($sqlVal)->fetchColumn(0);
                     } catch (Exception $e) {
@@ -127,6 +129,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
                 $sql = str_replace($out[$k][0], $newVal, $sql);
             }
         }
+        $newid = [];
         if (preg_match_all('|@KEY\[(.+)\]\[(.+)\]@|Ui', $sql, $newkey)) {
             for ($j = 0; $j < count($newkey[0]); $j++) {
                 if (!$newid[$newkey[1][$j]][$newkey[2][$j]]) {
@@ -189,6 +192,7 @@ function import_raster($d, $ext, $layergroup_id, $catalog_id, $srid = -1, $filtr
     $dir = str_replace("//", "/", $result);
     require_once "filesystem.php";
     $fileList = [];
+    $i = 0;
     foreach ($ext as $e) {
         $tmpF = elenco_file($dir, $e, $filtro);
         for ($i = 0; $i < count($tmpF); $i++) {
@@ -234,6 +238,7 @@ function _getPKeys()
     $xml = new ParseXml();
     $xml->LoadFile(PK_FILE);
     $ris = $xml->ToArray();
+    $struct = [];
     foreach ($ris as $key => $val) {
         $struct["pkey"][$key] = (is_array($ris[$key]["pkey"])) ? ($ris[$key]["pkey"]) : ([$ris[$key]["pkey"]]);
         $struct["parent"][$key] = $ris[$key]["parent"];
@@ -245,11 +250,13 @@ function _getListValue($level, $val, $db = null)
 {
     $db = GCApp::getDB();
     $pk = _getPKeys();
+    $result = [];
     if ($level == 'project') {
         $result[] = "[$level][$val]";
     } else {
         while (trim($pk["parent"][$level])) {
             $table = $pk["table"][$level];
+            $sql = "";
             if (count($pk['pkey'][$level]) > 1) {
             } else {
                 if ($pk["parent"][$level]) {
@@ -259,6 +266,8 @@ function _getListValue($level, $val, $db = null)
                 }
                 $sql = "SELECT " . $level . "_name as name,$parentPK as parentpk FROM " . DB_SCHEMA . ".$table WHERE " . $pk['pkey'][$level][0] . "=:val;";
             }
+            $name = "";
+            $newval = "";
             try {
                 $stmt = $db->prepare($sql);
                 $stmt->execute([
@@ -295,7 +304,7 @@ function _isPKey($fld, $pk, $lev = "")
             }
         }
     }
-    if (count($arr) > 1) {
+    if (isset($arr) && count($arr) > 1) {
         for ($i = 0; $i < count($arr); $i++) {
             if ($arr[$i] == $fld) {
                 return true;
@@ -354,12 +363,16 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
         $Errors[] = "<p>Errore nell'estrazione dei Dati del Livello $currentLevel</p>";
     }
     $fldType = [];
+    $struct = [];
     $recordSet = $stmt->fetchAll(PDO::FETCH_ASSOC);
     for ($i = 0; $i < count($recordSet); $i++) {    //RISULTATI DA INSERIRE NEL FILE
         $rec = $recordSet[$i];
         $fldIns = [];
         $valIns = [];
         $j = 0;
+
+        $values = [];
+        $pkeyVal = [];
 
         foreach ($rec as $key => $val) {        //Ciclo su tutti i campi
             //SFRUTTO IL PRIMO GIRO PER ESTRARRE I TIPI DI DATO
