@@ -337,6 +337,7 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 				// **** Set style
 				switch ($type['ms_type']) {
 					case MS_LAYER_POINT:
+						$oLabel->updateFromString('LABEL MAXSCALEDENOM 250 END');
 						$oClass->setExpression("(length('[graphicname]') > 0)");
 						$oStyle = new gc_styleObj($oClass);
 						$oStyle->setBinding(MS_STYLE_BINDING_SIZE, 'pointradius');
@@ -346,6 +347,42 @@ if($_REQUEST["REQUEST"] == "GetMap" && isset($_REQUEST["SERVICE"]) && $_REQUEST[
 						$oStyle->setBinding(MS_STYLE_BINDING_ANGLE, 'rotation');
 						$oStyle->updateFromString('STYLE OPACITY [strokeopacity] END');
 						$oStyle->updateFromString('STYLE SYMBOL [graphicname] END');
+
+						$oLabel1 = new gc_labelObj();
+						$oLabel1->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+						$oLabel1->updateFromString('LABEL SIZE([fontsize]) END');
+						$oLabel1->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+						$oLabel1->set('position', MS_UC);
+						$oLabel1->updateFromString('LABEL MAXSCALEDENOM 500 END');
+						$oLabel1->updateFromString('LABEL MINSCALEDENOM 251 END');
+						$oClass->addLabel($oLabel1);
+
+						$oLabel2 = new gc_labelObj();
+						$oLabel2->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+						$oLabel2->updateFromString('LABEL SIZE([fontsize]*2) END');
+						$oLabel2->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+						$oLabel2->set('position', MS_UC);
+						$oLabel2->updateFromString('LABEL MAXSCALEDENOM 1000 END');
+						$oLabel2->updateFromString('LABEL MINSCALEDENOM 501 END');
+						$oClass->addLabel($oLabel2);
+
+						$oLabel4 = new gc_labelObj();
+						$oLabel4->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+						$oLabel4->updateFromString('LABEL SIZE([fontsize]*4) END');
+						$oLabel4->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+						$oLabel4->set('position', MS_UC);
+						$oLabel4->updateFromString('LABEL MAXSCALEDENOM 2000 END');
+						$oLabel4->updateFromString('LABEL MINSCALEDENOM 1001 END');
+						$oClass->addLabel($oLabel4);
+
+						$oLabel8 = new gc_labelObj();
+						$oLabel8->setBinding(MS_LABEL_BINDING_COLOR, 'fontcolor');
+						$oLabel8->updateFromString('LABEL SIZE([fontsize]*8) END');
+						$oLabel8->setBinding(MS_LABEL_BINDING_ANGLE, 'angle');
+						$oLabel8->set('position', MS_UC);
+						$oLabel8->updateFromString('LABEL MINSCALEDENOM 2001 END');
+						$oClass->addLabel($oLabel8);
+
 						// **** Set symbol class
 						$oClassS = new gc_classObj($oLay);
 						$oClassS->set('name', 'PRINTVECTORS_CLASS_SYMBOL_' . $type['db_type']);
