@@ -16,7 +16,7 @@ psql -q -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${DB_DBNAME}"
 EOSQL
 
 echo "* Import gisclient data on database ${DB_DBNAME}"
-gunzip </docker-entrypoint-initdb.d/gisclient_34.dmp.gz | psql -q -1 -v ON_ERROR_STOP=1 --username "${DB_USER}" --dbname "${DB_DBNAME}" >/dev/null
+psql -q -1 -v ON_ERROR_STOP=1 --username "${DB_USER}" --dbname "${DB_DBNAME}" -f /docker-entrypoint-initdb.d/gisclient_34.dmp.sql >/dev/null
 
 echo "* Import spatial data data on database ${DB_DBNAME}"
 gunzip </docker-entrypoint-initdb.d/geo.dmp.gz | psql -q -v ON_ERROR_STOP=1 --username "${DB_USER}" --dbname "${DB_DBNAME}" >/dev/null
