@@ -10,7 +10,10 @@ Pilot scope:
 
 ## Endpoints and auth
 
-Base URL (docker default): `http://localhost:8080/api`
+Base URL:
+
+- Docker default service root: `http://localhost:8080`
+- Author JSON:API base path: `http://localhost:8080/author/services/api`
 
 CRUD endpoints:
 
@@ -22,11 +25,16 @@ CRUD endpoints:
 
 Project-scoped `project_srs` endpoints:
 
-- `GET /api/project/{project}/srs`
-- `POST /api/project/{project}/srs`
-- `GET /api/project/{project}/srs/{id}`
-- `PUT /api/project/{project}/srs/{id}`
-- `DELETE /api/project/{project}/srs/{id}`
+- `GET /api/project/{project}/project_srs`
+- `POST /api/project/{project}/project_srs`
+- `GET /api/project/{project}/project_srs/{id}`
+- `PUT /api/project/{project}/project_srs/{id}`
+- `DELETE /api/project/{project}/project_srs/{id}`
+
+Scoped entity naming is canonical (no aliases):
+
+- use `project_srs`
+- `srs` is not supported
 
 All `/api/*` endpoints require:
 
@@ -157,8 +165,8 @@ fields are normalized to `null` by validator logic).
 
 `project_srs` is scoped under project routes:
 
-- `POST /api/project/{project}/srs`
-- `PUT /api/project/{project}/srs/{id}`
+- `POST /api/project/{project}/project_srs`
+- `PUT /api/project/{project}/project_srs/{id}`
 
 Write payload requirements:
 

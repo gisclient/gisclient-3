@@ -30,52 +30,57 @@ apiDelete:
     methods:
         - DELETE
 
-## Project scoped SRS JSON:API CRUD routes
-apiProjectSrsIndex:
-    path: 'api/project/{project}/srs'
+## Generic project scoped JSON:API CRUD routes
+apiProjectScopedIndex:
+    path: 'api/project/{project}/{entity}'
     defaults:
         _controller: 'GisClient\Author\Controller\JsonApiController::indexAction'
-        entity: 'project_srs'
         _scope_map:
             project_name: project
     methods:
         - GET
-apiProjectSrsCreate:
-    path: 'api/project/{project}/srs'
+    requirements:
+        entity: project_srs
+apiProjectScopedCreate:
+    path: 'api/project/{project}/{entity}'
     defaults:
         _controller: 'GisClient\Author\Controller\JsonApiController::createAction'
-        entity: 'project_srs'
         _scope_map:
             project_name: project
     methods:
         - POST
-apiProjectSrsShow:
-    path: 'api/project/{project}/srs/{id}'
+    requirements:
+        entity: project_srs
+apiProjectScopedShow:
+    path: 'api/project/{project}/{entity}/{id}'
     defaults:
         _controller: 'GisClient\Author\Controller\JsonApiController::showAction'
-        entity: 'project_srs'
         _scope_map:
             project_name: project
     methods:
         - GET
-apiProjectSrsUpdate:
-    path: 'api/project/{project}/srs/{id}'
+    requirements:
+        entity: project_srs
+apiProjectScopedUpdate:
+    path: 'api/project/{project}/{entity}/{id}'
     defaults:
         _controller: 'GisClient\Author\Controller\JsonApiController::updateAction'
-        entity: 'project_srs'
         _scope_map:
             project_name: project
     methods:
         - PUT
-apiProjectSrsDelete:
-    path: 'api/project/{project}/srs/{id}'
+    requirements:
+        entity: project_srs
+apiProjectScopedDelete:
+    path: 'api/project/{project}/{entity}/{id}'
     defaults:
         _controller: 'GisClient\Author\Controller\JsonApiController::deleteAction'
-        entity: 'project_srs'
         _scope_map:
             project_name: project
     methods:
         - DELETE
+    requirements:
+        entity: project_srs
 
 ## Available routes in public/services/...
 login:
