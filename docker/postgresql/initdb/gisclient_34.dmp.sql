@@ -4639,6 +4639,26 @@ COPY gisclient_34.users_options (users_options_id, username, option_key, option_
 --
 
 COPY gisclient_34.version (version_id, version_name, version_date, version_key) FROM stdin;
+1	3.4.0	2015-06-15	author
+2	3.4.1	2015-10-09	author
+3	3.4.2	2016-01-25	author
+4	3.4.3	2016-03-08	author
+5	3.4.4	2016-05-07	author
+6	3.4.5	2016-05-30	author
+7	3.4.6	2016-10-26	author
+8	3.4.7	2017-01-16	author
+9	3.4.8	2017-02-03	author
+10	3.5.0	2017-11-27	author
+11	3.5.1	2018-01-25	author
+12	3.5.2	2018-05-22	author
+13	3.5.3	2018-08-14	author
+14	3.5.4	2019-08-01	author
+15	3.5.5	2019-03-19	author
+16	3.5.6	2019-05-14	author
+17	3.6.0	2019-01-24	author
+18	3.6.1	2019-05-31	author
+19	3.6.2	2019-10-11	author
+20	3.6.3	2024-03-14	author
 \.
 
 
@@ -4723,7 +4743,7 @@ SELECT pg_catalog.setval('gisclient_34.users_options_users_options_id_seq', 1, t
 -- Name: version_version_id_seq; Type: SEQUENCE SET; Schema: gisclient_34; Owner: -
 --
 
-SELECT pg_catalog.setval('gisclient_34.version_version_id_seq', 1, false);
+SELECT pg_catalog.setval('gisclient_34.version_version_id_seq', 20, true);
 
 
 --
@@ -6127,4 +6147,3 @@ ALTER TABLE ONLY gisclient_34.project_admin
 --
 -- PostgreSQL database dump complete
 --
-
