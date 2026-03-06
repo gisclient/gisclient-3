@@ -3,10 +3,12 @@
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
 use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Service\ApiCrudService;
+use GisClient\Author\Api\Validation\PayloadValidator;
 use PHPUnit\Framework\TestCase;
 
 class ApiCrudServiceTest extends TestCase
@@ -125,11 +127,11 @@ class ApiCrudServiceTest extends TestCase
                     ],
                 ],
             ]);
-            $this->fail('Expected invalid_attribute_type ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('invalid_attribute_type', $exception->getErrorCode());
-            $this->assertSame('/data/attributes/max_extent_scale', $exception->getSourcePointer());
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $errors = $exception->getErrors();
+            $this->assertSame('invalid_attribute_type', $errors[0]['code']);
+            $this->assertSame('/data/attributes/max_extent_scale', $errors[0]['source']['pointer']);
         }
     }
 
@@ -163,11 +165,56 @@ class ApiCrudServiceTest extends TestCase
                     ],
                 ],
             ]);
-            $this->fail('Expected invalid_attribute ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(400, $exception->getStatus());
-            $this->assertSame('invalid_attribute', $exception->getErrorCode());
-            $this->assertSame('/data/attributes/project_note', $exception->getSourcePointer());
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $errors = $exception->getErrors();
+            $this->assertSame('invalid_attribute', $errors[0]['code']);
+            $this->assertSame('/data/attributes/project_note', $errors[0]['source']['pointer']);
+        }
+    }
+
+    public function testCreateReturnsAllValidationErrorsAtOnce()
+    {
+        $definition = new EntityDefinition(
+            'project',
+            'gisclient_34',
+            'project',
+            'project_name',
+            'string',
+            ['project_name', 'project_title', 'max_extent_scale'],
+            ['project_title', 'max_extent_scale'],
+            ['project_name', 'project_title', 'max_extent_scale'],
+            ['project_title', 'max_extent_scale'],
+            ['project_name'],
+            ['project_name'],
+            'project_name',
+            [
+                'max_extent_scale' => [
+                    'type' => 'numeric',
+                ],
+            ]
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('project', [
+                'data' => [
+                    'type' => 'project',
+                    'id' => 'milano',
+                    'attributes' => [
+                        'project_note' => 'hidden',
+                        'project_title' => '',
+                        'max_extent_scale' => 'A50000',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $codes = array_column($exception->getErrors(), 'code');
+            $this->assertContains('invalid_attribute', $codes);
+            $this->assertContains('missing_required_attribute', $codes);
+            $this->assertContains('invalid_attribute_type', $codes);
         }
     }
 
@@ -248,7 +295,7 @@ class ApiCrudServiceTest extends TestCase
                 AuthorEntityRepositoryInterface $repository,
                 $isAdmin
             ) {
-                parent::__construct($provider, $repository);
+                parent::__construct($provider, $repository, new PayloadValidator());
                 $this->isAdmin = $isAdmin;
             }
 

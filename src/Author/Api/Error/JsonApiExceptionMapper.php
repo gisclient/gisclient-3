@@ -3,6 +3,7 @@
 namespace GisClient\Author\Api\Error;
 
 use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Exception\ValidationException;
 
 class JsonApiExceptionMapper
 {
@@ -11,6 +12,15 @@ class JsonApiExceptionMapper
      */
     public function map(\Throwable $exception)
     {
+        if ($exception instanceof ValidationException) {
+            return [
+                'status' => 422,
+                'payload' => [
+                    'errors' => $exception->getErrors(),
+                ],
+            ];
+        }
+
         if ($exception instanceof ApiException) {
             $error = [
                 'status' => (string) $exception->getStatus(),

@@ -7,6 +7,7 @@ use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\QueryOptions;
+use GisClient\Author\Api\Validation\PayloadValidator;
 
 class ApiCrudService
 {
@@ -20,12 +21,19 @@ class ApiCrudService
      */
     private $repository;
 
+    /**
+     * @var PayloadValidator
+     */
+    private $payloadValidator;
+
     public function __construct(
         EntityDefinitionProviderInterface $definitionProvider,
-        AuthorEntityRepositoryInterface $repository
+        AuthorEntityRepositoryInterface $repository,
+        PayloadValidator $payloadValidator
     ) {
         $this->definitionProvider = $definitionProvider;
         $this->repository = $repository;
+        $this->payloadValidator = $payloadValidator;
     }
 
     /**
@@ -186,61 +194,7 @@ class ApiCrudService
      */
     private function extractAttributes(EntityDefinition $definition, array $payload, $isCreate, $isPut)
     {
-        if (!isset($payload['data']) || !is_array($payload['data'])) {
-            throw new ApiException(400, 'invalid_payload', 'Invalid Payload', 'Payload must include a data object', '/data');
-        }
-        if (($payload['data']['type'] ?? null) !== $definition->getType()) {
-            throw new ApiException(409, 'type_mismatch', 'Type Mismatch', sprintf("Payload data.type must be '%s'", $definition->getType()), '/data/type');
-        }
-        if (!isset($payload['data']['attributes']) || !is_array($payload['data']['attributes'])) {
-            throw new ApiException(400, 'invalid_attributes', 'Invalid Attributes', 'Payload must include data.attributes object', '/data/attributes');
-        }
-
-        $attributes = $payload['data']['attributes'];
-        $primaryKey = $definition->getPrimaryKey();
-
-        if ($isCreate && array_key_exists('id', $payload['data'])) {
-            $idValue = $payload['data']['id'];
-            if ($this->isEmptyValue($idValue)) {
-                throw new ApiException(400, 'invalid_id', 'Invalid Resource Identifier', 'data.id cannot be empty', '/data/id');
-            }
-            if (array_key_exists($primaryKey, $attributes) && (string) $attributes[$primaryKey] !== (string) $idValue) {
-                throw new ApiException(409, 'id_attribute_mismatch', 'Identifier Mismatch', sprintf("data.id and data.attributes.%s must match", $primaryKey), '/data/id');
-            }
-            $attributes[$primaryKey] = $idValue;
-        }
-
-        foreach ($attributes as $field => $value) {
-            if (!in_array($field, $definition->getWritableFields(), true) && $field !== $primaryKey) {
-                throw new ApiException(400, 'invalid_attribute', 'Invalid Attribute', sprintf("Attribute '%s' is not writable", $field), '/data/attributes/' . $field);
-            }
-        }
-
-        if (isset($attributes[$primaryKey]) && !$isCreate) {
-            throw new ApiException(400, 'immutable_primary_key', 'Immutable Primary Key', 'Primary key cannot be changed', '/data/attributes/' . $primaryKey);
-        }
-
-        if ($isPut) {
-            $complete = [];
-            foreach ($definition->getWritableFields() as $field) {
-                if ($field === $primaryKey) {
-                    continue;
-                }
-                $complete[$field] = array_key_exists($field, $attributes) ? $attributes[$field] : null;
-            }
-            $attributes = $complete;
-        }
-
-        $requiredFields = $isCreate ? $definition->getRequiredOnCreate() : $definition->getRequiredOnPut();
-        foreach ($requiredFields as $field) {
-            if (!array_key_exists($field, $attributes) || $this->isEmptyValue($attributes[$field])) {
-                throw new ApiException(400, 'missing_required_attribute', 'Missing Required Attribute', sprintf("Attribute '%s' is required", $field), '/data/attributes/' . $field);
-            }
-        }
-
-        $this->validateAttributeTypes($definition, $attributes);
-
-        return $attributes;
+        return $this->payloadValidator->validateAndNormalize($definition, $payload, $isCreate, $isPut);
     }
 
     /**
@@ -279,50 +233,6 @@ class ApiCrudService
         }
         if (!$auth->isAdmin()) {
             throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
-        }
-    }
-
-    /**
-     * @param mixed $value
-     * @return bool
-     */
-    private function isEmptyValue($value)
-    {
-        if ($value === null) {
-            return true;
-        }
-        if (is_string($value)) {
-            return trim($value) === '';
-        }
-        return false;
-    }
-
-    private function validateAttributeTypes(EntityDefinition $definition, array $attributes)
-    {
-        foreach ($attributes as $field => $value) {
-            if ($value === null) {
-                continue;
-            }
-
-            $rule = $definition->getAttributeRule($field);
-            if ($rule === null || !isset($rule['type'])) {
-                continue;
-            }
-
-            $type = $rule['type'];
-            $pointer = '/data/attributes/' . $field;
-            if ($type === 'integer' && !is_int($value)) {
-                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be an integer", $field), $pointer);
-            }
-            if ($type === 'numeric' && !is_int($value) && !is_float($value)) {
-                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be numeric", $field), $pointer);
-            }
-            if ($type === 'boolean' && !is_bool($value)) {
-                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be boolean", $field), $pointer);
-            }
-            if ($type === 'string' && !is_string($value)) {
-                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be string", $field), $pointer);
-            }
         }
     }
 }
