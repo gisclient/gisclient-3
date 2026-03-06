@@ -35,6 +35,26 @@ class EntityRegistry
                 'sortable_fields' => ['project_name', 'project_title'],
                 'default_sort' => 'project_name',
             ],
+            'project_srs' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'project_srs',
+                'primary_key' => 'srid',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'project_srs.tab',
+                'required_on_create' => ['project_name', 'srid'],
+                'required_on_put' => [],
+                'filterable_fields' => ['project_name', 'srid'],
+                'sortable_fields' => ['srid'],
+                'default_sort' => 'srid',
+                'scope_fields' => ['project_name'],
+                'relationships' => [
+                    'project' => [
+                        'type' => 'project',
+                        'local_key' => 'project_name',
+                    ],
+                ],
+                'required_relationships_on_write' => ['project'],
+            ],
         ];
     }
 }
