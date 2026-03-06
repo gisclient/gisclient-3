@@ -47,6 +47,8 @@ List query params:
 - `offset` default `0`
 - `sort` e.g. `project_name` or `-project_name`
 - `filter[field]=value`
+- Relationship filter alias is supported for to-one relations in definitions.
+  Example: `filter[project]=default` is normalized to `filter[project_name]=default`.
 
 ## Component architecture
 
@@ -140,9 +142,9 @@ Example create payload:
 {
   "data": {
     "type": "project",
-    "id": "milano",
+    "id": "default",
     "attributes": {
-      "project_title": "Milano",
+      "project_title": "Default",
       "xc": 501090,
       "yc": 5022596,
       "project_srid": 32632,
@@ -175,6 +177,7 @@ Write payload requirements:
   internally for `srid` (entity `id_type: int`)
 - `relationships.project.data` is required on write
 - `relationships.project.data.type` must be `project`
+- `relationships.project.data.id` is required and cannot be empty
 - `relationships.project.data.id` must match `{project}` in the URL
 
 Example create payload:
@@ -191,7 +194,7 @@ Example create payload:
       "project": {
         "data": {
           "type": "project",
-          "id": "milano"
+          "id": "default"
         }
       }
     }
@@ -205,3 +208,12 @@ Example create payload:
 - `project_srs` returns read-only `relationships.project` data; relationship
   links/endpoints are not exposed.
 - Mapfile refresh is not automatically triggered by CRUD writes.
+
+## Relationship write semantics
+
+- Relationship IDs are mapped internally to local FK fields on write.
+  Example: `relationships.project.data.id` -> `project_name`.
+- Clients should send relationships for references and should not rely on
+  writing FK fields directly in `data.attributes` when those are not writable.
+- Required attributes backed by relationships are considered satisfied when the
+  corresponding relationship `data.id` is present and valid.
