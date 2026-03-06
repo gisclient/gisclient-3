@@ -90,7 +90,50 @@ class ApiCrudServiceTest extends TestCase
         $this->assertSame('Milano', $repo->createdAttributes['project_title']);
     }
 
-    private function createService($isAdmin, &$repo = null)
+    public function testCreateRejectsInvalidAttributeTypeWith422()
+    {
+        $definition = new EntityDefinition(
+            'project',
+            'gisclient_34',
+            'project',
+            'project_name',
+            'string',
+            ['project_name', 'project_title', 'max_extent_scale'],
+            ['project_name', 'project_title', 'max_extent_scale'],
+            ['project_name', 'project_title', 'max_extent_scale'],
+            ['project_title', 'max_extent_scale'],
+            ['project_name'],
+            ['project_name'],
+            'project_name',
+            [
+                'max_extent_scale' => [
+                    'type' => 'numeric',
+                ],
+            ]
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('project', [
+                'data' => [
+                    'type' => 'project',
+                    'id' => 'milano',
+                    'attributes' => [
+                        'project_title' => 'Milano',
+                        'max_extent_scale' => 'A50000',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected invalid_attribute_type ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('invalid_attribute_type', $exception->getErrorCode());
+            $this->assertSame('/data/attributes/max_extent_scale', $exception->getSourcePointer());
+        }
+    }
+
+    public function testCreateRejectsHiddenAttribute()
     {
         $definition = new EntityDefinition(
             'project',
@@ -99,7 +142,7 @@ class ApiCrudServiceTest extends TestCase
             'project_name',
             'string',
             ['project_name', 'project_title'],
-            ['project_name', 'project_title'],
+            ['project_title'],
             ['project_name', 'project_title'],
             ['project_title'],
             ['project_name'],
@@ -107,6 +150,49 @@ class ApiCrudServiceTest extends TestCase
             'project_name'
         );
 
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('project', [
+                'data' => [
+                    'type' => 'project',
+                    'id' => 'milano',
+                    'attributes' => [
+                        'project_title' => 'Milano',
+                        'project_note' => 'hidden',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected invalid_attribute ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(400, $exception->getStatus());
+            $this->assertSame('invalid_attribute', $exception->getErrorCode());
+            $this->assertSame('/data/attributes/project_note', $exception->getSourcePointer());
+        }
+    }
+
+    private function createService($isAdmin, &$repo = null)
+    {
+        $definition = new EntityDefinition(
+            'project',
+            'gisclient_34',
+            'project',
+            'project_name',
+            'string',
+            ['project_name', 'project_title', 'project_note'],
+            ['project_name', 'project_title', 'project_note'],
+            ['project_name', 'project_title'],
+            ['project_title'],
+            ['project_name'],
+            ['project_name'],
+            'project_name'
+        );
+
+        return $this->createServiceFromDefinition($definition, $isAdmin, $repo);
+    }
+
+    private function createServiceFromDefinition(EntityDefinition $definition, $isAdmin, &$repo = null)
+    {
         $provider = new class($definition) implements EntityDefinitionProviderInterface {
             private $definition;
 

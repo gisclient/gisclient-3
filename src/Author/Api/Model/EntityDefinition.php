@@ -16,6 +16,7 @@ class EntityDefinition
     private $filterableFields;
     private $sortableFields;
     private $defaultSort;
+    private $attributeRules;
 
     public function __construct(
         $type,
@@ -29,7 +30,8 @@ class EntityDefinition
         array $requiredOnPut,
         array $filterableFields,
         array $sortableFields,
-        $defaultSort
+        $defaultSort,
+        array $attributeRules = []
     ) {
         $this->type = $type;
         $this->schema = $schema;
@@ -43,6 +45,7 @@ class EntityDefinition
         $this->filterableFields = array_values(array_unique($filterableFields));
         $this->sortableFields = array_values(array_unique($sortableFields));
         $this->defaultSort = $defaultSort;
+        $this->attributeRules = $attributeRules;
     }
 
     public function getType()
@@ -103,5 +106,15 @@ class EntityDefinition
     public function getDefaultSort()
     {
         return $this->defaultSort;
+    }
+
+    public function getAttributeRules()
+    {
+        return $this->attributeRules;
+    }
+
+    public function getAttributeRule($field)
+    {
+        return $this->attributeRules[$field] ?? null;
     }
 }

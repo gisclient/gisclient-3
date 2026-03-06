@@ -238,6 +238,8 @@ class ApiCrudService
             }
         }
 
+        $this->validateAttributeTypes($definition, $attributes);
+
         return $attributes;
     }
 
@@ -293,5 +295,34 @@ class ApiCrudService
             return trim($value) === '';
         }
         return false;
+    }
+
+    private function validateAttributeTypes(EntityDefinition $definition, array $attributes)
+    {
+        foreach ($attributes as $field => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $rule = $definition->getAttributeRule($field);
+            if ($rule === null || !isset($rule['type'])) {
+                continue;
+            }
+
+            $type = $rule['type'];
+            $pointer = '/data/attributes/' . $field;
+            if ($type === 'integer' && !is_int($value)) {
+                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be an integer", $field), $pointer);
+            }
+            if ($type === 'numeric' && !is_int($value) && !is_float($value)) {
+                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be numeric", $field), $pointer);
+            }
+            if ($type === 'boolean' && !is_bool($value)) {
+                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be boolean", $field), $pointer);
+            }
+            if ($type === 'string' && !is_string($value)) {
+                throw new ApiException(422, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be string", $field), $pointer);
+            }
+        }
     }
 }
