@@ -75,6 +75,9 @@ class InformationSchemaEntityDefinitionProvider implements EntityDefinitionProvi
 
         $idType = $config['id_type'] ?? ($columns[$primaryKey]['type'] ?? 'string');
         $attributeRules = $this->buildAttributeRules($columns, $foreignKeys);
+        $scopeFields = $config['scope_fields'] ?? [];
+        $relationships = $config['relationships'] ?? [];
+        $requiredRelationshipsOnWrite = $config['required_relationships_on_write'] ?? [];
 
         return new EntityDefinition(
             $entity,
@@ -89,7 +92,10 @@ class InformationSchemaEntityDefinitionProvider implements EntityDefinitionProvi
             $filterableFields,
             $sortableFields,
             $defaultSort,
-            $attributeRules
+            $attributeRules,
+            $scopeFields,
+            $relationships,
+            $requiredRelationshipsOnWrite
         );
     }
 

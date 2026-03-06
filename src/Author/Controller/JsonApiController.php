@@ -32,7 +32,8 @@ class JsonApiController implements ContainerAwareInterface
     public function indexAction($entity, Request $request)
     {
         return $this->execute(function () use ($entity, $request) {
-            $payload = $this->apiCrudService->listResources($entity, $request->query->all());
+            $scope = $this->resolveScopeFromRequest($request);
+            $payload = $this->apiCrudService->listResources($entity, $request->query->all(), $scope);
             return new JsonResponse($payload, Response::HTTP_OK);
         });
     }
@@ -40,7 +41,8 @@ class JsonApiController implements ContainerAwareInterface
     public function showAction($entity, $id, Request $request)
     {
         return $this->execute(function () use ($entity, $id, $request) {
-            $payload = $this->apiCrudService->getResource($entity, $id, $request->query->all());
+            $scope = $this->resolveScopeFromRequest($request);
+            $payload = $this->apiCrudService->getResource($entity, $id, $request->query->all(), $scope);
             return new JsonResponse($payload, Response::HTTP_OK);
         });
     }
@@ -48,7 +50,8 @@ class JsonApiController implements ContainerAwareInterface
     public function createAction($entity, Request $request)
     {
         return $this->execute(function () use ($entity, $request) {
-            $payload = $this->apiCrudService->createResource($entity, $this->decodeJsonBody($request));
+            $scope = $this->resolveScopeFromRequest($request);
+            $payload = $this->apiCrudService->createResource($entity, $this->decodeJsonBody($request), $scope);
             return new JsonResponse($payload, Response::HTTP_CREATED);
         });
     }
@@ -56,15 +59,17 @@ class JsonApiController implements ContainerAwareInterface
     public function updateAction($entity, $id, Request $request)
     {
         return $this->execute(function () use ($entity, $id, $request) {
-            $payload = $this->apiCrudService->updateResource($entity, $id, $this->decodeJsonBody($request));
+            $scope = $this->resolveScopeFromRequest($request);
+            $payload = $this->apiCrudService->updateResource($entity, $id, $this->decodeJsonBody($request), $scope);
             return new JsonResponse($payload, Response::HTTP_OK);
         });
     }
 
-    public function deleteAction($entity, $id)
+    public function deleteAction($entity, $id, Request $request)
     {
-        return $this->execute(function () use ($entity, $id) {
-            $this->apiCrudService->deleteResource($entity, $id);
+        return $this->execute(function () use ($entity, $id, $request) {
+            $scope = $this->resolveScopeFromRequest($request);
+            $this->apiCrudService->deleteResource($entity, $id, $scope);
             return new Response('', Response::HTTP_NO_CONTENT);
         });
     }
@@ -98,5 +103,26 @@ class JsonApiController implements ContainerAwareInterface
         }
 
         return $decoded;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function resolveScopeFromRequest(Request $request)
+    {
+        $scopeMap = $request->attributes->get('_scope_map');
+        if (!is_array($scopeMap)) {
+            return [];
+        }
+
+        $scope = [];
+        foreach ($scopeMap as $scopeField => $routeParam) {
+            if (!is_string($scopeField) || !is_string($routeParam)) {
+                continue;
+            }
+            $scope[$scopeField] = $request->attributes->get($routeParam);
+        }
+
+        return $scope;
     }
 }

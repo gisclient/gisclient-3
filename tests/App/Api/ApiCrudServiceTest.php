@@ -240,6 +240,201 @@ class ApiCrudServiceTest extends TestCase
         }
     }
 
+    public function testScopedCreateInjectsScopeAndRendersParentRelationship()
+    {
+        $definition = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'project_name'],
+            [],
+            ['srid', 'project_name'],
+            ['srid'],
+            'srid',
+            [],
+            ['project_name'],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('project_srs', [
+            'data' => [
+                'type' => 'project_srs',
+                'id' => '3857',
+                'attributes' => [
+                    'projparam' => '+proj=merc',
+                ],
+                'relationships' => [
+                    'project' => [
+                        'data' => [
+                            'type' => 'project',
+                            'id' => 'default',
+                        ],
+                    ],
+                ],
+            ],
+        ], [
+            'project_name' => 'default',
+        ]);
+
+        $this->assertSame('default', $repo->createdAttributes['project_name']);
+        $this->assertSame('3857', (string) $payload['data']['id']);
+        $this->assertSame('default', $payload['data']['relationships']['project']['data']['id']);
+        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
+    }
+
+    public function testScopedCreateRejectsMismatchedScopeAttribute()
+    {
+        $definition = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'project_name'],
+            [],
+            ['srid', 'project_name'],
+            ['srid'],
+            'srid',
+            [],
+            ['project_name'],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('project_srs', [
+                'data' => [
+                    'type' => 'project_srs',
+                    'id' => '3857',
+                    'attributes' => [
+                        'project_name' => 'other_project',
+                        'projparam' => '+proj=merc',
+                    ],
+                    'relationships' => [
+                        'project' => [
+                            'data' => [
+                                'type' => 'project',
+                                'id' => 'default',
+                            ],
+                        ],
+                    ],
+                ],
+            ], [
+                'project_name' => 'default',
+            ]);
+            $this->fail('Expected scope_attribute_mismatch ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('scope_attribute_mismatch', $exception->getErrorCode());
+            $this->assertSame('/data/attributes/project_name', $exception->getSourcePointer());
+        }
+    }
+
+    public function testScopedGetUsesScopeFilter()
+    {
+        $definition = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'project_name'],
+            [],
+            ['srid', 'project_name'],
+            ['srid'],
+            'srid',
+            [],
+            ['project_name']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo, ['default|3857']);
+
+        $payload = $service->getResource('project_srs', 3857, [], [
+            'project_name' => 'default',
+        ]);
+        $this->assertSame('3857', (string) $payload['data']['id']);
+
+        try {
+            $service->getResource('project_srs', 3857, [], [
+                'project_name' => 'other',
+            ]);
+            $this->fail('Expected resource_not_found ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(404, $exception->getStatus());
+            $this->assertSame('resource_not_found', $exception->getErrorCode());
+        }
+    }
+
+    public function testScopedCreateRequiresProjectRelationship()
+    {
+        $definition = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'project_name'],
+            [],
+            ['srid', 'project_name'],
+            ['srid'],
+            'srid',
+            [],
+            ['project_name'],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('project_srs', [
+                'data' => [
+                    'type' => 'project_srs',
+                    'id' => '3857',
+                    'attributes' => [
+                        'projparam' => '+proj=merc',
+                    ],
+                ],
+            ], [
+                'project_name' => 'default',
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
+        }
+    }
+
     private function createService($isAdmin, &$repo = null, array $existingIds = [])
     {
         $definition = new EntityDefinition(
@@ -284,18 +479,21 @@ class ApiCrudServiceTest extends TestCase
                 $this->existingIds = array_fill_keys($existingIds, true);
             }
 
-            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions)
+            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
             {
                 return new PagedResult([], 0, 50, 0);
             }
 
-            public function findById(EntityDefinition $definition, $id)
+            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
             {
-                if (!isset($this->existingIds[(string) $id])) {
+                $scopeKey = isset($scopeFilters['project_name']) ? (string) $scopeFilters['project_name'] : null;
+                $key = $scopeKey !== null ? ($scopeKey . '|' . (string) $id) : (string) $id;
+                if (!isset($this->existingIds[$key])) {
                     return null;
                 }
                 return [
-                    'project_name' => (string) $id,
+                    'srid' => (int) $id,
+                    'project_name' => $scopeKey ?? (string) $id,
                     'project_title' => 'Project',
                 ];
             }
@@ -303,20 +501,27 @@ class ApiCrudServiceTest extends TestCase
             public function create(EntityDefinition $definition, array $attributes)
             {
                 $this->createdAttributes = $attributes;
-                if (isset($attributes['project_name'])) {
+                if (isset($attributes['srid'])) {
+                    if (isset($attributes['project_name'])) {
+                        $this->existingIds[(string) $attributes['project_name'] . '|' . (string) $attributes['srid']] = true;
+                    } else {
+                        $this->existingIds[(string) $attributes['srid']] = true;
+                    }
+                } elseif (isset($attributes['project_name'])) {
                     $this->existingIds[(string) $attributes['project_name']] = true;
                 }
                 return $attributes;
             }
 
-            public function update(EntityDefinition $definition, $id, array $attributes)
+            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
             {
                 return array_merge([
-                    'project_name' => (string) $id,
+                    'project_name' => isset($scopeFilters['project_name']) ? (string) $scopeFilters['project_name'] : (string) $id,
+                    'srid' => (int) $id,
                 ], $attributes);
             }
 
-            public function delete(EntityDefinition $definition, $id)
+            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
             {
             }
         };

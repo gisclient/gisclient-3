@@ -132,4 +132,75 @@ class TabVisibilityEntityDefinitionProviderTest extends TestCase
 
         @unlink($tabFile);
     }
+
+    public function testKeepsScopeAndRelationshipLocalFieldsWhenNotInTab()
+    {
+        $tabFile = tempnam(sys_get_temp_dir(), 'tab');
+        file_put_contents($tabFile, "[standard]\n" .
+            "dato[] = \"SRID;srid;40;intero\"\n" .
+            "dato[] = \"Param;projparam;40;text\"\n");
+
+        $base = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'projparam', 'project_name'],
+            ['srid', 'project_name'],
+            [],
+            ['srid', 'project_name'],
+            ['srid'],
+            'srid',
+            [
+                'project_name' => [
+                    'type' => 'string',
+                ],
+                'srid' => [
+                    'type' => 'integer',
+                ],
+            ],
+            ['project_name'],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ]
+        );
+
+        $inner = new class($base) implements EntityDefinitionProviderInterface {
+            private $definition;
+
+            public function __construct(EntityDefinition $definition)
+            {
+                $this->definition = $definition;
+            }
+
+            public function getEntityDefinition($entity)
+            {
+                return $this->definition;
+            }
+        };
+
+        $provider = new TabVisibilityEntityDefinitionProvider(
+            $inner,
+            new TabFieldExtractor(),
+            [
+                'project_srs' => [
+                    'tab_file' => $tabFile,
+                ],
+            ]
+        );
+
+        $definition = $provider->getEntityDefinition('project_srs');
+
+        $this->assertContains('project_name', $definition->getReadableFields());
+        $this->assertContains('project_name', $definition->getWritableFields());
+        $this->assertSame(['project_name'], $definition->getScopeFields());
+        $this->assertArrayHasKey('project', $definition->getRelationships());
+
+        @unlink($tabFile);
+    }
 }
