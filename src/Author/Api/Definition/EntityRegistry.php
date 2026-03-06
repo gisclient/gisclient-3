@@ -55,6 +55,25 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['project'],
             ],
+            'theme' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'theme',
+                'primary_key' => 'theme_id',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'theme.tab',
+                'required_on_create' => ['project_name', 'theme_name', 'theme_title', 'theme_order'],
+                'required_on_put' => ['theme_name', 'theme_title', 'theme_order'],
+                'filterable_fields' => ['theme_id', 'project_name', 'theme_name', 'theme_title'],
+                'sortable_fields' => ['theme_id', 'theme_order', 'theme_title', 'theme_name'],
+                'default_sort' => 'theme_order',
+                'relationships' => [
+                    'project' => [
+                        'type' => 'project',
+                        'local_key' => 'project_name',
+                    ],
+                ],
+                'required_relationships_on_write' => ['project'],
+            ],
         ];
     }
 }
