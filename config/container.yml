@@ -28,6 +28,18 @@ services:
   GisClient\Author\Utils\TemporaryFileService:
     arguments: ['%tmp_dir%']
 
+  GisClient\Author\Api\Contract\EntityDefinitionProviderInterface:
+    class: GisClient\Author\Api\Definition\TabEntityDefinitionProvider
+
+  GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface:
+    class: GisClient\Author\Api\Persistence\PdoAuthorEntityRepository
+
+  GisClient\Author\Api\Error\JsonApiExceptionMapper:
+    public: true
+
+  GisClient\Author\Api\Service\ApiCrudService:
+    public: true
+
   Symfony\Component\Config\FileLocator:
     arguments: ['%project_dir%/config']
   Symfony\Component\Routing\Loader\YamlFileLoader:

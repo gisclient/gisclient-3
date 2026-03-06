@@ -1,3 +1,35 @@
+## Generic JSON:API CRUD routes
+apiIndex:
+    path: 'api/{entity}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::indexAction'
+    methods:
+        - GET
+apiCreate:
+    path: 'api/{entity}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::createAction'
+    methods:
+        - POST
+apiShow:
+    path: 'api/{entity}/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::showAction'
+    methods:
+        - GET
+apiUpdate:
+    path: 'api/{entity}/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::updateAction'
+    methods:
+        - PUT
+apiDelete:
+    path: 'api/{entity}/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::deleteAction'
+    methods:
+        - DELETE
+
 ## Available routes in public/services/...
 login:
     path: login
