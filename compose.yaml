@@ -1,6 +1,7 @@
 services:
   db:
     image: postgis/postgis:17-3.5-alpine
+    platform: linux/amd64
     restart: unless-stopped
     env_file:
       - path: .env.dist
@@ -23,6 +24,7 @@ services:
       args:
         UID: ${USER_ID:-48}
         GID: ${GROUP_ID:-48}
+    platform: linux/amd64
     restart: unless-stopped
     volumes:
       - type: bind
@@ -45,6 +47,7 @@ services:
       context: .
       target: dev
       dockerfile: docker/frontend/Dockerfile
+    platform: linux/amd64
     restart: unless-stopped
     env_file:
       - path: .env.dist
