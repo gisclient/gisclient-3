@@ -1624,4 +1624,117 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
         v_author_version = '3.6.3';
         INSERT INTO version (version_name,version_key, version_date) values (v_author_version, 'author', '2024-03-14');
     END IF;
-END$$
+    
+    IF v_author_version = '3.6.3' THEN
+        DECLARE
+            v_schema text := 'gisclient_34';
+            r record;
+            v_constraint_name text;
+        BEGIN
+            FOR r IN
+                SELECT * FROM (VALUES
+                    ('class',      'legendtype_id',        'e_legendtype',        'legendtype_id'),
+                    ('field',      'datatype_id',          'e_datatype',          'datatype_id'),
+                    ('field',      'orderby_id',           'e_orderby',           'orderby_id'),
+                    ('field',      'resultype_id',         'e_resultype',         'resultype_id'),
+                    ('field',      'searchtype_id',        'e_searchtype',        'searchtype_id'),
+                    ('layer',      'layertype_id',         'e_layertype',         'layertype_id'),
+                    ('layer',      'papersize_id',         'e_papersize',         'papersize_id'),
+                    ('layer',      'searchable_id',        'e_searchable',        'searchable_id'),
+                    ('layer',      'sizeunits_id',         'e_sizeunits',         'sizeunits_id'),
+                    ('layer',      'toleranceunits_id',    'e_sizeunits',         'sizeunits_id'),
+                    ('layer_link', 'resultype_id',         'e_resultype',         'resultype_id'),
+                    ('layergroup', 'outputformat_id',      'e_outputformat',      'outputformat_id'),
+                    ('layergroup', 'owstype_id',           'e_owstype',           'owstype_id'),
+                    ('layergroup', 'tiletype_id',          'e_tiletype',          'tiletype_id'),
+                    ('mapset',     'sizeunits_id',         'e_sizeunits',         'sizeunits_id'),
+                    ('project',    'charset_encodings_id', 'e_charset_encodings', 'charset_encodings_id'),
+                    ('project',    'default_language_id',  'e_language',          'language_id'),
+                    ('qt',         'layer_id',             'layer',               'layer_id'),
+                    ('qt',         'papersize_id',         'e_papersize',         'papersize_id'),
+                    ('qt',         'qtresultype_id',       'e_resultype',         'resultype_id'),
+                    ('qt',         'theme_id',             'theme',               'theme_id'),
+                    ('qt_field',   'datatype_id',          'e_datatype',          'datatype_id'),
+                    ('qt_field',   'orderby_id',           'e_orderby',           'orderby_id'),
+                    ('qt_field',   'qtrelation_id',        'qt_relation',         'qtrelation_id'),
+                    ('qt_field',   'resultype_id',         'e_resultype',         'resultype_id'),
+                    ('qt_field',   'searchtype_id',        'e_searchtype',        'searchtype_id'),
+                    ('qt_link',    'resultype_id',         'e_resultype',         'resultype_id'),
+                    ('qt_relation','language_id',          'e_language',          'language_id'),
+                    ('qt_relation','qtrelationtype_id',    'e_relationtype',      'relationtype_id'),
+                    ('relation',   'language_id',          'e_language',          'language_id'),
+                    ('relation',   'relationtype_id',      'e_relationtype',      'relationtype_id')
+                ) AS t(src_table, src_col, ref_table, ref_col)
+            LOOP
+                v_constraint_name := format('fk_%s__%s', r.src_table, r.src_col);
+
+                IF EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = v_schema
+                      AND table_name   = r.src_table
+                      AND column_name  = r.src_col
+                ) AND EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = v_schema
+                      AND table_name   = r.ref_table
+                      AND column_name  = r.ref_col
+                ) THEN
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM pg_constraint c
+                        JOIN pg_class t ON t.oid = c.conrelid
+                        JOIN pg_namespace n ON n.oid = t.relnamespace
+                        WHERE n.nspname = v_schema
+                          AND t.relname = r.src_table
+                          AND c.conname = v_constraint_name
+                    ) THEN
+                        BEGIN
+                            EXECUTE format(
+                                'ALTER TABLE %I.%I ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %I.%I(%I) NOT VALID',
+                                v_schema, r.src_table, v_constraint_name, r.src_col,
+                                v_schema, r.ref_table, r.ref_col
+                            );
+                            RAISE NOTICE 'Added %', v_constraint_name;
+                        EXCEPTION WHEN OTHERS THEN
+                            RAISE NOTICE 'Skipped %: %', v_constraint_name, SQLERRM;
+                        END;
+                    END IF;
+                ELSE
+                    RAISE NOTICE 'Skipped fk_%__% (missing table/column)', r.src_table, r.src_col;
+                END IF;
+            END LOOP;
+        END;
+
+        v_author_version = '3.6.4';
+        INSERT INTO version (version_name,version_key, version_date) values (v_author_version, 'author', '2026-03-06');
+    END IF;
+END$$;
+
+DO $$
+DECLARE
+    v_schema text := 'gisclient_34';
+    c record;
+BEGIN
+    FOR c IN
+        SELECT n.nspname AS schema_name, t.relname AS table_name, co.conname
+        FROM pg_constraint co
+        JOIN pg_class t ON t.oid = co.conrelid
+        JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = v_schema
+          AND co.contype = 'f'
+          AND co.conname LIKE 'fk_%__%'
+          AND co.convalidated = false
+    LOOP
+        BEGIN
+            EXECUTE format(
+                'ALTER TABLE %I.%I VALIDATE CONSTRAINT %I',
+                c.schema_name, c.table_name, c.conname
+            );
+            RAISE NOTICE 'Validated %', c.conname;
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'Validation failed for %: %', c.conname, SQLERRM;
+        END;
+    END LOOP;
+END $$;
