@@ -6,6 +6,7 @@ components involved from controller to database.
 Pilot scope:
 
 - `project`
+- `project_srs` (scoped under project)
 
 ## Endpoints and auth
 
@@ -18,6 +19,14 @@ CRUD endpoints:
 - `POST /api/{entity}`
 - `PUT /api/{entity}/{id}`
 - `DELETE /api/{entity}/{id}`
+
+Project-scoped `project_srs` endpoints:
+
+- `GET /api/project/{project}/srs`
+- `POST /api/project/{project}/srs`
+- `GET /api/project/{project}/srs/{id}`
+- `PUT /api/project/{project}/srs/{id}`
+- `DELETE /api/project/{project}/srs/{id}`
 
 All `/api/*` endpoints require:
 
@@ -144,7 +153,47 @@ Example create payload:
 `PUT` is full replace over writable fields for the entity (missing writable
 fields are normalized to `null` by validator logic).
 
+## Payload notes (`project_srs`)
+
+`project_srs` is scoped under project routes:
+
+- `POST /api/project/{project}/srs`
+- `PUT /api/project/{project}/srs/{id}`
+
+Write payload requirements:
+
+- `data.type` must be `project_srs`
+- `data.id` follows JSON:API string format and is normalized to integer
+  internally for `srid` (entity `id_type: int`)
+- `relationships.project.data` is required on write
+- `relationships.project.data.type` must be `project`
+- `relationships.project.data.id` must match `{project}` in the URL
+
+Example create payload:
+
+```json
+{
+  "data": {
+    "type": "project_srs",
+    "id": "32632",
+    "attributes": {
+      "projparam": null
+    },
+    "relationships": {
+      "project": {
+        "data": {
+          "type": "project",
+          "id": "milano"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Current limitations
 
-- Relationships endpoints are not exposed in this pilot.
+- No relationship endpoints are exposed in this pilot.
+- `project_srs` returns read-only `relationships.project` data; relationship
+  links/endpoints are not exposed.
 - Mapfile refresh is not automatically triggered by CRUD writes.
