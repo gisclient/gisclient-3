@@ -74,6 +74,25 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['project'],
             ],
+            'catalog' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'catalog',
+                'primary_key' => 'catalog_id',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'catalog.tab',
+                'required_on_create' => ['project_name', 'catalog_name', 'connection_type', 'catalog_path'],
+                'required_on_put' => ['catalog_name', 'connection_type', 'catalog_path'],
+                'filterable_fields' => ['catalog_id', 'project_name', 'catalog_name', 'connection_type'],
+                'sortable_fields' => ['catalog_id', 'catalog_name', 'connection_type'],
+                'default_sort' => 'catalog_name',
+                'relationships' => [
+                    'project' => [
+                        'type' => 'project',
+                        'local_key' => 'project_name',
+                    ],
+                ],
+                'required_relationships_on_write' => ['project'],
+            ],
         ];
     }
 }

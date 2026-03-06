@@ -525,6 +525,106 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
+    public function testTopLevelCatalogCreateRequiresProjectRelationship()
+    {
+        $definition = new EntityDefinition(
+            'catalog',
+            'gisclient_34',
+            'catalog',
+            'catalog_id',
+            'int',
+            ['catalog_id', 'project_name', 'catalog_name', 'connection_type', 'catalog_path'],
+            ['catalog_name', 'connection_type', 'catalog_path'],
+            ['project_name', 'catalog_name', 'connection_type', 'catalog_path'],
+            ['catalog_name', 'connection_type', 'catalog_path'],
+            ['catalog_id', 'project_name', 'catalog_name'],
+            ['catalog_id', 'catalog_name'],
+            'catalog_name',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('catalog', [
+                'data' => [
+                    'type' => 'catalog',
+                    'id' => '1',
+                    'attributes' => [
+                        'catalog_name' => 'osm',
+                        'connection_type' => 1,
+                        'catalog_path' => 'dbname=test',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelCatalogCreateMapsProjectRelationshipToLocalKey()
+    {
+        $definition = new EntityDefinition(
+            'catalog',
+            'gisclient_34',
+            'catalog',
+            'catalog_id',
+            'int',
+            ['catalog_id', 'project_name', 'catalog_name', 'connection_type', 'catalog_path'],
+            ['catalog_name', 'connection_type', 'catalog_path'],
+            ['project_name', 'catalog_name', 'connection_type', 'catalog_path'],
+            ['catalog_name', 'connection_type', 'catalog_path'],
+            ['catalog_id', 'project_name', 'catalog_name'],
+            ['catalog_id', 'catalog_name'],
+            'catalog_name',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('catalog', [
+            'data' => [
+                'type' => 'catalog',
+                'id' => '1',
+                'attributes' => [
+                    'catalog_name' => 'osm',
+                    'connection_type' => 1,
+                    'catalog_path' => 'dbname=test',
+                ],
+                'relationships' => [
+                    'project' => [
+                        'data' => [
+                            'type' => 'project',
+                            'id' => 'milano',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('milano', $repo->createdAttributes['project_name']);
+        $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
+    }
+
     public function testGetResourceCastsNumericAttributesFromDatabaseStrings()
     {
         $definition = new EntityDefinition(

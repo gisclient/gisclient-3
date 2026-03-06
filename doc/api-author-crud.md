@@ -7,6 +7,7 @@ Pilot scope:
 
 - `project`
 - `project_srs` (scoped under project)
+- `catalog` (top-level endpoints, project relationship required on write)
 
 ## Endpoints and auth
 
@@ -201,6 +202,20 @@ Example create payload:
   }
 }
 ```
+
+## Payload notes (`catalog`)
+
+`catalog` is managed through top-level routes:
+
+- `POST /api/catalog`
+- `PUT /api/catalog/{id}`
+
+Write payload requirements:
+
+- `data.type` must be `catalog`
+- `relationships.project.data` is required on write
+- `relationships.project.data.type` must be `project`
+- `relationships.project.data.id` is required and mapped to `project_name`
 
 ## Current limitations
 
