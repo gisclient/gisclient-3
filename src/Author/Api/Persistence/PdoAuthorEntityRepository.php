@@ -15,6 +15,11 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
      */
     private $db;
 
+    /**
+     * @var int
+     */
+    private $savepointCounter = 0;
+
     public function __construct(\PDO $db = null)
     {
         $this->db = $db ?: \GCApp::getDB();
@@ -36,42 +41,47 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         $whereSql = count($where) > 0 ? (' WHERE ' . implode(' AND ', $where)) : '';
         $table = sprintf('%s.%s', $definition->getSchema(), $definition->getTable());
 
-        $countSql = sprintf('SELECT COUNT(*) FROM %s%s', $table, $whereSql);
-        $stmt = $this->db->prepare($countSql);
-        $stmt->execute($params);
-        $total = (int) $stmt->fetchColumn();
+        return $this->executeSafely(function () use ($definition, $queryOptions, $params, $whereSql, $table) {
+            $countSql = sprintf('SELECT COUNT(*) FROM %s%s', $table, $whereSql);
+            $stmt = $this->db->prepare($countSql);
+            $stmt->execute($params);
+            $total = (int) $stmt->fetchColumn();
 
-        $fields = implode(', ', $definition->getReadableFields());
-        $selectSql = sprintf('SELECT %s FROM %s%s', $fields, $table, $whereSql);
+            $fields = implode(', ', $definition->getReadableFields());
+            $selectSql = sprintf('SELECT %s FROM %s%s', $fields, $table, $whereSql);
 
-        $sortField = $queryOptions->getSortField() ?: $definition->getDefaultSort();
-        $sortDirection = $queryOptions->getSortDirection();
-        $selectSql .= sprintf(' ORDER BY %s %s', $sortField, $sortDirection);
-        $selectSql .= ' LIMIT :limit OFFSET :offset';
+            $sortField = $queryOptions->getSortField() ?: $definition->getDefaultSort();
+            $sortDirection = $queryOptions->getSortDirection();
+            $selectSql .= sprintf(' ORDER BY %s %s', $sortField, $sortDirection);
+            $selectSql .= ' LIMIT :limit OFFSET :offset';
 
-        $stmt = $this->db->prepare($selectSql);
-        foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value);
-        }
-        $stmt->bindValue(':limit', (int) $queryOptions->getLimit(), \PDO::PARAM_INT);
-        $stmt->bindValue(':offset', (int) $queryOptions->getOffset(), \PDO::PARAM_INT);
-        $stmt->execute();
+            $stmt = $this->db->prepare($selectSql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int) $queryOptions->getLimit(), \PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int) $queryOptions->getOffset(), \PDO::PARAM_INT);
+            $stmt->execute();
 
-        return new PagedResult($stmt->fetchAll(\PDO::FETCH_ASSOC), $total, $queryOptions->getLimit(), $queryOptions->getOffset());
+            return new PagedResult($stmt->fetchAll(\PDO::FETCH_ASSOC), $total, $queryOptions->getLimit(), $queryOptions->getOffset());
+        });
     }
 
     public function findById(EntityDefinition $definition, $id)
     {
         $table = sprintf('%s.%s', $definition->getSchema(), $definition->getTable());
         $fields = implode(', ', $definition->getReadableFields());
-        $sql = sprintf('SELECT %s FROM %s WHERE %s = :id LIMIT 1', $fields, $table, $definition->getPrimaryKey());
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':id' => $this->normalizeId($definition, $id),
-        ]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        return $row === false ? null : $row;
+        return $this->executeSafely(function () use ($definition, $id, $table, $fields) {
+            $sql = sprintf('SELECT %s FROM %s WHERE %s = :id LIMIT 1', $fields, $table, $definition->getPrimaryKey());
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':id' => $this->normalizeId($definition, $id),
+            ]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            return $row === false ? null : $row;
+        });
     }
 
     public function create(EntityDefinition $definition, array $attributes)
@@ -98,12 +108,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             implode(', ', $placeholders)
         );
 
-        try {
+        $this->executeSafely(function () use ($sql, $params): void {
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
-        } catch (\PDOException $exception) {
-            $this->rethrowDatabaseException($exception);
-        }
+        });
 
         return $this->findById($definition, $attributes[$pk]);
     }
@@ -129,12 +137,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $definition->getPrimaryKey()
         );
 
-        try {
+        $this->executeSafely(function () use ($sql, $params): void {
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
-        } catch (\PDOException $exception) {
-            $this->rethrowDatabaseException($exception);
-        }
+        });
 
         return $this->findById($definition, $id);
     }
@@ -148,14 +154,62 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $definition->getPrimaryKey()
         );
 
-        try {
+        $this->executeSafely(function () use ($definition, $id, $sql): void {
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 ':id' => $this->normalizeId($definition, $id),
             ]);
+        });
+    }
+
+    /**
+     * @template T
+     * @param callable():T $callback
+     * @return T
+     */
+    private function executeSafely(callable $callback)
+    {
+        $savepoint = null;
+
+        if ($this->db->inTransaction()) {
+            $savepoint = $this->createSavepointName();
+            $this->db->exec('SAVEPOINT ' . $savepoint);
+        }
+
+        try {
+            $result = $callback();
+            if ($savepoint !== null) {
+                $this->db->exec('RELEASE SAVEPOINT ' . $savepoint);
+            }
+            return $result;
         } catch (\PDOException $exception) {
+            if ($savepoint !== null) {
+                $this->clearSavepointAfterFailure($savepoint);
+            }
             $this->rethrowDatabaseException($exception);
         }
+    }
+
+    /**
+     * @param string $savepoint
+     */
+    private function clearSavepointAfterFailure($savepoint)
+    {
+        try {
+            $this->db->exec('ROLLBACK TO SAVEPOINT ' . $savepoint);
+            $this->db->exec('RELEASE SAVEPOINT ' . $savepoint);
+        } catch (\Throwable $rollbackException) {
+            // Ignore rollback cleanup failures, original exception is more relevant.
+        }
+    }
+
+    /**
+     * @return string
+     */
+    private function createSavepointName()
+    {
+        $this->savepointCounter++;
+        return 'gc_api_sp_' . $this->savepointCounter;
     }
 
     /**
@@ -179,7 +233,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         if ($code === '23503') {
             throw new ApiException(409, 'foreign_key_violation', 'Conflict', 'Foreign key constraint violation', null, $exception);
         }
+        if (strpos($code, '22') === 0 || in_array($code, ['23502', '23514'], true)) {
+            throw new ApiException(422, 'invalid_attribute_value', 'Invalid Attribute Value', 'One or more attributes have invalid value or format', null, $exception);
+        }
 
-        throw new ApiException(500, 'database_error', 'Database Error', $exception->getMessage(), null, $exception);
+        throw new ApiException(500, 'database_error', 'Database Error', 'An internal error occurred', null, $exception);
     }
 }
