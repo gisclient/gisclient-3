@@ -93,6 +93,7 @@ class ApiCrudService
 
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $attributes = $this->extractAttributes($definition, $payload, true, false);
+        $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes);
         $created = $this->repository->create($definition, $attributes);
 
         return [
@@ -195,6 +196,33 @@ class ApiCrudService
     private function extractAttributes(EntityDefinition $definition, array $payload, $isCreate, $isPut)
     {
         return $this->payloadValidator->validateAndNormalize($definition, $payload, $isCreate, $isPut);
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @param array<string,mixed> $attributes
+     */
+    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, array $payload, array $attributes)
+    {
+        if (!isset($payload['data']) || !is_array($payload['data']) || !array_key_exists('id', $payload['data'])) {
+            return;
+        }
+
+        $primaryKey = $definition->getPrimaryKey();
+        if (!array_key_exists($primaryKey, $attributes)) {
+            return;
+        }
+
+        $existing = $this->repository->findById($definition, $attributes[$primaryKey]);
+        if ($existing !== null) {
+            throw new ApiException(
+                409,
+                'duplicate_primary_key',
+                'Conflict',
+                sprintf("Resource with primary key '%s' already exists", (string) $attributes[$primaryKey]),
+                '/data/id'
+            );
+        }
     }
 
     /**

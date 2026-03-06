@@ -218,7 +218,29 @@ class ApiCrudServiceTest extends TestCase
         }
     }
 
-    private function createService($isAdmin, &$repo = null)
+    public function testCreateRejectsDuplicatePrimaryKeyWithExplicitConflict()
+    {
+        $service = $this->createService(true, $repo, ['milano']);
+
+        try {
+            $service->createResource('project', [
+                'data' => [
+                    'type' => 'project',
+                    'id' => 'milano',
+                    'attributes' => [
+                        'project_title' => 'Milano',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected duplicate_primary_key ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(409, $exception->getStatus());
+            $this->assertSame('duplicate_primary_key', $exception->getErrorCode());
+            $this->assertSame('/data/id', $exception->getSourcePointer());
+        }
+    }
+
+    private function createService($isAdmin, &$repo = null, array $existingIds = [])
     {
         $definition = new EntityDefinition(
             'project',
@@ -235,10 +257,10 @@ class ApiCrudServiceTest extends TestCase
             'project_name'
         );
 
-        return $this->createServiceFromDefinition($definition, $isAdmin, $repo);
+        return $this->createServiceFromDefinition($definition, $isAdmin, $repo, $existingIds);
     }
 
-    private function createServiceFromDefinition(EntityDefinition $definition, $isAdmin, &$repo = null)
+    private function createServiceFromDefinition(EntityDefinition $definition, $isAdmin, &$repo = null, array $existingIds = [])
     {
         $provider = new class($definition) implements EntityDefinitionProviderInterface {
             private $definition;
@@ -253,8 +275,14 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        $repo = new class() implements AuthorEntityRepositoryInterface {
+        $repo = new class($existingIds) implements AuthorEntityRepositoryInterface {
             public $createdAttributes = [];
+            private $existingIds = [];
+
+            public function __construct(array $existingIds)
+            {
+                $this->existingIds = array_fill_keys($existingIds, true);
+            }
 
             public function findAll(EntityDefinition $definition, QueryOptions $queryOptions)
             {
@@ -263,6 +291,9 @@ class ApiCrudServiceTest extends TestCase
 
             public function findById(EntityDefinition $definition, $id)
             {
+                if (!isset($this->existingIds[(string) $id])) {
+                    return null;
+                }
                 return [
                     'project_name' => (string) $id,
                     'project_title' => 'Project',
@@ -272,6 +303,9 @@ class ApiCrudServiceTest extends TestCase
             public function create(EntityDefinition $definition, array $attributes)
             {
                 $this->createdAttributes = $attributes;
+                if (isset($attributes['project_name'])) {
+                    $this->existingIds[(string) $attributes['project_name']] = true;
+                }
                 return $attributes;
             }
 
