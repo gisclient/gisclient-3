@@ -31,6 +31,13 @@ make up          # start all services in foreground and build images
 make down        # stop all services
 make deps        # install backend composer dependencies in container
 make test        # run backend test suite
+make phpstan     # run static analysis
+make ecs         # run coding standard checks
+make rector      # run rector in dry-run mode
+make quality     # run all checks (rector, ecs, phpstan)
+make ecs-fix     # apply coding standard fixes
+make rector-fix  # apply rector refactors
+make quality-fix # run all auto-fixes (rector-fix, ecs-fix)
 make cache-clear # clear container cache and restart backend service
 ```
 
