@@ -98,6 +98,7 @@ class ApiCrudService
         $scope = $this->normalizeScope($definition, $scope);
         $payload = $this->applyScopeToPayload($definition, $payload, $scope);
         $attributes = $this->extractAttributes($definition, $payload, true, false);
+        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
         $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
         $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes, $scope);
         $created = $this->repository->create($definition, $attributes);
@@ -125,6 +126,7 @@ class ApiCrudService
 
         $payload = $this->applyScopeToPayload($definition, $payload, $scope);
         $attributes = $this->extractAttributes($definition, $payload, false, true);
+        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
         $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
         $updated = $this->repository->update($definition, $id, $attributes, $scope);
 
@@ -188,6 +190,7 @@ class ApiCrudService
         if (!is_array($filters)) {
             throw new ApiException(400, 'invalid_filters', 'Invalid Filters', 'filter must be an object of field/value pairs', '/filter');
         }
+        $filters = $this->normalizeFilterAliases($definition, $filters);
 
         foreach ($filters as $field => $value) {
             if (!in_array($field, $definition->getFilterableFields(), true)) {
@@ -205,7 +208,13 @@ class ApiCrudService
      */
     private function extractAttributes(EntityDefinition $definition, array $payload, $isCreate, $isPut)
     {
-        return $this->payloadValidator->validateAndNormalize($definition, $payload, $isCreate, $isPut);
+        return $this->payloadValidator->validateAndNormalize(
+            $definition,
+            $payload,
+            $isCreate,
+            $isPut,
+            $this->extractRequiredFieldsSatisfiedByRelationships($definition, $payload)
+        );
     }
 
     /**
@@ -424,6 +433,15 @@ class ApiCrudService
                         $pointer . '/type'
                     );
                 }
+                if (!array_key_exists('id', $relationshipData) || (!is_scalar($relationshipData['id']) && $relationshipData['id'] !== null) || trim((string) $relationshipData['id']) === '') {
+                    throw new ApiException(
+                        422,
+                        'invalid_relationship',
+                        'Invalid Relationship',
+                        sprintf("Relationship '%s' id is required", $relationshipName),
+                        $pointer . '/id'
+                    );
+                }
                 if ($expectedId !== null && ((string) ($relationshipData['id'] ?? '')) !== $expectedId) {
                     throw new ApiException(
                         422,
@@ -479,5 +497,129 @@ class ApiCrudService
         }
 
         return $relationships;
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @param array<string,mixed> $attributes
+     * @return array<string,mixed>
+     */
+    private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, array $payload, array $attributes)
+    {
+        $relationshipsPayload = $payload['data']['relationships'] ?? null;
+        if (!is_array($relationshipsPayload)) {
+            return $attributes;
+        }
+        $scopeFields = array_fill_keys($definition->getScopeFields(), true);
+
+        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
+            if (!is_string($relationshipName) || !is_array($relationship)) {
+                continue;
+            }
+
+            $localKey = $relationship['local_key'] ?? null;
+            if (!is_string($localKey) || !array_key_exists($relationshipName, $relationshipsPayload) || !is_array($relationshipsPayload[$relationshipName])) {
+                continue;
+            }
+
+            $relationshipData = $relationshipsPayload[$relationshipName]['data'] ?? null;
+            if (!is_array($relationshipData) || !array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
+                continue;
+            }
+
+            $relationshipId = (string) $relationshipData['id'];
+            if ($relationshipId === '') {
+                continue;
+            }
+
+            if (isset($scopeFields[$localKey])) {
+                continue;
+            }
+
+            if (array_key_exists($localKey, $attributes) && (string) $attributes[$localKey] !== $relationshipId) {
+                throw new ApiException(
+                    422,
+                    'relationship_attribute_mismatch',
+                    'Relationship Attribute Mismatch',
+                    sprintf("Attribute '%s' must match relationship '%s' id", $localKey, $relationshipName),
+                    '/data/attributes/' . $localKey
+                );
+            }
+
+            $attributes[$localKey] = $relationshipId;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @return array<int,string>
+     */
+    private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, array $payload)
+    {
+        $relationshipsPayload = $payload['data']['relationships'] ?? null;
+        if (!is_array($relationshipsPayload)) {
+            return [];
+        }
+
+        $fields = [];
+        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
+            if (!is_string($relationshipName) || !is_array($relationship)) {
+                continue;
+            }
+
+            $localKey = $relationship['local_key'] ?? null;
+            if (!is_string($localKey) || !array_key_exists($relationshipName, $relationshipsPayload) || !is_array($relationshipsPayload[$relationshipName])) {
+                continue;
+            }
+
+            $relationshipData = $relationshipsPayload[$relationshipName]['data'] ?? null;
+            if (!is_array($relationshipData) || !array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
+                continue;
+            }
+
+            if (trim((string) $relationshipData['id']) === '') {
+                continue;
+            }
+
+            $fields[] = $localKey;
+        }
+
+        return array_values(array_unique($fields));
+    }
+
+    /**
+     * @param array<string,mixed> $filters
+     * @return array<string,mixed>
+     */
+    private function normalizeFilterAliases(EntityDefinition $definition, array $filters)
+    {
+        $normalized = $filters;
+        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
+            if (!is_string($relationshipName) || !is_array($relationship)) {
+                continue;
+            }
+            $localKey = $relationship['local_key'] ?? null;
+            if (!is_string($localKey) || !array_key_exists($relationshipName, $normalized)) {
+                continue;
+            }
+
+            $aliasValue = $normalized[$relationshipName];
+            if (array_key_exists($localKey, $normalized) && (string) $normalized[$localKey] !== (string) $aliasValue) {
+                throw new ApiException(
+                    400,
+                    'ambiguous_filter_alias',
+                    'Invalid Filters',
+                    sprintf("Filter '%s' conflicts with filter '%s'", $relationshipName, $localKey),
+                    '/filter/' . $relationshipName
+                );
+            }
+
+            $normalized[$localKey] = $aliasValue;
+            unset($normalized[$relationshipName]);
+        }
+
+        return $normalized;
     }
 }

@@ -26,9 +26,10 @@ class PayloadValidator
     /**
      * @param bool $isCreate
      * @param bool $isPut
+     * @param array<int,string> $requiredFieldsSatisfied
      * @return array<string,mixed>
      */
-    public function validateAndNormalize(EntityDefinition $definition, array $payload, $isCreate, $isPut)
+    public function validateAndNormalize(EntityDefinition $definition, array $payload, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
     {
         $errors = [];
         $data = $payload['data'] ?? null;
@@ -106,7 +107,11 @@ class PayloadValidator
         }
 
         $requiredFields = $isCreate ? $definition->getRequiredOnCreate() : $definition->getRequiredOnPut();
+        $requiredFieldsSatisfiedSet = array_fill_keys($requiredFieldsSatisfied, true);
         foreach ($requiredFields as $field) {
+            if (isset($requiredFieldsSatisfiedSet[$field])) {
+                continue;
+            }
             if (!array_key_exists($field, $attributes) || $this->isEmptyValue($attributes[$field])) {
                 $this->addError(
                     $errors,

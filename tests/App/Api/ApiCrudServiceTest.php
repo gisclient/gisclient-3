@@ -240,6 +240,43 @@ class ApiCrudServiceTest extends TestCase
         }
     }
 
+    public function testBuildQueryOptionsAcceptsRelationshipFilterAlias()
+    {
+        $definition = new EntityDefinition(
+            'theme',
+            'gisclient_34',
+            'theme',
+            'theme_id',
+            'int',
+            ['theme_id', 'project_name', 'theme_name'],
+            ['project_name', 'theme_name'],
+            ['project_name', 'theme_name'],
+            ['theme_name'],
+            ['theme_id', 'project_name', 'theme_name'],
+            ['theme_id', 'theme_name'],
+            'theme_id',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ]
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+        $queryOptions = $service->buildQueryOptions($definition, [
+            'filter' => [
+                'project' => 'milano',
+            ],
+        ]);
+
+        $this->assertSame([
+            'project_name' => 'milano',
+        ], $queryOptions->getFilters());
+    }
+
     public function testScopedCreateInjectsScopeAndRendersParentRelationship()
     {
         $definition = new EntityDefinition(
@@ -433,6 +470,59 @@ class ApiCrudServiceTest extends TestCase
             $this->assertSame('missing_required_relationship', $exception->getErrorCode());
             $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
         }
+    }
+
+    public function testTopLevelCreateMapsProjectRelationshipToLocalKey()
+    {
+        $definition = new EntityDefinition(
+            'theme',
+            'gisclient_34',
+            'theme',
+            'theme_id',
+            'int',
+            ['theme_id', 'project_name', 'theme_name', 'theme_title', 'theme_order'],
+            ['theme_name', 'theme_title', 'theme_order'],
+            ['project_name', 'theme_name', 'theme_title', 'theme_order'],
+            ['project_name', 'theme_name', 'theme_title', 'theme_order'],
+            ['theme_id', 'project_name', 'theme_name', 'theme_title', 'theme_order'],
+            ['theme_id', 'theme_order', 'theme_name'],
+            'theme_order',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+
+        $payload = $service->createResource('theme', [
+            'data' => [
+                'type' => 'theme',
+                'id' => '4',
+                'attributes' => [
+                    'theme_name' => 'boundaries_places',
+                    'theme_title' => 'Boundaries and places',
+                    'theme_order' => 10,
+                ],
+                'relationships' => [
+                    'project' => [
+                        'data' => [
+                            'type' => 'project',
+                            'id' => 'milano',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('milano', $repo->createdAttributes['project_name']);
+        $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
     private function createService($isAdmin, &$repo = null, array $existingIds = [])
