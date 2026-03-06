@@ -276,11 +276,82 @@ class ApiCrudService
                 continue;
             }
             if (array_key_exists($field, $row)) {
-                $resource['attributes'][$field] = $row[$field];
+                $resource['attributes'][$field] = $this->castAttributeValue($definition, $field, $row[$field]);
             }
         }
 
         return $resource;
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    private function castAttributeValue(EntityDefinition $definition, $field, $value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $rule = $definition->getAttributeRule($field);
+        $type = is_array($rule) ? ($rule['type'] ?? null) : null;
+        if (!is_string($type)) {
+            return $value;
+        }
+
+        if ($type === 'integer') {
+            if (is_int($value)) {
+                return $value;
+            }
+            if (is_string($value) && preg_match('/^-?\d+$/', $value) === 1) {
+                return (int) $value;
+            }
+            return $value;
+        }
+
+        if ($type === 'boolean') {
+            if (is_bool($value)) {
+                return $value;
+            }
+            if (is_int($value)) {
+                if ($value === 0) {
+                    return false;
+                }
+                if ($value === 1) {
+                    return true;
+                }
+            }
+            if (is_string($value)) {
+                $normalized = strtolower(trim($value));
+                if (in_array($normalized, ['1', 't', 'true', 'yes', 'on'], true)) {
+                    return true;
+                }
+                if (in_array($normalized, ['0', 'f', 'false', 'no', 'off'], true)) {
+                    return false;
+                }
+            }
+            return $value;
+        }
+
+        if ($type === 'numeric') {
+            if (is_int($value) || is_float($value)) {
+                return $value;
+            }
+            if (is_string($value)) {
+                $normalized = trim($value);
+                if ($normalized === '' || !is_numeric($normalized)) {
+                    return $value;
+                }
+                if (preg_match('/^[+-]?\d+$/', $normalized) === 1) {
+                    $intValue = filter_var($normalized, FILTER_VALIDATE_INT);
+                    return $intValue === false ? $value : $intValue;
+                }
+                return (float) $normalized;
+            }
+            return $value;
+        }
+
+        return $value;
     }
 
     protected function assertAdmin()

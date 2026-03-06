@@ -525,6 +525,82 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
+    public function testGetResourceCastsNumericAttributesFromDatabaseStrings()
+    {
+        $definition = new EntityDefinition(
+            'theme',
+            'gisclient_34',
+            'theme',
+            'theme_id',
+            'int',
+            ['theme_id', 'project_name', 'theme_name', 'theme_single', 'radio'],
+            ['theme_name', 'theme_single', 'radio'],
+            ['project_name', 'theme_name'],
+            ['theme_name'],
+            ['theme_id', 'project_name', 'theme_name'],
+            ['theme_id', 'theme_name'],
+            'theme_id',
+            [
+                'theme_id' => [
+                    'type' => 'integer',
+                ],
+                'theme_single' => [
+                    'type' => 'numeric',
+                ],
+                'radio' => [
+                    'type' => 'numeric',
+                ],
+            ],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ]
+        );
+
+        $repo = new class() implements AuthorEntityRepositoryInterface {
+            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
+            {
+                return new PagedResult([], 0, 50, 0);
+            }
+
+            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+                return [
+                    'theme_id' => '3',
+                    'project_name' => 'milano',
+                    'theme_name' => 'boundaries_places3',
+                    'theme_single' => '0',
+                    'radio' => '1',
+                ];
+            }
+
+            public function create(EntityDefinition $definition, array $attributes)
+            {
+                return $attributes;
+            }
+
+            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
+            {
+                return $attributes;
+            }
+
+            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+            }
+        };
+
+        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $payload = $service->getResource('theme', '3');
+
+        $this->assertSame('3', $payload['data']['id']);
+        $this->assertSame(0, $payload['data']['attributes']['theme_single']);
+        $this->assertSame(1, $payload['data']['attributes']['radio']);
+        $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+    }
+
     private function createService($isAdmin, &$repo = null, array $existingIds = [])
     {
         $definition = new EntityDefinition(
@@ -617,6 +693,44 @@ class ApiCrudServiceTest extends TestCase
         };
 
         return new class($provider, $repo, $isAdmin) extends ApiCrudService {
+            private $isAdmin;
+
+            public function __construct(
+                EntityDefinitionProviderInterface $provider,
+                AuthorEntityRepositoryInterface $repository,
+                $isAdmin
+            ) {
+                parent::__construct($provider, $repository, new PayloadValidator());
+                $this->isAdmin = $isAdmin;
+            }
+
+            protected function assertAdmin()
+            {
+                if ($this->isAdmin) {
+                    return;
+                }
+
+                throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
+            }
+        };
+    }
+
+    private function createServiceWithRepository(EntityDefinition $definition, AuthorEntityRepositoryInterface $repository, $isAdmin)
+    {
+        $provider = new class($definition) implements EntityDefinitionProviderInterface {
+            private $definition;
+
+            public function __construct(EntityDefinition $definition)
+            {
+                $this->definition = $definition;
+            }
+            public function getEntityDefinition($entity)
+            {
+                return $this->definition;
+            }
+        };
+
+        return new class($provider, $repository, $isAdmin) extends ApiCrudService {
             private $isAdmin;
 
             public function __construct(
