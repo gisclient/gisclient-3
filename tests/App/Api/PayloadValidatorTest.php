@@ -52,4 +52,105 @@ class PayloadValidatorTest extends TestCase
             $this->assertContains('invalid_attribute_type', $codes);
         }
     }
+
+    public function testRejectsInvalidForeignKeyReference()
+    {
+        $validator = new PayloadValidator(null, static function (array $lookupRule, $value): bool {
+            if ($lookupRule['table'] === 'e_language') {
+                return in_array((string) $value, ['it', 'en'], true);
+            }
+
+            return true;
+        });
+
+        $definition = new EntityDefinition(
+            'project',
+            'gisclient_34',
+            'project',
+            'project_name',
+            'string',
+            ['project_name', 'default_language_id'],
+            ['default_language_id'],
+            ['project_name', 'default_language_id'],
+            ['default_language_id'],
+            ['project_name'],
+            ['project_name'],
+            'project_name',
+            [
+                'default_language_id' => [
+                    'type' => 'string',
+                    'lookup' => [
+                        'schema' => 'gisclient_34',
+                        'table' => 'e_language',
+                        'column' => 'language_id',
+                    ],
+                ],
+            ]
+        );
+
+        try {
+            $validator->validateAndNormalize($definition, [
+                'data' => [
+                    'type' => 'project',
+                    'id' => 'milano',
+                    'attributes' => [
+                        'default_language_id' => 'zz',
+                    ],
+                ],
+            ], true, false);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $errors = $exception->getErrors();
+            $codes = array_column($errors, 'code');
+            $this->assertContains('invalid_reference', $codes);
+        }
+    }
+
+    public function testAcceptsValidForeignKeyReference()
+    {
+        $validator = new PayloadValidator(null, static function (array $lookupRule, $value): bool {
+            if ($lookupRule['table'] === 'e_language') {
+                return in_array((string) $value, ['it', 'en'], true);
+            }
+
+            return true;
+        });
+
+        $definition = new EntityDefinition(
+            'project',
+            'gisclient_34',
+            'project',
+            'project_name',
+            'string',
+            ['project_name', 'default_language_id'],
+            ['default_language_id'],
+            ['project_name', 'default_language_id'],
+            ['default_language_id'],
+            ['project_name'],
+            ['project_name'],
+            'project_name',
+            [
+                'default_language_id' => [
+                    'type' => 'string',
+                    'lookup' => [
+                        'schema' => 'gisclient_34',
+                        'table' => 'e_language',
+                        'column' => 'language_id',
+                    ],
+                ],
+            ]
+        );
+
+        $attributes = $validator->validateAndNormalize($definition, [
+            'data' => [
+                'type' => 'project',
+                'id' => 'milano',
+                'attributes' => [
+                    'default_language_id' => 'it',
+                ],
+            ],
+        ], true, false);
+
+        $this->assertSame('it', $attributes['default_language_id']);
+    }
 }

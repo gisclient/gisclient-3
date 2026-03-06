@@ -8,6 +8,22 @@ use GisClient\Author\Api\Model\EntityDefinition;
 class PayloadValidator
 {
     /**
+     * @var \PDO|null
+     */
+    private $db;
+
+    /**
+     * @var callable|null
+     */
+    private $lookupExistsCallback;
+
+    public function __construct(?\PDO $db = null, ?callable $lookupExistsCallback = null)
+    {
+        $this->db = $db;
+        $this->lookupExistsCallback = $lookupExistsCallback;
+    }
+
+    /**
      * @param bool $isCreate
      * @param bool $isPut
      * @return array<string,mixed>
@@ -99,6 +115,7 @@ class PayloadValidator
         }
 
         $this->validateAttributeTypes($definition, $attributes, $errors);
+        $this->validateAttributeLookups($definition, $attributes, $errors);
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);
@@ -137,6 +154,98 @@ class PayloadValidator
                 $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be string", $field), $pointer);
             }
         }
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $errors
+     */
+    private function validateAttributeLookups(EntityDefinition $definition, array $attributes, array &$errors)
+    {
+        foreach ($attributes as $field => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $rule = $definition->getAttributeRule($field);
+            if ($rule === null || !isset($rule['lookup']) || !is_array($rule['lookup'])) {
+                continue;
+            }
+
+            if (!$this->lookupValueExists($rule['lookup'], $value)) {
+                $this->addError(
+                    $errors,
+                    'invalid_reference',
+                    'Invalid Reference',
+                    sprintf("Attribute '%s' references an unknown value", $field),
+                    '/data/attributes/' . $field
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $lookupRule
+     * @param mixed $value
+     * @return bool
+     */
+    private function lookupValueExists(array $lookupRule, $value)
+    {
+        if ($this->lookupExistsCallback !== null) {
+            return (bool) call_user_func($this->lookupExistsCallback, $lookupRule, $value);
+        }
+
+        $db = $this->getDb();
+        if ($db === null) {
+            return true;
+        }
+
+        $schema = $lookupRule['schema'] ?? null;
+        $table = $lookupRule['table'] ?? null;
+        $column = $lookupRule['column'] ?? null;
+        if (!is_string($schema) || !is_string($table) || !is_string($column)) {
+            return true;
+        }
+        if (!$this->isSafeIdentifier($schema) || !$this->isSafeIdentifier($table) || !$this->isSafeIdentifier($column)) {
+            return true;
+        }
+
+        $sql = sprintf(
+            'SELECT 1 FROM %s.%s WHERE %s = :value LIMIT 1',
+            $schema,
+            $table,
+            $column
+        );
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            ':value' => $value,
+        ]);
+
+        return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * @param string $identifier
+     * @return bool
+     */
+    private function isSafeIdentifier($identifier)
+    {
+        return preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier) === 1;
+    }
+
+    /**
+     * @return \PDO|null
+     */
+    private function getDb()
+    {
+        if ($this->db !== null) {
+            return $this->db;
+        }
+        if (!class_exists('\GCApp')) {
+            return null;
+        }
+
+        $this->db = \GCApp::getDB();
+        return $this->db;
     }
 
     /**

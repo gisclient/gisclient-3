@@ -35,6 +35,7 @@ class InformationSchemaEntityDefinitionProvider implements EntityDefinitionProvi
         $table = $config['table'];
 
         $columns = $this->loadColumns($schema, $table);
+        $foreignKeys = $this->loadForeignKeys($schema, $table);
         if (count($columns) === 0) {
             throw new ApiException(500, 'entity_schema_not_found', 'Entity Schema Not Found', sprintf("No columns found for %s.%s", $schema, $table));
         }
@@ -73,7 +74,7 @@ class InformationSchemaEntityDefinitionProvider implements EntityDefinitionProvi
         $defaultSort = $config['default_sort'] ?? $primaryKey;
 
         $idType = $config['id_type'] ?? ($columns[$primaryKey]['type'] ?? 'string');
-        $attributeRules = $columns;
+        $attributeRules = $this->buildAttributeRules($columns, $foreignKeys);
 
         return new EntityDefinition(
             $entity,
@@ -121,6 +122,41 @@ class InformationSchemaEntityDefinitionProvider implements EntityDefinitionProvi
         }
 
         return $columns;
+    }
+
+    /**
+     * @param string $schema
+     * @param string $table
+     * @return array<string,array{schema:string,table:string,column:string}>
+     */
+    private function loadForeignKeys($schema, $table)
+    {
+        $sql = 'SELECT kcu.column_name AS local_column, ccu.table_schema AS foreign_schema, ' .
+            'ccu.table_name AS foreign_table, ccu.column_name AS foreign_column ' .
+            'FROM information_schema.table_constraints tc ' .
+            'JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name ' .
+            'AND tc.table_schema = kcu.table_schema AND tc.table_name = kcu.table_name ' .
+            'JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name ' .
+            'AND ccu.table_schema = tc.table_schema ' .
+            'WHERE tc.constraint_type = :type AND tc.table_schema = :schema AND tc.table_name = :table';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':type' => 'FOREIGN KEY',
+            ':schema' => $schema,
+            ':table' => $table,
+        ]);
+
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $foreignKeys = [];
+        foreach ($rows as $row) {
+            $foreignKeys[$row['local_column']] = [
+                'schema' => $row['foreign_schema'],
+                'table' => $row['foreign_table'],
+                'column' => $row['foreign_column'],
+            ];
+        }
+
+        return $foreignKeys;
     }
 
     /**
@@ -189,5 +225,23 @@ class InformationSchemaEntityDefinitionProvider implements EntityDefinitionProvi
         }
 
         return 'string';
+    }
+
+    /**
+     * @param array<string,array{type:string,nullable:bool,has_default:bool,db_type:string}> $columns
+     * @param array<string,array{schema:string,table:string,column:string}> $foreignKeys
+     * @return array<string,array<string,mixed>>
+     */
+    private function buildAttributeRules(array $columns, array $foreignKeys)
+    {
+        $rules = $columns;
+        foreach ($foreignKeys as $field => $foreignKey) {
+            if (!isset($rules[$field])) {
+                continue;
+            }
+            $rules[$field]['lookup'] = $foreignKey;
+        }
+
+        return $rules;
     }
 }
