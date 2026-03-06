@@ -153,4 +153,84 @@ class PayloadValidatorTest extends TestCase
 
         $this->assertSame('it', $attributes['default_language_id']);
     }
+
+    public function testNormalizesIntegerResourceIdFromString()
+    {
+        $validator = new PayloadValidator();
+        $definition = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'project_name', 'projparam'],
+            ['srid', 'project_name', 'projparam'],
+            ['srid', 'project_name'],
+            [],
+            ['srid'],
+            ['srid'],
+            'srid',
+            [
+                'srid' => [
+                    'type' => 'integer',
+                ],
+                'project_name' => [
+                    'type' => 'string',
+                ],
+            ]
+        );
+
+        $attributes = $validator->validateAndNormalize($definition, [
+            'data' => [
+                'type' => 'project_srs',
+                'id' => '32632',
+                'attributes' => [
+                    'project_name' => 'milano',
+                    'projparam' => null,
+                ],
+            ],
+        ], true, false);
+
+        $this->assertSame(32632, $attributes['srid']);
+    }
+
+    public function testRejectsNonNumericResourceIdForIntegerPrimaryKey()
+    {
+        $validator = new PayloadValidator();
+        $definition = new EntityDefinition(
+            'project_srs',
+            'gisclient_34',
+            'project_srs',
+            'srid',
+            'int',
+            ['srid', 'project_name'],
+            ['srid', 'project_name'],
+            ['srid', 'project_name'],
+            [],
+            ['srid'],
+            ['srid'],
+            'srid',
+            [
+                'srid' => [
+                    'type' => 'integer',
+                ],
+            ]
+        );
+
+        try {
+            $validator->validateAndNormalize($definition, [
+                'data' => [
+                    'type' => 'project_srs',
+                    'id' => '32A',
+                    'attributes' => [
+                        'project_name' => 'milano',
+                    ],
+                ],
+            ], true, false);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $codes = array_column($exception->getErrors(), 'code');
+            $this->assertContains('invalid_id', $codes);
+        }
+    }
 }

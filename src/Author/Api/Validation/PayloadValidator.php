@@ -55,7 +55,10 @@ class PayloadValidator
             if ($this->isEmptyValue($idValue)) {
                 $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id cannot be empty', '/data/id');
             } else {
-                if (array_key_exists($primaryKey, $attributes) && (string) $attributes[$primaryKey] !== (string) $idValue) {
+                $normalizedId = $this->normalizeResourceId($definition, $idValue, $errors);
+                if ($normalizedId === null) {
+                    // keep collecting all errors in payload
+                } elseif (array_key_exists($primaryKey, $attributes) && (string) $attributes[$primaryKey] !== (string) $normalizedId) {
                     $this->addError(
                         $errors,
                         'id_attribute_mismatch',
@@ -63,8 +66,9 @@ class PayloadValidator
                         sprintf("data.id and data.attributes.%s must match", $primaryKey),
                         '/data/id'
                     );
+                } else {
+                    $attributes[$primaryKey] = $normalizedId;
                 }
-                $attributes[$primaryKey] = $idValue;
             }
         }
 
@@ -122,6 +126,37 @@ class PayloadValidator
         }
 
         return $attributes;
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $errors
+     * @param mixed $idValue
+     * @return int|string|null
+     */
+    private function normalizeResourceId(EntityDefinition $definition, $idValue, array &$errors)
+    {
+        $idType = strtolower((string) $definition->getIdType());
+        if (in_array($idType, ['int', 'integer'], true)) {
+            if (is_int($idValue)) {
+                return $idValue;
+            }
+            if (is_string($idValue) && preg_match('/^-?\d+$/', $idValue) === 1) {
+                return (int) $idValue;
+            }
+
+            $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be an integer identifier for this resource type', '/data/id');
+            return null;
+        }
+
+        if (is_string($idValue)) {
+            return $idValue;
+        }
+        if (is_scalar($idValue)) {
+            return (string) $idValue;
+        }
+
+        $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be a string identifier', '/data/id');
+        return null;
     }
 
     /**
