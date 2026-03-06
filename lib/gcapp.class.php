@@ -44,7 +44,7 @@ class GCApp
     {
         if (empty(self::$db)) {
             $dsn = 'pgsql:dbname=' . DB_NAME . ';host=' . DB_HOST;
-            if (defined('DB_PORT')) {
+            if (defined('DB_PORT') && DB_PORT !== '') {
                 $dsn .= ';port=' . DB_PORT;
             }
             try {
@@ -52,8 +52,17 @@ class GCApp
                 self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             } catch (Exception $e) {
-                header('HTTP/1.1 500 Internal Server Error');
-                die("GCApp: Can't connect to database " . DB_NAME . ": {$e->getMessage()}");
+                $message = "GCApp: Can't connect to database " . DB_NAME . ": {$e->getMessage()}";
+
+                if (PHP_SAPI === 'cli') {
+                    throw new RuntimeException($message, 0, $e);
+                }
+
+                if (!headers_sent()) {
+                    header('HTTP/1.1 500 Internal Server Error');
+                }
+
+                die($message);
             }
         }
         return self::$db;
@@ -347,7 +356,7 @@ class GCDataDB
         [$dbName, $schema] = explode('/', $path);
         
         $dsn = 'pgsql:dbname=' . $dbName . ';host=' . DB_HOST;
-        if (defined('DB_PORT')) {
+        if (defined('DB_PORT') && DB_PORT !== '') {
             $dsn .= ';port=' . DB_PORT;
         }
         try {
