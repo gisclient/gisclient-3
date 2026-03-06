@@ -21,6 +21,21 @@ Use docker compose to run the GisClient backend, frontend and a PostgreSQL datab
 docker compose up
 ```
 
+## Run with Makefile
+
+Use the provided `Makefile` shortcuts for common development tasks:
+
+```bash
+make start       # start all services in background and build images
+make up          # start all services in foreground and build images
+make down        # stop all services
+make deps        # install backend composer dependencies in container
+make test        # run backend test suite
+make cache-clear # clear container cache and restart backend service
+```
+
+On first setup (or after resetting volumes), run `make deps` before `make test`.
+
 Open a browser and go to [http://127.0.0.1:8080/author/](http://127.0.0.1:8080/author/)
 
 To generate a working map enter inside the UI on [http://127.0.0.1:8080/author/](http://127.0.0.1:8080/author/), press on the "Author" button, go to the default project, and regenerate the map.
@@ -29,7 +44,7 @@ You can open a gis client like qGIS, and add a WMS or WFS with this URL: [http:/
 Defaults:
 
 - Login and password: `admin`. _Don't forget to change the password 😱_
-- Web port: 80
+- Web port: 8080
 - PostgreSQL port: 5432
 
 You can create a .env file to customize parameters

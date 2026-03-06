@@ -99,6 +99,31 @@ RUN --mount=type=bind,from=builder,source=/app/rpmbuild/RPMS/x86_64/mapserver-7.
 	&& dnf clean all
 
 
+FROM mapserver-rls AS dev
+
+USER 0
+ARG UID=48
+ARG GID=48
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+COPY --from=source --chown=root:root /app /app
+RUN dnf --nodocs update -y \
+	&& dnf --nodocs install -y binutils curl gzip procps telnet vim \
+	&& dnf clean all \
+	&& cd /app/author \
+	&& composer install --no-ansi --no-interaction --no-plugins --no-progress --optimize-autoloader \
+	&& chmod 777 /app/author/var \
+	&& chmod 777 /app/author/map \
+	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list \
+	&& rm -rf /root/.cache/composer
+WORKDIR /app/author
+USER ${UID}
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["-F"]
+STOPSIGNAL SIGQUIT
+EXPOSE 9000
+HEALTHCHECK NONE
+
+
 FROM mapserver-rls AS prod
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
@@ -117,14 +142,3 @@ CMD ["-F"]
 STOPSIGNAL SIGQUIT
 EXPOSE 9000
 HEALTHCHECK NONE
-
-
-FROM prod AS dev
-
-USER 0
-ARG UID=48
-ARG GID=48
-RUN dnf --nodocs update -y \
-	&& dnf --nodocs install -y binutils curl gzip procps telnet vim \
-	&& dnf clean all
-USER ${UID}

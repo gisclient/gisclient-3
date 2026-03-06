@@ -4,10 +4,8 @@ services:
     platform: linux/amd64
     restart: unless-stopped
     env_file:
-      - path: .env.dist
-        required: true
       - path: .env
-        required: false
+        required: true
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
@@ -26,6 +24,9 @@ services:
         GID: ${GROUP_ID:-48}
     platform: linux/amd64
     restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
     volumes:
       - type: bind
         source: .
@@ -50,10 +51,8 @@ services:
     platform: linux/amd64
     restart: unless-stopped
     env_file:
-      - path: .env.dist
-        required: true
       - path: .env
-        required: false
+        required: true
     ports:
       - 8080:8080
     depends_on:
