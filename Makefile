@@ -1,7 +1,7 @@
 COMPOSE ?= docker compose
 PHP_SERVICE ?= author-be
 
-.PHONY: start up down deps test phpstan ecs rector quality ecs-fix rector-fix quality-fix cache-clear
+.PHONY: start up down clean deps db-upgrade test phpstan ecs rector quality ecs-fix rector-fix quality-fix cache-clear
 
 start:
 	$(COMPOSE) up -d --build
@@ -12,8 +12,14 @@ up:
 down:
 	$(COMPOSE) down
 
+clean:
+	$(COMPOSE) down -v --remove-orphans
+
 deps:
 	$(COMPOSE) exec -T -u 0 $(PHP_SERVICE) sh -lc 'COMPOSER_ALLOW_SUPERUSER=1 composer install'
+
+db-upgrade:
+	$(COMPOSE) exec -T $(PHP_SERVICE) php bin/console gisclient:dbupgrade
 
 test:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run test

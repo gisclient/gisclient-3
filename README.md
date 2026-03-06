@@ -29,7 +29,9 @@ Use the provided `Makefile` shortcuts for common development tasks:
 make start       # start all services in background and build images
 make up          # start all services in foreground and build images
 make down        # stop all services
+make clean       # stop services and remove volumes (full reset)
 make deps        # install backend composer dependencies in container
+make db-upgrade  # run database upgrade script (doc/update_db_from_3.4.0.sql)
 make test        # run backend test suite
 make phpstan     # run static analysis
 make ecs         # run coding standard checks
