@@ -203,4 +203,73 @@ class TabVisibilityEntityDefinitionProviderTest extends TestCase
 
         @unlink($tabFile);
     }
+
+    public function testKeepsRelationshipLocalKeyReadableAndFilterableWhenNotInTab()
+    {
+        $tabFile = tempnam(sys_get_temp_dir(), 'tab');
+        file_put_contents($tabFile, "[standard]\n" .
+            "dato[] = \"Name;layergroup_name;40;text\"\n" .
+            "dato[] = \"Title;layergroup_title;40;text\"\n");
+
+        $base = new EntityDefinition(
+            'layergroup',
+            'gisclient_34',
+            'layergroup',
+            'layergroup_id',
+            'int',
+            ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title'],
+            ['theme_id', 'layergroup_name', 'layergroup_title'],
+            ['theme_id', 'layergroup_name', 'layergroup_title'],
+            ['layergroup_name', 'layergroup_title'],
+            ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title'],
+            ['layergroup_id', 'theme_id', 'layergroup_name'],
+            'theme_id',
+            [
+                'theme_id' => [
+                    'type' => 'integer',
+                ],
+            ],
+            [],
+            [
+                'theme' => [
+                    'type' => 'theme',
+                    'local_key' => 'theme_id',
+                ],
+            ],
+            ['theme']
+        );
+
+        $inner = new class($base) implements EntityDefinitionProviderInterface {
+            private $definition;
+
+            public function __construct(EntityDefinition $definition)
+            {
+                $this->definition = $definition;
+            }
+
+            public function getEntityDefinition($entity)
+            {
+                return $this->definition;
+            }
+        };
+
+        $provider = new TabVisibilityEntityDefinitionProvider(
+            $inner,
+            new TabFieldExtractor(),
+            [
+                'layergroup' => [
+                    'tab_file' => $tabFile,
+                ],
+            ]
+        );
+
+        $definition = $provider->getEntityDefinition('layergroup');
+
+        $this->assertContains('theme_id', $definition->getReadableFields());
+        $this->assertContains('theme_id', $definition->getFilterableFields());
+        $this->assertNotContains('theme_id', $definition->getWritableFields());
+        $this->assertArrayHasKey('theme', $definition->getRelationships());
+
+        @unlink($tabFile);
+    }
 }

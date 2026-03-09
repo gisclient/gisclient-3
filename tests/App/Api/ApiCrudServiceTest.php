@@ -625,6 +625,110 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
+    public function testTopLevelLayergroupCreateRequiresThemeRelationship()
+    {
+        $definition = new EntityDefinition(
+            'layergroup',
+            'gisclient_34',
+            'layergroup',
+            'layergroup_id',
+            'int',
+            ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['layergroup_id', 'theme_id', 'layergroup_name'],
+            ['layergroup_id', 'layergroup_order', 'layergroup_name'],
+            'layergroup_order',
+            [],
+            [],
+            [
+                'theme' => [
+                    'type' => 'theme',
+                    'local_key' => 'theme_id',
+                ],
+            ],
+            ['theme']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('layergroup', [
+                'data' => [
+                    'type' => 'layergroup',
+                    'id' => '11',
+                    'attributes' => [
+                        'layergroup_name' => 'base',
+                        'layergroup_title' => 'Base',
+                        'layergroup_order' => 1,
+                        'owstype_id' => 1,
+                        'layers' => 'osm',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/theme/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelLayergroupCreateMapsThemeRelationshipToLocalKey()
+    {
+        $definition = new EntityDefinition(
+            'layergroup',
+            'gisclient_34',
+            'layergroup',
+            'layergroup_id',
+            'int',
+            ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
+            ['layergroup_id', 'theme_id', 'layergroup_name'],
+            ['layergroup_id', 'layergroup_order', 'layergroup_name'],
+            'layergroup_order',
+            [],
+            [],
+            [
+                'theme' => [
+                    'type' => 'theme',
+                    'local_key' => 'theme_id',
+                ],
+            ],
+            ['theme']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('layergroup', [
+            'data' => [
+                'type' => 'layergroup',
+                'id' => '11',
+                'attributes' => [
+                    'layergroup_name' => 'base',
+                    'layergroup_title' => 'Base',
+                    'layergroup_order' => 1,
+                    'owstype_id' => 1,
+                    'layers' => 'osm',
+                ],
+                'relationships' => [
+                    'theme' => [
+                        'data' => [
+                            'type' => 'theme',
+                            'id' => '4',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('4', (string) $repo->createdAttributes['theme_id']);
+        $this->assertSame('4', $payload['data']['relationships']['theme']['data']['id']);
+        $this->assertArrayNotHasKey('theme_id', $payload['data']['attributes']);
+    }
+
     public function testGetResourceCastsNumericAttributesFromDatabaseStrings()
     {
         $definition = new EntityDefinition(

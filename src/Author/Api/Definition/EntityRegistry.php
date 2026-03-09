@@ -74,6 +74,31 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['project'],
             ],
+            'layergroup' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'layergroup',
+                'primary_key' => 'layergroup_id',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'layergroup.tab',
+                'required_on_create' => [
+                    'theme_id',
+                    'layergroup_name',
+                ],
+                'required_on_put' => [
+                    'theme_id',
+                    'layergroup_name',
+                ],
+                'filterable_fields' => ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title', 'owstype_id'],
+                'sortable_fields' => ['layergroup_id', 'layergroup_order', 'layergroup_name', 'layergroup_title'],
+                'default_sort' => 'layergroup_order',
+                'relationships' => [
+                    'theme' => [
+                        'type' => 'theme',
+                        'local_key' => 'theme_id',
+                    ],
+                ],
+                'required_relationships_on_write' => ['theme'],
+            ],
             'catalog' => [
                 'schema' => DB_SCHEMA,
                 'table' => 'catalog',
