@@ -352,4 +352,73 @@ class TabVisibilityEntityDefinitionProviderTest extends TestCase
 
         @unlink($tabFile);
     }
+
+    public function testKeepsClassLayerRelationshipLocalKeyReadableAndFilterableWhenNotInTab()
+    {
+        $tabFile = tempnam(sys_get_temp_dir(), 'tab');
+        file_put_contents($tabFile, "[standard]\n" .
+            "dato[] = \"Name;class_name;40;text\"\n" .
+            "dato[] = \"Title;class_title;40;text\"\n");
+
+        $base = new EntityDefinition(
+            'class',
+            'gisclient_34',
+            'class',
+            'class_id',
+            'int',
+            ['class_id', 'layer_id', 'class_name', 'class_title'],
+            ['layer_id', 'class_name', 'class_title'],
+            ['class_name'],
+            ['class_name'],
+            ['class_id', 'layer_id', 'class_name', 'class_title'],
+            ['class_id', 'class_name'],
+            'class_id',
+            [
+                'layer_id' => [
+                    'type' => 'integer',
+                ],
+            ],
+            [],
+            [
+                'layer' => [
+                    'type' => 'layer',
+                    'local_key' => 'layer_id',
+                ],
+            ],
+            ['layer']
+        );
+
+        $inner = new class($base) implements EntityDefinitionProviderInterface {
+            private $definition;
+
+            public function __construct(EntityDefinition $definition)
+            {
+                $this->definition = $definition;
+            }
+
+            public function getEntityDefinition($entity)
+            {
+                return $this->definition;
+            }
+        };
+
+        $provider = new TabVisibilityEntityDefinitionProvider(
+            $inner,
+            new TabFieldExtractor(),
+            [
+                'class' => [
+                    'tab_file' => $tabFile,
+                ],
+            ]
+        );
+
+        $definition = $provider->getEntityDefinition('class');
+
+        $this->assertContains('layer_id', $definition->getReadableFields());
+        $this->assertContains('layer_id', $definition->getFilterableFields());
+        $this->assertNotContains('layer_id', $definition->getWritableFields());
+        $this->assertArrayHasKey('layer', $definition->getRelationships());
+
+        @unlink($tabFile);
+    }
 }

@@ -144,6 +144,37 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['layergroup', 'catalog'],
             ],
+            'class' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'class',
+                'primary_key' => 'class_id',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'class.tab',
+                'required_on_create' => [
+                    'class_name',
+                ],
+                'required_on_put' => [
+                    'class_name',
+                ],
+                'filterable_fields' => [
+                    'class_id',
+                    'layer_id',
+                    'class_name',
+                    'class_title',
+                    'legendtype_id',
+                    'maxscale',
+                    'minscale',
+                ],
+                'sortable_fields' => ['class_id', 'class_order', 'class_name', 'class_title'],
+                'default_sort' => 'class_order',
+                'relationships' => [
+                    'layer' => [
+                        'type' => 'layer',
+                        'local_key' => 'layer_id',
+                    ],
+                ],
+                'required_relationships_on_write' => ['layer'],
+            ],
             'catalog' => [
                 'schema' => DB_SCHEMA,
                 'table' => 'catalog',
