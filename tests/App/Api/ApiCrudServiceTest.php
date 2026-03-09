@@ -1188,6 +1188,342 @@ class ApiCrudServiceTest extends TestCase
         ], $queryOptions->getFilters());
     }
 
+    public function testTopLevelStyleCreateRequiresClassRelationship()
+    {
+        $definition = new EntityDefinition(
+            'style',
+            'gisclient_34',
+            'style',
+            'style_id',
+            'int',
+            ['style_id', 'class_id', 'style_name', 'style_order'],
+            ['style_name', 'style_order'],
+            ['class_id', 'style_name'],
+            ['class_id', 'style_name'],
+            ['style_id', 'class_id', 'style_name'],
+            ['style_id', 'style_order', 'style_name'],
+            'style_order',
+            [],
+            [],
+            [
+                'class' => [
+                    'type' => 'class',
+                    'local_key' => 'class_id',
+                ],
+            ],
+            ['class']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('style', [
+                'data' => [
+                    'type' => 'style',
+                    'id' => '41',
+                    'attributes' => [
+                        'style_name' => 'default',
+                        'style_order' => 1,
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/class/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelStyleCreateMapsClassRelationshipToLocalKey()
+    {
+        $definition = new EntityDefinition(
+            'style',
+            'gisclient_34',
+            'style',
+            'style_id',
+            'int',
+            ['style_id', 'class_id', 'style_name', 'style_order'],
+            ['style_name', 'style_order'],
+            ['class_id', 'style_name'],
+            ['class_id', 'style_name'],
+            ['style_id', 'class_id', 'style_name'],
+            ['style_id', 'style_order', 'style_name'],
+            'style_order',
+            [],
+            [],
+            [
+                'class' => [
+                    'type' => 'class',
+                    'local_key' => 'class_id',
+                ],
+            ],
+            ['class']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('style', [
+            'data' => [
+                'type' => 'style',
+                'id' => '41',
+                'attributes' => [
+                    'style_name' => 'default',
+                    'style_order' => 1,
+                ],
+                'relationships' => [
+                    'class' => [
+                        'data' => [
+                            'type' => 'class',
+                            'id' => '3',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('3', (string) $repo->createdAttributes['class_id']);
+        $this->assertSame('3', $payload['data']['relationships']['class']['data']['id']);
+        $this->assertArrayNotHasKey('class_id', $payload['data']['attributes']);
+    }
+
+    public function testBuildQueryOptionsAcceptsStyleRelationshipFilterAlias()
+    {
+        $definition = new EntityDefinition(
+            'style',
+            'gisclient_34',
+            'style',
+            'style_id',
+            'int',
+            ['style_id', 'class_id', 'style_name'],
+            ['style_name'],
+            ['class_id', 'style_name'],
+            ['class_id', 'style_name'],
+            ['style_id', 'class_id', 'style_name'],
+            ['style_id', 'style_name'],
+            'style_id',
+            [],
+            [],
+            [
+                'class' => [
+                    'type' => 'class',
+                    'local_key' => 'class_id',
+                ],
+            ]
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+        $queryOptions = $service->buildQueryOptions($definition, [
+            'filter' => [
+                'class' => '3',
+            ],
+        ]);
+
+        $this->assertSame([
+            'class_id' => '3',
+        ], $queryOptions->getFilters());
+    }
+
+    public function testTopLevelFieldCreateRequiresLayerRelationship()
+    {
+        $definition = new EntityDefinition(
+            'field',
+            'gisclient_34',
+            'field',
+            'field_id',
+            'int',
+            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order'],
+            ['field_name', 'field_header', 'field_order'],
+            ['field_name', 'field_header'],
+            ['field_name', 'field_header'],
+            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
+            ['field_id', 'field_order', 'field_name'],
+            'field_order',
+            [],
+            [],
+            [
+                'layer' => [
+                    'type' => 'layer',
+                    'local_key' => 'layer_id',
+                ],
+            ],
+            ['layer']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('field', [
+                'data' => [
+                    'type' => 'field',
+                    'id' => '51',
+                    'attributes' => [
+                        'field_name' => 'gid',
+                        'field_header' => 'GID',
+                        'field_order' => 1,
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/layer/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelFieldCreateMapsLayerRelationshipToLocalKey()
+    {
+        $definition = new EntityDefinition(
+            'field',
+            'gisclient_34',
+            'field',
+            'field_id',
+            'int',
+            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order'],
+            ['field_name', 'field_header', 'field_order'],
+            ['field_name', 'field_header'],
+            ['field_name', 'field_header'],
+            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
+            ['field_id', 'field_order', 'field_name'],
+            'field_order',
+            [],
+            [],
+            [
+                'layer' => [
+                    'type' => 'layer',
+                    'local_key' => 'layer_id',
+                ],
+            ],
+            ['layer']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('field', [
+            'data' => [
+                'type' => 'field',
+                'id' => '51',
+                'attributes' => [
+                    'field_name' => 'gid',
+                    'field_header' => 'GID',
+                    'field_order' => 1,
+                ],
+                'relationships' => [
+                    'layer' => [
+                        'data' => [
+                            'type' => 'layer',
+                            'id' => '2',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('2', (string) $repo->createdAttributes['layer_id']);
+        $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
+        $this->assertArrayNotHasKey('layer_id', $payload['data']['attributes']);
+    }
+
+    public function testBuildQueryOptionsAcceptsFieldRelationshipFilterAlias()
+    {
+        $definition = new EntityDefinition(
+            'field',
+            'gisclient_34',
+            'field',
+            'field_id',
+            'int',
+            ['field_id', 'layer_id', 'relation_id', 'field_name'],
+            ['field_name'],
+            ['field_name'],
+            ['field_name'],
+            ['field_id', 'layer_id', 'relation_id', 'field_name'],
+            ['field_id', 'field_name'],
+            'field_id',
+            [],
+            [],
+            [
+                'layer' => [
+                    'type' => 'layer',
+                    'local_key' => 'layer_id',
+                ],
+            ]
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+        $queryOptions = $service->buildQueryOptions($definition, [
+            'filter' => [
+                'layer' => '2',
+            ],
+        ]);
+
+        $this->assertSame([
+            'layer_id' => '2',
+        ], $queryOptions->getFilters());
+    }
+
+    public function testGetFieldResourceKeepsRelationIdAsAttribute()
+    {
+        $definition = new EntityDefinition(
+            'field',
+            'gisclient_34',
+            'field',
+            'field_id',
+            'int',
+            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
+            ['field_name', 'field_header'],
+            ['field_name', 'field_header'],
+            ['field_name', 'field_header'],
+            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
+            ['field_id', 'field_name'],
+            'field_id',
+            [],
+            [],
+            [
+                'layer' => [
+                    'type' => 'layer',
+                    'local_key' => 'layer_id',
+                ],
+            ]
+        );
+
+        $repo = new class() implements AuthorEntityRepositoryInterface {
+            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
+            {
+                return new PagedResult([], 0, 50, 0);
+            }
+
+            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+                return [
+                    'field_id' => (int) $id,
+                    'layer_id' => 2,
+                    'relation_id' => 0,
+                    'field_name' => 'gid',
+                    'field_header' => 'GID',
+                ];
+            }
+
+            public function create(EntityDefinition $definition, array $attributes)
+            {
+                return $attributes;
+            }
+
+            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
+            {
+                return $attributes;
+            }
+
+            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+            }
+        };
+
+        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $payload = $service->getResource('field', 51);
+
+        $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
+        $this->assertSame(0, $payload['data']['attributes']['relation_id']);
+    }
+
     public function testGetResourceCastsNumericAttributesFromDatabaseStrings()
     {
         $definition = new EntityDefinition(
