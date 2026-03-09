@@ -562,6 +562,10 @@ class ApiCrudService
                 ];
             }
 
+            if ($data === null) {
+                continue;
+            }
+
             $relationships[$name] = [
                 'data' => $data,
             ];
