@@ -625,6 +625,108 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
+    public function testTopLevelLinkCreateRequiresProjectRelationship()
+    {
+        $definition = new EntityDefinition(
+            'link',
+            'gisclient_34',
+            'link',
+            'link_id',
+            'int',
+            ['link_id', 'project_name', 'link_name', 'link_def', 'link_order', 'winw', 'winh'],
+            ['link_name', 'link_def', 'link_order', 'winw', 'winh'],
+            ['project_name', 'link_name', 'link_def'],
+            ['link_name', 'link_def'],
+            ['link_id', 'project_name', 'link_name', 'link_order'],
+            ['link_id', 'link_order', 'link_name'],
+            'link_order',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('link', [
+                'data' => [
+                    'type' => 'link',
+                    'id' => '1',
+                    'attributes' => [
+                        'link_name' => 'Manual',
+                        'link_def' => 'https://example.test/manual',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelLinkCreateMapsProjectRelationshipToLocalKey()
+    {
+        $definition = new EntityDefinition(
+            'link',
+            'gisclient_34',
+            'link',
+            'link_id',
+            'int',
+            ['link_id', 'project_name', 'link_name', 'link_def', 'link_order', 'winw', 'winh'],
+            ['link_name', 'link_def', 'link_order', 'winw', 'winh'],
+            ['project_name', 'link_name', 'link_def'],
+            ['link_name', 'link_def'],
+            ['link_id', 'project_name', 'link_name', 'link_order'],
+            ['link_id', 'link_order', 'link_name'],
+            'link_order',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('link', [
+            'data' => [
+                'type' => 'link',
+                'id' => '1',
+                'attributes' => [
+                    'link_name' => 'Manual',
+                    'link_def' => 'https://example.test/manual',
+                    'link_order' => 3,
+                    'winw' => 640,
+                    'winh' => 480,
+                ],
+                'relationships' => [
+                    'project' => [
+                        'data' => [
+                            'type' => 'project',
+                            'id' => 'milano',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('milano', $repo->createdAttributes['project_name']);
+        $this->assertSame('Manual', $repo->createdAttributes['link_name']);
+        $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
+    }
+
     public function testTopLevelLayergroupCreateRequiresThemeRelationship()
     {
         $definition = new EntityDefinition(

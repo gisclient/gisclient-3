@@ -263,6 +263,25 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['project'],
             ],
+            'link' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'link',
+                'primary_key' => 'link_id',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'link.tab',
+                'required_on_create' => ['project_name', 'link_name', 'link_def'],
+                'required_on_put' => ['link_name', 'link_def'],
+                'filterable_fields' => ['link_id', 'project_name', 'link_name', 'link_order'],
+                'sortable_fields' => ['link_id', 'link_order', 'link_name'],
+                'default_sort' => 'link_order',
+                'relationships' => [
+                    'project' => [
+                        'type' => 'project',
+                        'local_key' => 'project_name',
+                    ],
+                ],
+                'required_relationships_on_write' => ['project'],
+            ],
         ];
     }
 }
