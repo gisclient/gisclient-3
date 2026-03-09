@@ -607,7 +607,11 @@ class ApiCrudService
                 continue;
             }
 
-            if (array_key_exists($localKey, $attributes) && (string) $attributes[$localKey] !== $relationshipId) {
+            if (
+                array_key_exists($localKey, $attributes) &&
+                $attributes[$localKey] !== null &&
+                (string) $attributes[$localKey] !== $relationshipId
+            ) {
                 throw new ApiException(
                     422,
                     'relationship_attribute_mismatch',

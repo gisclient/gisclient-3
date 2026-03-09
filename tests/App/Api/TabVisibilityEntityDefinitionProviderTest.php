@@ -272,4 +272,84 @@ class TabVisibilityEntityDefinitionProviderTest extends TestCase
 
         @unlink($tabFile);
     }
+
+    public function testKeepsMultipleRelationshipLocalKeysReadableAndFilterableWhenNotInTab()
+    {
+        $tabFile = tempnam(sys_get_temp_dir(), 'tab');
+        file_put_contents($tabFile, "[standard]\n" .
+            "dato[] = \"Name;layer_name;40;text\"\n" .
+            "dato[] = \"Title;layer_title;40;text\"\n");
+
+        $base = new EntityDefinition(
+            'layer',
+            'gisclient_34',
+            'layer',
+            'layer_id',
+            'int',
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layer_title'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layer_title'],
+            ['layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_name'],
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layer_title'],
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
+            'layer_id',
+            [
+                'layergroup_id' => [
+                    'type' => 'integer',
+                ],
+                'catalog_id' => [
+                    'type' => 'integer',
+                ],
+            ],
+            [],
+            [
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+                'catalog' => [
+                    'type' => 'catalog',
+                    'local_key' => 'catalog_id',
+                ],
+            ],
+            ['layergroup', 'catalog']
+        );
+
+        $inner = new class($base) implements EntityDefinitionProviderInterface {
+            private $definition;
+
+            public function __construct(EntityDefinition $definition)
+            {
+                $this->definition = $definition;
+            }
+
+            public function getEntityDefinition($entity)
+            {
+                return $this->definition;
+            }
+        };
+
+        $provider = new TabVisibilityEntityDefinitionProvider(
+            $inner,
+            new TabFieldExtractor(),
+            [
+                'layer' => [
+                    'tab_file' => $tabFile,
+                ],
+            ]
+        );
+
+        $definition = $provider->getEntityDefinition('layer');
+
+        $this->assertContains('layergroup_id', $definition->getReadableFields());
+        $this->assertContains('catalog_id', $definition->getReadableFields());
+        $this->assertContains('layergroup_id', $definition->getFilterableFields());
+        $this->assertContains('catalog_id', $definition->getFilterableFields());
+        $this->assertNotContains('layergroup_id', $definition->getWritableFields());
+        $this->assertNotContains('catalog_id', $definition->getWritableFields());
+        $this->assertArrayHasKey('layergroup', $definition->getRelationships());
+        $this->assertArrayHasKey('catalog', $definition->getRelationships());
+
+        @unlink($tabFile);
+    }
 }

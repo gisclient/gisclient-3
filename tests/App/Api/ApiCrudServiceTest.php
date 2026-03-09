@@ -729,6 +729,329 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('theme_id', $payload['data']['attributes']);
     }
 
+    public function testTopLevelLayerCreateRequiresLayergroupRelationship()
+    {
+        $definition = new EntityDefinition(
+            'layer',
+            'gisclient_34',
+            'layer',
+            'layer_id',
+            'int',
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_order', 'layer_title'],
+            ['layer_name', 'layertype_id', 'layer_order', 'layer_title'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_id', 'layer_order', 'layer_name'],
+            'layer_order',
+            [],
+            [],
+            [
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+                'catalog' => [
+                    'type' => 'catalog',
+                    'local_key' => 'catalog_id',
+                ],
+            ],
+            ['layergroup', 'catalog']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('layer', [
+                'data' => [
+                    'type' => 'layer',
+                    'id' => '21',
+                    'attributes' => [
+                        'layer_name' => 'roads',
+                        'layertype_id' => 2,
+                    ],
+                    'relationships' => [
+                        'catalog' => [
+                            'data' => [
+                                'type' => 'catalog',
+                                'id' => '10',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/layergroup/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelLayerCreateRequiresCatalogRelationship()
+    {
+        $definition = new EntityDefinition(
+            'layer',
+            'gisclient_34',
+            'layer',
+            'layer_id',
+            'int',
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_order', 'layer_title'],
+            ['layer_name', 'layertype_id', 'layer_order', 'layer_title'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_id', 'layer_order', 'layer_name'],
+            'layer_order',
+            [],
+            [],
+            [
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+                'catalog' => [
+                    'type' => 'catalog',
+                    'local_key' => 'catalog_id',
+                ],
+            ],
+            ['layergroup', 'catalog']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('layer', [
+                'data' => [
+                    'type' => 'layer',
+                    'id' => '21',
+                    'attributes' => [
+                        'layer_name' => 'roads',
+                        'layertype_id' => 2,
+                    ],
+                    'relationships' => [
+                        'layergroup' => [
+                            'data' => [
+                                'type' => 'layergroup',
+                                'id' => '5',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/catalog/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelLayerCreateMapsParentRelationshipsToLocalKeys()
+    {
+        $definition = new EntityDefinition(
+            'layer',
+            'gisclient_34',
+            'layer',
+            'layer_id',
+            'int',
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_order', 'layer_title'],
+            ['layer_name', 'layertype_id', 'layer_order', 'layer_title'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
+            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_id', 'layer_order', 'layer_name'],
+            'layer_order',
+            [],
+            [],
+            [
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+                'catalog' => [
+                    'type' => 'catalog',
+                    'local_key' => 'catalog_id',
+                ],
+            ],
+            ['layergroup', 'catalog']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('layer', [
+            'data' => [
+                'type' => 'layer',
+                'id' => '21',
+                'attributes' => [
+                    'layer_name' => 'roads',
+                    'layertype_id' => 2,
+                    'layer_order' => 1,
+                    'layer_title' => 'Roads',
+                ],
+                'relationships' => [
+                    'layergroup' => [
+                        'data' => [
+                            'type' => 'layergroup',
+                            'id' => '5',
+                        ],
+                    ],
+                    'catalog' => [
+                        'data' => [
+                            'type' => 'catalog',
+                            'id' => '10',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('5', (string) $repo->createdAttributes['layergroup_id']);
+        $this->assertSame('10', (string) $repo->createdAttributes['catalog_id']);
+        $this->assertSame('5', $payload['data']['relationships']['layergroup']['data']['id']);
+        $this->assertSame('10', $payload['data']['relationships']['catalog']['data']['id']);
+        $this->assertArrayNotHasKey('layergroup_id', $payload['data']['attributes']);
+        $this->assertArrayNotHasKey('catalog_id', $payload['data']['attributes']);
+    }
+
+    public function testBuildQueryOptionsAcceptsLayerRelationshipFilterAliases()
+    {
+        $definition = new EntityDefinition(
+            'layer',
+            'gisclient_34',
+            'layer',
+            'layer_id',
+            'int',
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_name'],
+            ['layergroup_id', 'catalog_id', 'layer_name'],
+            ['layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
+            ['layer_id', 'layer_name'],
+            'layer_id',
+            [],
+            [],
+            [
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+                'catalog' => [
+                    'type' => 'catalog',
+                    'local_key' => 'catalog_id',
+                ],
+            ]
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+        $queryOptions = $service->buildQueryOptions($definition, [
+            'filter' => [
+                'layergroup' => '5',
+                'catalog' => '10',
+            ],
+        ]);
+
+        $this->assertSame([
+            'layergroup_id' => '5',
+            'catalog_id' => '10',
+        ], $queryOptions->getFilters());
+    }
+
+    public function testTopLevelLayerUpdateAcceptsRelationshipIdsWhenAttributesAreNullOnPut()
+    {
+        $definition = new EntityDefinition(
+            'layer',
+            'gisclient_34',
+            'layer',
+            'layer_id',
+            'int',
+            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_title'],
+            ['catalog_id', 'layer_name', 'layertype_id', 'layer_title'],
+            ['catalog_id', 'layer_name', 'layertype_id'],
+            ['catalog_id', 'layer_name', 'layertype_id'],
+            ['layer_id', 'catalog_id', 'layer_name'],
+            ['layer_id', 'layer_name'],
+            'layer_id',
+            [],
+            [],
+            [
+                'catalog' => [
+                    'type' => 'catalog',
+                    'local_key' => 'catalog_id',
+                ],
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+            ],
+            ['catalog', 'layergroup']
+        );
+
+        $repo = new class() implements AuthorEntityRepositoryInterface {
+            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
+            {
+                return new PagedResult([], 0, 50, 0);
+            }
+
+            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+                return [
+                    'layer_id' => (int) $id,
+                    'layergroup_id' => 1,
+                    'catalog_id' => 1,
+                    'layer_name' => 'buildings',
+                    'layertype_id' => 3,
+                    'layer_title' => 'Buildings',
+                ];
+            }
+
+            public function create(EntityDefinition $definition, array $attributes)
+            {
+                return $attributes;
+            }
+
+            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
+            {
+                return array_merge([
+                    'layer_id' => (int) $id,
+                ], $attributes);
+            }
+
+            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+            }
+        };
+
+        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $payload = $service->updateResource('layer', 2, [
+            'data' => [
+                'type' => 'layer',
+                'attributes' => [
+                    'layer_name' => 'buildings',
+                    'layer_title' => 'buildings UPDATE',
+                    'layertype_id' => 3,
+                ],
+                'relationships' => [
+                    'layergroup' => [
+                        'data' => [
+                            'type' => 'layergroup',
+                            'id' => '2',
+                        ],
+                    ],
+                    'catalog' => [
+                        'data' => [
+                            'type' => 'catalog',
+                            'id' => '2',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('2', $payload['data']['id']);
+        $this->assertSame('2', $payload['data']['relationships']['layergroup']['data']['id']);
+        $this->assertSame('2', $payload['data']['relationships']['catalog']['data']['id']);
+    }
+
     public function testGetResourceCastsNumericAttributesFromDatabaseStrings()
     {
         $definition = new EntityDefinition(
