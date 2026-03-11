@@ -82,6 +82,58 @@ apiProjectScopedDelete:
     requirements:
         entity: project_srs
 
+## Generic mapset scoped JSON:API CRUD routes
+apiMapsetScopedIndex:
+    path: 'api/mapset/{mapset}/{entity}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::indexAction'
+        _scope_map:
+            mapset_name: mapset
+    methods:
+        - GET
+    requirements:
+        entity: mapset_layergroup
+apiMapsetScopedCreate:
+    path: 'api/mapset/{mapset}/{entity}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::createAction'
+        _scope_map:
+            mapset_name: mapset
+    methods:
+        - POST
+    requirements:
+        entity: mapset_layergroup
+apiMapsetScopedShow:
+    path: 'api/mapset/{mapset}/{entity}/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::showAction'
+        _scope_map:
+            mapset_name: mapset
+    methods:
+        - GET
+    requirements:
+        entity: mapset_layergroup
+apiMapsetScopedUpdate:
+    path: 'api/mapset/{mapset}/{entity}/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::updateAction'
+        _scope_map:
+            mapset_name: mapset
+    methods:
+        - PUT
+    requirements:
+        entity: mapset_layergroup
+apiMapsetScopedDelete:
+    path: 'api/mapset/{mapset}/{entity}/{id}'
+    defaults:
+        _controller: 'GisClient\Author\Controller\JsonApiController::deleteAction'
+        _scope_map:
+            mapset_name: mapset
+    methods:
+        - DELETE
+    requirements:
+        entity: mapset_layergroup
+
 ## Available routes in public/services/...
 login:
     path: login

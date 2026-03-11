@@ -472,6 +472,308 @@ class ApiCrudServiceTest extends TestCase
         }
     }
 
+    public function testScopedMapsetLayergroupCreateInjectsScopeAndRendersRelationships()
+    {
+        $definition = new EntityDefinition(
+            'mapset_layergroup',
+            'gisclient_34',
+            'mapset_layergroup',
+            'layergroup_id',
+            'int',
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id'],
+            [],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['layergroup_id', 'status', 'refmap', 'hide'],
+            'layergroup_id',
+            [],
+            ['mapset_name'],
+            [
+                'mapset' => [
+                    'type' => 'mapset',
+                    'local_key' => 'mapset_name',
+                ],
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+            ],
+            ['mapset', 'layergroup']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('mapset_layergroup', [
+            'data' => [
+                'type' => 'mapset_layergroup',
+                'id' => '42',
+                'attributes' => [
+                    'status' => 1,
+                    'refmap' => 0,
+                    'hide' => 1,
+                ],
+                'relationships' => [
+                    'mapset' => [
+                        'data' => [
+                            'type' => 'mapset',
+                            'id' => 'base',
+                        ],
+                    ],
+                    'layergroup' => [
+                        'data' => [
+                            'type' => 'layergroup',
+                            'id' => '42',
+                        ],
+                    ],
+                ],
+            ],
+        ], [
+            'mapset_name' => 'base',
+        ]);
+
+        $this->assertSame('base', $repo->createdAttributes['mapset_name']);
+        $this->assertSame('42', (string) $repo->createdAttributes['layergroup_id']);
+        $this->assertSame('42', (string) $payload['data']['id']);
+        $this->assertSame('base', $payload['data']['relationships']['mapset']['data']['id']);
+        $this->assertSame('42', $payload['data']['relationships']['layergroup']['data']['id']);
+        $this->assertArrayNotHasKey('mapset_name', $payload['data']['attributes']);
+        $this->assertArrayNotHasKey('layergroup_id', $payload['data']['attributes']);
+    }
+
+    public function testScopedMapsetLayergroupCreateRequiresMapsetRelationship()
+    {
+        $definition = new EntityDefinition(
+            'mapset_layergroup',
+            'gisclient_34',
+            'mapset_layergroup',
+            'layergroup_id',
+            'int',
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id'],
+            [],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['layergroup_id', 'status', 'refmap', 'hide'],
+            'layergroup_id',
+            [],
+            ['mapset_name'],
+            [
+                'mapset' => [
+                    'type' => 'mapset',
+                    'local_key' => 'mapset_name',
+                ],
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+            ],
+            ['mapset', 'layergroup']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('mapset_layergroup', [
+                'data' => [
+                    'type' => 'mapset_layergroup',
+                    'id' => '42',
+                    'attributes' => [
+                        'status' => 1,
+                    ],
+                    'relationships' => [
+                        'layergroup' => [
+                            'data' => [
+                                'type' => 'layergroup',
+                                'id' => '42',
+                            ],
+                        ],
+                    ],
+                ],
+            ], [
+                'mapset_name' => 'base',
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/mapset/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testScopedMapsetLayergroupCreateRequiresLayergroupRelationship()
+    {
+        $definition = new EntityDefinition(
+            'mapset_layergroup',
+            'gisclient_34',
+            'mapset_layergroup',
+            'layergroup_id',
+            'int',
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id'],
+            [],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['layergroup_id', 'status', 'refmap', 'hide'],
+            'layergroup_id',
+            [],
+            ['mapset_name'],
+            [
+                'mapset' => [
+                    'type' => 'mapset',
+                    'local_key' => 'mapset_name',
+                ],
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+            ],
+            ['mapset', 'layergroup']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('mapset_layergroup', [
+                'data' => [
+                    'type' => 'mapset_layergroup',
+                    'id' => '42',
+                    'attributes' => [
+                        'status' => 1,
+                    ],
+                    'relationships' => [
+                        'mapset' => [
+                            'data' => [
+                                'type' => 'mapset',
+                                'id' => 'base',
+                            ],
+                        ],
+                    ],
+                ],
+            ], [
+                'mapset_name' => 'base',
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/layergroup/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testScopedMapsetLayergroupCreateRejectsMismatchedMapsetRelationship()
+    {
+        $definition = new EntityDefinition(
+            'mapset_layergroup',
+            'gisclient_34',
+            'mapset_layergroup',
+            'layergroup_id',
+            'int',
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id'],
+            [],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['layergroup_id', 'status', 'refmap', 'hide'],
+            'layergroup_id',
+            [],
+            ['mapset_name'],
+            [
+                'mapset' => [
+                    'type' => 'mapset',
+                    'local_key' => 'mapset_name',
+                ],
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+            ],
+            ['mapset', 'layergroup']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('mapset_layergroup', [
+                'data' => [
+                    'type' => 'mapset_layergroup',
+                    'id' => '42',
+                    'attributes' => [
+                        'status' => 1,
+                    ],
+                    'relationships' => [
+                        'mapset' => [
+                            'data' => [
+                                'type' => 'mapset',
+                                'id' => 'other',
+                            ],
+                        ],
+                        'layergroup' => [
+                            'data' => [
+                                'type' => 'layergroup',
+                                'id' => '42',
+                            ],
+                        ],
+                    ],
+                ],
+            ], [
+                'mapset_name' => 'base',
+            ]);
+            $this->fail('Expected relationship_scope_mismatch ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('relationship_scope_mismatch', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/mapset/data/id', $exception->getSourcePointer());
+        }
+    }
+
+    public function testScopedMapsetLayergroupGetUsesScopeFilter()
+    {
+        $definition = new EntityDefinition(
+            'mapset_layergroup',
+            'gisclient_34',
+            'mapset_layergroup',
+            'layergroup_id',
+            'int',
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['mapset_name', 'layergroup_id'],
+            [],
+            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+            ['layergroup_id', 'status', 'refmap', 'hide'],
+            'layergroup_id',
+            [],
+            ['mapset_name'],
+            [
+                'mapset' => [
+                    'type' => 'mapset',
+                    'local_key' => 'mapset_name',
+                ],
+                'layergroup' => [
+                    'type' => 'layergroup',
+                    'local_key' => 'layergroup_id',
+                ],
+            ],
+            ['mapset', 'layergroup']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo, ['base|42']);
+
+        $payload = $service->getResource('mapset_layergroup', 42, [], [
+            'mapset_name' => 'base',
+        ]);
+        $this->assertSame('42', (string) $payload['data']['id']);
+
+        try {
+            $service->getResource('mapset_layergroup', 42, [], [
+                'mapset_name' => 'other',
+            ]);
+            $this->fail('Expected resource_not_found ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(404, $exception->getStatus());
+            $this->assertSame('resource_not_found', $exception->getErrorCode());
+        }
+    }
+
     public function testTopLevelCreateMapsProjectRelationshipToLocalKey()
     {
         $definition = new EntityDefinition(
@@ -1952,14 +2254,15 @@ class ApiCrudServiceTest extends TestCase
 
             public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
             {
-                $scopeKey = isset($scopeFilters['project_name']) ? (string) $scopeFilters['project_name'] : null;
+                $scopeField = $definition->getScopeFields()[0] ?? null;
+                $scopeKey = ($scopeField !== null && isset($scopeFilters[$scopeField])) ? (string) $scopeFilters[$scopeField] : null;
                 $key = $scopeKey !== null ? ($scopeKey . '|' . (string) $id) : (string) $id;
                 if (!isset($this->existingIds[$key])) {
                     return null;
                 }
                 return [
-                    'srid' => (int) $id,
-                    'project_name' => $scopeKey ?? (string) $id,
+                    $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
+                    $scopeField ?? 'project_name' => $scopeKey ?? (string) $id,
                     'project_title' => 'Project',
                 ];
             }
@@ -1967,24 +2270,32 @@ class ApiCrudServiceTest extends TestCase
             public function create(EntityDefinition $definition, array $attributes)
             {
                 $this->createdAttributes = $attributes;
-                if (isset($attributes['srid'])) {
-                    if (isset($attributes['project_name'])) {
-                        $this->existingIds[(string) $attributes['project_name'] . '|' . (string) $attributes['srid']] = true;
+                $scopeField = $definition->getScopeFields()[0] ?? null;
+                $primaryKey = $definition->getPrimaryKey();
+                if (isset($attributes[$primaryKey])) {
+                    if ($scopeField !== null && isset($attributes[$scopeField])) {
+                        $this->existingIds[(string) $attributes[$scopeField] . '|' . (string) $attributes[$primaryKey]] = true;
                     } else {
-                        $this->existingIds[(string) $attributes['srid']] = true;
+                        $this->existingIds[(string) $attributes[$primaryKey]] = true;
                     }
-                } elseif (isset($attributes['project_name'])) {
-                    $this->existingIds[(string) $attributes['project_name']] = true;
+                } elseif ($scopeField !== null && isset($attributes[$scopeField])) {
+                    $this->existingIds[(string) $attributes[$scopeField]] = true;
                 }
                 return $attributes;
             }
 
             public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
             {
-                return array_merge([
-                    'project_name' => isset($scopeFilters['project_name']) ? (string) $scopeFilters['project_name'] : (string) $id,
-                    'srid' => (int) $id,
-                ], $attributes);
+                $defaults = [
+                    $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
+                ];
+                foreach ($definition->getScopeFields() as $scopeField) {
+                    if (isset($scopeFilters[$scopeField])) {
+                        $defaults[$scopeField] = (string) $scopeFilters[$scopeField];
+                    }
+                }
+
+                return array_merge($defaults, $attributes);
             }
 
             public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])

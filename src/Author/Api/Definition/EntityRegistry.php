@@ -301,6 +301,30 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['project'],
             ],
+            'mapset_layergroup' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'mapset_layergroup',
+                'primary_key' => 'layergroup_id',
+                'id_type' => 'int',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'mapset_layergroup.tab',
+                'required_on_create' => ['mapset_name', 'layergroup_id'],
+                'required_on_put' => [],
+                'filterable_fields' => ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
+                'sortable_fields' => ['layergroup_id', 'status', 'refmap', 'hide'],
+                'default_sort' => 'layergroup_id',
+                'scope_fields' => ['mapset_name'],
+                'relationships' => [
+                    'mapset' => [
+                        'type' => 'mapset',
+                        'local_key' => 'mapset_name',
+                    ],
+                    'layergroup' => [
+                        'type' => 'layergroup',
+                        'local_key' => 'layergroup_id',
+                    ],
+                ],
+                'required_relationships_on_write' => ['mapset', 'layergroup'],
+            ],
         ];
     }
 }
