@@ -282,6 +282,25 @@ class EntityRegistry
                 ],
                 'required_relationships_on_write' => ['project'],
             ],
+            'mapset' => [
+                'schema' => DB_SCHEMA,
+                'table' => 'mapset',
+                'primary_key' => 'mapset_name',
+                'id_type' => 'string',
+                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'mapset.tab',
+                'required_on_create' => ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+                'required_on_put' => ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+                'filterable_fields' => ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
+                'sortable_fields' => ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
+                'default_sort' => 'mapset_order',
+                'relationships' => [
+                    'project' => [
+                        'type' => 'project',
+                        'local_key' => 'project_name',
+                    ],
+                ],
+                'required_relationships_on_write' => ['project'],
+            ],
         ];
     }
 }

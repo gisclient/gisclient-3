@@ -727,6 +727,205 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
+    public function testTopLevelMapsetCreateRequiresProjectRelationship()
+    {
+        $definition = new EntityDefinition(
+            'mapset',
+            'gisclient_34',
+            'mapset',
+            'mapset_name',
+            'string',
+            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
+            ['mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
+            ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+            ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
+            ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
+            'mapset_order',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true);
+
+        try {
+            $service->createResource('mapset', [
+                'data' => [
+                    'type' => 'mapset',
+                    'id' => 'base',
+                    'attributes' => [
+                        'mapset_title' => 'Base map',
+                        'mapset_srid' => 3857,
+                        'displayprojection' => 4326,
+                        'maxscale' => 50000,
+                        'mapset_extent' => '0 0 10 10',
+                    ],
+                ],
+            ]);
+            $this->fail('Expected missing_required_relationship ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
+        }
+    }
+
+    public function testTopLevelMapsetCreateMapsProjectRelationshipAndKeepsSridAttributes()
+    {
+        $definition = new EntityDefinition(
+            'mapset',
+            'gisclient_34',
+            'mapset',
+            'mapset_name',
+            'string',
+            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
+            ['mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
+            ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+            ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
+            ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
+            'mapset_order',
+            [],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $payload = $service->createResource('mapset', [
+            'data' => [
+                'type' => 'mapset',
+                'id' => 'base',
+                'attributes' => [
+                    'mapset_title' => 'Base map',
+                    'mapset_srid' => 3857,
+                    'displayprojection' => 4326,
+                    'maxscale' => 50000,
+                    'mapset_extent' => '0 0 10 10',
+                    'mapset_order' => 1,
+                    'private' => 0,
+                ],
+                'relationships' => [
+                    'project' => [
+                        'data' => [
+                            'type' => 'project',
+                            'id' => 'milano',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('milano', $repo->createdAttributes['project_name']);
+        $this->assertSame(3857, $repo->createdAttributes['mapset_srid']);
+        $this->assertSame(4326, $repo->createdAttributes['displayprojection']);
+        $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+        $this->assertSame(3857, $payload['data']['attributes']['mapset_srid']);
+        $this->assertSame(4326, $payload['data']['attributes']['displayprojection']);
+        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
+    }
+
+    public function testTopLevelMapsetGetKeepsSridFieldsAsAttributes()
+    {
+        $definition = new EntityDefinition(
+            'mapset',
+            'gisclient_34',
+            'mapset',
+            'mapset_name',
+            'string',
+            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
+            ['mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
+            ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+            ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
+            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
+            ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
+            'mapset_order',
+            [
+                'mapset_srid' => [
+                    'type' => 'integer',
+                ],
+                'displayprojection' => [
+                    'type' => 'integer',
+                ],
+                'maxscale' => [
+                    'type' => 'integer',
+                ],
+                'mapset_order' => [
+                    'type' => 'integer',
+                ],
+                'private' => [
+                    'type' => 'integer',
+                ],
+            ],
+            [],
+            [
+                'project' => [
+                    'type' => 'project',
+                    'local_key' => 'project_name',
+                ],
+            ],
+            ['project']
+        );
+
+        $repo = new class() implements AuthorEntityRepositoryInterface {
+            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
+            {
+                return new PagedResult([], 0, 50, 0);
+            }
+
+            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+                return [
+                    'mapset_name' => 'base',
+                    'project_name' => 'milano',
+                    'mapset_title' => 'Base map',
+                    'mapset_srid' => '3857',
+                    'displayprojection' => '4326',
+                    'maxscale' => '50000',
+                    'mapset_extent' => '0 0 10 10',
+                    'mapset_order' => '1',
+                    'private' => '0',
+                ];
+            }
+
+            public function create(EntityDefinition $definition, array $attributes)
+            {
+                return $attributes;
+            }
+
+            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
+            {
+                return $attributes;
+            }
+
+            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
+            {
+            }
+        };
+
+        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $payload = $service->getResource('mapset', 'base');
+
+        $this->assertSame('base', $payload['data']['id']);
+        $this->assertSame(3857, $payload['data']['attributes']['mapset_srid']);
+        $this->assertSame(4326, $payload['data']['attributes']['displayprojection']);
+        $this->assertSame(0, $payload['data']['attributes']['private']);
+        $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
+    }
+
     public function testTopLevelLayergroupCreateRequiresThemeRelationship()
     {
         $definition = new EntityDefinition(
