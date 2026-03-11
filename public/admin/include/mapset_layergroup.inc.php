@@ -17,21 +17,21 @@ try {
         'project' => $project,
         'mapset' => $mapset,
     ]);
-    if ($stmt->rowCount() > 0) {
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if ($this->mode != 0 || $row['presente'] == 1) {
-                array_push($data, [
-                    'presente' => $row['presente'],
-                    'layergroup_id' => $row['layergroup_id'],
-                    'layergroup_title' => $row['layergroup_title'],
-                    'theme_title' => $row['theme_title'],
-                    'status' => $row['status'],
-                    'hide' => $row['hide'],
-                    'refmap' => $row['refmap'],
-                ]);
-            }
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if ($this->mode != 0 || $row['presente'] == 1) {
+            $data[] = [
+                'presente' => $row['presente'],
+                'layergroup_id' => $row['layergroup_id'],
+                'layergroup_title' => $row['layergroup_title'],
+                'theme_title' => $row['theme_title'],
+                'status' => $row['status'],
+                'hide' => $row['hide'],
+                'refmap' => $row['refmap'],
+            ];
         }
-    } else {
+    }
+
+    if (!$data) {
         $msg = "Nessun Livello Interrogabile definito nel Gruppo di selezione";
     }
 } catch (Exception $e) {

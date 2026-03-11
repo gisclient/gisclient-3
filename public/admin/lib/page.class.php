@@ -259,7 +259,15 @@ class page
                         print_debug($sql, null, "navtree");
                     }
                     $_row = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $navTreeTitle = $_row['val'];
+                    if (is_array($_row)) {
+                        $navTreeTitle = $_row['val'];
+                    } else {
+                        $navTreeTitle = '';
+                        if (preg_match("/^'([^']*)'\\|\\|(\\w+)$/", $this->navTreeValues[$key]["standard"], $matches)) {
+                            $fallbackValue = $this->_get_pkey_value($matches[2]);
+                            $navTreeTitle = $matches[1] . $fallbackValue;
+                        }
+                    }
                 }
 
                 if ((is_numeric($value) && $value > 0) || (!is_numeric($value) && strlen($value) > 0)) {
@@ -961,15 +969,14 @@ class page
                 //$tb->set_titolo($tab["title"],"",$prm);
                 $tb->set_titolo($tb->FileTitle, "", $prm);
                 $tb->get_titolo();
-                $data = [];
-                if (is_array($data) && !$data && !$msg) {
-                    $data = $filter;
-                }
-                    
                 $tb->set_multiple_data($data);
                 $tb->elenco($msg);
 
-                echo "<hr>";
+                if (!empty($btn) && is_array($btn)) {
+                    echo "<hr>" . implode("\n", $btn);
+                } else {
+                    echo "<hr>";
+                }
                 echo "<input type=\"hidden\" name=\"save_type\" value=\"multiple\">";
                 echo "</form>";
                 break;
