@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: cp .env.dist .env
+
+      - name: Start services
+        run: make start
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Run tests
+        run: make test-ci
+
+      - name: Stop services
+        if: always()
+        run: make clean
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: cp .env.dist .env
+
+      - name: Start services
+        run: make start
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Run quality checks
+        run: make quality-ci
+
+      - name: Stop services
+        if: always()
+        run: make clean

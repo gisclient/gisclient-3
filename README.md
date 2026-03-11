@@ -3,7 +3,7 @@
 GisClient3 is an open source software written in AJAX, Javascript, PHP/MapScript that offers an innovative way to manage complex GIS projects and a platform for publishing spatial data.
 This version apply a MapServer patch to take advantage of the PostgreSQL Row Level Security
 
-[![Build Status](https://travis-ci.org/gisclient/gisclient-3.svg?branch=master)](https://travis-ci.org/gisclient/gisclient-3)
+[![CI](https://github.com/gisclient/gisclient-3/actions/workflows/ci.yml/badge.svg)](https://github.com/gisclient/gisclient-3/actions/workflows/ci.yml)
 
 ## Clone the repo
 
@@ -33,10 +33,15 @@ make clean       # stop services and remove volumes (full reset)
 make deps        # install backend composer dependencies in container
 make db-upgrade  # run database upgrade script (doc/update_db_from_3.4.0.sql)
 make test        # run backend test suite
+make test-ci     # run backend test suite in CI-friendly mode
 make phpstan     # run static analysis
+make phpstan-ci  # run static analysis in CI-friendly mode
 make ecs         # run coding standard checks
+make ecs-ci      # run coding standard checks in CI-friendly mode
 make rector      # run rector in dry-run mode
+make rector-ci   # run rector in CI-friendly mode
 make quality     # run all checks (rector, ecs, phpstan)
+make quality-ci  # run all CI checks (rector-ci, ecs-ci, phpstan-ci)
 make ecs-fix     # apply coding standard fixes
 make rector-fix  # apply rector refactors
 make quality-fix # run all auto-fixes (rector-fix, ecs-fix)
@@ -57,6 +62,8 @@ Defaults:
 - PostgreSQL port: 5432
 
 You can create a .env file to customize parameters
+
+GitHub Actions uses the same Make-based workflow in CI by copying `.env.dist` to `.env`, starting the Docker stack, and running `make test-ci` / `make quality-ci`.
 
 ## Local installation / Usage
 

@@ -1,7 +1,7 @@
 COMPOSE ?= docker compose
 PHP_SERVICE ?= author-be
 
-.PHONY: start up down clean deps db-upgrade test phpstan ecs rector quality ecs-fix rector-fix quality-fix cache-clear
+.PHONY: start up down clean deps db-upgrade test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear
 
 start:
 	$(COMPOSE) up -d --build
@@ -24,17 +24,32 @@ db-upgrade:
 test:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run test
 
+test-ci:
+	$(COMPOSE) exec -T $(PHP_SERVICE) composer run test-ci
+
 phpstan:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run phpstan
+
+phpstan-ci:
+	$(COMPOSE) exec -T $(PHP_SERVICE) composer run phpstan-ci
 
 ecs:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run ecs
 
+ecs-ci:
+	$(COMPOSE) exec -T $(PHP_SERVICE) composer run ecs-ci
+
 rector:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run rector
 
+rector-ci:
+	$(COMPOSE) exec -T $(PHP_SERVICE) composer run rector-ci
+
 quality:
 	$(MAKE) rector ecs phpstan
+
+quality-ci:
+	$(MAKE) rector-ci ecs-ci phpstan-ci
 
 ecs-fix:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run ecs-fix
