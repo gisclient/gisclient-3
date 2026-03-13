@@ -7,6 +7,7 @@ use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
+use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\PayloadValidator;
 use PHPUnit\Framework\TestCase;
@@ -131,7 +132,7 @@ class ApiCrudServiceTest extends TestCase
         } catch (ValidationException $exception) {
             $errors = $exception->getErrors();
             $this->assertSame('invalid_attribute_type', $errors[0]['code']);
-            $this->assertSame('/data/attributes/max_extent_scale', $errors[0]['source']['pointer']);
+            $this->assertSame('max_extent_scale', $errors[0]['source']['attribute']);
         }
     }
 
@@ -169,7 +170,7 @@ class ApiCrudServiceTest extends TestCase
         } catch (ValidationException $exception) {
             $errors = $exception->getErrors();
             $this->assertSame('invalid_attribute', $errors[0]['code']);
-            $this->assertSame('/data/attributes/project_note', $errors[0]['source']['pointer']);
+            $this->assertSame('project_note', $errors[0]['source']['attribute']);
         }
     }
 
@@ -2305,6 +2306,7 @@ class ApiCrudServiceTest extends TestCase
 
         return new class($provider, $repo, $isAdmin) extends ApiCrudService {
             private $isAdmin;
+            private $serializer;
 
             public function __construct(
                 EntityDefinitionProviderInterface $provider,
@@ -2313,6 +2315,7 @@ class ApiCrudServiceTest extends TestCase
             ) {
                 parent::__construct($provider, $repository, new PayloadValidator());
                 $this->isAdmin = $isAdmin;
+                $this->serializer = new JsonApiSerializer();
             }
 
             protected function assertAdmin()
@@ -2322,6 +2325,26 @@ class ApiCrudServiceTest extends TestCase
                 }
 
                 throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
+            }
+
+            public function listResources($entity, array $query, array $scope = [])
+            {
+                return $this->serializer->serializeCollection(parent::listResources($entity, $query, $scope));
+            }
+
+            public function getResource($entity, $id, array $query = [], array $scope = [])
+            {
+                return $this->serializer->serializeResource(parent::getResource($entity, $id, $query, $scope));
+            }
+
+            public function createResource($entity, $payload, array $scope = [])
+            {
+                return $this->serializer->serializeResource(parent::createResource($entity, $payload, $scope));
+            }
+
+            public function updateResource($entity, $id, $payload, array $scope = [])
+            {
+                return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload, $scope));
             }
         };
     }
@@ -2343,6 +2366,7 @@ class ApiCrudServiceTest extends TestCase
 
         return new class($provider, $repository, $isAdmin) extends ApiCrudService {
             private $isAdmin;
+            private $serializer;
 
             public function __construct(
                 EntityDefinitionProviderInterface $provider,
@@ -2351,6 +2375,7 @@ class ApiCrudServiceTest extends TestCase
             ) {
                 parent::__construct($provider, $repository, new PayloadValidator());
                 $this->isAdmin = $isAdmin;
+                $this->serializer = new JsonApiSerializer();
             }
 
             protected function assertAdmin()
@@ -2360,6 +2385,26 @@ class ApiCrudServiceTest extends TestCase
                 }
 
                 throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
+            }
+
+            public function listResources($entity, array $query, array $scope = [])
+            {
+                return $this->serializer->serializeCollection(parent::listResources($entity, $query, $scope));
+            }
+
+            public function getResource($entity, $id, array $query = [], array $scope = [])
+            {
+                return $this->serializer->serializeResource(parent::getResource($entity, $id, $query, $scope));
+            }
+
+            public function createResource($entity, $payload, array $scope = [])
+            {
+                return $this->serializer->serializeResource(parent::createResource($entity, $payload, $scope));
+            }
+
+            public function updateResource($entity, $id, $payload, array $scope = [])
+            {
+                return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload, $scope));
             }
         };
     }

@@ -4,6 +4,7 @@ namespace GisClient\Author\Api\Validation;
 
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
+use GisClient\Author\Api\Model\ResourceWriteData;
 
 class PayloadValidator
 {
@@ -29,32 +30,23 @@ class PayloadValidator
      * @param array<int,string> $requiredFieldsSatisfied
      * @return array<string,mixed>
      */
-    public function validateAndNormalize(EntityDefinition $definition, array $payload, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
+    public function validateAndNormalize(EntityDefinition $definition, $payload, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
     {
         $errors = [];
-        $data = $payload['data'] ?? null;
-        if (!is_array($data)) {
-            $this->addError($errors, 'invalid_payload', 'Invalid Payload', 'Payload must include a data object', '/data');
+        $payload = $this->normalizePayload($definition, $payload, $errors);
+        if (count($errors) > 0) {
             throw new ValidationException($errors);
         }
 
-        if (($data['type'] ?? null) !== $definition->getType()) {
-            $this->addError($errors, 'type_mismatch', 'Type Mismatch', sprintf("Payload data.type must be '%s'", $definition->getType()), '/data/type');
-        }
-
-        $attributesRaw = $data['attributes'] ?? null;
-        if (!is_array($attributesRaw)) {
-            $this->addError($errors, 'invalid_attributes', 'Invalid Attributes', 'Payload must include data.attributes object', '/data/attributes');
-            throw new ValidationException($errors);
-        }
-
-        $attributes = $attributesRaw;
+        $attributes = $payload->getAttributes();
         $primaryKey = $definition->getPrimaryKey();
 
-        if ($isCreate && array_key_exists('id', $data)) {
-            $idValue = $data['id'];
+        if ($isCreate && $payload->getId() !== null) {
+            $idValue = $payload->getId();
             if ($this->isEmptyValue($idValue)) {
-                $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id cannot be empty', '/data/id');
+                $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id cannot be empty', [
+                    'id' => true,
+                ]);
             } else {
                 $normalizedId = $this->normalizeResourceId($definition, $idValue, $errors);
                 if ($normalizedId === null) {
@@ -65,7 +57,9 @@ class PayloadValidator
                         'id_attribute_mismatch',
                         'Identifier Mismatch',
                         sprintf("data.id and data.attributes.%s must match", $primaryKey),
-                        '/data/id'
+                        [
+                            'id' => true,
+                        ]
                     );
                 } else {
                     $attributes[$primaryKey] = $normalizedId;
@@ -80,7 +74,9 @@ class PayloadValidator
                     'invalid_attribute',
                     'Invalid Attribute',
                     sprintf("Attribute '%s' is not writable", $field),
-                    '/data/attributes/' . $field
+                    [
+                        'attribute' => $field,
+                    ]
                 );
             }
         }
@@ -91,7 +87,9 @@ class PayloadValidator
                 'immutable_primary_key',
                 'Immutable Primary Key',
                 'Primary key cannot be changed',
-                '/data/attributes/' . $primaryKey
+                [
+                    'attribute' => $primaryKey,
+                ]
             );
         }
 
@@ -118,7 +116,9 @@ class PayloadValidator
                     'missing_required_attribute',
                     'Missing Required Attribute',
                     sprintf("Attribute '%s' is required", $field),
-                    '/data/attributes/' . $field
+                    [
+                        'attribute' => $field,
+                    ]
                 );
             }
         }
@@ -131,6 +131,67 @@ class PayloadValidator
         }
 
         return $attributes;
+    }
+
+    /**
+     * @param mixed $payload
+     * @param array<int,array<string,mixed>> $errors
+     * @return ResourceWriteData
+     */
+    private function normalizePayload(EntityDefinition $definition, $payload, array &$errors)
+    {
+        if ($payload instanceof ResourceWriteData) {
+            return $payload;
+        }
+
+        $data = is_array($payload) ? ($payload['data'] ?? null) : null;
+        if (!is_array($data)) {
+            $this->addError($errors, 'invalid_payload', 'Invalid Payload', 'Payload must include a data object', [
+                'pointer' => '/data',
+            ]);
+            return new ResourceWriteData();
+        }
+
+        if (($data['type'] ?? null) !== $definition->getType()) {
+            $this->addError($errors, 'type_mismatch', 'Type Mismatch', sprintf("Payload data.type must be '%s'", $definition->getType()), [
+                'pointer' => '/data/type',
+            ]);
+        }
+
+        $attributes = $data['attributes'] ?? null;
+        if (!is_array($attributes)) {
+            $this->addError($errors, 'invalid_attributes', 'Invalid Attributes', 'Payload must include data.attributes object', [
+                'pointer' => '/data/attributes',
+            ]);
+            return new ResourceWriteData();
+        }
+
+        $relationships = [];
+        $relationshipsPayload = $data['relationships'] ?? [];
+        if (is_array($relationshipsPayload)) {
+            foreach ($relationshipsPayload as $name => $relationship) {
+                if (!is_string($name) || !is_array($relationship)) {
+                    continue;
+                }
+
+                $relationshipData = $relationship['data'] ?? null;
+                if ($relationshipData === null) {
+                    $relationships[$name] = new \GisClient\Author\Api\Model\ResourceIdentifierData();
+                    continue;
+                }
+
+                if (!is_array($relationshipData)) {
+                    continue;
+                }
+
+                $relationships[$name] = new \GisClient\Author\Api\Model\ResourceIdentifierData(
+                    isset($relationshipData['type']) ? (string) $relationshipData['type'] : null,
+                    $relationshipData['id'] ?? null
+                );
+            }
+        }
+
+        return new ResourceWriteData($data['id'] ?? null, $attributes, $relationships);
     }
 
     /**
@@ -149,7 +210,9 @@ class PayloadValidator
                 return (int) $idValue;
             }
 
-            $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be an integer identifier for this resource type', '/data/id');
+            $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be an integer identifier for this resource type', [
+                'id' => true,
+            ]);
             return null;
         }
 
@@ -160,7 +223,9 @@ class PayloadValidator
             return (string) $idValue;
         }
 
-        $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be a string identifier', '/data/id');
+        $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be a string identifier', [
+            'id' => true,
+        ]);
         return null;
     }
 
@@ -180,18 +245,25 @@ class PayloadValidator
             }
 
             $type = $rule['type'];
-            $pointer = '/data/attributes/' . $field;
             if ($type === 'integer' && !is_int($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be an integer", $field), $pointer);
+                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be an integer", $field), [
+                    'attribute' => $field,
+                ]);
             }
             if ($type === 'numeric' && !is_int($value) && !is_float($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be numeric", $field), $pointer);
+                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be numeric", $field), [
+                    'attribute' => $field,
+                ]);
             }
             if ($type === 'boolean' && !is_bool($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be boolean", $field), $pointer);
+                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be boolean", $field), [
+                    'attribute' => $field,
+                ]);
             }
             if ($type === 'string' && !is_string($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be string", $field), $pointer);
+                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be string", $field), [
+                    'attribute' => $field,
+                ]);
             }
         }
     }
@@ -217,7 +289,9 @@ class PayloadValidator
                     'invalid_reference',
                     'Invalid Reference',
                     sprintf("Attribute '%s' references an unknown value", $field),
-                    '/data/attributes/' . $field
+                    [
+                        'attribute' => $field,
+                    ]
                 );
             }
         }
@@ -291,7 +365,7 @@ class PayloadValidator
     /**
      * @param array<int,array<string,mixed>> $errors
      */
-    private function addError(array &$errors, $code, $title, $detail, $pointer)
+    private function addError(array &$errors, $code, $title, $detail, array $source = [])
     {
         $error = [
             'status' => '422',
@@ -299,10 +373,8 @@ class PayloadValidator
             'title' => $title,
             'detail' => $detail,
         ];
-        if ($pointer !== null) {
-            $error['source'] = [
-                'pointer' => $pointer,
-            ];
+        if (count($source) > 0) {
+            $error['source'] = $source;
         }
         $errors[] = $error;
     }

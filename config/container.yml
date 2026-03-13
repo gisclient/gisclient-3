@@ -48,6 +48,9 @@ services:
   GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface:
     class: GisClient\Author\Api\Persistence\PdoAuthorEntityRepository
 
+  GisClient\Author\Api\Serializer\JsonApiSerializer:
+    public: true
+
   GisClient\Author\Api\Error\JsonApiExceptionMapper:
     public: true
 

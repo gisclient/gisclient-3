@@ -3,13 +3,14 @@
 use GisClient\Author\Api\Error\JsonApiExceptionMapper;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use PHPUnit\Framework\TestCase;
 
 class JsonApiExceptionMapperTest extends TestCase
 {
     public function testMapsApiExceptionToJsonApiError()
     {
-        $mapper = new JsonApiExceptionMapper();
+        $mapper = new JsonApiExceptionMapper(new JsonApiSerializer());
         $mapped = $mapper->map(new ApiException(400, 'invalid_payload', 'Invalid Payload', 'Bad input', '/data'));
 
         $this->assertSame(400, $mapped['status']);
@@ -19,7 +20,7 @@ class JsonApiExceptionMapperTest extends TestCase
 
     public function testMapsInternalErrorDetailsForFiveHundreds()
     {
-        $mapper = new JsonApiExceptionMapper();
+        $mapper = new JsonApiExceptionMapper(new JsonApiSerializer());
         $mapped = $mapper->map(new ApiException(500, 'database_error', 'Database Error', 'SQLSTATE details here'));
 
         $this->assertSame(500, $mapped['status']);
@@ -29,7 +30,7 @@ class JsonApiExceptionMapperTest extends TestCase
 
     public function testMapsValidationExceptionWithMultipleErrors()
     {
-        $mapper = new JsonApiExceptionMapper();
+        $mapper = new JsonApiExceptionMapper(new JsonApiSerializer());
         $mapped = $mapper->map(new ValidationException([
             [
                 'status' => '422',
@@ -37,7 +38,7 @@ class JsonApiExceptionMapperTest extends TestCase
                 'title' => 'Invalid Attribute',
                 'detail' => "Attribute 'foo' is not writable",
                 'source' => [
-                    'pointer' => '/data/attributes/foo',
+                    'attribute' => 'foo',
                 ],
             ],
             [
@@ -46,7 +47,7 @@ class JsonApiExceptionMapperTest extends TestCase
                 'title' => 'Invalid Attribute Type',
                 'detail' => "Attribute 'bar' must be numeric",
                 'source' => [
-                    'pointer' => '/data/attributes/bar',
+                    'attribute' => 'bar',
                 ],
             ],
         ]));

@@ -7,6 +7,10 @@ use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\QueryOptions;
+use GisClient\Author\Api\Model\ResourceCollectionData;
+use GisClient\Author\Api\Model\ResourceData;
+use GisClient\Author\Api\Model\ResourceIdentifierData;
+use GisClient\Author\Api\Model\ResourceWriteData;
 use GisClient\Author\Api\Validation\PayloadValidator;
 
 class ApiCrudService
@@ -38,7 +42,7 @@ class ApiCrudService
 
     /**
      * @param string $entity
-     * @return array
+     * @return ResourceCollectionData
      */
     public function listResources($entity, array $query, array $scope = [])
     {
@@ -50,25 +54,19 @@ class ApiCrudService
         $queryOptions = $this->applyScopeToQueryOptions($queryOptions, $scope);
         $result = $this->repository->findAll($definition, $queryOptions, $scope);
 
-        $data = [];
-        foreach ($result->getRows() as $row) {
-            $data[] = $this->resourceObject($definition, $row);
-        }
-
-        return [
-            'data' => $data,
-            'meta' => [
-                'total' => $result->getTotal(),
-                'limit' => $result->getLimit(),
-                'offset' => $result->getOffset(),
-            ],
-        ];
+        return new ResourceCollectionData(
+            $definition,
+            $result->getRows(),
+            $result->getTotal(),
+            $result->getLimit(),
+            $result->getOffset()
+        );
     }
 
     /**
      * @param string $entity
      * @param mixed $id
-     * @return array
+     * @return ResourceData
      */
     public function getResource($entity, $id, array $query = [], array $scope = [])
     {
@@ -81,58 +79,54 @@ class ApiCrudService
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        return [
-            'data' => $this->resourceObject($definition, $row),
-        ];
+        return new ResourceData($definition, $row);
     }
 
     /**
      * @param string $entity
-     * @return array
+     * @return ResourceData
      */
-    public function createResource($entity, array $payload, array $scope = [])
+    public function createResource($entity, $payload, array $scope = [])
     {
         $this->assertAdmin();
 
         $definition = $this->definitionProvider->getEntityDefinition($entity);
+        $payload = $this->normalizeWriteData($definition, $payload);
         $scope = $this->normalizeScope($definition, $scope);
-        $payload = $this->applyScopeToPayload($definition, $payload, $scope);
+        $this->validateRequiredRelationships($definition, $payload, $scope);
         $attributes = $this->extractAttributes($definition, $payload, true, false);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
         $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
         $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes, $scope);
         $created = $this->repository->create($definition, $attributes);
 
-        return [
-            'data' => $this->resourceObject($definition, $created),
-        ];
+        return new ResourceData($definition, $created);
     }
 
     /**
      * @param string $entity
      * @param mixed $id
-     * @return array
+     * @return ResourceData
      */
-    public function updateResource($entity, $id, array $payload, array $scope = [])
+    public function updateResource($entity, $id, $payload, array $scope = [])
     {
         $this->assertAdmin();
 
         $definition = $this->definitionProvider->getEntityDefinition($entity);
+        $payload = $this->normalizeWriteData($definition, $payload);
         $scope = $this->normalizeScope($definition, $scope);
         $current = $this->repository->findById($definition, $id, $scope);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $payload = $this->applyScopeToPayload($definition, $payload, $scope);
+        $this->validateRequiredRelationships($definition, $payload, $scope);
         $attributes = $this->extractAttributes($definition, $payload, false, true);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
         $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
         $updated = $this->repository->update($definition, $id, $attributes, $scope);
 
-        return [
-            'data' => $this->resourceObject($definition, $updated),
-        ];
+        return new ResourceData($definition, $updated);
     }
 
     /**
@@ -206,7 +200,7 @@ class ApiCrudService
      * @param bool $isPut
      * @return array
      */
-    private function extractAttributes(EntityDefinition $definition, array $payload, $isCreate, $isPut)
+    private function extractAttributes(EntityDefinition $definition, ResourceWriteData $payload, $isCreate, $isPut)
     {
         return $this->payloadValidator->validateAndNormalize(
             $definition,
@@ -221,9 +215,9 @@ class ApiCrudService
      * @param array<string,mixed> $payload
      * @param array<string,mixed> $attributes
      */
-    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, array $payload, array $attributes, array $scope)
+    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, ResourceWriteData $payload, array $attributes, array $scope)
     {
-        if (!isset($payload['data']) || !is_array($payload['data']) || !array_key_exists('id', $payload['data'])) {
+        if ($payload->getId() === null) {
             return;
         }
 
@@ -242,116 +236,6 @@ class ApiCrudService
                 '/data/id'
             );
         }
-    }
-
-    /**
-     * @return array
-     */
-    private function resourceObject(EntityDefinition $definition, array $row)
-    {
-        $primaryKey = $definition->getPrimaryKey();
-        if (!array_key_exists($primaryKey, $row)) {
-            throw new ApiException(500, 'invalid_resource', 'Invalid Resource', sprintf("Primary key '%s' missing in resource row", $primaryKey));
-        }
-
-        $resource = [
-            'type' => $definition->getType(),
-            'id' => (string) $row[$primaryKey],
-            'attributes' => [],
-        ];
-
-        $relationshipKeys = [];
-        $relationships = $this->buildRelationships($definition, $row);
-        if (count($relationships) > 0) {
-            $resource['relationships'] = $relationships;
-            foreach ($definition->getRelationships() as $relationship) {
-                if (isset($relationship['local_key']) && is_string($relationship['local_key'])) {
-                    $relationshipKeys[$relationship['local_key']] = true;
-                }
-            }
-        }
-
-        foreach ($definition->getReadableFields() as $field) {
-            if ($field === '*' || $field === $primaryKey || isset($relationshipKeys[$field])) {
-                continue;
-            }
-            if (array_key_exists($field, $row)) {
-                $resource['attributes'][$field] = $this->castAttributeValue($definition, $field, $row[$field]);
-            }
-        }
-
-        return $resource;
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    private function castAttributeValue(EntityDefinition $definition, $field, $value)
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        $rule = $definition->getAttributeRule($field);
-        $type = is_array($rule) ? ($rule['type'] ?? null) : null;
-        if (!is_string($type)) {
-            return $value;
-        }
-
-        if ($type === 'integer') {
-            if (is_int($value)) {
-                return $value;
-            }
-            if (is_string($value) && preg_match('/^-?\d+$/', $value) === 1) {
-                return (int) $value;
-            }
-            return $value;
-        }
-
-        if ($type === 'boolean') {
-            if (is_bool($value)) {
-                return $value;
-            }
-            if (is_int($value)) {
-                if ($value === 0) {
-                    return false;
-                }
-                if ($value === 1) {
-                    return true;
-                }
-            }
-            if (is_string($value)) {
-                $normalized = strtolower(trim($value));
-                if (in_array($normalized, ['1', 't', 'true', 'yes', 'on'], true)) {
-                    return true;
-                }
-                if (in_array($normalized, ['0', 'f', 'false', 'no', 'off'], true)) {
-                    return false;
-                }
-            }
-            return $value;
-        }
-
-        if ($type === 'numeric') {
-            if (is_int($value) || is_float($value)) {
-                return $value;
-            }
-            if (is_string($value)) {
-                $normalized = trim($value);
-                if ($normalized === '' || !is_numeric($normalized)) {
-                    return $value;
-                }
-                if (preg_match('/^[+-]?\d+$/', $normalized) === 1) {
-                    $intValue = filter_var($normalized, FILTER_VALIDATE_INT);
-                    return $intValue === false ? $value : $intValue;
-                }
-                return (float) $normalized;
-            }
-            return $value;
-        }
-
-        return $value;
     }
 
     protected function assertAdmin()
@@ -414,76 +298,33 @@ class ApiCrudService
 
     /**
      * @param array<string,mixed> $scope
-     * @return array<string,mixed>
      */
-    private function applyScopeToPayload(EntityDefinition $definition, array $payload, array $scope)
-    {
-        if (!isset($payload['data']) || !is_array($payload['data'])) {
-            return $payload;
-        }
-
-        $this->validateRequiredRelationships($definition, $payload, $scope);
-
-        if (count($scope) === 0) {
-            return $payload;
-        }
-
-        $attributes = $payload['data']['attributes'] ?? [];
-        if (!is_array($attributes)) {
-            return $payload;
-        }
-
-        foreach ($definition->getScopeFields() as $scopeField) {
-            if (!array_key_exists($scopeField, $scope)) {
-                continue;
-            }
-            if (array_key_exists($scopeField, $attributes) && (string) $attributes[$scopeField] !== (string) $scope[$scopeField]) {
-                throw new ApiException(
-                    422,
-                    'scope_attribute_mismatch',
-                    'Scope Mismatch',
-                    sprintf("Attribute '%s' must match scoped value", $scopeField),
-                    '/data/attributes/' . $scopeField
-                );
-            }
-            $attributes[$scopeField] = $scope[$scopeField];
-        }
-
-        $payload['data']['attributes'] = $attributes;
-        return $payload;
-    }
-
-    /**
-     * @param array<string,mixed> $scope
-     */
-    private function validateRequiredRelationships(EntityDefinition $definition, array $payload, array $scope)
+    private function validateRequiredRelationships(EntityDefinition $definition, ResourceWriteData $payload, array $scope)
     {
         $required = $definition->getRequiredRelationshipsOnWrite();
         if (count($required) === 0) {
             return;
         }
 
-        $relationshipsPayload = $payload['data']['relationships'] ?? null;
         foreach ($required as $relationshipName) {
-            $pointer = '/data/relationships/' . $relationshipName . '/data';
-            if (!is_array($relationshipsPayload) || !isset($relationshipsPayload[$relationshipName]) || !is_array($relationshipsPayload[$relationshipName])) {
+            if (!$payload->hasRelationship($relationshipName)) {
                 throw new ApiException(
                     422,
                     'missing_required_relationship',
                     'Missing Required Relationship',
                     sprintf("Relationship '%s' is required", $relationshipName),
-                    $pointer
+                    '/data/relationships/' . $relationshipName . '/data'
                 );
             }
 
-            $relationshipData = $relationshipsPayload[$relationshipName]['data'] ?? null;
-            if (!is_array($relationshipData)) {
+            $relationshipData = $payload->getRelationship($relationshipName);
+            if (!$relationshipData instanceof ResourceIdentifierData) {
                 throw new ApiException(
                     422,
                     'missing_required_relationship',
                     'Missing Required Relationship',
                     sprintf("Relationship '%s' data is required", $relationshipName),
-                    $pointer
+                    '/data/relationships/' . $relationshipName . '/data'
                 );
             }
 
@@ -495,31 +336,31 @@ class ApiCrudService
                     $expectedId = (string) $scope[$relationshipDefinition['local_key']];
                 }
 
-                if ($expectedType !== null && (($relationshipData['type'] ?? null) !== $expectedType)) {
+                if ($expectedType !== null && $relationshipData->getType() !== null && $relationshipData->getType() !== $expectedType) {
                     throw new ApiException(
                         422,
                         'invalid_relationship',
                         'Invalid Relationship',
                         sprintf("Relationship '%s' type must be '%s'", $relationshipName, $expectedType),
-                        $pointer . '/type'
+                        '/data/relationships/' . $relationshipName . '/data/type'
                     );
                 }
-                if (!array_key_exists('id', $relationshipData) || (!is_scalar($relationshipData['id']) && $relationshipData['id'] !== null) || trim((string) $relationshipData['id']) === '') {
+                if ($relationshipData->getId() === null || (!is_scalar($relationshipData->getId()) && $relationshipData->getId() !== null) || trim((string) $relationshipData->getId()) === '') {
                     throw new ApiException(
                         422,
                         'invalid_relationship',
                         'Invalid Relationship',
                         sprintf("Relationship '%s' id is required", $relationshipName),
-                        $pointer . '/id'
+                        '/data/relationships/' . $relationshipName . '/data/id'
                     );
                 }
-                if ($expectedId !== null && ((string) ($relationshipData['id'] ?? '')) !== $expectedId) {
+                if ($expectedId !== null && (string) $relationshipData->getId() !== $expectedId) {
                     throw new ApiException(
                         422,
                         'relationship_scope_mismatch',
                         'Relationship Scope Mismatch',
                         sprintf("Relationship '%s' id must match scoped project", $relationshipName),
-                        $pointer . '/id'
+                        '/data/relationships/' . $relationshipName . '/data/id'
                     );
                 }
             }
@@ -542,49 +383,12 @@ class ApiCrudService
     }
 
     /**
-     * @return array<string,array{data:array<string,mixed>|null}>
-     */
-    private function buildRelationships(EntityDefinition $definition, array $row)
-    {
-        $relationships = [];
-        foreach ($definition->getRelationships() as $name => $relationship) {
-            $localKey = $relationship['local_key'] ?? null;
-            $type = $relationship['type'] ?? null;
-            if (!is_string($name) || !is_string($localKey) || !is_string($type)) {
-                continue;
-            }
-
-            $data = null;
-            if (array_key_exists($localKey, $row) && $row[$localKey] !== null) {
-                $data = [
-                    'type' => $type,
-                    'id' => (string) $row[$localKey],
-                ];
-            }
-
-            if ($data === null) {
-                continue;
-            }
-
-            $relationships[$name] = [
-                'data' => $data,
-            ];
-        }
-
-        return $relationships;
-    }
-
-    /**
      * @param array<string,mixed> $payload
      * @param array<string,mixed> $attributes
      * @return array<string,mixed>
      */
-    private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, array $payload, array $attributes)
+    private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, ResourceWriteData $payload, array $attributes)
     {
-        $relationshipsPayload = $payload['data']['relationships'] ?? null;
-        if (!is_array($relationshipsPayload)) {
-            return $attributes;
-        }
         $scopeFields = array_fill_keys($definition->getScopeFields(), true);
 
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
@@ -593,16 +397,16 @@ class ApiCrudService
             }
 
             $localKey = $relationship['local_key'] ?? null;
-            if (!is_string($localKey) || !array_key_exists($relationshipName, $relationshipsPayload) || !is_array($relationshipsPayload[$relationshipName])) {
+            if (!is_string($localKey) || !$payload->hasRelationship($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $relationshipsPayload[$relationshipName]['data'] ?? null;
-            if (!is_array($relationshipData) || !array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
+            $relationshipData = $payload->getRelationship($relationshipName);
+            if (!$relationshipData instanceof ResourceIdentifierData || $relationshipData->getId() === null) {
                 continue;
             }
 
-            $relationshipId = (string) $relationshipData['id'];
+            $relationshipId = (string) $relationshipData->getId();
             if ($relationshipId === '') {
                 continue;
             }
@@ -635,13 +439,8 @@ class ApiCrudService
      * @param array<string,mixed> $payload
      * @return array<int,string>
      */
-    private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, array $payload)
+    private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, ResourceWriteData $payload)
     {
-        $relationshipsPayload = $payload['data']['relationships'] ?? null;
-        if (!is_array($relationshipsPayload)) {
-            return [];
-        }
-
         $fields = [];
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
             if (!is_string($relationshipName) || !is_array($relationship)) {
@@ -649,16 +448,16 @@ class ApiCrudService
             }
 
             $localKey = $relationship['local_key'] ?? null;
-            if (!is_string($localKey) || !array_key_exists($relationshipName, $relationshipsPayload) || !is_array($relationshipsPayload[$relationshipName])) {
+            if (!is_string($localKey) || !$payload->hasRelationship($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $relationshipsPayload[$relationshipName]['data'] ?? null;
-            if (!is_array($relationshipData) || !array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
+            $relationshipData = $payload->getRelationship($relationshipName);
+            if (!$relationshipData instanceof ResourceIdentifierData || $relationshipData->getId() === null) {
                 continue;
             }
 
-            if (trim((string) $relationshipData['id']) === '') {
+            if (trim((string) $relationshipData->getId()) === '') {
                 continue;
             }
 
@@ -700,5 +499,65 @@ class ApiCrudService
         }
 
         return $normalized;
+    }
+
+    /**
+     * Accept legacy array payloads during the refactor while the controller
+     * now uses JsonApiSerializer as the canonical boundary.
+     *
+     * @param mixed $payload
+     * @return ResourceWriteData
+     */
+    private function normalizeWriteData(EntityDefinition $definition, $payload)
+    {
+        if ($payload instanceof ResourceWriteData) {
+            return $payload;
+        }
+
+        $data = is_array($payload) ? ($payload['data'] ?? null) : null;
+        if (!is_array($data)) {
+            throw new ApiException(400, 'invalid_payload', 'Invalid Payload', 'Payload must include a data object', '/data');
+        }
+        if (($data['type'] ?? null) !== $definition->getType()) {
+            throw new ApiException(422, 'type_mismatch', 'Type Mismatch', sprintf("Payload data.type must be '%s'", $definition->getType()), '/data/type');
+        }
+
+        $attributes = $data['attributes'] ?? null;
+        if (!is_array($attributes)) {
+            throw new ApiException(400, 'invalid_attributes', 'Invalid Attributes', 'Payload must include data.attributes object', '/data/attributes');
+        }
+
+        $relationships = [];
+        $relationshipsPayload = $data['relationships'] ?? [];
+        if (is_array($relationshipsPayload)) {
+            foreach ($relationshipsPayload as $name => $relationship) {
+                if (!is_string($name) || !is_array($relationship)) {
+                    continue;
+                }
+
+                $relationshipData = $relationship['data'] ?? null;
+                if ($relationshipData === null) {
+                    $relationships[$name] = new ResourceIdentifierData();
+                    continue;
+                }
+
+                if (!is_array($relationshipData)) {
+                    throw new ApiException(
+                        400,
+                        'invalid_relationship',
+                        'Invalid Relationship',
+                        sprintf("Relationship '%s' data must be an object or null", $name),
+                        '/data/relationships/' . $name . '/data'
+                    );
+                }
+
+                $relationships[$name] = new ResourceIdentifierData(
+                    isset($relationshipData['type']) ? (string) $relationshipData['type'] : null,
+                    $relationshipData['id'] ?? null
+                );
+            }
+        }
+
+        return new ResourceWriteData($data['id'] ?? null, $attributes, $relationships);
     }
 }

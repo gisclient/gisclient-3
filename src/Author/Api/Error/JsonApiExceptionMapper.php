@@ -4,19 +4,34 @@ namespace GisClient\Author\Api\Error;
 
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Api\Serializer\JsonApiSerializer;
 
 class JsonApiExceptionMapper
 {
+    /**
+     * @var JsonApiSerializer
+     */
+    private $serializer;
+
+    public function __construct(JsonApiSerializer $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @return array{status:int,payload:array}
      */
     public function map(\Throwable $exception)
     {
         if ($exception instanceof ValidationException) {
+            $errors = [];
+            foreach ($exception->getErrors() as $error) {
+                $errors[] = $this->serializer->serializeValidationError($error);
+            }
             return [
                 'status' => 422,
                 'payload' => [
-                    'errors' => $exception->getErrors(),
+                    'errors' => $errors,
                 ],
             ];
         }

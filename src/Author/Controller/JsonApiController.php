@@ -3,7 +3,7 @@
 namespace GisClient\Author\Controller;
 
 use GisClient\Author\Api\Error\JsonApiExceptionMapper;
-use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -23,17 +23,25 @@ class JsonApiController implements ContainerAwareInterface
      */
     private $exceptionMapper;
 
+    /**
+     * @var JsonApiSerializer
+     */
+    private $serializer;
+
     public function setContainer(ContainerInterface $container = null)
     {
         $this->apiCrudService = $container->get(ApiCrudService::class);
         $this->exceptionMapper = $container->get(JsonApiExceptionMapper::class);
+        $this->serializer = $container->get(JsonApiSerializer::class);
     }
 
     public function indexAction($entity, Request $request)
     {
         return $this->execute(function () use ($entity, $request) {
             $scope = $this->resolveScopeFromRequest($request);
-            $payload = $this->apiCrudService->listResources($entity, $request->query->all(), $scope);
+            $payload = $this->serializer->serializeCollection(
+                $this->apiCrudService->listResources($entity, $request->query->all(), $scope)
+            );
             return new JsonResponse($payload, Response::HTTP_OK);
         });
     }
@@ -42,7 +50,9 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $id, $request) {
             $scope = $this->resolveScopeFromRequest($request);
-            $payload = $this->apiCrudService->getResource($entity, $id, $request->query->all(), $scope);
+            $payload = $this->serializer->serializeResource(
+                $this->apiCrudService->getResource($entity, $id, $request->query->all(), $scope)
+            );
             return new JsonResponse($payload, Response::HTTP_OK);
         });
     }
@@ -51,7 +61,13 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $request) {
             $scope = $this->resolveScopeFromRequest($request);
-            $payload = $this->apiCrudService->createResource($entity, $this->decodeJsonBody($request), $scope);
+            $payload = $this->serializer->serializeResource(
+                $this->apiCrudService->createResource(
+                    $entity,
+                    $this->serializer->deserializeRequestBody($request->getContent(), $entity),
+                    $scope
+                )
+            );
             return new JsonResponse($payload, Response::HTTP_CREATED);
         });
     }
@@ -60,7 +76,14 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $id, $request) {
             $scope = $this->resolveScopeFromRequest($request);
-            $payload = $this->apiCrudService->updateResource($entity, $id, $this->decodeJsonBody($request), $scope);
+            $payload = $this->serializer->serializeResource(
+                $this->apiCrudService->updateResource(
+                    $entity,
+                    $id,
+                    $this->serializer->deserializeRequestBody($request->getContent(), $entity),
+                    $scope
+                )
+            );
             return new JsonResponse($payload, Response::HTTP_OK);
         });
     }
@@ -85,24 +108,6 @@ class JsonApiController implements ContainerAwareInterface
             $mapped = $this->exceptionMapper->map($exception);
             return new JsonResponse($mapped['payload'], $mapped['status']);
         }
-    }
-
-    /**
-     * @return array
-     */
-    private function decodeJsonBody(Request $request)
-    {
-        $content = $request->getContent();
-        if ($content === null || trim($content) === '') {
-            throw new ApiException(400, 'invalid_json', 'Invalid JSON', 'Request body must be valid JSON');
-        }
-
-        $decoded = json_decode($content, true);
-        if (!is_array($decoded)) {
-            throw new ApiException(400, 'invalid_json', 'Invalid JSON', 'Request body must be valid JSON');
-        }
-
-        return $decoded;
     }
 
     /**
