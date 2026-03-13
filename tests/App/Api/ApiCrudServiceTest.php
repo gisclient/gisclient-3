@@ -14,70 +14,10 @@ use PHPUnit\Framework\TestCase;
 
 class ApiCrudServiceTest extends TestCase
 {
-    public function testListResourcesRequiresAdmin()
-    {
-        $service = $this->createService(false);
-
-        $this->assertAdminRequired(function () use ($service): void {
-            $service->listResources('project', []);
-        });
-    }
-
-    public function testGetResourceRequiresAdmin()
-    {
-        $service = $this->createService(false);
-
-        $this->assertAdminRequired(function () use ($service): void {
-            $service->getResource('project', 'default');
-        });
-    }
-
-    public function testCreateResourceRequiresAdmin()
-    {
-        $service = $this->createService(false);
-
-        $this->assertAdminRequired(function () use ($service): void {
-            $service->createResource('project', [
-                'data' => [
-                    'type' => 'project',
-                    'id' => 'default',
-                    'attributes' => [
-                        'project_title' => 'Default',
-                    ],
-                ],
-            ]);
-        });
-    }
-
-    public function testUpdateResourceRequiresAdmin()
-    {
-        $service = $this->createService(false);
-
-        $this->assertAdminRequired(function () use ($service): void {
-            $service->updateResource('project', 'default', [
-                'data' => [
-                    'type' => 'project',
-                    'attributes' => [
-                        'project_title' => 'Updated',
-                    ],
-                ],
-            ]);
-        });
-    }
-
-    public function testDeleteResourceRequiresAdmin()
-    {
-        $service = $this->createService(false);
-
-        $this->assertAdminRequired(function () use ($service): void {
-            $service->deleteResource('project', 'default');
-        });
-    }
-
     public function testCreateMapsDataIdToPrimaryKey()
     {
         $repo = null;
-        $service = $this->createService(true, $repo);
+        $service = $this->createService($repo);
 
         $service->createResource('project', [
             'data' => [
@@ -115,7 +55,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('project', [
@@ -153,7 +93,7 @@ class ApiCrudServiceTest extends TestCase
             'project_name'
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('project', [
@@ -196,7 +136,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('project', [
@@ -221,7 +161,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsDuplicatePrimaryKeyWithExplicitConflict()
     {
-        $service = $this->createService(true, $repo, ['milano']);
+        $service = $this->createService($repo, ['milano']);
 
         try {
             $service->createResource('project', [
@@ -266,7 +206,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
         $queryOptions = $service->buildQueryOptions($definition, [
             'filter' => [
                 'project' => 'milano',
@@ -304,7 +244,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('project_srs', [
             'data' => [
                 'type' => 'project_srs',
@@ -357,7 +297,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('project_srs', [
@@ -407,7 +347,7 @@ class ApiCrudServiceTest extends TestCase
             ['project_name']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo, ['default|3857']);
+        $service = $this->createServiceFromDefinition($definition, $repo, ['default|3857']);
 
         $payload = $service->getResource('project_srs', 3857, [], [
             'project_name' => 'default',
@@ -451,7 +391,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('project_srs', [
@@ -503,7 +443,7 @@ class ApiCrudServiceTest extends TestCase
             ['mapset', 'layergroup']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('mapset_layergroup', [
             'data' => [
                 'type' => 'mapset_layergroup',
@@ -571,7 +511,7 @@ class ApiCrudServiceTest extends TestCase
             ['mapset', 'layergroup']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('mapset_layergroup', [
@@ -631,7 +571,7 @@ class ApiCrudServiceTest extends TestCase
             ['mapset', 'layergroup']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('mapset_layergroup', [
@@ -691,7 +631,7 @@ class ApiCrudServiceTest extends TestCase
             ['mapset', 'layergroup']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('mapset_layergroup', [
@@ -757,7 +697,7 @@ class ApiCrudServiceTest extends TestCase
             ['mapset', 'layergroup']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo, ['base|42']);
+        $service = $this->createServiceFromDefinition($definition, $repo, ['base|42']);
 
         $payload = $service->getResource('mapset_layergroup', 42, [], [
             'mapset_name' => 'base',
@@ -801,7 +741,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
 
         $payload = $service->createResource('theme', [
             'data' => [
@@ -854,7 +794,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('catalog', [
@@ -902,7 +842,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('catalog', [
             'data' => [
                 'type' => 'catalog',
@@ -954,7 +894,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('link', [
@@ -1001,7 +941,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('link', [
             'data' => [
                 'type' => 'link',
@@ -1056,7 +996,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('mapset', [
@@ -1106,7 +1046,7 @@ class ApiCrudServiceTest extends TestCase
             ['project']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('mapset', [
             'data' => [
                 'type' => 'mapset',
@@ -1218,7 +1158,7 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $service = $this->createServiceWithRepository($definition, $repo);
         $payload = $service->getResource('mapset', 'base');
 
         $this->assertSame('base', $payload['data']['id']);
@@ -1255,7 +1195,7 @@ class ApiCrudServiceTest extends TestCase
             ['theme']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('layergroup', [
@@ -1305,7 +1245,7 @@ class ApiCrudServiceTest extends TestCase
             ['theme']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('layergroup', [
             'data' => [
                 'type' => 'layergroup',
@@ -1363,7 +1303,7 @@ class ApiCrudServiceTest extends TestCase
             ['layergroup', 'catalog']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('layer', [
@@ -1422,7 +1362,7 @@ class ApiCrudServiceTest extends TestCase
             ['layergroup', 'catalog']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('layer', [
@@ -1481,7 +1421,7 @@ class ApiCrudServiceTest extends TestCase
             ['layergroup', 'catalog']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('layer', [
             'data' => [
                 'type' => 'layer',
@@ -1546,7 +1486,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
         $queryOptions = $service->buildQueryOptions($definition, [
             'filter' => [
                 'layergroup' => '5',
@@ -1625,7 +1565,7 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $service = $this->createServiceWithRepository($definition, $repo);
         $payload = $service->updateResource('layer', 2, [
             'data' => [
                 'type' => 'layer',
@@ -1682,7 +1622,7 @@ class ApiCrudServiceTest extends TestCase
             ['layer']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('class', [
@@ -1729,7 +1669,7 @@ class ApiCrudServiceTest extends TestCase
             ['layer']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('class', [
             'data' => [
                 'type' => 'class',
@@ -1780,7 +1720,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
         $queryOptions = $service->buildQueryOptions($definition, [
             'filter' => [
                 'layer' => '2',
@@ -1818,7 +1758,7 @@ class ApiCrudServiceTest extends TestCase
             ['class']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('style', [
@@ -1865,7 +1805,7 @@ class ApiCrudServiceTest extends TestCase
             ['class']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('style', [
             'data' => [
                 'type' => 'style',
@@ -1915,7 +1855,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
         $queryOptions = $service->buildQueryOptions($definition, [
             'filter' => [
                 'class' => '3',
@@ -1953,7 +1893,7 @@ class ApiCrudServiceTest extends TestCase
             ['layer']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
 
         try {
             $service->createResource('field', [
@@ -2001,7 +1941,7 @@ class ApiCrudServiceTest extends TestCase
             ['layer']
         );
 
-        $service = $this->createServiceFromDefinition($definition, true, $repo);
+        $service = $this->createServiceFromDefinition($definition, $repo);
         $payload = $service->createResource('field', [
             'data' => [
                 'type' => 'field',
@@ -2052,7 +1992,7 @@ class ApiCrudServiceTest extends TestCase
             ]
         );
 
-        $service = $this->createServiceFromDefinition($definition, true);
+        $service = $this->createServiceFromDefinition($definition);
         $queryOptions = $service->buildQueryOptions($definition, [
             'filter' => [
                 'layer' => '2',
@@ -2121,7 +2061,7 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $service = $this->createServiceWithRepository($definition, $repo);
         $payload = $service->getResource('field', 51);
 
         $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
@@ -2195,7 +2135,7 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        $service = $this->createServiceWithRepository($definition, $repo, true);
+        $service = $this->createServiceWithRepository($definition, $repo);
         $payload = $service->getResource('theme', '3');
 
         $this->assertSame('3', $payload['data']['id']);
@@ -2204,7 +2144,7 @@ class ApiCrudServiceTest extends TestCase
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
     }
 
-    private function createService($isAdmin, &$repo = null, array $existingIds = [])
+    private function createService(&$repo = null, array $existingIds = [])
     {
         $definition = new EntityDefinition(
             'project',
@@ -2221,10 +2161,10 @@ class ApiCrudServiceTest extends TestCase
             'project_name'
         );
 
-        return $this->createServiceFromDefinition($definition, $isAdmin, $repo, $existingIds);
+        return $this->createServiceFromDefinition($definition, $repo, $existingIds);
     }
 
-    private function createServiceFromDefinition(EntityDefinition $definition, $isAdmin, &$repo = null, array $existingIds = [])
+    private function createServiceFromDefinition(EntityDefinition $definition, &$repo = null, array $existingIds = [])
     {
         $provider = new class($definition) implements EntityDefinitionProviderInterface {
             private $definition;
@@ -2304,27 +2244,15 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        return new class($provider, $repo, $isAdmin) extends ApiCrudService {
-            private $isAdmin;
+        return new class($provider, $repo) extends ApiCrudService {
             private $serializer;
 
             public function __construct(
                 EntityDefinitionProviderInterface $provider,
-                AuthorEntityRepositoryInterface $repository,
-                $isAdmin
+                AuthorEntityRepositoryInterface $repository
             ) {
                 parent::__construct($provider, $repository, new PayloadValidator());
-                $this->isAdmin = $isAdmin;
                 $this->serializer = new JsonApiSerializer();
-            }
-
-            protected function assertAdmin()
-            {
-                if ($this->isAdmin) {
-                    return;
-                }
-
-                throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
             }
 
             public function listResources($entity, array $query, array $scope = [])
@@ -2349,7 +2277,7 @@ class ApiCrudServiceTest extends TestCase
         };
     }
 
-    private function createServiceWithRepository(EntityDefinition $definition, AuthorEntityRepositoryInterface $repository, $isAdmin)
+    private function createServiceWithRepository(EntityDefinition $definition, AuthorEntityRepositoryInterface $repository)
     {
         $provider = new class($definition) implements EntityDefinitionProviderInterface {
             private $definition;
@@ -2364,27 +2292,15 @@ class ApiCrudServiceTest extends TestCase
             }
         };
 
-        return new class($provider, $repository, $isAdmin) extends ApiCrudService {
-            private $isAdmin;
+        return new class($provider, $repository) extends ApiCrudService {
             private $serializer;
 
             public function __construct(
                 EntityDefinitionProviderInterface $provider,
-                AuthorEntityRepositoryInterface $repository,
-                $isAdmin
+                AuthorEntityRepositoryInterface $repository
             ) {
                 parent::__construct($provider, $repository, new PayloadValidator());
-                $this->isAdmin = $isAdmin;
                 $this->serializer = new JsonApiSerializer();
-            }
-
-            protected function assertAdmin()
-            {
-                if ($this->isAdmin) {
-                    return;
-                }
-
-                throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
             }
 
             public function listResources($entity, array $query, array $scope = [])
@@ -2407,16 +2323,5 @@ class ApiCrudServiceTest extends TestCase
                 return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload, $scope));
             }
         };
-    }
-
-    private function assertAdminRequired(callable $callable)
-    {
-        try {
-            $callable();
-            $this->fail('Expected admin_required ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(403, $exception->getStatus());
-            $this->assertSame('admin_required', $exception->getErrorCode());
-        }
     }
 }

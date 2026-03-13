@@ -46,8 +46,6 @@ class ApiCrudService
      */
     public function listResources($entity, array $query, array $scope = [])
     {
-        $this->assertAdmin();
-
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $scope = $this->normalizeScope($definition, $scope);
         $queryOptions = $this->buildQueryOptions($definition, $query);
@@ -70,8 +68,6 @@ class ApiCrudService
      */
     public function getResource($entity, $id, array $query = [], array $scope = [])
     {
-        $this->assertAdmin();
-
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $scope = $this->normalizeScope($definition, $scope);
         $row = $this->repository->findById($definition, $id, $scope);
@@ -88,8 +84,6 @@ class ApiCrudService
      */
     public function createResource($entity, $payload, array $scope = [])
     {
-        $this->assertAdmin();
-
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $payload = $this->normalizeWriteData($definition, $payload);
         $scope = $this->normalizeScope($definition, $scope);
@@ -110,8 +104,6 @@ class ApiCrudService
      */
     public function updateResource($entity, $id, $payload, array $scope = [])
     {
-        $this->assertAdmin();
-
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $payload = $this->normalizeWriteData($definition, $payload);
         $scope = $this->normalizeScope($definition, $scope);
@@ -135,8 +127,6 @@ class ApiCrudService
      */
     public function deleteResource($entity, $id, array $scope = [])
     {
-        $this->assertAdmin();
-
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $scope = $this->normalizeScope($definition, $scope);
         $current = $this->repository->findById($definition, $id, $scope);
@@ -235,17 +225,6 @@ class ApiCrudService
                 sprintf("Resource with primary key '%s' already exists", (string) $attributes[$primaryKey]),
                 '/data/id'
             );
-        }
-    }
-
-    protected function assertAdmin()
-    {
-        $auth = \GCApp::getAuthenticationHandler();
-        if (!$auth->isAuthenticated()) {
-            throw new ApiException(401, 'authentication_required', 'Unauthorized', 'Authentication is required');
-        }
-        if (!$auth->isAdmin()) {
-            throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
         }
     }
 
