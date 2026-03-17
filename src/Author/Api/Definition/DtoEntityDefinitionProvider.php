@@ -11,20 +11,9 @@ class DtoEntityDefinitionProvider implements EntityDefinitionProviderInterface
 {
     private const DEFAULT_DB_SCHEMA = 'gisclient_34';
 
-    /**
-     * @var array<string,mixed>
-     */
-    private $registry;
-
-    public function __construct()
-    {
-        $this->registry = EntityRegistry::getDefinitions();
-    }
-
     public function getEntityDefinition($entity)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $registryEntry = $this->registry[(string) $entity] ?? [];
 
         $relationships = [];
         $readableFields = [$schema->getPrimaryKey()];
@@ -42,6 +31,13 @@ class DtoEntityDefinitionProvider implements EntityDefinitionProviderInterface
 
             $rule = $this->attributeRuleFromField($field);
             if ($rule !== null) {
+                if (
+                    isset($rule['lookup']) &&
+                    is_array($rule['lookup']) &&
+                    !isset($rule['lookup']['schema'])
+                ) {
+                    $rule['lookup']['schema'] = $schema->getDbSchema() ?? self::DEFAULT_DB_SCHEMA;
+                }
                 $attributeRules[$localKey] = $rule;
             }
         }
@@ -67,40 +63,22 @@ class DtoEntityDefinitionProvider implements EntityDefinitionProviderInterface
 
         return new EntityDefinition(
             $schema->getType(),
-            $registryEntry['schema'] ?? self::DEFAULT_DB_SCHEMA,
-            $registryEntry['table'] ?? $schema->getType(),
+            $schema->getDbSchema() ?? self::DEFAULT_DB_SCHEMA,
+            $schema->getTable() ?? $schema->getType(),
             $schema->getPrimaryKey(),
             $schema->getIdPhpType(),
             array_values(array_unique($readableFields)),
-            array_values(array_unique(array_merge($writableFields, $registryEntry['scope_fields'] ?? []))),
+            array_values(array_unique(array_merge($writableFields, $schema->getScopeFields()))),
             $schema->getRequiredOnCreate(),
             $schema->getRequiredOnPut(),
-            $registryEntry['filterable_fields'] ?? array_values(array_unique($readableFields)),
-            $registryEntry['sortable_fields'] ?? [$schema->getPrimaryKey()],
-            $registryEntry['default_sort'] ?? $schema->getPrimaryKey(),
-            $this->mergeAttributeRules($attributeRules, $registryEntry['attribute_rules'] ?? []),
-            $registryEntry['scope_fields'] ?? [],
+            $schema->getFilterableFields() !== [] ? $schema->getFilterableFields() : array_values(array_unique($readableFields)),
+            $schema->getSortableFields() !== [] ? $schema->getSortableFields() : [$schema->getPrimaryKey()],
+            $schema->getDefaultSort() ?? $schema->getPrimaryKey(),
+            $attributeRules,
+            $schema->getScopeFields(),
             $relationships,
             array_values(array_unique($requiredRelationshipsOnWrite))
         );
-    }
-
-    /**
-     * @param array<string,array<string,mixed>> $baseRules
-     * @param array<string,array<string,mixed>> $overrideRules
-     * @return array<string,array<string,mixed>>
-     */
-    private function mergeAttributeRules(array $baseRules, array $overrideRules): array
-    {
-        foreach ($overrideRules as $field => $rule) {
-            if (!is_string($field) || !is_array($rule)) {
-                continue;
-            }
-
-            $baseRules[$field] = array_merge($baseRules[$field] ?? [], $rule);
-        }
-
-        return $baseRules;
     }
 
     /**
@@ -114,12 +92,12 @@ class DtoEntityDefinitionProvider implements EntityDefinitionProviderInterface
 
         $type = $this->normalizeRuleType($field->getPhpType());
         if ($type === null) {
-            return null;
+            return $field->getRules() !== [] ? $field->getRules() : null;
         }
 
-        return [
+        return array_merge([
             'type' => $type,
-        ];
+        ], $field->getRules());
     }
 
     private function normalizeRuleType(string $phpType): ?string

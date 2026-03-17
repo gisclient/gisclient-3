@@ -59,6 +59,36 @@ class ResourceSchema
      */
     private $requiredOnPut;
 
+    /**
+     * @var array<int,string>
+     */
+    private $filterableFields = [];
+
+    /**
+     * @var array<int,string>
+     */
+    private $sortableFields = [];
+
+    /**
+     * @var string|null
+     */
+    private $defaultSort;
+
+    /**
+     * @var array<int,string>
+     */
+    private $scopeFields = [];
+
+    /**
+     * @var string|null
+     */
+    private $table;
+
+    /**
+     * @var string|null
+     */
+    private $dbSchema;
+
     public function __construct(
         string $type,
         string $dtoClass,
@@ -166,5 +196,74 @@ class ResourceSchema
     public function getRequiredOnPut(): array
     {
         return $this->requiredOnPut;
+    }
+
+    public function filterable(array $fields): self
+    {
+        $this->filterableFields = array_values($fields);
+
+        return $this;
+    }
+
+    public function sortable(array $fields, ?string $defaultSort = null): self
+    {
+        $this->sortableFields = array_values($fields);
+        $this->defaultSort = $defaultSort;
+
+        return $this;
+    }
+
+    public function scopedBy(array $fields): self
+    {
+        $this->scopeFields = array_values($fields);
+
+        return $this;
+    }
+
+    public function storedAs(?string $table = null, ?string $dbSchema = null): self
+    {
+        $this->table = $table;
+        $this->dbSchema = $dbSchema;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getFilterableFields(): array
+    {
+        return $this->filterableFields;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getSortableFields(): array
+    {
+        return $this->sortableFields;
+    }
+
+    public function getDefaultSort(): ?string
+    {
+        return $this->defaultSort;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getScopeFields(): array
+    {
+        return $this->scopeFields;
+    }
+
+    public function getTable(): ?string
+    {
+        return $this->table;
+    }
+
+    public function getDbSchema(): ?string
+    {
+        return $this->dbSchema;
     }
 }

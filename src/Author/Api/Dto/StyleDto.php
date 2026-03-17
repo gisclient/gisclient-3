@@ -46,10 +46,15 @@ class StyleDto extends JsonApiDto
         return ResourceSchema::resource('style', self::class, 'style_id', 'int')
             ->requiredOnCreate(['class_id', 'style_name'])
             ->requiredOnPut(['class_id', 'style_name'])
+            ->filterable(['style_id', 'class_id', 'style_name', 'symbol_name', 'pattern_id', 'color', 'outlinecolor'])
+            ->sortable(['style_id', 'style_order', 'style_name'], 'style_order')
             ->addAttribute(FieldDefinition::attribute('style_name', 'styleName', 'string'))
             ->addAttribute(FieldDefinition::attribute('style_order', 'styleOrder', 'int', true))
             ->addAttribute(FieldDefinition::attribute('symbol_name', 'symbolName', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('pattern_id', 'patternId', 'int', true))
+            ->addAttribute(FieldDefinition::attribute('pattern_id', 'patternId', 'int', true)->withLookup([
+                'table' => 'e_pattern',
+                'column' => 'pattern_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('color', 'color', 'string', true))
             ->addAttribute(FieldDefinition::attribute('outlinecolor', 'outlinecolor', 'string', true))
             ->addAttribute(FieldDefinition::attribute('bgcolor', 'bgcolor', 'string', true))

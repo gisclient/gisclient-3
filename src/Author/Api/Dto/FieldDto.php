@@ -52,18 +52,41 @@ class FieldDto extends JsonApiDto
         return ResourceSchema::resource('field', self::class, 'field_id', 'int')
             ->requiredOnCreate(['layer_id', 'field_name', 'field_header'])
             ->requiredOnPut(['layer_id', 'field_name', 'field_header'])
-            ->addAttribute(FieldDefinition::attribute('relation_id', 'relationId', 'int'))
+            ->filterable(['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order', 'fieldtype_id', 'datatype_id', 'searchtype_id', 'resultype_id'])
+            ->sortable(['field_id', 'field_order', 'field_name', 'field_header'], 'field_order')
+            ->addAttribute(FieldDefinition::attribute('relation_id', 'relationId', 'int')->withLookup([
+                'table' => 'seldb_relation',
+                'column' => 'id',
+                'filters' => [
+                    'layer_id' => 'from_attribute:layer_id',
+                ],
+            ]))
             ->addAttribute(FieldDefinition::attribute('field_name', 'fieldName', 'string'))
             ->addAttribute(FieldDefinition::attribute('field_header', 'fieldHeader', 'string'))
             ->addAttribute(FieldDefinition::attribute('field_order', 'fieldOrder', 'int'))
-            ->addAttribute(FieldDefinition::attribute('fieldtype_id', 'fieldtypeId', 'int'))
-            ->addAttribute(FieldDefinition::attribute('datatype_id', 'datatypeId', 'int'))
+            ->addAttribute(FieldDefinition::attribute('fieldtype_id', 'fieldtypeId', 'int')->withLookup([
+                'table' => 'e_fieldtype',
+                'column' => 'fieldtype_id',
+            ]))
+            ->addAttribute(FieldDefinition::attribute('datatype_id', 'datatypeId', 'int')->withLookup([
+                'table' => 'e_datatype',
+                'column' => 'datatype_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('formula', 'formula', 'string', true))
             ->addAttribute(FieldDefinition::attribute('field_format', 'fieldFormat', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('resultype_id', 'resultypeId', 'int'))
-            ->addAttribute(FieldDefinition::attribute('searchtype_id', 'searchtypeId', 'int'))
+            ->addAttribute(FieldDefinition::attribute('resultype_id', 'resultypeId', 'int')->withLookup([
+                'table' => 'e_resultype',
+                'column' => 'resultype_id',
+            ]))
+            ->addAttribute(FieldDefinition::attribute('searchtype_id', 'searchtypeId', 'int')->withLookup([
+                'table' => 'e_searchtype',
+                'column' => 'searchtype_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('filter_field_name', 'filterFieldName', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('orderby_id', 'orderbyId', 'int'))
+            ->addAttribute(FieldDefinition::attribute('orderby_id', 'orderbyId', 'int')->withLookup([
+                'table' => 'e_orderby',
+                'column' => 'orderby_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('default_op', 'defaultOp', 'string', true))
             ->addAttribute(FieldDefinition::attribute('editable', 'editable', 'float', true))
             ->addAttribute(FieldDefinition::attribute('mandatory', 'mandatory', 'float', true))

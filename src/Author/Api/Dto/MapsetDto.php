@@ -60,12 +60,29 @@ class MapsetDto extends JsonApiDto
         return ResourceSchema::resource('mapset', self::class, 'mapset_name', 'string')
             ->requiredOnCreate(['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'])
             ->requiredOnPut(['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'])
+            ->filterable(['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'])
+            ->sortable(['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'], 'mapset_order')
             ->addAttribute(FieldDefinition::attribute('mapset_title', 'mapsetTitle', 'string', true))
             ->addAttribute(FieldDefinition::attribute('maxscale', 'maxscale', 'int', true))
             ->addAttribute(FieldDefinition::attribute('minscale', 'minscale', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('mapset_srid', 'mapsetSrid', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('displayprojection', 'displayprojection', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('sizeunits_id', 'sizeunitsId', 'int', true))
+            ->addAttribute(FieldDefinition::attribute('mapset_srid', 'mapsetSrid', 'int', true)->withLookup([
+                'table' => 'seldb_mapset_srid',
+                'column' => 'id',
+                'filters' => [
+                    'project_name' => 'from_attribute:project_name',
+                ],
+            ]))
+            ->addAttribute(FieldDefinition::attribute('displayprojection', 'displayprojection', 'int', true)->withLookup([
+                'table' => 'seldb_mapset_srid',
+                'column' => 'id',
+                'filters' => [
+                    'project_name' => 'from_attribute:project_name',
+                ],
+            ]))
+            ->addAttribute(FieldDefinition::attribute('sizeunits_id', 'sizeunitsId', 'int', true)->withLookup([
+                'table' => 'e_sizeunits',
+                'column' => 'sizeunits_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('mapset_scales', 'mapsetScales', 'string', true))
             ->addAttribute(FieldDefinition::attribute('mapset_extent', 'mapsetExtent', 'string', true))
             ->addAttribute(FieldDefinition::attribute('refmap_extent', 'refmapExtent', 'string', true))
@@ -81,7 +98,10 @@ class MapsetDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('geolocator', 'geolocator', 'string', true))
             ->addAttribute(FieldDefinition::attribute('bg_color', 'bgColor', 'string', true))
             ->addAttribute(FieldDefinition::attribute('static_reference', 'staticReference', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('mapset_tiles', 'mapsetTiles', 'int', true))
+            ->addAttribute(FieldDefinition::attribute('mapset_tiles', 'mapsetTiles', 'int', true)->withLookup([
+                'table' => 'seldb_mapset_tiles',
+                'column' => 'id',
+            ]))
             ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project', 'project_name'));
     }
 }

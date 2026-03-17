@@ -24,6 +24,8 @@ class LinkDto extends JsonApiDto
         return ResourceSchema::resource('link', self::class, 'link_id', 'int')
             ->requiredOnCreate(['project_name', 'link_name', 'link_def'])
             ->requiredOnPut(['link_name', 'link_def'])
+            ->filterable(['link_id', 'project_name', 'link_name', 'link_order'])
+            ->sortable(['link_id', 'link_order', 'link_name'], 'link_order')
             ->addAttribute(FieldDefinition::attribute('link_name', 'linkName', 'string'))
             ->addAttribute(FieldDefinition::attribute('link_def', 'linkDef', 'string'))
             ->addAttribute(FieldDefinition::attribute('winw', 'winw', 'int', true))

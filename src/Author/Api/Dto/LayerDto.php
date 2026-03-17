@@ -98,11 +98,28 @@ class LayerDto extends JsonApiDto
         return ResourceSchema::resource('layer', self::class, 'layer_id', 'int')
             ->requiredOnCreate(['layergroup_id', 'layer_name', 'layertype_id', 'catalog_id'])
             ->requiredOnPut(['layergroup_id', 'layer_name', 'layertype_id', 'catalog_id'])
+            ->filterable([
+                'layer_id',
+                'layergroup_id',
+                'catalog_id',
+                'layertype_id',
+                'layer_name',
+                'layer_title',
+                'layer_order',
+                'queryable',
+                'private',
+                'hidden',
+                'searchable_id',
+            ])
+            ->sortable(['layer_id', 'layer_order', 'layer_name', 'layer_title', 'layertype_id'], 'layer_order')
             ->addAttribute(FieldDefinition::attribute('layer_name', 'layerName', 'string'))
             ->addAttribute(FieldDefinition::attribute('layer_title', 'layerTitle', 'string', true))
             ->addAttribute(FieldDefinition::attribute('layer_order', 'layerOrder', 'int', true))
             ->addAttribute(FieldDefinition::attribute('opacity', 'opacity', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('layertype_id', 'layertypeId', 'int'))
+            ->addAttribute(FieldDefinition::attribute('layertype_id', 'layertypeId', 'int')->withLookup([
+                'table' => 'e_layertype',
+                'column' => 'layertype_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('data_type', 'dataType', 'string', true))
             ->addAttribute(FieldDefinition::attribute('data', 'data', 'string', true))
             ->addAttribute(FieldDefinition::attribute('data_geom', 'dataGeom', 'string', true))
@@ -111,7 +128,10 @@ class LayerDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('maxscale', 'maxscale', 'string', true))
             ->addAttribute(FieldDefinition::attribute('minscale', 'minscale', 'string', true))
             ->addAttribute(FieldDefinition::attribute('symbolscale', 'symbolscale', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('sizeunits_id', 'sizeunitsId', 'float'))
+            ->addAttribute(FieldDefinition::attribute('sizeunits_id', 'sizeunitsId', 'float')->withLookup([
+                'table' => 'e_sizeunits',
+                'column' => 'sizeunits_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('data_extent', 'dataExtent', 'string', true))
             ->addAttribute(FieldDefinition::attribute('data_filter', 'dataFilter', 'string', true))
             ->addAttribute(FieldDefinition::attribute('layer_def', 'layerDef', 'string', true))
@@ -126,12 +146,18 @@ class LayerDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('queryable', 'queryable', 'float', true))
             ->addAttribute(FieldDefinition::attribute('hide_vector_geom', 'hideVectorGeom', 'float', true))
             ->addAttribute(FieldDefinition::attribute('hidden', 'hidden', 'float', true))
-            ->addAttribute(FieldDefinition::attribute('searchable_id', 'searchableId', 'float', true))
+            ->addAttribute(FieldDefinition::attribute('searchable_id', 'searchableId', 'float', true)->withLookup([
+                'table' => 'e_searchable',
+                'column' => 'searchable_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('template', 'template', 'string', true))
             ->addAttribute(FieldDefinition::attribute('header', 'header', 'string', true))
             ->addAttribute(FieldDefinition::attribute('footer', 'footer', 'string', true))
             ->addAttribute(FieldDefinition::attribute('tolerance', 'tolerance', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('toleranceunits_id', 'toleranceunitsId', 'float', true))
+            ->addAttribute(FieldDefinition::attribute('toleranceunits_id', 'toleranceunitsId', 'float', true)->withLookup([
+                'table' => 'e_sizeunits',
+                'column' => 'sizeunits_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('selection_width', 'selectionWidth', 'float', true))
             ->addAttribute(FieldDefinition::attribute('selection_color', 'selectionColor', 'string', true))
             ->addAttribute(FieldDefinition::attribute('maxfeatures', 'maxfeatures', 'int', true))

@@ -111,6 +111,11 @@ class FieldDefinition
      */
     private $allowIdentifierOnly;
 
+    /**
+     * @var array<string,mixed>
+     */
+    private $rules = [];
+
     public function __construct(
         string $jsonApiName,
         string $propertyName,
@@ -197,5 +202,33 @@ class FieldDefinition
     public function allowIdentifierOnly(): bool
     {
         return $this->allowIdentifierOnly;
+    }
+
+    /**
+     * @param array<string,mixed> $lookup
+     */
+    public function withLookup(array $lookup): self
+    {
+        $this->rules['lookup'] = $lookup;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function withRule(string $name, $value): self
+    {
+        $this->rules[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function getRules(): array
+    {
+        return $this->rules;
     }
 }

@@ -18,6 +18,9 @@ class ProjectSrsDto extends JsonApiDto
         return ResourceSchema::resource('project_srs', self::class, 'srid', 'int')
             ->requiredOnCreate(['project_name', 'srid'])
             ->requiredOnPut([])
+            ->filterable(['project_name', 'srid'])
+            ->sortable(['srid'], 'srid')
+            ->scopedBy(['project_name'])
             ->addAttribute(FieldDefinition::attribute('projparam', 'projparam', 'string', true))
             ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project', 'project_name'));
     }

@@ -28,8 +28,13 @@ class CatalogDto extends JsonApiDto
         return ResourceSchema::resource('catalog', self::class, 'catalog_id', 'int')
             ->requiredOnCreate(['project_name', 'catalog_name', 'connection_type', 'catalog_path'])
             ->requiredOnPut(['catalog_name', 'connection_type', 'catalog_path'])
+            ->filterable(['catalog_id', 'project_name', 'catalog_name', 'connection_type'])
+            ->sortable(['catalog_id', 'catalog_name', 'connection_type'], 'catalog_name')
             ->addAttribute(FieldDefinition::attribute('catalog_name', 'catalogName', 'string'))
-            ->addAttribute(FieldDefinition::attribute('connection_type', 'connectionType', 'int'))
+            ->addAttribute(FieldDefinition::attribute('connection_type', 'connectionType', 'int')->withLookup([
+                'table' => 'e_conntype',
+                'column' => 'conntype_id',
+            ]))
             ->addAttribute(FieldDefinition::attribute('set_extent', 'setExtent', 'int', true))
             ->addAttribute(FieldDefinition::attribute('catalog_path', 'catalogPath', 'string'))
             ->addAttribute(FieldDefinition::attribute('files_path', 'filesPath', 'string', true))

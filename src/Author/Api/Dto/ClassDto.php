@@ -66,6 +66,8 @@ class ClassDto extends JsonApiDto
         return ResourceSchema::resource('class', self::class, 'class_id', 'int')
             ->requiredOnCreate(['layer_id', 'class_name'])
             ->requiredOnPut(['layer_id', 'class_name'])
+            ->filterable(['class_id', 'layer_id', 'class_name', 'class_title', 'legendtype_id', 'maxscale', 'minscale'])
+            ->sortable(['class_id', 'class_order', 'class_name', 'class_title'], 'class_order')
             ->addAttribute(FieldDefinition::attribute('class_name', 'className', 'string'))
             ->addAttribute(FieldDefinition::attribute('class_title', 'classTitle', 'string', true))
             ->addAttribute(FieldDefinition::attribute('class_order', 'classOrder', 'int', true))
