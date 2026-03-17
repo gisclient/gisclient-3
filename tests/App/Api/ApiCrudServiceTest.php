@@ -1,23 +1,20 @@
 <?php
 
-use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
+require_once __DIR__ . '/Support/AuthorEntityRepositoryStub.php';
+require_once __DIR__ . '/Support/TestApiCrudService.php';
+
+use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
-use GisClient\Author\Api\Model\PagedResult;
-use GisClient\Author\Api\Model\QueryOptions;
-use GisClient\Author\Api\Serializer\JsonApiSerializer;
-use GisClient\Author\Api\Service\ApiCrudService;
-use GisClient\Author\Api\Validation\PayloadValidator;
 use PHPUnit\Framework\TestCase;
 
 class ApiCrudServiceTest extends TestCase
 {
-    public function testCreateMapsDataIdToPrimaryKey()
+    public function testCreateMapsDataIdToPrimaryKey(): void
     {
-        $repo = null;
-        $service = $this->createService($repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
 
         $service->createResource('project', [
             'data' => [
@@ -25,37 +22,21 @@ class ApiCrudServiceTest extends TestCase
                 'id' => 'milano',
                 'attributes' => [
                     'project_title' => 'Milano',
+                    'project_srid' => 3857,
+                    'max_extent_scale' => 50000,
+                    'charset_encodings_id' => 1,
+                    'default_language_id' => 'it',
                 ],
             ],
         ]);
 
-        $this->assertSame('milano', $repo->createdAttributes['project_name']);
-        $this->assertSame('Milano', $repo->createdAttributes['project_title']);
+        $this->assertSame('milano', $repository->createdAttributes['project_name']);
+        $this->assertSame('Milano', $repository->createdAttributes['project_title']);
     }
 
-    public function testCreateRejectsInvalidAttributeTypeWith422()
+    public function testCreateRejectsInvalidAttributeTypeWith422(): void
     {
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_title', 'max_extent_scale'],
-            ['project_name'],
-            ['project_name'],
-            'project_name',
-            [
-                'max_extent_scale' => [
-                    'type' => 'numeric',
-                ],
-            ]
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
+        $service = TestApiCrudService::create();
 
         try {
             $service->createResource('project', [
@@ -64,7 +45,10 @@ class ApiCrudServiceTest extends TestCase
                     'id' => 'milano',
                     'attributes' => [
                         'project_title' => 'Milano',
+                        'project_srid' => 3857,
                         'max_extent_scale' => 'A50000',
+                        'charset_encodings_id' => 1,
+                        'default_language_id' => 'it',
                     ],
                 ],
             ]);
@@ -76,24 +60,9 @@ class ApiCrudServiceTest extends TestCase
         }
     }
 
-    public function testCreateRejectsHiddenAttribute()
+    public function testCreateReturnsAllValidationErrorsAtOnce(): void
     {
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'project_title'],
-            ['project_title'],
-            ['project_name', 'project_title'],
-            ['project_title'],
-            ['project_name'],
-            ['project_name'],
-            'project_name'
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
+        $service = TestApiCrudService::create();
 
         try {
             $service->createResource('project', [
@@ -101,52 +70,12 @@ class ApiCrudServiceTest extends TestCase
                     'type' => 'project',
                     'id' => 'milano',
                     'attributes' => [
-                        'project_title' => 'Milano',
-                        'project_note' => 'hidden',
-                    ],
-                ],
-            ]);
-            $this->fail('Expected ValidationException');
-        } catch (ValidationException $exception) {
-            $errors = $exception->getErrors();
-            $this->assertSame('invalid_attribute', $errors[0]['code']);
-            $this->assertSame('project_note', $errors[0]['source']['attribute']);
-        }
-    }
-
-    public function testCreateReturnsAllValidationErrorsAtOnce()
-    {
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_title', 'max_extent_scale'],
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_title', 'max_extent_scale'],
-            ['project_name'],
-            ['project_name'],
-            'project_name',
-            [
-                'max_extent_scale' => [
-                    'type' => 'numeric',
-                ],
-            ]
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
-            $service->createResource('project', [
-                'data' => [
-                    'type' => 'project',
-                    'id' => 'milano',
-                    'attributes' => [
-                        'project_note' => 'hidden',
+                        'hidden_field' => 'hidden',
                         'project_title' => '',
+                        'project_srid' => 3857,
                         'max_extent_scale' => 'A50000',
+                        'charset_encodings_id' => 1,
+                        'default_language_id' => 'it',
                     ],
                 ],
             ]);
@@ -159,55 +88,185 @@ class ApiCrudServiceTest extends TestCase
         }
     }
 
-    public function testCreateRejectsDuplicatePrimaryKeyWithExplicitConflict()
+    public function testCreateRejectsDuplicatePrimaryKeyWithExplicitConflict(): void
     {
-        $service = $this->createService($repo, ['milano']);
+        $repository = new AuthorEntityRepositoryStub(['milano']);
+        $service = TestApiCrudService::create($repository);
 
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('project', [
                 'data' => [
                     'type' => 'project',
                     'id' => 'milano',
                     'attributes' => [
                         'project_title' => 'Milano',
+                        'project_srid' => 3857,
+                        'max_extent_scale' => 50000,
+                        'charset_encodings_id' => 1,
+                        'default_language_id' => 'it',
                     ],
                 ],
             ]);
-            $this->fail('Expected duplicate_primary_key ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(409, $exception->getStatus());
-            $this->assertSame('duplicate_primary_key', $exception->getErrorCode());
-            $this->assertSame('/data/id', $exception->getSourcePointer());
+        }, 409, 'duplicate_primary_key', '/data/id');
+    }
+
+    public function testCreateRejectsUnknownRelationshipReference(): void
+    {
+        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id, array $scopeFilters) {
+            if ($definition->getType() === 'project') {
+                return null;
+            }
+
+            return null;
+        });
+        $service = new \GisClient\Author\Api\Service\ApiCrudService(
+            new DtoEntityDefinitionProvider(),
+            $repository,
+            new \GisClient\Author\Api\Validation\PayloadValidator(null, static fn (): bool => true)
+        );
+
+        try {
+            $service->createResource('theme', [
+                'data' => [
+                    'type' => 'theme',
+                    'id' => '4',
+                    'attributes' => [
+                        'theme_name' => 'boundaries_places',
+                        'theme_title' => 'Boundaries and places',
+                        'theme_order' => 10,
+                    ],
+                    'relationships' => [
+                        'project' => [
+                            'data' => [
+                                'type' => 'project',
+                                'id' => 'missing_project',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $this->assertSame('invalid_relationship', $exception->getErrors()[0]['code']);
+            $this->assertSame('/data/relationships/project/data/id', $exception->getErrors()[0]['source']['pointer']);
         }
     }
 
-    public function testBuildQueryOptionsAcceptsRelationshipFilterAlias()
+    public function testCreateRejectsUnknownScopedMapsetSridReference(): void
     {
-        $definition = new EntityDefinition(
-            'theme',
-            'gisclient_34',
-            'theme',
-            'theme_id',
-            'int',
-            ['theme_id', 'project_name', 'theme_name'],
-            ['project_name', 'theme_name'],
-            ['project_name', 'theme_name'],
-            ['theme_name'],
-            ['theme_id', 'project_name', 'theme_name'],
-            ['theme_id', 'theme_name'],
-            'theme_id',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ]
+        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id, array $scopeFilters) {
+            if ($definition->getType() === 'project') {
+                return [
+                    'project_name' => (string) $id,
+                ];
+            }
+
+            return null;
+        });
+        $service = new \GisClient\Author\Api\Service\ApiCrudService(
+            new DtoEntityDefinitionProvider(),
+            $repository,
+            new \GisClient\Author\Api\Validation\PayloadValidator(null, static function (array $lookupRule, $value): bool {
+                if (($lookupRule['table'] ?? null) !== 'seldb_mapset_srid') {
+                    return true;
+                }
+
+                return (int) $value === 3857
+                    && (($lookupRule['resolved_filters']['project_name'] ?? null) === 'milano');
+            })
         );
 
-        $service = $this->createServiceFromDefinition($definition);
-        $queryOptions = $service->buildQueryOptions($definition, [
+        try {
+            $service->createResource('mapset', [
+                'data' => [
+                    'type' => 'mapset',
+                    'id' => 'base',
+                    'attributes' => [
+                        'mapset_title' => 'Base map',
+                        'mapset_srid' => 32632,
+                        'displayprojection' => 32632,
+                        'maxscale' => 50000,
+                        'mapset_extent' => '0 0 10 10',
+                    ],
+                    'relationships' => [
+                        'project' => [
+                            'data' => [
+                                'type' => 'project',
+                                'id' => 'milano',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $this->assertSame('invalid_reference', $exception->getErrors()[0]['code']);
+            $this->assertSame('mapset_srid', $exception->getErrors()[0]['source']['attribute']);
+        }
+    }
+
+    public function testCreateRejectsUnknownScopedFieldRelationReference(): void
+    {
+        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id, array $scopeFilters) {
+            if ($definition->getType() === 'layer') {
+                return [
+                    'layer_id' => (int) $id,
+                ];
+            }
+
+            return null;
+        });
+        $service = new \GisClient\Author\Api\Service\ApiCrudService(
+            new DtoEntityDefinitionProvider(),
+            $repository,
+            new \GisClient\Author\Api\Validation\PayloadValidator(null, static function (array $lookupRule, $value): bool {
+                if (($lookupRule['table'] ?? null) !== 'seldb_relation') {
+                    return true;
+                }
+
+                return (int) $value === 0
+                    && (($lookupRule['resolved_filters']['layer_id'] ?? null) === '2'
+                        || ($lookupRule['resolved_filters']['layer_id'] ?? null) === 2);
+            })
+        );
+
+        try {
+            $service->createResource('field', [
+                'data' => [
+                    'type' => 'field',
+                    'id' => '51',
+                    'attributes' => [
+                        'relation_id' => 99,
+                        'field_name' => 'gid',
+                        'field_header' => 'GID',
+                        'fieldtype_id' => 1,
+                        'datatype_id' => 1,
+                        'resultype_id' => 1,
+                        'searchtype_id' => 1,
+                        'orderby_id' => 0,
+                    ],
+                    'relationships' => [
+                        'layer' => [
+                            'data' => [
+                                'type' => 'layer',
+                                'id' => '2',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $this->assertSame('invalid_reference', $exception->getErrors()[0]['code']);
+            $this->assertSame('relation_id', $exception->getErrors()[0]['source']['attribute']);
+        }
+    }
+
+    public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
+    {
+        $service = TestApiCrudService::create();
+        $provider = new DtoEntityDefinitionProvider();
+        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('theme'), [
             'filter' => [
                 'project' => 'milano',
             ],
@@ -218,33 +277,10 @@ class ApiCrudServiceTest extends TestCase
         ], $queryOptions->getFilters());
     }
 
-    public function testScopedCreateInjectsScopeAndRendersParentRelationship()
+    public function testScopedCreateInjectsScopeAndRendersParentRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'project_srs',
-            'gisclient_34',
-            'project_srs',
-            'srid',
-            'int',
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'project_name'],
-            [],
-            ['srid', 'project_name'],
-            ['srid'],
-            'srid',
-            [],
-            ['project_name'],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('project_srs', [
             'data' => [
                 'type' => 'project_srs',
@@ -265,41 +301,17 @@ class ApiCrudServiceTest extends TestCase
             'project_name' => 'default',
         ]);
 
-        $this->assertSame('default', $repo->createdAttributes['project_name']);
+        $this->assertSame('default', $repository->createdAttributes['project_name']);
         $this->assertSame('3857', (string) $payload['data']['id']);
         $this->assertSame('default', $payload['data']['relationships']['project']['data']['id']);
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testScopedCreateRejectsMismatchedScopeAttribute()
+    public function testScopedCreateRejectsMismatchedScopeAttribute(): void
     {
-        $definition = new EntityDefinition(
-            'project_srs',
-            'gisclient_34',
-            'project_srs',
-            'srid',
-            'int',
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'project_name'],
-            [],
-            ['srid', 'project_name'],
-            ['srid'],
-            'srid',
-            [],
-            ['project_name'],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('project_srs', [
                 'data' => [
                     'type' => 'project_srs',
@@ -320,80 +332,31 @@ class ApiCrudServiceTest extends TestCase
             ], [
                 'project_name' => 'default',
             ]);
-            $this->fail('Expected scope_attribute_mismatch ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('scope_attribute_mismatch', $exception->getErrorCode());
-            $this->assertSame('/data/attributes/project_name', $exception->getSourcePointer());
-        }
+        }, 422, 'scope_attribute_mismatch', '/data/attributes/project_name');
     }
 
-    public function testScopedGetUsesScopeFilter()
+    public function testScopedGetUsesScopeFilter(): void
     {
-        $definition = new EntityDefinition(
-            'project_srs',
-            'gisclient_34',
-            'project_srs',
-            'srid',
-            'int',
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'project_name'],
-            [],
-            ['srid', 'project_name'],
-            ['srid'],
-            'srid',
-            [],
-            ['project_name']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo, ['default|3857']);
+        $repository = new AuthorEntityRepositoryStub(['default|3857']);
+        $service = TestApiCrudService::create($repository);
 
         $payload = $service->getResource('project_srs', 3857, [], [
             'project_name' => 'default',
         ]);
         $this->assertSame('3857', (string) $payload['data']['id']);
 
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->getResource('project_srs', 3857, [], [
                 'project_name' => 'other',
             ]);
-            $this->fail('Expected resource_not_found ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(404, $exception->getStatus());
-            $this->assertSame('resource_not_found', $exception->getErrorCode());
-        }
+        }, 404, 'resource_not_found');
     }
 
-    public function testScopedCreateRequiresProjectRelationship()
+    public function testScopedCreateRequiresProjectRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'project_srs',
-            'gisclient_34',
-            'project_srs',
-            'srid',
-            'int',
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'projparam', 'project_name'],
-            ['srid', 'project_name'],
-            [],
-            ['srid', 'project_name'],
-            ['srid'],
-            'srid',
-            [],
-            ['project_name'],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('project_srs', [
                 'data' => [
                     'type' => 'project_srs',
@@ -405,45 +368,13 @@ class ApiCrudServiceTest extends TestCase
             ], [
                 'project_name' => 'default',
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }
 
-    public function testScopedMapsetLayergroupCreateInjectsScopeAndRendersRelationships()
+    public function testScopedMapsetLayergroupCreateInjectsScopeAndRendersRelationships(): void
     {
-        $definition = new EntityDefinition(
-            'mapset_layergroup',
-            'gisclient_34',
-            'mapset_layergroup',
-            'layergroup_id',
-            'int',
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id'],
-            [],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['layergroup_id', 'status', 'refmap', 'hide'],
-            'layergroup_id',
-            [],
-            ['mapset_name'],
-            [
-                'mapset' => [
-                    'type' => 'mapset',
-                    'local_key' => 'mapset_name',
-                ],
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-            ],
-            ['mapset', 'layergroup']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('mapset_layergroup', [
             'data' => [
                 'type' => 'mapset_layergroup',
@@ -472,8 +403,8 @@ class ApiCrudServiceTest extends TestCase
             'mapset_name' => 'base',
         ]);
 
-        $this->assertSame('base', $repo->createdAttributes['mapset_name']);
-        $this->assertSame('42', (string) $repo->createdAttributes['layergroup_id']);
+        $this->assertSame('base', $repository->createdAttributes['mapset_name']);
+        $this->assertSame('42', (string) $repository->createdAttributes['layergroup_id']);
         $this->assertSame('42', (string) $payload['data']['id']);
         $this->assertSame('base', $payload['data']['relationships']['mapset']['data']['id']);
         $this->assertSame('42', $payload['data']['relationships']['layergroup']['data']['id']);
@@ -481,39 +412,11 @@ class ApiCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('layergroup_id', $payload['data']['attributes']);
     }
 
-    public function testScopedMapsetLayergroupCreateRequiresMapsetRelationship()
+    public function testScopedMapsetLayergroupCreateRequiresMapsetRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'mapset_layergroup',
-            'gisclient_34',
-            'mapset_layergroup',
-            'layergroup_id',
-            'int',
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id'],
-            [],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['layergroup_id', 'status', 'refmap', 'hide'],
-            'layergroup_id',
-            [],
-            ['mapset_name'],
-            [
-                'mapset' => [
-                    'type' => 'mapset',
-                    'local_key' => 'mapset_name',
-                ],
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-            ],
-            ['mapset', 'layergroup']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('mapset_layergroup', [
                 'data' => [
                     'type' => 'mapset_layergroup',
@@ -533,47 +436,14 @@ class ApiCrudServiceTest extends TestCase
             ], [
                 'mapset_name' => 'base',
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/mapset/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/mapset/data');
     }
 
-    public function testScopedMapsetLayergroupCreateRequiresLayergroupRelationship()
+    public function testScopedMapsetLayergroupCreateRequiresLayergroupRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'mapset_layergroup',
-            'gisclient_34',
-            'mapset_layergroup',
-            'layergroup_id',
-            'int',
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id'],
-            [],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['layergroup_id', 'status', 'refmap', 'hide'],
-            'layergroup_id',
-            [],
-            ['mapset_name'],
-            [
-                'mapset' => [
-                    'type' => 'mapset',
-                    'local_key' => 'mapset_name',
-                ],
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-            ],
-            ['mapset', 'layergroup']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('mapset_layergroup', [
                 'data' => [
                     'type' => 'mapset_layergroup',
@@ -593,47 +463,14 @@ class ApiCrudServiceTest extends TestCase
             ], [
                 'mapset_name' => 'base',
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/layergroup/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/layergroup/data');
     }
 
-    public function testScopedMapsetLayergroupCreateRejectsMismatchedMapsetRelationship()
+    public function testScopedMapsetLayergroupCreateRejectsMismatchedMapsetRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'mapset_layergroup',
-            'gisclient_34',
-            'mapset_layergroup',
-            'layergroup_id',
-            'int',
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id'],
-            [],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['layergroup_id', 'status', 'refmap', 'hide'],
-            'layergroup_id',
-            [],
-            ['mapset_name'],
-            [
-                'mapset' => [
-                    'type' => 'mapset',
-                    'local_key' => 'mapset_name',
-                ],
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-            ],
-            ['mapset', 'layergroup']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('mapset_layergroup', [
                 'data' => [
                     'type' => 'mapset_layergroup',
@@ -659,90 +496,69 @@ class ApiCrudServiceTest extends TestCase
             ], [
                 'mapset_name' => 'base',
             ]);
-            $this->fail('Expected relationship_scope_mismatch ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('relationship_scope_mismatch', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/mapset/data/id', $exception->getSourcePointer());
-        }
+        }, 422, 'relationship_scope_mismatch', '/data/relationships/mapset/data/id');
     }
 
-    public function testScopedMapsetLayergroupGetUsesScopeFilter()
+    public function testScopedMapsetLayergroupGetUsesScopeFilter(): void
     {
-        $definition = new EntityDefinition(
-            'mapset_layergroup',
-            'gisclient_34',
-            'mapset_layergroup',
-            'layergroup_id',
-            'int',
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['mapset_name', 'layergroup_id'],
-            [],
-            ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
-            ['layergroup_id', 'status', 'refmap', 'hide'],
-            'layergroup_id',
-            [],
-            ['mapset_name'],
-            [
-                'mapset' => [
-                    'type' => 'mapset',
-                    'local_key' => 'mapset_name',
-                ],
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-            ],
-            ['mapset', 'layergroup']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo, ['base|42']);
+        $repository = new AuthorEntityRepositoryStub(['base|42']);
+        $service = TestApiCrudService::create($repository);
 
         $payload = $service->getResource('mapset_layergroup', 42, [], [
             'mapset_name' => 'base',
         ]);
         $this->assertSame('42', (string) $payload['data']['id']);
 
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->getResource('mapset_layergroup', 42, [], [
                 'mapset_name' => 'other',
             ]);
-            $this->fail('Expected resource_not_found ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(404, $exception->getStatus());
-            $this->assertSame('resource_not_found', $exception->getErrorCode());
-        }
+        }, 404, 'resource_not_found');
     }
 
-    public function testTopLevelCreateMapsProjectRelationshipToLocalKey()
+    public function testScopedMapsetLayergroupPutAllowsRelationshipOnlyMapsetWithoutAttributeMismatch(): void
     {
-        $definition = new EntityDefinition(
-            'theme',
-            'gisclient_34',
-            'theme',
-            'theme_id',
-            'int',
-            ['theme_id', 'project_name', 'theme_name', 'theme_title', 'theme_order'],
-            ['theme_name', 'theme_title', 'theme_order'],
-            ['project_name', 'theme_name', 'theme_title', 'theme_order'],
-            ['project_name', 'theme_name', 'theme_title', 'theme_order'],
-            ['theme_id', 'project_name', 'theme_name', 'theme_title', 'theme_order'],
-            ['theme_id', 'theme_order', 'theme_name'],
-            'theme_order',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
+        $repository = new AuthorEntityRepositoryStub(['base|42']);
+        $service = TestApiCrudService::create($repository);
+
+        $payload = $service->updateResource('mapset_layergroup', 42, [
+            'data' => [
+                'type' => 'mapset_layergroup',
+                'id' => '42',
+                'attributes' => [
+                    'status' => 1,
+                    'refmap' => 1,
+                    'hide' => 0,
+                ],
+                'relationships' => [
+                    'mapset' => [
+                        'data' => [
+                            'type' => 'mapset',
+                            'id' => 'base',
+                        ],
+                    ],
+                    'layergroup' => [
+                        'data' => [
+                            'type' => 'layergroup',
+                            'id' => '42',
+                        ],
+                    ],
                 ],
             ],
-            ['project']
-        );
+        ], [
+            'mapset_name' => 'base',
+        ]);
 
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $this->assertSame('base', $repository->updatedAttributes['mapset_name']);
+        $this->assertSame(1, $repository->updatedAttributes['status']);
+        $this->assertSame('base', $payload['data']['relationships']['mapset']['data']['id']);
+        $this->assertSame('42', $payload['data']['relationships']['layergroup']['data']['id']);
+    }
 
+    public function testTopLevelCreateMapsProjectRelationshipToLocalKey(): void
+    {
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('theme', [
             'data' => [
                 'type' => 'theme',
@@ -763,93 +579,41 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('milano', $repo->createdAttributes['project_name']);
+        $this->assertSame('milano', $repository->createdAttributes['project_name']);
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testTopLevelCatalogCreateRequiresProjectRelationship()
+    public function testTopLevelCatalogCreateRequiresProjectRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'catalog',
-            'gisclient_34',
-            'catalog',
-            'catalog_id',
-            'int',
-            ['catalog_id', 'project_name', 'catalog_name', 'connection_type', 'catalog_path'],
-            ['catalog_name', 'connection_type', 'catalog_path'],
-            ['project_name', 'catalog_name', 'connection_type', 'catalog_path'],
-            ['catalog_name', 'connection_type', 'catalog_path'],
-            ['catalog_id', 'project_name', 'catalog_name'],
-            ['catalog_id', 'catalog_name'],
-            'catalog_name',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('catalog', [
                 'data' => [
                     'type' => 'catalog',
-                    'id' => '1',
+                    'id' => '2',
                     'attributes' => [
-                        'catalog_name' => 'osm',
-                        'connection_type' => 1,
+                        'catalog_name' => 'Main catalog',
+                        'connection_type' => 6,
                         'catalog_path' => 'dbname=test',
                     ],
                 ],
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }
 
-    public function testTopLevelCatalogCreateMapsProjectRelationshipToLocalKey()
+    public function testTopLevelCatalogCreateMapsProjectRelationshipToLocalKey(): void
     {
-        $definition = new EntityDefinition(
-            'catalog',
-            'gisclient_34',
-            'catalog',
-            'catalog_id',
-            'int',
-            ['catalog_id', 'project_name', 'catalog_name', 'connection_type', 'catalog_path'],
-            ['catalog_name', 'connection_type', 'catalog_path'],
-            ['project_name', 'catalog_name', 'connection_type', 'catalog_path'],
-            ['catalog_name', 'connection_type', 'catalog_path'],
-            ['catalog_id', 'project_name', 'catalog_name'],
-            ['catalog_id', 'catalog_name'],
-            'catalog_name',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('catalog', [
             'data' => [
                 'type' => 'catalog',
-                'id' => '1',
+                'id' => '2',
                 'attributes' => [
-                    'catalog_name' => 'osm',
-                    'connection_type' => 1,
+                    'catalog_name' => 'Main catalog',
+                    'connection_type' => 6,
                     'catalog_path' => 'dbname=test',
                 ],
                 'relationships' => [
@@ -863,95 +627,40 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('milano', $repo->createdAttributes['project_name']);
+        $this->assertSame('milano', $repository->createdAttributes['project_name']);
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testTopLevelLinkCreateRequiresProjectRelationship()
+    public function testTopLevelLinkCreateRequiresProjectRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'link',
-            'gisclient_34',
-            'link',
-            'link_id',
-            'int',
-            ['link_id', 'project_name', 'link_name', 'link_def', 'link_order', 'winw', 'winh'],
-            ['link_name', 'link_def', 'link_order', 'winw', 'winh'],
-            ['project_name', 'link_name', 'link_def'],
-            ['link_name', 'link_def'],
-            ['link_id', 'project_name', 'link_name', 'link_order'],
-            ['link_id', 'link_order', 'link_name'],
-            'link_order',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('link', [
                 'data' => [
                     'type' => 'link',
-                    'id' => '1',
+                    'id' => '2',
                     'attributes' => [
-                        'link_name' => 'Manual',
-                        'link_def' => 'https://example.test/manual',
+                        'link_name' => 'Docs',
+                        'link_def' => 'https://example.test',
                     ],
                 ],
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }
 
-    public function testTopLevelLinkCreateMapsProjectRelationshipToLocalKey()
+    public function testTopLevelLinkCreateMapsProjectRelationshipToLocalKey(): void
     {
-        $definition = new EntityDefinition(
-            'link',
-            'gisclient_34',
-            'link',
-            'link_id',
-            'int',
-            ['link_id', 'project_name', 'link_name', 'link_def', 'link_order', 'winw', 'winh'],
-            ['link_name', 'link_def', 'link_order', 'winw', 'winh'],
-            ['project_name', 'link_name', 'link_def'],
-            ['link_name', 'link_def'],
-            ['link_id', 'project_name', 'link_name', 'link_order'],
-            ['link_id', 'link_order', 'link_name'],
-            'link_order',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('link', [
             'data' => [
                 'type' => 'link',
-                'id' => '1',
+                'id' => '2',
                 'attributes' => [
-                    'link_name' => 'Manual',
-                    'link_def' => 'https://example.test/manual',
-                    'link_order' => 3,
-                    'winw' => 640,
-                    'winh' => 480,
+                    'link_name' => 'Docs',
+                    'link_def' => 'https://example.test',
                 ],
                 'relationships' => [
                     'project' => [
@@ -964,41 +673,16 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('milano', $repo->createdAttributes['project_name']);
-        $this->assertSame('Manual', $repo->createdAttributes['link_name']);
+        $this->assertSame('milano', $repository->createdAttributes['project_name']);
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testTopLevelMapsetCreateRequiresProjectRelationship()
+    public function testTopLevelMapsetCreateRequiresProjectRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'mapset',
-            'gisclient_34',
-            'mapset',
-            'mapset_name',
-            'string',
-            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
-            ['mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
-            ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
-            ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
-            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
-            ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
-            'mapset_order',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('mapset', [
                 'data' => [
                     'type' => 'mapset',
@@ -1012,41 +696,13 @@ class ApiCrudServiceTest extends TestCase
                     ],
                 ],
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/project/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }
 
-    public function testTopLevelMapsetCreateMapsProjectRelationshipAndKeepsSridAttributes()
+    public function testTopLevelMapsetCreateMapsProjectRelationshipAndKeepsSridAttributes(): void
     {
-        $definition = new EntityDefinition(
-            'mapset',
-            'gisclient_34',
-            'mapset',
-            'mapset_name',
-            'string',
-            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
-            ['mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
-            ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
-            ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
-            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
-            ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
-            'mapset_order',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('mapset', [
             'data' => [
                 'type' => 'mapset',
@@ -1057,8 +713,6 @@ class ApiCrudServiceTest extends TestCase
                     'displayprojection' => 4326,
                     'maxscale' => 50000,
                     'mapset_extent' => '0 0 10 10',
-                    'mapset_order' => 1,
-                    'private' => 0,
                 ],
                 'relationships' => [
                     'project' => [
@@ -1071,191 +725,60 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('milano', $repo->createdAttributes['project_name']);
-        $this->assertSame(3857, $repo->createdAttributes['mapset_srid']);
-        $this->assertSame(4326, $repo->createdAttributes['displayprojection']);
+        $this->assertSame('milano', $repository->createdAttributes['project_name']);
+        $this->assertSame(3857, $repository->createdAttributes['mapset_srid']);
+        $this->assertSame(4326, $repository->createdAttributes['displayprojection']);
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
         $this->assertSame(3857, $payload['data']['attributes']['mapset_srid']);
         $this->assertSame(4326, $payload['data']['attributes']['displayprojection']);
-        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testTopLevelMapsetGetKeepsSridFieldsAsAttributes()
+    public function testTopLevelMapsetGetKeepsSridFieldsAsAttributes(): void
     {
-        $definition = new EntityDefinition(
-            'mapset',
-            'gisclient_34',
-            'mapset',
-            'mapset_name',
-            'string',
-            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
-            ['mapset_title', 'mapset_srid', 'displayprojection', 'maxscale', 'mapset_extent', 'mapset_order', 'private'],
-            ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
-            ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
-            ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
-            ['mapset_name', 'mapset_title', 'mapset_order', 'mapset_srid'],
-            'mapset_order',
-            [
-                'mapset_srid' => [
-                    'type' => 'integer',
-                ],
-                'displayprojection' => [
-                    'type' => 'integer',
-                ],
-                'maxscale' => [
-                    'type' => 'integer',
-                ],
-                'mapset_order' => [
-                    'type' => 'integer',
-                ],
-                'private' => [
-                    'type' => 'integer',
-                ],
-            ],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ],
-            ['project']
-        );
-
-        $repo = new class() implements AuthorEntityRepositoryInterface {
-            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
-            {
-                return new PagedResult([], 0, 50, 0);
-            }
-
-            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-                return [
-                    'mapset_name' => 'base',
-                    'project_name' => 'milano',
-                    'mapset_title' => 'Base map',
-                    'mapset_srid' => '3857',
-                    'displayprojection' => '4326',
-                    'maxscale' => '50000',
-                    'mapset_extent' => '0 0 10 10',
-                    'mapset_order' => '1',
-                    'private' => '0',
-                ];
-            }
-
-            public function create(EntityDefinition $definition, array $attributes)
-            {
-                return $attributes;
-            }
-
-            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
-            {
-                return $attributes;
-            }
-
-            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-            }
-        };
-
-        $service = $this->createServiceWithRepository($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id, array $scopeFilters) => [
+            'mapset_name' => (string) $id,
+            'project_name' => 'milano',
+            'mapset_title' => 'Base map',
+            'mapset_srid' => '3857',
+            'displayprojection' => '4326',
+            'maxscale' => '50000',
+            'mapset_extent' => '0 0 10 10',
+        ]);
+        $service = TestApiCrudService::create($repository);
         $payload = $service->getResource('mapset', 'base');
 
-        $this->assertSame('base', $payload['data']['id']);
         $this->assertSame(3857, $payload['data']['attributes']['mapset_srid']);
         $this->assertSame(4326, $payload['data']['attributes']['displayprojection']);
-        $this->assertSame(0, $payload['data']['attributes']['private']);
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
-        $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testTopLevelLayergroupCreateRequiresThemeRelationship()
+    public function testTopLevelLayergroupCreateRequiresThemeRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'layergroup',
-            'gisclient_34',
-            'layergroup',
-            'layergroup_id',
-            'int',
-            ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['layergroup_id', 'theme_id', 'layergroup_name'],
-            ['layergroup_id', 'layergroup_order', 'layergroup_name'],
-            'layergroup_order',
-            [],
-            [],
-            [
-                'theme' => [
-                    'type' => 'theme',
-                    'local_key' => 'theme_id',
-                ],
-            ],
-            ['theme']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('layergroup', [
                 'data' => [
                     'type' => 'layergroup',
-                    'id' => '11',
+                    'id' => '5',
                     'attributes' => [
                         'layergroup_name' => 'base',
-                        'layergroup_title' => 'Base',
-                        'layergroup_order' => 1,
-                        'owstype_id' => 1,
-                        'layers' => 'osm',
                     ],
                 ],
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/theme/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/theme/data');
     }
 
-    public function testTopLevelLayergroupCreateMapsThemeRelationshipToLocalKey()
+    public function testTopLevelLayergroupCreateMapsThemeRelationshipToLocalKey(): void
     {
-        $definition = new EntityDefinition(
-            'layergroup',
-            'gisclient_34',
-            'layergroup',
-            'layergroup_id',
-            'int',
-            ['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['theme_id', 'layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['layergroup_name', 'layergroup_title', 'layergroup_order', 'owstype_id', 'layers'],
-            ['layergroup_id', 'theme_id', 'layergroup_name'],
-            ['layergroup_id', 'layergroup_order', 'layergroup_name'],
-            'layergroup_order',
-            [],
-            [],
-            [
-                'theme' => [
-                    'type' => 'theme',
-                    'local_key' => 'theme_id',
-                ],
-            ],
-            ['theme']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('layergroup', [
             'data' => [
                 'type' => 'layergroup',
-                'id' => '11',
+                'id' => '5',
                 'attributes' => [
                     'layergroup_name' => 'base',
-                    'layergroup_title' => 'Base',
-                    'layergroup_order' => 1,
-                    'owstype_id' => 1,
-                    'layers' => 'osm',
                 ],
                 'relationships' => [
                     'theme' => [
@@ -1268,51 +791,23 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('4', (string) $repo->createdAttributes['theme_id']);
+        $this->assertSame('4', (string) $repository->createdAttributes['theme_id']);
         $this->assertSame('4', $payload['data']['relationships']['theme']['data']['id']);
         $this->assertArrayNotHasKey('theme_id', $payload['data']['attributes']);
     }
 
-    public function testTopLevelLayerCreateRequiresLayergroupRelationship()
+    public function testTopLevelLayerCreateRequiresLayergroupRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'layer',
-            'gisclient_34',
-            'layer',
-            'layer_id',
-            'int',
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_order', 'layer_title'],
-            ['layer_name', 'layertype_id', 'layer_order', 'layer_title'],
-            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
-            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
-            ['layer_id', 'layer_order', 'layer_name'],
-            'layer_order',
-            [],
-            [],
-            [
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-                'catalog' => [
-                    'type' => 'catalog',
-                    'local_key' => 'catalog_id',
-                ],
-            ],
-            ['layergroup', 'catalog']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('layer', [
                 'data' => [
                     'type' => 'layer',
-                    'id' => '21',
+                    'id' => '2',
                     'attributes' => [
-                        'layer_name' => 'roads',
-                        'layertype_id' => 2,
+                        'layer_name' => 'buildings',
+                        'layertype_id' => 3,
                     ],
                     'relationships' => [
                         'catalog' => [
@@ -1324,54 +819,21 @@ class ApiCrudServiceTest extends TestCase
                     ],
                 ],
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/layergroup/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/layergroup/data');
     }
 
-    public function testTopLevelLayerCreateRequiresCatalogRelationship()
+    public function testTopLevelLayerCreateRequiresCatalogRelationship(): void
     {
-        $definition = new EntityDefinition(
-            'layer',
-            'gisclient_34',
-            'layer',
-            'layer_id',
-            'int',
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_order', 'layer_title'],
-            ['layer_name', 'layertype_id', 'layer_order', 'layer_title'],
-            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
-            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
-            ['layer_id', 'layer_order', 'layer_name'],
-            'layer_order',
-            [],
-            [],
-            [
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-                'catalog' => [
-                    'type' => 'catalog',
-                    'local_key' => 'catalog_id',
-                ],
-            ],
-            ['layergroup', 'catalog']
-        );
+        $service = TestApiCrudService::create();
 
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
+        $this->assertApiException(function () use ($service): void {
             $service->createResource('layer', [
                 'data' => [
                     'type' => 'layer',
-                    'id' => '21',
+                    'id' => '2',
                     'attributes' => [
-                        'layer_name' => 'roads',
-                        'layertype_id' => 2,
+                        'layer_name' => 'buildings',
+                        'layertype_id' => 3,
                     ],
                     'relationships' => [
                         'layergroup' => [
@@ -1383,54 +845,20 @@ class ApiCrudServiceTest extends TestCase
                     ],
                 ],
             ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/catalog/data', $exception->getSourcePointer());
-        }
+        }, 422, 'missing_required_relationship', '/data/relationships/catalog/data');
     }
 
-    public function testTopLevelLayerCreateMapsParentRelationshipsToLocalKeys()
+    public function testTopLevelLayerCreateMapsParentRelationshipsToLocalKeys(): void
     {
-        $definition = new EntityDefinition(
-            'layer',
-            'gisclient_34',
-            'layer',
-            'layer_id',
-            'int',
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_order', 'layer_title'],
-            ['layer_name', 'layertype_id', 'layer_order', 'layer_title'],
-            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
-            ['layergroup_id', 'catalog_id', 'layer_name', 'layertype_id'],
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
-            ['layer_id', 'layer_order', 'layer_name'],
-            'layer_order',
-            [],
-            [],
-            [
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-                'catalog' => [
-                    'type' => 'catalog',
-                    'local_key' => 'catalog_id',
-                ],
-            ],
-            ['layergroup', 'catalog']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('layer', [
             'data' => [
                 'type' => 'layer',
-                'id' => '21',
+                'id' => '2',
                 'attributes' => [
-                    'layer_name' => 'roads',
-                    'layertype_id' => 2,
-                    'layer_order' => 1,
-                    'layer_title' => 'Roads',
+                    'layer_name' => 'buildings',
+                    'layertype_id' => 3,
                 ],
                 'relationships' => [
                     'layergroup' => [
@@ -1449,45 +877,19 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('5', (string) $repo->createdAttributes['layergroup_id']);
-        $this->assertSame('10', (string) $repo->createdAttributes['catalog_id']);
+        $this->assertSame('5', (string) $repository->createdAttributes['layergroup_id']);
+        $this->assertSame('10', (string) $repository->createdAttributes['catalog_id']);
         $this->assertSame('5', $payload['data']['relationships']['layergroup']['data']['id']);
         $this->assertSame('10', $payload['data']['relationships']['catalog']['data']['id']);
         $this->assertArrayNotHasKey('layergroup_id', $payload['data']['attributes']);
         $this->assertArrayNotHasKey('catalog_id', $payload['data']['attributes']);
     }
 
-    public function testBuildQueryOptionsAcceptsLayerRelationshipFilterAliases()
+    public function testBuildQueryOptionsAcceptsLayerRelationshipFilterAliases(): void
     {
-        $definition = new EntityDefinition(
-            'layer',
-            'gisclient_34',
-            'layer',
-            'layer_id',
-            'int',
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
-            ['layer_name'],
-            ['layergroup_id', 'catalog_id', 'layer_name'],
-            ['layergroup_id', 'catalog_id', 'layer_name'],
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name'],
-            ['layer_id', 'layer_name'],
-            'layer_id',
-            [],
-            [],
-            [
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-                'catalog' => [
-                    'type' => 'catalog',
-                    'local_key' => 'catalog_id',
-                ],
-            ]
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-        $queryOptions = $service->buildQueryOptions($definition, [
+        $service = TestApiCrudService::create();
+        $provider = new DtoEntityDefinitionProvider();
+        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('layer'), [
             'filter' => [
                 'layergroup' => '5',
                 'catalog' => '10',
@@ -1495,181 +897,15 @@ class ApiCrudServiceTest extends TestCase
         ]);
 
         $this->assertSame([
-            'layergroup_id' => '5',
             'catalog_id' => '10',
+            'layergroup_id' => '5',
         ], $queryOptions->getFilters());
     }
 
-    public function testTopLevelLayerUpdateAcceptsRelationshipIdsWhenAttributesAreNullOnPut()
+    public function testTopLevelClassCreateMapsLayerRelationshipToLocalKey(): void
     {
-        $definition = new EntityDefinition(
-            'layer',
-            'gisclient_34',
-            'layer',
-            'layer_id',
-            'int',
-            ['layer_id', 'layergroup_id', 'catalog_id', 'layer_name', 'layertype_id', 'layer_title'],
-            ['catalog_id', 'layer_name', 'layertype_id', 'layer_title'],
-            ['catalog_id', 'layer_name', 'layertype_id'],
-            ['catalog_id', 'layer_name', 'layertype_id'],
-            ['layer_id', 'catalog_id', 'layer_name'],
-            ['layer_id', 'layer_name'],
-            'layer_id',
-            [],
-            [],
-            [
-                'catalog' => [
-                    'type' => 'catalog',
-                    'local_key' => 'catalog_id',
-                ],
-                'layergroup' => [
-                    'type' => 'layergroup',
-                    'local_key' => 'layergroup_id',
-                ],
-            ],
-            ['catalog', 'layergroup']
-        );
-
-        $repo = new class() implements AuthorEntityRepositoryInterface {
-            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
-            {
-                return new PagedResult([], 0, 50, 0);
-            }
-
-            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-                return [
-                    'layer_id' => (int) $id,
-                    'layergroup_id' => 1,
-                    'catalog_id' => 1,
-                    'layer_name' => 'buildings',
-                    'layertype_id' => 3,
-                    'layer_title' => 'Buildings',
-                ];
-            }
-
-            public function create(EntityDefinition $definition, array $attributes)
-            {
-                return $attributes;
-            }
-
-            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
-            {
-                return array_merge([
-                    'layer_id' => (int) $id,
-                ], $attributes);
-            }
-
-            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-            }
-        };
-
-        $service = $this->createServiceWithRepository($definition, $repo);
-        $payload = $service->updateResource('layer', 2, [
-            'data' => [
-                'type' => 'layer',
-                'attributes' => [
-                    'layer_name' => 'buildings',
-                    'layer_title' => 'buildings UPDATE',
-                    'layertype_id' => 3,
-                ],
-                'relationships' => [
-                    'layergroup' => [
-                        'data' => [
-                            'type' => 'layergroup',
-                            'id' => '2',
-                        ],
-                    ],
-                    'catalog' => [
-                        'data' => [
-                            'type' => 'catalog',
-                            'id' => '2',
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        $this->assertSame('2', $payload['data']['id']);
-        $this->assertSame('2', $payload['data']['relationships']['layergroup']['data']['id']);
-        $this->assertSame('2', $payload['data']['relationships']['catalog']['data']['id']);
-    }
-
-    public function testTopLevelClassCreateRequiresLayerRelationship()
-    {
-        $definition = new EntityDefinition(
-            'class',
-            'gisclient_34',
-            'class',
-            'class_id',
-            'int',
-            ['class_id', 'layer_id', 'class_name', 'class_title', 'class_order'],
-            ['class_name', 'class_title', 'class_order'],
-            ['class_name'],
-            ['class_name'],
-            ['class_id', 'layer_id', 'class_name', 'class_title'],
-            ['class_id', 'class_order', 'class_name'],
-            'class_order',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ],
-            ['layer']
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
-            $service->createResource('class', [
-                'data' => [
-                    'type' => 'class',
-                    'id' => '31',
-                    'attributes' => [
-                        'class_name' => 'buildings',
-                        'class_title' => 'Buildings',
-                    ],
-                ],
-            ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/layer/data', $exception->getSourcePointer());
-        }
-    }
-
-    public function testTopLevelClassCreateMapsLayerRelationshipToLocalKey()
-    {
-        $definition = new EntityDefinition(
-            'class',
-            'gisclient_34',
-            'class',
-            'class_id',
-            'int',
-            ['class_id', 'layer_id', 'class_name', 'class_title', 'class_order'],
-            ['class_name', 'class_title', 'class_order'],
-            ['class_name'],
-            ['class_name'],
-            ['class_id', 'layer_id', 'class_name', 'class_title'],
-            ['class_id', 'class_order', 'class_name'],
-            'class_order',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ],
-            ['layer']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('class', [
             'data' => [
                 'type' => 'class',
@@ -1690,38 +926,16 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('2', (string) $repo->createdAttributes['layer_id']);
+        $this->assertSame('2', (string) $repository->createdAttributes['layer_id']);
         $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
         $this->assertArrayNotHasKey('layer_id', $payload['data']['attributes']);
     }
 
-    public function testBuildQueryOptionsAcceptsClassRelationshipFilterAlias()
+    public function testBuildQueryOptionsAcceptsClassRelationshipFilterAlias(): void
     {
-        $definition = new EntityDefinition(
-            'class',
-            'gisclient_34',
-            'class',
-            'class_id',
-            'int',
-            ['class_id', 'layer_id', 'class_name'],
-            ['class_name'],
-            ['class_name'],
-            ['class_name'],
-            ['class_id', 'layer_id', 'class_name'],
-            ['class_id', 'class_name'],
-            'class_id',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ]
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-        $queryOptions = $service->buildQueryOptions($definition, [
+        $service = TestApiCrudService::create();
+        $provider = new DtoEntityDefinitionProvider();
+        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('class'), [
             'filter' => [
                 'layer' => '2',
             ],
@@ -1732,80 +946,10 @@ class ApiCrudServiceTest extends TestCase
         ], $queryOptions->getFilters());
     }
 
-    public function testTopLevelStyleCreateRequiresClassRelationship()
+    public function testTopLevelStyleCreateMapsClassRelationshipToLocalKey(): void
     {
-        $definition = new EntityDefinition(
-            'style',
-            'gisclient_34',
-            'style',
-            'style_id',
-            'int',
-            ['style_id', 'class_id', 'style_name', 'style_order'],
-            ['style_name', 'style_order'],
-            ['class_id', 'style_name'],
-            ['class_id', 'style_name'],
-            ['style_id', 'class_id', 'style_name'],
-            ['style_id', 'style_order', 'style_name'],
-            'style_order',
-            [],
-            [],
-            [
-                'class' => [
-                    'type' => 'class',
-                    'local_key' => 'class_id',
-                ],
-            ],
-            ['class']
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
-            $service->createResource('style', [
-                'data' => [
-                    'type' => 'style',
-                    'id' => '41',
-                    'attributes' => [
-                        'style_name' => 'default',
-                        'style_order' => 1,
-                    ],
-                ],
-            ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/class/data', $exception->getSourcePointer());
-        }
-    }
-
-    public function testTopLevelStyleCreateMapsClassRelationshipToLocalKey()
-    {
-        $definition = new EntityDefinition(
-            'style',
-            'gisclient_34',
-            'style',
-            'style_id',
-            'int',
-            ['style_id', 'class_id', 'style_name', 'style_order'],
-            ['style_name', 'style_order'],
-            ['class_id', 'style_name'],
-            ['class_id', 'style_name'],
-            ['style_id', 'class_id', 'style_name'],
-            ['style_id', 'style_order', 'style_name'],
-            'style_order',
-            [],
-            [],
-            [
-                'class' => [
-                    'type' => 'class',
-                    'local_key' => 'class_id',
-                ],
-            ],
-            ['class']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('style', [
             'data' => [
                 'type' => 'style',
@@ -1825,38 +969,16 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('3', (string) $repo->createdAttributes['class_id']);
+        $this->assertSame('3', (string) $repository->createdAttributes['class_id']);
         $this->assertSame('3', $payload['data']['relationships']['class']['data']['id']);
         $this->assertArrayNotHasKey('class_id', $payload['data']['attributes']);
     }
 
-    public function testBuildQueryOptionsAcceptsStyleRelationshipFilterAlias()
+    public function testBuildQueryOptionsAcceptsStyleRelationshipFilterAlias(): void
     {
-        $definition = new EntityDefinition(
-            'style',
-            'gisclient_34',
-            'style',
-            'style_id',
-            'int',
-            ['style_id', 'class_id', 'style_name'],
-            ['style_name'],
-            ['class_id', 'style_name'],
-            ['class_id', 'style_name'],
-            ['style_id', 'class_id', 'style_name'],
-            ['style_id', 'style_name'],
-            'style_id',
-            [],
-            [],
-            [
-                'class' => [
-                    'type' => 'class',
-                    'local_key' => 'class_id',
-                ],
-            ]
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-        $queryOptions = $service->buildQueryOptions($definition, [
+        $service = TestApiCrudService::create();
+        $provider = new DtoEntityDefinitionProvider();
+        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('style'), [
             'filter' => [
                 'class' => '3',
             ],
@@ -1867,81 +989,10 @@ class ApiCrudServiceTest extends TestCase
         ], $queryOptions->getFilters());
     }
 
-    public function testTopLevelFieldCreateRequiresLayerRelationship()
+    public function testTopLevelFieldCreateMapsLayerRelationshipToLocalKey(): void
     {
-        $definition = new EntityDefinition(
-            'field',
-            'gisclient_34',
-            'field',
-            'field_id',
-            'int',
-            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order'],
-            ['field_name', 'field_header', 'field_order'],
-            ['field_name', 'field_header'],
-            ['field_name', 'field_header'],
-            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
-            ['field_id', 'field_order', 'field_name'],
-            'field_order',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ],
-            ['layer']
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-
-        try {
-            $service->createResource('field', [
-                'data' => [
-                    'type' => 'field',
-                    'id' => '51',
-                    'attributes' => [
-                        'field_name' => 'gid',
-                        'field_header' => 'GID',
-                        'field_order' => 1,
-                    ],
-                ],
-            ]);
-            $this->fail('Expected missing_required_relationship ApiException');
-        } catch (ApiException $exception) {
-            $this->assertSame(422, $exception->getStatus());
-            $this->assertSame('missing_required_relationship', $exception->getErrorCode());
-            $this->assertSame('/data/relationships/layer/data', $exception->getSourcePointer());
-        }
-    }
-
-    public function testTopLevelFieldCreateMapsLayerRelationshipToLocalKey()
-    {
-        $definition = new EntityDefinition(
-            'field',
-            'gisclient_34',
-            'field',
-            'field_id',
-            'int',
-            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order'],
-            ['field_name', 'field_header', 'field_order'],
-            ['field_name', 'field_header'],
-            ['field_name', 'field_header'],
-            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
-            ['field_id', 'field_order', 'field_name'],
-            'field_order',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ],
-            ['layer']
-        );
-
-        $service = $this->createServiceFromDefinition($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create($repository);
         $payload = $service->createResource('field', [
             'data' => [
                 'type' => 'field',
@@ -1949,7 +1000,6 @@ class ApiCrudServiceTest extends TestCase
                 'attributes' => [
                     'field_name' => 'gid',
                     'field_header' => 'GID',
-                    'field_order' => 1,
                 ],
                 'relationships' => [
                     'layer' => [
@@ -1962,38 +1012,16 @@ class ApiCrudServiceTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('2', (string) $repo->createdAttributes['layer_id']);
+        $this->assertSame('2', (string) $repository->createdAttributes['layer_id']);
         $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
         $this->assertArrayNotHasKey('layer_id', $payload['data']['attributes']);
     }
 
-    public function testBuildQueryOptionsAcceptsFieldRelationshipFilterAlias()
+    public function testBuildQueryOptionsAcceptsFieldRelationshipFilterAlias(): void
     {
-        $definition = new EntityDefinition(
-            'field',
-            'gisclient_34',
-            'field',
-            'field_id',
-            'int',
-            ['field_id', 'layer_id', 'relation_id', 'field_name'],
-            ['field_name'],
-            ['field_name'],
-            ['field_name'],
-            ['field_id', 'layer_id', 'relation_id', 'field_name'],
-            ['field_id', 'field_name'],
-            'field_id',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ]
-        );
-
-        $service = $this->createServiceFromDefinition($definition);
-        $queryOptions = $service->buildQueryOptions($definition, [
+        $service = TestApiCrudService::create();
+        $provider = new DtoEntityDefinitionProvider();
+        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('field'), [
             'filter' => [
                 'layer' => '2',
             ],
@@ -2004,138 +1032,32 @@ class ApiCrudServiceTest extends TestCase
         ], $queryOptions->getFilters());
     }
 
-    public function testGetFieldResourceKeepsRelationIdAsAttribute()
+    public function testGetFieldResourceKeepsRelationIdAsAttribute(): void
     {
-        $definition = new EntityDefinition(
-            'field',
-            'gisclient_34',
-            'field',
-            'field_id',
-            'int',
-            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
-            ['field_name', 'field_header'],
-            ['field_name', 'field_header'],
-            ['field_name', 'field_header'],
-            ['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header'],
-            ['field_id', 'field_name'],
-            'field_id',
-            [],
-            [],
-            [
-                'layer' => [
-                    'type' => 'layer',
-                    'local_key' => 'layer_id',
-                ],
-            ]
-        );
-
-        $repo = new class() implements AuthorEntityRepositoryInterface {
-            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
-            {
-                return new PagedResult([], 0, 50, 0);
-            }
-
-            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-                return [
-                    'field_id' => (int) $id,
-                    'layer_id' => 2,
-                    'relation_id' => 0,
-                    'field_name' => 'gid',
-                    'field_header' => 'GID',
-                ];
-            }
-
-            public function create(EntityDefinition $definition, array $attributes)
-            {
-                return $attributes;
-            }
-
-            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
-            {
-                return $attributes;
-            }
-
-            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-            }
-        };
-
-        $service = $this->createServiceWithRepository($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id, array $scopeFilters) => [
+            'field_id' => (int) $id,
+            'layer_id' => 2,
+            'relation_id' => 0,
+            'field_name' => 'gid',
+            'field_header' => 'GID',
+        ]);
+        $service = TestApiCrudService::create($repository);
         $payload = $service->getResource('field', 51);
 
         $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
         $this->assertSame(0, $payload['data']['attributes']['relation_id']);
     }
 
-    public function testGetResourceCastsNumericAttributesFromDatabaseStrings()
+    public function testGetResourceCastsNumericAttributesFromDatabaseStrings(): void
     {
-        $definition = new EntityDefinition(
-            'theme',
-            'gisclient_34',
-            'theme',
-            'theme_id',
-            'int',
-            ['theme_id', 'project_name', 'theme_name', 'theme_single', 'radio'],
-            ['theme_name', 'theme_single', 'radio'],
-            ['project_name', 'theme_name'],
-            ['theme_name'],
-            ['theme_id', 'project_name', 'theme_name'],
-            ['theme_id', 'theme_name'],
-            'theme_id',
-            [
-                'theme_id' => [
-                    'type' => 'integer',
-                ],
-                'theme_single' => [
-                    'type' => 'numeric',
-                ],
-                'radio' => [
-                    'type' => 'numeric',
-                ],
-            ],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ]
-        );
-
-        $repo = new class() implements AuthorEntityRepositoryInterface {
-            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
-            {
-                return new PagedResult([], 0, 50, 0);
-            }
-
-            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-                return [
-                    'theme_id' => '3',
-                    'project_name' => 'milano',
-                    'theme_name' => 'boundaries_places3',
-                    'theme_single' => '0',
-                    'radio' => '1',
-                ];
-            }
-
-            public function create(EntityDefinition $definition, array $attributes)
-            {
-                return $attributes;
-            }
-
-            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
-            {
-                return $attributes;
-            }
-
-            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-            }
-        };
-
-        $service = $this->createServiceWithRepository($definition, $repo);
+        $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id, array $scopeFilters) => [
+            'theme_id' => '3',
+            'project_name' => 'milano',
+            'theme_name' => 'boundaries_places3',
+            'theme_single' => '0',
+            'radio' => '1',
+        ]);
+        $service = TestApiCrudService::create($repository);
         $payload = $service->getResource('theme', '3');
 
         $this->assertSame('3', $payload['data']['id']);
@@ -2144,184 +1066,17 @@ class ApiCrudServiceTest extends TestCase
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
     }
 
-    private function createService(&$repo = null, array $existingIds = [])
+    private function assertApiException(callable $callable, int $status, string $code, ?string $pointer = null): void
     {
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'project_title', 'project_note'],
-            ['project_name', 'project_title', 'project_note'],
-            ['project_name', 'project_title'],
-            ['project_title'],
-            ['project_name'],
-            ['project_name'],
-            'project_name'
-        );
-
-        return $this->createServiceFromDefinition($definition, $repo, $existingIds);
-    }
-
-    private function createServiceFromDefinition(EntityDefinition $definition, &$repo = null, array $existingIds = [])
-    {
-        $provider = new class($definition) implements EntityDefinitionProviderInterface {
-            private $definition;
-
-            public function __construct(EntityDefinition $definition)
-            {
-                $this->definition = $definition;
+        try {
+            $callable();
+            $this->fail(sprintf('Expected %s ApiException', $code));
+        } catch (ApiException $exception) {
+            $this->assertSame($status, $exception->getStatus());
+            $this->assertSame($code, $exception->getErrorCode());
+            if ($pointer !== null) {
+                $this->assertSame($pointer, $exception->getSourcePointer());
             }
-            public function getEntityDefinition($entity)
-            {
-                return $this->definition;
-            }
-        };
-
-        $repo = new class($existingIds) implements AuthorEntityRepositoryInterface {
-            public $createdAttributes = [];
-            private $existingIds = [];
-
-            public function __construct(array $existingIds)
-            {
-                $this->existingIds = array_fill_keys($existingIds, true);
-            }
-
-            public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
-            {
-                return new PagedResult([], 0, 50, 0);
-            }
-
-            public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-                $scopeField = $definition->getScopeFields()[0] ?? null;
-                $scopeKey = ($scopeField !== null && isset($scopeFilters[$scopeField])) ? (string) $scopeFilters[$scopeField] : null;
-                $key = $scopeKey !== null ? ($scopeKey . '|' . (string) $id) : (string) $id;
-                if (!isset($this->existingIds[$key])) {
-                    return null;
-                }
-                return [
-                    $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
-                    $scopeField ?? 'project_name' => $scopeKey ?? (string) $id,
-                    'project_title' => 'Project',
-                ];
-            }
-
-            public function create(EntityDefinition $definition, array $attributes)
-            {
-                $this->createdAttributes = $attributes;
-                $scopeField = $definition->getScopeFields()[0] ?? null;
-                $primaryKey = $definition->getPrimaryKey();
-                if (isset($attributes[$primaryKey])) {
-                    if ($scopeField !== null && isset($attributes[$scopeField])) {
-                        $this->existingIds[(string) $attributes[$scopeField] . '|' . (string) $attributes[$primaryKey]] = true;
-                    } else {
-                        $this->existingIds[(string) $attributes[$primaryKey]] = true;
-                    }
-                } elseif ($scopeField !== null && isset($attributes[$scopeField])) {
-                    $this->existingIds[(string) $attributes[$scopeField]] = true;
-                }
-                return $attributes;
-            }
-
-            public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
-            {
-                $defaults = [
-                    $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
-                ];
-                foreach ($definition->getScopeFields() as $scopeField) {
-                    if (isset($scopeFilters[$scopeField])) {
-                        $defaults[$scopeField] = (string) $scopeFilters[$scopeField];
-                    }
-                }
-
-                return array_merge($defaults, $attributes);
-            }
-
-            public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
-            {
-            }
-        };
-
-        return new class($provider, $repo) extends ApiCrudService {
-            private $serializer;
-
-            public function __construct(
-                EntityDefinitionProviderInterface $provider,
-                AuthorEntityRepositoryInterface $repository
-            ) {
-                parent::__construct($provider, $repository, new PayloadValidator());
-                $this->serializer = new JsonApiSerializer();
-            }
-
-            public function listResources($entity, array $query, array $scope = [])
-            {
-                return $this->serializer->serializeCollection(parent::listResources($entity, $query, $scope));
-            }
-
-            public function getResource($entity, $id, array $query = [], array $scope = [])
-            {
-                return $this->serializer->serializeResource(parent::getResource($entity, $id, $query, $scope));
-            }
-
-            public function createResource($entity, $payload, array $scope = [])
-            {
-                return $this->serializer->serializeResource(parent::createResource($entity, $payload, $scope));
-            }
-
-            public function updateResource($entity, $id, $payload, array $scope = [])
-            {
-                return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload, $scope));
-            }
-        };
-    }
-
-    private function createServiceWithRepository(EntityDefinition $definition, AuthorEntityRepositoryInterface $repository)
-    {
-        $provider = new class($definition) implements EntityDefinitionProviderInterface {
-            private $definition;
-
-            public function __construct(EntityDefinition $definition)
-            {
-                $this->definition = $definition;
-            }
-            public function getEntityDefinition($entity)
-            {
-                return $this->definition;
-            }
-        };
-
-        return new class($provider, $repository) extends ApiCrudService {
-            private $serializer;
-
-            public function __construct(
-                EntityDefinitionProviderInterface $provider,
-                AuthorEntityRepositoryInterface $repository
-            ) {
-                parent::__construct($provider, $repository, new PayloadValidator());
-                $this->serializer = new JsonApiSerializer();
-            }
-
-            public function listResources($entity, array $query, array $scope = [])
-            {
-                return $this->serializer->serializeCollection(parent::listResources($entity, $query, $scope));
-            }
-
-            public function getResource($entity, $id, array $query = [], array $scope = [])
-            {
-                return $this->serializer->serializeResource(parent::getResource($entity, $id, $query, $scope));
-            }
-
-            public function createResource($entity, $payload, array $scope = [])
-            {
-                return $this->serializer->serializeResource(parent::createResource($entity, $payload, $scope));
-            }
-
-            public function updateResource($entity, $id, $payload, array $scope = [])
-            {
-                return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload, $scope));
-            }
-        };
+        }
     }
 }

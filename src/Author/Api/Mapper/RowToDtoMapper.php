@@ -1,0 +1,101 @@
+<?php
+
+namespace GisClient\Author\Api\Mapper;
+
+use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
+use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
+use GisClient\Author\Api\Model\EntityDefinition;
+
+class RowToDtoMapper
+{
+    /**
+     * @param array<string,mixed> $row
+     */
+    public function map(EntityDefinition $definition, array $row): JsonApiDto
+    {
+        $dtoClass = DtoSchemaRegistry::classFromType($definition->getType());
+        /** @var JsonApiDto $dto */
+        $dto = new $dtoClass();
+        $schema = $dtoClass::schema();
+
+        if (array_key_exists($definition->getPrimaryKey(), $row)) {
+            DtoPropertyAccessor::set($dto, 'id', $row[$definition->getPrimaryKey()]);
+            $dto->markPresent('id');
+        }
+
+        foreach ($schema->getAttributes() as $field) {
+            $jsonApiName = $field->getJsonApiName();
+            if (!array_key_exists($jsonApiName, $row)) {
+                continue;
+            }
+
+            DtoPropertyAccessor::set($dto, $field->getPropertyName(), $this->castAttributeValue($definition, $jsonApiName, $row[$jsonApiName]));
+            $dto->markPresent($jsonApiName);
+        }
+
+        foreach ($schema->getRelationships() as $field) {
+            $localKey = $field->getLocalKey();
+            if ($localKey === null || !array_key_exists($localKey, $row)) {
+                continue;
+            }
+
+            if ($row[$localKey] === null) {
+                continue;
+            }
+
+            $targetClass = (string) $field->getTargetClass();
+            /** @var JsonApiDto $relatedDto */
+            $relatedDto = new $targetClass();
+            DtoPropertyAccessor::set($relatedDto, 'id', $row[$localKey]);
+            $relatedDto->markPresent('id');
+            $relatedDto->markAsIdentifierOnly();
+            DtoPropertyAccessor::set($dto, $field->getPropertyName(), $relatedDto);
+            $dto->markPresent($field->getJsonApiName());
+        }
+
+        return $dto;
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    private function castAttributeValue(EntityDefinition $definition, string $field, $value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $rule = $definition->getAttributeRule($field);
+        $type = is_array($rule) ? ($rule['type'] ?? null) : null;
+        if (!is_string($type)) {
+            return $value;
+        }
+
+        if ($type === 'integer' && is_string($value) && preg_match('/^-?\d+$/', $value) === 1) {
+            return (int) $value;
+        }
+
+        if ($type === 'boolean') {
+            if (is_int($value)) {
+                return $value === 1;
+            }
+            if (is_string($value)) {
+                $normalized = strtolower(trim($value));
+                if (in_array($normalized, ['1', 't', 'true', 'yes', 'on'], true)) {
+                    return true;
+                }
+                if (in_array($normalized, ['0', 'f', 'false', 'no', 'off'], true)) {
+                    return false;
+                }
+            }
+        }
+
+        if ($type === 'numeric' && is_string($value) && is_numeric(trim($value))) {
+            return preg_match('/^[+-]?\d+$/', trim($value)) === 1 ? (int) $value : (float) $value;
+        }
+
+        return $value;
+    }
+}

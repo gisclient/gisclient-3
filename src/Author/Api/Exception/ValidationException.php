@@ -5,6 +5,11 @@ namespace GisClient\Author\Api\Exception;
 class ValidationException extends \RuntimeException
 {
     /**
+     * @var int
+     */
+    private $status;
+
+    /**
      * @var array<int,array<string,mixed>>
      */
     private $errors;
@@ -12,10 +17,11 @@ class ValidationException extends \RuntimeException
     /**
      * @param array<int,array<string,mixed>> $errors
      */
-    public function __construct(array $errors)
+    public function __construct(array $errors, int $status = 422)
     {
         parent::__construct('Validation failed');
         $this->errors = $errors;
+        $this->status = $status;
     }
 
     /**
@@ -24,5 +30,10 @@ class ValidationException extends \RuntimeException
     public function getErrors()
     {
         return $this->errors;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
     }
 }

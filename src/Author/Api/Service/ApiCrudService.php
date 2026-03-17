@@ -4,13 +4,17 @@ namespace GisClient\Author\Api\Service;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
+use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Api\Mapper\DtoWriteDataAdapter;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Model\ResourceCollectionData;
 use GisClient\Author\Api\Model\ResourceData;
 use GisClient\Author\Api\Model\ResourceIdentifierData;
 use GisClient\Author\Api\Model\ResourceWriteData;
+use GisClient\Author\Api\Validation\DtoValidator;
 use GisClient\Author\Api\Validation\PayloadValidator;
 
 class ApiCrudService
@@ -30,14 +34,28 @@ class ApiCrudService
      */
     private $payloadValidator;
 
+    /**
+     * @var DtoValidator
+     */
+    private $dtoValidator;
+
+    /**
+     * @var DtoWriteDataAdapter
+     */
+    private $dtoWriteDataAdapter;
+
     public function __construct(
         EntityDefinitionProviderInterface $definitionProvider,
         AuthorEntityRepositoryInterface $repository,
-        PayloadValidator $payloadValidator
+        PayloadValidator $payloadValidator,
+        ?DtoValidator $dtoValidator = null,
+        ?DtoWriteDataAdapter $dtoWriteDataAdapter = null
     ) {
         $this->definitionProvider = $definitionProvider;
         $this->repository = $repository;
         $this->payloadValidator = $payloadValidator;
+        $this->dtoValidator = $dtoValidator ?: new DtoValidator();
+        $this->dtoWriteDataAdapter = $dtoWriteDataAdapter ?: new DtoWriteDataAdapter();
     }
 
     /**
@@ -85,12 +103,13 @@ class ApiCrudService
     public function createResource($entity, $payload, array $scope = [])
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $payload = $this->normalizeWriteData($definition, $payload);
+        $payload = $this->normalizeWriteData($definition, $payload, true, false);
         $scope = $this->normalizeScope($definition, $scope);
         $this->validateRequiredRelationships($definition, $payload, $scope);
         $attributes = $this->extractAttributes($definition, $payload, true, false);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
         $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
+        $this->validateReferences($definition, $payload, $attributes);
         $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes, $scope);
         $created = $this->repository->create($definition, $attributes);
 
@@ -105,7 +124,7 @@ class ApiCrudService
     public function updateResource($entity, $id, $payload, array $scope = [])
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $payload = $this->normalizeWriteData($definition, $payload);
+        $payload = $this->normalizeWriteData($definition, $payload, false, true);
         $scope = $this->normalizeScope($definition, $scope);
         $current = $this->repository->findById($definition, $id, $scope);
         if ($current === null) {
@@ -116,6 +135,7 @@ class ApiCrudService
         $attributes = $this->extractAttributes($definition, $payload, false, true);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
         $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
+        $this->validateReferences($definition, $payload, $attributes);
         $updated = $this->repository->update($definition, $id, $attributes, $scope);
 
         return new ResourceData($definition, $updated);
@@ -260,7 +280,11 @@ class ApiCrudService
             if (!array_key_exists($scopeField, $scope)) {
                 continue;
             }
-            if (array_key_exists($scopeField, $attributes) && (string) $attributes[$scopeField] !== (string) $scope[$scopeField]) {
+            if (
+                array_key_exists($scopeField, $attributes)
+                && $attributes[$scopeField] !== null
+                && (string) $attributes[$scopeField] !== (string) $scope[$scopeField]
+            ) {
                 throw new ApiException(
                     422,
                     'scope_attribute_mismatch',
@@ -481,14 +505,152 @@ class ApiCrudService
     }
 
     /**
+     * @param array<string,mixed> $attributes
+     */
+    private function validateReferences(EntityDefinition $definition, ResourceWriteData $payload, array $attributes): void
+    {
+        $errors = [];
+        $this->validateRelationshipReferences($definition, $payload, $attributes, $errors);
+
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
+
+        $this->payloadValidator->validateAttributeReferences(
+            $this->definitionWithResolvedLookupFilters($definition, $attributes),
+            $attributes
+        );
+    }
+
+    /**
+     * @param array<string,mixed> $attributes
+     * @param array<int,array<string,mixed>> $errors
+     */
+    private function validateRelationshipReferences(EntityDefinition $definition, ResourceWriteData $payload, array $attributes, array &$errors): void
+    {
+        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
+            if (!is_string($relationshipName) || !is_array($relationship) || !$payload->hasRelationship($relationshipName)) {
+                continue;
+            }
+
+            $relationshipData = $payload->getRelationship($relationshipName);
+            if (!$relationshipData instanceof ResourceIdentifierData || $relationshipData->getId() === null) {
+                continue;
+            }
+
+            $targetType = $relationship['type'] ?? null;
+            if (!is_string($targetType) || trim($targetType) === '') {
+                continue;
+            }
+
+            $targetDefinition = $this->definitionProvider->getEntityDefinition($targetType);
+            $targetScope = [];
+            foreach ($targetDefinition->getScopeFields() as $scopeField) {
+                if (array_key_exists($scopeField, $attributes)) {
+                    $targetScope[$scopeField] = $attributes[$scopeField];
+                }
+            }
+
+            if ($this->repository->findById($targetDefinition, $relationshipData->getId(), $targetScope) !== null) {
+                continue;
+            }
+
+            $errors[] = [
+                'status' => '422',
+                'code' => 'invalid_relationship',
+                'title' => 'Invalid Relationship',
+                'detail' => sprintf("Relationship '%s' references an unknown resource", $relationshipName),
+                'source' => [
+                    'pointer' => '/data/relationships/' . $relationshipName . '/data/id',
+                ],
+            ];
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $attributes
+     */
+    private function definitionWithResolvedLookupFilters(EntityDefinition $definition, array $attributes): EntityDefinition
+    {
+        $attributeRules = $definition->getAttributeRules();
+        foreach ($attributeRules as $field => $rule) {
+            if (!is_string($field) || !is_array($rule) || !isset($rule['lookup']) || !is_array($rule['lookup'])) {
+                continue;
+            }
+
+            $attributeRules[$field]['lookup'] = $this->resolveLookupRuleFilters($rule['lookup'], $attributes);
+        }
+
+        return new EntityDefinition(
+            $definition->getType(),
+            $definition->getSchema(),
+            $definition->getTable(),
+            $definition->getPrimaryKey(),
+            $definition->getIdType(),
+            $definition->getReadableFields(),
+            $definition->getWritableFields(),
+            $definition->getRequiredOnCreate(),
+            $definition->getRequiredOnPut(),
+            $definition->getFilterableFields(),
+            $definition->getSortableFields(),
+            $definition->getDefaultSort(),
+            $attributeRules,
+            $definition->getScopeFields(),
+            $definition->getRelationships(),
+            $definition->getRequiredRelationshipsOnWrite()
+        );
+    }
+
+    /**
+     * @param array<string,mixed> $lookupRule
+     * @param array<string,mixed> $attributes
+     * @return array<string,mixed>
+     */
+    private function resolveLookupRuleFilters(array $lookupRule, array $attributes): array
+    {
+        $filters = $lookupRule['filters'] ?? null;
+        if (!is_array($filters)) {
+            return $lookupRule;
+        }
+
+        $resolved = [];
+        foreach ($filters as $column => $value) {
+            if (!is_string($column)) {
+                continue;
+            }
+
+            if (is_string($value) && strpos($value, 'from_attribute:') === 0) {
+                $attributeName = substr($value, strlen('from_attribute:'));
+                if ($attributeName === '' || !array_key_exists($attributeName, $attributes) || $attributes[$attributeName] === null) {
+                    $lookupRule['skip_lookup'] = true;
+                    continue;
+                }
+                $resolved[$column] = $attributes[$attributeName];
+                continue;
+            }
+
+            $resolved[$column] = $value;
+        }
+
+        $lookupRule['resolved_filters'] = $resolved;
+
+        return $lookupRule;
+    }
+
+    /**
      * Accept legacy array payloads during the refactor while the controller
      * now uses JsonApiSerializer as the canonical boundary.
      *
      * @param mixed $payload
      * @return ResourceWriteData
      */
-    private function normalizeWriteData(EntityDefinition $definition, $payload)
+    private function normalizeWriteData(EntityDefinition $definition, $payload, bool $isCreate = false, bool $isPut = false)
     {
+        if ($payload instanceof JsonApiDto) {
+            $this->dtoValidator->validate($payload, $isCreate, $isPut);
+            return $this->dtoWriteDataAdapter->toResourceWriteData($payload);
+        }
+
         if ($payload instanceof ResourceWriteData) {
             return $payload;
         }

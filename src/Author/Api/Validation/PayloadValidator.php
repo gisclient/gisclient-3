@@ -134,6 +134,19 @@ class PayloadValidator
     }
 
     /**
+     * @param array<string,mixed> $attributes
+     */
+    public function validateAttributeReferences(EntityDefinition $definition, array $attributes): void
+    {
+        $errors = [];
+        $this->validateAttributeLookups($definition, $attributes, $errors);
+
+        if (count($errors) > 0) {
+            throw new ValidationException($errors);
+        }
+    }
+
+    /**
      * @param mixed $payload
      * @param array<int,array<string,mixed>> $errors
      * @return ResourceWriteData
@@ -308,6 +321,10 @@ class PayloadValidator
             return (bool) call_user_func($this->lookupExistsCallback, $lookupRule, $value);
         }
 
+        if (!empty($lookupRule['skip_lookup'])) {
+            return true;
+        }
+
         $db = $this->getDb();
         if ($db === null) {
             return true;
@@ -323,18 +340,52 @@ class PayloadValidator
             return true;
         }
 
-        $sql = sprintf(
-            'SELECT 1 FROM %s.%s WHERE %s = :value LIMIT 1',
-            $schema,
-            $table,
-            $column
-        );
-        $stmt = $db->prepare($sql);
-        $stmt->execute([
+        $sql = sprintf('SELECT 1 FROM %s.%s WHERE %s = :value', $schema, $table, $column);
+        $params = [
             ':value' => $value,
-        ]);
+        ];
+
+        $filters = $this->resolveLookupFilters($lookupRule, $params);
+        if ($filters === null) {
+            return true;
+        }
+        if ($filters !== []) {
+            $sql .= ' AND ' . implode(' AND ', $filters);
+        }
+        $sql .= ' LIMIT 1';
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
 
         return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * @param array<string,mixed> $lookupRule
+     * @param array<string,mixed> $params
+     * @return array<int,string>|null
+     */
+    private function resolveLookupFilters(array $lookupRule, array &$params): ?array
+    {
+        $filters = $lookupRule['resolved_filters'] ?? [];
+        if (!is_array($filters)) {
+            return [];
+        }
+
+        $clauses = [];
+        $index = 0;
+        foreach ($filters as $column => $value) {
+            if (!is_string($column) || !$this->isSafeIdentifier($column)) {
+                continue;
+            }
+
+            $placeholder = ':filter_' . $index;
+            $clauses[] = sprintf('%s = %s', $column, $placeholder);
+            $params[$placeholder] = $value;
+            $index++;
+        }
+
+        return $clauses;
     }
 
     /**

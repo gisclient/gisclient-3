@@ -28,22 +28,13 @@ services:
   GisClient\Author\Utils\TemporaryFileService:
     arguments: ['%tmp_dir%']
 
-  GisClient\Author\Api\Definition\InformationSchemaEntityDefinitionProvider:
-    class: GisClient\Author\Api\Definition\InformationSchemaEntityDefinitionProvider
-
-  GisClient\Author\Api\Definition\TabFieldExtractor:
-    class: GisClient\Author\Api\Definition\TabFieldExtractor
-
-  GisClient\Author\Api\Definition\TabVisibilityEntityDefinitionProvider:
-    class: GisClient\Author\Api\Definition\TabVisibilityEntityDefinitionProvider
-    arguments:
-      - '@GisClient\Author\Api\Definition\InformationSchemaEntityDefinitionProvider'
-      - '@GisClient\Author\Api\Definition\TabFieldExtractor'
+  GisClient\Author\Api\Definition\DtoEntityDefinitionProvider:
+    class: GisClient\Author\Api\Definition\DtoEntityDefinitionProvider
 
   GisClient\Author\Api\Contract\EntityDefinitionProviderInterface:
     class: GisClient\Author\Api\Definition\CachedEntityDefinitionProvider
     arguments:
-      - '@GisClient\Author\Api\Definition\TabVisibilityEntityDefinitionProvider'
+      - '@GisClient\Author\Api\Definition\DtoEntityDefinitionProvider'
 
   GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface:
     class: GisClient\Author\Api\Persistence\PdoAuthorEntityRepository

@@ -156,6 +156,58 @@ class JsonApiControllerTest extends TestCase
         $this->assertSame('Milano', $payload['data']['attributes']['project_title']);
     }
 
+    public function testCreateActionReturnsBadRequestForWrongAttributeTypes()
+    {
+        $service = new class() {
+            public $createCalled = false;
+
+            public function createResource($entity, $payload, array $scope = [])
+            {
+                $this->createCalled = true;
+                return null;
+            }
+        };
+
+        $controller = $this->createController($service);
+        $this->setAuthenticationHandler($this->createAuthHandler(true, true));
+
+        $request = Request::create(
+            '/api/project',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            json_encode([
+                'data' => [
+                    'type' => 'project',
+                    'id' => 'milano',
+                    'attributes' => [
+                        'project_title' => 'Milano',
+                        'xc' => '501090',
+                        'yc' => '5022596',
+                        'project_srid' => '32632',
+                        'max_extent_scale' => '50000',
+                        'charset_encodings_id' => 2,
+                        'default_language_id' => 'it',
+                    ],
+                ],
+            ])
+        );
+
+        $response = $controller->createAction('project', $request);
+        $payload = json_decode($response->getContent(), true);
+
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $this->assertCount(4, $payload['errors']);
+        $this->assertSame('invalid_attribute_type', $payload['errors'][0]['code']);
+        $this->assertSame('/data/attributes/xc', $payload['errors'][0]['source']['pointer']);
+        $this->assertSame('/data/attributes/yc', $payload['errors'][1]['source']['pointer']);
+        $this->assertSame('/data/attributes/project_srid', $payload['errors'][2]['source']['pointer']);
+        $this->assertSame('/data/attributes/max_extent_scale', $payload['errors'][3]['source']['pointer']);
+        $this->assertFalse($service->createCalled);
+    }
+
     private function createController($service)
     {
         $container = new Container();

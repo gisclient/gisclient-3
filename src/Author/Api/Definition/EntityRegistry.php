@@ -4,18 +4,21 @@ namespace GisClient\Author\Api\Definition;
 
 class EntityRegistry
 {
+    private const DEFAULT_DB_SCHEMA = 'gisclient_34';
+
     /**
      * @return array
      */
     public static function getDefinitions()
     {
+        $schema = self::resolveSchema();
+
         return [
             'project' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'project',
                 'primary_key' => 'project_name',
                 'id_type' => 'string',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'project.tab',
                 'required_on_create' => [
                     'project_name',
                     'project_title',
@@ -34,13 +37,28 @@ class EntityRegistry
                 'filterable_fields' => ['project_name', 'project_title', 'default_language_id'],
                 'sortable_fields' => ['project_name', 'project_title'],
                 'default_sort' => 'project_name',
+                'attribute_rules' => [
+                    'charset_encodings_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_charset_encodings',
+                            'column' => 'charset_encodings_id',
+                        ],
+                    ],
+                    'default_language_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_language',
+                            'column' => 'language_id',
+                        ],
+                    ],
+                ],
             ],
             'project_srs' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'project_srs',
                 'primary_key' => 'srid',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'project_srs.tab',
                 'required_on_create' => ['project_name', 'srid'],
                 'required_on_put' => [],
                 'filterable_fields' => ['project_name', 'srid'],
@@ -56,11 +74,10 @@ class EntityRegistry
                 'required_relationships_on_write' => ['project'],
             ],
             'theme' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'theme',
                 'primary_key' => 'theme_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'theme.tab',
                 'required_on_create' => ['project_name', 'theme_name', 'theme_title', 'theme_order'],
                 'required_on_put' => ['theme_name', 'theme_title', 'theme_order'],
                 'filterable_fields' => ['theme_id', 'project_name', 'theme_name', 'theme_title'],
@@ -72,14 +89,22 @@ class EntityRegistry
                         'local_key' => 'project_name',
                     ],
                 ],
+                'attribute_rules' => [
+                    'symbol_name' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'symbol',
+                            'column' => 'symbol_name',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['project'],
             ],
             'layergroup' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'layergroup',
                 'primary_key' => 'layergroup_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'layergroup.tab',
                 'required_on_create' => [
                     'theme_id',
                     'layergroup_name',
@@ -97,14 +122,36 @@ class EntityRegistry
                         'local_key' => 'theme_id',
                     ],
                 ],
+                'attribute_rules' => [
+                    'owstype_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_owstype',
+                            'column' => 'owstype_id',
+                        ],
+                    ],
+                    'outputformat_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_outputformat',
+                            'column' => 'outputformat_id',
+                        ],
+                    ],
+                    'wmsversion_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_wmsversion',
+                            'column' => 'wmsversion_id',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['theme'],
             ],
             'layer' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'layer',
                 'primary_key' => 'layer_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'layer.tab',
                 'required_on_create' => [
                     'layergroup_id',
                     'layer_name',
@@ -142,14 +189,43 @@ class EntityRegistry
                         'local_key' => 'catalog_id',
                     ],
                 ],
+                'attribute_rules' => [
+                    'layertype_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_layertype',
+                            'column' => 'layertype_id',
+                        ],
+                    ],
+                    'sizeunits_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_sizeunits',
+                            'column' => 'sizeunits_id',
+                        ],
+                    ],
+                    'searchable_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_searchable',
+                            'column' => 'searchable_id',
+                        ],
+                    ],
+                    'toleranceunits_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_sizeunits',
+                            'column' => 'sizeunits_id',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['layergroup', 'catalog'],
             ],
             'class' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'class',
                 'primary_key' => 'class_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'class.tab',
                 'required_on_create' => [
                     'class_name',
                 ],
@@ -176,11 +252,10 @@ class EntityRegistry
                 'required_relationships_on_write' => ['layer'],
             ],
             'style' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'style',
                 'primary_key' => 'style_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'style.tab',
                 'required_on_create' => [
                     'class_id',
                     'style_name',
@@ -206,14 +281,22 @@ class EntityRegistry
                         'local_key' => 'class_id',
                     ],
                 ],
+                'attribute_rules' => [
+                    'pattern_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_pattern',
+                            'column' => 'pattern_id',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['class'],
             ],
             'field' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'field',
                 'primary_key' => 'field_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'field.tab',
                 'required_on_create' => [
                     'field_name',
                     'field_header',
@@ -242,14 +325,60 @@ class EntityRegistry
                         'local_key' => 'layer_id',
                     ],
                 ],
+                'attribute_rules' => [
+                    'relation_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'seldb_relation',
+                            'column' => 'id',
+                            'filters' => [
+                                'layer_id' => 'from_attribute:layer_id',
+                            ],
+                        ],
+                    ],
+                    'fieldtype_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_fieldtype',
+                            'column' => 'fieldtype_id',
+                        ],
+                    ],
+                    'datatype_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_datatype',
+                            'column' => 'datatype_id',
+                        ],
+                    ],
+                    'resultype_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_resultype',
+                            'column' => 'resultype_id',
+                        ],
+                    ],
+                    'searchtype_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_searchtype',
+                            'column' => 'searchtype_id',
+                        ],
+                    ],
+                    'orderby_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_orderby',
+                            'column' => 'orderby_id',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['layer'],
             ],
             'catalog' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'catalog',
                 'primary_key' => 'catalog_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'catalog.tab',
                 'required_on_create' => ['project_name', 'catalog_name', 'connection_type', 'catalog_path'],
                 'required_on_put' => ['catalog_name', 'connection_type', 'catalog_path'],
                 'filterable_fields' => ['catalog_id', 'project_name', 'catalog_name', 'connection_type'],
@@ -261,14 +390,22 @@ class EntityRegistry
                         'local_key' => 'project_name',
                     ],
                 ],
+                'attribute_rules' => [
+                    'connection_type' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_conntype',
+                            'column' => 'conntype_id',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['project'],
             ],
             'link' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'link',
                 'primary_key' => 'link_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'link.tab',
                 'required_on_create' => ['project_name', 'link_name', 'link_def'],
                 'required_on_put' => ['link_name', 'link_def'],
                 'filterable_fields' => ['link_id', 'project_name', 'link_name', 'link_order'],
@@ -283,11 +420,10 @@ class EntityRegistry
                 'required_relationships_on_write' => ['project'],
             ],
             'mapset' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'mapset',
                 'primary_key' => 'mapset_name',
                 'id_type' => 'string',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'mapset.tab',
                 'required_on_create' => ['project_name', 'mapset_name', 'mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
                 'required_on_put' => ['mapset_title', 'maxscale', 'mapset_srid', 'mapset_extent'],
                 'filterable_fields' => ['mapset_name', 'project_name', 'mapset_title', 'mapset_srid', 'displayprojection', 'private', 'mapset_order'],
@@ -299,14 +435,49 @@ class EntityRegistry
                         'local_key' => 'project_name',
                     ],
                 ],
+                'attribute_rules' => [
+                    'mapset_srid' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'seldb_mapset_srid',
+                            'column' => 'id',
+                            'filters' => [
+                                'project_name' => 'from_attribute:project_name',
+                            ],
+                        ],
+                    ],
+                    'displayprojection' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'seldb_mapset_srid',
+                            'column' => 'id',
+                            'filters' => [
+                                'project_name' => 'from_attribute:project_name',
+                            ],
+                        ],
+                    ],
+                    'sizeunits_id' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'e_sizeunits',
+                            'column' => 'sizeunits_id',
+                        ],
+                    ],
+                    'mapset_tiles' => [
+                        'lookup' => [
+                            'schema' => $schema,
+                            'table' => 'seldb_mapset_tiles',
+                            'column' => 'id',
+                        ],
+                    ],
+                ],
                 'required_relationships_on_write' => ['project'],
             ],
             'mapset_layergroup' => [
-                'schema' => DB_SCHEMA,
+                'schema' => $schema,
                 'table' => 'mapset_layergroup',
                 'primary_key' => 'layergroup_id',
                 'id_type' => 'int',
-                'tab_file' => ROOT_PATH . \GCAuthor::getTabDir() . 'mapset_layergroup.tab',
                 'required_on_create' => ['mapset_name', 'layergroup_id'],
                 'required_on_put' => [],
                 'filterable_fields' => ['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'],
@@ -326,5 +497,16 @@ class EntityRegistry
                 'required_relationships_on_write' => ['mapset', 'layergroup'],
             ],
         ];
+    }
+
+    private static function resolveSchema(): string
+    {
+        if (defined('DB_SCHEMA')) {
+            /** @var string $schema */
+            $schema = DB_SCHEMA;
+            return $schema;
+        }
+
+        return self::DEFAULT_DB_SCHEMA;
     }
 }

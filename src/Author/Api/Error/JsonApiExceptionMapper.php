@@ -18,7 +18,7 @@ class JsonApiExceptionMapper
                 $errors[] = $this->serializeValidationError($error);
             }
             return [
-                'status' => 422,
+                'status' => $exception->getStatus(),
                 'payload' => [
                     'errors' => $errors,
                 ],

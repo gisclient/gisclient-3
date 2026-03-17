@@ -57,6 +57,23 @@ class JsonApiExceptionMapperTest extends TestCase
         $this->assertSame('invalid_attribute_type', $mapped['payload']['errors'][1]['code']);
     }
 
+    public function testMapsValidationExceptionStatus()
+    {
+        $mapper = new JsonApiExceptionMapper();
+        $mapped = $mapper->map(new ValidationException([
+            [
+                'code' => 'invalid_attribute_type',
+                'title' => 'Bad Request',
+                'detail' => "Attribute 'xc' must be a number, string given",
+                'source' => [
+                    'pointer' => '/data/attributes/xc',
+                ],
+            ],
+        ], 400));
+
+        $this->assertSame(400, $mapped['status']);
+    }
+
     public function testMapsGenericThrowableToInternalError()
     {
         $mapper = new JsonApiExceptionMapper();
