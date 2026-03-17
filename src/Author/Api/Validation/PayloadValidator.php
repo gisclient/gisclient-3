@@ -33,9 +33,8 @@ class PayloadValidator
     public function validateAndNormalize(EntityDefinition $definition, $payload, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
     {
         $errors = [];
-        $payload = $this->normalizePayload($definition, $payload, $errors);
-        if (count($errors) > 0) {
-            throw new ValidationException($errors);
+        if (!$payload instanceof ResourceWriteData) {
+            throw new \InvalidArgumentException('PayloadValidator expects a ResourceWriteData payload');
         }
 
         $attributes = $payload->getAttributes();
@@ -123,7 +122,6 @@ class PayloadValidator
             }
         }
 
-        $this->validateAttributeTypes($definition, $attributes, $errors);
         $this->validateAttributeLookups($definition, $attributes, $errors);
 
         if (count($errors) > 0) {
@@ -144,67 +142,6 @@ class PayloadValidator
         if (count($errors) > 0) {
             throw new ValidationException($errors);
         }
-    }
-
-    /**
-     * @param mixed $payload
-     * @param array<int,array<string,mixed>> $errors
-     * @return ResourceWriteData
-     */
-    private function normalizePayload(EntityDefinition $definition, $payload, array &$errors)
-    {
-        if ($payload instanceof ResourceWriteData) {
-            return $payload;
-        }
-
-        $data = is_array($payload) ? ($payload['data'] ?? null) : null;
-        if (!is_array($data)) {
-            $this->addError($errors, 'invalid_payload', 'Invalid Payload', 'Payload must include a data object', [
-                'pointer' => '/data',
-            ]);
-            return new ResourceWriteData();
-        }
-
-        if (($data['type'] ?? null) !== $definition->getType()) {
-            $this->addError($errors, 'type_mismatch', 'Type Mismatch', sprintf("Payload data.type must be '%s'", $definition->getType()), [
-                'pointer' => '/data/type',
-            ]);
-        }
-
-        $attributes = $data['attributes'] ?? null;
-        if (!is_array($attributes)) {
-            $this->addError($errors, 'invalid_attributes', 'Invalid Attributes', 'Payload must include data.attributes object', [
-                'pointer' => '/data/attributes',
-            ]);
-            return new ResourceWriteData();
-        }
-
-        $relationships = [];
-        $relationshipsPayload = $data['relationships'] ?? [];
-        if (is_array($relationshipsPayload)) {
-            foreach ($relationshipsPayload as $name => $relationship) {
-                if (!is_string($name) || !is_array($relationship)) {
-                    continue;
-                }
-
-                $relationshipData = $relationship['data'] ?? null;
-                if ($relationshipData === null) {
-                    $relationships[$name] = new \GisClient\Author\Api\Model\ResourceIdentifierData();
-                    continue;
-                }
-
-                if (!is_array($relationshipData)) {
-                    continue;
-                }
-
-                $relationships[$name] = new \GisClient\Author\Api\Model\ResourceIdentifierData(
-                    isset($relationshipData['type']) ? (string) $relationshipData['type'] : null,
-                    $relationshipData['id'] ?? null
-                );
-            }
-        }
-
-        return new ResourceWriteData($data['id'] ?? null, $attributes, $relationships);
     }
 
     /**
@@ -240,45 +177,6 @@ class PayloadValidator
             'id' => true,
         ]);
         return null;
-    }
-
-    /**
-     * @param array<int,array<string,mixed>> $errors
-     */
-    private function validateAttributeTypes(EntityDefinition $definition, array $attributes, array &$errors)
-    {
-        foreach ($attributes as $field => $value) {
-            if ($value === null) {
-                continue;
-            }
-
-            $rule = $definition->getAttributeRule($field);
-            if ($rule === null || !isset($rule['type'])) {
-                continue;
-            }
-
-            $type = $rule['type'];
-            if ($type === 'integer' && !is_int($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be an integer", $field), [
-                    'attribute' => $field,
-                ]);
-            }
-            if ($type === 'numeric' && !is_int($value) && !is_float($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be numeric", $field), [
-                    'attribute' => $field,
-                ]);
-            }
-            if ($type === 'boolean' && !is_bool($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be boolean", $field), [
-                    'attribute' => $field,
-                ]);
-            }
-            if ($type === 'string' && !is_string($value)) {
-                $this->addError($errors, 'invalid_attribute_type', 'Invalid Attribute Type', sprintf("Attribute '%s' must be string", $field), [
-                    'attribute' => $field,
-                ]);
-            }
-        }
     }
 
     /**

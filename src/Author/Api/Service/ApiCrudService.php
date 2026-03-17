@@ -646,59 +646,27 @@ class ApiCrudService
      */
     private function normalizeWriteData(EntityDefinition $definition, $payload, bool $isCreate = false, bool $isPut = false)
     {
-        if ($payload instanceof JsonApiDto) {
-            $this->dtoValidator->validate($payload, $isCreate, $isPut);
-            return $this->dtoWriteDataAdapter->toResourceWriteData($payload);
+        if (!$payload instanceof JsonApiDto) {
+            throw new ApiException(
+                400,
+                'invalid_payload',
+                'Invalid Payload',
+                'Write operations require a DTO payload'
+            );
         }
 
-        if ($payload instanceof ResourceWriteData) {
-            return $payload;
+        if ($payload::schema()->getType() !== $definition->getType()) {
+            throw new ApiException(
+                422,
+                'type_mismatch',
+                'Type Mismatch',
+                sprintf("Payload data.type must be '%s'", $definition->getType()),
+                '/data/type'
+            );
         }
 
-        $data = is_array($payload) ? ($payload['data'] ?? null) : null;
-        if (!is_array($data)) {
-            throw new ApiException(400, 'invalid_payload', 'Invalid Payload', 'Payload must include a data object', '/data');
-        }
-        if (($data['type'] ?? null) !== $definition->getType()) {
-            throw new ApiException(422, 'type_mismatch', 'Type Mismatch', sprintf("Payload data.type must be '%s'", $definition->getType()), '/data/type');
-        }
+        $this->dtoValidator->validate($payload, $isCreate, $isPut);
 
-        $attributes = $data['attributes'] ?? null;
-        if (!is_array($attributes)) {
-            throw new ApiException(400, 'invalid_attributes', 'Invalid Attributes', 'Payload must include data.attributes object', '/data/attributes');
-        }
-
-        $relationships = [];
-        $relationshipsPayload = $data['relationships'] ?? [];
-        if (is_array($relationshipsPayload)) {
-            foreach ($relationshipsPayload as $name => $relationship) {
-                if (!is_string($name) || !is_array($relationship)) {
-                    continue;
-                }
-
-                $relationshipData = $relationship['data'] ?? null;
-                if ($relationshipData === null) {
-                    $relationships[$name] = new ResourceIdentifierData();
-                    continue;
-                }
-
-                if (!is_array($relationshipData)) {
-                    throw new ApiException(
-                        400,
-                        'invalid_relationship',
-                        'Invalid Relationship',
-                        sprintf("Relationship '%s' data must be an object or null", $name),
-                        '/data/relationships/' . $name . '/data'
-                    );
-                }
-
-                $relationships[$name] = new ResourceIdentifierData(
-                    isset($relationshipData['type']) ? (string) $relationshipData['type'] : null,
-                    $relationshipData['id'] ?? null
-                );
-            }
-        }
-
-        return new ResourceWriteData($data['id'] ?? null, $attributes, $relationships);
+        return $this->dtoWriteDataAdapter->toResourceWriteData($payload);
     }
 }

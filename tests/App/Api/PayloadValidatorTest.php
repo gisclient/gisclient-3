@@ -2,12 +2,13 @@
 
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
+use GisClient\Author\Api\Model\ResourceWriteData;
 use GisClient\Author\Api\Validation\PayloadValidator;
 use PHPUnit\Framework\TestCase;
 
 class PayloadValidatorTest extends TestCase
 {
-    public function testCollectsMultipleValidationErrors()
+    public function testCollectsMultipleValidationErrors(): void
     {
         $validator = new PayloadValidator();
         $definition = new EntityDefinition(
@@ -22,26 +23,14 @@ class PayloadValidatorTest extends TestCase
             ['project_title', 'max_extent_scale'],
             ['project_name'],
             ['project_name'],
-            'project_name',
-            [
-                'max_extent_scale' => [
-                    'type' => 'numeric',
-                ],
-            ]
+            'project_name'
         );
 
         try {
-            $validator->validateAndNormalize($definition, [
-                'data' => [
-                    'type' => 'project',
-                    'id' => 'milano',
-                    'attributes' => [
-                        'project_note' => 'hidden',
-                        'project_title' => '',
-                        'max_extent_scale' => 'A50000',
-                    ],
-                ],
-            ], true, false);
+            $validator->validateAndNormalize($definition, new ResourceWriteData('milano', [
+                'project_note' => 'hidden',
+                'project_title' => '',
+            ]), true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
             $errors = $exception->getErrors();
@@ -49,11 +38,10 @@ class PayloadValidatorTest extends TestCase
 
             $this->assertContains('invalid_attribute', $codes);
             $this->assertContains('missing_required_attribute', $codes);
-            $this->assertContains('invalid_attribute_type', $codes);
         }
     }
 
-    public function testRejectsInvalidForeignKeyReference()
+    public function testRejectsInvalidForeignKeyReference(): void
     {
         $validator = new PayloadValidator(null, static function (array $lookupRule, $value): bool {
             if ($lookupRule['table'] === 'e_language') {
@@ -78,7 +66,6 @@ class PayloadValidatorTest extends TestCase
             'project_name',
             [
                 'default_language_id' => [
-                    'type' => 'string',
                     'lookup' => [
                         'schema' => 'gisclient_34',
                         'table' => 'e_language',
@@ -89,15 +76,9 @@ class PayloadValidatorTest extends TestCase
         );
 
         try {
-            $validator->validateAndNormalize($definition, [
-                'data' => [
-                    'type' => 'project',
-                    'id' => 'milano',
-                    'attributes' => [
-                        'default_language_id' => 'zz',
-                    ],
-                ],
-            ], true, false);
+            $validator->validateAndNormalize($definition, new ResourceWriteData('milano', [
+                'default_language_id' => 'zz',
+            ]), true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
             $errors = $exception->getErrors();
@@ -106,7 +87,7 @@ class PayloadValidatorTest extends TestCase
         }
     }
 
-    public function testAcceptsValidForeignKeyReference()
+    public function testAcceptsValidForeignKeyReference(): void
     {
         $validator = new PayloadValidator(null, static function (array $lookupRule, $value): bool {
             if ($lookupRule['table'] === 'e_language') {
@@ -131,7 +112,6 @@ class PayloadValidatorTest extends TestCase
             'project_name',
             [
                 'default_language_id' => [
-                    'type' => 'string',
                     'lookup' => [
                         'schema' => 'gisclient_34',
                         'table' => 'e_language',
@@ -141,20 +121,14 @@ class PayloadValidatorTest extends TestCase
             ]
         );
 
-        $attributes = $validator->validateAndNormalize($definition, [
-            'data' => [
-                'type' => 'project',
-                'id' => 'milano',
-                'attributes' => [
-                    'default_language_id' => 'it',
-                ],
-            ],
-        ], true, false);
+        $attributes = $validator->validateAndNormalize($definition, new ResourceWriteData('milano', [
+            'default_language_id' => 'it',
+        ]), true, false);
 
         $this->assertSame('it', $attributes['default_language_id']);
     }
 
-    public function testNormalizesIntegerResourceIdFromString()
+    public function testNormalizesIntegerResourceIdFromString(): void
     {
         $validator = new PayloadValidator();
         $definition = new EntityDefinition(
@@ -169,32 +143,18 @@ class PayloadValidatorTest extends TestCase
             [],
             ['srid'],
             ['srid'],
-            'srid',
-            [
-                'srid' => [
-                    'type' => 'integer',
-                ],
-                'project_name' => [
-                    'type' => 'string',
-                ],
-            ]
+            'srid'
         );
 
-        $attributes = $validator->validateAndNormalize($definition, [
-            'data' => [
-                'type' => 'project_srs',
-                'id' => '32632',
-                'attributes' => [
-                    'project_name' => 'milano',
-                    'projparam' => null,
-                ],
-            ],
-        ], true, false);
+        $attributes = $validator->validateAndNormalize($definition, new ResourceWriteData('32632', [
+            'project_name' => 'milano',
+            'projparam' => null,
+        ]), true, false);
 
         $this->assertSame(32632, $attributes['srid']);
     }
 
-    public function testRejectsNonNumericResourceIdForIntegerPrimaryKey()
+    public function testRejectsNonNumericResourceIdForIntegerPrimaryKey(): void
     {
         $validator = new PayloadValidator();
         $definition = new EntityDefinition(
@@ -209,24 +169,13 @@ class PayloadValidatorTest extends TestCase
             [],
             ['srid'],
             ['srid'],
-            'srid',
-            [
-                'srid' => [
-                    'type' => 'integer',
-                ],
-            ]
+            'srid'
         );
 
         try {
-            $validator->validateAndNormalize($definition, [
-                'data' => [
-                    'type' => 'project_srs',
-                    'id' => '32A',
-                    'attributes' => [
-                        'project_name' => 'milano',
-                    ],
-                ],
-            ], true, false);
+            $validator->validateAndNormalize($definition, new ResourceWriteData('32A', [
+                'project_name' => 'milano',
+            ]), true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
             $codes = array_column($exception->getErrors(), 'code');
