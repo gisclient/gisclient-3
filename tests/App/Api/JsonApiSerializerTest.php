@@ -54,14 +54,7 @@ class JsonApiSerializerTest extends TestCase
             ['theme_id'],
             ['theme_id'],
             'theme_id',
-            [
-                'theme_single' => [
-                    'type' => 'numeric',
-                ],
-                'radio' => [
-                    'type' => 'numeric',
-                ],
-            ],
+            [],
             [],
             [
                 'project' => [

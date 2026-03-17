@@ -4,6 +4,7 @@ namespace GisClient\Author\Api\Mapper;
 
 use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
+use GisClient\Author\Api\Dto\Schema\FieldDefinition;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
 use GisClient\Author\Api\Model\EntityDefinition;
 
@@ -30,7 +31,7 @@ class RowToDtoMapper
                 continue;
             }
 
-            DtoPropertyAccessor::set($dto, $field->getPropertyName(), $this->castAttributeValue($definition, $jsonApiName, $row[$jsonApiName]));
+            DtoPropertyAccessor::set($dto, $field->getPropertyName(), $this->castAttributeValue($field, $row[$jsonApiName]));
             $dto->markPresent($jsonApiName);
         }
 
@@ -61,23 +62,19 @@ class RowToDtoMapper
      * @param mixed $value
      * @return mixed
      */
-    private function castAttributeValue(EntityDefinition $definition, string $field, $value)
+    private function castAttributeValue(FieldDefinition $field, $value)
     {
         if ($value === null) {
             return null;
         }
 
-        $rule = $definition->getAttributeRule($field);
-        $type = is_array($rule) ? ($rule['type'] ?? null) : null;
-        if (!is_string($type)) {
-            return $value;
-        }
+        $type = $field->getPhpType();
 
-        if ($type === 'integer' && is_string($value) && preg_match('/^-?\d+$/', $value) === 1) {
+        if ($type === 'int' && is_string($value) && preg_match('/^-?\d+$/', $value) === 1) {
             return (int) $value;
         }
 
-        if ($type === 'boolean') {
+        if ($type === 'bool') {
             if (is_int($value)) {
                 return $value === 1;
             }
@@ -92,7 +89,7 @@ class RowToDtoMapper
             }
         }
 
-        if ($type === 'numeric' && is_string($value) && is_numeric(trim($value))) {
+        if ($type === 'float' && is_string($value) && is_numeric(trim($value))) {
             return preg_match('/^[+-]?\d+$/', trim($value)) === 1 ? (int) $value : (float) $value;
         }
 
