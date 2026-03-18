@@ -12,10 +12,8 @@ use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Model\ResourceCollectionData;
 use GisClient\Author\Api\Model\ResourceData;
-use GisClient\Author\Api\Model\ResourceIdentifierData;
-use GisClient\Author\Api\Model\ResourceWriteData;
 use GisClient\Author\Api\Validation\DtoValidator;
-use GisClient\Author\Api\Validation\PayloadValidator;
+use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 
 class ApiCrudService
 {
@@ -30,9 +28,9 @@ class ApiCrudService
     private $repository;
 
     /**
-     * @var PayloadValidator
+     * @var PersistenceWriteValidator
      */
-    private $payloadValidator;
+    private $persistenceWriteValidator;
 
     /**
      * @var DtoValidator
@@ -42,12 +40,12 @@ class ApiCrudService
     public function __construct(
         EntityDefinitionProviderInterface $definitionProvider,
         AuthorEntityRepositoryInterface $repository,
-        PayloadValidator $payloadValidator,
+        PersistenceWriteValidator $persistenceWriteValidator,
         ?DtoValidator $dtoValidator = null
     ) {
         $this->definitionProvider = $definitionProvider;
         $this->repository = $repository;
-        $this->payloadValidator = $payloadValidator;
+        $this->persistenceWriteValidator = $persistenceWriteValidator;
         $this->dtoValidator = $dtoValidator ?: new DtoValidator();
     }
 
@@ -93,12 +91,12 @@ class ApiCrudService
     public function createResource($entity, $payload)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $payload = $this->normalizeWriteData($definition, $payload, true, false);
-        $this->validateRequiredRelationships($definition, $payload);
-        $attributes = $this->extractAttributes($definition, $payload, true, false);
-        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
-        $this->validateReferences($definition, $payload, $attributes);
-        $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes);
+        $dto = $this->normalizeWriteDto($definition, $payload, true, false);
+        $this->validateRequiredRelationships($definition, $dto);
+        $attributes = $this->extractAttributes($definition, $dto, true, false);
+        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
+        $this->validateReferences($definition, $dto, $attributes);
+        $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $dto, $attributes);
         $created = $this->repository->create($definition, $attributes);
 
         return new ResourceData($definition, $created);
@@ -112,16 +110,16 @@ class ApiCrudService
     public function updateResource($entity, $id, $payload)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $payload = $this->normalizeWriteData($definition, $payload, false, true);
+        $dto = $this->normalizeWriteDto($definition, $payload, false, true);
         $current = $this->repository->findById($definition, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $this->validateRequiredRelationships($definition, $payload);
-        $attributes = $this->extractAttributes($definition, $payload, false, true);
-        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
-        $this->validateReferences($definition, $payload, $attributes);
+        $this->validateRequiredRelationships($definition, $dto);
+        $attributes = $this->extractAttributes($definition, $dto, false, true);
+        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
+        $this->validateReferences($definition, $dto, $attributes);
         $updated = $this->repository->update($definition, $id, $attributes);
 
         return new ResourceData($definition, $updated);
@@ -195,14 +193,17 @@ class ApiCrudService
      * @param bool $isPut
      * @return array
      */
-    private function extractAttributes(EntityDefinition $definition, ResourceWriteData $payload, $isCreate, $isPut)
+    private function extractAttributes(EntityDefinition $definition, JsonApiDto $dto, $isCreate, $isPut)
     {
-        return $this->payloadValidator->validateAndNormalize(
+        $attributes = $this->extractDtoAttributes($dto);
+
+        return $this->persistenceWriteValidator->validateAndNormalize(
             $definition,
-            $payload,
+            $attributes,
+            $dto->getId(),
             $isCreate,
             $isPut,
-            $this->extractRequiredFieldsSatisfiedByRelationships($definition, $payload)
+            $this->extractRequiredFieldsSatisfiedByRelationships($definition, $dto)
         );
     }
 
@@ -210,9 +211,9 @@ class ApiCrudService
      * @param array<string,mixed> $payload
      * @param array<string,mixed> $attributes
      */
-    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, ResourceWriteData $payload, array $attributes)
+    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, JsonApiDto $dto, array $attributes)
     {
-        if ($payload->getId() === null) {
+        if ($dto->getId() === null) {
             return;
         }
 
@@ -233,7 +234,7 @@ class ApiCrudService
         }
     }
 
-    private function validateRequiredRelationships(EntityDefinition $definition, ResourceWriteData $payload)
+    private function validateRequiredRelationships(EntityDefinition $definition, JsonApiDto $dto)
     {
         $required = $definition->getRequiredRelationshipsOnWrite();
         if (count($required) === 0) {
@@ -241,7 +242,7 @@ class ApiCrudService
         }
 
         foreach ($required as $relationshipName) {
-            if (!$payload->hasRelationship($relationshipName)) {
+            if (!$dto->isPresent($relationshipName)) {
                 throw new ApiException(
                     422,
                     'missing_required_relationship',
@@ -251,8 +252,8 @@ class ApiCrudService
                 );
             }
 
-            $relationshipData = $payload->getRelationship($relationshipName);
-            if (!$relationshipData instanceof ResourceIdentifierData) {
+            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
+            if ($relationshipData === null) {
                 throw new ApiException(
                     422,
                     'missing_required_relationship',
@@ -266,7 +267,7 @@ class ApiCrudService
             if (is_array($relationshipDefinition)) {
                 $expectedType = $relationshipDefinition['type'] ?? null;
 
-                if ($expectedType !== null && $relationshipData->getType() !== null && $relationshipData->getType() !== $expectedType) {
+                if ($expectedType !== null && $relationshipData['type'] !== null && $relationshipData['type'] !== $expectedType) {
                     throw new ApiException(
                         422,
                         'invalid_relationship',
@@ -275,7 +276,7 @@ class ApiCrudService
                         '/data/relationships/' . $relationshipName . '/data/type'
                     );
                 }
-                if ($relationshipData->getId() === null || (!is_scalar($relationshipData->getId()) && $relationshipData->getId() !== null) || trim((string) $relationshipData->getId()) === '') {
+                if ($relationshipData['id'] === null || (!is_scalar($relationshipData['id']) && $relationshipData['id'] !== null) || trim((string) $relationshipData['id']) === '') {
                     throw new ApiException(
                         422,
                         'invalid_relationship',
@@ -293,7 +294,7 @@ class ApiCrudService
      * @param array<string,mixed> $attributes
      * @return array<string,mixed>
      */
-    private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, ResourceWriteData $payload, array $attributes)
+    private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, JsonApiDto $dto, array $attributes)
     {
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
             if (!is_string($relationshipName) || !is_array($relationship)) {
@@ -301,16 +302,16 @@ class ApiCrudService
             }
 
             $localKey = $relationship['local_key'] ?? null;
-            if (!is_string($localKey) || !$payload->hasRelationship($relationshipName)) {
+            if (!is_string($localKey) || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $payload->getRelationship($relationshipName);
-            if (!$relationshipData instanceof ResourceIdentifierData || $relationshipData->getId() === null) {
+            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
+            if ($relationshipData === null || $relationshipData['id'] === null) {
                 continue;
             }
 
-            $relationshipId = (string) $relationshipData->getId();
+            $relationshipId = (string) $relationshipData['id'];
             if ($relationshipId === '') {
                 continue;
             }
@@ -339,7 +340,7 @@ class ApiCrudService
      * @param array<string,mixed> $payload
      * @return array<int,string>
      */
-    private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, ResourceWriteData $payload)
+    private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, JsonApiDto $dto)
     {
         $fields = [];
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
@@ -348,16 +349,16 @@ class ApiCrudService
             }
 
             $localKey = $relationship['local_key'] ?? null;
-            if (!is_string($localKey) || !$payload->hasRelationship($relationshipName)) {
+            if (!is_string($localKey) || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $payload->getRelationship($relationshipName);
-            if (!$relationshipData instanceof ResourceIdentifierData || $relationshipData->getId() === null) {
+            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
+            if ($relationshipData === null || $relationshipData['id'] === null) {
                 continue;
             }
 
-            if (trim((string) $relationshipData->getId()) === '') {
+            if (trim((string) $relationshipData['id']) === '') {
                 continue;
             }
 
@@ -404,16 +405,16 @@ class ApiCrudService
     /**
      * @param array<string,mixed> $attributes
      */
-    private function validateReferences(EntityDefinition $definition, ResourceWriteData $payload, array $attributes): void
+    private function validateReferences(EntityDefinition $definition, JsonApiDto $dto, array $attributes): void
     {
         $errors = [];
-        $this->validateRelationshipReferences($definition, $payload, $attributes, $errors);
+        $this->validateRelationshipReferences($definition, $dto, $attributes, $errors);
 
         if ($errors !== []) {
             throw new ValidationException($errors);
         }
 
-        $this->payloadValidator->validateAttributeReferences(
+        $this->persistenceWriteValidator->validateAttributeReferences(
             $this->definitionWithResolvedLookupFilters($definition, $attributes),
             $attributes
         );
@@ -423,15 +424,15 @@ class ApiCrudService
      * @param array<string,mixed> $attributes
      * @param array<int,array<string,mixed>> $errors
      */
-    private function validateRelationshipReferences(EntityDefinition $definition, ResourceWriteData $payload, array $attributes, array &$errors): void
+    private function validateRelationshipReferences(EntityDefinition $definition, JsonApiDto $dto, array $attributes, array &$errors): void
     {
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
-            if (!is_string($relationshipName) || !is_array($relationship) || !$payload->hasRelationship($relationshipName)) {
+            if (!is_string($relationshipName) || !is_array($relationship) || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $payload->getRelationship($relationshipName);
-            if (!$relationshipData instanceof ResourceIdentifierData || $relationshipData->getId() === null) {
+            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
+            if ($relationshipData === null || $relationshipData['id'] === null) {
                 continue;
             }
 
@@ -442,7 +443,7 @@ class ApiCrudService
 
             $targetDefinition = $this->definitionProvider->getEntityDefinition($targetType);
 
-            if ($this->repository->findById($targetDefinition, $relationshipData->getId()) !== null) {
+            if ($this->repository->findById($targetDefinition, $relationshipData['id']) !== null) {
                 continue;
             }
 
@@ -529,9 +530,9 @@ class ApiCrudService
 
     /**
      * @param mixed $payload
-     * @return ResourceWriteData
+     * @return JsonApiDto
      */
-    private function normalizeWriteData(EntityDefinition $definition, $payload, bool $isCreate = false, bool $isPut = false)
+    private function normalizeWriteDto(EntityDefinition $definition, $payload, bool $isCreate = false, bool $isPut = false)
     {
         if (!$payload instanceof JsonApiDto) {
             throw new ApiException(
@@ -554,19 +555,16 @@ class ApiCrudService
 
         $this->dtoValidator->validate($payload, $isCreate, $isPut);
 
-        return $this->resourceWriteDataFromDto($payload);
+        return $payload;
     }
 
-    private function resourceWriteDataFromDto(JsonApiDto $dto): ResourceWriteData
+    /**
+     * @return array<string,mixed>
+     */
+    private function extractDtoAttributes(JsonApiDto $dto): array
     {
         $schema = $dto::schema();
         $attributes = [];
-        $relationships = [];
-        $id = null;
-
-        if (DtoPropertyAccessor::isInitialized($dto, 'id')) {
-            $id = DtoPropertyAccessor::get($dto, 'id');
-        }
 
         foreach ($schema->getAttributes() as $field) {
             if (!$dto->isPresent($field->getJsonApiName()) || !DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
@@ -576,32 +574,40 @@ class ApiCrudService
             $attributes[$field->getJsonApiName()] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
         }
 
-        foreach ($schema->getRelationships() as $field) {
-            if (!$dto->isPresent($field->getJsonApiName())) {
-                continue;
-            }
+        return $attributes;
+    }
 
-            if (!DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
-                $relationships[$field->getJsonApiName()] = new ResourceIdentifierData();
-                continue;
-            }
-
-            $relatedDto = DtoPropertyAccessor::get($dto, $field->getPropertyName());
-            if ($relatedDto === null) {
-                $relationships[$field->getJsonApiName()] = new ResourceIdentifierData();
-                continue;
-            }
-
-            $relationshipId = DtoPropertyAccessor::isInitialized($relatedDto, 'id')
-                ? DtoPropertyAccessor::get($relatedDto, 'id')
-                : null;
-
-            $relationships[$field->getJsonApiName()] = new ResourceIdentifierData(
-                $field->getTargetType(),
-                $relationshipId
-            );
+    /**
+     * @return array{type:?string,id:string|int|null}|null
+     */
+    private function getRelationshipIdentifier(EntityDefinition $definition, JsonApiDto $dto, string $relationshipName): ?array
+    {
+        $relationship = $definition->getRelationships()[$relationshipName] ?? null;
+        $schemaRelationship = $dto::schema()->getRelationship($relationshipName);
+        if (!is_array($relationship) || $schemaRelationship === null) {
+            return null;
         }
 
-        return new ResourceWriteData($id, $attributes, $relationships);
+        if (!DtoPropertyAccessor::isInitialized($dto, $schemaRelationship->getPropertyName())) {
+            return [
+                'type' => $relationship['type'] ?? null,
+                'id' => null,
+            ];
+        }
+
+        $relatedDto = DtoPropertyAccessor::get($dto, $schemaRelationship->getPropertyName());
+        if ($relatedDto === null) {
+            return [
+                'type' => $relationship['type'] ?? null,
+                'id' => null,
+            ];
+        }
+
+        return [
+            'type' => $relationship['type'] ?? null,
+            'id' => DtoPropertyAccessor::isInitialized($relatedDto, 'id')
+                ? DtoPropertyAccessor::get($relatedDto, 'id')
+                : null,
+        ];
     }
 }

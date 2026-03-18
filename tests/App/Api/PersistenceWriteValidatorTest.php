@@ -2,15 +2,14 @@
 
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
-use GisClient\Author\Api\Model\ResourceWriteData;
-use GisClient\Author\Api\Validation\PayloadValidator;
+use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 use PHPUnit\Framework\TestCase;
 
-class PayloadValidatorTest extends TestCase
+class PersistenceWriteValidatorTest extends TestCase
 {
     public function testCollectsMultipleValidationErrors(): void
     {
-        $validator = new PayloadValidator();
+        $validator = new PersistenceWriteValidator();
         $definition = new EntityDefinition(
             'project',
             'gisclient_34',
@@ -27,10 +26,10 @@ class PayloadValidatorTest extends TestCase
         );
 
         try {
-            $validator->validateAndNormalize($definition, new ResourceWriteData('milano', [
+            $validator->validateAndNormalize($definition, [
                 'project_note' => 'hidden',
                 'project_title' => '',
-            ]), true, false);
+            ], 'milano', true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
             $errors = $exception->getErrors();
@@ -43,7 +42,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testRejectsInvalidForeignKeyReference(): void
     {
-        $validator = new PayloadValidator(null, static function (array $lookupRule, $value): bool {
+        $validator = new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
             if ($lookupRule['table'] === 'e_language') {
                 return in_array((string) $value, ['it', 'en'], true);
             }
@@ -76,9 +75,9 @@ class PayloadValidatorTest extends TestCase
         );
 
         try {
-            $validator->validateAndNormalize($definition, new ResourceWriteData('milano', [
+            $validator->validateAndNormalize($definition, [
                 'default_language_id' => 'zz',
-            ]), true, false);
+            ], 'milano', true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
             $errors = $exception->getErrors();
@@ -89,7 +88,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testAcceptsValidForeignKeyReference(): void
     {
-        $validator = new PayloadValidator(null, static function (array $lookupRule, $value): bool {
+        $validator = new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
             if ($lookupRule['table'] === 'e_language') {
                 return in_array((string) $value, ['it', 'en'], true);
             }
@@ -121,16 +120,16 @@ class PayloadValidatorTest extends TestCase
             ]
         );
 
-        $attributes = $validator->validateAndNormalize($definition, new ResourceWriteData('milano', [
+        $attributes = $validator->validateAndNormalize($definition, [
             'default_language_id' => 'it',
-        ]), true, false);
+        ], 'milano', true, false);
 
         $this->assertSame('it', $attributes['default_language_id']);
     }
 
     public function testNormalizesIntegerResourceIdFromString(): void
     {
-        $validator = new PayloadValidator();
+        $validator = new PersistenceWriteValidator();
         $definition = new EntityDefinition(
             'project_srs',
             'gisclient_34',
@@ -146,17 +145,17 @@ class PayloadValidatorTest extends TestCase
             'srid'
         );
 
-        $attributes = $validator->validateAndNormalize($definition, new ResourceWriteData('32632', [
+        $attributes = $validator->validateAndNormalize($definition, [
             'project_name' => 'milano',
             'projparam' => null,
-        ]), true, false);
+        ], '32632', true, false);
 
         $this->assertSame(32632, $attributes['srid']);
     }
 
     public function testRejectsNonNumericResourceIdForIntegerPrimaryKey(): void
     {
-        $validator = new PayloadValidator();
+        $validator = new PersistenceWriteValidator();
         $definition = new EntityDefinition(
             'project_srs',
             'gisclient_34',
@@ -173,9 +172,9 @@ class PayloadValidatorTest extends TestCase
         );
 
         try {
-            $validator->validateAndNormalize($definition, new ResourceWriteData('32A', [
+            $validator->validateAndNormalize($definition, [
                 'project_name' => 'milano',
-            ]), true, false);
+            ], '32A', true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
             $codes = array_column($exception->getErrors(), 'code');

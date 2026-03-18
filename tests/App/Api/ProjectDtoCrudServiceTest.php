@@ -7,7 +7,7 @@ use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Service\ApiCrudService;
-use GisClient\Author\Api\Validation\PayloadValidator;
+use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 use PHPUnit\Framework\TestCase;
 
 class ProjectDtoCrudServiceTest extends TestCase
@@ -61,7 +61,7 @@ class ProjectDtoCrudServiceTest extends TestCase
         $service = new ApiCrudService(
             new DtoEntityDefinitionProvider(),
             new AuthorEntityRepositoryStub(),
-            new PayloadValidator(null, static function (array $lookupRule, $value): bool {
+            new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
                 if ($lookupRule['table'] !== 'e_charset_encodings') {
                     return true;
                 }

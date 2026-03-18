@@ -4,9 +4,8 @@ namespace GisClient\Author\Api\Validation;
 
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
-use GisClient\Author\Api\Model\ResourceWriteData;
 
-class PayloadValidator
+class PersistenceWriteValidator
 {
     /**
      * @var \PDO|null
@@ -25,23 +24,20 @@ class PayloadValidator
     }
 
     /**
+     * @param array<string,mixed> $attributes
+     * @param string|int|null $resourceId
      * @param bool $isCreate
      * @param bool $isPut
      * @param array<int,string> $requiredFieldsSatisfied
      * @return array<string,mixed>
      */
-    public function validateAndNormalize(EntityDefinition $definition, $payload, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
+    public function validateAndNormalize(EntityDefinition $definition, array $attributes, $resourceId, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
     {
         $errors = [];
-        if (!$payload instanceof ResourceWriteData) {
-            throw new \InvalidArgumentException('PayloadValidator expects a ResourceWriteData payload');
-        }
-
-        $attributes = $payload->getAttributes();
         $primaryKey = $definition->getPrimaryKey();
 
-        if ($isCreate && $payload->getId() !== null) {
-            $idValue = $payload->getId();
+        if ($isCreate && $resourceId !== null) {
+            $idValue = $resourceId;
             if ($this->isEmptyValue($idValue)) {
                 $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id cannot be empty', [
                     'id' => true,
@@ -322,24 +318,23 @@ class PayloadValidator
             'title' => $title,
             'detail' => $detail,
         ];
-        if (count($source) > 0) {
+
+        if ($source !== []) {
             $error['source'] = $source;
         }
+
         $errors[] = $error;
     }
 
     /**
      * @param mixed $value
-     * @return bool
      */
-    private function isEmptyValue($value)
+    private function isEmptyValue($value): bool
     {
         if ($value === null) {
             return true;
         }
-        if (is_string($value)) {
-            return trim($value) === '';
-        }
-        return false;
+
+        return is_string($value) && trim($value) === '';
     }
 }

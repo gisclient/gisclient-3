@@ -6,7 +6,7 @@ use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
-use GisClient\Author\Api\Validation\PayloadValidator;
+use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 
 final class TestApiCrudService extends ApiCrudService
 {
@@ -21,7 +21,7 @@ final class TestApiCrudService extends ApiCrudService
         parent::__construct(
             $provider,
             $repository,
-            new PayloadValidator(null, static fn (...$args): bool => true)
+            new PersistenceWriteValidator(null, static fn (...$args): bool => true)
         );
         $this->repository = $repository;
         $this->serializer = new JsonApiSerializer();

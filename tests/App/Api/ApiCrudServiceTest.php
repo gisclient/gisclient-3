@@ -13,7 +13,7 @@ use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Service\ApiCrudService;
-use GisClient\Author\Api\Validation\PayloadValidator;
+use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 use PHPUnit\Framework\TestCase;
 
 class ApiCrudServiceTest extends TestCase
@@ -78,7 +78,7 @@ class ApiCrudServiceTest extends TestCase
         $service = new ApiCrudService(
             new DtoEntityDefinitionProvider(),
             $repository,
-            new PayloadValidator(null, static fn (): bool => true)
+            new PersistenceWriteValidator(null, static fn (): bool => true)
         );
 
         $dto = $this->makeDto(ThemeDto::class, 4, [
@@ -112,7 +112,7 @@ class ApiCrudServiceTest extends TestCase
         $service = new ApiCrudService(
             new DtoEntityDefinitionProvider(),
             $repository,
-            new PayloadValidator(null, static function (array $lookupRule, $value): bool {
+            new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
                 if (($lookupRule['table'] ?? null) !== 'seldb_mapset_srid') {
                     return true;
                 }
@@ -188,7 +188,7 @@ class ApiCrudServiceTest extends TestCase
         $service = new ApiCrudService(
             new DtoEntityDefinitionProvider(),
             $repository,
-            new PayloadValidator(null, static fn (): bool => true)
+            new PersistenceWriteValidator(null, static fn (): bool => true)
         );
 
         $service->listResources('theme', [
