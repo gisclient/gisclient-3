@@ -30,7 +30,7 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $listCalled = false;
 
-            public function listResources($entity, array $query, array $scope = [])
+            public function listResources($entity, array $query)
             {
                 $this->listCalled = true;
                 return null;
@@ -53,7 +53,7 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $createCalled = false;
 
-            public function createResource($entity, $payload, array $scope = [])
+            public function createResource($entity, $payload)
             {
                 $this->createCalled = true;
                 return null;
@@ -93,12 +93,11 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $captured = [];
 
-            public function createResource($entity, $payload, array $scope = [])
+            public function createResource($entity, $payload)
             {
                 $this->captured = [
                     'entity' => $entity,
                     'payload' => $payload,
-                    'scope' => $scope,
                 ];
 
                 return new \GisClient\Author\Api\Model\ResourceData(
@@ -151,7 +150,6 @@ class JsonApiControllerTest extends TestCase
         $this->assertSame(Response::HTTP_CREATED, $response->getStatusCode());
         $this->assertSame('project', $service->captured['entity']);
         $this->assertSame('milano', $service->captured['payload']->getId());
-        $this->assertSame([], $service->captured['scope']);
         $this->assertSame('milano', $payload['data']['id']);
         $this->assertSame('Milano', $payload['data']['attributes']['project_title']);
     }
@@ -161,7 +159,7 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $createCalled = false;
 
-            public function createResource($entity, $payload, array $scope = [])
+            public function createResource($entity, $payload)
             {
                 $this->createCalled = true;
                 return null;

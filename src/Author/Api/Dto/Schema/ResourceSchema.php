@@ -75,11 +75,6 @@ class ResourceSchema
     private $defaultSort;
 
     /**
-     * @var array<int,string>
-     */
-    private $scopeFields = [];
-
-    /**
      * @var string|null
      */
     private $table;
@@ -213,13 +208,6 @@ class ResourceSchema
         return $this;
     }
 
-    public function scopedBy(array $fields): self
-    {
-        $this->scopeFields = array_values($fields);
-
-        return $this;
-    }
-
     public function storedAs(?string $table = null, ?string $dbSchema = null): self
     {
         $this->table = $table;
@@ -247,14 +235,6 @@ class ResourceSchema
     public function getDefaultSort(): ?string
     {
         return $this->defaultSort;
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    public function getScopeFields(): array
-    {
-        return $this->scopeFields;
     }
 
     public function getTable(): ?string

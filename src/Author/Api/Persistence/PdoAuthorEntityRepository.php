@@ -25,7 +25,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         $this->db = $db ?: \GCApp::getDB();
     }
 
-    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
+    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions)
     {
         $where = [];
         $params = [];
@@ -37,13 +37,6 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $params[$placeholder] = $value;
             $paramIndex++;
         }
-        foreach ($scopeFilters as $field => $value) {
-            $placeholder = ':s' . $paramIndex;
-            $where[] = sprintf('%s = %s', $field, $placeholder);
-            $params[$placeholder] = $value;
-            $paramIndex++;
-        }
-
         $whereSql = count($where) > 0 ? (' WHERE ' . implode(' AND ', $where)) : '';
         $table = sprintf('%s.%s', $definition->getSchema(), $definition->getTable());
 
@@ -73,19 +66,16 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         });
     }
 
-    public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
+    public function findById(EntityDefinition $definition, $id)
     {
         $table = sprintf('%s.%s', $definition->getSchema(), $definition->getTable());
         $fields = implode(', ', $definition->getReadableFields());
 
-        return $this->executeSafely(function () use ($definition, $id, $table, $fields, $scopeFilters) {
+        return $this->executeSafely(function () use ($definition, $id, $table, $fields) {
             $params = [
                 ':id' => $this->normalizeId($definition, $id),
             ];
-            $where = [sprintf('%s = :id', $definition->getPrimaryKey())];
-            $this->appendScopeWhere($scopeFilters, $where, $params);
-
-            $sql = sprintf('SELECT %s FROM %s WHERE %s LIMIT 1', $fields, $table, implode(' AND ', $where));
+            $sql = sprintf('SELECT %s FROM %s WHERE %s = :id LIMIT 1', $fields, $table, $definition->getPrimaryKey());
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -123,10 +113,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
         });
 
-        return $this->findById($definition, $attributes[$pk], $this->extractScopeFilters($definition, $attributes));
+        return $this->findById($definition, $attributes[$pk]);
     }
 
-    public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
+    public function update(EntityDefinition $definition, $id, array $attributes)
     {
         $assignments = [];
         $params = [];
@@ -139,14 +129,12 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         }
 
         $params[':id'] = $this->normalizeId($definition, $id);
-        $where = [sprintf('%s = :id', $definition->getPrimaryKey())];
-        $this->appendScopeWhere($scopeFilters, $where, $params);
         $sql = sprintf(
-            'UPDATE %s.%s SET %s WHERE %s',
+            'UPDATE %s.%s SET %s WHERE %s = :id',
             $definition->getSchema(),
             $definition->getTable(),
             implode(', ', $assignments),
-            implode(' AND ', $where)
+            $definition->getPrimaryKey()
         );
 
         $this->executeSafely(function () use ($sql, $params): void {
@@ -154,59 +142,25 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
         });
 
-        return $this->findById($definition, $id, $scopeFilters);
+        return $this->findById($definition, $id);
     }
 
-    public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
+    public function delete(EntityDefinition $definition, $id)
     {
         $params = [
             ':id' => $this->normalizeId($definition, $id),
         ];
-        $where = [sprintf('%s = :id', $definition->getPrimaryKey())];
-        $this->appendScopeWhere($scopeFilters, $where, $params);
         $sql = sprintf(
-            'DELETE FROM %s.%s WHERE %s',
+            'DELETE FROM %s.%s WHERE %s = :id',
             $definition->getSchema(),
             $definition->getTable(),
-            implode(' AND ', $where)
+            $definition->getPrimaryKey()
         );
 
         $this->executeSafely(function () use ($sql, $params): void {
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
         });
-    }
-
-    /**
-     * @param array<string,mixed> $scopeFilters
-     * @param array<int,string> $where
-     * @param array<string,mixed> $params
-     */
-    private function appendScopeWhere(array $scopeFilters, array &$where, array &$params)
-    {
-        $idx = 0;
-        foreach ($scopeFilters as $field => $value) {
-            $placeholder = ':scope_' . $idx;
-            $where[] = sprintf('%s = %s', $field, $placeholder);
-            $params[$placeholder] = $value;
-            $idx++;
-        }
-    }
-
-    /**
-     * @param array<string,mixed> $attributes
-     * @return array<string,mixed>
-     */
-    private function extractScopeFilters(EntityDefinition $definition, array $attributes)
-    {
-        $scopeFilters = [];
-        foreach ($definition->getScopeFields() as $scopeField) {
-            if (array_key_exists($scopeField, $attributes)) {
-                $scopeFilters[$scopeField] = $attributes[$scopeField];
-            }
-        }
-
-        return $scopeFilters;
     }
 
     /**

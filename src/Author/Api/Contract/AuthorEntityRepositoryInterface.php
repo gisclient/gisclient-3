@@ -11,13 +11,13 @@ interface AuthorEntityRepositoryInterface
     /**
      * @return PagedResult
      */
-    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = []);
+    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions);
 
     /**
      * @param string|int $id
      * @return array|null
      */
-    public function findById(EntityDefinition $definition, $id, array $scopeFilters = []);
+    public function findById(EntityDefinition $definition, $id);
 
     /**
      * @return array
@@ -28,10 +28,10 @@ interface AuthorEntityRepositoryInterface
      * @param string|int $id
      * @return array
      */
-    public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = []);
+    public function update(EntityDefinition $definition, $id, array $attributes);
 
     /**
      * @param string|int $id
      */
-    public function delete(EntityDefinition $definition, $id, array $scopeFilters = []);
+    public function delete(EntityDefinition $definition, $id);
 }

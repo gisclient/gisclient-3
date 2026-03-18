@@ -68,14 +68,13 @@ class DtoEntityDefinitionProvider implements EntityDefinitionProviderInterface
             $schema->getPrimaryKey(),
             $schema->getIdPhpType(),
             array_values(array_unique($readableFields)),
-            array_values(array_unique(array_merge($writableFields, $schema->getScopeFields()))),
+            array_values(array_unique($writableFields)),
             $schema->getRequiredOnCreate(),
             $schema->getRequiredOnPut(),
             $schema->getFilterableFields() !== [] ? $schema->getFilterableFields() : array_values(array_unique($readableFields)),
             $schema->getSortableFields() !== [] ? $schema->getSortableFields() : [$schema->getPrimaryKey()],
             $schema->getDefaultSort() ?? $schema->getPrimaryKey(),
             $attributeRules,
-            $schema->getScopeFields(),
             $relationships,
             array_values(array_unique($requiredRelationshipsOnWrite))
         );

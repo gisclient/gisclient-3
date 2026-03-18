@@ -17,7 +17,6 @@ class EntityDefinition
     private $sortableFields;
     private $defaultSort;
     private $attributeRules;
-    private $scopeFields;
     private $relationships;
     private $requiredRelationshipsOnWrite;
 
@@ -35,7 +34,6 @@ class EntityDefinition
         array $sortableFields,
         $defaultSort,
         array $attributeRules = [],
-        array $scopeFields = [],
         array $relationships = [],
         array $requiredRelationshipsOnWrite = []
     ) {
@@ -52,7 +50,6 @@ class EntityDefinition
         $this->sortableFields = array_values(array_unique($sortableFields));
         $this->defaultSort = $defaultSort;
         $this->attributeRules = $attributeRules;
-        $this->scopeFields = array_values(array_unique($scopeFields));
         $this->relationships = $relationships;
         $this->requiredRelationshipsOnWrite = array_values(array_unique($requiredRelationshipsOnWrite));
     }
@@ -125,11 +122,6 @@ class EntityDefinition
     public function getAttributeRule($field)
     {
         return $this->attributeRules[$field] ?? null;
-    }
-
-    public function getScopeFields()
-    {
-        return $this->scopeFields;
     }
 
     public function getRelationships()

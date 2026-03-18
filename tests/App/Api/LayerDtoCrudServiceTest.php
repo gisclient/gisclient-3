@@ -76,7 +76,7 @@ class LayerDtoCrudServiceTest extends TestCase
     {
         $repository = new AuthorEntityRepositoryStub(
             [],
-            static fn ($definition, $id, array $scopeFilters) => [
+            static fn ($definition, $id) => [
                 'layer_id' => (int) $id,
                 'layergroup_id' => 1,
                 'catalog_id' => 1,
@@ -87,7 +87,7 @@ class LayerDtoCrudServiceTest extends TestCase
             ],
             null,
             null,
-            static fn ($definition, $id, array $attributes, array $scopeFilters) => array_merge([
+            static fn ($definition, $id, array $attributes) => array_merge([
                 'layer_id' => (int) $id,
                 'layergroup_id' => 1,
                 'catalog_id' => 1,

@@ -35,33 +35,33 @@ final class TestApiCrudService extends ApiCrudService
         );
     }
 
-    public function listResources($entity, array $query, array $scope = [])
+    public function listResources($entity, array $query)
     {
-        return $this->serializer->serializeCollection(parent::listResources($entity, $query, $scope));
+        return $this->serializer->serializeCollection(parent::listResources($entity, $query));
     }
 
-    public function getResource($entity, $id, array $query = [], array $scope = [])
+    public function getResource($entity, $id)
     {
-        return $this->serializer->serializeResource(parent::getResource($entity, $id, $query, $scope));
+        return $this->serializer->serializeResource(parent::getResource($entity, $id));
     }
 
-    public function createResource($entity, $payload, array $scope = [])
+    public function createResource($entity, $payload)
     {
         $this->beginWriteContext($entity);
 
         try {
-            return $this->serializer->serializeResource(parent::createResource($entity, $payload, $scope));
+            return $this->serializer->serializeResource(parent::createResource($entity, $payload));
         } finally {
             $this->endWriteContext();
         }
     }
 
-    public function updateResource($entity, $id, $payload, array $scope = [])
+    public function updateResource($entity, $id, $payload)
     {
         $this->beginWriteContext($entity);
 
         try {
-            return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload, $scope));
+            return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload));
         } finally {
             $this->endWriteContext();
         }

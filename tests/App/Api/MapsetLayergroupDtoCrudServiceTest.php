@@ -64,7 +64,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
 
     public function testGetUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id, array $scopeFilters) => [
+        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id) => [
             'id' => (int) $id,
             'mapset_name' => 'base',
             'layergroup_id' => 42,
@@ -84,7 +84,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
     {
         $repository = new AuthorEntityRepositoryStub(
             [],
-            static fn ($definition, $id, array $scopeFilters) => [
+            static fn ($definition, $id) => [
                 'id' => (int) $id,
                 'mapset_name' => 'base',
                 'layergroup_id' => 42,
@@ -94,7 +94,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
             ],
             null,
             null,
-            static fn ($definition, $id, array $attributes, array $scopeFilters) => array_merge([
+            static fn ($definition, $id, array $attributes) => array_merge([
                 'id' => (int) $id,
                 'mapset_name' => 'base',
                 'layergroup_id' => 42,

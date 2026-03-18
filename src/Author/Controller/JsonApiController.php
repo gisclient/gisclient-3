@@ -29,7 +29,7 @@ class JsonApiController implements ContainerAwareInterface
      */
     private $serializer;
 
-    public function setContainer(ContainerInterface $container = null)
+    public function setContainer(?ContainerInterface $container = null)
     {
         $this->apiCrudService = $container->get(ApiCrudService::class);
         $this->exceptionMapper = $container->get(JsonApiExceptionMapper::class);
@@ -40,9 +40,8 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $request) {
             $this->assertAdmin();
-            $scope = $this->resolveScopeFromRequest($request);
             $payload = $this->serializer->serializeCollection(
-                $this->apiCrudService->listResources($entity, $request->query->all(), $scope)
+                $this->apiCrudService->listResources($entity, $request->query->all())
             );
             return new JsonResponse($payload, Response::HTTP_OK);
         });
@@ -52,9 +51,8 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $id, $request) {
             $this->assertAdmin();
-            $scope = $this->resolveScopeFromRequest($request);
             $payload = $this->serializer->serializeResource(
-                $this->apiCrudService->getResource($entity, $id, $request->query->all(), $scope)
+                $this->apiCrudService->getResource($entity, $id)
             );
             return new JsonResponse($payload, Response::HTTP_OK);
         });
@@ -64,12 +62,10 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $request) {
             $this->assertAdmin();
-            $scope = $this->resolveScopeFromRequest($request);
             $payload = $this->serializer->serializeResource(
                 $this->apiCrudService->createResource(
                     $entity,
-                    $this->serializer->deserializeRequestBody($request->getContent(), $entity),
-                    $scope
+                    $this->serializer->deserializeRequestBody($request->getContent(), $entity)
                 )
             );
             return new JsonResponse($payload, Response::HTTP_CREATED);
@@ -80,13 +76,11 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $id, $request) {
             $this->assertAdmin();
-            $scope = $this->resolveScopeFromRequest($request);
             $payload = $this->serializer->serializeResource(
                 $this->apiCrudService->updateResource(
                     $entity,
                     $id,
-                    $this->serializer->deserializeRequestBody($request->getContent(), $entity),
-                    $scope
+                    $this->serializer->deserializeRequestBody($request->getContent(), $entity)
                 )
             );
             return new JsonResponse($payload, Response::HTTP_OK);
@@ -97,8 +91,7 @@ class JsonApiController implements ContainerAwareInterface
     {
         return $this->execute(function () use ($entity, $id, $request) {
             $this->assertAdmin();
-            $scope = $this->resolveScopeFromRequest($request);
-            $this->apiCrudService->deleteResource($entity, $id, $scope);
+            $this->apiCrudService->deleteResource($entity, $id);
             return new Response('', Response::HTTP_NO_CONTENT);
         });
     }
@@ -125,26 +118,5 @@ class JsonApiController implements ContainerAwareInterface
         if (!$auth->isAdmin()) {
             throw new ApiException(403, 'admin_required', 'Forbidden', 'Administrator permissions are required');
         }
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    private function resolveScopeFromRequest(Request $request)
-    {
-        $scopeMap = $request->attributes->get('_scope_map');
-        if (!is_array($scopeMap)) {
-            return [];
-        }
-
-        $scope = [];
-        foreach ($scopeMap as $scopeField => $routeParam) {
-            if (!is_string($scopeField) || !is_string($routeParam)) {
-                continue;
-            }
-            $scope[$scopeField] = $request->attributes->get($routeParam);
-        }
-
-        return $scope;
     }
 }

@@ -59,24 +59,22 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $this->deleteCallback = $deleteCallback;
     }
 
-    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions, array $scopeFilters = [])
+    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions)
     {
         if ($this->findAllCallback !== null) {
-            return ($this->findAllCallback)($definition, $queryOptions, $scopeFilters);
+            return ($this->findAllCallback)($definition, $queryOptions);
         }
 
         return new PagedResult([], 0, 50, 0);
     }
 
-    public function findById(EntityDefinition $definition, $id, array $scopeFilters = [])
+    public function findById(EntityDefinition $definition, $id)
     {
         if ($this->findByIdCallback !== null) {
-            return ($this->findByIdCallback)($definition, $id, $scopeFilters);
+            return ($this->findByIdCallback)($definition, $id);
         }
 
-        $scopeField = $definition->getScopeFields()[0] ?? null;
-        $scopeKey = ($scopeField !== null && isset($scopeFilters[$scopeField])) ? (string) $scopeFilters[$scopeField] : null;
-        $key = $scopeKey !== null ? ($scopeKey . '|' . (string) $id) : (string) $id;
+        $key = (string) $id;
         if (!isset($this->existingIds[$key])) {
             if ($this->writeEntityContext !== null && $definition->getType() !== $this->writeEntityContext) {
                 return [
@@ -89,7 +87,6 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
 
         return [
             $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
-            $scopeField ?? 'project_name' => $scopeKey ?? (string) $id,
             'project_title' => 'Project',
         ];
     }
@@ -102,45 +99,33 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
             return ($this->createCallback)($definition, $attributes);
         }
 
-        $scopeField = $definition->getScopeFields()[0] ?? null;
         $primaryKey = $definition->getPrimaryKey();
         if (isset($attributes[$primaryKey])) {
-            if ($scopeField !== null && isset($attributes[$scopeField])) {
-                $this->existingIds[(string) $attributes[$scopeField] . '|' . (string) $attributes[$primaryKey]] = true;
-            } else {
-                $this->existingIds[(string) $attributes[$primaryKey]] = true;
-            }
-        } elseif ($scopeField !== null && isset($attributes[$scopeField])) {
-            $this->existingIds[(string) $attributes[$scopeField]] = true;
+            $this->existingIds[(string) $attributes[$primaryKey]] = true;
         }
 
         return $attributes;
     }
 
-    public function update(EntityDefinition $definition, $id, array $attributes, array $scopeFilters = [])
+    public function update(EntityDefinition $definition, $id, array $attributes)
     {
         $this->updatedAttributes = $attributes;
 
         if ($this->updateCallback !== null) {
-            return ($this->updateCallback)($definition, $id, $attributes, $scopeFilters);
+            return ($this->updateCallback)($definition, $id, $attributes);
         }
 
         $defaults = [
             $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
         ];
-        foreach ($definition->getScopeFields() as $scopeField) {
-            if (isset($scopeFilters[$scopeField])) {
-                $defaults[$scopeField] = (string) $scopeFilters[$scopeField];
-            }
-        }
 
         return array_merge($defaults, $attributes);
     }
 
-    public function delete(EntityDefinition $definition, $id, array $scopeFilters = [])
+    public function delete(EntityDefinition $definition, $id)
     {
         if ($this->deleteCallback !== null) {
-            ($this->deleteCallback)($definition, $id, $scopeFilters);
+            ($this->deleteCallback)($definition, $id);
         }
     }
 

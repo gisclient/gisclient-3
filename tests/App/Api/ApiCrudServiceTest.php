@@ -10,6 +10,8 @@ use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Dto\ThemeDto;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
+use GisClient\Author\Api\Model\PagedResult;
+use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\PayloadValidator;
 use PHPUnit\Framework\TestCase;
@@ -72,7 +74,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownRelationshipReference(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id, array $scopeFilters) => null);
+        $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id) => null);
         $service = new ApiCrudService(
             new DtoEntityDefinitionProvider(),
             $repository,
@@ -98,7 +100,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownScopedMapsetSridReference(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id, array $scopeFilters) {
+        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id) {
             if ($definition->getType() === 'project') {
                 return [
                     'project_name' => (string) $id,
@@ -169,5 +171,65 @@ class ApiCrudServiceTest extends TestCase
             'catalog_id' => '10',
             'layergroup_id' => '5',
         ], $queryOptions->getFilters());
+    }
+
+    public function testListResourcesPassesNormalizedFiltersThroughQueryOptions(): void
+    {
+        $capturedQueryOptions = null;
+        $repository = new AuthorEntityRepositoryStub(
+            [],
+            null,
+            static function (EntityDefinition $definition, QueryOptions $queryOptions) use (&$capturedQueryOptions) {
+                $capturedQueryOptions = $queryOptions;
+
+                return new PagedResult([], 0, $queryOptions->getLimit(), $queryOptions->getOffset());
+            }
+        );
+        $service = new ApiCrudService(
+            new DtoEntityDefinitionProvider(),
+            $repository,
+            new PayloadValidator(null, static fn (): bool => true)
+        );
+
+        $service->listResources('theme', [
+            'filter' => [
+                'project' => 'milano',
+            ],
+            'limit' => 10,
+            'offset' => 5,
+        ]);
+
+        $this->assertNotNull($capturedQueryOptions);
+        $this->assertSame([
+            'project_name' => 'milano',
+        ], $capturedQueryOptions->getFilters());
+        $this->assertSame(10, $capturedQueryOptions->getLimit());
+        $this->assertSame(5, $capturedQueryOptions->getOffset());
+    }
+
+    public function testDeleteRemovesExistingResourceWithoutScopeContext(): void
+    {
+        $deleted = [];
+        $repository = new AuthorEntityRepositoryStub(
+            ['milano'],
+            null,
+            null,
+            null,
+            null,
+            static function (EntityDefinition $definition, $id) use (&$deleted): void {
+                $deleted = [
+                    'type' => $definition->getType(),
+                    'id' => $id,
+                ];
+            }
+        );
+        $service = TestApiCrudService::create($repository);
+
+        $service->deleteResource('project', 'milano');
+
+        $this->assertSame([
+            'type' => 'project',
+            'id' => 'milano',
+        ], $deleted);
     }
 }

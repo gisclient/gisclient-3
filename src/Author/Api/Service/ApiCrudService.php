@@ -55,12 +55,11 @@ class ApiCrudService
      * @param string $entity
      * @return ResourceCollectionData
      */
-    public function listResources($entity, array $query, array $scope = [])
+    public function listResources($entity, array $query)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $scope = $this->normalizeScope($definition, $scope);
         $queryOptions = $this->buildQueryOptions($definition, $query);
-        $result = $this->repository->findAll($definition, $queryOptions, $scope);
+        $result = $this->repository->findAll($definition, $queryOptions);
 
         return new ResourceCollectionData(
             $definition,
@@ -76,11 +75,10 @@ class ApiCrudService
      * @param mixed $id
      * @return ResourceData
      */
-    public function getResource($entity, $id, array $query = [], array $scope = [])
+    public function getResource($entity, $id)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $scope = $this->normalizeScope($definition, $scope);
-        $row = $this->repository->findById($definition, $id, $scope);
+        $row = $this->repository->findById($definition, $id);
         if ($row === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
@@ -92,17 +90,15 @@ class ApiCrudService
      * @param string $entity
      * @return ResourceData
      */
-    public function createResource($entity, $payload, array $scope = [])
+    public function createResource($entity, $payload)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $payload = $this->normalizeWriteData($definition, $payload, true, false);
-        $scope = $this->normalizeScope($definition, $scope);
-        $this->validateRequiredRelationships($definition, $payload, $scope);
+        $this->validateRequiredRelationships($definition, $payload);
         $attributes = $this->extractAttributes($definition, $payload, true, false);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
-        $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
         $this->validateReferences($definition, $payload, $attributes);
-        $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes, $scope);
+        $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $payload, $attributes);
         $created = $this->repository->create($definition, $attributes);
 
         return new ResourceData($definition, $created);
@@ -113,22 +109,20 @@ class ApiCrudService
      * @param mixed $id
      * @return ResourceData
      */
-    public function updateResource($entity, $id, $payload, array $scope = [])
+    public function updateResource($entity, $id, $payload)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $payload = $this->normalizeWriteData($definition, $payload, false, true);
-        $scope = $this->normalizeScope($definition, $scope);
-        $current = $this->repository->findById($definition, $id, $scope);
+        $current = $this->repository->findById($definition, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $this->validateRequiredRelationships($definition, $payload, $scope);
+        $this->validateRequiredRelationships($definition, $payload);
         $attributes = $this->extractAttributes($definition, $payload, false, true);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $payload, $attributes);
-        $attributes = $this->applyScopeToAttributes($definition, $attributes, $scope);
         $this->validateReferences($definition, $payload, $attributes);
-        $updated = $this->repository->update($definition, $id, $attributes, $scope);
+        $updated = $this->repository->update($definition, $id, $attributes);
 
         return new ResourceData($definition, $updated);
     }
@@ -137,16 +131,15 @@ class ApiCrudService
      * @param string $entity
      * @param mixed $id
      */
-    public function deleteResource($entity, $id, array $scope = [])
+    public function deleteResource($entity, $id)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $scope = $this->normalizeScope($definition, $scope);
-        $current = $this->repository->findById($definition, $id, $scope);
+        $current = $this->repository->findById($definition, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $this->repository->delete($definition, $id, $scope);
+        $this->repository->delete($definition, $id);
     }
 
     /**
@@ -217,7 +210,7 @@ class ApiCrudService
      * @param array<string,mixed> $payload
      * @param array<string,mixed> $attributes
      */
-    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, ResourceWriteData $payload, array $attributes, array $scope)
+    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, ResourceWriteData $payload, array $attributes)
     {
         if ($payload->getId() === null) {
             return;
@@ -228,7 +221,7 @@ class ApiCrudService
             return;
         }
 
-        $existing = $this->repository->findById($definition, $attributes[$primaryKey], $scope);
+        $existing = $this->repository->findById($definition, $attributes[$primaryKey]);
         if ($existing !== null) {
             throw new ApiException(
                 409,
@@ -240,61 +233,7 @@ class ApiCrudService
         }
     }
 
-    /**
-     * @param array<string,mixed> $scope
-     * @return array<string,mixed>
-     */
-    private function normalizeScope(EntityDefinition $definition, array $scope)
-    {
-        $requiredScopeFields = $definition->getScopeFields();
-        if (count($requiredScopeFields) === 0) {
-            return [];
-        }
-
-        $normalized = [];
-        foreach ($requiredScopeFields as $scopeField) {
-            if (!array_key_exists($scopeField, $scope)) {
-                throw new ApiException(400, 'missing_scope', 'Missing Scope', sprintf("Scope field '%s' is required", $scopeField));
-            }
-            $normalized[$scopeField] = $scope[$scopeField];
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * @param array<string,mixed> $scope
-     * @return array<string,mixed>
-     */
-    private function applyScopeToAttributes(EntityDefinition $definition, array $attributes, array $scope)
-    {
-        foreach ($definition->getScopeFields() as $scopeField) {
-            if (!array_key_exists($scopeField, $scope)) {
-                continue;
-            }
-            if (
-                array_key_exists($scopeField, $attributes)
-                && $attributes[$scopeField] !== null
-                && (string) $attributes[$scopeField] !== (string) $scope[$scopeField]
-            ) {
-                throw new ApiException(
-                    422,
-                    'scope_attribute_mismatch',
-                    'Scope Mismatch',
-                    sprintf("Attribute '%s' must match scoped value", $scopeField),
-                    '/data/attributes/' . $scopeField
-                );
-            }
-            $attributes[$scopeField] = $scope[$scopeField];
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * @param array<string,mixed> $scope
-     */
-    private function validateRequiredRelationships(EntityDefinition $definition, ResourceWriteData $payload, array $scope)
+    private function validateRequiredRelationships(EntityDefinition $definition, ResourceWriteData $payload)
     {
         $required = $definition->getRequiredRelationshipsOnWrite();
         if (count($required) === 0) {
@@ -326,10 +265,6 @@ class ApiCrudService
             $relationshipDefinition = $definition->getRelationships()[$relationshipName] ?? null;
             if (is_array($relationshipDefinition)) {
                 $expectedType = $relationshipDefinition['type'] ?? null;
-                $expectedId = null;
-                if (isset($relationshipDefinition['local_key']) && is_string($relationshipDefinition['local_key']) && array_key_exists($relationshipDefinition['local_key'], $scope)) {
-                    $expectedId = (string) $scope[$relationshipDefinition['local_key']];
-                }
 
                 if ($expectedType !== null && $relationshipData->getType() !== null && $relationshipData->getType() !== $expectedType) {
                     throw new ApiException(
@@ -349,15 +284,6 @@ class ApiCrudService
                         '/data/relationships/' . $relationshipName . '/data/id'
                     );
                 }
-                if ($expectedId !== null && (string) $relationshipData->getId() !== $expectedId) {
-                    throw new ApiException(
-                        422,
-                        'relationship_scope_mismatch',
-                        'Relationship Scope Mismatch',
-                        sprintf("Relationship '%s' id must match scoped project", $relationshipName),
-                        '/data/relationships/' . $relationshipName . '/data/id'
-                    );
-                }
             }
         }
     }
@@ -369,8 +295,6 @@ class ApiCrudService
      */
     private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, ResourceWriteData $payload, array $attributes)
     {
-        $scopeFields = array_fill_keys($definition->getScopeFields(), true);
-
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
             if (!is_string($relationshipName) || !is_array($relationship)) {
                 continue;
@@ -388,10 +312,6 @@ class ApiCrudService
 
             $relationshipId = (string) $relationshipData->getId();
             if ($relationshipId === '') {
-                continue;
-            }
-
-            if (isset($scopeFields[$localKey])) {
                 continue;
             }
 
@@ -521,14 +441,8 @@ class ApiCrudService
             }
 
             $targetDefinition = $this->definitionProvider->getEntityDefinition($targetType);
-            $targetScope = [];
-            foreach ($targetDefinition->getScopeFields() as $scopeField) {
-                if (array_key_exists($scopeField, $attributes)) {
-                    $targetScope[$scopeField] = $attributes[$scopeField];
-                }
-            }
 
-            if ($this->repository->findById($targetDefinition, $relationshipData->getId(), $targetScope) !== null) {
+            if ($this->repository->findById($targetDefinition, $relationshipData->getId()) !== null) {
                 continue;
             }
 
@@ -572,7 +486,6 @@ class ApiCrudService
             $definition->getSortableFields(),
             $definition->getDefaultSort(),
             $attributeRules,
-            $definition->getScopeFields(),
             $definition->getRelationships(),
             $definition->getRequiredRelationshipsOnWrite()
         );
@@ -615,9 +528,6 @@ class ApiCrudService
     }
 
     /**
-     * Accept legacy array payloads during the refactor while the controller
-     * now uses JsonApiSerializer as the canonical boundary.
-     *
      * @param mixed $payload
      * @return ResourceWriteData
      */

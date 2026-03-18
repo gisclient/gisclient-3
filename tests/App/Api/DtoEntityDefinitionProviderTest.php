@@ -33,7 +33,6 @@ class DtoEntityDefinitionProviderTest extends TestCase
         $definition = $provider->getEntityDefinition('project_srs');
 
         $this->assertSame('id', $definition->getPrimaryKey());
-        $this->assertSame([], $definition->getScopeFields());
         $this->assertSame(['id', 'project_name', 'srid'], $definition->getFilterableFields());
         $this->assertSame(['id', 'srid'], $definition->getSortableFields());
         $this->assertSame('project_name', $definition->getRelationships()['project']['local_key']);
