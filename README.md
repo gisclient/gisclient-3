@@ -26,7 +26,7 @@ docker compose up
 Use the provided `Makefile` shortcuts for common development tasks:
 
 ```bash
-make start       # start all services in background and build images
+make start       # start all services in background, build images, and run db upgrade
 make up          # start all services in foreground and build images
 make down        # stop all services
 make clean       # stop services and remove volumes (full reset)

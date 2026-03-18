@@ -5,6 +5,7 @@ PHP_SERVICE ?= author-be
 
 start:
 	$(COMPOSE) up -d --build
+	$(MAKE) db-upgrade
 
 up:
 	$(COMPOSE) up --build
@@ -19,6 +20,7 @@ deps:
 	$(COMPOSE) exec -T -u 0 $(PHP_SERVICE) sh -lc 'COMPOSER_ALLOW_SUPERUSER=1 composer install'
 
 db-upgrade:
+	sh -lc 'until $(COMPOSE) exec -T $(PHP_SERVICE) php -r '\''$$host = getenv("DB_HOST"); $$port = getenv("DB_PORT") ?: "5432"; $$dbname = getenv("DB_DBNAME"); $$user = getenv("DB_USER"); $$password = getenv("DB_PASSWORD"); $$connection = @pg_connect("host=$$host port=$$port dbname=$$dbname user=$$user password=$$password connect_timeout=1"); if (!$$connection) { exit(1); } pg_close($$connection);'\'' >/dev/null 2>&1; do sleep 2; done'
 	$(COMPOSE) exec -T $(PHP_SERVICE) php bin/console gisclient:dbupgrade
 
 test:
