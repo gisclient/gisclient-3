@@ -18,7 +18,7 @@ class LayergroupDtoCrudServiceTest extends TestCase
             'layergroup_name' => 'base',
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('layergroup', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/theme/data');
     }

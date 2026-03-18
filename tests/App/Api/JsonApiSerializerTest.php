@@ -175,4 +175,65 @@ class JsonApiSerializerTest extends TestCase
             );
         }
     }
+
+    public function testDeserializeRequestBodyRejectsRelationshipTypeMismatchWithSpecificCode()
+    {
+        $serializer = new JsonApiSerializer();
+
+        try {
+            $serializer->deserializeRequestBody(json_encode([
+                'data' => [
+                    'type' => 'theme',
+                    'id' => '3',
+                    'attributes' => [
+                        'theme_name' => 'base',
+                        'theme_title' => 'Base',
+                    ],
+                    'relationships' => [
+                        'project' => [
+                            'data' => [
+                                'type' => 'mapset',
+                                'id' => 'milano',
+                            ],
+                        ],
+                    ],
+                ],
+            ]), 'theme');
+            $this->fail('Expected ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('invalid_relationship_type', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/project/data/type', $exception->getSourcePointer());
+        }
+    }
+
+    public function testDeserializeRequestBodyRejectsRelationshipWithoutIdWithSpecificCode()
+    {
+        $serializer = new JsonApiSerializer();
+
+        try {
+            $serializer->deserializeRequestBody(json_encode([
+                'data' => [
+                    'type' => 'theme',
+                    'id' => '3',
+                    'attributes' => [
+                        'theme_name' => 'base',
+                        'theme_title' => 'Base',
+                    ],
+                    'relationships' => [
+                        'project' => [
+                            'data' => [
+                                'type' => 'project',
+                            ],
+                        ],
+                    ],
+                ],
+            ]), 'theme');
+            $this->fail('Expected ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(422, $exception->getStatus());
+            $this->assertSame('invalid_relationship_id', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/project/data/id', $exception->getSourcePointer());
+        }
+    }
 }

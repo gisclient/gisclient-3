@@ -24,7 +24,7 @@ class MapsetDtoCrudServiceTest extends TestCase
             'private' => 0,
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('mapset', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }

@@ -127,7 +127,7 @@ class DtoHydrator
                 );
             }
 
-            $relatedDto = $this->hydrateRelationshipData($relationshipData, (string) $field->getTargetClass());
+            $relatedDto = $this->hydrateRelationshipData($relationshipData, (string) $field->getTargetClass(), $name);
             $relationshipErrors = [];
             $this->assignValue($dto, $field->getPropertyName(), $relatedDto, '/data/relationships/' . $name . '/data', $name, $relationshipErrors);
             if ($relationshipErrors !== []) {
@@ -142,7 +142,7 @@ class DtoHydrator
     /**
      * @param array<string,mixed> $relationshipData
      */
-    private function hydrateRelationshipData(array $relationshipData, string $dtoClass): JsonApiDto
+    private function hydrateRelationshipData(array $relationshipData, string $dtoClass, string $relationshipName): JsonApiDto
     {
         /** @var JsonApiDto $relatedDto */
         $relatedDto = new $dtoClass();
@@ -151,17 +151,25 @@ class DtoHydrator
         if (($relationshipData['type'] ?? null) !== null && $relationshipData['type'] !== $schema->getType()) {
             throw new ApiException(
                 422,
-                'invalid_relationship',
-                'Invalid Relationship',
+                'invalid_relationship_type',
+                'Invalid Relationship Type',
                 sprintf("Relationship type must be '%s'", $schema->getType()),
-                '/data/type'
+                '/data/relationships/' . $relationshipName . '/data/type'
             );
         }
 
-        if (array_key_exists('id', $relationshipData) && $relationshipData['id'] !== null) {
-            DtoPropertyAccessor::set($relatedDto, 'id', $this->normalizeScalarId($relationshipData['id']));
-            $relatedDto->markPresent('id');
+        if (!array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
+            throw new ApiException(
+                422,
+                'invalid_relationship_id',
+                'Invalid Relationship Id',
+                sprintf("Relationship '%s' id is required", $relationshipName),
+                '/data/relationships/' . $relationshipName . '/data/id'
+            );
         }
+
+        DtoPropertyAccessor::set($relatedDto, 'id', $this->normalizeRelationshipId($relationshipData['id'], $relationshipName));
+        $relatedDto->markPresent('id');
 
         $hasExpandedContent = isset($relationshipData['attributes']) || isset($relationshipData['relationships']);
         if (!$hasExpandedContent) {
@@ -177,6 +185,54 @@ class DtoHydrator
         ];
 
         return $this->hydrateResourceObject($resourceObject, $dtoClass);
+    }
+
+    /**
+     * @param mixed $id
+     * @return string|int
+     */
+    private function normalizeRelationshipId($id, string $relationshipName)
+    {
+        if (is_string($id)) {
+            if (trim($id) === '') {
+                throw new ApiException(
+                    422,
+                    'invalid_relationship_id',
+                    'Invalid Relationship Id',
+                    sprintf("Relationship '%s' id must not be empty", $relationshipName),
+                    '/data/relationships/' . $relationshipName . '/data/id'
+                );
+            }
+
+            return $id;
+        }
+
+        if (is_int($id)) {
+            return $id;
+        }
+
+        if (is_scalar($id)) {
+            $normalized = (string) $id;
+            if (trim($normalized) === '') {
+                throw new ApiException(
+                    422,
+                    'invalid_relationship_id',
+                    'Invalid Relationship Id',
+                    sprintf("Relationship '%s' id must not be empty", $relationshipName),
+                    '/data/relationships/' . $relationshipName . '/data/id'
+                );
+            }
+
+            return $normalized;
+        }
+
+        throw new ApiException(
+            422,
+            'invalid_relationship_id',
+            'Invalid Relationship Id',
+            sprintf("Relationship '%s' id must be a scalar value", $relationshipName),
+            '/data/relationships/' . $relationshipName . '/data/id'
+        );
     }
 
     /**

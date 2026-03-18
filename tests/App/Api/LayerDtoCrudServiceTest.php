@@ -20,7 +20,7 @@ class LayerDtoCrudServiceTest extends TestCase
         $dto->catalog = $this->identifierDto(CatalogDto::class, 10);
         $dto->markPresent('catalog');
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('layer', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/layergroup/data');
     }
@@ -32,7 +32,7 @@ class LayerDtoCrudServiceTest extends TestCase
         $dto->layergroup = $this->identifierDto(LayergroupDto::class, 5);
         $dto->markPresent('layergroup');
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('layer', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/catalog/data');
     }

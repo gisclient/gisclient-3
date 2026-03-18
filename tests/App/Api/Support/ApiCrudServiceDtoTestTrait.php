@@ -2,6 +2,7 @@
 
 use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Exception\ValidationException;
 
 trait ApiCrudServiceDtoTestTrait
 {
@@ -71,6 +72,54 @@ trait ApiCrudServiceDtoTestTrait
                 $this->assertSame($pointer, $exception->getSourcePointer());
             }
         }
+    }
+
+    private function assertValidationException(callable $callable, int $status, string $code, ?string $pointer = null): void
+    {
+        try {
+            $callable();
+            $this->fail(sprintf('Expected %s ValidationException', $code));
+        } catch (ValidationException $exception) {
+            $this->assertSame($status, $exception->getStatus());
+            $this->assertSame($code, $exception->getErrors()[0]['code']);
+            if ($pointer !== null) {
+                $source = $exception->getErrors()[0]['source'] ?? [];
+                $this->assertSame($pointer, $this->validationErrorPointer($source));
+            }
+        }
+    }
+
+    private function validationErrorPointer(array $source): ?string
+    {
+        if (isset($source['pointer']) && is_string($source['pointer'])) {
+            return $source['pointer'];
+        }
+
+        if (!empty($source['id'])) {
+            return '/data/id';
+        }
+
+        if (isset($source['attribute']) && is_string($source['attribute'])) {
+            return '/data/attributes/' . $source['attribute'];
+        }
+
+        if (isset($source['relationship']) && is_string($source['relationship'])) {
+            return '/data/relationships/' . $source['relationship'] . '/data';
+        }
+
+        if (isset($source['relationship_type']) && is_string($source['relationship_type'])) {
+            return '/data/relationships/' . $source['relationship_type'] . '/data/type';
+        }
+
+        if (isset($source['relationship_id']) && is_string($source['relationship_id'])) {
+            return '/data/relationships/' . $source['relationship_id'] . '/data/id';
+        }
+
+        if (isset($source['parameter']) && is_string($source['parameter'])) {
+            return '/' . $source['parameter'];
+        }
+
+        return null;
     }
 
     private function fieldToProperty(string $field): string

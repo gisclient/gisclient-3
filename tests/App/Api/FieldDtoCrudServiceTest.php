@@ -20,7 +20,7 @@ class FieldDtoCrudServiceTest extends TestCase
             'field_header' => 'GID',
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('field', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/layer/data');
     }

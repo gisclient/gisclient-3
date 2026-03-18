@@ -19,7 +19,7 @@ class LinkDtoCrudServiceTest extends TestCase
             'link_def' => 'https://example.test',
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('link', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }

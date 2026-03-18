@@ -20,7 +20,7 @@ class CatalogDtoCrudServiceTest extends TestCase
             'catalog_path' => 'dbname=test',
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('catalog', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }

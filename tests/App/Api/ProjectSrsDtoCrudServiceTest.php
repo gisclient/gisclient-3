@@ -55,7 +55,7 @@ class ProjectSrsDtoCrudServiceTest extends TestCase
             'projparam' => '+proj=merc',
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('project_srs', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }

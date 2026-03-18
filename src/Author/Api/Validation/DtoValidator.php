@@ -45,28 +45,16 @@ class DtoValidator
             }
         }
 
-        foreach ($schema->getRelationships() as $field) {
-            if (!$dto->isPresent($field->getJsonApiName())) {
-                continue;
-            }
-
-            $value = DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())
-                ? DtoPropertyAccessor::get($dto, $field->getPropertyName())
-                : null;
-
-            if ($value === null) {
-                if (!$field->isNullable()) {
-                    $errors[] = $this->error('invalid_relationship', 'Invalid Relationship', sprintf("Relationship '%s' cannot be null", $field->getJsonApiName()), [
-                        'pointer' => '/data/relationships/' . $field->getJsonApiName() . '/data',
-                    ]);
-                }
-                continue;
-            }
-
-            if (!DtoPropertyAccessor::isInitialized($value, 'id') || $this->isEmpty($value, 'id')) {
-                $errors[] = $this->error('invalid_relationship', 'Invalid Relationship', sprintf("Relationship '%s' id is required", $field->getJsonApiName()), [
-                    'pointer' => '/data/relationships/' . $field->getJsonApiName() . '/data/id',
-                ]);
+        foreach ($this->requiredRelationshipNames($dto, $isCreate, $isPut) as $relationshipName) {
+            if (!$dto->isPresent($relationshipName)) {
+                $errors[] = $this->error(
+                    'missing_required_relationship',
+                    'Missing Required Relationship',
+                    sprintf("Relationship '%s' is required", $relationshipName),
+                    [
+                        'relationship' => $relationshipName,
+                    ]
+                );
             }
         }
 
@@ -110,6 +98,28 @@ class DtoValidator
         }
 
         return false;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private function requiredRelationshipNames(JsonApiDto $dto, bool $isCreate, bool $isPut): array
+    {
+        $schema = $dto::schema();
+        $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : ($isPut ? $schema->getRequiredOnPut() : []);
+        $requiredFieldsSet = array_fill_keys($requiredFields, true);
+        $requiredRelationships = [];
+
+        foreach ($schema->getRelationships() as $field) {
+            $localKey = $field->getLocalKey();
+            if ($localKey === null || !isset($requiredFieldsSet[$localKey])) {
+                continue;
+            }
+
+            $requiredRelationships[] = $field->getJsonApiName();
+        }
+
+        return array_values(array_unique($requiredRelationships));
     }
 
     /**

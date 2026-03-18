@@ -43,7 +43,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
             'layergroup' => $this->identifierDto(LayergroupDto::class, 42),
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('mapset_layergroup', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/mapset/data');
     }
@@ -57,7 +57,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
             'mapset' => $this->identifierDto(MapsetDto::class, 'base'),
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('mapset_layergroup', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/layergroup/data');
     }

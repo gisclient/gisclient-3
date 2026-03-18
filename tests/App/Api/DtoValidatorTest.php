@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/Support/ApiCrudServiceDtoTestTrait.php';
 
+use GisClient\Author\Api\Dto\MapsetDto;
 use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Dto\ProjectSrsDto;
 use GisClient\Author\Api\Exception\ValidationException;
@@ -44,23 +45,23 @@ class DtoValidatorTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testRejectsRelationshipWithoutIdentifier(): void
+    public function testRejectsMissingRequiredRelationshipOnCreate(): void
     {
         $validator = new DtoValidator();
-        $related = new ProjectDto();
-        $dto = $this->makeDto(ProjectSrsDto::class, 1, [
-            'srid' => 3857,
-            'projparam' => '+proj=merc',
-        ], [
-            'project' => $related,
+        $dto = $this->makeDto(MapsetDto::class, 'base', [
+            'mapset_title' => 'Base map',
+            'mapset_srid' => 3857,
+            'displayprojection' => 4326,
+            'maxscale' => 50000,
+            'mapset_extent' => '0 0 10 10',
         ]);
 
         try {
             $validator->validate($dto, true, false);
             $this->fail('Expected ValidationException');
         } catch (ValidationException $exception) {
-            $this->assertSame('invalid_relationship', $exception->getErrors()[0]['code']);
-            $this->assertSame('/data/relationships/project/data/id', $exception->getErrors()[0]['source']['pointer']);
+            $this->assertSame('missing_required_relationship', $exception->getErrors()[0]['code']);
+            $this->assertSame('project', $exception->getErrors()[0]['source']['relationship']);
         }
     }
 }

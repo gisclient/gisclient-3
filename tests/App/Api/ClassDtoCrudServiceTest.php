@@ -20,7 +20,7 @@ class ClassDtoCrudServiceTest extends TestCase
             'class_order' => 1,
         ]);
 
-        $this->assertApiException(static function () use ($service, $dto): void {
+        $this->assertValidationException(static function () use ($service, $dto): void {
             $service->createResource('class', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/layer/data');
     }

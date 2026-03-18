@@ -92,7 +92,6 @@ class ApiCrudService
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $dto = $this->normalizeWriteDto($definition, $payload, true, false);
-        $this->validateRequiredRelationships($definition, $dto);
         $attributes = $this->extractAttributes($definition, $dto, true, false);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
         $this->validateReferences($definition, $dto, $attributes);
@@ -116,7 +115,6 @@ class ApiCrudService
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $this->validateRequiredRelationships($definition, $dto);
         $attributes = $this->extractAttributes($definition, $dto, false, true);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
         $this->validateReferences($definition, $dto, $attributes);
@@ -208,7 +206,6 @@ class ApiCrudService
     }
 
     /**
-     * @param array<string,mixed> $payload
      * @param array<string,mixed> $attributes
      */
     private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, JsonApiDto $dto, array $attributes)
@@ -234,63 +231,7 @@ class ApiCrudService
         }
     }
 
-    private function validateRequiredRelationships(EntityDefinition $definition, JsonApiDto $dto)
-    {
-        $required = $definition->getRequiredRelationshipsOnWrite();
-        if (count($required) === 0) {
-            return;
-        }
-
-        foreach ($required as $relationshipName) {
-            if (!$dto->isPresent($relationshipName)) {
-                throw new ApiException(
-                    422,
-                    'missing_required_relationship',
-                    'Missing Required Relationship',
-                    sprintf("Relationship '%s' is required", $relationshipName),
-                    '/data/relationships/' . $relationshipName . '/data'
-                );
-            }
-
-            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
-            if ($relationshipData === null) {
-                throw new ApiException(
-                    422,
-                    'missing_required_relationship',
-                    'Missing Required Relationship',
-                    sprintf("Relationship '%s' data is required", $relationshipName),
-                    '/data/relationships/' . $relationshipName . '/data'
-                );
-            }
-
-            $relationshipDefinition = $definition->getRelationships()[$relationshipName] ?? null;
-            if (is_array($relationshipDefinition)) {
-                $expectedType = $relationshipDefinition['type'] ?? null;
-
-                if ($expectedType !== null && $relationshipData['type'] !== null && $relationshipData['type'] !== $expectedType) {
-                    throw new ApiException(
-                        422,
-                        'invalid_relationship',
-                        'Invalid Relationship',
-                        sprintf("Relationship '%s' type must be '%s'", $relationshipName, $expectedType),
-                        '/data/relationships/' . $relationshipName . '/data/type'
-                    );
-                }
-                if ($relationshipData['id'] === null || (!is_scalar($relationshipData['id']) && $relationshipData['id'] !== null) || trim((string) $relationshipData['id']) === '') {
-                    throw new ApiException(
-                        422,
-                        'invalid_relationship',
-                        'Invalid Relationship',
-                        sprintf("Relationship '%s' id is required", $relationshipName),
-                        '/data/relationships/' . $relationshipName . '/data/id'
-                    );
-                }
-            }
-        }
-    }
-
     /**
-     * @param array<string,mixed> $payload
      * @param array<string,mixed> $attributes
      * @return array<string,mixed>
      */
@@ -337,7 +278,6 @@ class ApiCrudService
     }
 
     /**
-     * @param array<string,mixed> $payload
      * @return array<int,string>
      */
     private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, JsonApiDto $dto)
