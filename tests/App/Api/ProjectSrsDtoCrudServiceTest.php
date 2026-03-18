@@ -11,70 +11,52 @@ class ProjectSrsDtoCrudServiceTest extends TestCase
 {
     use ApiCrudServiceDtoTestTrait;
 
-    public function testScopedCreateInjectsScopeAndRendersParentRelationship(): void
+    public function testCreateUsesIdAndRendersParentRelationship(): void
     {
         $repository = new AuthorEntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
-        $dto = $this->makeDto(ProjectSrsDto::class, 3857, [
+        $dto = $this->makeDto(ProjectSrsDto::class, 1, [
+            'srid' => 3857,
             'projparam' => '+proj=merc',
         ], [
             'project' => $this->identifierDto(ProjectDto::class, 'default'),
         ]);
 
-        $payload = $service->createResource('project_srs', $dto, [
-            'project_name' => 'default',
-        ]);
+        $payload = $service->createResource('project_srs', $dto);
 
         $this->assertSame('default', $repository->createdAttributes['project_name']);
-        $this->assertSame('3857', (string) $payload['data']['id']);
+        $this->assertSame(3857, $repository->createdAttributes['srid']);
+        $this->assertSame('1', (string) $payload['data']['id']);
         $this->assertSame('default', $payload['data']['relationships']['project']['data']['id']);
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testScopedCreateRejectsMismatchedScopeRelationship(): void
+    public function testGetUsesRootIdWithoutScope(): void
     {
-        $service = TestApiCrudService::create();
-        $dto = $this->makeDto(ProjectSrsDto::class, 3857, [
+        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id, array $scopeFilters) => [
+            'id' => (int) $id,
+            'project_name' => 'default',
+            'srid' => 3857,
             'projparam' => '+proj=merc',
-        ], [
-            'project' => $this->identifierDto(ProjectDto::class, 'other_project'),
         ]);
-
-        $this->assertApiException(static function () use ($service, $dto): void {
-            $service->createResource('project_srs', $dto, [
-                'project_name' => 'default',
-            ]);
-        }, 422, 'relationship_scope_mismatch', '/data/relationships/project/data/id');
-    }
-
-    public function testScopedGetUsesScopeFilter(): void
-    {
-        $repository = new AuthorEntityRepositoryStub(['default|3857']);
         $service = TestApiCrudService::create($repository);
 
-        $payload = $service->getResource('project_srs', 3857, [], [
-            'project_name' => 'default',
-        ]);
-        $this->assertSame('3857', (string) $payload['data']['id']);
-
-        $this->assertApiException(static function () use ($service): void {
-            $service->getResource('project_srs', 3857, [], [
-                'project_name' => 'other',
-            ]);
-        }, 404, 'resource_not_found');
+        $payload = $service->getResource('project_srs', 1);
+        $this->assertSame('1', (string) $payload['data']['id']);
+        $this->assertSame(3857, $payload['data']['attributes']['srid']);
+        $this->assertSame('default', $payload['data']['relationships']['project']['data']['id']);
     }
 
-    public function testScopedCreateRequiresProjectRelationship(): void
+    public function testCreateRequiresProjectRelationship(): void
     {
         $service = TestApiCrudService::create();
-        $dto = $this->makeDto(ProjectSrsDto::class, 3857, [
+        $dto = $this->makeDto(ProjectSrsDto::class, 1, [
+            'srid' => 3857,
             'projparam' => '+proj=merc',
         ]);
 
         $this->assertApiException(static function () use ($service, $dto): void {
-            $service->createResource('project_srs', $dto, [
-                'project_name' => 'default',
-            ]);
+            $service->createResource('project_srs', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/project/data');
     }
 }

@@ -21,12 +21,11 @@ class MapsetLayergroupDto extends JsonApiDto
 
     public static function schema(): ResourceSchema
     {
-        return ResourceSchema::resource('mapset_layergroup', self::class, 'layergroup_id', 'int')
+        return ResourceSchema::resource('mapset_layergroup', self::class, 'id', 'int')
             ->requiredOnCreate(['mapset_name', 'layergroup_id'])
-            ->requiredOnPut([])
-            ->filterable(['mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'])
-            ->sortable(['layergroup_id', 'status', 'refmap', 'hide'], 'layergroup_id')
-            ->scopedBy(['mapset_name'])
+            ->requiredOnPut(['mapset_name', 'layergroup_id'])
+            ->filterable(['id', 'mapset_name', 'layergroup_id', 'status', 'refmap', 'hide'])
+            ->sortable(['id', 'layergroup_id', 'status', 'refmap', 'hide'], 'id')
             ->addAttribute(FieldDefinition::attribute('status', 'status', 'int', true))
             ->addAttribute(FieldDefinition::attribute('refmap', 'refmap', 'int', true))
             ->addAttribute(FieldDefinition::attribute('hide', 'hide', 'int', true))

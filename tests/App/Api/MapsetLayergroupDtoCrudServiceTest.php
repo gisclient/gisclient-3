@@ -12,11 +12,11 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
 {
     use ApiCrudServiceDtoTestTrait;
 
-    public function testScopedCreateInjectsScopeAndRendersRelationships(): void
+    public function testCreateUsesRootIdAndRendersRelationships(): void
     {
         $repository = new AuthorEntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
-        $dto = $this->makeDto(MapsetLayergroupDto::class, 42, [
+        $dto = $this->makeDto(MapsetLayergroupDto::class, 7, [
             'status' => 1,
             'refmap' => 0,
             'hide' => 1,
@@ -25,87 +25,83 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
             'layergroup' => $this->identifierDto(LayergroupDto::class, 42),
         ]);
 
-        $payload = $service->createResource('mapset_layergroup', $dto, [
-            'mapset_name' => 'base',
-        ]);
+        $payload = $service->createResource('mapset_layergroup', $dto);
 
         $this->assertSame('base', $repository->createdAttributes['mapset_name']);
         $this->assertSame('42', (string) $repository->createdAttributes['layergroup_id']);
+        $this->assertSame('7', (string) $payload['data']['id']);
         $this->assertSame('base', $payload['data']['relationships']['mapset']['data']['id']);
         $this->assertSame('42', $payload['data']['relationships']['layergroup']['data']['id']);
     }
 
-    public function testScopedCreateRequiresMapsetRelationship(): void
+    public function testCreateRequiresMapsetRelationship(): void
     {
         $service = TestApiCrudService::create();
-        $dto = $this->makeDto(MapsetLayergroupDto::class, 42, [
+        $dto = $this->makeDto(MapsetLayergroupDto::class, 7, [
             'status' => 1,
         ], [
             'layergroup' => $this->identifierDto(LayergroupDto::class, 42),
         ]);
 
         $this->assertApiException(static function () use ($service, $dto): void {
-            $service->createResource('mapset_layergroup', $dto, [
-                'mapset_name' => 'base',
-            ]);
+            $service->createResource('mapset_layergroup', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/mapset/data');
     }
 
-    public function testScopedCreateRequiresLayergroupRelationship(): void
+    public function testCreateRequiresLayergroupRelationship(): void
     {
         $service = TestApiCrudService::create();
-        $dto = $this->makeDto(MapsetLayergroupDto::class, 42, [
+        $dto = $this->makeDto(MapsetLayergroupDto::class, 7, [
             'status' => 1,
         ], [
             'mapset' => $this->identifierDto(MapsetDto::class, 'base'),
         ]);
 
         $this->assertApiException(static function () use ($service, $dto): void {
-            $service->createResource('mapset_layergroup', $dto, [
-                'mapset_name' => 'base',
-            ]);
+            $service->createResource('mapset_layergroup', $dto);
         }, 422, 'missing_required_relationship', '/data/relationships/layergroup/data');
     }
 
-    public function testScopedCreateRejectsMismatchedMapsetRelationship(): void
+    public function testGetUsesRootIdWithoutScope(): void
     {
-        $service = TestApiCrudService::create();
-        $dto = $this->makeDto(MapsetLayergroupDto::class, 42, [
-            'status' => 1,
-        ], [
-            'mapset' => $this->identifierDto(MapsetDto::class, 'other'),
-            'layergroup' => $this->identifierDto(LayergroupDto::class, 42),
-        ]);
-
-        $this->assertApiException(static function () use ($service, $dto): void {
-            $service->createResource('mapset_layergroup', $dto, [
-                'mapset_name' => 'base',
-            ]);
-        }, 422, 'relationship_scope_mismatch', '/data/relationships/mapset/data/id');
-    }
-
-    public function testScopedGetUsesScopeFilter(): void
-    {
-        $repository = new AuthorEntityRepositoryStub(['base|42']);
-        $service = TestApiCrudService::create($repository);
-
-        $payload = $service->getResource('mapset_layergroup', 42, [], [
+        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id, array $scopeFilters) => [
+            'id' => (int) $id,
             'mapset_name' => 'base',
+            'layergroup_id' => 42,
+            'status' => 1,
+            'refmap' => 0,
+            'hide' => 1,
         ]);
-        $this->assertSame('42', (string) $payload['data']['id']);
+        $service = TestApiCrudService::create($repository);
 
-        $this->assertApiException(static function () use ($service): void {
-            $service->getResource('mapset_layergroup', 42, [], [
-                'mapset_name' => 'other',
-            ]);
-        }, 404, 'resource_not_found');
+        $payload = $service->getResource('mapset_layergroup', 7);
+        $this->assertSame('7', (string) $payload['data']['id']);
+        $this->assertSame('base', $payload['data']['relationships']['mapset']['data']['id']);
+        $this->assertSame('42', $payload['data']['relationships']['layergroup']['data']['id']);
     }
 
-    public function testScopedPutAllowsRelationshipOnlyMapsetWithoutAttributeMismatch(): void
+    public function testPutUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub(['base|42']);
+        $repository = new AuthorEntityRepositoryStub(
+            [],
+            static fn ($definition, $id, array $scopeFilters) => [
+                'id' => (int) $id,
+                'mapset_name' => 'base',
+                'layergroup_id' => 42,
+                'status' => 0,
+                'refmap' => 0,
+                'hide' => 1,
+            ],
+            null,
+            null,
+            static fn ($definition, $id, array $attributes, array $scopeFilters) => array_merge([
+                'id' => (int) $id,
+                'mapset_name' => 'base',
+                'layergroup_id' => 42,
+            ], $attributes)
+        );
         $service = TestApiCrudService::create($repository);
-        $dto = $this->makeDto(MapsetLayergroupDto::class, 42, [
+        $dto = $this->makeDto(MapsetLayergroupDto::class, 7, [
             'status' => 1,
             'refmap' => 1,
             'hide' => 0,
@@ -114,12 +110,10 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
             'layergroup' => $this->identifierDto(LayergroupDto::class, 42),
         ]);
 
-        $payload = $service->updateResource('mapset_layergroup', 42, $dto, [
-            'mapset_name' => 'base',
-        ]);
+        $payload = $service->updateResource('mapset_layergroup', 7, $dto);
 
-        $this->assertSame('base', $repository->updatedAttributes['mapset_name']);
         $this->assertSame(1, $repository->updatedAttributes['status']);
+        $this->assertSame('7', (string) $payload['data']['id']);
         $this->assertSame('base', $payload['data']['relationships']['mapset']['data']['id']);
         $this->assertSame('42', $payload['data']['relationships']['layergroup']['data']['id']);
     }

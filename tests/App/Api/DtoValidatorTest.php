@@ -32,7 +32,8 @@ class DtoValidatorTest extends TestCase
     public function testRelationshipSatisfiesRequiredLocalKey(): void
     {
         $validator = new DtoValidator();
-        $dto = $this->makeDto(ProjectSrsDto::class, 3857, [
+        $dto = $this->makeDto(ProjectSrsDto::class, 1, [
+            'srid' => 3857,
             'projparam' => '+proj=merc',
         ], [
             'project' => $this->identifierDto(ProjectDto::class, 'milano'),
@@ -47,7 +48,8 @@ class DtoValidatorTest extends TestCase
     {
         $validator = new DtoValidator();
         $related = new ProjectDto();
-        $dto = $this->makeDto(ProjectSrsDto::class, 3857, [
+        $dto = $this->makeDto(ProjectSrsDto::class, 1, [
+            'srid' => 3857,
             'projparam' => '+proj=merc',
         ], [
             'project' => $related,

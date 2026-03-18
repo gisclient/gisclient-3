@@ -26,15 +26,16 @@ class DtoEntityDefinitionProviderTest extends TestCase
         $this->assertSame('symbol', $definition->getAttributeRule('symbol_name')['lookup']['table']);
     }
 
-    public function testBuildsScopedEntityDefinitionFromDtoSchema()
+    public function testBuildsUnscopedEntityDefinitionFromDtoSchema()
     {
         $provider = new DtoEntityDefinitionProvider();
 
         $definition = $provider->getEntityDefinition('project_srs');
 
-        $this->assertSame(['project_name'], $definition->getScopeFields());
-        $this->assertSame(['project_name', 'srid'], $definition->getFilterableFields());
-        $this->assertSame(['srid'], $definition->getSortableFields());
+        $this->assertSame('id', $definition->getPrimaryKey());
+        $this->assertSame([], $definition->getScopeFields());
+        $this->assertSame(['id', 'project_name', 'srid'], $definition->getFilterableFields());
+        $this->assertSame(['id', 'srid'], $definition->getSortableFields());
         $this->assertSame('project_name', $definition->getRelationships()['project']['local_key']);
     }
 }

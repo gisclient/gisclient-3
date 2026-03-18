@@ -60,7 +60,6 @@ class ApiCrudService
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $scope = $this->normalizeScope($definition, $scope);
         $queryOptions = $this->buildQueryOptions($definition, $query);
-        $queryOptions = $this->applyScopeToQueryOptions($queryOptions, $scope);
         $result = $this->repository->findAll($definition, $queryOptions, $scope);
 
         return new ResourceCollectionData(
@@ -361,21 +360,6 @@ class ApiCrudService
                 }
             }
         }
-    }
-
-    private function applyScopeToQueryOptions(QueryOptions $queryOptions, array $scope)
-    {
-        if (count($scope) === 0) {
-            return $queryOptions;
-        }
-
-        return new QueryOptions(
-            $queryOptions->getLimit(),
-            $queryOptions->getOffset(),
-            $queryOptions->getSortField(),
-            $queryOptions->getSortDirection(),
-            array_merge($queryOptions->getFilters(), $scope)
-        );
     }
 
     /**
