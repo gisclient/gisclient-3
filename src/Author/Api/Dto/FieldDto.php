@@ -54,13 +54,7 @@ class FieldDto extends JsonApiDto
             ->requiredOnPut(['layer_id', 'field_name', 'field_header'])
             ->filterable(['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order', 'fieldtype_id', 'datatype_id', 'searchtype_id', 'resultype_id'])
             ->sortable(['field_id', 'field_order', 'field_name', 'field_header'], 'field_order')
-            ->addAttribute(FieldDefinition::attribute('relation_id', 'relationId', 'int')->withLookup([
-                'table' => 'seldb_relation',
-                'column' => 'id',
-                'filters' => [
-                    'layer_id' => 'from_attribute:layer_id',
-                ],
-            ]))
+            ->addAttribute(FieldDefinition::attribute('relation_id', 'relationId', 'int'))
             ->addAttribute(FieldDefinition::attribute('field_name', 'fieldName', 'string'))
             ->addAttribute(FieldDefinition::attribute('field_header', 'fieldHeader', 'string'))
             ->addAttribute(FieldDefinition::attribute('field_order', 'fieldOrder', 'int'))

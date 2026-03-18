@@ -5,8 +5,6 @@ require_once __DIR__ . '/Support/ApiCrudServiceDtoTestTrait.php';
 require_once __DIR__ . '/Support/TestApiCrudService.php';
 
 use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
-use GisClient\Author\Api\Dto\FieldDto;
-use GisClient\Author\Api\Dto\LayerDto;
 use GisClient\Author\Api\Dto\MapsetDto;
 use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Dto\ThemeDto;
@@ -138,53 +136,6 @@ class ApiCrudServiceTest extends TestCase
         } catch (ValidationException $exception) {
             $this->assertSame('invalid_reference', $exception->getErrors()[0]['code']);
             $this->assertSame('mapset_srid', $exception->getErrors()[0]['source']['attribute']);
-        }
-    }
-
-    public function testCreateRejectsUnknownScopedFieldRelationReference(): void
-    {
-        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id, array $scopeFilters) {
-            if ($definition->getType() === 'layer') {
-                return [
-                    'layer_id' => (int) $id,
-                ];
-            }
-
-            return null;
-        });
-        $service = new ApiCrudService(
-            new DtoEntityDefinitionProvider(),
-            $repository,
-            new PayloadValidator(null, static function (array $lookupRule, $value): bool {
-                if (($lookupRule['table'] ?? null) !== 'seldb_relation') {
-                    return true;
-                }
-
-                return (int) $value === 0
-                    && (($lookupRule['resolved_filters']['layer_id'] ?? null) === '2'
-                        || ($lookupRule['resolved_filters']['layer_id'] ?? null) === 2);
-            })
-        );
-
-        $dto = $this->makeDto(FieldDto::class, 51, [
-            'relation_id' => 99,
-            'field_name' => 'gid',
-            'field_header' => 'GID',
-            'fieldtype_id' => 1,
-            'datatype_id' => 1,
-            'resultype_id' => 1,
-            'searchtype_id' => 1,
-            'orderby_id' => 0,
-        ], [
-            'layer' => $this->identifierDto(LayerDto::class, 2),
-        ]);
-
-        try {
-            $service->createResource('field', $dto);
-            $this->fail('Expected ValidationException');
-        } catch (ValidationException $exception) {
-            $this->assertSame('invalid_reference', $exception->getErrors()[0]['code']);
-            $this->assertSame('relation_id', $exception->getErrors()[0]['source']['attribute']);
         }
     }
 
