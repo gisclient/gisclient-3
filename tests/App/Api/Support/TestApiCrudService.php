@@ -4,6 +4,7 @@ require_once __DIR__ . '/AuthorEntityRepositoryStub.php';
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
+use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\PersistenceWriteValidator;
@@ -45,23 +46,23 @@ final class TestApiCrudService extends ApiCrudService
         return $this->serializer->serializeResource(parent::getResource($entity, $id));
     }
 
-    public function createResource($entity, $payload)
+    public function createResource($entity, JsonApiDto $dto)
     {
         $this->beginWriteContext($entity);
 
         try {
-            return $this->serializer->serializeResource(parent::createResource($entity, $payload));
+            return $this->serializer->serializeResource(parent::createResource($entity, $dto));
         } finally {
             $this->endWriteContext();
         }
     }
 
-    public function updateResource($entity, $id, $payload)
+    public function updateResource($entity, $id, JsonApiDto $dto)
     {
         $this->beginWriteContext($entity);
 
         try {
-            return $this->serializer->serializeResource(parent::updateResource($entity, $id, $payload));
+            return $this->serializer->serializeResource(parent::updateResource($entity, $id, $dto));
         } finally {
             $this->endWriteContext();
         }

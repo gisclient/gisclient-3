@@ -20,23 +20,6 @@ class ApiCrudServiceTest extends TestCase
 {
     use ApiCrudServiceDtoTestTrait;
 
-    public function testCreateRejectsLegacyArrayPayloads(): void
-    {
-        $service = TestApiCrudService::create();
-
-        $this->assertApiException(static function () use ($service): void {
-            $service->createResource('project', [
-                'data' => [
-                    'type' => 'project',
-                    'id' => 'milano',
-                    'attributes' => [
-                        'project_title' => 'Milano',
-                    ],
-                ],
-            ]);
-        }, 400, 'invalid_payload');
-    }
-
     public function testCreateMapsDataIdToPrimaryKey(): void
     {
         $repository = new AuthorEntityRepositoryStub();

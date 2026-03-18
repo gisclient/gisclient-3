@@ -88,10 +88,10 @@ class ApiCrudService
      * @param string $entity
      * @return ResourceData
      */
-    public function createResource($entity, $payload)
+    public function createResource($entity, JsonApiDto $dto)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $dto = $this->normalizeWriteDto($definition, $payload, true, false);
+        $this->validateWriteDto($definition, $dto, true, false);
         $attributes = $this->extractAttributes($definition, $dto, true, false);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
         $this->validateReferences($definition, $dto, $attributes);
@@ -106,10 +106,10 @@ class ApiCrudService
      * @param mixed $id
      * @return ResourceData
      */
-    public function updateResource($entity, $id, $payload)
+    public function updateResource($entity, $id, JsonApiDto $dto)
     {
         $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $dto = $this->normalizeWriteDto($definition, $payload, false, true);
+        $this->validateWriteDto($definition, $dto, false, true);
         $current = $this->repository->findById($definition, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
@@ -468,22 +468,9 @@ class ApiCrudService
         return $lookupRule;
     }
 
-    /**
-     * @param mixed $payload
-     * @return JsonApiDto
-     */
-    private function normalizeWriteDto(EntityDefinition $definition, $payload, bool $isCreate = false, bool $isPut = false)
+    private function validateWriteDto(EntityDefinition $definition, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void
     {
-        if (!$payload instanceof JsonApiDto) {
-            throw new ApiException(
-                400,
-                'invalid_payload',
-                'Invalid Payload',
-                'Write operations require a DTO payload'
-            );
-        }
-
-        if ($payload::schema()->getType() !== $definition->getType()) {
+        if ($dto::schema()->getType() !== $definition->getType()) {
             throw new ApiException(
                 422,
                 'type_mismatch',
@@ -493,9 +480,7 @@ class ApiCrudService
             );
         }
 
-        $this->dtoValidator->validate($payload, $isCreate, $isPut);
-
-        return $payload;
+        $this->dtoValidator->validate($dto, $isCreate, $isPut);
     }
 
     /**

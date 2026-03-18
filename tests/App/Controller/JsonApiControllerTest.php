@@ -1,5 +1,6 @@
 <?php
 
+use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Error\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Controller\JsonApiController;
@@ -53,7 +54,7 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $createCalled = false;
 
-            public function createResource($entity, $payload)
+            public function createResource($entity, JsonApiDto $payload)
             {
                 $this->createCalled = true;
                 return null;
@@ -93,7 +94,7 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $captured = [];
 
-            public function createResource($entity, $payload)
+            public function createResource($entity, JsonApiDto $payload)
             {
                 $this->captured = [
                     'entity' => $entity,
@@ -159,7 +160,7 @@ class JsonApiControllerTest extends TestCase
         $service = new class() {
             public $createCalled = false;
 
-            public function createResource($entity, $payload)
+            public function createResource($entity, JsonApiDto $payload)
             {
                 $this->createCalled = true;
                 return null;
