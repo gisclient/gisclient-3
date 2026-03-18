@@ -51,6 +51,7 @@ class DtoEntityDefinitionProvider implements EntityDefinitionProviderInterface
 
             if ($field->getLocalKey() !== null) {
                 $readableFields[] = $field->getLocalKey();
+                $writableFields[] = $field->getLocalKey();
             }
 
             if (

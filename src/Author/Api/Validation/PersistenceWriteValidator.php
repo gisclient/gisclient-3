@@ -46,10 +46,9 @@ class PersistenceWriteValidator
      * @param string|int|null $resourceId
      * @param bool $isCreate
      * @param bool $isPut
-     * @param array<int,string> $requiredFieldsSatisfied
      * @return array<string,mixed>
      */
-    public function validateAndNormalize(EntityDefinition $definition, array $attributes, $resourceId, $isCreate, $isPut, array $requiredFieldsSatisfied = [])
+    public function validateAndNormalize(EntityDefinition $definition, array $attributes, $resourceId, $isCreate, $isPut)
     {
         $errors = [];
         $primaryKey = $definition->getPrimaryKey();
@@ -118,11 +117,7 @@ class PersistenceWriteValidator
         }
 
         $requiredFields = $isCreate ? $definition->getRequiredOnCreate() : $definition->getRequiredOnPut();
-        $requiredFieldsSatisfiedSet = array_fill_keys($requiredFieldsSatisfied, true);
         foreach ($requiredFields as $field) {
-            if (isset($requiredFieldsSatisfiedSet[$field])) {
-                continue;
-            }
             if (!array_key_exists($field, $attributes) || $this->isEmptyValue($attributes[$field])) {
                 $this->addError(
                     $errors,

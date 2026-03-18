@@ -92,7 +92,6 @@ class ApiCrudService
         $definition = $this->definitionProvider->getEntityDefinition($entity);
         $this->validateWriteDto($definition, $dto, true, false);
         $attributes = $this->extractAttributes($definition, $dto, true, false);
-        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
         $this->validateReferences($definition, $dto, $attributes);
         $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $dto, $attributes);
         $created = $this->repository->create($definition, $attributes);
@@ -115,7 +114,6 @@ class ApiCrudService
         }
 
         $attributes = $this->extractAttributes($definition, $dto, false, true);
-        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes($definition, $dto, $attributes);
         $this->validateReferences($definition, $dto, $attributes);
         $updated = $this->repository->update($definition, $id, $attributes);
 
@@ -192,15 +190,18 @@ class ApiCrudService
      */
     private function extractAttributes(EntityDefinition $definition, JsonApiDto $dto, $isCreate, $isPut)
     {
-        $attributes = $this->extractDtoAttributes($dto);
+        $attributes = $this->mergeRelationshipLocalKeysIntoAttributes(
+            $definition,
+            $dto,
+            $this->extractDtoAttributes($dto)
+        );
 
         return $this->persistenceWriteValidator->validateAndNormalize(
             $definition,
             $attributes,
             $dto->getId(),
             $isCreate,
-            $isPut,
-            $this->extractRequiredFieldsSatisfiedByRelationships($definition, $dto)
+            $isPut
         );
     }
 
@@ -274,37 +275,6 @@ class ApiCrudService
         }
 
         return $attributes;
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    private function extractRequiredFieldsSatisfiedByRelationships(EntityDefinition $definition, JsonApiDto $dto)
-    {
-        $fields = [];
-        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
-            if (!is_string($relationshipName) || !is_array($relationship)) {
-                continue;
-            }
-
-            $localKey = $relationship['local_key'] ?? null;
-            if (!is_string($localKey) || !$dto->isPresent($relationshipName)) {
-                continue;
-            }
-
-            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
-            if ($relationshipData === null || $relationshipData['id'] === null) {
-                continue;
-            }
-
-            if (trim((string) $relationshipData['id']) === '') {
-                continue;
-            }
-
-            $fields[] = $localKey;
-        }
-
-        return array_values(array_unique($fields));
     }
 
     /**
