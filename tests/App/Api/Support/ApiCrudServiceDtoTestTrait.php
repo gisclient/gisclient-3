@@ -23,7 +23,11 @@ trait ApiCrudServiceDtoTestTrait
                 continue;
             }
 
-            $dto->addExtraAttribute($field, $value);
+            throw new \InvalidArgumentException(sprintf(
+                "Unknown attribute '%s' for DTO '%s'",
+                $field,
+                $class
+            ));
         }
 
         foreach ($relationships as $field => $value) {
@@ -34,7 +38,11 @@ trait ApiCrudServiceDtoTestTrait
                 continue;
             }
 
-            $dto->addExtraRelationship($field, $value);
+            throw new \InvalidArgumentException(sprintf(
+                "Unknown relationship '%s' for DTO '%s'",
+                $field,
+                $class
+            ));
         }
 
         return $dto;

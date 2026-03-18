@@ -31,21 +31,20 @@ class ProjectSrsDtoCrudServiceTest extends TestCase
         $this->assertArrayNotHasKey('project_name', $payload['data']['attributes']);
     }
 
-    public function testScopedCreateRejectsMismatchedScopeAttribute(): void
+    public function testScopedCreateRejectsMismatchedScopeRelationship(): void
     {
         $service = TestApiCrudService::create();
         $dto = $this->makeDto(ProjectSrsDto::class, 3857, [
-            'project_name' => 'other_project',
             'projparam' => '+proj=merc',
         ], [
-            'project' => $this->identifierDto(ProjectDto::class, 'default'),
+            'project' => $this->identifierDto(ProjectDto::class, 'other_project'),
         ]);
 
         $this->assertApiException(static function () use ($service, $dto): void {
             $service->createResource('project_srs', $dto, [
                 'project_name' => 'default',
             ]);
-        }, 422, 'scope_attribute_mismatch', '/data/attributes/project_name');
+        }, 422, 'relationship_scope_mismatch', '/data/relationships/project/data/id');
     }
 
     public function testScopedGetUsesScopeFilter(): void

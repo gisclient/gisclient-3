@@ -66,8 +66,13 @@ class DtoHydrator
 
             $field = $schema->getAttribute($name);
             if ($field === null) {
-                $dto->addExtraAttribute($name, $value);
-                continue;
+                throw new ApiException(
+                    400,
+                    'invalid_attribute',
+                    'Invalid Attribute',
+                    sprintf("Attribute '%s' is not allowed for resource type '%s'", $name, $schema->getType()),
+                    '/data/attributes/' . $name
+                );
             }
 
             if (!$this->tryAssignAttributeValue($dto, $field, $name, $value, $errors)) {
@@ -93,8 +98,13 @@ class DtoHydrator
             $field = $schema->getRelationship($name);
             $relationshipData = $relationship['data'] ?? null;
             if ($field === null) {
-                $dto->addExtraRelationship($name, $relationshipData);
-                continue;
+                throw new ApiException(
+                    400,
+                    'invalid_relationship',
+                    'Invalid Relationship',
+                    sprintf("Relationship '%s' is not allowed for resource type '%s'", $name, $schema->getType()),
+                    '/data/relationships/' . $name
+                );
             }
 
             if ($relationshipData === null) {

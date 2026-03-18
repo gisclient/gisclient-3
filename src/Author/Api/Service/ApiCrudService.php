@@ -666,7 +666,7 @@ class ApiCrudService
     private function resourceWriteDataFromDto(JsonApiDto $dto): ResourceWriteData
     {
         $schema = $dto::schema();
-        $attributes = $dto->extraAttributes();
+        $attributes = [];
         $relationships = [];
         $id = null;
 
@@ -680,20 +680,6 @@ class ApiCrudService
             }
 
             $attributes[$field->getJsonApiName()] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
-        }
-
-        foreach ($dto->extraRelationships() as $name => $relationshipData) {
-            if ($relationshipData === null) {
-                $relationships[$name] = new ResourceIdentifierData();
-                continue;
-            }
-            if (!is_array($relationshipData)) {
-                continue;
-            }
-            $relationships[$name] = new ResourceIdentifierData(
-                isset($relationshipData['type']) ? (string) $relationshipData['type'] : null,
-                $relationshipData['id'] ?? null
-            );
         }
 
         foreach ($schema->getRelationships() as $field) {

@@ -1,5 +1,6 @@
 <?php
 
+use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\ResourceData;
@@ -103,6 +104,75 @@ class JsonApiSerializerTest extends TestCase
             $this->assertSame('/data/attributes/xc', $errors[0]['source']['pointer']);
             $this->assertSame('/data/attributes/yc', $errors[1]['source']['pointer']);
             $this->assertSame('/data/attributes/project_srid', $errors[2]['source']['pointer']);
+        }
+    }
+
+    public function testDeserializeRequestBodyRejectsUnknownAttributes()
+    {
+        $serializer = new JsonApiSerializer();
+
+        try {
+            $serializer->deserializeRequestBody(json_encode([
+                'data' => [
+                    'type' => 'theme',
+                    'id' => '3',
+                    'attributes' => [
+                        'theme_name' => 'base',
+                        'theme_title' => 'Base',
+                        'mapset_name' => 'base',
+                    ],
+                ],
+            ]), 'theme');
+            $this->fail('Expected ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(400, $exception->getStatus());
+            $this->assertSame('invalid_attribute', $exception->getErrorCode());
+            $this->assertSame('/data/attributes/mapset_name', $exception->getSourcePointer());
+            $this->assertSame(
+                "Attribute 'mapset_name' is not allowed for resource type 'theme'",
+                $exception->getDetail()
+            );
+        }
+    }
+
+    public function testDeserializeRequestBodyRejectsUnknownRelationships()
+    {
+        $serializer = new JsonApiSerializer();
+
+        try {
+            $serializer->deserializeRequestBody(json_encode([
+                'data' => [
+                    'type' => 'theme',
+                    'id' => '3',
+                    'attributes' => [
+                        'theme_name' => 'base',
+                        'theme_title' => 'Base',
+                    ],
+                    'relationships' => [
+                        'project' => [
+                            'data' => [
+                                'type' => 'project',
+                                'id' => 'milano',
+                            ],
+                        ],
+                        'mapset' => [
+                            'data' => [
+                                'type' => 'mapset',
+                                'id' => 'base',
+                            ],
+                        ],
+                    ],
+                ],
+            ]), 'theme');
+            $this->fail('Expected ApiException');
+        } catch (ApiException $exception) {
+            $this->assertSame(400, $exception->getStatus());
+            $this->assertSame('invalid_relationship', $exception->getErrorCode());
+            $this->assertSame('/data/relationships/mapset', $exception->getSourcePointer());
+            $this->assertSame(
+                "Relationship 'mapset' is not allowed for resource type 'theme'",
+                $exception->getDetail()
+            );
         }
     }
 }

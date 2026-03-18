@@ -16,16 +16,6 @@ abstract class JsonApiDto
      */
     private $identifierOnly = false;
 
-    /**
-     * @var array<string,mixed>
-     */
-    private $extraAttributes = [];
-
-    /**
-     * @var array<string,mixed>
-     */
-    private $extraRelationships = [];
-
     public function markPresent(string $field): void
     {
         $this->presentFields[$field] = true;
@@ -64,39 +54,5 @@ abstract class JsonApiDto
         }
 
         return DtoPropertyAccessor::get($this, 'id');
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function addExtraAttribute(string $name, $value): void
-    {
-        $this->extraAttributes[$name] = $value;
-        $this->markPresent($name);
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function extraAttributes(): array
-    {
-        return $this->extraAttributes;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function addExtraRelationship(string $name, $value): void
-    {
-        $this->extraRelationships[$name] = $value;
-        $this->markPresent($name);
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function extraRelationships(): array
-    {
-        return $this->extraRelationships;
     }
 }
