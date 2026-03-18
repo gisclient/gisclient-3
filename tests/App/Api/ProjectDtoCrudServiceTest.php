@@ -6,7 +6,6 @@ require_once __DIR__ . '/Support/TestApiCrudService.php';
 use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -58,16 +57,18 @@ class ProjectDtoCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownCharsetEncodingReference(): void
     {
-        $service = new ApiCrudService(
-            new DtoEntityDefinitionProvider(),
-            new AuthorEntityRepositoryStub(),
+        $provider = new DtoEntityDefinitionProvider();
+        $repository = new AuthorEntityRepositoryStub();
+        $service = TestApiCrudService::create(
+            $repository,
             new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
                 if ($lookupRule['table'] !== 'e_charset_encodings') {
                     return true;
                 }
 
                 return in_array((int) $value, [1, 2], true);
-            })
+            }, $provider, $repository),
+            $provider
         );
 
         $dto = $this->makeDto(ProjectDto::class, 'milano', [

@@ -1,5 +1,8 @@
 <?php
 
+require_once __DIR__ . '/Support/AuthorEntityRepositoryStub.php';
+
+use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Validation\PersistenceWriteValidator;
@@ -179,6 +182,31 @@ class PersistenceWriteValidatorTest extends TestCase
         } catch (ValidationException $exception) {
             $codes = array_column($exception->getErrors(), 'code');
             $this->assertContains('invalid_id', $codes);
+        }
+    }
+
+    public function testRejectsUnknownRelationshipReference(): void
+    {
+        $definitionProvider = new DtoEntityDefinitionProvider();
+        $validator = new PersistenceWriteValidator(
+            null,
+            null,
+            $definitionProvider,
+            new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id) => null)
+        );
+        $definition = $definitionProvider->getEntityDefinition('theme');
+
+        try {
+            $validator->validateReferences($definition, [], [
+                'project' => [
+                    'type' => 'project',
+                    'id' => 'missing_project',
+                ],
+            ]);
+            $this->fail('Expected ValidationException');
+        } catch (ValidationException $exception) {
+            $this->assertSame('invalid_relationship', $exception->getErrors()[0]['code']);
+            $this->assertSame('/data/relationships/project/data/id', $exception->getErrors()[0]['source']['pointer']);
         }
     }
 }

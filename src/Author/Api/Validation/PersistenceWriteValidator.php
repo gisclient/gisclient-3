@@ -2,6 +2,8 @@
 
 namespace GisClient\Author\Api\Validation;
 
+use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
+use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
 
@@ -17,10 +19,26 @@ class PersistenceWriteValidator
      */
     private $lookupExistsCallback;
 
-    public function __construct(?\PDO $db = null, ?callable $lookupExistsCallback = null)
-    {
+    /**
+     * @var EntityDefinitionProviderInterface|null
+     */
+    private $definitionProvider;
+
+    /**
+     * @var AuthorEntityRepositoryInterface|null
+     */
+    private $repository;
+
+    public function __construct(
+        ?\PDO $db = null,
+        ?callable $lookupExistsCallback = null,
+        ?EntityDefinitionProviderInterface $definitionProvider = null,
+        ?AuthorEntityRepositoryInterface $repository = null
+    ) {
         $this->db = $db;
         $this->lookupExistsCallback = $lookupExistsCallback;
+        $this->definitionProvider = $definitionProvider;
+        $this->repository = $repository;
     }
 
     /**
@@ -129,10 +147,12 @@ class PersistenceWriteValidator
 
     /**
      * @param array<string,mixed> $attributes
+     * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
      */
-    public function validateAttributeReferences(EntityDefinition $definition, array $attributes): void
+    public function validateReferences(EntityDefinition $definition, array $attributes, array $relationships): void
     {
         $errors = [];
+        $this->validateRelationshipReferences($definition, $relationships, $errors);
         $this->validateAttributeLookups($definition, $attributes, $errors);
 
         if (count($errors) > 0) {
@@ -201,6 +221,52 @@ class PersistenceWriteValidator
                     ]
                 );
             }
+        }
+    }
+
+    /**
+     * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
+     * @param array<int,array<string,mixed>> $errors
+     */
+    private function validateRelationshipReferences(EntityDefinition $definition, array $relationships, array &$errors): void
+    {
+        if ($this->definitionProvider === null || $this->repository === null) {
+            return;
+        }
+
+        foreach ($relationships as $relationshipName => $relationshipData) {
+            if (!is_string($relationshipName) || !is_array($relationshipData) || !array_key_exists('id', $relationshipData)) {
+                continue;
+            }
+
+            if ($relationshipData['id'] === null) {
+                continue;
+            }
+
+            $relationship = $definition->getRelationships()[$relationshipName] ?? null;
+            if (!is_array($relationship)) {
+                continue;
+            }
+
+            $targetType = $relationship['type'] ?? null;
+            if (!is_string($targetType) || trim($targetType) === '') {
+                continue;
+            }
+
+            $targetDefinition = $this->definitionProvider->getEntityDefinition($targetType);
+            if ($this->repository->findById($targetDefinition, $relationshipData['id']) !== null) {
+                continue;
+            }
+
+            $errors[] = [
+                'status' => '422',
+                'code' => 'invalid_relationship',
+                'title' => 'Invalid Relationship',
+                'detail' => sprintf("Relationship '%s' references an unknown resource", $relationshipName),
+                'source' => [
+                    'pointer' => '/data/relationships/' . $relationshipName . '/data/id',
+                ],
+            ];
         }
     }
 

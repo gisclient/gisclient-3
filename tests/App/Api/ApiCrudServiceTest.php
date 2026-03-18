@@ -57,11 +57,12 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownRelationshipReference(): void
     {
+        $provider = new DtoEntityDefinitionProvider();
         $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id) => null);
         $service = new ApiCrudService(
-            new DtoEntityDefinitionProvider(),
+            $provider,
             $repository,
-            new PersistenceWriteValidator(null, static fn (): bool => true)
+            new PersistenceWriteValidator(null, static fn (): bool => true, $provider, $repository)
         );
 
         $dto = $this->makeDto(ThemeDto::class, 4, [
@@ -83,6 +84,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownScopedMapsetSridReference(): void
     {
+        $provider = new DtoEntityDefinitionProvider();
         $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id) {
             if ($definition->getType() === 'project') {
                 return [
@@ -93,7 +95,7 @@ class ApiCrudServiceTest extends TestCase
             return null;
         });
         $service = new ApiCrudService(
-            new DtoEntityDefinitionProvider(),
+            $provider,
             $repository,
             new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
                 if (($lookupRule['table'] ?? null) !== 'seldb_mapset_srid') {
@@ -102,7 +104,7 @@ class ApiCrudServiceTest extends TestCase
 
                 return (int) $value === 3857
                     && (($lookupRule['resolved_filters']['project_name'] ?? null) === 'milano');
-            })
+            }, $provider, $repository)
         );
 
         $dto = $this->makeDto(MapsetDto::class, 'base', [
@@ -158,6 +160,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testListResourcesPassesNormalizedFiltersThroughQueryOptions(): void
     {
+        $provider = new DtoEntityDefinitionProvider();
         $capturedQueryOptions = null;
         $repository = new AuthorEntityRepositoryStub(
             [],
@@ -169,9 +172,9 @@ class ApiCrudServiceTest extends TestCase
             }
         );
         $service = new ApiCrudService(
-            new DtoEntityDefinitionProvider(),
+            $provider,
             $repository,
-            new PersistenceWriteValidator(null, static fn (): bool => true)
+            new PersistenceWriteValidator(null, static fn (): bool => true, $provider, $repository)
         );
 
         $service->listResources('theme', [

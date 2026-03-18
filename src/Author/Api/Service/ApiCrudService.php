@@ -7,7 +7,6 @@ use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
 use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
 use GisClient\Author\Api\Exception\ApiException;
-use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Model\ResourceCollectionData;
@@ -347,56 +346,29 @@ class ApiCrudService
      */
     private function validateReferences(EntityDefinition $definition, JsonApiDto $dto, array $attributes): void
     {
-        $errors = [];
-        $this->validateRelationshipReferences($definition, $dto, $attributes, $errors);
-
-        if ($errors !== []) {
-            throw new ValidationException($errors);
-        }
-
-        $this->persistenceWriteValidator->validateAttributeReferences(
+        $this->persistenceWriteValidator->validateReferences(
             $this->definitionWithResolvedLookupFilters($definition, $attributes),
-            $attributes
+            $attributes,
+            $this->extractRelationshipIdentifiers($definition, $dto)
         );
     }
 
     /**
-     * @param array<string,mixed> $attributes
-     * @param array<int,array<string,mixed>> $errors
+     * @return array<string,array{type:?string,id:string|int|null}|null>
      */
-    private function validateRelationshipReferences(EntityDefinition $definition, JsonApiDto $dto, array $attributes, array &$errors): void
+    private function extractRelationshipIdentifiers(EntityDefinition $definition, JsonApiDto $dto): array
     {
+        $relationships = [];
+
         foreach ($definition->getRelationships() as $relationshipName => $relationship) {
             if (!is_string($relationshipName) || !is_array($relationship) || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
-            if ($relationshipData === null || $relationshipData['id'] === null) {
-                continue;
-            }
-
-            $targetType = $relationship['type'] ?? null;
-            if (!is_string($targetType) || trim($targetType) === '') {
-                continue;
-            }
-
-            $targetDefinition = $this->definitionProvider->getEntityDefinition($targetType);
-
-            if ($this->repository->findById($targetDefinition, $relationshipData['id']) !== null) {
-                continue;
-            }
-
-            $errors[] = [
-                'status' => '422',
-                'code' => 'invalid_relationship',
-                'title' => 'Invalid Relationship',
-                'detail' => sprintf("Relationship '%s' references an unknown resource", $relationshipName),
-                'source' => [
-                    'pointer' => '/data/relationships/' . $relationshipName . '/data/id',
-                ],
-            ];
+            $relationships[$relationshipName] = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
         }
+
+        return $relationships;
     }
 
     /**

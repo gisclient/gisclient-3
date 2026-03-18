@@ -17,22 +17,36 @@ final class TestApiCrudService extends ApiCrudService
 
     public function __construct(
         DtoEntityDefinitionProvider $provider,
-        AuthorEntityRepositoryInterface $repository
+        AuthorEntityRepositoryInterface $repository,
+        PersistenceWriteValidator $validator
     ) {
         parent::__construct(
             $provider,
             $repository,
-            new PersistenceWriteValidator(null, static fn (...$args): bool => true)
+            $validator
         );
         $this->repository = $repository;
         $this->serializer = new JsonApiSerializer();
     }
 
-    public static function create(?AuthorEntityRepositoryInterface $repository = null): self
-    {
+    public static function create(
+        ?AuthorEntityRepositoryInterface $repository = null,
+        ?PersistenceWriteValidator $validator = null,
+        ?DtoEntityDefinitionProvider $provider = null
+    ): self {
+        $provider ??= new DtoEntityDefinitionProvider();
+        $repository ??= new AuthorEntityRepositoryStub();
+        $validator ??= new PersistenceWriteValidator(
+            null,
+            static fn (...$args): bool => true,
+            $provider,
+            $repository
+        );
+
         return new self(
-            new DtoEntityDefinitionProvider(),
-            $repository ?? new AuthorEntityRepositoryStub()
+            $provider,
+            $repository,
+            $validator
         );
     }
 
