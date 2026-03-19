@@ -4,6 +4,7 @@ use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Controller\JsonApiController;
+use GisClient\Author\Persistence\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
@@ -192,6 +193,43 @@ class JsonApiControllerTest extends TestCase
         $this->assertSame('/data/attributes/project_srid', $payload['errors'][2]['source']['pointer']);
         $this->assertSame('/data/attributes/max_extent_scale', $payload['errors'][3]['source']['pointer']);
         $this->assertFalse($service->createCalled);
+    }
+
+    public function testCreateActionMapsPersistenceExceptionToJsonApiError()
+    {
+        $service = new class() {
+            public function createResource($entity, JsonApiDto $payload)
+            {
+                throw new UniqueConstraintViolationException('duplicate');
+            }
+        };
+
+        $controller = $this->createController($service);
+        $this->setAuthenticationHandler($this->createAuthHandler(true, true));
+
+        $request = Request::create(
+            '/api/project',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            json_encode([
+                'data' => [
+                    'type' => 'project',
+                    'attributes' => [
+                        'project_title' => 'Milano',
+                    ],
+                ],
+            ])
+        );
+
+        $response = $controller->createAction('project', $request);
+        $payload = json_decode($response->getContent(), true);
+
+        $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
+        $this->assertSame('unique_constraint_violation', $payload['errors'][0]['code']);
+        $this->assertSame('Duplicate value violates unique constraint', $payload['errors'][0]['detail']);
     }
 
     private function createController($service)

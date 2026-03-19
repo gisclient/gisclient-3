@@ -6,9 +6,9 @@ use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityRef;
+use GisClient\Author\Persistence\EntityRepository;
 use GisClient\Author\Persistence\EntitySchema;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
 

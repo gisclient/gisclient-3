@@ -2,8 +2,10 @@
 
 namespace GisClient\Author\Persistence;
 
-use GisClient\Author\Api\Exception\ApiException;
-use GisClient\Author\Api\Persistence\EntityRepository;
+use GisClient\Author\Persistence\Exception\ForeignKeyConstraintViolationException;
+use GisClient\Author\Persistence\Exception\InvalidPersistedDataException;
+use GisClient\Author\Persistence\Exception\RepositoryOperationException;
+use GisClient\Author\Persistence\Exception\UniqueConstraintViolationException;
 
 class PdoEntityRepository implements EntityRepository
 {
@@ -278,15 +280,15 @@ class PdoEntityRepository implements EntityRepository
     {
         $code = (string) $exception->getCode();
         if ($code === '23505') {
-            throw new ApiException(409, 'unique_constraint_violation', 'Conflict', 'Duplicate value violates unique constraint', null, $exception);
+            throw new UniqueConstraintViolationException('Duplicate value violates unique constraint', 0, $exception);
         }
         if ($code === '23503') {
-            throw new ApiException(409, 'foreign_key_violation', 'Conflict', 'Foreign key constraint violation', null, $exception);
+            throw new ForeignKeyConstraintViolationException('Foreign key constraint violation', 0, $exception);
         }
         if (strpos($code, '22') === 0 || in_array($code, ['23502', '23514'], true)) {
-            throw new ApiException(422, 'invalid_attribute_value', 'Invalid Attribute Value', 'One or more attributes have invalid value or format', null, $exception);
+            throw new InvalidPersistedDataException('One or more attributes have invalid value or format', 0, $exception);
         }
 
-        throw new ApiException(500, 'database_error', 'Database Error', 'An internal error occurred', null, $exception);
+        throw new RepositoryOperationException('An internal error occurred', 0, $exception);
     }
 }

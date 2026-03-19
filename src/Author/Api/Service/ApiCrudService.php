@@ -10,11 +10,11 @@ use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Mapper\DtoToEntityMapper;
 use GisClient\Author\Api\Mapper\EntityToDtoMapper;
 use GisClient\Author\Api\Mapper\ResourceQueryMapper;
-use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Api\Validation\DtoValidator;
 use GisClient\Author\Api\Validation\EntityValidator;
 use GisClient\Author\Persistence\EntityQuery;
 use GisClient\Author\Persistence\EntityRef;
+use GisClient\Author\Persistence\EntityRepository;
 
 class ApiCrudService
 {

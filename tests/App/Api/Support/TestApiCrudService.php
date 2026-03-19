@@ -3,10 +3,10 @@
 require_once __DIR__ . '/EntityRepositoryStub.php';
 
 use GisClient\Author\Api\Dto\JsonApiDto;
-use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\EntityValidator;
+use GisClient\Author\Persistence\EntityRepository;
 
 final class TestApiCrudService extends ApiCrudService
 {

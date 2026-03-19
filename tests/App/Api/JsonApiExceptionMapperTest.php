@@ -3,6 +3,10 @@
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
+use GisClient\Author\Persistence\Exception\ForeignKeyConstraintViolationException;
+use GisClient\Author\Persistence\Exception\InvalidPersistedDataException;
+use GisClient\Author\Persistence\Exception\RepositoryOperationException;
+use GisClient\Author\Persistence\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\TestCase;
 
 class JsonApiExceptionMapperTest extends TestCase
@@ -25,6 +29,46 @@ class JsonApiExceptionMapperTest extends TestCase
         $this->assertSame(500, $mapped['status']);
         $this->assertSame('database_error', $mapped['payload']['errors'][0]['code']);
         $this->assertSame('SQLSTATE details here', $mapped['payload']['errors'][0]['detail']);
+    }
+
+    public function testMapsUniqueConstraintViolationToConflict()
+    {
+        $mapper = new JsonApiExceptionMapper();
+        $mapped = $mapper->map(new UniqueConstraintViolationException('duplicate'));
+
+        $this->assertSame(409, $mapped['status']);
+        $this->assertSame('unique_constraint_violation', $mapped['payload']['errors'][0]['code']);
+        $this->assertSame('Duplicate value violates unique constraint', $mapped['payload']['errors'][0]['detail']);
+    }
+
+    public function testMapsForeignKeyConstraintViolationToConflict()
+    {
+        $mapper = new JsonApiExceptionMapper();
+        $mapped = $mapper->map(new ForeignKeyConstraintViolationException('fk'));
+
+        $this->assertSame(409, $mapped['status']);
+        $this->assertSame('foreign_key_violation', $mapped['payload']['errors'][0]['code']);
+        $this->assertSame('Foreign key constraint violation', $mapped['payload']['errors'][0]['detail']);
+    }
+
+    public function testMapsInvalidPersistedDataToUnprocessableEntity()
+    {
+        $mapper = new JsonApiExceptionMapper();
+        $mapped = $mapper->map(new InvalidPersistedDataException('invalid'));
+
+        $this->assertSame(422, $mapped['status']);
+        $this->assertSame('invalid_attribute_value', $mapped['payload']['errors'][0]['code']);
+        $this->assertSame('One or more attributes have invalid value or format', $mapped['payload']['errors'][0]['detail']);
+    }
+
+    public function testMapsRepositoryOperationExceptionToDatabaseError()
+    {
+        $mapper = new JsonApiExceptionMapper();
+        $mapped = $mapper->map(new RepositoryOperationException('boom'));
+
+        $this->assertSame(500, $mapped['status']);
+        $this->assertSame('database_error', $mapped['payload']['errors'][0]['code']);
+        $this->assertSame('An internal error occurred', $mapped['payload']['errors'][0]['detail']);
     }
 
     public function testMapsValidationExceptionWithMultipleErrors()

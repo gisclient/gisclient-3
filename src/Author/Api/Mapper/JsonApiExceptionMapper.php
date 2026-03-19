@@ -4,6 +4,10 @@ namespace GisClient\Author\Api\Mapper;
 
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Persistence\Exception\ForeignKeyConstraintViolationException;
+use GisClient\Author\Persistence\Exception\InvalidPersistedDataException;
+use GisClient\Author\Persistence\Exception\RepositoryOperationException;
+use GisClient\Author\Persistence\Exception\UniqueConstraintViolationException;
 
 class JsonApiExceptionMapper
 {
@@ -45,6 +49,22 @@ class JsonApiExceptionMapper
             ];
         }
 
+        if ($exception instanceof UniqueConstraintViolationException) {
+            return $this->mapError(409, 'unique_constraint_violation', 'Conflict', 'Duplicate value violates unique constraint');
+        }
+
+        if ($exception instanceof ForeignKeyConstraintViolationException) {
+            return $this->mapError(409, 'foreign_key_violation', 'Conflict', 'Foreign key constraint violation');
+        }
+
+        if ($exception instanceof InvalidPersistedDataException) {
+            return $this->mapError(422, 'invalid_attribute_value', 'Invalid Attribute Value', 'One or more attributes have invalid value or format');
+        }
+
+        if ($exception instanceof RepositoryOperationException) {
+            return $this->mapError(500, 'database_error', 'Database Error', 'An internal error occurred');
+        }
+
         return [
             'status' => 500,
             'payload' => [
@@ -53,6 +73,24 @@ class JsonApiExceptionMapper
                     'code' => 'internal_error',
                     'title' => 'Internal Server Error',
                     'detail' => $exception->getMessage(),
+                ]],
+            ],
+        ];
+    }
+
+    /**
+     * @return array{status:int,payload:array{errors:array<int,array<string,string>>}}
+     */
+    private function mapError(int $status, string $code, string $title, string $detail): array
+    {
+        return [
+            'status' => $status,
+            'payload' => [
+                'errors' => [[
+                    'status' => (string) $status,
+                    'code' => $code,
+                    'title' => $title,
+                    'detail' => $detail,
                 ]],
             ],
         ];

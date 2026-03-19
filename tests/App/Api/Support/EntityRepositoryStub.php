@@ -1,9 +1,9 @@
 <?php
 
-use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityQuery;
 use GisClient\Author\Persistence\EntityRef;
+use GisClient\Author\Persistence\EntityRepository;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
 use GisClient\Author\Persistence\PagedResult;
 

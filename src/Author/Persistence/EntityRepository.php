@@ -1,11 +1,6 @@
 <?php
 
-namespace GisClient\Author\Api\Persistence;
-
-use GisClient\Author\Persistence\Entity;
-use GisClient\Author\Persistence\EntityQuery;
-use GisClient\Author\Persistence\EntityRef;
-use GisClient\Author\Persistence\PagedResult;
+namespace GisClient\Author\Persistence;
 
 interface EntityRepository
 {
