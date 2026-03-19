@@ -34,7 +34,7 @@ services:
   GisClient\Author\Api\Serializer\JsonApiSerializer:
     public: true
 
-  GisClient\Author\Api\Error\JsonApiExceptionMapper:
+  GisClient\Author\Api\Mapper\JsonApiExceptionMapper:
     public: true
 
   GisClient\Author\Api\Service\ApiCrudService:

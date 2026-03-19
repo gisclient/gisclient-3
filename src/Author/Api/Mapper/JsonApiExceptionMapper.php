@@ -1,6 +1,6 @@
 <?php
 
-namespace GisClient\Author\Api\Error;
+namespace GisClient\Author\Api\Mapper;
 
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;

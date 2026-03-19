@@ -1,8 +1,8 @@
 <?php
 
-use GisClient\Author\Api\Error\JsonApiExceptionMapper;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use PHPUnit\Framework\TestCase;
 
 class JsonApiExceptionMapperTest extends TestCase

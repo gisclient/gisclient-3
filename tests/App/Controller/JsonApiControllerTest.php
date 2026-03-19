@@ -1,7 +1,7 @@
 <?php
 
 use GisClient\Author\Api\Dto\JsonApiDto;
-use GisClient\Author\Api\Error\JsonApiExceptionMapper;
+use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Controller\JsonApiController;
 use PHPUnit\Framework\TestCase;

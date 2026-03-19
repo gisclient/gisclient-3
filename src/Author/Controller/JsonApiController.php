@@ -2,8 +2,8 @@
 
 namespace GisClient\Author\Controller;
 
-use GisClient\Author\Api\Error\JsonApiExceptionMapper;
 use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
