@@ -1,13 +1,13 @@
 <?php
 
-namespace GisClient\Author\Api\Contract;
+namespace GisClient\Author\Api\Persistence;
 
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityQuery;
 use GisClient\Author\Persistence\EntityRef;
 
-interface AuthorEntityRepositoryInterface
+interface EntityRepository
 {
     /**
      * @return PagedResult

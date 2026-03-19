@@ -27,7 +27,7 @@ class StyleDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsClassRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(StyleDto::class, 3, [
             'style_name' => 'default',

@@ -2,11 +2,11 @@
 
 namespace GisClient\Author\Persistence;
 
-use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Model\PagedResult;
+use GisClient\Author\Api\Persistence\EntityRepository;
 
-class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
+class PdoEntityRepository implements EntityRepository
 {
     /**
      * @var \PDO

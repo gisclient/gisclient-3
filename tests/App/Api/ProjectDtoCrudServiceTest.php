@@ -14,7 +14,7 @@ class ProjectDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsDtoIdToPrimaryKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
 
         $service->createResource('project', $this->makeDto(ProjectDto::class, 'milano', [
@@ -39,7 +39,7 @@ class ProjectDtoCrudServiceTest extends TestCase
 
     public function testCreateRejectsDuplicatePrimaryKeyWithExplicitConflict(): void
     {
-        $repository = new AuthorEntityRepositoryStub(['milano']);
+        $repository = new EntityRepositoryStub(['milano']);
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(ProjectDto::class, 'milano', [
             'project_title' => 'Milano',
@@ -56,7 +56,7 @@ class ProjectDtoCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownCharsetEncodingReference(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create(
             $repository,
             new EntityValidator(null, static function (array $lookupRule, $value): bool {

@@ -27,7 +27,7 @@ class FieldDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsLayerRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(FieldDto::class, 51, [
             'field_name' => 'gid',
@@ -58,7 +58,7 @@ class FieldDtoCrudServiceTest extends TestCase
 
     public function testGetResourceKeepsRelationIdAsAttribute(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+        $repository = new EntityRepositoryStub([], static fn ($ref) => [
             'field_id' => (int) $ref->getId(),
             'layer_id' => 2,
             'relation_id' => 0,

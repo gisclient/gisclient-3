@@ -14,7 +14,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
 
     public function testCreateUsesRootIdAndRendersRelationships(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(MapsetLayergroupDto::class, 7, [
             'status' => 1,
@@ -64,7 +64,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
 
     public function testGetUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+        $repository = new EntityRepositoryStub([], static fn ($ref) => [
             'id' => (int) $ref->getId(),
             'mapset_name' => 'base',
             'layergroup_id' => 42,
@@ -82,7 +82,7 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
 
     public function testPutUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub(
+        $repository = new EntityRepositoryStub(
             [],
             static fn ($ref) => [
                 'id' => (int) $ref->getId(),

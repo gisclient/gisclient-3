@@ -2,11 +2,11 @@
 
 namespace GisClient\Author\Api\Validation;
 
-use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityRef;
 use GisClient\Author\Persistence\EntitySchema;
@@ -25,14 +25,14 @@ class EntityValidator
     private $lookupExistsCallback;
 
     /**
-     * @var AuthorEntityRepositoryInterface|null
+     * @var EntityRepository|null
      */
     private $repository;
 
     public function __construct(
         ?\PDO $db = null,
         ?callable $lookupExistsCallback = null,
-        ?AuthorEntityRepositoryInterface $repository = null
+        ?EntityRepository $repository = null
     ) {
         $this->db = $db;
         $this->lookupExistsCallback = $lookupExistsCallback;

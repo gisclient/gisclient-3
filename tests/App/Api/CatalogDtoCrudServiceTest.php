@@ -27,7 +27,7 @@ class CatalogDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsProjectRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(CatalogDto::class, 2, [
             'catalog_name' => 'Main catalog',

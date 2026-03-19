@@ -39,7 +39,7 @@ class LayerDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsParentRelationshipsToLocalKeys(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->baseLayerDto();
         $dto->layergroup = $this->identifierDto(LayergroupDto::class, 5);
@@ -73,7 +73,7 @@ class LayerDtoCrudServiceTest extends TestCase
 
     public function testUpdateAcceptsRelationshipIdsWhenAttributesAreNullOnPut(): void
     {
-        $repository = new AuthorEntityRepositoryStub(
+        $repository = new EntityRepositoryStub(
             [],
             static fn ($ref) => [
                 'layer_id' => (int) $ref->getId(),

@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Support/AuthorEntityRepositoryStub.php';
+require_once __DIR__ . '/Support/EntityRepositoryStub.php';
 
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Api\Validation\EntityValidator;
@@ -109,7 +109,7 @@ class EntityValidatorTest extends TestCase
         $validator = new EntityValidator(
             null,
             null,
-            new AuthorEntityRepositoryStub([], static fn ($ref) => null)
+            new EntityRepositoryStub([], static fn ($ref) => null)
         );
 
         try {

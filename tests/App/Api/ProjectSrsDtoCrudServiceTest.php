@@ -13,7 +13,7 @@ class ProjectSrsDtoCrudServiceTest extends TestCase
 
     public function testCreateUsesIdAndRendersParentRelationship(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(ProjectSrsDto::class, 1, [
             'srid' => 3857,
@@ -33,7 +33,7 @@ class ProjectSrsDtoCrudServiceTest extends TestCase
 
     public function testGetUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+        $repository = new EntityRepositoryStub([], static fn ($ref) => [
             'id' => (int) $ref->getId(),
             'project_name' => 'default',
             'srid' => 3857,

@@ -14,7 +14,7 @@ class ThemeDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsProjectRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(ThemeDto::class, 4, [
             'theme_name' => 'boundaries_places',
@@ -47,7 +47,7 @@ class ThemeDtoCrudServiceTest extends TestCase
 
     public function testGetResourceCastsNumericAttributesFromDatabaseStrings(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+        $repository = new EntityRepositoryStub([], static fn ($ref) => [
             'theme_id' => '3',
             'project_name' => 'milano',
             'theme_name' => 'boundaries_places3',

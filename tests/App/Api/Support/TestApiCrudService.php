@@ -1,9 +1,9 @@
 <?php
 
-require_once __DIR__ . '/AuthorEntityRepositoryStub.php';
+require_once __DIR__ . '/EntityRepositoryStub.php';
 
-use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\EntityValidator;
@@ -12,10 +12,10 @@ final class TestApiCrudService extends ApiCrudService
 {
     private JsonApiSerializer $serializer;
 
-    private AuthorEntityRepositoryInterface $repository;
+    private EntityRepository $repository;
 
     public function __construct(
-        AuthorEntityRepositoryInterface $repository,
+        EntityRepository $repository,
         EntityValidator $validator
     ) {
         parent::__construct(
@@ -27,10 +27,10 @@ final class TestApiCrudService extends ApiCrudService
     }
 
     public static function create(
-        ?AuthorEntityRepositoryInterface $repository = null,
+        ?EntityRepository $repository = null,
         ?EntityValidator $validator = null
     ): self {
-        $repository ??= new AuthorEntityRepositoryStub();
+        $repository ??= new EntityRepositoryStub();
         $validator ??= new EntityValidator(
             null,
             static fn (...$args): bool => true,
@@ -77,14 +77,14 @@ final class TestApiCrudService extends ApiCrudService
 
     private function beginWriteContext(string $entity): void
     {
-        if ($this->repository instanceof AuthorEntityRepositoryStub) {
+        if ($this->repository instanceof EntityRepositoryStub) {
             $this->repository->beginWriteContext($entity);
         }
     }
 
     private function endWriteContext(): void
     {
-        if ($this->repository instanceof AuthorEntityRepositoryStub) {
+        if ($this->repository instanceof EntityRepositoryStub) {
             $this->repository->endWriteContext();
         }
     }

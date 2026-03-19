@@ -2,7 +2,6 @@
 
 namespace GisClient\Author\Api\Service;
 
-use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Dto\PagedResultDto;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
@@ -11,6 +10,7 @@ use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Mapper\DtoToEntityMapper;
 use GisClient\Author\Api\Mapper\EntityToDtoMapper;
 use GisClient\Author\Api\Mapper\ResourceQueryMapper;
+use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Api\Validation\DtoValidator;
 use GisClient\Author\Api\Validation\EntityValidator;
 use GisClient\Author\Persistence\EntityQuery;
@@ -19,7 +19,7 @@ use GisClient\Author\Persistence\EntityRef;
 class ApiCrudService
 {
     /**
-     * @var AuthorEntityRepositoryInterface
+     * @var EntityRepository
      */
     private $repository;
 
@@ -49,7 +49,7 @@ class ApiCrudService
     private $entityToDtoMapper;
 
     public function __construct(
-        AuthorEntityRepositoryInterface $repository,
+        EntityRepository $repository,
         EntityValidator $entityValidator,
         ?DtoValidator $dtoValidator = null,
         ?DtoToEntityMapper $dtoToEntityMapper = null,

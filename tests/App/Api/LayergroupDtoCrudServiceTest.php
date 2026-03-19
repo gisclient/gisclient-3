@@ -25,7 +25,7 @@ class LayergroupDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsThemeRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(LayergroupDto::class, 5, [
             'layergroup_name' => 'base',

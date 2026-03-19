@@ -31,7 +31,7 @@ class MapsetDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsProjectRelationshipAndKeepsSridAttributes(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(MapsetDto::class, 'base', [
             'mapset_title' => 'Base map',
@@ -57,7 +57,7 @@ class MapsetDtoCrudServiceTest extends TestCase
 
     public function testGetKeepsSridFieldsAsAttributes(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+        $repository = new EntityRepositoryStub([], static fn ($ref) => [
             'mapset_name' => (string) $ref->getId(),
             'project_name' => 'milano',
             'mapset_title' => 'Base map',

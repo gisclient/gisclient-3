@@ -27,7 +27,7 @@ class ClassDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsLayerRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(ClassDto::class, 3, [
             'class_name' => 'default',

@@ -1,13 +1,13 @@
 <?php
 
-use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Model\PagedResult;
+use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityQuery;
 use GisClient\Author\Persistence\EntityRef;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
 
-final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterface
+final class EntityRepositoryStub implements EntityRepository
 {
     public array $createdAttributes = [];
 

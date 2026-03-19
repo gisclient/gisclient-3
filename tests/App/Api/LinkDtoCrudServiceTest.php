@@ -26,7 +26,7 @@ class LinkDtoCrudServiceTest extends TestCase
 
     public function testCreateMapsProjectRelationshipToLocalKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(LinkDto::class, 2, [
             'link_name' => 'Docs',

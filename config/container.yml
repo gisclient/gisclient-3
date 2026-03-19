@@ -28,8 +28,8 @@ services:
   GisClient\Author\Utils\TemporaryFileService:
     arguments: ['%tmp_dir%']
 
-  GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface:
-    class: GisClient\Author\Persistence\PdoAuthorEntityRepository
+  GisClient\Author\Api\Persistence\EntityRepository:
+    class: GisClient\Author\Persistence\PdoEntityRepository
 
   GisClient\Author\Api\Serializer\JsonApiSerializer:
     public: true

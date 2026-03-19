@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Support/AuthorEntityRepositoryStub.php';
+require_once __DIR__ . '/Support/EntityRepositoryStub.php';
 require_once __DIR__ . '/Support/ApiCrudServiceDtoTestTrait.php';
 require_once __DIR__ . '/Support/TestApiCrudService.php';
 
@@ -21,7 +21,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateMapsDataIdToPrimaryKey(): void
     {
-        $repository = new AuthorEntityRepositoryStub();
+        $repository = new EntityRepositoryStub();
         $service = TestApiCrudService::create($repository);
 
         $service->createResource('project', $this->makeDto(ProjectDto::class, 'milano', [
@@ -38,7 +38,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsDuplicatePrimaryKeyWithExplicitConflict(): void
     {
-        $repository = new AuthorEntityRepositoryStub(['milano']);
+        $repository = new EntityRepositoryStub(['milano']);
         $service = TestApiCrudService::create($repository);
 
         $dto = $this->makeDto(ProjectDto::class, 'milano', [
@@ -56,7 +56,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownRelationshipReference(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => null);
+        $repository = new EntityRepositoryStub([], static fn ($ref) => null);
         $service = new ApiCrudService(
             $repository,
             new EntityValidator(null, static fn (): bool => true, $repository)
@@ -81,7 +81,7 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownScopedMapsetSridReference(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static function ($ref) {
+        $repository = new EntityRepositoryStub([], static function ($ref) {
             if ($ref->getType() === 'project') {
                 return [
                     'project_name' => (string) $ref->getId(),
@@ -154,7 +154,7 @@ class ApiCrudServiceTest extends TestCase
     public function testListResourcesPassesNormalizedFiltersThroughQueryOptions(): void
     {
         $capturedQueryOptions = null;
-        $repository = new AuthorEntityRepositoryStub(
+        $repository = new EntityRepositoryStub(
             [],
             null,
             static function (EntityQuery $query) use (&$capturedQueryOptions) {
@@ -187,7 +187,7 @@ class ApiCrudServiceTest extends TestCase
     public function testDeleteRemovesExistingResourceWithoutScopeContext(): void
     {
         $deleted = [];
-        $repository = new AuthorEntityRepositoryStub(
+        $repository = new EntityRepositoryStub(
             ['milano'],
             null,
             null,
