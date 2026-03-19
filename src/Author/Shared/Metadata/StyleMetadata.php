@@ -36,6 +36,6 @@ class StyleMetadata extends Metadata
             ->addAttribute('width', 'width', 'string', true)
             ->addAttribute('angle', 'angle', 'string', true)
             ->addAttribute('style_def', 'styleDef', 'string', true)
-            ->addRelationship('class', 'class', ClassDto::class, 'class', false, true, true, true, 'class_id');
+            ->addRelationship('class', 'class', ClassDto::class, 'class', false, true, true, 'class_id');
     }
 }

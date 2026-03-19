@@ -298,32 +298,6 @@ class EntitySchema
     }
 
     /**
-     * @return array<int,string>
-     */
-    public function getReadableSelectColumns(): array
-    {
-        $fields = [$this->primaryKey];
-
-        foreach ($this->attributes as $publicName => $attribute) {
-            if (!$attribute['readable']) {
-                continue;
-            }
-
-            $fields[] = $attribute['column'] === $publicName
-                ? $attribute['column']
-                : sprintf('%s AS %s', $attribute['column'], $publicName);
-        }
-
-        foreach ($this->relationships as $relationship) {
-            if ($relationship['readable']) {
-                $fields[] = $relationship['column'];
-            }
-        }
-
-        return array_values(array_unique($fields));
-    }
-
-    /**
      * @return array<string,array<string,mixed>>
      */
     public function getAttributeRules(): array

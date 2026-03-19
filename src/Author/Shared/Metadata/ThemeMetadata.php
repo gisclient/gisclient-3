@@ -28,6 +28,6 @@ class ThemeMetadata extends Metadata
             ])
             ->addAttribute('theme_single', 'themeSingle', 'float', true)
             ->addAttribute('radio', 'radio', 'float', true)
-            ->addRelationship('project', 'project', ProjectDto::class, 'project', true, true, true, true, 'project_name');
+            ->addRelationship('project', 'project', ProjectDto::class, 'project', true, true, true, 'project_name');
     }
 }

@@ -20,7 +20,7 @@ class MapsetLayergroupMetadata extends Metadata
             ->addAttribute('status', 'status', 'int', true)
             ->addAttribute('refmap', 'refmap', 'int', true)
             ->addAttribute('hide', 'hide', 'int', true)
-            ->addRelationship('mapset', 'mapset', MapsetDto::class, 'mapset', false, true, true, true, 'mapset_name')
-            ->addRelationship('layergroup', 'layergroup', LayergroupDto::class, 'layergroup', false, true, true, true, 'layergroup_id');
+            ->addRelationship('mapset', 'mapset', MapsetDto::class, 'mapset', false, true, true, 'mapset_name')
+            ->addRelationship('layergroup', 'layergroup', LayergroupDto::class, 'layergroup', false, true, true, 'layergroup_id');
     }
 }

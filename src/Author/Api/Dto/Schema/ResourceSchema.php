@@ -10,10 +10,9 @@ class ResourceSchema
         string $type,
         string $dtoClass,
         string $primaryKey,
-        string $idPhpType,
-        bool $clientGeneratedIdAllowed = true
+        string $idPhpType
     ): self {
-        return new self($type, $dtoClass, $primaryKey, $idPhpType, $clientGeneratedIdAllowed, [], []);
+        return new self($type, $dtoClass, $primaryKey, $idPhpType, [], []);
     }
 
     public static function fromMetadata(Metadata $metadata): self
@@ -48,8 +47,7 @@ class ResourceSchema
                 $relationship['target_type'],
                 $relationship['nullable'],
                 $relationship['readable'],
-                $relationship['writable'],
-                $relationship['allow_identifier_only']
+                $relationship['writable']
             ));
         }
 
@@ -75,11 +73,6 @@ class ResourceSchema
      * @var string
      */
     private $idPhpType;
-
-    /**
-     * @var bool
-     */
-    private $clientGeneratedIdAllowed;
 
     /**
      * @var array<string,FieldDefinition>
@@ -121,7 +114,6 @@ class ResourceSchema
         string $dtoClass,
         string $primaryKey,
         string $idPhpType,
-        bool $clientGeneratedIdAllowed,
         array $requiredOnCreate,
         array $requiredOnPut
     ) {
@@ -129,7 +121,6 @@ class ResourceSchema
         $this->dtoClass = $dtoClass;
         $this->primaryKey = $primaryKey;
         $this->idPhpType = $idPhpType;
-        $this->clientGeneratedIdAllowed = $clientGeneratedIdAllowed;
         $this->requiredOnCreate = $requiredOnCreate;
         $this->requiredOnPut = $requiredOnPut;
     }
@@ -176,11 +167,6 @@ class ResourceSchema
     public function getIdPhpType(): string
     {
         return $this->idPhpType;
-    }
-
-    public function isClientGeneratedIdAllowed(): bool
-    {
-        return $this->clientGeneratedIdAllowed;
     }
 
     /**

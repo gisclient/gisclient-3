@@ -89,7 +89,7 @@ class LayerMetadata extends Metadata
             ->addAttribute('maxvectfeatures', 'maxvectfeatures', 'int', true)
             ->addAttribute('zoom_buffer', 'zoomBuffer', 'float', true)
             ->addAttribute('last_update', 'lastUpdate', 'string', true)
-            ->addRelationship('catalog', 'catalog', CatalogDto::class, 'catalog', false, true, true, true, 'catalog_id')
-            ->addRelationship('layergroup', 'layergroup', LayergroupDto::class, 'layergroup', false, true, true, true, 'layergroup_id');
+            ->addRelationship('catalog', 'catalog', CatalogDto::class, 'catalog', false, true, true, 'catalog_id')
+            ->addRelationship('layergroup', 'layergroup', LayergroupDto::class, 'layergroup', false, true, true, 'layergroup_id');
     }
 }

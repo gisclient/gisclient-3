@@ -56,6 +56,6 @@ class LayergroupMetadata extends Metadata
             ->addAttribute('transition', 'transition', 'float', true)
             ->addAttribute('layergroup_single', 'layergroupSingle', 'float', true)
             ->addAttribute('tiletype_id', 'tiletypeId', 'float', true)
-            ->addRelationship('theme', 'theme', ThemeDto::class, 'theme', false, true, true, true, 'theme_id');
+            ->addRelationship('theme', 'theme', ThemeDto::class, 'theme', false, true, true, 'theme_id');
     }
 }

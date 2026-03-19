@@ -64,6 +64,6 @@ class MapsetMetadata extends Metadata
                     'column' => 'id',
                 ],
             ])
-            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, true, 'project_name');
+            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, 'project_name');
     }
 }

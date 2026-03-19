@@ -20,6 +20,6 @@ class LinkMetadata extends Metadata
             ->addAttribute('link_def', 'linkDef', 'string')
             ->addAttribute('winw', 'winw', 'int', true)
             ->addAttribute('winh', 'winh', 'int', true)
-            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, true, 'project_name');
+            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, 'project_name');
     }
 }

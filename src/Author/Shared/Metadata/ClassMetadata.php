@@ -41,6 +41,6 @@ class ClassMetadata extends Metadata
             ->addAttribute('label_buffer', 'labelBuffer', 'int', true)
             ->addAttribute('label_antialias', 'labelAntialias', 'int', true)
             ->addAttribute('label_wrap', 'labelWrap', 'string', true)
-            ->addRelationship('layer', 'layer', LayerDto::class, 'layer', true, true, true, true, 'layer_id');
+            ->addRelationship('layer', 'layer', LayerDto::class, 'layer', true, true, true, 'layer_id');
     }
 }

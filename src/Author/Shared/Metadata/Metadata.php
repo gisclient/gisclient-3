@@ -155,7 +155,6 @@ class Metadata
         bool $nullable = false,
         bool $readable = true,
         bool $writable = true,
-        bool $allowIdentifierOnly = true,
         ?string $column = null
     ): self {
         $this->relationships[$jsonApiName] = [
@@ -166,7 +165,6 @@ class Metadata
             'nullable' => $nullable,
             'readable' => $readable,
             'writable' => $writable,
-            'allow_identifier_only' => $allowIdentifierOnly,
             'column' => $column ?? $jsonApiName,
         ];
 

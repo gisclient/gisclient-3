@@ -27,6 +27,6 @@ class CatalogMetadata extends Metadata
             ->addAttribute('catalog_path', 'catalogPath', 'string')
             ->addAttribute('files_path', 'filesPath', 'string', true)
             ->addAttribute('catalog_description', 'catalogDescription', 'string', true)
-            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, true, 'project_name');
+            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, 'project_name');
     }
 }

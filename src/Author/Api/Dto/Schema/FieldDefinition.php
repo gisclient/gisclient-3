@@ -29,8 +29,7 @@ class FieldDefinition
         string $targetType,
         bool $nullable = false,
         bool $readable = true,
-        bool $writable = true,
-        bool $allowIdentifierOnly = true
+        bool $writable = true
     ): self {
         return new self(
             $jsonApiName,
@@ -42,8 +41,7 @@ class FieldDefinition
             $targetClass,
             $targetType,
             true,
-            false,
-            $allowIdentifierOnly
+            false
         );
     }
 
@@ -97,11 +95,6 @@ class FieldDefinition
      */
     private $collection;
 
-    /**
-     * @var bool
-     */
-    private $allowIdentifierOnly;
-
     public function __construct(
         string $jsonApiName,
         string $propertyName,
@@ -112,8 +105,7 @@ class FieldDefinition
         ?string $targetClass = null,
         ?string $targetType = null,
         bool $relationship = false,
-        bool $collection = false,
-        bool $allowIdentifierOnly = false
+        bool $collection = false
     ) {
         $this->jsonApiName = $jsonApiName;
         $this->propertyName = $propertyName;
@@ -125,7 +117,6 @@ class FieldDefinition
         $this->targetType = $targetType;
         $this->relationship = $relationship;
         $this->collection = $collection;
-        $this->allowIdentifierOnly = $allowIdentifierOnly;
     }
 
     public function getJsonApiName(): string
@@ -176,10 +167,5 @@ class FieldDefinition
     public function isCollection(): bool
     {
         return $this->collection;
-    }
-
-    public function allowIdentifierOnly(): bool
-    {
-        return $this->allowIdentifierOnly;
     }
 }

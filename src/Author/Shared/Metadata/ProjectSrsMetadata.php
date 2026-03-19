@@ -18,6 +18,6 @@ class ProjectSrsMetadata extends Metadata
             ->sortable(['id', 'srid'], 'srid')
             ->addAttribute('srid', 'srid', 'int')
             ->addAttribute('projparam', 'projparam', 'string', true)
-            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, true, 'project_name');
+            ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, 'project_name');
     }
 }

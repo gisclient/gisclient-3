@@ -59,6 +59,6 @@ class FieldMetadata extends Metadata
             ->addAttribute('lookup_table', 'lookupTable', 'string', true)
             ->addAttribute('lookup_id', 'lookupId', 'string', true)
             ->addAttribute('lookup_name', 'lookupName', 'string', true)
-            ->addRelationship('layer', 'layer', LayerDto::class, 'layer', true, true, true, true, 'layer_id');
+            ->addRelationship('layer', 'layer', LayerDto::class, 'layer', true, true, true, 'layer_id');
     }
 }
