@@ -71,8 +71,8 @@ class ApiCrudService
     public function listResources($entity, array $query)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $queryOptions = $this->buildQueryOptions($schema, $query);
-        $result = $this->repository->findAll($queryOptions);
+        $entityQuery = $this->buildEntityQuery($schema, $query);
+        $result = $this->repository->findAll($entityQuery);
         $items = [];
         foreach ($result->getItems() as $item) {
             $items[] = $this->entityToDtoMapper->map($schema, $item);
@@ -156,7 +156,7 @@ class ApiCrudService
     /**
      * @return EntityQuery
      */
-    public function buildQueryOptions(ResourceSchema $schema, array $query)
+    public function buildEntityQuery(ResourceSchema $schema, array $query)
     {
         return $this->resourceQueryMapper->map($schema, $query);
     }

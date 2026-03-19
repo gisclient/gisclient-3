@@ -34,7 +34,7 @@ class ThemeDtoCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
     {
         $service = TestApiCrudService::create();
-        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('theme'), [
+        $queryOptions = $service->buildEntityQuery(DtoSchemaRegistry::schemaForType('theme'), [
             'filter' => [
                 'project' => 'milano',
             ],

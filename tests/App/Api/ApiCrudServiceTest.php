@@ -9,10 +9,10 @@ use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\ThemeDto;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Validation\EntityValidator;
 use GisClient\Author\Persistence\EntityQuery;
+use GisClient\Author\Persistence\PagedResult;
 use PHPUnit\Framework\TestCase;
 
 class ApiCrudServiceTest extends TestCase
@@ -124,7 +124,7 @@ class ApiCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
     {
         $service = TestApiCrudService::create();
-        $query = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('theme'), [
+        $query = $service->buildEntityQuery(DtoSchemaRegistry::schemaForType('theme'), [
             'filter' => [
                 'project' => 'milano',
             ],
@@ -138,7 +138,7 @@ class ApiCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsMultipleRelationshipFilterAliases(): void
     {
         $service = TestApiCrudService::create();
-        $query = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('layer'), [
+        $query = $service->buildEntityQuery(DtoSchemaRegistry::schemaForType('layer'), [
             'filter' => [
                 'layergroup' => '5',
                 'catalog' => '10',

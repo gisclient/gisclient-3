@@ -3,7 +3,6 @@
 namespace GisClient\Author\Persistence;
 
 use GisClient\Author\Api\Exception\ApiException;
-use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Persistence\EntityRepository;
 
 class PdoEntityRepository implements EntityRepository

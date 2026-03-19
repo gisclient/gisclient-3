@@ -45,7 +45,7 @@ class FieldDtoCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
     {
         $service = TestApiCrudService::create();
-        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('field'), [
+        $queryOptions = $service->buildEntityQuery(DtoSchemaRegistry::schemaForType('field'), [
             'filter' => [
                 'layer' => '2',
             ],

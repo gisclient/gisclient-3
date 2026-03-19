@@ -58,7 +58,7 @@ class LayerDtoCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAliases(): void
     {
         $service = TestApiCrudService::create();
-        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('layer'), [
+        $queryOptions = $service->buildEntityQuery(DtoSchemaRegistry::schemaForType('layer'), [
             'filter' => [
                 'layergroup' => '5',
                 'catalog' => '10',

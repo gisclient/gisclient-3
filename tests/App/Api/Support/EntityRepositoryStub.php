@@ -1,11 +1,11 @@
 <?php
 
-use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Persistence\EntityRepository;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityQuery;
 use GisClient\Author\Persistence\EntityRef;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
+use GisClient\Author\Persistence\PagedResult;
 
 final class EntityRepositoryStub implements EntityRepository
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace GisClient\Author\Api\Model;
+namespace GisClient\Author\Persistence;
 
 class PagedResult
 {
