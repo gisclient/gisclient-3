@@ -13,7 +13,6 @@ use GisClient\Author\Api\Model\ResourceCollectionData;
 use GisClient\Author\Api\Model\ResourceData;
 use GisClient\Author\Api\Validation\DtoValidator;
 use GisClient\Author\Api\Validation\EntityValidator;
-use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityQuery;
 use GisClient\Author\Persistence\EntityRef;
 
@@ -103,7 +102,6 @@ class ApiCrudService
         $this->validateWriteDto($schema, $dto, true, false);
         $entityModel = $this->dtoToEntityMapper->mapForCreate((string) $entity, $dto);
         $this->entityValidator->validate($entityModel);
-        $this->assertNoDuplicatePrimaryKeyOnCreate($entityModel);
         $created = $this->repository->create($entityModel);
 
         return new ResourceData($schema, $created);
@@ -151,24 +149,6 @@ class ApiCrudService
     public function buildQueryOptions(ResourceSchema $schema, array $query)
     {
         return $this->resourceQueryMapper->map($schema, $query);
-    }
-
-    private function assertNoDuplicatePrimaryKeyOnCreate(Entity $entity): void
-    {
-        if ($entity->getId() === null) {
-            return;
-        }
-
-        $existing = $this->repository->findById(new EntityRef($entity->getType(), $entity->getId()));
-        if ($existing !== null) {
-            throw new ApiException(
-                409,
-                'duplicate_primary_key',
-                'Conflict',
-                sprintf("Resource with primary key '%s' already exists", (string) $entity->getId()),
-                '/data/id'
-            );
-        }
     }
 
     private function validateWriteDto(ResourceSchema $schema, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void

@@ -5,6 +5,7 @@ namespace GisClient\Author\Api\Validation;
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
+use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
 use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntityRef;
@@ -45,6 +46,8 @@ class EntityValidator
         $attributes = $entity->getAttributes();
         $errors = [];
         $primaryKey = $resourceSchema->getPrimaryKey();
+
+        $this->assertNoDuplicatePrimaryKeyOnCreate($entity);
 
         foreach ($attributes as $field => $value) {
             if (!in_array($field, $entitySchema->getWritableDbFields(), true) && $field !== $primaryKey) {
@@ -94,6 +97,26 @@ class EntityValidator
         if (count($errors) > 0) {
             throw new ValidationException($errors);
         }
+    }
+
+    private function assertNoDuplicatePrimaryKeyOnCreate(Entity $entity): void
+    {
+        if (!$entity->isCreate() || $entity->getId() === null || $this->repository === null) {
+            return;
+        }
+
+        $existing = $this->repository->findById(new EntityRef($entity->getType(), $entity->getId()));
+        if ($existing === null) {
+            return;
+        }
+
+        throw new ApiException(
+            409,
+            'duplicate_primary_key',
+            'Conflict',
+            sprintf("Resource with primary key '%s' already exists", (string) $entity->getId()),
+            '/data/id'
+        );
     }
 
     /**
