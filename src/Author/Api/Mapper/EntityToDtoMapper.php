@@ -17,7 +17,7 @@ class EntityToDtoMapper
         $dtoClass = DtoSchemaRegistry::classFromType($schema->getType());
         /** @var JsonApiDto $dto */
         $dto = new $dtoClass();
-        $dtoSchema = $dtoClass::schema();
+        $dtoSchema = DtoSchemaRegistry::schemaForDtoClass($dtoClass);
         $entitySchema = EntitySchemaRegistry::schemaForType($schema->getType());
         $attributes = $entity->getAttributes();
 

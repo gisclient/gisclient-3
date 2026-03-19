@@ -2,6 +2,8 @@
 
 namespace GisClient\Author\Api\Dto\Schema;
 
+use GisClient\Author\Shared\Metadata\Metadata;
+
 class ResourceSchema
 {
     public static function resource(
@@ -12,6 +14,46 @@ class ResourceSchema
         bool $clientGeneratedIdAllowed = true
     ): self {
         return new self($type, $dtoClass, $primaryKey, $idPhpType, $clientGeneratedIdAllowed, [], []);
+    }
+
+    public static function fromMetadata(Metadata $metadata): self
+    {
+        $schema = self::resource(
+            $metadata->getType(),
+            $metadata->getDtoClass(),
+            $metadata->getPrimaryKey(),
+            $metadata->getIdPhpType()
+        )
+            ->requiredOnCreate($metadata->getRequiredOnCreate())
+            ->requiredOnPut($metadata->getRequiredOnPut())
+            ->filterable($metadata->getFilterableFields())
+            ->sortable($metadata->getSortableFields(), $metadata->getDefaultSort());
+
+        foreach ($metadata->getAttributes() as $attribute) {
+            $schema->addAttribute(FieldDefinition::attribute(
+                $attribute['json_api_name'],
+                $attribute['property_name'],
+                $attribute['php_type'],
+                $attribute['nullable'],
+                $attribute['readable'],
+                $attribute['writable']
+            ));
+        }
+
+        foreach ($metadata->getRelationships() as $relationship) {
+            $schema->addRelationship(FieldDefinition::relationship(
+                $relationship['json_api_name'],
+                $relationship['property_name'],
+                $relationship['target_dto_class'],
+                $relationship['target_type'],
+                $relationship['nullable'],
+                $relationship['readable'],
+                $relationship['writable'],
+                $relationship['allow_identifier_only']
+            ));
+        }
+
+        return $schema;
     }
 
     /**

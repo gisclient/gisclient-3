@@ -3,6 +3,7 @@
 namespace GisClient\Author\Api\Serializer;
 
 use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
 
 class DtoSerializer
@@ -12,7 +13,7 @@ class DtoSerializer
      */
     public function serialize(JsonApiDto $dto): array
     {
-        $schema = $dto::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass(get_class($dto));
         $resource = [
             'type' => $schema->getType(),
             'id' => DtoPropertyAccessor::isInitialized($dto, 'id') ? (string) DtoPropertyAccessor::get($dto, 'id') : null,

@@ -2,9 +2,6 @@
 
 namespace GisClient\Author\Api\Dto;
 
-use GisClient\Author\Api\Dto\Schema\FieldDefinition;
-use GisClient\Author\Api\Dto\Schema\ResourceSchema;
-
 class CatalogDto extends JsonApiDto
 {
     public ?int $id = null;
@@ -22,20 +19,4 @@ class CatalogDto extends JsonApiDto
     public ?string $catalogDescription = null;
 
     public ProjectDto $project;
-
-    public static function schema(): ResourceSchema
-    {
-        return ResourceSchema::resource('catalog', self::class, 'catalog_id', 'int')
-            ->requiredOnCreate(['project', 'catalog_name', 'connection_type', 'catalog_path'])
-            ->requiredOnPut(['catalog_name', 'connection_type', 'catalog_path'])
-            ->filterable(['catalog_id', 'project_name', 'catalog_name', 'connection_type'])
-            ->sortable(['catalog_id', 'catalog_name', 'connection_type'], 'catalog_name')
-            ->addAttribute(FieldDefinition::attribute('catalog_name', 'catalogName', 'string'))
-            ->addAttribute(FieldDefinition::attribute('connection_type', 'connectionType', 'int'))
-            ->addAttribute(FieldDefinition::attribute('set_extent', 'setExtent', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('catalog_path', 'catalogPath', 'string'))
-            ->addAttribute(FieldDefinition::attribute('files_path', 'filesPath', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('catalog_description', 'catalogDescription', 'string', true))
-            ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project'));
-    }
 }

@@ -2,6 +2,8 @@
 
 namespace GisClient\Author\Persistence;
 
+use GisClient\Author\Shared\Metadata\Metadata;
+
 class EntitySchema
 {
     public const DEFAULT_DB_SCHEMA = 'gisclient_34';
@@ -14,6 +16,41 @@ class EntitySchema
         ?string $dbSchema = null
     ): self {
         return new self($type, $primaryKey, $idPhpType, $table, $dbSchema);
+    }
+
+    public static function fromMetadata(Metadata $metadata): self
+    {
+        $schema = self::entity(
+            $metadata->getType(),
+            $metadata->getPrimaryKey(),
+            $metadata->getIdPhpType(),
+            $metadata->getTable(),
+            $metadata->getDbSchema()
+        )
+            ->filterable($metadata->getFilterableFields())
+            ->sortable($metadata->getSortableFields(), $metadata->getDefaultSort());
+
+        foreach ($metadata->getAttributes() as $attribute) {
+            $schema->addAttribute(
+                $attribute['json_api_name'],
+                $attribute['php_type'],
+                $attribute['column'],
+                $attribute['readable'],
+                $attribute['writable'],
+                $attribute['rules']
+            );
+        }
+
+        foreach ($metadata->getRelationships() as $relationship) {
+            $schema->addRelationship(
+                $relationship['json_api_name'],
+                $relationship['column'],
+                $relationship['readable'],
+                $relationship['writable']
+            );
+        }
+
+        return $schema;
     }
 
     /**

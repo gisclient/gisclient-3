@@ -1,7 +1,6 @@
 <?php
 
-use GisClient\Author\Api\Dto\ProjectSrsDto;
-use GisClient\Author\Api\Dto\ThemeDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
 use PHPUnit\Framework\TestCase;
 
@@ -9,7 +8,7 @@ class ResourceSchemaMetadataTest extends TestCase
 {
     public function testThemeResourceSchemaExposesContractMetadata(): void
     {
-        $schema = ThemeDto::schema();
+        $schema = DtoSchemaRegistry::schemaForType('theme');
 
         $this->assertSame('theme', $schema->getType());
         $this->assertSame('theme_id', $schema->getPrimaryKey());
@@ -37,7 +36,7 @@ class ResourceSchemaMetadataTest extends TestCase
 
     public function testProjectSrsSchemaExposesContractMetadata(): void
     {
-        $schema = ProjectSrsDto::schema();
+        $schema = DtoSchemaRegistry::schemaForType('project_srs');
 
         $this->assertSame('id', $schema->getPrimaryKey());
         $this->assertSame(['id', 'project_name', 'srid'], $schema->getFilterableFields());

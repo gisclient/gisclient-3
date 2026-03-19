@@ -46,7 +46,7 @@ class DtoHydrator
     {
         /** @var JsonApiDto $dto */
         $dto = new $dtoClass();
-        $schema = $dtoClass::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass($dtoClass);
 
         if (array_key_exists('id', $data) && $data['id'] !== null) {
             DtoPropertyAccessor::set($dto, 'id', $this->normalizeScalarId($data['id']));
@@ -146,7 +146,7 @@ class DtoHydrator
     {
         /** @var JsonApiDto $relatedDto */
         $relatedDto = new $dtoClass();
-        $schema = $dtoClass::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass($dtoClass);
 
         if (($relationshipData['type'] ?? null) !== null && $relationshipData['type'] !== $schema->getType()) {
             throw new ApiException(

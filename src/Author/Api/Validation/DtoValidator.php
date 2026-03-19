@@ -3,6 +3,7 @@
 namespace GisClient\Author\Api\Validation;
 
 use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
 use GisClient\Author\Api\Exception\ValidationException;
 
@@ -14,7 +15,7 @@ class DtoValidator
      */
     public function validate(JsonApiDto $dto, $isCreate, $isPut): void
     {
-        $schema = $dto::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass(get_class($dto));
         $errors = [];
 
         $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : ($isPut ? $schema->getRequiredOnPut() : []);
@@ -82,7 +83,7 @@ class DtoValidator
 
     private function isSatisfiedByRelationship(JsonApiDto $dto, string $relationshipName): bool
     {
-        $field = $dto::schema()->getRelationship($relationshipName);
+        $field = DtoSchemaRegistry::schemaForDtoClass(get_class($dto))->getRelationship($relationshipName);
         if ($field === null || !$dto->isPresent($relationshipName)) {
             return false;
         }
@@ -105,7 +106,7 @@ class DtoValidator
      */
     private function requiredRelationshipNames(JsonApiDto $dto, bool $isCreate, bool $isPut): array
     {
-        $schema = $dto::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass(get_class($dto));
         $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : ($isPut ? $schema->getRequiredOnPut() : []);
         $requiredRelationships = [];
 

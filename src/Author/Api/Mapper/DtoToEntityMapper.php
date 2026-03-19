@@ -3,6 +3,7 @@
 namespace GisClient\Author\Api\Mapper;
 
 use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
 use GisClient\Author\Api\Exception\ApiException;
@@ -15,7 +16,7 @@ class DtoToEntityMapper
 {
     public function mapForCreate(string $type, JsonApiDto $dto): Entity
     {
-        $schema = $dto::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass(get_class($dto));
         $entitySchema = EntitySchemaRegistry::schemaForType($type);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes(
             $entitySchema,
@@ -42,7 +43,7 @@ class DtoToEntityMapper
      */
     public function mapForUpdate(string $type, $id, JsonApiDto $dto, bool $isPut = true): Entity
     {
-        $schema = $dto::schema();
+        $schema = DtoSchemaRegistry::schemaForDtoClass(get_class($dto));
         $entitySchema = EntitySchemaRegistry::schemaForType($type);
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes(
             $entitySchema,
@@ -96,13 +97,14 @@ class DtoToEntityMapper
      */
     private function mergeRelationshipLocalKeysIntoAttributes(EntitySchema $entitySchema, JsonApiDto $dto, array $attributes): array
     {
-        foreach ($dto::schema()->getRelationships() as $relationshipName => $relationship) {
+        $schema = DtoSchemaRegistry::schemaForDtoClass(get_class($dto));
+        foreach ($schema->getRelationships() as $relationshipName => $relationship) {
             $localKey = $entitySchema->getRelationshipColumn($relationshipName);
             if ($localKey === null || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $this->getRelationshipIdentifier($dto::schema(), $dto, $relationshipName);
+            $relationshipData = $this->getRelationshipIdentifier($schema, $dto, $relationshipName);
             if ($relationshipData === null || $relationshipData['id'] === null) {
                 continue;
             }

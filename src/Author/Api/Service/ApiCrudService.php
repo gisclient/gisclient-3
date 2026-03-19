@@ -163,7 +163,7 @@ class ApiCrudService
 
     private function validateWriteDto(ResourceSchema $schema, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void
     {
-        if ($dto::schema()->getType() !== $schema->getType()) {
+        if (DtoSchemaRegistry::schemaForDtoClass(get_class($dto))->getType() !== $schema->getType()) {
             throw new ApiException(
                 422,
                 'type_mismatch',
