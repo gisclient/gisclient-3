@@ -64,8 +64,8 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
 
     public function testGetUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id) => [
-            'id' => (int) $id,
+        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+            'id' => (int) $ref->getId(),
             'mapset_name' => 'base',
             'layergroup_id' => 42,
             'status' => 1,
@@ -84,8 +84,8 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
     {
         $repository = new AuthorEntityRepositoryStub(
             [],
-            static fn ($definition, $id) => [
-                'id' => (int) $id,
+            static fn ($ref) => [
+                'id' => (int) $ref->getId(),
                 'mapset_name' => 'base',
                 'layergroup_id' => 42,
                 'status' => 0,
@@ -94,11 +94,11 @@ class MapsetLayergroupDtoCrudServiceTest extends TestCase
             ],
             null,
             null,
-            static fn ($definition, $id, array $attributes) => array_merge([
-                'id' => (int) $id,
+            static fn ($entity) => array_merge([
+                'id' => (int) $entity->getId(),
                 'mapset_name' => 'base',
                 'layergroup_id' => 42,
-            ], $attributes)
+            ], $entity->getAttributes())
         );
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(MapsetLayergroupDto::class, 7, [

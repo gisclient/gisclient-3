@@ -3,12 +3,15 @@
 namespace GisClient\Author\Api\Validation;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Persistence\Entity;
+use GisClient\Author\Persistence\EntityRef;
 use GisClient\Author\Persistence\EntitySchema;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
 
-class PersistenceWriteValidator
+class EntityValidator
 {
     /**
      * @var \PDO|null
@@ -35,40 +38,13 @@ class PersistenceWriteValidator
         $this->repository = $repository;
     }
 
-    /**
-     * @param bool $isCreate
-     * @param bool $isPut
-     */
-    public function validateAndNormalize(ResourceSchema $schema, EntitySchema $entitySchema, array $attributes, $resourceId, $isCreate, $isPut)
+    public function validate(Entity $entity): void
     {
+        $resourceSchema = DtoSchemaRegistry::schemaForType($entity->getType());
+        $entitySchema = EntitySchemaRegistry::schemaForType($entity->getType());
+        $attributes = $entity->getAttributes();
         $errors = [];
-        $primaryKey = $schema->getPrimaryKey();
-
-        if ($isCreate && $resourceId !== null) {
-            $idValue = $resourceId;
-            if ($this->isEmptyValue($idValue)) {
-                $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id cannot be empty', [
-                    'id' => true,
-                ]);
-            } else {
-                $normalizedId = $this->normalizeResourceId($schema, $idValue, $errors);
-                if ($normalizedId === null) {
-                    // keep collecting all errors in payload
-                } elseif (array_key_exists($primaryKey, $attributes) && (string) $attributes[$primaryKey] !== (string) $normalizedId) {
-                    $this->addError(
-                        $errors,
-                        'id_attribute_mismatch',
-                        'Identifier Mismatch',
-                        sprintf("data.id and data.attributes.%s must match", $primaryKey),
-                        [
-                            'id' => true,
-                        ]
-                    );
-                } else {
-                    $attributes[$primaryKey] = $normalizedId;
-                }
-            }
-        }
+        $primaryKey = $resourceSchema->getPrimaryKey();
 
         foreach ($attributes as $field => $value) {
             if (!in_array($field, $entitySchema->getWritableDbFields(), true) && $field !== $primaryKey) {
@@ -84,7 +60,7 @@ class PersistenceWriteValidator
             }
         }
 
-        if (isset($attributes[$primaryKey]) && !$isCreate) {
+        if (isset($attributes[$primaryKey]) && !$entity->isCreate()) {
             $this->addError(
                 $errors,
                 'immutable_primary_key',
@@ -96,20 +72,9 @@ class PersistenceWriteValidator
             );
         }
 
-        if ($isPut) {
-            $complete = [];
-            foreach ($entitySchema->getWritableDbFields() as $field) {
-                if ($field === $primaryKey) {
-                    continue;
-                }
-                $complete[$field] = array_key_exists($field, $attributes) ? $attributes[$field] : null;
-            }
-            $attributes = $complete;
-        }
-
-        $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : $schema->getRequiredOnPut();
+        $requiredFields = $entity->isCreate() ? $resourceSchema->getRequiredOnCreate() : $resourceSchema->getRequiredOnPut();
         foreach ($requiredFields as $field) {
-            $requiredColumn = $this->resolveRequiredFieldColumn($schema, $entitySchema, $field);
+            $requiredColumn = $this->resolveRequiredFieldColumn($resourceSchema, $entitySchema, $field);
             if ($requiredColumn === null || !array_key_exists($requiredColumn, $attributes) || $this->isEmptyValue($attributes[$requiredColumn])) {
                 $this->addError(
                     $errors,
@@ -123,23 +88,7 @@ class PersistenceWriteValidator
             }
         }
 
-        $this->validateAttributeLookups($entitySchema, $attributes, $errors);
-
-        if (count($errors) > 0) {
-            throw new ValidationException($errors);
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * @param array<string,mixed> $attributes
-     * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
-     */
-    public function validateReferences(ResourceSchema $schema, EntitySchema $entitySchema, array $attributes, array $relationships): void
-    {
-        $errors = [];
-        $this->validateRelationshipReferences($schema, $relationships, $errors);
+        $this->validateRelationshipReferences($resourceSchema, $entity->getRelationships(), $errors);
         $this->validateAttributeLookups($entitySchema, $attributes, $errors);
 
         if (count($errors) > 0) {
@@ -149,43 +98,8 @@ class PersistenceWriteValidator
 
     /**
      * @param array<int,array<string,mixed>> $errors
-     * @param mixed $idValue
-     * @return int|string|null
      */
-    private function normalizeResourceId(ResourceSchema $schema, $idValue, array &$errors)
-    {
-        $idType = strtolower((string) $schema->getIdPhpType());
-        if (in_array($idType, ['int', 'integer'], true)) {
-            if (is_int($idValue)) {
-                return $idValue;
-            }
-            if (is_string($idValue) && preg_match('/^-?\d+$/', $idValue) === 1) {
-                return (int) $idValue;
-            }
-
-            $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be an integer identifier for this resource type', [
-                'id' => true,
-            ]);
-            return null;
-        }
-
-        if (is_string($idValue)) {
-            return $idValue;
-        }
-        if (is_scalar($idValue)) {
-            return (string) $idValue;
-        }
-
-        $this->addError($errors, 'invalid_id', 'Invalid Resource Identifier', 'data.id must be a string identifier', [
-            'id' => true,
-        ]);
-        return null;
-    }
-
-    /**
-     * @param array<int,array<string,mixed>> $errors
-     */
-    private function validateAttributeLookups(EntitySchema $schema, array $attributes, array &$errors)
+    private function validateAttributeLookups(EntitySchema $schema, array $attributes, array &$errors): void
     {
         foreach ($attributes as $field => $value) {
             if ($value === null) {
@@ -240,8 +154,7 @@ class PersistenceWriteValidator
                 continue;
             }
 
-            $targetSchema = EntitySchemaRegistry::schemaForType($targetType);
-            if ($this->repository->findById($targetSchema, $relationshipData['id']) !== null) {
+            if ($this->repository->findById(new EntityRef($targetType, $relationshipData['id'])) !== null) {
                 continue;
             }
 
@@ -329,9 +242,8 @@ class PersistenceWriteValidator
     /**
      * @param array<string,mixed> $lookupRule
      * @param mixed $value
-     * @return bool
      */
-    private function lookupValueExists(array $lookupRule, $value)
+    private function lookupValueExists(array $lookupRule, $value): bool
     {
         if ($this->lookupExistsCallback !== null) {
             return (bool) call_user_func($this->lookupExistsCallback, $lookupRule, $value);
@@ -361,91 +273,44 @@ class PersistenceWriteValidator
             ':value' => $value,
         ];
 
-        $filters = $this->resolveLookupFilters($lookupRule, $params);
-        if ($filters === null) {
-            return true;
-        }
-        if ($filters !== []) {
-            $sql .= ' AND ' . implode(' AND ', $filters);
-        }
-        $sql .= ' LIMIT 1';
+        $resolvedFilters = $lookupRule['resolved_filters'] ?? [];
+        foreach ($resolvedFilters as $filterColumn => $filterValue) {
+            if (!is_string($filterColumn) || !$this->isSafeIdentifier($filterColumn)) {
+                continue;
+            }
 
+            $placeholder = ':filter_' . count($params);
+            $sql .= sprintf(' AND %s = %s', $filterColumn, $placeholder);
+            $params[$placeholder] = $filterValue;
+        }
+
+        $sql .= ' LIMIT 1';
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
 
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * @param array<string,mixed> $lookupRule
-     * @param array<string,mixed> $params
-     * @return array<int,string>|null
-     */
-    private function resolveLookupFilters(array $lookupRule, array &$params): ?array
-    {
-        $filters = $lookupRule['resolved_filters'] ?? [];
-        if (!is_array($filters)) {
-            return [];
-        }
-
-        $clauses = [];
-        $index = 0;
-        foreach ($filters as $column => $value) {
-            if (!is_string($column) || !$this->isSafeIdentifier($column)) {
-                continue;
-            }
-
-            $placeholder = ':filter_' . $index;
-            $clauses[] = sprintf('%s = %s', $column, $placeholder);
-            $params[$placeholder] = $value;
-            $index++;
-        }
-
-        return $clauses;
-    }
-
-    /**
-     * @param string $identifier
-     * @return bool
-     */
-    private function isSafeIdentifier($identifier)
-    {
-        return preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier) === 1;
-    }
-
-    /**
-     * @return \PDO|null
-     */
-    private function getDb()
+    private function getDb(): ?\PDO
     {
         if ($this->db !== null) {
             return $this->db;
         }
-        if (!class_exists('\GCApp')) {
+
+        if (!\class_exists('GCApp', false)) {
             return null;
         }
 
-        $this->db = \GCApp::getDB();
-        return $this->db;
+        try {
+            return \GCApp::getDB();
+        } catch (\Throwable $exception) {
+            return null;
+        }
     }
 
-    /**
-     * @param array<int,array<string,mixed>> $errors
-     */
-    private function addError(array &$errors, $code, $title, $detail, array $source = [])
+    private function isSafeIdentifier(string $value): bool
     {
-        $error = [
-            'status' => '422',
-            'code' => $code,
-            'title' => $title,
-            'detail' => $detail,
-        ];
-
-        if ($source !== []) {
-            $error['source'] = $source;
-        }
-
-        $errors[] = $error;
+        return preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $value) === 1;
     }
 
     /**
@@ -453,10 +318,21 @@ class PersistenceWriteValidator
      */
     private function isEmptyValue($value): bool
     {
-        if ($value === null) {
-            return true;
-        }
+        return $value === null || (is_string($value) && trim($value) === '');
+    }
 
-        return is_string($value) && trim($value) === '';
+    /**
+     * @param array<int,array<string,mixed>> $errors
+     * @param array<string,mixed> $source
+     */
+    private function addError(array &$errors, string $code, string $title, string $detail, array $source): void
+    {
+        $errors[] = [
+            'status' => '422',
+            'code' => $code,
+            'title' => $title,
+            'detail' => $detail,
+            'source' => $source,
+        ];
     }
 }

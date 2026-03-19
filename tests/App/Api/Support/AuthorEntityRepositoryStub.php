@@ -2,14 +2,20 @@
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Model\PagedResult;
-use GisClient\Author\Api\Model\QueryOptions;
-use GisClient\Author\Persistence\EntitySchema;
+use GisClient\Author\Persistence\Entity;
+use GisClient\Author\Persistence\EntityQuery;
+use GisClient\Author\Persistence\EntityRef;
+use GisClient\Author\Persistence\EntitySchemaRegistry;
 
 final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterface
 {
     public array $createdAttributes = [];
 
     public array $updatedAttributes = [];
+
+    public ?Entity $createdEntity = null;
+
+    public ?Entity $updatedEntity = null;
 
     /**
      * @var array<string,bool>
@@ -59,26 +65,28 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $this->deleteCallback = $deleteCallback;
     }
 
-    public function findAll(EntitySchema $schema, QueryOptions $queryOptions)
+    public function findAll(EntityQuery $query)
     {
         if ($this->findAllCallback !== null) {
-            return ($this->findAllCallback)($schema, $queryOptions);
+            return ($this->findAllCallback)($query);
         }
 
         return new PagedResult([], 0, 50, 0);
     }
 
-    public function findById(EntitySchema $schema, $id)
+    public function findById(EntityRef $ref)
     {
+        $schema = EntitySchemaRegistry::schemaForType($ref->getType());
+
         if ($this->findByIdCallback !== null) {
-            return ($this->findByIdCallback)($schema, $id);
+            return ($this->findByIdCallback)($ref);
         }
 
-        $key = (string) $id;
+        $key = (string) $ref->getId();
         if (!isset($this->existingIds[$key])) {
-            if ($this->writeEntityContext !== null && $schema->getType() !== $this->writeEntityContext) {
+            if ($this->writeEntityContext !== null && $ref->getType() !== $this->writeEntityContext) {
                 return [
-                    $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $id : (string) $id,
+                    $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $ref->getId() : (string) $ref->getId(),
                 ];
             }
 
@@ -86,46 +94,49 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         }
 
         return [
-            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $id : (string) $id,
+            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $ref->getId() : (string) $ref->getId(),
             'project_title' => 'Project',
         ];
     }
 
-    public function create(EntitySchema $schema, array $attributes)
+    public function create(Entity $entity)
     {
-        $this->createdAttributes = $attributes;
+        $this->createdEntity = $entity;
+        $this->createdAttributes = $entity->getAttributes();
 
         if ($this->createCallback !== null) {
-            return ($this->createCallback)($schema, $attributes);
+            return ($this->createCallback)($entity);
         }
 
-        $primaryKey = $schema->getPrimaryKey();
-        if (isset($attributes[$primaryKey])) {
-            $this->existingIds[(string) $attributes[$primaryKey]] = true;
+        $primaryKey = EntitySchemaRegistry::schemaForType($entity->getType())->getPrimaryKey();
+        if ($primaryKey !== null && isset($this->createdAttributes[$primaryKey])) {
+            $this->existingIds[(string) $this->createdAttributes[$primaryKey]] = true;
         }
 
-        return $attributes;
+        return $this->createdAttributes;
     }
 
-    public function update(EntitySchema $schema, $id, array $attributes)
+    public function update(Entity $entity)
     {
-        $this->updatedAttributes = $attributes;
+        $this->updatedEntity = $entity;
+        $this->updatedAttributes = $entity->getAttributes();
 
         if ($this->updateCallback !== null) {
-            return ($this->updateCallback)($schema, $id, $attributes);
+            return ($this->updateCallback)($entity);
         }
 
+        $schema = EntitySchemaRegistry::schemaForType($entity->getType());
         $defaults = [
-            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $id : (string) $id,
+            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $entity->getId() : (string) $entity->getId(),
         ];
 
-        return array_merge($defaults, $attributes);
+        return array_merge($defaults, $this->updatedAttributes);
     }
 
-    public function delete(EntitySchema $schema, $id)
+    public function delete(EntityRef $ref)
     {
         if ($this->deleteCallback !== null) {
-            ($this->deleteCallback)($schema, $id);
+            ($this->deleteCallback)($ref);
         }
     }
 

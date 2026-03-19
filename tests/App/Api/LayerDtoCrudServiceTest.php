@@ -75,8 +75,8 @@ class LayerDtoCrudServiceTest extends TestCase
     {
         $repository = new AuthorEntityRepositoryStub(
             [],
-            static fn ($definition, $id) => [
-                'layer_id' => (int) $id,
+            static fn ($ref) => [
+                'layer_id' => (int) $ref->getId(),
                 'layergroup_id' => 1,
                 'catalog_id' => 1,
                 'layer_name' => 'buildings',
@@ -86,14 +86,14 @@ class LayerDtoCrudServiceTest extends TestCase
             ],
             null,
             null,
-            static fn ($definition, $id, array $attributes) => array_merge([
-                'layer_id' => (int) $id,
+            static fn ($entity) => array_merge([
+                'layer_id' => (int) $entity->getId(),
                 'layergroup_id' => 1,
                 'catalog_id' => 1,
                 'layer_name' => 'buildings',
                 'layertype_id' => 3,
                 'sizeunits_id' => 1.0,
-            ], $attributes)
+            ], $entity->getAttributes())
         );
         $service = TestApiCrudService::create($repository);
         $dto = $this->makeDto(LayerDto::class, null, [

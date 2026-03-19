@@ -5,7 +5,7 @@ require_once __DIR__ . '/Support/TestApiCrudService.php';
 
 use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Validation\PersistenceWriteValidator;
+use GisClient\Author\Api\Validation\EntityValidator;
 use PHPUnit\Framework\TestCase;
 
 class ProjectDtoCrudServiceTest extends TestCase
@@ -59,7 +59,7 @@ class ProjectDtoCrudServiceTest extends TestCase
         $repository = new AuthorEntityRepositoryStub();
         $service = TestApiCrudService::create(
             $repository,
-            new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
+            new EntityValidator(null, static function (array $lookupRule, $value): bool {
                 if ($lookupRule['table'] !== 'e_charset_encodings') {
                     return true;
                 }

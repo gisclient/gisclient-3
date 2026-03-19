@@ -57,8 +57,8 @@ class MapsetDtoCrudServiceTest extends TestCase
 
     public function testGetKeepsSridFieldsAsAttributes(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id) => [
-            'mapset_name' => (string) $id,
+        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+            'mapset_name' => (string) $ref->getId(),
             'project_name' => 'milano',
             'mapset_title' => 'Base map',
             'mapset_srid' => '3857',

@@ -3,35 +3,31 @@
 namespace GisClient\Author\Api\Contract;
 
 use GisClient\Author\Api\Model\PagedResult;
-use GisClient\Author\Api\Model\QueryOptions;
-use GisClient\Author\Persistence\EntitySchema;
+use GisClient\Author\Persistence\Entity;
+use GisClient\Author\Persistence\EntityQuery;
+use GisClient\Author\Persistence\EntityRef;
 
 interface AuthorEntityRepositoryInterface
 {
     /**
      * @return PagedResult
      */
-    public function findAll(EntitySchema $schema, QueryOptions $queryOptions);
+    public function findAll(EntityQuery $query);
 
     /**
-     * @param string|int $id
      * @return array|null
      */
-    public function findById(EntitySchema $schema, $id);
+    public function findById(EntityRef $ref);
 
     /**
      * @return array
      */
-    public function create(EntitySchema $schema, array $attributes);
+    public function create(Entity $entity);
 
     /**
-     * @param string|int $id
      * @return array
      */
-    public function update(EntitySchema $schema, $id, array $attributes);
+    public function update(Entity $entity);
 
-    /**
-     * @param string|int $id
-     */
-    public function delete(EntitySchema $schema, $id);
+    public function delete(EntityRef $ref);
 }

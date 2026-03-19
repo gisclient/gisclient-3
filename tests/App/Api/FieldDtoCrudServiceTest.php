@@ -58,8 +58,8 @@ class FieldDtoCrudServiceTest extends TestCase
 
     public function testGetResourceKeepsRelationIdAsAttribute(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id) => [
-            'field_id' => (int) $id,
+        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+            'field_id' => (int) $ref->getId(),
             'layer_id' => 2,
             'relation_id' => 0,
             'field_name' => 'gid',

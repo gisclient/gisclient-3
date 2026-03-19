@@ -33,8 +33,8 @@ class ProjectSrsDtoCrudServiceTest extends TestCase
 
     public function testGetUsesRootIdWithoutScope(): void
     {
-        $repository = new AuthorEntityRepositoryStub([], static fn ($definition, $id) => [
-            'id' => (int) $id,
+        $repository = new AuthorEntityRepositoryStub([], static fn ($ref) => [
+            'id' => (int) $ref->getId(),
             'project_name' => 'default',
             'srid' => 3857,
             'projparam' => '+proj=merc',
