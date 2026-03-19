@@ -3,9 +3,10 @@
 namespace GisClient\Author\Api\Validation;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ValidationException;
+use GisClient\Author\Persistence\EntitySchema;
+use GisClient\Author\Persistence\EntitySchemaRegistry;
 
 class PersistenceWriteValidator
 {
@@ -38,7 +39,7 @@ class PersistenceWriteValidator
      * @param bool $isCreate
      * @param bool $isPut
      */
-    public function validateAndNormalize(ResourceSchema $schema, array $attributes, $resourceId, $isCreate, $isPut)
+    public function validateAndNormalize(ResourceSchema $schema, EntitySchema $entitySchema, array $attributes, $resourceId, $isCreate, $isPut)
     {
         $errors = [];
         $primaryKey = $schema->getPrimaryKey();
@@ -70,7 +71,7 @@ class PersistenceWriteValidator
         }
 
         foreach ($attributes as $field => $value) {
-            if (!in_array($field, $schema->getWritableDbFields(), true) && $field !== $primaryKey) {
+            if (!in_array($field, $entitySchema->getWritableDbFields(), true) && $field !== $primaryKey) {
                 $this->addError(
                     $errors,
                     'invalid_attribute',
@@ -97,7 +98,7 @@ class PersistenceWriteValidator
 
         if ($isPut) {
             $complete = [];
-            foreach ($schema->getWritableDbFields() as $field) {
+            foreach ($entitySchema->getWritableDbFields() as $field) {
                 if ($field === $primaryKey) {
                     continue;
                 }
@@ -108,7 +109,8 @@ class PersistenceWriteValidator
 
         $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : $schema->getRequiredOnPut();
         foreach ($requiredFields as $field) {
-            if (!array_key_exists($field, $attributes) || $this->isEmptyValue($attributes[$field])) {
+            $requiredColumn = $this->resolveRequiredFieldColumn($schema, $entitySchema, $field);
+            if ($requiredColumn === null || !array_key_exists($requiredColumn, $attributes) || $this->isEmptyValue($attributes[$requiredColumn])) {
                 $this->addError(
                     $errors,
                     'missing_required_attribute',
@@ -121,7 +123,7 @@ class PersistenceWriteValidator
             }
         }
 
-        $this->validateAttributeLookups($schema, $attributes, $errors);
+        $this->validateAttributeLookups($entitySchema, $attributes, $errors);
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);
@@ -134,11 +136,11 @@ class PersistenceWriteValidator
      * @param array<string,mixed> $attributes
      * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
      */
-    public function validateReferences(ResourceSchema $schema, array $attributes, array $relationships): void
+    public function validateReferences(ResourceSchema $schema, EntitySchema $entitySchema, array $attributes, array $relationships): void
     {
         $errors = [];
         $this->validateRelationshipReferences($schema, $relationships, $errors);
-        $this->validateAttributeLookups($schema, $attributes, $errors);
+        $this->validateAttributeLookups($entitySchema, $attributes, $errors);
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);
@@ -183,7 +185,7 @@ class PersistenceWriteValidator
     /**
      * @param array<int,array<string,mixed>> $errors
      */
-    private function validateAttributeLookups(ResourceSchema $schema, array $attributes, array &$errors)
+    private function validateAttributeLookups(EntitySchema $schema, array $attributes, array &$errors)
     {
         foreach ($attributes as $field => $value) {
             if ($value === null) {
@@ -238,7 +240,7 @@ class PersistenceWriteValidator
                 continue;
             }
 
-            $targetSchema = DtoSchemaRegistry::schemaForType($targetType);
+            $targetSchema = EntitySchemaRegistry::schemaForType($targetType);
             if ($this->repository->findById($targetSchema, $relationshipData['id']) !== null) {
                 continue;
             }
@@ -259,7 +261,7 @@ class PersistenceWriteValidator
      * @param array<string,mixed> $attributes
      * @return array<string,mixed>|null
      */
-    private function resolveAttributeRule(ResourceSchema $schema, string $field, array $attributes): ?array
+    private function resolveAttributeRule(EntitySchema $schema, string $field, array $attributes): ?array
     {
         $rule = $schema->getAttributeRule($field);
         if ($rule === null || !isset($rule['lookup']) || !is_array($rule['lookup'])) {
@@ -269,6 +271,23 @@ class PersistenceWriteValidator
         $rule['lookup'] = $this->resolveLookupRuleFilters($rule['lookup'], $attributes);
 
         return $rule;
+    }
+
+    private function resolveRequiredFieldColumn(ResourceSchema $resourceSchema, EntitySchema $entitySchema, string $field): ?string
+    {
+        if ($field === $resourceSchema->getPrimaryKey()) {
+            return $field;
+        }
+
+        if ($resourceSchema->getAttribute($field) !== null) {
+            return $entitySchema->getAttributeColumn($field) ?? $field;
+        }
+
+        if ($resourceSchema->getRelationship($field) !== null) {
+            return $entitySchema->getRelationshipColumn($field);
+        }
+
+        return $field;
     }
 
     /**

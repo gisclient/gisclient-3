@@ -64,8 +64,8 @@ class ClassDto extends JsonApiDto
     public static function schema(): ResourceSchema
     {
         return ResourceSchema::resource('class', self::class, 'class_id', 'int')
-            ->requiredOnCreate(['layer_id', 'class_name'])
-            ->requiredOnPut(['layer_id', 'class_name'])
+            ->requiredOnCreate(['layer', 'class_name'])
+            ->requiredOnPut(['layer', 'class_name'])
             ->filterable(['class_id', 'layer_id', 'class_name', 'class_title', 'legendtype_id', 'maxscale', 'minscale'])
             ->sortable(['class_id', 'class_order', 'class_name', 'class_title'], 'class_order')
             ->addAttribute(FieldDefinition::attribute('class_name', 'className', 'string'))
@@ -93,6 +93,6 @@ class ClassDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('label_buffer', 'labelBuffer', 'int', true))
             ->addAttribute(FieldDefinition::attribute('label_antialias', 'labelAntialias', 'int', true))
             ->addAttribute(FieldDefinition::attribute('label_wrap', 'labelWrap', 'string', true))
-            ->addRelationship(FieldDefinition::relationship('layer', 'layer', LayerDto::class, 'layer', 'layer_id', true));
+            ->addRelationship(FieldDefinition::relationship('layer', 'layer', LayerDto::class, 'layer', true));
     }
 }

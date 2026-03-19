@@ -29,7 +29,7 @@ services:
     arguments: ['%tmp_dir%']
 
   GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface:
-    class: GisClient\Author\Api\Persistence\PdoAuthorEntityRepository
+    class: GisClient\Author\Persistence\PdoAuthorEntityRepository
 
   GisClient\Author\Api\Serializer\JsonApiSerializer:
     public: true

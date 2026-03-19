@@ -59,14 +59,8 @@ class ProjectDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('yc', 'yc', 'float', true))
             ->addAttribute(FieldDefinition::attribute('project_srid', 'projectSrid', 'int'))
             ->addAttribute(FieldDefinition::attribute('max_extent_scale', 'maxExtentScale', 'float', true))
-            ->addAttribute(FieldDefinition::attribute('charset_encodings_id', 'charsetEncodingsId', 'int', true)->withLookup([
-                'table' => 'e_charset_encodings',
-                'column' => 'charset_encodings_id',
-            ]))
-            ->addAttribute(FieldDefinition::attribute('default_language_id', 'defaultLanguageId', 'string')->withLookup([
-                'table' => 'e_language',
-                'column' => 'language_id',
-            ]))
+            ->addAttribute(FieldDefinition::attribute('charset_encodings_id', 'charsetEncodingsId', 'int', true))
+            ->addAttribute(FieldDefinition::attribute('default_language_id', 'defaultLanguageId', 'string'))
             ->addAttribute(FieldDefinition::attribute('base_path', 'basePath', 'string', true))
             ->addAttribute(FieldDefinition::attribute('base_url', 'baseUrl', 'string', true))
             ->addAttribute(FieldDefinition::attribute('imagelabel_text', 'imagelabelText', 'string', true))

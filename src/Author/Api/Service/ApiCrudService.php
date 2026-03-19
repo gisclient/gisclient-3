@@ -13,6 +13,8 @@ use GisClient\Author\Api\Model\ResourceCollectionData;
 use GisClient\Author\Api\Model\ResourceData;
 use GisClient\Author\Api\Validation\DtoValidator;
 use GisClient\Author\Api\Validation\PersistenceWriteValidator;
+use GisClient\Author\Persistence\EntitySchema;
+use GisClient\Author\Persistence\EntitySchemaRegistry;
 
 class ApiCrudService
 {
@@ -48,8 +50,9 @@ class ApiCrudService
     public function listResources($entity, array $query)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
+        $entitySchema = EntitySchemaRegistry::schemaForType((string) $entity);
         $queryOptions = $this->buildQueryOptions($schema, $query);
-        $result = $this->repository->findAll($schema, $queryOptions);
+        $result = $this->repository->findAll($entitySchema, $queryOptions);
 
         return new ResourceCollectionData(
             $schema,
@@ -68,7 +71,8 @@ class ApiCrudService
     public function getResource($entity, $id)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $row = $this->repository->findById($schema, $id);
+        $entitySchema = EntitySchemaRegistry::schemaForType((string) $entity);
+        $row = $this->repository->findById($entitySchema, $id);
         if ($row === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
@@ -83,11 +87,12 @@ class ApiCrudService
     public function createResource($entity, JsonApiDto $dto)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $this->validateWriteDto($schema, $dto, true, false);
-        $attributes = $this->extractAttributes($schema, $dto, true, false);
-        $this->validateReferences($schema, $dto, $attributes);
-        $this->assertNoDuplicatePrimaryKeyOnCreate($schema, $dto, $attributes);
-        $created = $this->repository->create($schema, $attributes);
+        $entitySchema = EntitySchemaRegistry::schemaForType((string) $entity);
+        $this->validateWriteDto($schema, $entitySchema, $dto, true, false);
+        $attributes = $this->extractAttributes($schema, $entitySchema, $dto, true, false);
+        $this->validateReferences($schema, $entitySchema, $dto, $attributes);
+        $this->assertNoDuplicatePrimaryKeyOnCreate($entitySchema, $dto, $attributes);
+        $created = $this->repository->create($entitySchema, $attributes);
 
         return new ResourceData($schema, $created);
     }
@@ -100,15 +105,16 @@ class ApiCrudService
     public function updateResource($entity, $id, JsonApiDto $dto)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $this->validateWriteDto($schema, $dto, false, true);
-        $current = $this->repository->findById($schema, $id);
+        $entitySchema = EntitySchemaRegistry::schemaForType((string) $entity);
+        $this->validateWriteDto($schema, $entitySchema, $dto, false, true);
+        $current = $this->repository->findById($entitySchema, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $attributes = $this->extractAttributes($schema, $dto, false, true);
-        $this->validateReferences($schema, $dto, $attributes);
-        $updated = $this->repository->update($schema, $id, $attributes);
+        $attributes = $this->extractAttributes($schema, $entitySchema, $dto, false, true);
+        $this->validateReferences($schema, $entitySchema, $dto, $attributes);
+        $updated = $this->repository->update($entitySchema, $id, $attributes);
 
         return new ResourceData($schema, $updated);
     }
@@ -119,13 +125,13 @@ class ApiCrudService
      */
     public function deleteResource($entity, $id)
     {
-        $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $current = $this->repository->findById($schema, $id);
+        $entitySchema = EntitySchemaRegistry::schemaForType((string) $entity);
+        $current = $this->repository->findById($entitySchema, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $this->repository->delete($schema, $id);
+        $this->repository->delete($entitySchema, $id);
     }
 
     /**
@@ -133,6 +139,7 @@ class ApiCrudService
      */
     public function buildQueryOptions(ResourceSchema $schema, array $query)
     {
+        $entitySchema = EntitySchemaRegistry::schemaForType($schema->getType());
         $limit = isset($query['limit']) ? (int) $query['limit'] : 50;
         if ($limit < 1) {
             $limit = 1;
@@ -156,24 +163,31 @@ class ApiCrudService
             } else {
                 $sortField = $sortRaw;
             }
-            if (!in_array($sortField, $schema->getEffectiveSortableFields(), true)) {
+            if (!in_array($sortField, $schema->getSortableFields(), true)) {
                 throw new ApiException(400, 'invalid_sort_field', 'Invalid Sort Field', sprintf("Sort field '%s' is not allowed", $sortField), '/sort');
             }
+
+            $sortField = $entitySchema->translateSortField($sortField);
         }
 
         $filters = $query['filter'] ?? [];
         if (!is_array($filters)) {
             throw new ApiException(400, 'invalid_filters', 'Invalid Filters', 'filter must be an object of field/value pairs', '/filter');
         }
-        $filters = $this->normalizeFilterAliases($schema, $filters);
+        $filters = $this->normalizeFilterAliases($entitySchema, $filters);
 
         foreach ($filters as $field => $value) {
-            if (!in_array($field, $schema->getEffectiveFilterableFields(), true)) {
+            if (!in_array($field, $schema->getFilterableFields(), true)) {
                 throw new ApiException(400, 'invalid_filter_field', 'Invalid Filter Field', sprintf("Filter field '%s' is not allowed", $field), '/filter/' . $field);
             }
         }
 
-        return new QueryOptions($limit, $offset, $sortField, $sortDirection, $filters);
+        $translatedFilters = [];
+        foreach ($filters as $field => $value) {
+            $translatedFilters[$entitySchema->translateFilterField($field)] = $value;
+        }
+
+        return new QueryOptions($limit, $offset, $sortField, $sortDirection, $translatedFilters);
     }
 
     /**
@@ -181,16 +195,17 @@ class ApiCrudService
      * @param bool $isPut
      * @return array
      */
-    private function extractAttributes(ResourceSchema $schema, JsonApiDto $dto, $isCreate, $isPut)
+    private function extractAttributes(ResourceSchema $schema, EntitySchema $entitySchema, JsonApiDto $dto, $isCreate, $isPut)
     {
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes(
-            $schema,
+            $entitySchema,
             $dto,
-            $this->extractDtoAttributes($dto)
+            $this->extractDtoAttributes($schema, $entitySchema, $dto)
         );
 
         return $this->persistenceWriteValidator->validateAndNormalize(
             $schema,
+            $entitySchema,
             $attributes,
             $dto->getId(),
             $isCreate,
@@ -198,7 +213,7 @@ class ApiCrudService
         );
     }
 
-    private function assertNoDuplicatePrimaryKeyOnCreate(ResourceSchema $schema, JsonApiDto $dto, array $attributes): void
+    private function assertNoDuplicatePrimaryKeyOnCreate(EntitySchema $schema, JsonApiDto $dto, array $attributes): void
     {
         if ($dto->getId() === null) {
             return;
@@ -225,15 +240,15 @@ class ApiCrudService
      * @param array<string,mixed> $attributes
      * @return array<string,mixed>
      */
-    private function mergeRelationshipLocalKeysIntoAttributes(ResourceSchema $schema, JsonApiDto $dto, array $attributes)
+    private function mergeRelationshipLocalKeysIntoAttributes(EntitySchema $entitySchema, JsonApiDto $dto, array $attributes)
     {
-        foreach ($schema->getRelationships() as $relationshipName => $relationship) {
-            $localKey = $relationship->getLocalKey();
-            if (!is_string($localKey) || !$dto->isPresent($relationshipName)) {
+        foreach ($dto::schema()->getRelationships() as $relationshipName => $relationship) {
+            $localKey = $entitySchema->getRelationshipColumn($relationshipName);
+            if ($localKey === null || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $this->getRelationshipIdentifier($schema, $dto, $relationshipName);
+            $relationshipData = $this->getRelationshipIdentifier($dto::schema(), $dto, $relationshipName);
             if ($relationshipData === null || $relationshipData['id'] === null) {
                 continue;
             }
@@ -267,12 +282,13 @@ class ApiCrudService
      * @param array<string,mixed> $filters
      * @return array<string,mixed>
      */
-    private function normalizeFilterAliases(ResourceSchema $schema, array $filters)
+    private function normalizeFilterAliases(EntitySchema $entitySchema, array $filters)
     {
         $normalized = $filters;
-        foreach ($schema->getRelationships() as $relationshipName => $relationship) {
-            $localKey = $relationship->getLocalKey();
-            if (!is_string($localKey) || !array_key_exists($relationshipName, $normalized)) {
+        $resourceSchema = DtoSchemaRegistry::schemaForType($entitySchema->getType());
+        foreach ($resourceSchema->getRelationships() as $relationshipName => $relationship) {
+            $localKey = $entitySchema->getRelationshipColumn($relationshipName);
+            if ($localKey === null || !array_key_exists($relationshipName, $normalized)) {
                 continue;
             }
 
@@ -294,16 +310,17 @@ class ApiCrudService
         return $normalized;
     }
 
-    private function validateReferences(ResourceSchema $schema, JsonApiDto $dto, array $attributes): void
+    private function validateReferences(ResourceSchema $schema, EntitySchema $entitySchema, JsonApiDto $dto, array $attributes): void
     {
         $this->persistenceWriteValidator->validateReferences(
             $schema,
+            $entitySchema,
             $attributes,
             $this->extractRelationshipIdentifiers($schema, $dto)
         );
     }
 
-    private function validateWriteDto(ResourceSchema $schema, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void
+    private function validateWriteDto(ResourceSchema $schema, EntitySchema $entitySchema, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void
     {
         if ($dto::schema()->getType() !== $schema->getType()) {
             throw new ApiException(
@@ -321,9 +338,8 @@ class ApiCrudService
     /**
      * @return array<string,mixed>
      */
-    private function extractDtoAttributes(JsonApiDto $dto): array
+    private function extractDtoAttributes(ResourceSchema $schema, EntitySchema $entitySchema, JsonApiDto $dto): array
     {
-        $schema = $dto::schema();
         $attributes = [];
 
         foreach ($schema->getAttributes() as $field) {
@@ -331,7 +347,8 @@ class ApiCrudService
                 continue;
             }
 
-            $attributes[$field->getLocalKey() ?? $field->getJsonApiName()] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+            $column = $entitySchema->getAttributeColumn($field->getJsonApiName()) ?? $field->getJsonApiName();
+            $attributes[$column] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
         }
 
         return $attributes;

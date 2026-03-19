@@ -1,9 +1,8 @@
 <?php
 
-namespace GisClient\Author\Api\Persistence;
+namespace GisClient\Author\Persistence;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
@@ -25,7 +24,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         $this->db = $db ?: \GCApp::getDB();
     }
 
-    public function findAll(ResourceSchema $schema, QueryOptions $queryOptions)
+    public function findAll(EntitySchema $schema, QueryOptions $queryOptions)
     {
         $where = [];
         $params = [];
@@ -46,10 +45,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
             $total = (int) $stmt->fetchColumn();
 
-            $fields = implode(', ', $schema->getReadableDbFields());
+            $fields = implode(', ', $schema->getReadableSelectColumns());
             $selectSql = sprintf('SELECT %s FROM %s%s', $fields, $table, $whereSql);
 
-            $sortField = $queryOptions->getSortField() ?: $schema->getEffectiveDefaultSort();
+            $sortField = $queryOptions->getSortField() ?: $schema->getDefaultSortColumn();
             $sortDirection = $queryOptions->getSortDirection();
             $selectSql .= sprintf(' ORDER BY %s %s', $sortField, $sortDirection);
             $selectSql .= ' LIMIT :limit OFFSET :offset';
@@ -66,10 +65,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         });
     }
 
-    public function findById(ResourceSchema $schema, $id)
+    public function findById(EntitySchema $schema, $id)
     {
         $table = sprintf('%s.%s', $schema->getResolvedDbSchema(), $schema->getResolvedTable());
-        $fields = implode(', ', $schema->getReadableDbFields());
+        $fields = implode(', ', $schema->getReadableSelectColumns());
 
         return $this->executeSafely(function () use ($schema, $id, $table, $fields) {
             $params = [
@@ -84,7 +83,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         });
     }
 
-    public function create(ResourceSchema $schema, array $attributes)
+    public function create(EntitySchema $schema, array $attributes)
     {
         $pk = $schema->getPrimaryKey();
         if ($schema->getIdPhpType() === 'int' && empty($attributes[$pk])) {
@@ -116,7 +115,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         return $this->findById($schema, $attributes[$pk]);
     }
 
-    public function update(ResourceSchema $schema, $id, array $attributes)
+    public function update(EntitySchema $schema, $id, array $attributes)
     {
         $assignments = [];
         $params = [];
@@ -145,7 +144,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         return $this->findById($schema, $id);
     }
 
-    public function delete(ResourceSchema $schema, $id)
+    public function delete(EntitySchema $schema, $id)
     {
         $params = [
             ':id' => $this->normalizeId($schema, $id),
@@ -217,7 +216,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
      * @param mixed $id
      * @return int|string
      */
-    private function normalizeId(ResourceSchema $schema, $id)
+    private function normalizeId(EntitySchema $schema, $id)
     {
         if ($schema->getIdPhpType() === 'int') {
             return (int) $id;

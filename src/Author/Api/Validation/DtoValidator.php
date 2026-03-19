@@ -28,17 +28,20 @@ class DtoValidator
                 continue;
             }
 
-            $attribute = $schema->getAttribute($fieldName);
-            if ($attribute === null) {
+            $relationship = $schema->getRelationship($fieldName);
+            if ($relationship !== null) {
                 if ($this->isSatisfiedByRelationship($dto, $fieldName)) {
                     continue;
                 }
                 continue;
             }
+
+            $attribute = $schema->getAttribute($fieldName);
+            if ($attribute === null) {
+                continue;
+            }
+
             if (!$dto->isPresent($fieldName) || $this->isEmpty($dto, $attribute->getPropertyName())) {
-                if ($this->isSatisfiedByRelationship($dto, $fieldName)) {
-                    continue;
-                }
                 $errors[] = $this->error('missing_required_attribute', 'Missing Required Attribute', sprintf("Attribute '%s' is required", $fieldName), [
                     'attribute' => $fieldName,
                 ]);
@@ -77,27 +80,24 @@ class DtoValidator
         return is_string($value) && trim($value) === '';
     }
 
-    private function isSatisfiedByRelationship(JsonApiDto $dto, string $localKey): bool
+    private function isSatisfiedByRelationship(JsonApiDto $dto, string $relationshipName): bool
     {
-        foreach ($dto::schema()->getRelationships() as $field) {
-            if ($field->getLocalKey() !== $localKey || !$dto->isPresent($field->getJsonApiName())) {
-                continue;
-            }
-
-            if (!DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
-                return false;
-            }
-
-            $relatedDto = DtoPropertyAccessor::get($dto, $field->getPropertyName());
-            if (!$relatedDto instanceof JsonApiDto || !DtoPropertyAccessor::isInitialized($relatedDto, 'id')) {
-                return false;
-            }
-
-            $value = DtoPropertyAccessor::get($relatedDto, 'id');
-            return $value !== null && (!is_string($value) || trim($value) !== '');
+        $field = $dto::schema()->getRelationship($relationshipName);
+        if ($field === null || !$dto->isPresent($relationshipName)) {
+            return false;
         }
 
-        return false;
+        if (!DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
+            return false;
+        }
+
+        $relatedDto = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+        if (!$relatedDto instanceof JsonApiDto || !DtoPropertyAccessor::isInitialized($relatedDto, 'id')) {
+            return false;
+        }
+
+        $value = DtoPropertyAccessor::get($relatedDto, 'id');
+        return $value !== null && (!is_string($value) || trim($value) !== '');
     }
 
     /**
@@ -107,16 +107,14 @@ class DtoValidator
     {
         $schema = $dto::schema();
         $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : ($isPut ? $schema->getRequiredOnPut() : []);
-        $requiredFieldsSet = array_fill_keys($requiredFields, true);
         $requiredRelationships = [];
 
-        foreach ($schema->getRelationships() as $field) {
-            $localKey = $field->getLocalKey();
-            if ($localKey === null || !isset($requiredFieldsSet[$localKey])) {
+        foreach ($requiredFields as $fieldName) {
+            if ($schema->getRelationship($fieldName) === null) {
                 continue;
             }
 
-            $requiredRelationships[] = $field->getJsonApiName();
+            $requiredRelationships[] = $fieldName;
         }
 
         return array_values(array_unique($requiredRelationships));

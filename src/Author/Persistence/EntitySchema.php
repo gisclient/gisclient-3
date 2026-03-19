@@ -1,0 +1,336 @@
+<?php
+
+namespace GisClient\Author\Persistence;
+
+class EntitySchema
+{
+    public const DEFAULT_DB_SCHEMA = 'gisclient_34';
+
+    public static function entity(
+        string $type,
+        string $primaryKey,
+        string $idPhpType,
+        ?string $table = null,
+        ?string $dbSchema = null
+    ): self {
+        return new self($type, $primaryKey, $idPhpType, $table, $dbSchema);
+    }
+
+    /**
+     * @var string
+     */
+    private $type;
+
+    /**
+     * @var string
+     */
+    private $primaryKey;
+
+    /**
+     * @var string
+     */
+    private $idPhpType;
+
+    /**
+     * @var string
+     */
+    private $table;
+
+    /**
+     * @var string
+     */
+    private $dbSchema;
+
+    /**
+     * @var array<string,array{column:string,readable:bool,writable:bool,rules:array<string,mixed>}>
+     */
+    private $attributes = [];
+
+    /**
+     * @var array<string,array{column:string,readable:bool,writable:bool}>
+     */
+    private $relationships = [];
+
+    /**
+     * @var array<string,string>
+     */
+    private $filterColumns = [];
+
+    /**
+     * @var array<string,string>
+     */
+    private $sortColumns = [];
+
+    /**
+     * @var string|null
+     */
+    private $defaultSortColumn;
+
+    public function __construct(
+        string $type,
+        string $primaryKey,
+        string $idPhpType,
+        ?string $table = null,
+        ?string $dbSchema = null
+    ) {
+        $this->type = $type;
+        $this->primaryKey = $primaryKey;
+        $this->idPhpType = $idPhpType;
+        $this->table = $table ?? $type;
+        $this->dbSchema = $dbSchema ?? self::DEFAULT_DB_SCHEMA;
+        $this->defaultSortColumn = $primaryKey;
+    }
+
+    /**
+     * @param array<string,mixed> $rules
+     */
+    public function addAttribute(
+        string $publicName,
+        string $phpType,
+        ?string $column = null,
+        bool $readable = true,
+        bool $writable = true,
+        array $rules = []
+    ): self {
+        $column ??= $publicName;
+        $type = $this->normalizeRuleType($phpType);
+
+        if ($type !== null) {
+            $rules = array_merge([
+                'type' => $type,
+            ], $rules);
+        }
+
+        $this->attributes[$publicName] = [
+            'column' => $column,
+            'readable' => $readable,
+            'writable' => $writable,
+            'rules' => $rules,
+        ];
+
+        return $this;
+    }
+
+    public function addRelationship(
+        string $relationshipName,
+        string $column,
+        bool $readable = true,
+        bool $writable = true
+    ): self {
+        $this->relationships[$relationshipName] = [
+            'column' => $column,
+            'readable' => $readable,
+            'writable' => $writable,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * @param array<int,string>|array<string,string> $fields
+     */
+    public function filterable(array $fields): self
+    {
+        $this->filterColumns = $this->normalizeFieldMappings($fields);
+
+        return $this;
+    }
+
+    /**
+     * @param array<int,string>|array<string,string> $fields
+     */
+    public function sortable(array $fields, ?string $defaultSort = null): self
+    {
+        $this->sortColumns = $this->normalizeFieldMappings($fields);
+        $this->defaultSortColumn = $defaultSort === null
+            ? $this->primaryKey
+            : ($this->sortColumns[$defaultSort] ?? $defaultSort);
+
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function getPrimaryKey(): string
+    {
+        return $this->primaryKey;
+    }
+
+    public function getIdPhpType(): string
+    {
+        return $this->idPhpType;
+    }
+
+    public function getResolvedTable(): string
+    {
+        return $this->table;
+    }
+
+    public function getResolvedDbSchema(): string
+    {
+        return $this->dbSchema;
+    }
+
+    public function getAttributeColumn(string $publicName): ?string
+    {
+        return $this->attributes[$publicName]['column'] ?? null;
+    }
+
+    public function getRelationshipColumn(string $relationshipName): ?string
+    {
+        return $this->relationships[$relationshipName]['column'] ?? null;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getReadableDbFields(): array
+    {
+        $fields = [$this->primaryKey];
+
+        foreach ($this->attributes as $attribute) {
+            if ($attribute['readable']) {
+                $fields[] = $attribute['column'];
+            }
+        }
+
+        foreach ($this->relationships as $relationship) {
+            if ($relationship['readable']) {
+                $fields[] = $relationship['column'];
+            }
+        }
+
+        return array_values(array_unique($fields));
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getWritableDbFields(): array
+    {
+        $fields = [];
+
+        foreach ($this->attributes as $attribute) {
+            if ($attribute['writable']) {
+                $fields[] = $attribute['column'];
+            }
+        }
+
+        foreach ($this->relationships as $relationship) {
+            if ($relationship['writable']) {
+                $fields[] = $relationship['column'];
+            }
+        }
+
+        return array_values(array_unique($fields));
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getReadableSelectColumns(): array
+    {
+        $fields = [$this->primaryKey];
+
+        foreach ($this->attributes as $publicName => $attribute) {
+            if (!$attribute['readable']) {
+                continue;
+            }
+
+            $fields[] = $attribute['column'] === $publicName
+                ? $attribute['column']
+                : sprintf('%s AS %s', $attribute['column'], $publicName);
+        }
+
+        foreach ($this->relationships as $relationship) {
+            if ($relationship['readable']) {
+                $fields[] = $relationship['column'];
+            }
+        }
+
+        return array_values(array_unique($fields));
+    }
+
+    /**
+     * @return array<string,array<string,mixed>>
+     */
+    public function getAttributeRules(): array
+    {
+        $rules = [];
+
+        foreach ($this->attributes as $attribute) {
+            if ($attribute['rules'] !== []) {
+                $rules[$attribute['column']] = $attribute['rules'];
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @return array<string,mixed>|null
+     */
+    public function getAttributeRule(string $field): ?array
+    {
+        return $this->getAttributeRules()[$field] ?? null;
+    }
+
+    public function translateFilterField(string $publicField): string
+    {
+        return $this->filterColumns[$publicField] ?? $publicField;
+    }
+
+    public function translateSortField(string $publicField): string
+    {
+        return $this->sortColumns[$publicField] ?? $publicField;
+    }
+
+    public function getDefaultSortColumn(): string
+    {
+        return $this->defaultSortColumn ?? $this->primaryKey;
+    }
+
+    /**
+     * @param array<int,string>|array<string,string> $fields
+     * @return array<string,string>
+     */
+    private function normalizeFieldMappings(array $fields): array
+    {
+        $normalized = [];
+
+        foreach ($fields as $publicField => $column) {
+            if (is_int($publicField)) {
+                $normalized[(string) $column] = (string) $column;
+                continue;
+            }
+
+            $normalized[(string) $publicField] = (string) $column;
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeRuleType(string $phpType): ?string
+    {
+        if ($phpType === 'int') {
+            return 'integer';
+        }
+
+        if ($phpType === 'float') {
+            return 'numeric';
+        }
+
+        if ($phpType === 'bool') {
+            return 'boolean';
+        }
+
+        if ($phpType === 'string') {
+            return 'string';
+        }
+
+        return null;
+    }
+}

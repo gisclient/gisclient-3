@@ -10,8 +10,7 @@ class FieldDefinition
         string $phpType,
         bool $nullable = false,
         bool $readable = true,
-        bool $writable = true,
-        ?string $localKey = null
+        bool $writable = true
     ): self {
         return new self(
             $jsonApiName,
@@ -19,8 +18,7 @@ class FieldDefinition
             $phpType,
             $nullable,
             $readable,
-            $writable,
-            $localKey ?? $jsonApiName
+            $writable
         );
     }
 
@@ -29,7 +27,6 @@ class FieldDefinition
         string $propertyName,
         string $targetClass,
         string $targetType,
-        ?string $localKey,
         bool $nullable = false,
         bool $readable = true,
         bool $writable = true,
@@ -42,7 +39,6 @@ class FieldDefinition
             $nullable,
             $readable,
             $writable,
-            $localKey,
             $targetClass,
             $targetType,
             true,
@@ -84,11 +80,6 @@ class FieldDefinition
     /**
      * @var string|null
      */
-    private $localKey;
-
-    /**
-     * @var string|null
-     */
     private $targetClass;
 
     /**
@@ -111,11 +102,6 @@ class FieldDefinition
      */
     private $allowIdentifierOnly;
 
-    /**
-     * @var array<string,mixed>
-     */
-    private $rules = [];
-
     public function __construct(
         string $jsonApiName,
         string $propertyName,
@@ -123,7 +109,6 @@ class FieldDefinition
         bool $nullable,
         bool $readable,
         bool $writable,
-        ?string $localKey = null,
         ?string $targetClass = null,
         ?string $targetType = null,
         bool $relationship = false,
@@ -136,7 +121,6 @@ class FieldDefinition
         $this->nullable = $nullable;
         $this->readable = $readable;
         $this->writable = $writable;
-        $this->localKey = $localKey;
         $this->targetClass = $targetClass;
         $this->targetType = $targetType;
         $this->relationship = $relationship;
@@ -174,11 +158,6 @@ class FieldDefinition
         return $this->writable;
     }
 
-    public function getLocalKey(): ?string
-    {
-        return $this->localKey;
-    }
-
     public function getTargetClass(): ?string
     {
         return $this->targetClass;
@@ -202,33 +181,5 @@ class FieldDefinition
     public function allowIdentifierOnly(): bool
     {
         return $this->allowIdentifierOnly;
-    }
-
-    /**
-     * @param array<string,mixed> $lookup
-     */
-    public function withLookup(array $lookup): self
-    {
-        $this->rules['lookup'] = $lookup;
-
-        return $this;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function withRule(string $name, $value): self
-    {
-        $this->rules[$name] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function getRules(): array
-    {
-        return $this->rules;
     }
 }

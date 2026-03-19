@@ -4,8 +4,6 @@ namespace GisClient\Author\Api\Dto\Schema;
 
 class ResourceSchema
 {
-    public const DEFAULT_DB_SCHEMA = 'gisclient_34';
-
     public static function resource(
         string $type,
         string $dtoClass,
@@ -75,16 +73,6 @@ class ResourceSchema
      * @var string|null
      */
     private $defaultSort;
-
-    /**
-     * @var string|null
-     */
-    private $table;
-
-    /**
-     * @var string|null
-     */
-    private $dbSchema;
 
     public function __construct(
         string $type,
@@ -210,20 +198,9 @@ class ResourceSchema
         return $this;
     }
 
-    public function storedAs(?string $table = null, ?string $dbSchema = null): self
-    {
-        $this->table = $table;
-        $this->dbSchema = $dbSchema;
-
-        return $this;
-    }
-
-    /**
-     * @return array<int,string>
-     */
     public function getFilterableFields(): array
     {
-        return $this->filterableFields;
+        return $this->filterableFields !== [] ? $this->filterableFields : [$this->primaryKey];
     }
 
     /**
@@ -231,159 +208,11 @@ class ResourceSchema
      */
     public function getSortableFields(): array
     {
-        return $this->sortableFields;
+        return $this->sortableFields !== [] ? $this->sortableFields : [$this->primaryKey];
     }
 
-    public function getDefaultSort(): ?string
-    {
-        return $this->defaultSort;
-    }
-
-    public function getTable(): ?string
-    {
-        return $this->table;
-    }
-
-    public function getDbSchema(): ?string
-    {
-        return $this->dbSchema;
-    }
-
-    public function getResolvedTable(): string
-    {
-        return $this->table ?? $this->type;
-    }
-
-    public function getResolvedDbSchema(?string $default = null): string
-    {
-        return $this->dbSchema ?? ($default ?? self::DEFAULT_DB_SCHEMA);
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    public function getReadableDbFields(): array
-    {
-        $fields = [$this->primaryKey];
-
-        foreach ($this->attributes as $field) {
-            if ($field->isReadable()) {
-                $fields[] = $field->getLocalKey() ?? $field->getJsonApiName();
-            }
-        }
-
-        foreach ($this->relationships as $field) {
-            if ($field->getLocalKey() !== null) {
-                $fields[] = $field->getLocalKey();
-            }
-        }
-
-        return array_values(array_unique($fields));
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    public function getWritableDbFields(): array
-    {
-        $fields = [];
-
-        foreach ($this->attributes as $field) {
-            if ($field->isWritable()) {
-                $fields[] = $field->getLocalKey() ?? $field->getJsonApiName();
-            }
-        }
-
-        foreach ($this->relationships as $field) {
-            if ($field->isWritable() && $field->getLocalKey() !== null) {
-                $fields[] = $field->getLocalKey();
-            }
-        }
-
-        return array_values(array_unique($fields));
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    public function getEffectiveFilterableFields(): array
-    {
-        if ($this->filterableFields !== []) {
-            return $this->filterableFields;
-        }
-
-        return $this->getReadableDbFields();
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    public function getEffectiveSortableFields(): array
-    {
-        if ($this->sortableFields !== []) {
-            return $this->sortableFields;
-        }
-
-        return [$this->primaryKey];
-    }
-
-    public function getEffectiveDefaultSort(): string
+    public function getDefaultSort(): string
     {
         return $this->defaultSort ?? $this->primaryKey;
-    }
-
-    /**
-     * @return array<string,array<string,mixed>>
-     */
-    public function getAttributeRules(): array
-    {
-        $rules = [];
-
-        foreach ($this->attributes as $field) {
-            $localKey = $field->getLocalKey() ?? $field->getJsonApiName();
-            $type = $this->normalizeRuleType($field->getPhpType());
-            $fieldRules = $field->getRules();
-
-            if ($type !== null) {
-                $fieldRules = array_merge([
-                    'type' => $type,
-                ], $fieldRules);
-            }
-
-            if ($fieldRules !== []) {
-                $rules[$localKey] = $fieldRules;
-            }
-        }
-
-        return $rules;
-    }
-
-    /**
-     * @return array<string,mixed>|null
-     */
-    public function getAttributeRule(string $field): ?array
-    {
-        return $this->getAttributeRules()[$field] ?? null;
-    }
-
-    private function normalizeRuleType(string $phpType): ?string
-    {
-        if ($phpType === 'int') {
-            return 'integer';
-        }
-
-        if ($phpType === 'float') {
-            return 'numeric';
-        }
-
-        if ($phpType === 'bool') {
-            return 'boolean';
-        }
-
-        if ($phpType === 'string') {
-            return 'string';
-        }
-
-        return null;
     }
 }

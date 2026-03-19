@@ -28,7 +28,7 @@ class ThemeDto extends JsonApiDto
     public static function schema(): ResourceSchema
     {
         return ResourceSchema::resource('theme', self::class, 'theme_id', 'int')
-            ->requiredOnCreate(['project_name', 'theme_name', 'theme_title', 'theme_order'])
+            ->requiredOnCreate(['project', 'theme_name', 'theme_title', 'theme_order'])
             ->requiredOnPut(['theme_name', 'theme_title', 'theme_order'])
             ->filterable(['theme_id', 'project_name', 'theme_name', 'theme_title'])
             ->sortable(['theme_id', 'theme_order', 'theme_title', 'theme_name'], 'theme_order')
@@ -36,12 +36,9 @@ class ThemeDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('theme_title', 'themeTitle', 'string', true))
             ->addAttribute(FieldDefinition::attribute('theme_order', 'themeOrder', 'int', true))
             ->addAttribute(FieldDefinition::attribute('copyright_string', 'copyrightString', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('symbol_name', 'symbolName', 'string', true)->withLookup([
-                'table' => 'symbol',
-                'column' => 'symbol_name',
-            ]))
+            ->addAttribute(FieldDefinition::attribute('symbol_name', 'symbolName', 'string', true))
             ->addAttribute(FieldDefinition::attribute('theme_single', 'themeSingle', 'float', true))
             ->addAttribute(FieldDefinition::attribute('radio', 'radio', 'float', true))
-            ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project', 'project_name', true));
+            ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project', true));
     }
 }

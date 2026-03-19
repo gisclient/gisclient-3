@@ -22,7 +22,7 @@ class LinkDto extends JsonApiDto
     public static function schema(): ResourceSchema
     {
         return ResourceSchema::resource('link', self::class, 'link_id', 'int')
-            ->requiredOnCreate(['project_name', 'link_name', 'link_def'])
+            ->requiredOnCreate(['project', 'link_name', 'link_def'])
             ->requiredOnPut(['link_name', 'link_def'])
             ->filterable(['link_id', 'project_name', 'link_name', 'link_order'])
             ->sortable(['link_id', 'link_order', 'link_name'], 'link_order')
@@ -30,6 +30,6 @@ class LinkDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('link_def', 'linkDef', 'string'))
             ->addAttribute(FieldDefinition::attribute('winw', 'winw', 'int', true))
             ->addAttribute(FieldDefinition::attribute('winh', 'winh', 'int', true))
-            ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project', 'project_name'));
+            ->addRelationship(FieldDefinition::relationship('project', 'project', ProjectDto::class, 'project'));
     }
 }

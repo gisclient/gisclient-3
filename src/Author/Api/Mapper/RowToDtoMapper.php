@@ -7,6 +7,7 @@ use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\FieldDefinition;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
+use GisClient\Author\Persistence\EntitySchemaRegistry;
 
 class RowToDtoMapper
 {
@@ -19,6 +20,7 @@ class RowToDtoMapper
         /** @var JsonApiDto $dto */
         $dto = new $dtoClass();
         $dtoSchema = $dtoClass::schema();
+        $entitySchema = EntitySchemaRegistry::schemaForType($schema->getType());
 
         if (array_key_exists($schema->getPrimaryKey(), $row)) {
             DtoPropertyAccessor::set($dto, 'id', $row[$schema->getPrimaryKey()]);
@@ -36,7 +38,7 @@ class RowToDtoMapper
         }
 
         foreach ($dtoSchema->getRelationships() as $field) {
-            $localKey = $field->getLocalKey();
+            $localKey = $entitySchema->getRelationshipColumn($field->getJsonApiName());
             if ($localKey === null || !array_key_exists($localKey, $row)) {
                 continue;
             }

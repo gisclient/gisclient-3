@@ -64,32 +64,23 @@ class LayergroupDto extends JsonApiDto
     public static function schema(): ResourceSchema
     {
         return ResourceSchema::resource('layergroup', self::class, 'layergroup_id', 'int')
-            ->requiredOnCreate(['theme_id', 'layergroup_name'])
-            ->requiredOnPut(['theme_id', 'layergroup_name'])
+            ->requiredOnCreate(['theme', 'layergroup_name'])
+            ->requiredOnPut(['theme', 'layergroup_name'])
             ->filterable(['layergroup_id', 'theme_id', 'layergroup_name', 'layergroup_title', 'owstype_id'])
             ->sortable(['layergroup_id', 'layergroup_order', 'layergroup_name', 'layergroup_title'], 'layergroup_order')
             ->addAttribute(FieldDefinition::attribute('layergroup_name', 'layergroupName', 'string'))
             ->addAttribute(FieldDefinition::attribute('layergroup_title', 'layergroupTitle', 'string', true))
             ->addAttribute(FieldDefinition::attribute('layergroup_order', 'layergroupOrder', 'int', true))
-            ->addAttribute(FieldDefinition::attribute('owstype_id', 'owstypeId', 'int', true)->withLookup([
-                'table' => 'e_owstype',
-                'column' => 'owstype_id',
-            ]))
+            ->addAttribute(FieldDefinition::attribute('owstype_id', 'owstypeId', 'int', true))
             ->addAttribute(FieldDefinition::attribute('layergroup_maxscale', 'layergroupMaxscale', 'int', true))
             ->addAttribute(FieldDefinition::attribute('layergroup_minscale', 'layergroupMinscale', 'int', true))
             ->addAttribute(FieldDefinition::attribute('opacity', 'opacity', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('outputformat_id', 'outputformatId', 'int', true)->withLookup([
-                'table' => 'e_outputformat',
-                'column' => 'outputformat_id',
-            ]))
+            ->addAttribute(FieldDefinition::attribute('outputformat_id', 'outputformatId', 'int', true))
             ->addAttribute(FieldDefinition::attribute('layers', 'layers', 'string', true))
             ->addAttribute(FieldDefinition::attribute('tiles_extent_srid', 'tilesExtentSrid', 'int', true))
             ->addAttribute(FieldDefinition::attribute('tiles_extent', 'tilesExtent', 'string', true))
             ->addAttribute(FieldDefinition::attribute('url', 'url', 'string', true))
-            ->addAttribute(FieldDefinition::attribute('wmsversion_id', 'wmsversionId', 'int', true)->withLookup([
-                'table' => 'e_wmsversion',
-                'column' => 'wmsversion_id',
-            ]))
+            ->addAttribute(FieldDefinition::attribute('wmsversion_id', 'wmsversionId', 'int', true))
             ->addAttribute(FieldDefinition::attribute('tile_origin', 'tileOrigin', 'string', true))
             ->addAttribute(FieldDefinition::attribute('tile_resolutions', 'tileResolutions', 'string', true))
             ->addAttribute(FieldDefinition::attribute('style', 'style', 'string', true))
@@ -102,6 +93,6 @@ class LayergroupDto extends JsonApiDto
             ->addAttribute(FieldDefinition::attribute('transition', 'transition', 'float', true))
             ->addAttribute(FieldDefinition::attribute('layergroup_single', 'layergroupSingle', 'float', true))
             ->addAttribute(FieldDefinition::attribute('tiletype_id', 'tiletypeId', 'float', true))
-            ->addRelationship(FieldDefinition::relationship('theme', 'theme', ThemeDto::class, 'theme', 'theme_id'));
+            ->addRelationship(FieldDefinition::relationship('theme', 'theme', ThemeDto::class, 'theme'));
     }
 }

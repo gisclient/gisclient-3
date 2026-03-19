@@ -1,9 +1,9 @@
 <?php
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
+use GisClient\Author\Persistence\EntitySchema;
 
 final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterface
 {
@@ -59,7 +59,7 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $this->deleteCallback = $deleteCallback;
     }
 
-    public function findAll(ResourceSchema $schema, QueryOptions $queryOptions)
+    public function findAll(EntitySchema $schema, QueryOptions $queryOptions)
     {
         if ($this->findAllCallback !== null) {
             return ($this->findAllCallback)($schema, $queryOptions);
@@ -68,7 +68,7 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         return new PagedResult([], 0, 50, 0);
     }
 
-    public function findById(ResourceSchema $schema, $id)
+    public function findById(EntitySchema $schema, $id)
     {
         if ($this->findByIdCallback !== null) {
             return ($this->findByIdCallback)($schema, $id);
@@ -91,7 +91,7 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         ];
     }
 
-    public function create(ResourceSchema $schema, array $attributes)
+    public function create(EntitySchema $schema, array $attributes)
     {
         $this->createdAttributes = $attributes;
 
@@ -107,7 +107,7 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         return $attributes;
     }
 
-    public function update(ResourceSchema $schema, $id, array $attributes)
+    public function update(EntitySchema $schema, $id, array $attributes)
     {
         $this->updatedAttributes = $attributes;
 
@@ -122,7 +122,7 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         return array_merge($defaults, $attributes);
     }
 
-    public function delete(ResourceSchema $schema, $id)
+    public function delete(EntitySchema $schema, $id)
     {
         if ($this->deleteCallback !== null) {
             ($this->deleteCallback)($schema, $id);

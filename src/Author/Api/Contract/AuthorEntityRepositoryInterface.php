@@ -2,36 +2,36 @@
 
 namespace GisClient\Author\Api\Contract;
 
-use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
+use GisClient\Author\Persistence\EntitySchema;
 
 interface AuthorEntityRepositoryInterface
 {
     /**
      * @return PagedResult
      */
-    public function findAll(ResourceSchema $schema, QueryOptions $queryOptions);
+    public function findAll(EntitySchema $schema, QueryOptions $queryOptions);
 
     /**
      * @param string|int $id
      * @return array|null
      */
-    public function findById(ResourceSchema $schema, $id);
+    public function findById(EntitySchema $schema, $id);
 
     /**
      * @return array
      */
-    public function create(ResourceSchema $schema, array $attributes);
+    public function create(EntitySchema $schema, array $attributes);
 
     /**
      * @param string|int $id
      * @return array
      */
-    public function update(ResourceSchema $schema, $id, array $attributes);
+    public function update(EntitySchema $schema, $id, array $attributes);
 
     /**
      * @param string|int $id
      */
-    public function delete(ResourceSchema $schema, $id);
+    public function delete(EntitySchema $schema, $id);
 }
