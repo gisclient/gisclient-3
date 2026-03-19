@@ -4,22 +4,22 @@ namespace GisClient\Author\Api\Model;
 
 class PagedResult
 {
-    private $rows;
+    private $items;
     private $total;
     private $limit;
     private $offset;
 
-    public function __construct(array $rows, $total, $limit, $offset)
+    public function __construct(array $items, $total, $limit, $offset)
     {
-        $this->rows = $rows;
+        $this->items = $items;
         $this->total = $total;
         $this->limit = $limit;
         $this->offset = $offset;
     }
 
-    public function getRows()
+    public function getItems()
     {
-        return $this->rows;
+        return $this->items;
     }
 
     public function getTotal()

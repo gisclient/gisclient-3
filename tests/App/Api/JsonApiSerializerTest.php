@@ -1,9 +1,9 @@
 <?php
 
+use GisClient\Author\Api\Dto\PagedResultDto;
 use GisClient\Author\Api\Dto\ThemeDto;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Model\ResourceData;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use PHPUnit\Framework\TestCase;
 
@@ -42,20 +42,46 @@ class JsonApiSerializerTest extends TestCase
     public function testSerializeResourceUsesDtoRelationshipsAndTypedAttributes()
     {
         $serializer = new JsonApiSerializer();
-        $schema = ThemeDto::schema();
+        $dto = new ThemeDto();
+        $dto->id = 3;
+        $dto->themeName = 'base';
+        $dto->themeSingle = 0;
+        $dto->radio = 1;
+        $dto->markPresent('id');
+        $dto->markPresent('theme_name');
+        $dto->markPresent('theme_single');
+        $dto->markPresent('radio');
 
-        $payload = $serializer->serializeResource(new ResourceData($schema, [
-            'theme_id' => 3,
-            'theme_name' => 'base',
-            'theme_single' => '0',
-            'radio' => '1',
-            'project_name' => 'milano',
-        ]));
+        $project = new \GisClient\Author\Api\Dto\ProjectDto();
+        $project->id = 'milano';
+        $project->markPresent('id');
+        $project->markAsIdentifierOnly();
+        $dto->project = $project;
+        $dto->markPresent('project');
+
+        $payload = $serializer->serializeResource($dto);
 
         $this->assertSame('3', $payload['data']['id']);
         $this->assertSame(0, $payload['data']['attributes']['theme_single']);
         $this->assertSame(1, $payload['data']['attributes']['radio']);
         $this->assertSame('milano', $payload['data']['relationships']['project']['data']['id']);
+    }
+
+    public function testSerializeCollectionIncludesMeta()
+    {
+        $serializer = new JsonApiSerializer();
+        $dto = new ThemeDto();
+        $dto->id = 3;
+        $dto->themeName = 'base';
+        $dto->markPresent('id');
+        $dto->markPresent('theme_name');
+
+        $payload = $serializer->serializeCollection(new PagedResultDto([$dto], 7, 10, 5));
+
+        $this->assertCount(1, $payload['data']);
+        $this->assertSame(7, $payload['meta']['total']);
+        $this->assertSame(10, $payload['meta']['limit']);
+        $this->assertSame(5, $payload['meta']['offset']);
     }
 
     public function testDeserializeRequestBodyRejectsStringifiedNumericAttributes()

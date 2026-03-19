@@ -4,6 +4,7 @@ namespace GisClient\Author\Persistence;
 
 class Entity
 {
+    public const OPERATION_READ = 'read';
     public const OPERATION_CREATE = 'create';
     public const OPERATION_UPDATE = 'update';
 
@@ -59,6 +60,11 @@ class Entity
     public function isCreate(): bool
     {
         return $this->operation === self::OPERATION_CREATE;
+    }
+
+    public function isRead(): bool
+    {
+        return $this->operation === self::OPERATION_READ;
     }
 
     public function isUpdate(): bool

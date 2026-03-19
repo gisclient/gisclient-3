@@ -15,17 +15,17 @@ interface AuthorEntityRepositoryInterface
     public function findAll(EntityQuery $query);
 
     /**
-     * @return array|null
+     * @return Entity|null
      */
     public function findById(EntityRef $ref);
 
     /**
-     * @return array
+     * @return Entity
      */
     public function create(Entity $entity);
 
     /**
-     * @return array
+     * @return Entity
      */
     public function update(Entity $entity);
 

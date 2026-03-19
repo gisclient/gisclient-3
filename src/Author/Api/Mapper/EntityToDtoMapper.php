@@ -7,50 +7,46 @@ use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\FieldDefinition;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
+use GisClient\Author\Persistence\Entity;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
 
-class RowToDtoMapper
+class EntityToDtoMapper
 {
-    /**
-     * @param array<string,mixed> $row
-     */
-    public function map(ResourceSchema $schema, array $row): JsonApiDto
+    public function map(ResourceSchema $schema, Entity $entity): JsonApiDto
     {
         $dtoClass = DtoSchemaRegistry::classFromType($schema->getType());
         /** @var JsonApiDto $dto */
         $dto = new $dtoClass();
         $dtoSchema = $dtoClass::schema();
         $entitySchema = EntitySchemaRegistry::schemaForType($schema->getType());
+        $attributes = $entity->getAttributes();
 
-        if (array_key_exists($schema->getPrimaryKey(), $row)) {
-            DtoPropertyAccessor::set($dto, 'id', $row[$schema->getPrimaryKey()]);
+        if ($entity->getId() !== null) {
+            DtoPropertyAccessor::set($dto, 'id', $entity->getId());
             $dto->markPresent('id');
         }
 
         foreach ($dtoSchema->getAttributes() as $field) {
             $jsonApiName = $field->getJsonApiName();
-            if (!array_key_exists($jsonApiName, $row)) {
+            $column = $entitySchema->getAttributeColumn($jsonApiName) ?? $jsonApiName;
+            if (!array_key_exists($column, $attributes)) {
                 continue;
             }
 
-            DtoPropertyAccessor::set($dto, $field->getPropertyName(), $this->castAttributeValue($field, $row[$jsonApiName]));
+            DtoPropertyAccessor::set($dto, $field->getPropertyName(), $this->castAttributeValue($field, $attributes[$column]));
             $dto->markPresent($jsonApiName);
         }
 
         foreach ($dtoSchema->getRelationships() as $field) {
-            $localKey = $entitySchema->getRelationshipColumn($field->getJsonApiName());
-            if ($localKey === null || !array_key_exists($localKey, $row)) {
-                continue;
-            }
-
-            if ($row[$localKey] === null) {
+            $relationshipData = $entity->getRelationships()[$field->getJsonApiName()] ?? null;
+            if (!is_array($relationshipData) || !array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
                 continue;
             }
 
             $targetClass = (string) $field->getTargetClass();
             /** @var JsonApiDto $relatedDto */
             $relatedDto = new $targetClass();
-            DtoPropertyAccessor::set($relatedDto, 'id', $row[$localKey]);
+            DtoPropertyAccessor::set($relatedDto, 'id', $relationshipData['id']);
             $relatedDto->markPresent('id');
             $relatedDto->markAsIdentifierOnly();
             DtoPropertyAccessor::set($dto, $field->getPropertyName(), $relatedDto);

@@ -3,9 +3,7 @@
 namespace GisClient\Author\Api\Serializer;
 
 use GisClient\Author\Api\Dto\JsonApiDto;
-use GisClient\Author\Api\Mapper\RowToDtoMapper;
-use GisClient\Author\Api\Model\ResourceCollectionData;
-use GisClient\Author\Api\Model\ResourceData;
+use GisClient\Author\Api\Dto\PagedResultDto;
 
 class JsonApiSerializer
 {
@@ -15,22 +13,15 @@ class JsonApiSerializer
     private $dtoHydrator;
 
     /**
-     * @var RowToDtoMapper
-     */
-    private $rowToDtoMapper;
-
-    /**
      * @var DtoSerializer
      */
     private $dtoSerializer;
 
     public function __construct(
         ?DtoHydrator $dtoHydrator = null,
-        ?RowToDtoMapper $rowToDtoMapper = null,
         ?DtoSerializer $dtoSerializer = null
     ) {
         $this->dtoHydrator = $dtoHydrator ?: new DtoHydrator();
-        $this->rowToDtoMapper = $rowToDtoMapper ?: new RowToDtoMapper();
         $this->dtoSerializer = $dtoSerializer ?: new DtoSerializer();
     }
 
@@ -45,25 +36,21 @@ class JsonApiSerializer
     /**
      * @return array<string,mixed>
      */
-    public function serializeResource(ResourceData $resource)
+    public function serializeResource(JsonApiDto $resource)
     {
         return [
-            'data' => $this->dtoSerializer->serialize(
-                $this->rowToDtoMapper->map($resource->getSchema(), $resource->getRow())
-            ),
+            'data' => $this->dtoSerializer->serialize($resource),
         ];
     }
 
     /**
      * @return array<string,mixed>
      */
-    public function serializeCollection(ResourceCollectionData $collection)
+    public function serializeCollection(PagedResultDto $collection)
     {
         $data = [];
-        foreach ($collection->getRows() as $row) {
-            $data[] = $this->dtoSerializer->serialize(
-                $this->rowToDtoMapper->map($collection->getSchema(), $row)
-            );
+        foreach ($collection->getItems() as $item) {
+            $data[] = $this->dtoSerializer->serialize($item);
         }
 
         return [

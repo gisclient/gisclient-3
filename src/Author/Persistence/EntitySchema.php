@@ -185,6 +185,38 @@ class EntitySchema
     }
 
     /**
+     * @return array<string,string>
+     */
+    public function getReadableAttributeColumns(): array
+    {
+        $columns = [];
+
+        foreach ($this->attributes as $publicName => $attribute) {
+            if ($attribute['readable']) {
+                $columns[$publicName] = $attribute['column'];
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    public function getReadableRelationshipColumns(): array
+    {
+        $columns = [];
+
+        foreach ($this->relationships as $relationshipName => $relationship) {
+            if ($relationship['readable']) {
+                $columns[$relationshipName] = $relationship['column'];
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
      * @return array<int,string>
      */
     public function getReadableDbFields(): array

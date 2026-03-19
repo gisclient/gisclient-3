@@ -45,7 +45,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
             $total = (int) $stmt->fetchColumn();
 
-            $fields = implode(', ', $schema->getReadableSelectColumns());
+            $fields = implode(', ', $schema->getReadableDbFields());
             $selectSql = sprintf('SELECT %s FROM %s%s', $fields, $table, $whereSql);
 
             $sortField = $query->getSortField() ?: $schema->getDefaultSortColumn();
@@ -61,7 +61,12 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->bindValue(':offset', $query->getOffset(), \PDO::PARAM_INT);
             $stmt->execute();
 
-            return new PagedResult($stmt->fetchAll(\PDO::FETCH_ASSOC), $total, $query->getLimit(), $query->getOffset());
+            $items = [];
+            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $items[] = $this->mapRowToEntity($schema, $row);
+            }
+
+            return new PagedResult($items, $total, $query->getLimit(), $query->getOffset());
         });
     }
 
@@ -69,7 +74,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
     {
         $schema = $this->schemaForType($ref->getType());
         $table = sprintf('%s.%s', $schema->getResolvedDbSchema(), $schema->getResolvedTable());
-        $fields = implode(', ', $schema->getReadableSelectColumns());
+        $fields = implode(', ', $schema->getReadableDbFields());
 
         return $this->executeSafely(function () use ($schema, $ref, $table, $fields) {
             $params = [
@@ -80,7 +85,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            return $row === false ? null : $row;
+            return $row === false ? null : $this->mapRowToEntity($schema, $row);
         });
     }
 
@@ -173,6 +178,39 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
     private function schemaForType(string $type): EntitySchema
     {
         return EntitySchemaRegistry::schemaForType($type);
+    }
+
+    /**
+     * @param array<string,mixed> $row
+     */
+    private function mapRowToEntity(EntitySchema $schema, array $row): Entity
+    {
+        $attributes = [];
+        foreach ($schema->getReadableAttributeColumns() as $publicName => $column) {
+            if (array_key_exists($column, $row)) {
+                $attributes[$column] = $row[$column];
+            }
+        }
+
+        $relationships = [];
+        foreach ($schema->getReadableRelationshipColumns() as $relationshipName => $column) {
+            if (!array_key_exists($column, $row)) {
+                continue;
+            }
+
+            $relationships[$relationshipName] = [
+                'type' => null,
+                'id' => $row[$column],
+            ];
+        }
+
+        return new Entity(
+            $schema->getType(),
+            Entity::OPERATION_READ,
+            array_key_exists($schema->getPrimaryKey(), $row) ? $row[$schema->getPrimaryKey()] : null,
+            $attributes,
+            $relationships
+        );
     }
 
     /**

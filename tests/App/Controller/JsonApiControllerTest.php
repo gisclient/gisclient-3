@@ -101,13 +101,13 @@ class JsonApiControllerTest extends TestCase
                     'payload' => $payload,
                 ];
 
-                return new \GisClient\Author\Api\Model\ResourceData(
-                    \GisClient\Author\Api\Dto\ProjectDto::schema(),
-                    [
-                        'project_name' => 'milano',
-                        'project_title' => 'Milano',
-                    ]
-                );
+                $dto = new \GisClient\Author\Api\Dto\ProjectDto();
+                $dto->id = 'milano';
+                $dto->projectTitle = 'Milano';
+                $dto->markPresent('id');
+                $dto->markPresent('project_title');
+
+                return $dto;
             }
         };
 

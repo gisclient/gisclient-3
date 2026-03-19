@@ -4,13 +4,13 @@ namespace GisClient\Author\Api\Service;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
 use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Dto\PagedResultDto;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Mapper\DtoToEntityMapper;
+use GisClient\Author\Api\Mapper\EntityToDtoMapper;
 use GisClient\Author\Api\Mapper\ResourceQueryMapper;
-use GisClient\Author\Api\Model\ResourceCollectionData;
-use GisClient\Author\Api\Model\ResourceData;
 use GisClient\Author\Api\Validation\DtoValidator;
 use GisClient\Author\Api\Validation\EntityValidator;
 use GisClient\Author\Persistence\EntityQuery;
@@ -43,33 +43,43 @@ class ApiCrudService
      */
     private $resourceQueryMapper;
 
+    /**
+     * @var EntityToDtoMapper
+     */
+    private $entityToDtoMapper;
+
     public function __construct(
         AuthorEntityRepositoryInterface $repository,
         EntityValidator $entityValidator,
         ?DtoValidator $dtoValidator = null,
         ?DtoToEntityMapper $dtoToEntityMapper = null,
-        ?ResourceQueryMapper $resourceQueryMapper = null
+        ?ResourceQueryMapper $resourceQueryMapper = null,
+        ?EntityToDtoMapper $entityToDtoMapper = null
     ) {
         $this->repository = $repository;
         $this->entityValidator = $entityValidator;
         $this->dtoValidator = $dtoValidator ?: new DtoValidator();
         $this->dtoToEntityMapper = $dtoToEntityMapper ?: new DtoToEntityMapper();
         $this->resourceQueryMapper = $resourceQueryMapper ?: new ResourceQueryMapper();
+        $this->entityToDtoMapper = $entityToDtoMapper ?: new EntityToDtoMapper();
     }
 
     /**
      * @param string $entity
-     * @return ResourceCollectionData
+     * @return PagedResultDto
      */
     public function listResources($entity, array $query)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
         $queryOptions = $this->buildQueryOptions($schema, $query);
         $result = $this->repository->findAll($queryOptions);
+        $items = [];
+        foreach ($result->getItems() as $item) {
+            $items[] = $this->entityToDtoMapper->map($schema, $item);
+        }
 
-        return new ResourceCollectionData(
-            $schema,
-            $result->getRows(),
+        return new PagedResultDto(
+            $items,
             $result->getTotal(),
             $result->getLimit(),
             $result->getOffset()
@@ -79,22 +89,22 @@ class ApiCrudService
     /**
      * @param string $entity
      * @param mixed $id
-     * @return ResourceData
+     * @return JsonApiDto
      */
     public function getResource($entity, $id)
     {
         $schema = DtoSchemaRegistry::schemaForType((string) $entity);
-        $row = $this->repository->findById(new EntityRef((string) $entity, $id));
-        if ($row === null) {
+        $storedEntity = $this->repository->findById(new EntityRef((string) $entity, $id));
+        if ($storedEntity === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        return new ResourceData($schema, $row);
+        return $this->entityToDtoMapper->map($schema, $storedEntity);
     }
 
     /**
      * @param string $entity
-     * @return ResourceData
+     * @return JsonApiDto
      */
     public function createResource($entity, JsonApiDto $dto)
     {
@@ -104,13 +114,13 @@ class ApiCrudService
         $this->entityValidator->validate($entityModel);
         $created = $this->repository->create($entityModel);
 
-        return new ResourceData($schema, $created);
+        return $this->entityToDtoMapper->map($schema, $created);
     }
 
     /**
      * @param string $entity
      * @param mixed $id
-     * @return ResourceData
+     * @return JsonApiDto
      */
     public function updateResource($entity, $id, JsonApiDto $dto)
     {
@@ -125,7 +135,7 @@ class ApiCrudService
         $this->entityValidator->validate($entityModel);
         $updated = $this->repository->update($entityModel);
 
-        return new ResourceData($schema, $updated);
+        return $this->entityToDtoMapper->map($schema, $updated);
     }
 
     /**

@@ -79,24 +79,31 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $schema = EntitySchemaRegistry::schemaForType($ref->getType());
 
         if ($this->findByIdCallback !== null) {
-            return ($this->findByIdCallback)($ref);
+            $result = ($this->findByIdCallback)($ref);
+            return $this->normalizeEntityResult($ref->getType(), $result);
         }
 
         $key = (string) $ref->getId();
         if (!isset($this->existingIds[$key])) {
             if ($this->writeEntityContext !== null && $ref->getType() !== $this->writeEntityContext) {
-                return [
-                    $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $ref->getId() : (string) $ref->getId(),
-                ];
+                return new Entity(
+                    $ref->getType(),
+                    Entity::OPERATION_READ,
+                    $schema->getIdPhpType() === 'int' ? (int) $ref->getId() : (string) $ref->getId()
+                );
             }
 
             return null;
         }
 
-        return [
-            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $ref->getId() : (string) $ref->getId(),
-            'project_title' => 'Project',
-        ];
+        return new Entity(
+            $ref->getType(),
+            Entity::OPERATION_READ,
+            $schema->getIdPhpType() === 'int' ? (int) $ref->getId() : (string) $ref->getId(),
+            [
+                'project_title' => 'Project',
+            ]
+        );
     }
 
     public function create(Entity $entity)
@@ -105,7 +112,7 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $this->createdAttributes = $entity->getAttributes();
 
         if ($this->createCallback !== null) {
-            return ($this->createCallback)($entity);
+            return $this->normalizeEntityResult($entity->getType(), ($this->createCallback)($entity));
         }
 
         $primaryKey = EntitySchemaRegistry::schemaForType($entity->getType())->getPrimaryKey();
@@ -113,7 +120,13 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
             $this->existingIds[(string) $this->createdAttributes[$primaryKey]] = true;
         }
 
-        return $this->createdAttributes;
+        return new Entity(
+            $entity->getType(),
+            Entity::OPERATION_READ,
+            $entity->getId(),
+            $entity->getAttributes(),
+            $entity->getRelationships()
+        );
     }
 
     public function update(Entity $entity)
@@ -122,15 +135,16 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $this->updatedAttributes = $entity->getAttributes();
 
         if ($this->updateCallback !== null) {
-            return ($this->updateCallback)($entity);
+            return $this->normalizeEntityResult($entity->getType(), ($this->updateCallback)($entity));
         }
 
-        $schema = EntitySchemaRegistry::schemaForType($entity->getType());
-        $defaults = [
-            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $entity->getId() : (string) $entity->getId(),
-        ];
-
-        return array_merge($defaults, $this->updatedAttributes);
+        return new Entity(
+            $entity->getType(),
+            Entity::OPERATION_READ,
+            $entity->getId(),
+            $entity->getAttributes(),
+            $entity->getRelationships()
+        );
     }
 
     public function delete(EntityRef $ref)
@@ -148,5 +162,40 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
     public function endWriteContext(): void
     {
         $this->writeEntityContext = null;
+    }
+
+    /**
+     * @param mixed $result
+     */
+    private function normalizeEntityResult(string $type, $result): ?Entity
+    {
+        if ($result === null || $result instanceof Entity) {
+            return $result;
+        }
+
+        if (!is_array($result)) {
+            throw new \RuntimeException('Unsupported repository stub result');
+        }
+
+        $schema = EntitySchemaRegistry::schemaForType($type);
+        $id = $result[$schema->getPrimaryKey()] ?? null;
+        $attributes = [];
+        foreach ($schema->getReadableAttributeColumns() as $publicName => $column) {
+            if (array_key_exists($column, $result)) {
+                $attributes[$column] = $result[$column];
+            }
+        }
+
+        $relationships = [];
+        foreach ($schema->getReadableRelationshipColumns() as $relationshipName => $column) {
+            if (array_key_exists($column, $result)) {
+                $relationships[$relationshipName] = [
+                    'type' => null,
+                    'id' => $result[$column],
+                ];
+            }
+        }
+
+        return new Entity($type, Entity::OPERATION_READ, $id, $attributes, $relationships);
     }
 }
