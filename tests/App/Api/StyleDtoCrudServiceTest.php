@@ -3,8 +3,8 @@
 require_once __DIR__ . '/Support/ApiCrudServiceDtoTestTrait.php';
 require_once __DIR__ . '/Support/TestApiCrudService.php';
 
-use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Dto\ClassDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\StyleDto;
 use PHPUnit\Framework\TestCase;
 
@@ -45,8 +45,7 @@ class StyleDtoCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
     {
         $service = TestApiCrudService::create();
-        $provider = new DtoEntityDefinitionProvider();
-        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('style'), [
+        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('style'), [
             'filter' => [
                 'class' => '3',
             ],

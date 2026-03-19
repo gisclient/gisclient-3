@@ -28,12 +28,6 @@ services:
   GisClient\Author\Utils\TemporaryFileService:
     arguments: ['%tmp_dir%']
 
-  GisClient\Author\Api\Definition\DtoEntityDefinitionProvider:
-    class: GisClient\Author\Api\Definition\DtoEntityDefinitionProvider
-
-  GisClient\Author\Api\Contract\EntityDefinitionProviderInterface:
-    class: GisClient\Author\Api\Definition\DtoEntityDefinitionProvider
-
   GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface:
     class: GisClient\Author\Api\Persistence\PdoAuthorEntityRepository
 

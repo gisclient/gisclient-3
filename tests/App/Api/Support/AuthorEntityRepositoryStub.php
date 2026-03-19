@@ -1,7 +1,7 @@
 <?php
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Model\EntityDefinition;
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
 
@@ -59,26 +59,26 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         $this->deleteCallback = $deleteCallback;
     }
 
-    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions)
+    public function findAll(ResourceSchema $schema, QueryOptions $queryOptions)
     {
         if ($this->findAllCallback !== null) {
-            return ($this->findAllCallback)($definition, $queryOptions);
+            return ($this->findAllCallback)($schema, $queryOptions);
         }
 
         return new PagedResult([], 0, 50, 0);
     }
 
-    public function findById(EntityDefinition $definition, $id)
+    public function findById(ResourceSchema $schema, $id)
     {
         if ($this->findByIdCallback !== null) {
-            return ($this->findByIdCallback)($definition, $id);
+            return ($this->findByIdCallback)($schema, $id);
         }
 
         $key = (string) $id;
         if (!isset($this->existingIds[$key])) {
-            if ($this->writeEntityContext !== null && $definition->getType() !== $this->writeEntityContext) {
+            if ($this->writeEntityContext !== null && $schema->getType() !== $this->writeEntityContext) {
                 return [
-                    $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
+                    $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $id : (string) $id,
                 ];
             }
 
@@ -86,20 +86,20 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         }
 
         return [
-            $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
+            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $id : (string) $id,
             'project_title' => 'Project',
         ];
     }
 
-    public function create(EntityDefinition $definition, array $attributes)
+    public function create(ResourceSchema $schema, array $attributes)
     {
         $this->createdAttributes = $attributes;
 
         if ($this->createCallback !== null) {
-            return ($this->createCallback)($definition, $attributes);
+            return ($this->createCallback)($schema, $attributes);
         }
 
-        $primaryKey = $definition->getPrimaryKey();
+        $primaryKey = $schema->getPrimaryKey();
         if (isset($attributes[$primaryKey])) {
             $this->existingIds[(string) $attributes[$primaryKey]] = true;
         }
@@ -107,25 +107,25 @@ final class AuthorEntityRepositoryStub implements AuthorEntityRepositoryInterfac
         return $attributes;
     }
 
-    public function update(EntityDefinition $definition, $id, array $attributes)
+    public function update(ResourceSchema $schema, $id, array $attributes)
     {
         $this->updatedAttributes = $attributes;
 
         if ($this->updateCallback !== null) {
-            return ($this->updateCallback)($definition, $id, $attributes);
+            return ($this->updateCallback)($schema, $id, $attributes);
         }
 
         $defaults = [
-            $definition->getPrimaryKey() => $definition->getIdType() === 'int' ? (int) $id : (string) $id,
+            $schema->getPrimaryKey() => $schema->getIdPhpType() === 'int' ? (int) $id : (string) $id,
         ];
 
         return array_merge($defaults, $attributes);
     }
 
-    public function delete(EntityDefinition $definition, $id)
+    public function delete(ResourceSchema $schema, $id)
     {
         if ($this->deleteCallback !== null) {
-            ($this->deleteCallback)($definition, $id);
+            ($this->deleteCallback)($schema, $id);
         }
     }
 

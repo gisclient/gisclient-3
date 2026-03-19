@@ -1,8 +1,8 @@
 <?php
 
+use GisClient\Author\Api\Dto\ThemeDto;
 use GisClient\Author\Api\Exception\ApiException;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\ResourceData;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use PHPUnit\Framework\TestCase;
@@ -42,30 +42,9 @@ class JsonApiSerializerTest extends TestCase
     public function testSerializeResourceUsesDtoRelationshipsAndTypedAttributes()
     {
         $serializer = new JsonApiSerializer();
-        $definition = new EntityDefinition(
-            'theme',
-            'gisclient_34',
-            'theme',
-            'theme_id',
-            'int',
-            ['theme_id', 'theme_name', 'theme_single', 'radio', 'project_name'],
-            ['theme_name'],
-            ['theme_name'],
-            ['theme_name'],
-            ['theme_id'],
-            ['theme_id'],
-            'theme_id',
-            [],
-            [],
-            [
-                'project' => [
-                    'type' => 'project',
-                    'local_key' => 'project_name',
-                ],
-            ]
-        );
+        $schema = ThemeDto::schema();
 
-        $payload = $serializer->serializeResource(new ResourceData($definition, [
+        $payload = $serializer->serializeResource(new ResourceData($schema, [
             'theme_id' => 3,
             'theme_name' => 'base',
             'theme_single' => '0',

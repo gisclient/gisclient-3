@@ -2,12 +2,14 @@
 
 namespace GisClient\Author\Api\Model;
 
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
+
 class ResourceData
 {
     /**
-     * @var EntityDefinition
+     * @var ResourceSchema
      */
-    private $definition;
+    private $schema;
 
     /**
      * @var array<string,mixed>
@@ -17,18 +19,18 @@ class ResourceData
     /**
      * @param array<string,mixed> $row
      */
-    public function __construct(EntityDefinition $definition, array $row)
+    public function __construct(ResourceSchema $schema, array $row)
     {
-        $this->definition = $definition;
+        $this->schema = $schema;
         $this->row = $row;
     }
 
     /**
-     * @return EntityDefinition
+     * @return ResourceSchema
      */
-    public function getDefinition()
+    public function getSchema()
     {
-        return $this->definition;
+        return $this->schema;
     }
 
     /**

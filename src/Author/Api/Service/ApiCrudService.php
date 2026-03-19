@@ -3,11 +3,11 @@
 namespace GisClient\Author\Api\Service;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
 use GisClient\Author\Api\Dto\JsonApiDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
 use GisClient\Author\Api\Exception\ApiException;
-use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Model\ResourceCollectionData;
 use GisClient\Author\Api\Model\ResourceData;
@@ -16,11 +16,6 @@ use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 
 class ApiCrudService
 {
-    /**
-     * @var EntityDefinitionProviderInterface
-     */
-    private $definitionProvider;
-
     /**
      * @var AuthorEntityRepositoryInterface
      */
@@ -37,12 +32,10 @@ class ApiCrudService
     private $dtoValidator;
 
     public function __construct(
-        EntityDefinitionProviderInterface $definitionProvider,
         AuthorEntityRepositoryInterface $repository,
         PersistenceWriteValidator $persistenceWriteValidator,
         ?DtoValidator $dtoValidator = null
     ) {
-        $this->definitionProvider = $definitionProvider;
         $this->repository = $repository;
         $this->persistenceWriteValidator = $persistenceWriteValidator;
         $this->dtoValidator = $dtoValidator ?: new DtoValidator();
@@ -54,12 +47,12 @@ class ApiCrudService
      */
     public function listResources($entity, array $query)
     {
-        $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $queryOptions = $this->buildQueryOptions($definition, $query);
-        $result = $this->repository->findAll($definition, $queryOptions);
+        $schema = DtoSchemaRegistry::schemaForType((string) $entity);
+        $queryOptions = $this->buildQueryOptions($schema, $query);
+        $result = $this->repository->findAll($schema, $queryOptions);
 
         return new ResourceCollectionData(
-            $definition,
+            $schema,
             $result->getRows(),
             $result->getTotal(),
             $result->getLimit(),
@@ -74,13 +67,13 @@ class ApiCrudService
      */
     public function getResource($entity, $id)
     {
-        $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $row = $this->repository->findById($definition, $id);
+        $schema = DtoSchemaRegistry::schemaForType((string) $entity);
+        $row = $this->repository->findById($schema, $id);
         if ($row === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        return new ResourceData($definition, $row);
+        return new ResourceData($schema, $row);
     }
 
     /**
@@ -89,14 +82,14 @@ class ApiCrudService
      */
     public function createResource($entity, JsonApiDto $dto)
     {
-        $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $this->validateWriteDto($definition, $dto, true, false);
-        $attributes = $this->extractAttributes($definition, $dto, true, false);
-        $this->validateReferences($definition, $dto, $attributes);
-        $this->assertNoDuplicatePrimaryKeyOnCreate($definition, $dto, $attributes);
-        $created = $this->repository->create($definition, $attributes);
+        $schema = DtoSchemaRegistry::schemaForType((string) $entity);
+        $this->validateWriteDto($schema, $dto, true, false);
+        $attributes = $this->extractAttributes($schema, $dto, true, false);
+        $this->validateReferences($schema, $dto, $attributes);
+        $this->assertNoDuplicatePrimaryKeyOnCreate($schema, $dto, $attributes);
+        $created = $this->repository->create($schema, $attributes);
 
-        return new ResourceData($definition, $created);
+        return new ResourceData($schema, $created);
     }
 
     /**
@@ -106,18 +99,18 @@ class ApiCrudService
      */
     public function updateResource($entity, $id, JsonApiDto $dto)
     {
-        $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $this->validateWriteDto($definition, $dto, false, true);
-        $current = $this->repository->findById($definition, $id);
+        $schema = DtoSchemaRegistry::schemaForType((string) $entity);
+        $this->validateWriteDto($schema, $dto, false, true);
+        $current = $this->repository->findById($schema, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $attributes = $this->extractAttributes($definition, $dto, false, true);
-        $this->validateReferences($definition, $dto, $attributes);
-        $updated = $this->repository->update($definition, $id, $attributes);
+        $attributes = $this->extractAttributes($schema, $dto, false, true);
+        $this->validateReferences($schema, $dto, $attributes);
+        $updated = $this->repository->update($schema, $id, $attributes);
 
-        return new ResourceData($definition, $updated);
+        return new ResourceData($schema, $updated);
     }
 
     /**
@@ -126,19 +119,19 @@ class ApiCrudService
      */
     public function deleteResource($entity, $id)
     {
-        $definition = $this->definitionProvider->getEntityDefinition($entity);
-        $current = $this->repository->findById($definition, $id);
+        $schema = DtoSchemaRegistry::schemaForType((string) $entity);
+        $current = $this->repository->findById($schema, $id);
         if ($current === null) {
             throw new ApiException(404, 'resource_not_found', 'Not Found', sprintf("%s '%s' not found", $entity, $id));
         }
 
-        $this->repository->delete($definition, $id);
+        $this->repository->delete($schema, $id);
     }
 
     /**
      * @return QueryOptions
      */
-    public function buildQueryOptions(EntityDefinition $definition, array $query)
+    public function buildQueryOptions(ResourceSchema $schema, array $query)
     {
         $limit = isset($query['limit']) ? (int) $query['limit'] : 50;
         if ($limit < 1) {
@@ -163,7 +156,7 @@ class ApiCrudService
             } else {
                 $sortField = $sortRaw;
             }
-            if (!in_array($sortField, $definition->getSortableFields(), true)) {
+            if (!in_array($sortField, $schema->getEffectiveSortableFields(), true)) {
                 throw new ApiException(400, 'invalid_sort_field', 'Invalid Sort Field', sprintf("Sort field '%s' is not allowed", $sortField), '/sort');
             }
         }
@@ -172,10 +165,10 @@ class ApiCrudService
         if (!is_array($filters)) {
             throw new ApiException(400, 'invalid_filters', 'Invalid Filters', 'filter must be an object of field/value pairs', '/filter');
         }
-        $filters = $this->normalizeFilterAliases($definition, $filters);
+        $filters = $this->normalizeFilterAliases($schema, $filters);
 
         foreach ($filters as $field => $value) {
-            if (!in_array($field, $definition->getFilterableFields(), true)) {
+            if (!in_array($field, $schema->getEffectiveFilterableFields(), true)) {
                 throw new ApiException(400, 'invalid_filter_field', 'Invalid Filter Field', sprintf("Filter field '%s' is not allowed", $field), '/filter/' . $field);
             }
         }
@@ -188,16 +181,16 @@ class ApiCrudService
      * @param bool $isPut
      * @return array
      */
-    private function extractAttributes(EntityDefinition $definition, JsonApiDto $dto, $isCreate, $isPut)
+    private function extractAttributes(ResourceSchema $schema, JsonApiDto $dto, $isCreate, $isPut)
     {
         $attributes = $this->mergeRelationshipLocalKeysIntoAttributes(
-            $definition,
+            $schema,
             $dto,
             $this->extractDtoAttributes($dto)
         );
 
         return $this->persistenceWriteValidator->validateAndNormalize(
-            $definition,
+            $schema,
             $attributes,
             $dto->getId(),
             $isCreate,
@@ -205,21 +198,18 @@ class ApiCrudService
         );
     }
 
-    /**
-     * @param array<string,mixed> $attributes
-     */
-    private function assertNoDuplicatePrimaryKeyOnCreate(EntityDefinition $definition, JsonApiDto $dto, array $attributes)
+    private function assertNoDuplicatePrimaryKeyOnCreate(ResourceSchema $schema, JsonApiDto $dto, array $attributes): void
     {
         if ($dto->getId() === null) {
             return;
         }
 
-        $primaryKey = $definition->getPrimaryKey();
+        $primaryKey = $schema->getPrimaryKey();
         if (!array_key_exists($primaryKey, $attributes)) {
             return;
         }
 
-        $existing = $this->repository->findById($definition, $attributes[$primaryKey]);
+        $existing = $this->repository->findById($schema, $attributes[$primaryKey]);
         if ($existing !== null) {
             throw new ApiException(
                 409,
@@ -235,19 +225,15 @@ class ApiCrudService
      * @param array<string,mixed> $attributes
      * @return array<string,mixed>
      */
-    private function mergeRelationshipLocalKeysIntoAttributes(EntityDefinition $definition, JsonApiDto $dto, array $attributes)
+    private function mergeRelationshipLocalKeysIntoAttributes(ResourceSchema $schema, JsonApiDto $dto, array $attributes)
     {
-        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
-            if (!is_string($relationshipName) || !is_array($relationship)) {
-                continue;
-            }
-
-            $localKey = $relationship['local_key'] ?? null;
+        foreach ($schema->getRelationships() as $relationshipName => $relationship) {
+            $localKey = $relationship->getLocalKey();
             if (!is_string($localKey) || !$dto->isPresent($relationshipName)) {
                 continue;
             }
 
-            $relationshipData = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
+            $relationshipData = $this->getRelationshipIdentifier($schema, $dto, $relationshipName);
             if ($relationshipData === null || $relationshipData['id'] === null) {
                 continue;
             }
@@ -281,14 +267,11 @@ class ApiCrudService
      * @param array<string,mixed> $filters
      * @return array<string,mixed>
      */
-    private function normalizeFilterAliases(EntityDefinition $definition, array $filters)
+    private function normalizeFilterAliases(ResourceSchema $schema, array $filters)
     {
         $normalized = $filters;
-        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
-            if (!is_string($relationshipName) || !is_array($relationship)) {
-                continue;
-            }
-            $localKey = $relationship['local_key'] ?? null;
+        foreach ($schema->getRelationships() as $relationshipName => $relationship) {
+            $localKey = $relationship->getLocalKey();
             if (!is_string($localKey) || !array_key_exists($relationshipName, $normalized)) {
                 continue;
             }
@@ -311,113 +294,23 @@ class ApiCrudService
         return $normalized;
     }
 
-    /**
-     * @param array<string,mixed> $attributes
-     */
-    private function validateReferences(EntityDefinition $definition, JsonApiDto $dto, array $attributes): void
+    private function validateReferences(ResourceSchema $schema, JsonApiDto $dto, array $attributes): void
     {
         $this->persistenceWriteValidator->validateReferences(
-            $this->definitionWithResolvedLookupFilters($definition, $attributes),
+            $schema,
             $attributes,
-            $this->extractRelationshipIdentifiers($definition, $dto)
+            $this->extractRelationshipIdentifiers($schema, $dto)
         );
     }
 
-    /**
-     * @return array<string,array{type:?string,id:string|int|null}|null>
-     */
-    private function extractRelationshipIdentifiers(EntityDefinition $definition, JsonApiDto $dto): array
+    private function validateWriteDto(ResourceSchema $schema, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void
     {
-        $relationships = [];
-
-        foreach ($definition->getRelationships() as $relationshipName => $relationship) {
-            if (!is_string($relationshipName) || !is_array($relationship) || !$dto->isPresent($relationshipName)) {
-                continue;
-            }
-
-            $relationships[$relationshipName] = $this->getRelationshipIdentifier($definition, $dto, $relationshipName);
-        }
-
-        return $relationships;
-    }
-
-    /**
-     * @param array<string,mixed> $attributes
-     */
-    private function definitionWithResolvedLookupFilters(EntityDefinition $definition, array $attributes): EntityDefinition
-    {
-        $attributeRules = $definition->getAttributeRules();
-        foreach ($attributeRules as $field => $rule) {
-            if (!is_string($field) || !is_array($rule) || !isset($rule['lookup']) || !is_array($rule['lookup'])) {
-                continue;
-            }
-
-            $attributeRules[$field]['lookup'] = $this->resolveLookupRuleFilters($rule['lookup'], $attributes);
-        }
-
-        return new EntityDefinition(
-            $definition->getType(),
-            $definition->getSchema(),
-            $definition->getTable(),
-            $definition->getPrimaryKey(),
-            $definition->getIdType(),
-            $definition->getReadableFields(),
-            $definition->getWritableFields(),
-            $definition->getRequiredOnCreate(),
-            $definition->getRequiredOnPut(),
-            $definition->getFilterableFields(),
-            $definition->getSortableFields(),
-            $definition->getDefaultSort(),
-            $attributeRules,
-            $definition->getRelationships(),
-            $definition->getRequiredRelationshipsOnWrite()
-        );
-    }
-
-    /**
-     * @param array<string,mixed> $lookupRule
-     * @param array<string,mixed> $attributes
-     * @return array<string,mixed>
-     */
-    private function resolveLookupRuleFilters(array $lookupRule, array $attributes): array
-    {
-        $filters = $lookupRule['filters'] ?? null;
-        if (!is_array($filters)) {
-            return $lookupRule;
-        }
-
-        $resolved = [];
-        foreach ($filters as $column => $value) {
-            if (!is_string($column)) {
-                continue;
-            }
-
-            if (is_string($value) && strpos($value, 'from_attribute:') === 0) {
-                $attributeName = substr($value, strlen('from_attribute:'));
-                if ($attributeName === '' || !array_key_exists($attributeName, $attributes) || $attributes[$attributeName] === null) {
-                    $lookupRule['skip_lookup'] = true;
-                    continue;
-                }
-                $resolved[$column] = $attributes[$attributeName];
-                continue;
-            }
-
-            $resolved[$column] = $value;
-        }
-
-        $lookupRule['resolved_filters'] = $resolved;
-
-        return $lookupRule;
-    }
-
-    private function validateWriteDto(EntityDefinition $definition, JsonApiDto $dto, bool $isCreate = false, bool $isPut = false): void
-    {
-        if ($dto::schema()->getType() !== $definition->getType()) {
+        if ($dto::schema()->getType() !== $schema->getType()) {
             throw new ApiException(
                 422,
                 'type_mismatch',
                 'Type Mismatch',
-                sprintf("Payload data.type must be '%s'", $definition->getType()),
+                sprintf("Payload data.type must be '%s'", $schema->getType()),
                 '/data/type'
             );
         }
@@ -438,40 +331,57 @@ class ApiCrudService
                 continue;
             }
 
-            $attributes[$field->getJsonApiName()] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+            $attributes[$field->getLocalKey() ?? $field->getJsonApiName()] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
         }
 
         return $attributes;
     }
 
     /**
+     * @return array<string,array{type:?string,id:string|int|null}|null>
+     */
+    private function extractRelationshipIdentifiers(ResourceSchema $schema, JsonApiDto $dto): array
+    {
+        $relationships = [];
+
+        foreach ($schema->getRelationships() as $relationshipName => $relationship) {
+            if (!$dto->isPresent($relationshipName)) {
+                continue;
+            }
+
+            $relationships[$relationshipName] = $this->getRelationshipIdentifier($schema, $dto, $relationshipName);
+        }
+
+        return $relationships;
+    }
+
+    /**
      * @return array{type:?string,id:string|int|null}|null
      */
-    private function getRelationshipIdentifier(EntityDefinition $definition, JsonApiDto $dto, string $relationshipName): ?array
+    private function getRelationshipIdentifier(ResourceSchema $schema, JsonApiDto $dto, string $relationshipName): ?array
     {
-        $relationship = $definition->getRelationships()[$relationshipName] ?? null;
-        $schemaRelationship = $dto::schema()->getRelationship($relationshipName);
-        if (!is_array($relationship) || $schemaRelationship === null) {
+        $relationship = $schema->getRelationship($relationshipName);
+        if ($relationship === null) {
             return null;
         }
 
-        if (!DtoPropertyAccessor::isInitialized($dto, $schemaRelationship->getPropertyName())) {
+        if (!DtoPropertyAccessor::isInitialized($dto, $relationship->getPropertyName())) {
             return [
-                'type' => $relationship['type'] ?? null,
+                'type' => $relationship->getTargetType(),
                 'id' => null,
             ];
         }
 
-        $relatedDto = DtoPropertyAccessor::get($dto, $schemaRelationship->getPropertyName());
+        $relatedDto = DtoPropertyAccessor::get($dto, $relationship->getPropertyName());
         if ($relatedDto === null) {
             return [
-                'type' => $relationship['type'] ?? null,
+                'type' => $relationship->getTargetType(),
                 'id' => null,
             ];
         }
 
         return [
-            'type' => $relationship['type'] ?? null,
+            'type' => $relationship->getTargetType(),
             'id' => DtoPropertyAccessor::isInitialized($relatedDto, 'id')
                 ? DtoPropertyAccessor::get($relatedDto, 'id')
                 : null,

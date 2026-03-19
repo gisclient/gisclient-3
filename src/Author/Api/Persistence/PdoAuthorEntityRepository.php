@@ -3,8 +3,8 @@
 namespace GisClient\Author\Api\Persistence;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ApiException;
-use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
 
@@ -25,7 +25,7 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         $this->db = $db ?: \GCApp::getDB();
     }
 
-    public function findAll(EntityDefinition $definition, QueryOptions $queryOptions)
+    public function findAll(ResourceSchema $schema, QueryOptions $queryOptions)
     {
         $where = [];
         $params = [];
@@ -38,18 +38,18 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $paramIndex++;
         }
         $whereSql = count($where) > 0 ? (' WHERE ' . implode(' AND ', $where)) : '';
-        $table = sprintf('%s.%s', $definition->getSchema(), $definition->getTable());
+        $table = sprintf('%s.%s', $schema->getResolvedDbSchema(), $schema->getResolvedTable());
 
-        return $this->executeSafely(function () use ($definition, $queryOptions, $params, $whereSql, $table) {
+        return $this->executeSafely(function () use ($schema, $queryOptions, $params, $whereSql, $table) {
             $countSql = sprintf('SELECT COUNT(*) FROM %s%s', $table, $whereSql);
             $stmt = $this->db->prepare($countSql);
             $stmt->execute($params);
             $total = (int) $stmt->fetchColumn();
 
-            $fields = implode(', ', $definition->getReadableFields());
+            $fields = implode(', ', $schema->getReadableDbFields());
             $selectSql = sprintf('SELECT %s FROM %s%s', $fields, $table, $whereSql);
 
-            $sortField = $queryOptions->getSortField() ?: $definition->getDefaultSort();
+            $sortField = $queryOptions->getSortField() ?: $schema->getEffectiveDefaultSort();
             $sortDirection = $queryOptions->getSortDirection();
             $selectSql .= sprintf(' ORDER BY %s %s', $sortField, $sortDirection);
             $selectSql .= ' LIMIT :limit OFFSET :offset';
@@ -66,16 +66,16 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         });
     }
 
-    public function findById(EntityDefinition $definition, $id)
+    public function findById(ResourceSchema $schema, $id)
     {
-        $table = sprintf('%s.%s', $definition->getSchema(), $definition->getTable());
-        $fields = implode(', ', $definition->getReadableFields());
+        $table = sprintf('%s.%s', $schema->getResolvedDbSchema(), $schema->getResolvedTable());
+        $fields = implode(', ', $schema->getReadableDbFields());
 
-        return $this->executeSafely(function () use ($definition, $id, $table, $fields) {
+        return $this->executeSafely(function () use ($schema, $id, $table, $fields) {
             $params = [
-                ':id' => $this->normalizeId($definition, $id),
+                ':id' => $this->normalizeId($schema, $id),
             ];
-            $sql = sprintf('SELECT %s FROM %s WHERE %s = :id LIMIT 1', $fields, $table, $definition->getPrimaryKey());
+            $sql = sprintf('SELECT %s FROM %s WHERE %s = :id LIMIT 1', $fields, $table, $schema->getPrimaryKey());
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -84,11 +84,11 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
         });
     }
 
-    public function create(EntityDefinition $definition, array $attributes)
+    public function create(ResourceSchema $schema, array $attributes)
     {
-        $pk = $definition->getPrimaryKey();
-        if ($definition->getIdType() === 'int' && empty($attributes[$pk])) {
-            $attributes[$pk] = \GCApp::getNewPKey(DB_SCHEMA, $definition->getSchema(), $definition->getTable(), $pk);
+        $pk = $schema->getPrimaryKey();
+        if ($schema->getIdPhpType() === 'int' && empty($attributes[$pk])) {
+            $attributes[$pk] = \GCApp::getNewPKey(DB_SCHEMA, $schema->getResolvedDbSchema(), $schema->getResolvedTable(), $pk);
         }
 
         $columns = array_keys($attributes);
@@ -102,8 +102,8 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
 
         $sql = sprintf(
             'INSERT INTO %s.%s (%s) VALUES (%s)',
-            $definition->getSchema(),
-            $definition->getTable(),
+            $schema->getResolvedDbSchema(),
+            $schema->getResolvedTable(),
             implode(', ', $columns),
             implode(', ', $placeholders)
         );
@@ -113,10 +113,10 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
         });
 
-        return $this->findById($definition, $attributes[$pk]);
+        return $this->findById($schema, $attributes[$pk]);
     }
 
-    public function update(EntityDefinition $definition, $id, array $attributes)
+    public function update(ResourceSchema $schema, $id, array $attributes)
     {
         $assignments = [];
         $params = [];
@@ -128,13 +128,13 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $i++;
         }
 
-        $params[':id'] = $this->normalizeId($definition, $id);
+        $params[':id'] = $this->normalizeId($schema, $id);
         $sql = sprintf(
             'UPDATE %s.%s SET %s WHERE %s = :id',
-            $definition->getSchema(),
-            $definition->getTable(),
+            $schema->getResolvedDbSchema(),
+            $schema->getResolvedTable(),
             implode(', ', $assignments),
-            $definition->getPrimaryKey()
+            $schema->getPrimaryKey()
         );
 
         $this->executeSafely(function () use ($sql, $params): void {
@@ -142,19 +142,19 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
             $stmt->execute($params);
         });
 
-        return $this->findById($definition, $id);
+        return $this->findById($schema, $id);
     }
 
-    public function delete(EntityDefinition $definition, $id)
+    public function delete(ResourceSchema $schema, $id)
     {
         $params = [
-            ':id' => $this->normalizeId($definition, $id),
+            ':id' => $this->normalizeId($schema, $id),
         ];
         $sql = sprintf(
             'DELETE FROM %s.%s WHERE %s = :id',
-            $definition->getSchema(),
-            $definition->getTable(),
-            $definition->getPrimaryKey()
+            $schema->getResolvedDbSchema(),
+            $schema->getResolvedTable(),
+            $schema->getPrimaryKey()
         );
 
         $this->executeSafely(function () use ($sql, $params): void {
@@ -217,9 +217,9 @@ class PdoAuthorEntityRepository implements AuthorEntityRepositoryInterface
      * @param mixed $id
      * @return int|string
      */
-    private function normalizeId(EntityDefinition $definition, $id)
+    private function normalizeId(ResourceSchema $schema, $id)
     {
-        if ($definition->getIdType() === 'int') {
+        if ($schema->getIdPhpType() === 'int') {
             return (int) $id;
         }
         return (string) $id;

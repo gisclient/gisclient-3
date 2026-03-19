@@ -3,7 +3,6 @@
 require_once __DIR__ . '/AuthorEntityRepositoryStub.php';
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
@@ -16,12 +15,10 @@ final class TestApiCrudService extends ApiCrudService
     private AuthorEntityRepositoryInterface $repository;
 
     public function __construct(
-        DtoEntityDefinitionProvider $provider,
         AuthorEntityRepositoryInterface $repository,
         PersistenceWriteValidator $validator
     ) {
         parent::__construct(
-            $provider,
             $repository,
             $validator
         );
@@ -31,20 +28,16 @@ final class TestApiCrudService extends ApiCrudService
 
     public static function create(
         ?AuthorEntityRepositoryInterface $repository = null,
-        ?PersistenceWriteValidator $validator = null,
-        ?DtoEntityDefinitionProvider $provider = null
+        ?PersistenceWriteValidator $validator = null
     ): self {
-        $provider ??= new DtoEntityDefinitionProvider();
         $repository ??= new AuthorEntityRepositoryStub();
         $validator ??= new PersistenceWriteValidator(
             null,
             static fn (...$args): bool => true,
-            $provider,
             $repository
         );
 
         return new self(
-            $provider,
             $repository,
             $validator
         );

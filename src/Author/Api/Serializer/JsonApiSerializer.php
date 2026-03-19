@@ -49,7 +49,7 @@ class JsonApiSerializer
     {
         return [
             'data' => $this->dtoSerializer->serialize(
-                $this->rowToDtoMapper->map($resource->getDefinition(), $resource->getRow())
+                $this->rowToDtoMapper->map($resource->getSchema(), $resource->getRow())
             ),
         ];
     }
@@ -62,7 +62,7 @@ class JsonApiSerializer
         $data = [];
         foreach ($collection->getRows() as $row) {
             $data[] = $this->dtoSerializer->serialize(
-                $this->rowToDtoMapper->map($collection->getDefinition(), $row)
+                $this->rowToDtoMapper->map($collection->getSchema(), $row)
             );
         }
 

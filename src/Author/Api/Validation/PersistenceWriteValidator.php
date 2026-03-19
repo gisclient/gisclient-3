@@ -3,9 +3,9 @@
 namespace GisClient\Author\Api\Validation;
 
 use GisClient\Author\Api\Contract\AuthorEntityRepositoryInterface;
-use GisClient\Author\Api\Contract\EntityDefinitionProviderInterface;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Model\EntityDefinition;
 
 class PersistenceWriteValidator
 {
@@ -20,11 +20,6 @@ class PersistenceWriteValidator
     private $lookupExistsCallback;
 
     /**
-     * @var EntityDefinitionProviderInterface|null
-     */
-    private $definitionProvider;
-
-    /**
      * @var AuthorEntityRepositoryInterface|null
      */
     private $repository;
@@ -32,26 +27,21 @@ class PersistenceWriteValidator
     public function __construct(
         ?\PDO $db = null,
         ?callable $lookupExistsCallback = null,
-        ?EntityDefinitionProviderInterface $definitionProvider = null,
         ?AuthorEntityRepositoryInterface $repository = null
     ) {
         $this->db = $db;
         $this->lookupExistsCallback = $lookupExistsCallback;
-        $this->definitionProvider = $definitionProvider;
         $this->repository = $repository;
     }
 
     /**
-     * @param array<string,mixed> $attributes
-     * @param string|int|null $resourceId
      * @param bool $isCreate
      * @param bool $isPut
-     * @return array<string,mixed>
      */
-    public function validateAndNormalize(EntityDefinition $definition, array $attributes, $resourceId, $isCreate, $isPut)
+    public function validateAndNormalize(ResourceSchema $schema, array $attributes, $resourceId, $isCreate, $isPut)
     {
         $errors = [];
-        $primaryKey = $definition->getPrimaryKey();
+        $primaryKey = $schema->getPrimaryKey();
 
         if ($isCreate && $resourceId !== null) {
             $idValue = $resourceId;
@@ -60,7 +50,7 @@ class PersistenceWriteValidator
                     'id' => true,
                 ]);
             } else {
-                $normalizedId = $this->normalizeResourceId($definition, $idValue, $errors);
+                $normalizedId = $this->normalizeResourceId($schema, $idValue, $errors);
                 if ($normalizedId === null) {
                     // keep collecting all errors in payload
                 } elseif (array_key_exists($primaryKey, $attributes) && (string) $attributes[$primaryKey] !== (string) $normalizedId) {
@@ -80,7 +70,7 @@ class PersistenceWriteValidator
         }
 
         foreach ($attributes as $field => $value) {
-            if (!in_array($field, $definition->getWritableFields(), true) && $field !== $primaryKey) {
+            if (!in_array($field, $schema->getWritableDbFields(), true) && $field !== $primaryKey) {
                 $this->addError(
                     $errors,
                     'invalid_attribute',
@@ -107,7 +97,7 @@ class PersistenceWriteValidator
 
         if ($isPut) {
             $complete = [];
-            foreach ($definition->getWritableFields() as $field) {
+            foreach ($schema->getWritableDbFields() as $field) {
                 if ($field === $primaryKey) {
                     continue;
                 }
@@ -116,7 +106,7 @@ class PersistenceWriteValidator
             $attributes = $complete;
         }
 
-        $requiredFields = $isCreate ? $definition->getRequiredOnCreate() : $definition->getRequiredOnPut();
+        $requiredFields = $isCreate ? $schema->getRequiredOnCreate() : $schema->getRequiredOnPut();
         foreach ($requiredFields as $field) {
             if (!array_key_exists($field, $attributes) || $this->isEmptyValue($attributes[$field])) {
                 $this->addError(
@@ -131,7 +121,7 @@ class PersistenceWriteValidator
             }
         }
 
-        $this->validateAttributeLookups($definition, $attributes, $errors);
+        $this->validateAttributeLookups($schema, $attributes, $errors);
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);
@@ -144,11 +134,11 @@ class PersistenceWriteValidator
      * @param array<string,mixed> $attributes
      * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
      */
-    public function validateReferences(EntityDefinition $definition, array $attributes, array $relationships): void
+    public function validateReferences(ResourceSchema $schema, array $attributes, array $relationships): void
     {
         $errors = [];
-        $this->validateRelationshipReferences($definition, $relationships, $errors);
-        $this->validateAttributeLookups($definition, $attributes, $errors);
+        $this->validateRelationshipReferences($schema, $relationships, $errors);
+        $this->validateAttributeLookups($schema, $attributes, $errors);
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);
@@ -160,9 +150,9 @@ class PersistenceWriteValidator
      * @param mixed $idValue
      * @return int|string|null
      */
-    private function normalizeResourceId(EntityDefinition $definition, $idValue, array &$errors)
+    private function normalizeResourceId(ResourceSchema $schema, $idValue, array &$errors)
     {
-        $idType = strtolower((string) $definition->getIdType());
+        $idType = strtolower((string) $schema->getIdPhpType());
         if (in_array($idType, ['int', 'integer'], true)) {
             if (is_int($idValue)) {
                 return $idValue;
@@ -193,14 +183,14 @@ class PersistenceWriteValidator
     /**
      * @param array<int,array<string,mixed>> $errors
      */
-    private function validateAttributeLookups(EntityDefinition $definition, array $attributes, array &$errors)
+    private function validateAttributeLookups(ResourceSchema $schema, array $attributes, array &$errors)
     {
         foreach ($attributes as $field => $value) {
             if ($value === null) {
                 continue;
             }
 
-            $rule = $definition->getAttributeRule($field);
+            $rule = $this->resolveAttributeRule($schema, $field, $attributes);
             if ($rule === null || !isset($rule['lookup']) || !is_array($rule['lookup'])) {
                 continue;
             }
@@ -223,9 +213,9 @@ class PersistenceWriteValidator
      * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
      * @param array<int,array<string,mixed>> $errors
      */
-    private function validateRelationshipReferences(EntityDefinition $definition, array $relationships, array &$errors): void
+    private function validateRelationshipReferences(ResourceSchema $schema, array $relationships, array &$errors): void
     {
-        if ($this->definitionProvider === null || $this->repository === null) {
+        if ($this->repository === null) {
             return;
         }
 
@@ -238,18 +228,18 @@ class PersistenceWriteValidator
                 continue;
             }
 
-            $relationship = $definition->getRelationships()[$relationshipName] ?? null;
-            if (!is_array($relationship)) {
+            $relationship = $schema->getRelationship($relationshipName);
+            if ($relationship === null) {
                 continue;
             }
 
-            $targetType = $relationship['type'] ?? null;
+            $targetType = $relationship->getTargetType();
             if (!is_string($targetType) || trim($targetType) === '') {
                 continue;
             }
 
-            $targetDefinition = $this->definitionProvider->getEntityDefinition($targetType);
-            if ($this->repository->findById($targetDefinition, $relationshipData['id']) !== null) {
+            $targetSchema = DtoSchemaRegistry::schemaForType($targetType);
+            if ($this->repository->findById($targetSchema, $relationshipData['id']) !== null) {
                 continue;
             }
 
@@ -263,6 +253,58 @@ class PersistenceWriteValidator
                 ],
             ];
         }
+    }
+
+    /**
+     * @param array<string,mixed> $attributes
+     * @return array<string,mixed>|null
+     */
+    private function resolveAttributeRule(ResourceSchema $schema, string $field, array $attributes): ?array
+    {
+        $rule = $schema->getAttributeRule($field);
+        if ($rule === null || !isset($rule['lookup']) || !is_array($rule['lookup'])) {
+            return $rule;
+        }
+
+        $rule['lookup'] = $this->resolveLookupRuleFilters($rule['lookup'], $attributes);
+
+        return $rule;
+    }
+
+    /**
+     * @param array<string,mixed> $lookupRule
+     * @param array<string,mixed> $attributes
+     * @return array<string,mixed>
+     */
+    private function resolveLookupRuleFilters(array $lookupRule, array $attributes): array
+    {
+        $filters = $lookupRule['filters'] ?? null;
+        if (!is_array($filters)) {
+            return $lookupRule;
+        }
+
+        $resolved = [];
+        foreach ($filters as $column => $value) {
+            if (!is_string($column)) {
+                continue;
+            }
+
+            if (is_string($value) && strpos($value, 'from_attribute:') === 0) {
+                $attributeName = substr($value, strlen('from_attribute:'));
+                if ($attributeName === '' || !array_key_exists($attributeName, $attributes) || $attributes[$attributeName] === null) {
+                    $lookupRule['skip_lookup'] = true;
+                    continue;
+                }
+                $resolved[$column] = $attributes[$attributeName];
+                continue;
+            }
+
+            $resolved[$column] = $value;
+        }
+
+        $lookupRule['resolved_filters'] = $resolved;
+
+        return $lookupRule;
     }
 
     /**

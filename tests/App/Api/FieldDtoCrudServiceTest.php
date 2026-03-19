@@ -3,9 +3,9 @@
 require_once __DIR__ . '/Support/ApiCrudServiceDtoTestTrait.php';
 require_once __DIR__ . '/Support/TestApiCrudService.php';
 
-use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Dto\FieldDto;
 use GisClient\Author\Api\Dto\LayerDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use PHPUnit\Framework\TestCase;
 
 class FieldDtoCrudServiceTest extends TestCase
@@ -45,8 +45,7 @@ class FieldDtoCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
     {
         $service = TestApiCrudService::create();
-        $provider = new DtoEntityDefinitionProvider();
-        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('field'), [
+        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('field'), [
             'filter' => [
                 'layer' => '2',
             ],

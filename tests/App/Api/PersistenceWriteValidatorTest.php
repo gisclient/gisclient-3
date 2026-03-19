@@ -2,9 +2,10 @@
 
 require_once __DIR__ . '/Support/AuthorEntityRepositoryStub.php';
 
-use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
+use GisClient\Author\Api\Dto\Schema\FieldDefinition;
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Validation\PersistenceWriteValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -13,23 +14,17 @@ class PersistenceWriteValidatorTest extends TestCase
     public function testCollectsMultipleValidationErrors(): void
     {
         $validator = new PersistenceWriteValidator();
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_title', 'max_extent_scale'],
-            ['project_name', 'project_title', 'max_extent_scale'],
-            ['project_title', 'max_extent_scale'],
-            ['project_name'],
-            ['project_name'],
-            'project_name'
-        );
+        $schema = ResourceSchema::resource('project', 'ProjectDto', 'project_name', 'string')
+            ->requiredOnCreate(['project_name', 'project_title', 'max_extent_scale'])
+            ->requiredOnPut(['project_title', 'max_extent_scale'])
+            ->filterable(['project_name'])
+            ->sortable(['project_name'], 'project_name')
+            ->storedAs('project', 'gisclient_34')
+            ->addAttribute(FieldDefinition::attribute('project_title', 'projectTitle', 'string'))
+            ->addAttribute(FieldDefinition::attribute('max_extent_scale', 'maxExtentScale', 'int'));
 
         try {
-            $validator->validateAndNormalize($definition, [
+            $validator->validateAndNormalize($schema, [
                 'project_note' => 'hidden',
                 'project_title' => '',
             ], 'milano', true, false);
@@ -53,32 +48,20 @@ class PersistenceWriteValidatorTest extends TestCase
             return true;
         });
 
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'default_language_id'],
-            ['default_language_id'],
-            ['project_name', 'default_language_id'],
-            ['default_language_id'],
-            ['project_name'],
-            ['project_name'],
-            'project_name',
-            [
-                'default_language_id' => [
-                    'lookup' => [
-                        'schema' => 'gisclient_34',
-                        'table' => 'e_language',
-                        'column' => 'language_id',
-                    ],
-                ],
-            ]
-        );
+        $schema = ResourceSchema::resource('project', 'ProjectDto', 'project_name', 'string')
+            ->requiredOnCreate(['project_name', 'default_language_id'])
+            ->requiredOnPut(['default_language_id'])
+            ->filterable(['project_name'])
+            ->sortable(['project_name'], 'project_name')
+            ->storedAs('project', 'gisclient_34')
+            ->addAttribute(FieldDefinition::attribute('default_language_id', 'defaultLanguageId', 'string')->withLookup([
+                'schema' => 'gisclient_34',
+                'table' => 'e_language',
+                'column' => 'language_id',
+            ]));
 
         try {
-            $validator->validateAndNormalize($definition, [
+            $validator->validateAndNormalize($schema, [
                 'default_language_id' => 'zz',
             ], 'milano', true, false);
             $this->fail('Expected ValidationException');
@@ -99,31 +82,19 @@ class PersistenceWriteValidatorTest extends TestCase
             return true;
         });
 
-        $definition = new EntityDefinition(
-            'project',
-            'gisclient_34',
-            'project',
-            'project_name',
-            'string',
-            ['project_name', 'default_language_id'],
-            ['default_language_id'],
-            ['project_name', 'default_language_id'],
-            ['default_language_id'],
-            ['project_name'],
-            ['project_name'],
-            'project_name',
-            [
-                'default_language_id' => [
-                    'lookup' => [
-                        'schema' => 'gisclient_34',
-                        'table' => 'e_language',
-                        'column' => 'language_id',
-                    ],
-                ],
-            ]
-        );
+        $schema = ResourceSchema::resource('project', 'ProjectDto', 'project_name', 'string')
+            ->requiredOnCreate(['project_name', 'default_language_id'])
+            ->requiredOnPut(['default_language_id'])
+            ->filterable(['project_name'])
+            ->sortable(['project_name'], 'project_name')
+            ->storedAs('project', 'gisclient_34')
+            ->addAttribute(FieldDefinition::attribute('default_language_id', 'defaultLanguageId', 'string')->withLookup([
+                'schema' => 'gisclient_34',
+                'table' => 'e_language',
+                'column' => 'language_id',
+            ]));
 
-        $attributes = $validator->validateAndNormalize($definition, [
+        $attributes = $validator->validateAndNormalize($schema, [
             'default_language_id' => 'it',
         ], 'milano', true, false);
 
@@ -133,22 +104,16 @@ class PersistenceWriteValidatorTest extends TestCase
     public function testNormalizesIntegerResourceIdFromString(): void
     {
         $validator = new PersistenceWriteValidator();
-        $definition = new EntityDefinition(
-            'project_srs',
-            'gisclient_34',
-            'project_srs',
-            'srid',
-            'int',
-            ['srid', 'project_name', 'projparam'],
-            ['srid', 'project_name', 'projparam'],
-            ['srid', 'project_name'],
-            [],
-            ['srid'],
-            ['srid'],
-            'srid'
-        );
+        $schema = ResourceSchema::resource('project_srs', 'ProjectSrsDto', 'srid', 'int')
+            ->requiredOnCreate(['srid', 'project_name'])
+            ->requiredOnPut([])
+            ->filterable(['srid'])
+            ->sortable(['srid'], 'srid')
+            ->storedAs('project_srs', 'gisclient_34')
+            ->addAttribute(FieldDefinition::attribute('project_name', 'projectName', 'string'))
+            ->addAttribute(FieldDefinition::attribute('projparam', 'projparam', 'string', true));
 
-        $attributes = $validator->validateAndNormalize($definition, [
+        $attributes = $validator->validateAndNormalize($schema, [
             'project_name' => 'milano',
             'projparam' => null,
         ], '32632', true, false);
@@ -159,23 +124,16 @@ class PersistenceWriteValidatorTest extends TestCase
     public function testRejectsNonNumericResourceIdForIntegerPrimaryKey(): void
     {
         $validator = new PersistenceWriteValidator();
-        $definition = new EntityDefinition(
-            'project_srs',
-            'gisclient_34',
-            'project_srs',
-            'srid',
-            'int',
-            ['srid', 'project_name'],
-            ['srid', 'project_name'],
-            ['srid', 'project_name'],
-            [],
-            ['srid'],
-            ['srid'],
-            'srid'
-        );
+        $schema = ResourceSchema::resource('project_srs', 'ProjectSrsDto', 'srid', 'int')
+            ->requiredOnCreate(['srid', 'project_name'])
+            ->requiredOnPut([])
+            ->filterable(['srid'])
+            ->sortable(['srid'], 'srid')
+            ->storedAs('project_srs', 'gisclient_34')
+            ->addAttribute(FieldDefinition::attribute('project_name', 'projectName', 'string'));
 
         try {
-            $validator->validateAndNormalize($definition, [
+            $validator->validateAndNormalize($schema, [
                 'project_name' => 'milano',
             ], '32A', true, false);
             $this->fail('Expected ValidationException');
@@ -187,17 +145,15 @@ class PersistenceWriteValidatorTest extends TestCase
 
     public function testRejectsUnknownRelationshipReference(): void
     {
-        $definitionProvider = new DtoEntityDefinitionProvider();
         $validator = new PersistenceWriteValidator(
             null,
             null,
-            $definitionProvider,
-            new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id) => null)
+            new AuthorEntityRepositoryStub([], static fn ($schema, $id) => null)
         );
-        $definition = $definitionProvider->getEntityDefinition('theme');
+        $schema = DtoSchemaRegistry::schemaForType('theme');
 
         try {
-            $validator->validateReferences($definition, [], [
+            $validator->validateReferences($schema, [], [
                 'project' => [
                     'type' => 'project',
                     'id' => 'missing_project',

@@ -102,20 +102,7 @@ class JsonApiControllerTest extends TestCase
                 ];
 
                 return new \GisClient\Author\Api\Model\ResourceData(
-                    new \GisClient\Author\Api\Model\EntityDefinition(
-                        'project',
-                        'gisclient_34',
-                        'project',
-                        'project_name',
-                        'string',
-                        ['project_name', 'project_title'],
-                        ['project_name', 'project_title'],
-                        ['project_name', 'project_title'],
-                        ['project_title'],
-                        ['project_name'],
-                        ['project_name'],
-                        'project_name'
-                    ),
+                    \GisClient\Author\Api\Dto\ProjectDto::schema(),
                     [
                         'project_name' => 'milano',
                         'project_title' => 'Milano',

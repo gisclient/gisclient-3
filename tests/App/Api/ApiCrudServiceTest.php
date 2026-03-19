@@ -4,12 +4,11 @@ require_once __DIR__ . '/Support/AuthorEntityRepositoryStub.php';
 require_once __DIR__ . '/Support/ApiCrudServiceDtoTestTrait.php';
 require_once __DIR__ . '/Support/TestApiCrudService.php';
 
-use GisClient\Author\Api\Definition\DtoEntityDefinitionProvider;
 use GisClient\Author\Api\Dto\MapsetDto;
 use GisClient\Author\Api\Dto\ProjectDto;
+use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\ThemeDto;
 use GisClient\Author\Api\Exception\ValidationException;
-use GisClient\Author\Api\Model\EntityDefinition;
 use GisClient\Author\Api\Model\PagedResult;
 use GisClient\Author\Api\Model\QueryOptions;
 use GisClient\Author\Api\Service\ApiCrudService;
@@ -57,12 +56,10 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownRelationshipReference(): void
     {
-        $provider = new DtoEntityDefinitionProvider();
-        $repository = new AuthorEntityRepositoryStub([], static fn (EntityDefinition $definition, $id) => null);
+        $repository = new AuthorEntityRepositoryStub([], static fn ($schema, $id) => null);
         $service = new ApiCrudService(
-            $provider,
             $repository,
-            new PersistenceWriteValidator(null, static fn (): bool => true, $provider, $repository)
+            new PersistenceWriteValidator(null, static fn (): bool => true, $repository)
         );
 
         $dto = $this->makeDto(ThemeDto::class, 4, [
@@ -84,9 +81,8 @@ class ApiCrudServiceTest extends TestCase
 
     public function testCreateRejectsUnknownScopedMapsetSridReference(): void
     {
-        $provider = new DtoEntityDefinitionProvider();
-        $repository = new AuthorEntityRepositoryStub([], static function (EntityDefinition $definition, $id) {
-            if ($definition->getType() === 'project') {
+        $repository = new AuthorEntityRepositoryStub([], static function ($schema, $id) {
+            if ($schema->getType() === 'project') {
                 return [
                     'project_name' => (string) $id,
                 ];
@@ -95,7 +91,6 @@ class ApiCrudServiceTest extends TestCase
             return null;
         });
         $service = new ApiCrudService(
-            $provider,
             $repository,
             new PersistenceWriteValidator(null, static function (array $lookupRule, $value): bool {
                 if (($lookupRule['table'] ?? null) !== 'seldb_mapset_srid') {
@@ -104,7 +99,7 @@ class ApiCrudServiceTest extends TestCase
 
                 return (int) $value === 3857
                     && (($lookupRule['resolved_filters']['project_name'] ?? null) === 'milano');
-            }, $provider, $repository)
+            }, $repository)
         );
 
         $dto = $this->makeDto(MapsetDto::class, 'base', [
@@ -129,8 +124,7 @@ class ApiCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsRelationshipFilterAlias(): void
     {
         $service = TestApiCrudService::create();
-        $provider = new DtoEntityDefinitionProvider();
-        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('theme'), [
+        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('theme'), [
             'filter' => [
                 'project' => 'milano',
             ],
@@ -144,8 +138,7 @@ class ApiCrudServiceTest extends TestCase
     public function testBuildQueryOptionsAcceptsMultipleRelationshipFilterAliases(): void
     {
         $service = TestApiCrudService::create();
-        $provider = new DtoEntityDefinitionProvider();
-        $queryOptions = $service->buildQueryOptions($provider->getEntityDefinition('layer'), [
+        $queryOptions = $service->buildQueryOptions(DtoSchemaRegistry::schemaForType('layer'), [
             'filter' => [
                 'layergroup' => '5',
                 'catalog' => '10',
@@ -160,21 +153,19 @@ class ApiCrudServiceTest extends TestCase
 
     public function testListResourcesPassesNormalizedFiltersThroughQueryOptions(): void
     {
-        $provider = new DtoEntityDefinitionProvider();
         $capturedQueryOptions = null;
         $repository = new AuthorEntityRepositoryStub(
             [],
             null,
-            static function (EntityDefinition $definition, QueryOptions $queryOptions) use (&$capturedQueryOptions) {
+            static function ($schema, QueryOptions $queryOptions) use (&$capturedQueryOptions) {
                 $capturedQueryOptions = $queryOptions;
 
                 return new PagedResult([], 0, $queryOptions->getLimit(), $queryOptions->getOffset());
             }
         );
         $service = new ApiCrudService(
-            $provider,
             $repository,
-            new PersistenceWriteValidator(null, static fn (): bool => true, $provider, $repository)
+            new PersistenceWriteValidator(null, static fn (): bool => true, $repository)
         );
 
         $service->listResources('theme', [
@@ -202,9 +193,9 @@ class ApiCrudServiceTest extends TestCase
             null,
             null,
             null,
-            static function (EntityDefinition $definition, $id) use (&$deleted): void {
+            static function ($schema, $id) use (&$deleted): void {
                 $deleted = [
-                    'type' => $definition->getType(),
+                    'type' => $schema->getType(),
                     'id' => $id,
                 ];
             }

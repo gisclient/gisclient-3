@@ -2,12 +2,14 @@
 
 namespace GisClient\Author\Api\Model;
 
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
+
 class ResourceCollectionData
 {
     /**
-     * @var EntityDefinition
+     * @var ResourceSchema
      */
-    private $definition;
+    private $schema;
 
     /**
      * @var array<int,array<string,mixed>>
@@ -32,9 +34,9 @@ class ResourceCollectionData
     /**
      * @param array<int,array<string,mixed>> $rows
      */
-    public function __construct(EntityDefinition $definition, array $rows, $total, $limit, $offset)
+    public function __construct(ResourceSchema $schema, array $rows, $total, $limit, $offset)
     {
-        $this->definition = $definition;
+        $this->schema = $schema;
         $this->rows = $rows;
         $this->total = (int) $total;
         $this->limit = (int) $limit;
@@ -42,11 +44,11 @@ class ResourceCollectionData
     }
 
     /**
-     * @return EntityDefinition
+     * @return ResourceSchema
      */
-    public function getDefinition()
+    public function getSchema()
     {
-        return $this->definition;
+        return $this->schema;
     }
 
     /**

@@ -5,27 +5,27 @@ namespace GisClient\Author\Api\Mapper;
 use GisClient\Author\Api\Dto\JsonApiDto;
 use GisClient\Author\Api\Dto\Schema\DtoSchemaRegistry;
 use GisClient\Author\Api\Dto\Schema\FieldDefinition;
+use GisClient\Author\Api\Dto\Schema\ResourceSchema;
 use GisClient\Author\Api\Dto\Support\DtoPropertyAccessor;
-use GisClient\Author\Api\Model\EntityDefinition;
 
 class RowToDtoMapper
 {
     /**
      * @param array<string,mixed> $row
      */
-    public function map(EntityDefinition $definition, array $row): JsonApiDto
+    public function map(ResourceSchema $schema, array $row): JsonApiDto
     {
-        $dtoClass = DtoSchemaRegistry::classFromType($definition->getType());
+        $dtoClass = DtoSchemaRegistry::classFromType($schema->getType());
         /** @var JsonApiDto $dto */
         $dto = new $dtoClass();
-        $schema = $dtoClass::schema();
+        $dtoSchema = $dtoClass::schema();
 
-        if (array_key_exists($definition->getPrimaryKey(), $row)) {
-            DtoPropertyAccessor::set($dto, 'id', $row[$definition->getPrimaryKey()]);
+        if (array_key_exists($schema->getPrimaryKey(), $row)) {
+            DtoPropertyAccessor::set($dto, 'id', $row[$schema->getPrimaryKey()]);
             $dto->markPresent('id');
         }
 
-        foreach ($schema->getAttributes() as $field) {
+        foreach ($dtoSchema->getAttributes() as $field) {
             $jsonApiName = $field->getJsonApiName();
             if (!array_key_exists($jsonApiName, $row)) {
                 continue;
@@ -35,7 +35,7 @@ class RowToDtoMapper
             $dto->markPresent($jsonApiName);
         }
 
-        foreach ($schema->getRelationships() as $field) {
+        foreach ($dtoSchema->getRelationships() as $field) {
             $localKey = $field->getLocalKey();
             if ($localKey === null || !array_key_exists($localKey, $row)) {
                 continue;
