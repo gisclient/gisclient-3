@@ -1,4 +1,10 @@
 ## Generic JSON:API CRUD routes
+projectCopy:
+    path: 'api/project-copy'
+    defaults:
+        _controller: 'GisClient\Author\Controller\ProjectCopyController::copyAction'
+    methods:
+        - POST
 apiIndex:
     path: 'api/{entity}'
     defaults:
