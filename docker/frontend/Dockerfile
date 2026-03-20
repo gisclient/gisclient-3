@@ -8,6 +8,14 @@ RUN find /app \( -name "*.sql" -o -name "*.txt" -o -name "*.sh" -o -name ".gitig
 
 FROM almalinux/8-base AS prod
 
+ARG OCI_VERSION
+ARG OCI_REVISION
+ARG OCI_SOURCE
+
+LABEL org.opencontainers.image.version=$OCI_VERSION \
+	org.opencontainers.image.revision=$OCI_REVISION \
+	org.opencontainers.image.source=$OCI_SOURCE
+
 WORKDIR /app
 
 RUN dnf --nodocs update -y \
@@ -15,6 +23,7 @@ RUN dnf --nodocs update -y \
 	&& dnf clean all
 
 COPY --from=source --chown=root:root /app /app
+COPY --chown=root:root version.txt /app/author/version.txt
 COPY --chown=root:root --chmod=744 docker/frontend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY docker/frontend/httpd.conf /etc/httpd/conf/httpd.conf
 COPY docker/frontend/location.conf docker/frontend/php.conf /etc/httpd/conf.d/

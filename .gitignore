@@ -3,3 +3,4 @@
 /vendor/
 .env
 phan.result
+version.txt

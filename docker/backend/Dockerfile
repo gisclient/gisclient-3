@@ -126,8 +126,17 @@ HEALTHCHECK NONE
 
 FROM mapserver-rls AS prod
 
+ARG OCI_VERSION
+ARG OCI_REVISION
+ARG OCI_SOURCE
+
+LABEL org.opencontainers.image.version=$OCI_VERSION \
+	org.opencontainers.image.revision=$OCI_REVISION \
+	org.opencontainers.image.source=$OCI_SOURCE
+
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 COPY --from=source --chown=root:root /app /app
+COPY --chown=root:root version.txt /app/author/version.txt
 
 RUN cd /app/author \
 	&& composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --optimize-autoloader \

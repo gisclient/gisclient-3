@@ -1,13 +1,22 @@
 COMPOSE ?= docker compose
 PHP_SERVICE ?= author-be
+DOCKER ?= docker
+PLATFORM ?= linux/amd64
+BUILD_NUMBER ?= local
+BACKEND_IMAGE ?= ghcr.io/gisclient/gisclient-3-backend
+FRONTEND_IMAGE ?= ghcr.io/gisclient/gisclient-3-frontend
+APP_VERSION ?= $(shell scripts/release-metadata.sh parse-version)
+GIT_SHA ?= $(shell scripts/release-metadata.sh git-sha)
+OCI_SOURCE ?= $(shell scripts/release-metadata.sh source-url)
+VERSIONED_TAG ?= $(APP_VERSION)-$(BUILD_NUMBER)
 
-.PHONY: start up down clean deps db-upgrade test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear
+.PHONY: start up down clean deps db-upgrade test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear version-file build-backend build-frontend
 
-start:
+start: version-file
 	$(COMPOSE) up -d --build
 	$(MAKE) db-upgrade
 
-up:
+up: version-file
 	$(COMPOSE) up --build
 
 down:
@@ -65,3 +74,24 @@ quality-fix:
 cache-clear:
 	$(COMPOSE) exec -T $(PHP_SERVICE) sh -lc 'rm -f /app/author/var/container.php'
 	$(COMPOSE) restart $(PHP_SERVICE)
+
+version-file:
+	scripts/release-metadata.sh write-version-file
+
+build-backend: version-file
+	$(DOCKER) buildx build --load --platform $(PLATFORM) --target prod \
+		--build-arg OCI_VERSION=$(VERSIONED_TAG) \
+		--build-arg OCI_REVISION=$(GIT_SHA) \
+		--build-arg OCI_SOURCE=$(OCI_SOURCE) \
+		-t $(BACKEND_IMAGE):latest \
+		-t $(BACKEND_IMAGE):$(VERSIONED_TAG) \
+		-f docker/backend/Dockerfile .
+
+build-frontend: version-file
+	$(DOCKER) buildx build --load --platform $(PLATFORM) --target prod \
+		--build-arg OCI_VERSION=$(VERSIONED_TAG) \
+		--build-arg OCI_REVISION=$(GIT_SHA) \
+		--build-arg OCI_SOURCE=$(OCI_SOURCE) \
+		-t $(FRONTEND_IMAGE):latest \
+		-t $(FRONTEND_IMAGE):$(VERSIONED_TAG) \
+		-f docker/frontend/Dockerfile .
