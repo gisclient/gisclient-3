@@ -67,20 +67,16 @@ class User implements UserInterface
      * @param string $password
      * @param string $nome
      * @param string $cognome
-     * @param array $roles
-     * @param array $projects
-     * @param array $groups
-     * @param array $extras
      */
     public function __construct(
         $username = null,
         $password = null,
         $nome = null,
         $cognome = null,
-        array $roles = array(),
-        array $projects = array(),
-        array $groups = array(),
-        array $extras = array()
+        array $roles = [],
+        array $projects = [],
+        array $groups = [],
+        array $extras = []
     ) {
         $this->username = $username;
         $this->password = $password;
@@ -92,57 +88,36 @@ class User implements UserInterface
         $this->extras = $extras;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername()
     {
         return $this->username;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getPassword()
     {
         return $this->password;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getNome()
     {
         return $this->nome;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getCognome()
     {
         return $this->cognome;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getRoles()
     {
         return $this->roles;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getProjects()
     {
         return $this->projects;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getGroups()
     {
         return $this->groups;
@@ -158,9 +133,6 @@ class User implements UserInterface
         return $this->extras;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function isAdmin($project = null)
     {
         if (null !== $project) {

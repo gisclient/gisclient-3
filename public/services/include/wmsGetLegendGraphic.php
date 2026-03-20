@@ -1,4 +1,5 @@
 <?php
+
 /*
 GisClient map browser
 
@@ -34,38 +35,38 @@ use GisClient\Author\Utils\UrlChecker;
 
 if ($objRequest->getvaluebyname('layer')) {
     //PRENDO TUTTI I LIVELLI DEL GRUPPO E CREO UNA LEGENDA CON TUTTE LE CLASSI DI TUTTI I LIVELLI
-    $ruleLayerName=false;
-    $ruleClassName=false;
+    $ruleLayerName = false;
+    $ruleClassName = false;
 
-    $iconsArray = array();
-    $iconW=isset($_REQUEST["ICONW"])?$_REQUEST["ICONW"]:250;
-    $iconH=isset($_REQUEST["ICONH"])?$_REQUEST["ICONH"]:24;
-    $totWidth = $objRequest->getvaluebyname('width')?$objRequest->getvaluebyname('width'):250;
+    $iconsArray = [];
+    $iconW = $_REQUEST["ICONW"] ?? 250;
+    $iconH = $_REQUEST["ICONH"] ?? 24;
+    $totWidth = $objRequest->getvaluebyname('width') ?: 250;
 
 
-    $legend=false;
-/*  if(isset($_REQUEST["RULE"])){
-        //SE RULE E' FORMATA DA NOME_LIVELLO:NOME_CLASSE PRENDO LA SOLA CLASSE ALTRIMENTI CREO UNA LEGENDA CON TUTTE LE ICONE DELLE CLASSI DEL LIVELLO
-        $rule=$_REQUEST["RULE"];
-        if(strpos($rule,':')>0) {//USARE REGEXP!!!!
-            $v=explode(":",$rule);
-            $ruleLayerName=$v[0];
-            $ruleClassName=$v[1];
-            $legend=false;
+    $legend = false;
+    /*  if(isset($_REQUEST["RULE"])){
+            //SE RULE E' FORMATA DA NOME_LIVELLO:NOME_CLASSE PRENDO LA SOLA CLASSE ALTRIMENTI CREO UNA LEGENDA CON TUTTE LE ICONE DELLE CLASSI DEL LIVELLO
+            $rule=$_REQUEST["RULE"];
+            if(strpos($rule,':')>0) {//USARE REGEXP!!!!
+                $v=explode(":",$rule);
+                $ruleLayerName=$v[0];
+                $ruleClassName=$v[1];
+                $legend=false;
+            }
+            else{
+                $ruleLayerName=$rule;
+                $legend = false;
+            }
         }
-        else{
-            $ruleLayerName=$rule;
-            $legend = false;
-        }
-    }
-  */
+      */
     $gcLegendText = true;
     if (isset($_REQUEST['GCLEGENDTEXT']) && $_REQUEST['GCLEGENDTEXT'] == 0) {
         $gcLegendText = false;
-        $iconW=24;
+        $iconW = 24;
     }
 
-    $layers = array();
+    $layers = [];
     
     // QGIS set the layers list
     $layerNames = explode(',', $objRequest->getvaluebyname('layer'));
@@ -82,12 +83,12 @@ if ($objRequest->getvaluebyname('layer')) {
         ) {
             $layerIndexes = array_keys($oMap->getAllLayerNames());
         }
-        for ($j=0; $j<count($layerIndexes); $j++) {
+        for ($j = 0; $j < count($layerIndexes); $j++) {
             array_unshift($layers, $oMap->getLayer($layerIndexes[$j]));
         }
     }
 
-    $dy=0;
+    $dy = 0;
     foreach ($layers as $oLayer) {
         $private = $oLayer->getMetaData('gc_private_layer');
         if (!empty($private)) {
@@ -103,15 +104,15 @@ if ($objRequest->getvaluebyname('layer')) {
             } elseif (substr($url, 0, -1) != '&' && substr($url, 0, -1) != '?') {
                 $url .= '&';
             }
-            $params = array(
-                'request'=>'getlegendgraphic',
-                'service'=>'wms',
-                'format'=>'image/png',
-                'width'=>$iconW,
-                'height'=>$iconH,
-                'layer'=>$oLayer->getMetaData('wms_name'),
-                'version'=>$oLayer->getMetaData('wms_server_version')
-            );
+            $params = [
+                'request' => 'getlegendgraphic',
+                'service' => 'wms',
+                'format' => 'image/png',
+                'width' => $iconW,
+                'height' => $iconH,
+                'layer' => $oLayer->getMetaData('wms_name'),
+                'version' => $oLayer->getMetaData('wms_server_version'),
+            ];
             
             $gcService = \GCService::instance();
             
@@ -119,18 +120,18 @@ if ($objRequest->getvaluebyname('layer')) {
                 $params['GC_SESSION_ID'] = $gcService->getSession()->getId();
             }
 
-            $urlWmsRequest = $url. http_build_query($params);
+            $urlWmsRequest = $url . http_build_query($params);
 
             UrlChecker::checkUrl($urlWmsRequest);
-			
-            $options = array(
+            
+            $options = [
                 CURLOPT_URL => $urlWmsRequest,
                 CURLOPT_HEADER => 0,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_BINARYTRANSFER => true,
                 CURLOPT_SSL_VERIFYPEER => 0,
-                CURLOPT_SSL_VERIFYHOST => 0
-            );
+                CURLOPT_SSL_VERIFYHOST => 0,
+            ];
             $ch = curl_init();
             curl_setopt_array($ch, $options);
             $result = curl_exec($ch);
@@ -148,11 +149,11 @@ if ($objRequest->getvaluebyname('layer')) {
             $numCls = $oLayer->numclasses;
 
             //verifica sulle classi
-            $classToRemove=array();
-            for ($clno=0; $clno < $numCls; $clno++) {
+            $classToRemove = [];
+            for ($clno = 0; $clno < $numCls; $clno++) {
                 $oClass = $oLayer->getClass($clno);
                 $className = $oClass->name;
-//                if($oClass->title) $oClass->set('name',$oClass->title);
+                //                if($oClass->title) $oClass->set('name',$oClass->title);
                 
                 if ($oClass->getMetaData("gc_no_image") == 1) {
                     $classToRemove[] = $oClass->title;
@@ -161,10 +162,10 @@ if ($objRequest->getvaluebyname('layer')) {
                     //if(($oClass->getMetaData("gc_no_image")!='1') && (!$ruleClassName || $ruleClassName == $className)){
                     //if((($oClass->maxscale == -1) || ($scale <= $oClass->maxscale)) && (($oClass->minscale == -1) || ($scale >= $oClass->minscale))){
                     
-                    $char=$oClass->getTextString();
+                    $char = $oClass->getTextString();
                     //SE E' UNA CLASSE CON SIMBOLO TTF AGGIUNGO IL SIMBOLO
-                    if (strlen($char)==3) {//USARE REGEXP, non � detto che questa stringa sia lunga 3 !!!!
-                        $lbl=$oClass->label;
+                    if (strlen($char) == 3) {//USARE REGEXP, non � detto che questa stringa sia lunga 3 !!!!
+                        $lbl = $oClass->label;
                         $idSymbol = ms_newSymbolObj($oMap, "v");
                         $oSymbol = $oMap->getSymbolObjectById($idSymbol);
                         $oSymbol->set('type', MS_SYMBOL_TRUETYPE);
@@ -172,8 +173,8 @@ if ($objRequest->getvaluebyname('layer')) {
                         $oSymbol->set('character', substr($char, 1, 1));
                         $oSymbol->set('antialias', 1);
 
-                        $oStyle=ms_newStyleObj($oClass);
-                        $oStyle->set("size", $iconW/2);//DA VERERE !!!!!
+                        $oStyle = ms_newStyleObj($oClass);
+                        $oStyle->set("size", $iconW / 2);//DA VERERE !!!!!
                         //$oStyle->set("offsetx",-25);
                         //$oStyle->set("offsety",25);
                         $oStyle->set('symbolname', 'v');
@@ -192,10 +193,10 @@ if ($objRequest->getvaluebyname('layer')) {
                 }
             }
 
-            if ($gcLegendText && !($oLayer->type==MS_LAYER_ANNOTATION || $oLayer->type==MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
+            if ($gcLegendText && !($oLayer->type == MS_LAYER_ANNOTATION || $oLayer->type == MS_LAYER_RASTER)) {//ESCLUDO SEMPRE I LAYERS DI TIPO ANNOTATIONE I LAYER SENZA CLASSI VISIBILI
                 //Elimino le classi non visibili: devo cercarle una ad una perchè il removeclass rinumera le classi ogni volta
                 foreach ($classToRemove as $className) {
-                    for ($clno=0; $clno < $oLayer->numclasses; $clno++) {
+                    for ($clno = 0; $clno < $oLayer->numclasses; $clno++) {
                         $oClass = $oLayer->getClass($clno);
                         if ($oClass->name == $className) {
                             $oLayer->removeClass($clno);
@@ -203,9 +204,9 @@ if ($objRequest->getvaluebyname('layer')) {
                     }
                 };
                 //print('<pre>');print_r($classToRemove);echo $oLayer->numclasses;
-                if ($oLayer->numclasses>0) {
+                if ($oLayer->numclasses > 0) {
                     ms_ioinstallstdouttobuffer();
-                    $tempRequest = new OWSRequestObj();
+                    $tempRequest = new owsRequestObj();
                     $tempRequest->loadParams();
                     $tempRequest->setParameter('LAYER', $oLayer->name);
 
@@ -224,7 +225,7 @@ if ($objRequest->getvaluebyname('layer')) {
                 }
             } else {
                 $numCls = $oLayer->numclasses;
-                for ($clno=0; $clno < $numCls; $clno++) {
+                for ($clno = 0; $clno < $numCls; $clno++) {
                     $oClass = $oLayer->getClass($clno);
                     $check = $oClass->getMetaData('gc_no_image');
                     if (!empty($check)) {
@@ -254,7 +255,7 @@ if (!$legend) {
         if (!$gdImage) {
             continue;
         }
-        $h += (imagesy($gdImage)+0);
+        $h += (imagesy($gdImage) + 0);
     }
     $legendImage = imagecreatetruecolor($w, $h);
     $white = imagecolorallocate($legendImage, 255, 255, 255);
@@ -266,7 +267,7 @@ if (!$legend) {
         if (!$img) {
             continue;
         }
-        $size = array(imagesx($img), imagesy($img));
+        $size = [imagesx($img), imagesy($img)];
         imagealphablending($img, true);
         imagesavealpha($img, true);
         $temp = imagecreatetruecolor($w, $h);
@@ -283,5 +284,5 @@ if (!$legend) {
     exit(0);
 }
 
-$oLayer=$oMap->getLayer($aLayersIndexes[0]);
+$oLayer = $oMap->getLayer($aLayersIndexes[0]);
 $objRequest->setParameter('LAYER', $oLayer->name);

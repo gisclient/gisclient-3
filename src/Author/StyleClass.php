@@ -14,7 +14,7 @@ class StyleClass
 
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.class WHERE class_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($id));
+            $stmt->execute([$id]);
             $data = $stmt->fetch();
             if (!empty($data)) {
                 $this->data = $data;
@@ -52,11 +52,11 @@ class StyleClass
     {
         $styles = null;
         if (!empty($this->data)) {
-            $styles = array();
+            $styles = [];
 
             $sql = "SELECT style_id FROM {$this->db->getParams()['schema']}.style WHERE class_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($this->get('class_id')));
+            $stmt->execute([$this->get('class_id')]);
             while ($style_id = $stmt->fetchColumn(0)) {
                 $styles[] = new Style($style_id);
             }

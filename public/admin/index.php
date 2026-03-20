@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 require_once __DIR__ . '/../../bootstrap.php';
 include_once ROOT_PATH . "lib/i18n.php";
 
-use Symfony\Component\HttpFoundation\Request;
 
 header("Content-Type: text/html; Charset=" . CHAR_SET);
 header("Cache-Control: no-cache, must-revalidate, private, pre-check=0, post-check=0, max-age=0");
@@ -32,8 +31,8 @@ header("Expires: " . gmdate('D, d M Y H:i:s', time()) . " GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Pragma: no-cache");
 
-$Errors = array();
-$Notice = array();
+$Errors = [];
+$Notice = [];
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -54,9 +53,9 @@ if (!$authHandler->isAuthenticated()) {
 
 include ADMIN_PATH . "lib/page.class.php";
 
-$param = array();
-$arr_action = array("salva", "aggiungi", "cancella", "elimina", "genera mappa", "copia", "sposta");
-$arr_noaction = array("chiudi", "annulla", "avvia importazione");
+$param = [];
+$arr_action = ["salva", "aggiungi", "cancella", "elimina", "genera mappa", "copia", "sposta"];
+$arr_noaction = ["chiudi", "annulla", "avvia importazione"];
 if (!empty($_REQUEST["parametri"])) {
     $param = $_REQUEST["parametri"];
 }
@@ -90,7 +89,7 @@ $db = GCApp::getDB();
 if (defined('USE_DATA_IMPORT') && USE_DATA_IMPORT == true && $p->livello == 'catalog' && $p->mode == 0) {
     $sql = 'select connection_type from ' . DB_SCHEMA . '.catalog where catalog_id=?';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array($p->parametri['catalog']));
+    $stmt->execute([$p->parametri['catalog']]);
     $catalogType = $stmt->fetchColumn(0);
     if ($catalogType == 6) {
         $initDataManager = 'true';
@@ -99,13 +98,13 @@ if (defined('USE_DATA_IMPORT') && USE_DATA_IMPORT == true && $p->livello == 'cat
 
 $initPreviewMap = 'false';
 $previewMapUrl = 'previewmap/';
-if (in_array($p->livello, array('layer', 'layergroup')) && $p->mode == 0) {
+if (in_array($p->livello, ['layer', 'layergroup']) && $p->mode == 0) {
     $initPreviewMap = 'true';
 }
 $isAuthor = true;
 
 $initOgcServices = 'false';
-$layerList = array();
+$layerList = [];
 if (isset($p->parametri['project'])) {
     $mapsets = GCAuthor::getMapsets($p->parametri['project']);
     $layerList = GCAuthor::getLayerList($p->parametri['project']);
@@ -147,14 +146,14 @@ if (isset($p->parametri['project'])) {
         var currentLevel = '<?php echo $p->livello ?>';
         <?php
         $errors = GCError::get();
-        if (!empty($errors)) {
-            foreach ($errors as &$error) {
-                $error = str_replace(array('"', "\n"), array('\"', '<br>'), $error);
-            }
-            unset($error);
-            ?>var errors = ["<?php echo implode('","', $errors); ?>"];
+if (!empty($errors)) {
+    foreach ($errors as &$error) {
+        $error = str_replace(['"', "\n"], ['\"', '<br>'], $error);
+    }
+    unset($error);
+    ?>var errors = ["<?php echo implode('","', $errors); ?>"];
             <?php
-        } ?>
+} ?>
     </script>
     <script type="text/javascript" src="js/opentype/opentype.min.js"></script>
 </head>
@@ -167,7 +166,7 @@ if (isset($p->parametri['project'])) {
         </div>
         <div class="ui-layout-center">
             <div id="containment" style="position: relative;">
-                <?php /* FIXME: signature accepts only one parameter */ $p->writePage($Errors, $Notice); ?>
+                <?php /* FIXME: signature accepts only one parameter */ $p->writePage($Errors); ?>
                 <form method="POST" id="frm_param" name="frm_param"><?php $p->write_parameter(); ?></form>
                 <?php include ADMIN_PATH . "inc/inc.window.php"; ?>
             </div>
@@ -179,16 +178,16 @@ if (isset($p->parametri['project'])) {
         <div class="ui-layout-south">
             GisClient<span class="color">Author</span>
             <?php
-            $sql = "SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
-            $version = $db->query($sql)->fetchColumn(0);
-            echo sprintf("{$version} - 2009 - %d", date('Y'));
-            if (function_exists('ms_GetVersionInt')) {
-                $msVersion = ms_GetVersionInt();
-                $msVersionMajor = (int) ($msVersion / 10000);
-                $msVersionMinor = (int) (($msVersion - $msVersionMajor * 10000) / 100);
-                echo " | MapServer {$msVersionMajor}.{$msVersionMinor}";
-            }
-            ?>
+    $sql = "SELECT version_name FROM " . DB_SCHEMA . ".vista_version";
+$version = $db->query($sql)->fetchColumn(0);
+echo sprintf("{$version} - 2009 - %d", date('Y'));
+if (function_exists('ms_GetVersionInt')) {
+    $msVersion = ms_GetVersionInt();
+    $msVersionMajor = (int) ($msVersion / 10000);
+    $msVersionMinor = (int) (($msVersion - $msVersionMajor * 10000) / 100);
+    echo " | MapServer {$msVersionMajor}.{$msVersionMinor}";
+}
+?>
         </div>
     </div>
     </div>

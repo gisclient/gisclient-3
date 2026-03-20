@@ -38,15 +38,15 @@ class Process implements OfflineProcessInterface
     public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
         if (!($task instanceof Task)) {
-            throw new \Exception('The given task does not match the required class: '.Task::class);
+            throw new \Exception('The given task does not match the required class: ' . Task::class);
         }
 
         $commandLine = [
             $this->bin,
-            "--proxy-conf=".$task->getMapConfig(),
+            "--proxy-conf=" . $task->getMapConfig(),
             "--concurrency=1",
-            "--seed-conf=".$task->getSeedConfig(),
-            "--seed=".$task->getTaskName()
+            "--seed-conf=" . $task->getSeedConfig(),
+            "--seed=" . $task->getTaskName(),
         ];
         if ($runInBackground) {
             $commandLine[] = ">";

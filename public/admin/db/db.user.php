@@ -8,5 +8,5 @@ if (!empty($_POST['dati']) && !empty($_POST['dati']['pwd'])) {
     $_POST['dati']['pwd'] = null;
 }
 
-$save=new saveData($_POST);
-$p=$save->performAction($p);
+$save = new saveData($_POST);
+$p = $save->performAction($p);

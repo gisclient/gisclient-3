@@ -17,81 +17,51 @@ class LookupData implements OfflineDataInterface
         $this->tmpService = $tmpService;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return 'lookup';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCommand(LayerLevelInterface $layer)
     {
         throw new \RuntimeException('Method not supported');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(LayerLevelInterface $layer)
     {
         return $layer instanceof Layer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getState(LayerLevelInterface $layer)
     {
         return self::IS_STOPPED;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getProgress(LayerLevelInterface $layer)
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function exists(LayerLevelInterface $layer)
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function start(LayerLevelInterface $layer, $runInBackground = true)
     {
         throw new \RuntimeException('Method not supported');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function stop(LayerLevelInterface $layer)
     {
         throw new \RuntimeException('Method not supported');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function clear(LayerLevelInterface $layer)
     {
         throw new \RuntimeException('Method not supported');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getOfflineFiles(LayerLevelInterface $layer)
     {
         $files = [];
@@ -112,7 +82,7 @@ class LookupData implements OfflineDataInterface
                 $fs->dumpFile($lookupFile, $json);
                 $files[] = [
                     'file' => $lookupFile,
-                    'filename' => sprintf('%d%s.json', $catalogId, $lookupTable)
+                    'filename' => sprintf('%d%s.json', $catalogId, $lookupTable),
                 ];
             }
         }

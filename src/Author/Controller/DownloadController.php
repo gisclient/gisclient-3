@@ -3,11 +3,11 @@
 namespace GisClient\Author\Controller;
 
 use GisClient\Author\Utils\MapImage;
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Controller to create and download geo-referenced image
@@ -28,7 +28,7 @@ class DownloadController
         print_debug($errorMessage, null, 'download');
         $data = [
             'result' => 'error',
-            'error' => $errorMessage
+            'error' => $errorMessage,
         ];
         return new JsonResponse($data, $httpStatus);
     }
@@ -53,10 +53,10 @@ class DownloadController
         // TODO: handle request parameteers in a more systematic way, suing a single
         // procedure checking required/optional, type and value range
 
-        $options = array(
-            'image_format'=>'gtiff',
-            'output_format'=>'geotiff'
-        );
+        $options = [
+            'image_format' => 'gtiff',
+            'output_format' => 'geotiff',
+        ];
 
         if ($format == 'png') {
             $options['image_format'] = 'png';
@@ -78,7 +78,7 @@ class DownloadController
             return $this->createErrorResponse('No srid');
         }
         if (strpos($srid, ':') !== false) {
-            list($options['auth_name'], $srid) = explode(':', $srid);
+            [$options['auth_name'], $srid] = explode(':', $srid);
         }
 
         $options['dpi'] = MAP_DPI;
@@ -107,17 +107,17 @@ class DownloadController
             $scaleWidth = (int)$pixPerMetreFromDPI * ($options['extent'][2] - $options['extent'][0]) / $viewSize[0];
             $scaleHeight = (int)$pixPerMetreFromDPI * ($options['extent'][3] - $options['extent'][1]) / $viewSize[1];
 
-            $options['scale'] = ($scaleWidth < $scaleHeight)? $scaleWidth : $scaleHeight;
+            $options['scale'] = ($scaleWidth < $scaleHeight) ? $scaleWidth : $scaleHeight;
         }
 
         if (!empty($center)) {
             $options['center'] = $center;
         }
 
-        $imageSize = array(
+        $imageSize = [
             0 => (int)$pixPerMetreFromDPI * ($options['extent'][2] - $options['extent'][0]) / $options['scale'],
             1 => (int)$pixPerMetreFromDPI * ($options['extent'][3] - $options['extent'][1]) / $options['scale'],
-        );
+        ];
 
         if (isset($scalebar)) {
             $options['scalebar'] = $scalebar;
@@ -150,13 +150,13 @@ class DownloadController
         }
 
         try {
-            $imagePath = ROOT_PATH.'tmp/files';
-            $response = new BinaryFileResponse($imagePath.'/'.$filename);
+            $imagePath = ROOT_PATH . 'tmp/files';
+            $response = new BinaryFileResponse($imagePath . '/' . $filename);
             $response->setContentDisposition('attachment', $filename);
             $response->deleteFileAfterSend(true);
             return $response;
         } catch (FileNotFoundException $e) {
-            return $this->createErrorResponse('File not found "'.$filename.'"', BinaryFileResponse::HTTP_NOT_FOUND);
+            return $this->createErrorResponse('File not found "' . $filename . '"', BinaryFileResponse::HTTP_NOT_FOUND);
         }
     }
 }

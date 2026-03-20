@@ -16,9 +16,9 @@ class OwsHandler
         UrlChecker::checkUrl($url);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "Content-Type: application/xml",
-        ));
+        ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -69,7 +69,7 @@ class OwsHandler
                 // There is a misaligment in $layerAuth. From code it seems, that it is based on SERVICE
                 if (strtoupper($service) == 'WMS' && ($layerAuth == 1 || $layerAuth['WMS'] == 1)) {
                     $check = true;
-                } elseif (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1 )) {
+                } elseif (strtoupper($service) == 'WFS' && ($layerAuth == 1 || $layerAuth['WFS'] == 1)) {
                     $check = true;
                 }
             }
@@ -79,7 +79,7 @@ class OwsHandler
 
     public static function getRequestedLayers($oMap, $objRequest, $layersParameter)
     {
-        $layersArray = array();
+        $layersArray = [];
 
         if (empty($layersParameter)) {
             return $layersArray;
@@ -118,7 +118,7 @@ class OwsHandler
 
     public static function getRequestedLayersById($oMap, $objRequest, $layersIdList)
     {
-        $layersArray = array();
+        $layersArray = [];
         
         if (empty($layersIdList)) {
             return $layersArray;
@@ -144,15 +144,13 @@ class OwsHandler
      * list of inverted axis SRIDs. This is a temporarily hack, since some
      * operations depend on axis order, while others don't
      *
-     * @param type $filter
-     * @param array $invertedAxisOrderSrids
      * @return string
      */
     public function pruneSrsFromFilter($filter, array $invertedAxisOrderSrids)
     {
         $filterHasChanged = false;
+        $filterDoc = new \DOMDocument();
         if (!empty($filter)) {
-            $filterDoc = new \DOMDocument();
             $filterDoc->loadXML($filter);
             $xpath = new \DOMXPath($filterDoc);
             // find all elements with an attribute srsName
@@ -237,7 +235,7 @@ class OwsHandler
         $sldContent = curl_exec($ch);
 
         if ($sldContent === false) {
-            throw new \RuntimeException("Call to {$sldUrl} return with error:". var_export(curl_error($ch), true));
+            throw new \RuntimeException("Call to {$sldUrl} return with error:" . var_export(curl_error($ch), true));
         }
         if (200 != ($httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE))) {
             throw new \RuntimeException("Call to {$sldUrl} return HTTP code $httpCode");
@@ -270,7 +268,7 @@ class OwsHandler
     public static function removeLayersNotInRequest($oMap, $objRequest, $requestLayers)
     {
         $layersArray = self::getRequestedLayers($oMap, $objRequest, $requestLayers);
-        $layersFromRequest = array();
+        $layersFromRequest = [];
         foreach ($layersArray as $l) {
             $layersFromRequest[] = $l->name;
         }
@@ -289,8 +287,8 @@ class OwsHandler
     {
         $requestService = strtolower($objRequest->getValueByName('service'));
         $requestRequest = strtolower($objRequest->getValueByName('request'));
-        $requestSldUrl = self::getParameterFromRequest(array('SLD', 'sld'));
-        $requestSldBody = self::getParameterFromRequest(array('SLD_BODY', 'sld_body'));
+        $requestSldUrl = self::getParameterFromRequest(['SLD', 'sld']);
+        $requestSldBody = self::getParameterFromRequest(['SLD_BODY', 'sld_body']);
         
         if ($requestService !== 'wms') {
             throw new \Exception("Can't apply SLD to a non WMS request ({$requestService})");
@@ -322,13 +320,14 @@ class OwsHandler
                     INNER JOIN {$dbSchema}.mapset_layergroup USING (layergroup_id)
                     WHERE mapset_name=:mapset_name AND layergroup_name=:layergroup_name AND sld IS NOT NULL ";
             $stmt = $db->prepare($sql);
-            $layersWithSld = array();
+            $layersWithSld = [];
             // Group all the different SLD and apply less times as possible (to prevent performance issue)
             foreach ($layerList as $layerGroup) {
-                list($layerGroup) = explode('.', $layerGroup, 1);  // Extract layer group
-                $stmt->execute(array(
-                    'mapset_name'=>$objRequest->getValueByName('map'),
-                    'layergroup_name'=>$layerGroup));
+                [$layerGroup] = explode('.', $layerGroup, 1);  // Extract layer group
+                $stmt->execute([
+                    'mapset_name' => $objRequest->getValueByName('map'),
+                    'layergroup_name' => $layerGroup,
+                ]);
                 if (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
                     $sld = $i18n->translate($row['sld'], 'layergroup', $row['layergroup_id'], 'sld');
                     if (!in_array($sld, $layersWithSld)) {

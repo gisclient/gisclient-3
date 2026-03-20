@@ -30,8 +30,8 @@ class Symbol
     public function createIcon()
     {
         $dbSchema = DB_SCHEMA;
-        if (!is_dir(ROOT_PATH.'tmp')) {
-            mkdir(ROOT_PATH.'tmp');
+        if (!is_dir(ROOT_PATH . 'tmp')) {
+            mkdir(ROOT_PATH . 'tmp');
         }
         // $this->mapfile = ROOT_PATH.'map/tmp/tmp.map';
         $this->symbolSize = [
@@ -39,15 +39,15 @@ class Symbol
             LEGEND_LINE_WIDTH,
             LEGEND_POLYGON_WIDTH,
         ];
-        $aClass = array();
+        $aClass = [];
         
-        if ($this->table=='class') {
+        if ($this->table == 'class') {
             //lettera A per le icone dei testi
-            $aSymbol = array(
-                "SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND"
-            );
+            $aSymbol = [
+                "SYMBOL\nNAME \"___LETTER___\"\nTYPE TRUETYPE\nFONT \"verdana\"\nCHARACTER \"a\"\nANTIALIAS TRUE\nEND",
+            ];
             
-            $sql="SELECT
+            $sql = "SELECT
                     class.class_id, layertype_ms, style_id,
                     color, outlinecolor, bgcolor, angle, size, width,
                     symbol.*
@@ -62,56 +62,56 @@ class Symbol
             ";
 
             if ($this->filter) {
-                $sql.=" where ".$this->filter;
+                $sql .= " where " . $this->filter;
             }
-            $sql.=" order by style_order desc;";
+            $sql .= " order by style_order desc;";
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
 
             $aStyle = [];
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-                $aClass[$row["class_id"]]["icontype"]=$row["layertype_ms"];
+                $aClass[$row["class_id"]]["icontype"] = $row["layertype_ms"];
                 if ($row["style_id"]) {
-                    $aStyle["color"]=explode(" ", $row["color"]);
-                    $aStyle["outlinecolor"]=explode(" ", $row["outlinecolor"]);
-                    $aStyle["bgcolor"]=explode(" ", $row["bgcolor"]);
-                    $aStyle["angle"]=$row["angle"];
-                    $aStyle["width"]=$row["width"];
-                    $aStyle["size"]=$row["size"];
-                    $aStyle["symbol"]=$row["symbol_name"];
-                    $aClass[$row["class_id"]]["style"][]=$aStyle;
+                    $aStyle["color"] = explode(" ", $row["color"]);
+                    $aStyle["outlinecolor"] = explode(" ", $row["outlinecolor"]);
+                    $aStyle["bgcolor"] = explode(" ", $row["bgcolor"]);
+                    $aStyle["angle"] = $row["angle"];
+                    $aStyle["width"] = $row["width"];
+                    $aStyle["size"] = $row["size"];
+                    $aStyle["symbol"] = $row["symbol_name"];
+                    $aClass[$row["class_id"]]["style"][] = $aStyle;
                 }
                 if ($row["symbol_name"]) {
-                    $smbText=array();
-                    $smbText[]="SYMBOL";
-                    $smbText[]="\tNAME \"".$row["symbol_name"]."\"";
+                    $smbText = [];
+                    $smbText[] = "SYMBOL";
+                    $smbText[] = "\tNAME \"" . $row["symbol_name"] . "\"";
                     if ($row["symbol_type"]) {
-                        $smbText[]="\tTYPE ".$row["symbol_type"];
+                        $smbText[] = "\tTYPE " . $row["symbol_type"];
                     }
                     if ($row["font_name"]) {
-                        $smbText[]="\tFONT \"".$row["font_name"]."\"";
+                        $smbText[] = "\tFONT \"" . $row["font_name"] . "\"";
                     }
                     if ($row["ascii_code"]) {
-                        $smbText[]=($row["ascii_code"]==34) ?
-                            "\tCHARACTER '".chr($row["ascii_code"])."'" :
-                            "\tCHARACTER \"".($row["ascii_code"] == 92 ? chr(92) : '').chr($row["ascii_code"])."\"";
+                        $smbText[] = ($row["ascii_code"] == 34) ?
+                            "\tCHARACTER '" . chr($row["ascii_code"]) . "'" :
+                            "\tCHARACTER \"" . ($row["ascii_code"] == 92 ? chr(92) : '') . chr($row["ascii_code"]) . "\"";
                     }
                     if ($row["filled"]) {
-                        $smbText[]="\tFILLED TRUE";
+                        $smbText[] = "\tFILLED TRUE";
                     }
                     if ($row["points"]) {
-                        $smbText[]="\tPOINTS ".$row["points"]." END";
+                        $smbText[] = "\tPOINTS " . $row["points"] . " END";
                     }
                     if ($row["image"]) {
-                        $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$row["image"]."\"";
+                        $smbText[] = "\tIMAGE \"" . ROOT_PATH . 'map/' . $row["image"] . "\"";
                     }
                     if ($row["symbol_def"]) {
-                        $smbText[]=$row["symbol_def"];
+                        $smbText[] = $row["symbol_def"];
                     }
-                    $smbText[]="END";
+                    $smbText[] = "END";
                     if (!in_array($smbText, $aSymbol)) {
-                        $aSymbol[]=implode("\n", $smbText);
+                        $aSymbol[] = implode("\n", $smbText);
                     }
                 }
             }
@@ -134,48 +134,49 @@ class Symbol
                     INNER JOIN $dbSchema.e_symbolcategory USING (symbolcategory_id)
             ";
             if ($this->filter) {
-                $sql.=" where ".$this->filter;
+                $sql .= " where " . $this->filter;
             }
-            $sql.=" LIMIT 200;";
+            $sql .= " LIMIT 200;";
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
+            $aSymbol = [];
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-                $aClass[$row["symbol_name"]]["icontype"]=$row["icontype"];
-                $aStyle=array();
-                $aStyle["symbol"]=$row["symbol_name"];
-                $aStyle["color"]=array(0,0,0);
-                $aStyle["size"]=$this->symbolSize[$row["icontype"]];
-                $aClass[$row["symbol_name"]]["style"][]=$aStyle;
-                $smbText=array();
-                $smbText[]="SYMBOL";
-                $smbText[]="\tNAME \"".$row["symbol_name"]."\"";
+                $aClass[$row["symbol_name"]]["icontype"] = $row["icontype"];
+                $aStyle = [];
+                $aStyle["symbol"] = $row["symbol_name"];
+                $aStyle["color"] = [0, 0, 0];
+                $aStyle["size"] = $this->symbolSize[$row["icontype"]];
+                $aClass[$row["symbol_name"]]["style"][] = $aStyle;
+                $smbText = [];
+                $smbText[] = "SYMBOL";
+                $smbText[] = "\tNAME \"" . $row["symbol_name"] . "\"";
                 if ($row["symbol_type"]) {
-                    $smbText[]="\tTYPE ".$row["symbol_type"];
+                    $smbText[] = "\tTYPE " . $row["symbol_type"];
                 }
                 if ($row["font_name"]) {
-                    $smbText[]="\tFONT \"".$row["font_name"]."\"";
+                    $smbText[] = "\tFONT \"" . $row["font_name"] . "\"";
                 }
                 if ($row["ascii_code"]) {
                     $smbText[] = ($row["ascii_code"] == 34) ?
-                        "\tCHARACTER '".chr($row["ascii_code"])."'" :
-                        "\tCHARACTER \"".($row["ascii_code"] == 92 ? chr(92):'').chr($row["ascii_code"])."\"";
+                        "\tCHARACTER '" . chr($row["ascii_code"]) . "'" :
+                        "\tCHARACTER \"" . ($row["ascii_code"] == 92 ? chr(92) : '') . chr($row["ascii_code"]) . "\"";
                 }
                 if ($row["filled"]) {
-                    $smbText[]="\tFILLED TRUE";
+                    $smbText[] = "\tFILLED TRUE";
                 }
                 if ($row["points"]) {
-                    $smbText[]="\tPOINTS ".$row["points"]." END";
+                    $smbText[] = "\tPOINTS " . $row["points"] . " END";
                 }
                 if ($row["image"]) {
-                    $smbText[]="\tIMAGE \"".ROOT_PATH.'map/'.$row["image"]."\"";
+                    $smbText[] = "\tIMAGE \"" . ROOT_PATH . 'map/' . $row["image"] . "\"";
                 }
                 if ($row["symbol_def"]) {
-                    $smbText[]=$row["symbol_def"];
+                    $smbText[] = $row["symbol_def"];
                 }
-                $smbText[]="END";
+                $smbText[] = "END";
                 
-                $aSymbol[]=implode("\n", $smbText);
+                $aSymbol[] = implode("\n", $smbText);
             }
 
             $this->createMapFile($aSymbol);
@@ -194,50 +195,54 @@ class Symbol
         // quando viene renderizzata l'immaginetta preview della classe nell'author,
         //  abbiamo sempre una sola classe da visualizzare e bisogna ritornarla a chi chiama questa funzione
         // negli altri casi boh?
-        if ($this->filter) {
+        if ($this->filter && isset($image_data)) {
             return $image_data;
         }
+
+        return "";
     }
 
     private function iconFromClass($class)
     {
         // creo la mappa
         $oMap = $this->oMap;
-        $oMap->setFontSet(ROOT_PATH.'fonts/fonts.list');
+        $oMap->setFontSet(ROOT_PATH . 'fonts/fonts.list');
         $oMap->outputformat->set('name', 'PNG');
         $oMap->outputformat->set('driver', 'GD/PNG');
         $oMap->outputformat->set('extension', 'png');
         $oMap->outputformat->setOption("INTERLACE", "OFF");
-        $oLay=ms_newLayerObj($oMap);
+        $oLay = ms_newLayerObj($oMap);
         $oLay->set('type', $class["icontype"]);
-        $oClass=ms_newClassObj($oLay);
+        $oClass = ms_newClassObj($oLay);
         if ($this->symbolSize[$class["icontype"]]) {
-            $smbSize=$this->symbolSize[$class["icontype"]];
+            $smbSize = $this->symbolSize[$class["icontype"]];
         }
             
-        $style=isset($class["style"])?$class["style"]:array();
+        $style = $class["style"] ?? [];
         //print_array($class);
         //Aggiungo gli stili
-        for ($i=0; $i<count($style); $i++) {
-            $oStyle=ms_newStyleObj($oClass);
-            $oStyle->set("size", $smbSize);
+        for ($i = 0; $i < count($style); $i++) {
+            $oStyle = ms_newStyleObj($oClass);
+            if (!empty($smbSize)) {
+                $oStyle->set("size", $smbSize);
+            }
             if (!empty($style[$i]['symbol'])) {
                 $oStyle->set('symbolname', $style[$i]['symbol']);
             }
             if (!empty($style[$i]['angle'])) {
                 $oStyle->set('angle', $style[$i]['angle']);
             }
-            if (isset($style[$i]['color']) && count($style[$i]['color'])==3) {
+            if (isset($style[$i]['color']) && count($style[$i]['color']) == 3) {
                 $oStyle->color->setRGB($style[$i]['color'][0], $style[$i]['color'][1], $style[$i]['color'][2]);
             }
-            if (isset($style[$i]['outlinecolor']) && count($style[$i]['outlinecolor'])==3) {
+            if (isset($style[$i]['outlinecolor']) && count($style[$i]['outlinecolor']) == 3) {
                 $oStyle->outlinecolor->setRGB(
                     $style[$i]['outlinecolor'][0],
                     $style[$i]['outlinecolor'][1],
                     $style[$i]['outlinecolor'][2]
                 );
             }
-            if (isset($style[$i]['bgcolor']) && count($style[$i]['bgcolor'])==3) {
+            if (isset($style[$i]['bgcolor']) && count($style[$i]['bgcolor']) == 3) {
                 $oStyle->backgroundcolor->setRGB(
                     $style[$i]['bgcolor'][0],
                     $style[$i]['bgcolor'][1],
@@ -261,7 +266,7 @@ class Symbol
     private function createMapFile($aSymbol)
     {
         //creazione del file di simboli
-        $mapText=array();
+        $mapText = [];
         $mapText[] = "MAP";
         $mapText[] = "EXTENT 0 0 180 180";
         $mapText[] = implode("\n", $aSymbol);
@@ -274,7 +279,7 @@ class Symbol
         } catch (\Exception $e) {
             $error = ms_GetErrorObj();
             if ($error->code != MS_NOERR) {
-                $this->mapError=150;
+                $this->mapError = 150;
                 while (is_object($error) && $error->code != MS_NOERR) {
                     print("MAPFILE ERROR <br>");
                     printf("Error in %s: %s<br>\n", $error->routine, $error->message);
@@ -289,10 +294,11 @@ class Symbol
     //RESTITUISCE UN ELENCO DI SIMBOLI FILTRATI
     public function getList($assoc = false)
     {
-        $dbSchema=DB_SCHEMA;
-        $table=$this->table;
-        $values=array();
-        if ($table=='class') {
+        $dbSchema = DB_SCHEMA;
+        $table = $this->table;
+        $values = [];
+        $headers = [];
+        if ($table == 'class') {
             $sql = "SELECT
                         project_name as project, theme_name as theme, layergroup_name as layergroup,
                         layer_name as layer, class_name as class, class_id
@@ -303,29 +309,29 @@ class Symbol
                     INNER JOIN $dbSchema.project USING (project_name)
             ";
             if ($this->filter) {
-                $sql.=" where ".$this->filter;
+                $sql .= " where " . $this->filter;
             }
-            $sql.="  order by 1,2,3,4,5";
-            $headers = array("Image","Class","Layer","Layergroup","Theme","Project");
-            $values=array();
+            $sql .= "  order by 1,2,3,4,5";
+            $headers = ["Image", "Class", "Layer", "Layergroup", "Theme", "Project"];
+            $values = [];
             
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
-                    $values[] = array(
-                        "table=class&id=".$row["class_id"],
+                    $values[] = [
+                        "table=class&id=" . $row["class_id"],
                         $row["class"],
                         $row["layer"],
                         $row["layergroup"],
                         $row["theme"],
-                        $row["project"]
-                    );
+                        $row["project"],
+                    ];
                 } else {
                     array_push($values, $row);
                 }
             }
-        } elseif ($table=='symbol') {
+        } elseif ($table == 'symbol') {
             $sql = "SELECT
                         symbol_name as symbol,
                         symbolcategory_name as category
@@ -334,22 +340,25 @@ class Symbol
             ";
             
             if ($this->filter) {
-                $sql.=" where ".$this->filter;
+                $sql .= " where " . $this->filter;
             }
-            $sql.="  order by symbolcategory_name, symbol_name";
-            $headers = array("Image","Symbol","Category");
+            $sql .= "  order by symbolcategory_name, symbol_name";
+            $headers = ["Image", "Symbol", "Category"];
             $stmt = $this->database->prepare($sql);
             $stmt->execute();
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$assoc) {
-                    $values[]=array("table=symbol&id=".$row["symbol"],$row["symbol"],$row["category"]);
+                    $values[] = ["table=symbol&id=" . $row["symbol"], $row["symbol"], $row["category"]];
                 } else {
                     array_push($values, $row);
                 }
             }
         }
 
-        return array("headers"=>$headers,"values"=>$values);
+        return [
+            "headers" => $headers,
+            "values" => $values,
+        ];
     }
     
     
@@ -357,11 +366,11 @@ class Symbol
     
     public function removeByName($name)
     {
-        $dbSchema=DB_SCHEMA;
+        $dbSchema = DB_SCHEMA;
         $sql = "UPDATE $dbSchema.style SET symbol_name=NULL WHERE symbol_name =" . $this->database->quote($name);
         $rv = $this->database->exec($sql);
         
-        $sql="DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->database->quote($name);
+        $sql = "DELETE FROM $dbSchema.symbol WHERE symbol_name=" . $this->database->quote($name);
         $rv = $this->database->exec($sql);
         return $rv;
     }

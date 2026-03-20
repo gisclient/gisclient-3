@@ -1,10 +1,11 @@
 <?php
 
 use GisClient\Author\Symbol;
+use PHPUnit\Framework\TestCase;
 
-include_once __DIR__."/../../bootstrap.php";
+include_once __DIR__ . "/../../bootstrap.php";
 
-class SymbolTest extends PHPUnit_Framework_TestCase
+class SymbolTest extends TestCase
 {
     public function testSymbolList()
     {
@@ -18,7 +19,7 @@ class SymbolTest extends PHPUnit_Framework_TestCase
         $symbol = new Symbol('symbol');
         $symbolList = $symbol->getList(true);
         foreach ($symbolList['values'] as $symbolInfo) {
-            $symbol->filter="symbol.symbol_name='{$symbolInfo['symbol']}'";
+            $symbol->filter = "symbol.symbol_name='{$symbolInfo['symbol']}'";
             $img = $symbol->createIcon();
             $this->assertNotNull($img);
         }

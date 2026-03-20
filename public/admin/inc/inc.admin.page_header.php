@@ -42,10 +42,10 @@
                 <form id="user_options">
                 <input type="checkbox" name="save_to_tmp_map" <?php if ($gcService->get('save_to_tmp_map') === true) {
                     echo 'checked="checked"';
-                                                              } ?> value="1"> <?php echo GCAuthor::t('save_to_temp') ?><br />
+                } ?> value="1"> <?php echo GCAuthor::t('save_to_temp') ?><br />
                 <input type="checkbox" name="auto_refresh_mapfiles" <?php if ($gcService->get('auto_refresh_mapfiles') === true) {
                     echo 'checked="checked"';
-                                                                    } ?> value="1"> <?php echo GCAuthor::t('auto_refresh_mapfiles') ?><br />
+                } ?> value="1"> <?php echo GCAuthor::t('auto_refresh_mapfiles') ?><br />
                 <button name="save"><?php echo GCAuthor::t('save'); ?></button>
                 <div class="logs" style="color:red;"></div>
                 </form>
@@ -57,9 +57,9 @@
                     if (isset($mapsets)) {
                         foreach ($mapsets as $mapset) {
                             echo '<tr>
-                                <td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
-                                <td align="center"><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
-                                <td align="center"><a href="../services/ows.php?project='.$mapset['project_name'].'&map='.$mapset['mapset_name'].'&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
+                                <td>' . $mapset['mapset_title'] . ' (' . $mapset['mapset_name'] . ')</td>
+                                <td align="center"><a href="../services/ows.php?project=' . $mapset['project_name'] . '&map=' . $mapset['mapset_name'] . '&request=getcapabilities&service=WMS&version=1.1.1" data-action="getcapabilities" target="_blank">WMS GetCapabilities</a></td>
+                                <td align="center"><a href="../services/ows.php?project=' . $mapset['project_name'] . '&map=' . $mapset['mapset_name'] . '&request=getcapabilities&service=WFS" data-action="getcapabilities" target="_blank">WFS GetCapabilities</a></td>
                             </tr>';
                         }
                     }
@@ -69,8 +69,8 @@
                     $showSingleWmsLayers = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
                     $showWfstLayers = defined('TINYOWS_PATH');
                     
-                if ($showSingleWmsLayers || $showWfstLayers) {
-                    ?>
+                    if ($showSingleWmsLayers || $showWfstLayers) {
+                        ?>
                 <br><br>
                 <table border="1" cellpadding="3" class="stiletabella">
                 
@@ -81,10 +81,10 @@
                     <th><?php echo GCAuthor::t('FeatureType'); ?></th>
                     <th nowrap><?php if ($showWfstLayers) {
                         echo GCAuthor::t('WFS-T');
-                               } ?>&nbsp;</th>
+                    } ?>&nbsp;</th>
                     <th nowrap>&nbsp;<?php if ($showSingleWmsLayers) {
                         echo GCAuthor::t('WMS');
-                                     } ?></th>
+                    } ?></th>
                 </tr>
                     <?php
                     if (isset($layerList)) {
@@ -113,7 +113,7 @@
                             echo "</tr>";
                         }
                     }
-                    ?>
+                        ?>
                 </table>
                 <?php } ?>
             </div>
@@ -155,7 +155,7 @@
                 <table border="1" cellpadding="3" class="stiletabella">
                 <tr class="ui-widget ui-state-default">
                     <th>Mapset</th>
-                    <th><?php echo GCauthor::t('update') ?>:</th>
+                    <th><?php echo GCAuthor::t('update') ?>:</th>
                     <th><?php echo GCAuthor::t('temporary') ?></th>
                     <th><?php echo GCAuthor::t('public') ?></th>
                 </tr>
@@ -164,14 +164,14 @@
                 if (isset($mapsets)) {
                     foreach ($mapsets as $mapset) {
                         echo '<tr>
-                            <td>'.$mapset['mapset_title'].' ('.$mapset['mapset_name'].')</td>
+                            <td>' . $mapset['mapset_title'] . ' (' . $mapset['mapset_name'] . ')</td>
                             <td></td>
-                            <td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
-                            <td style="text-align:center;"><a data-action="view_map" href="'.$mapset['url'].'" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="'.$mapset['mapset_name'].'">'.GCAuthor::t('update').'</a></td>
+                            <td style="text-align:center;"><a data-action="view_map" href="' . $mapset['url'] . '&tmp=1" target="_blank">Map</a><a href="#" data-action="refresh" data-target="tmp" data-mapset="' . $mapset['mapset_name'] . '">' . GCAuthor::t('update') . '</a></td>
+                            <td style="text-align:center;"><a data-action="view_map" href="' . $mapset['url'] . '" target="_blank">Map</a><a href="#" data-action="refresh" data-target="public" data-mapset="' . $mapset['mapset_name'] . '">' . GCAuthor::t('update') . '</a></td>
                         </tr>';
                     }
                 }
-                ?>
+                    ?>
                 </table>
             </div>
 
@@ -179,45 +179,45 @@
                 <table border="1" cellpadding="3" class="stiletabella">
                 <tr class="ui-widget ui-state-default">
                     <th>Mapset</th>
-                    <th><?php echo GCauthor::t('create') ?></th>
+                    <th><?php echo GCAuthor::t('create') ?></th>
                     <th><?php echo GCAuthor::t('download') ?></th>
                 </tr>
                 <?php
-                if (isset($mapsets)) {
-                    foreach ($mapsets as $mapset) {
-                        ?>
+                    if (isset($mapsets)) {
+                        foreach ($mapsets as $mapset) {
+                            ?>
                 <tr>
                     <td><?php echo "{$mapset['mapset_title']} ({$mapset['mapset_name']})" ?></td>
                     <td style="text-align:center;"><a href="#" data-action="create" data-map="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('create') ?></a></td>
                     <td style="text-align:center;"><a href="#" data-action="download" data-map="<?php echo $mapset['mapset_name'] ?>"><?php echo GCAuthor::t('download') ?></a></td>
                 </tr>
                         <?php
+                        }
                     }
-                }
-                ?>
+                    ?>
                 </table>
             </script>
             <script type="text/template" id="offline_theme">
                 <table border="1" cellpadding="3" class="stiletabella" data-layer="theme">
                     <tr class="ui-widget ui-state-default">
-                        <th><?php echo GCauthor::t('theme') ?></th>
-                        <th><?php echo GCauthor::t('mbtiles') ?></th>
+                        <th><?php echo GCAuthor::t('theme') ?></th>
+                        <th><?php echo GCAuthor::t('mbtiles') ?></th>
                         <th><?php echo GCAuthor::t('sqlite') ?></th>
                         <th><?php echo GCAuthor::t('mvt') ?></th>
                     </tr>
                 </table>
                 <table border="1" cellpadding="3" class="stiletabella" data-layer="layergroup">
                     <tr class="ui-widget ui-state-default">
-                        <th><?php echo GCauthor::t('layergroup') ?></th>
-                        <th><?php echo GCauthor::t('mbtiles') ?></th>
+                        <th><?php echo GCAuthor::t('layergroup') ?></th>
+                        <th><?php echo GCAuthor::t('mbtiles') ?></th>
                         <th><?php echo GCAuthor::t('sqlite') ?></th>
                         <th><?php echo GCAuthor::t('mvt') ?></th>
                     </tr>
                 </table>
                 <table border="1" cellpadding="3" class="stiletabella" data-layer="layer">
                     <tr class="ui-widget ui-state-default">
-                        <th><?php echo GCauthor::t('layer') ?></th>
-                        <th><?php echo GCauthor::t('mbtiles') ?></th>
+                        <th><?php echo GCAuthor::t('layer') ?></th>
+                        <th><?php echo GCAuthor::t('mbtiles') ?></th>
                         <th><?php echo GCAuthor::t('sqlite') ?></th>
                         <th><?php echo GCAuthor::t('mvt') ?></th>
                     </tr>

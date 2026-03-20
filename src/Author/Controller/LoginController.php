@@ -15,14 +15,13 @@ class LoginController
     public function refreshAction()
     {
         return new JsonResponse([
-            'status' => 'ok'
+            'status' => 'ok',
         ]);
     }
 
     /**
      * Route for Username/Password Authenticator
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function loginAction(Request $request)
@@ -32,7 +31,7 @@ class LoginController
             exit();
         } else {
             return new JsonResponse([
-                'status' => 'ok'
+                'status' => 'ok',
             ]);
         }
     }
@@ -40,7 +39,6 @@ class LoginController
     /**
      * Route to logout
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function logoutAction(Request $request)
@@ -49,7 +47,7 @@ class LoginController
         $authHandler->logout();
 
         return new JsonResponse([
-            'status' => 'ok'
+            'status' => 'ok',
         ]);
     }
 }

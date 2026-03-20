@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class SessionTokenStorage implements TokenStorageInterface
 {
-    const TOKEN_ID = 'author/user';
+    public const TOKEN_ID = 'author/user';
     
     /**
      * The user session from which the session ID is returned.
@@ -28,9 +28,6 @@ class SessionTokenStorage implements TokenStorageInterface
         $this->session = $session;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getToken()
     {
         if (!$this->session->isStarted()) {
@@ -38,15 +35,12 @@ class SessionTokenStorage implements TokenStorageInterface
         }
 
         if (!$this->session->has(self::TOKEN_ID)) {
-            throw new \Exception('The token with ID '.self::TOKEN_ID.' does not exist.');
+            throw new \Exception('The token with ID ' . self::TOKEN_ID . ' does not exist.');
         }
 
         return unserialize($this->session->get(self::TOKEN_ID));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setToken(TokenInterface $token = null)
     {
         if (!$this->session->isStarted()) {
@@ -56,9 +50,6 @@ class SessionTokenStorage implements TokenStorageInterface
         $this->session->set(self::TOKEN_ID, serialize($token));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasToken()
     {
         if (!$this->session->isStarted()) {
@@ -68,9 +59,6 @@ class SessionTokenStorage implements TokenStorageInterface
         return $this->session->has(self::TOKEN_ID);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function removeToken()
     {
         if (!$this->session->isStarted()) {

@@ -1,12 +1,12 @@
 <?php
 
 require_once __DIR__ . '/../../bootstrap.php';
-require_once ROOT_PATH.'lib/ajax.class.php';
+require_once ROOT_PATH . 'lib/ajax.class.php';
 
 use GisClient\Author\Utils\PrintDocument;
 
 header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
 $gcService = GCService::instance();
@@ -32,7 +32,10 @@ try {
     if (!empty($_REQUEST['request_type']) && $_REQUEST['request_type'] == 'get-box') {
         $box = $printMap->getBox();
         $pages = $printMap->getDimensions();
-        $ajax->success(array('box'=>$box, 'pages'=>$pages));
+        $ajax->success([
+            'box' => $box,
+            'pages' => $pages,
+        ]);
     }
 
     if (!empty($_REQUEST['lang'])) {
@@ -57,4 +60,7 @@ try {
 } catch (Exception $e) {
     $ajax->error($e->getMessage());
 }
-$ajax->success(array('file'=>$file, 'format'=>$_REQUEST['format']));
+$ajax->success([
+    'file' => $file ?? null,
+    'format' => $_REQUEST['format'],
+]);

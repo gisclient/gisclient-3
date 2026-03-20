@@ -2,11 +2,11 @@
 
 use GisClient\Author\Symbol;
 
-$config_file=$_POST["config_file"];
-$parent=$_POST["parametri"][count($_POST["parametri"])-2];
-$pkeys=$_POST["parametri"][count($_POST["parametri"])-1];
-$save=new saveData($_POST);
-$p=$save->performAction($p);
+$config_file = $_POST["config_file"];
+$parent = $_POST["parametri"][count($_POST["parametri"]) - 2];
+$pkeys = $_POST["parametri"][count($_POST["parametri"]) - 1];
+$save = new saveData($_POST);
+$p = $save->performAction($p);
 /*
 if($save->status==1 && $_POST["dati"]["legendtype_id"]==2 && $_FILES["legend_icon"]){
     $img=getimagesize($_FILES["legend_icon"]["tmp_name"]);
@@ -30,11 +30,11 @@ if($save->status==1 && $_POST["dati"]["legendtype_id"]==2 && $_FILES["legend_ico
     if($p->errors["legend_icon"]) echo $p->errors["legend_icon"];
 }
 else*/
-if (!$save->hasErrors && $save->action=="salva") {
-    if ($_POST["dati"]["legendtype_id"]!=0) {
-        $smb=new Symbol("class");
-        $smb->table='class';
-        $smb->filter="class.class_id=".$p->parametri[$p->livello];
+if (!$save->hasErrors && $save->action == "salva") {
+    if ($_POST["dati"]["legendtype_id"] != 0) {
+        $smb = new Symbol("class");
+        $smb->table = 'class';
+        $smb->filter = "class.class_id=" . $p->parametri[$p->livello];
         $smb->createIcon();
     }
 }

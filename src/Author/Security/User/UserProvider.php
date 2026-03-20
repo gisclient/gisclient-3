@@ -13,8 +13,6 @@ class UserProvider implements UserProviderInterface
     
     /**
      * Constructor
-     *
-     * @param \PDO $db
      */
     public function __construct(\PDO $db)
     {
@@ -29,7 +27,7 @@ class UserProvider implements UserProviderInterface
      */
     private function getRoles($userName)
     {
-        $roles = array('ROLE_USER');
+        $roles = ['ROLE_USER'];
         if ($userName === SUPER_USER) {
             $roles[] = 'ROLE_ADMIN';
         }
@@ -44,16 +42,16 @@ class UserProvider implements UserProviderInterface
      */
     private function getProjects($userName)
     {
-        $projects = array();
+        $projects = [];
         
         $sql = '
-            SELECT * FROM '.DB_SCHEMA.'.project_admin 
+            SELECT * FROM ' . DB_SCHEMA . '.project_admin 
             WHERE username = :username
         ';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(
-            'username'=>$userName,
-        ));
+        $stmt->execute([
+            'username' => $userName,
+        ]);
         foreach ($stmt as $project) {
             $projects[] = $project['project_name'];
         }
@@ -69,16 +67,16 @@ class UserProvider implements UserProviderInterface
      */
     private function getGroups($userName)
     {
-        $groups = array();
+        $groups = [];
         
         $sql = '
-            SELECT groupname FROM '.DB_SCHEMA.'.user_group 
+            SELECT groupname FROM ' . DB_SCHEMA . '.user_group 
             WHERE username = :username
         ';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(
-            'username'=>$userName,
-        ));
+        $stmt->execute([
+            'username' => $userName,
+        ]);
         foreach ($stmt as $group) {
             $groups[] = $group['groupname'];
         }
@@ -86,21 +84,18 @@ class UserProvider implements UserProviderInterface
         return $groups;
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function loadUserByUsername($username)
     {
         $sql = '
             SELECT
                 username, enc_pwd AS password, nome, cognome
-            FROM '.DB_SCHEMA.'.users
+            FROM ' . DB_SCHEMA . '.users
             WHERE username=:user
         ';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(
-            'user'=>$username
-        ));
+        $stmt->execute([
+            'user' => $username,
+        ]);
         // make a call to your webservice here
         $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
         

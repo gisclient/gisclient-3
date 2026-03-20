@@ -1,10 +1,10 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-require_once ADMIN_PATH."lib/functions.php";
-require_once ADMIN_PATH.'lib/gcFeature.class.php';
-require_once ADMIN_PATH.'lib/gcMapfile.class.php';
-require_once ROOT_PATH."lib/i18n.php";
+require_once ADMIN_PATH . "lib/functions.php";
+require_once ADMIN_PATH . 'lib/gcFeature.class.php';
+require_once ADMIN_PATH . 'lib/gcMapfile.class.php';
+require_once ROOT_PATH . "lib/i18n.php";
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -21,14 +21,14 @@ $layergroupId = (int)$_REQUEST['layergroup_id'];
 $mapfile = new gcMapfile(null, "tmp");
 $tmpMap = $mapfile->writeMap("layergroup", $layergroupId);
 
-$sql = "select project_name, theme_name, project_srid, xc, yc, max_extent_scale, layergroup_name, layergroup_title, sld ".
-    " from ".DB_SCHEMA.".project ".
-    " inner join ".DB_SCHEMA.".theme using(project_name) ".
-    " inner join ".DB_SCHEMA.".layergroup using(theme_id) ".
+$sql = "select project_name, theme_name, project_srid, xc, yc, max_extent_scale, layergroup_name, layergroup_title, sld " .
+    " from " . DB_SCHEMA . ".project " .
+    " inner join " . DB_SCHEMA . ".theme using(project_name) " .
+    " inner join " . DB_SCHEMA . ".layergroup using(theme_id) " .
     " where layergroup_id = ?";
 
 $stmt = $db->prepare($sql);
-$stmt->execute(array($layergroupId));
+$stmt->execute([$layergroupId]);
 
 $mapConfig = $stmt->fetch(PDO::FETCH_ASSOC);
 if (empty($mapConfig['project_srid'])) {
@@ -43,23 +43,21 @@ if (empty($mapConfig['max_extent_scale'])) {
 
 $layerTitle = $mapConfig['layergroup_title'];
 $layerName = $mapConfig['layergroup_name'];
-//$user = new userApps(array());
-//$user->status = true;
 
 $scales = explode(',', SCALE);
-$resolutions = array();
+$resolutions = [];
 foreach ($scales as $scale) {
     if ($scale > $mapConfig['max_extent_scale']) {
         continue;
     }
-    array_push($resolutions, $scale / (39.3701*MAP_DPI));
+    array_push($resolutions, $scale / (39.3701 * MAP_DPI));
 }
-$maxExtent = array(
+$maxExtent = [
     $mapConfig['xc'] - $resolutions[0] * TILE_SIZE,
     $mapConfig['yc'] - $resolutions[0] * TILE_SIZE,
     $mapConfig['xc'] + $resolutions[0] * TILE_SIZE,
-    $mapConfig['yc'] + $resolutions[0] * TILE_SIZE
-);
+    $mapConfig['yc'] + $resolutions[0] * TILE_SIZE,
+];
 
 if (!defined('OPENLAYERS')) {
     // FIXME: handle error in more sensible way

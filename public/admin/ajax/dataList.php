@@ -4,8 +4,8 @@ use GisClient\Author\Security\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/functions.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/functions.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -45,37 +45,50 @@ if (empty($_REQUEST['catalog_id']) || !is_numeric($_REQUEST['catalog_id']) || $_
 }
 $catalogId = $_REQUEST['catalog_id'];
 
-$sql = "select catalog_path,connection_type from ".DB_SCHEMA.".catalog where catalog_id=?";
+$sql = "select catalog_path,connection_type from " . DB_SCHEMA . ".catalog where catalog_id=?";
 $stmt = $db->prepare($sql);
-$stmt->execute(array($catalogId));
+$stmt->execute([$catalogId]);
 $catalogData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-list(, $schema)=connAdminInfofromPath($catalogData["catalog_path"]);
+[, $schema] = connAdminInfofromPath($catalogData["catalog_path"]);
 
+$result = [];
 switch ($catalogData["connection_type"]) {
     case 1:     //Local Folder
-        $result = array('steps'=>1, 'data'=>array(), 'data_objects'=>array(), 'step'=>null, 'fields'=>array('file'=>'File'));
+        $result = [
+            'steps' => 1,
+            'data' => [],
+            'data_objects' => [],
+            'step' => null,
+            'fields' => [
+                'file' => 'File',
+            ],
+        ];
         $n = 0;
         
-        require_once ADMIN_PATH."lib/filesystem.php";
+        require_once ADMIN_PATH . "lib/filesystem.php";
         $baseDir = addFinalSlash(trim($catalogData["catalog_path"]));
         if (substr($baseDir, 0, 1) != '/') {// SOTTO CARTELLA
-            $sql="select base_path from ".DB_SCHEMA.".project where project_name=?";
+            $sql = "select base_path from " . DB_SCHEMA . ".project where project_name=?";
             $stmt = $db->prepare($sql);
-            $stmt->execute(array($_REQUEST['project']));
+            $stmt->execute([$_REQUEST['project']]);
             $projectPath = $stmt->fetchColumn(0);
             if (!empty($projectPath)) {
                 $projectPath = addFinalSlash($projectPath);
             } else {
                 $projectPath = addFinalSlash(ROOT_PATH);
             }
-            $baseDir = $projectPath.$baseDir;
+            $baseDir = $projectPath . $baseDir;
         }
         $navDir = '';
         if (!empty($_REQUEST['directory'])) { // siamo in una sottocartella, includi anche il back
             $navDir = $_REQUEST['directory'];
-            $result['data'][$n] = array('file'=>'..');
-            $result['data_objects'][$n] = array('directory'=>$navDir.'../');
+            $result['data'][$n] = [
+                'file' => '..',
+            ];
+            $result['data_objects'][$n] = [
+                'directory' => $navDir . '../',
+            ];
             $n++;
         }
         $sourceDir = $baseDir . $navDir;
@@ -83,8 +96,12 @@ switch ($catalogData["connection_type"]) {
         $directories = elenco_dir($sourceDir);
         sort($directories);
         foreach ($directories as $directory) {
-            $result['data'][$n] = array('file'=>$directory);
-            $result['data_objects'][$n] = array('directory'=>$navDir.addFinalSlash($directory));
+            $result['data'][$n] = [
+                'file' => $directory,
+            ];
+            $result['data_objects'][$n] = [
+                'directory' => $navDir . addFinalSlash($directory),
+            ];
             $n++;
         }
         
@@ -96,80 +113,102 @@ switch ($catalogData["connection_type"]) {
             }
             sort($files);
             foreach ($files as $file) {
-                $result['data'][$n] = array('file'=>$file);
-                $result['data_objects'][$n] = array('data'=>$file, 'is_final_step'=>1);
+                $result['data'][$n] = [
+                    'file' => $file,
+                ];
+                $result['data_objects'][$n] = [
+                    'data' => $file,
+                    'is_final_step' => 1,
+                ];
                 $n++;
             }
         }
         break;
     case 6: // PostGIS
-        $result = array(
-            'steps'=>2,
-            'data'=>array(),
-            'data_objects'=>array()
-        );
+        $result = [
+            'steps' => 2,
+            'data' => [],
+            'data_objects' => [],
+        ];
         $n = 0;
     
         $dataDb = GCApp::getDataDB($catalogData['catalog_path']);
         
         if (empty($_REQUEST["step"])) { //selezione tabella
-            $result['fields'] = array('table'=>GCAuthor::t('table'), 'column'=>GCAuthor::t('column'));
+            $result['fields'] = [
+                'table' => GCAuthor::t('table'),
+                'column' => GCAuthor::t('column'),
+            ];
             $result['step'] = 1;
             
-            $sql="SELECT f_table_name as table, f_geometry_column as column, srid, lower(type) as type FROM geometry_columns WHERE f_table_schema=? order by f_table_name,f_geometry_column";
+            $sql = "SELECT f_table_name as table, f_geometry_column as column, srid, lower(type) as type FROM geometry_columns WHERE f_table_schema=? order by f_table_name,f_geometry_column";
             try {
                 $stmt = $dataDb->prepare($sql);
-                $stmt->execute(array($schema));
+                $stmt->execute([$schema]);
             } catch (Exception $e) {
                 $ajax->error();
             }
             
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $result['data'][$n] = $row;
-                $result['data_objects'][$n] = array(
-                    'data'=>$row['table'],
-                    'data_geom'=>$row['column'],
-                    'data_type'=>$row['type'],
-                    'data_srid'=>$row['srid']
-                );
+                $result['data_objects'][$n] = [
+                    'data' => $row['table'],
+                    'data_geom' => $row['column'],
+                    'data_type' => $row['type'],
+                    'data_srid' => $row['srid'],
+                ];
                 $n++;
             }
         } else { // selezione pkey
-            $result['fields'] = array('pkey'=>GCAuthor::t('pkey'));
+            $result['fields'] = [
+                'pkey' => GCAuthor::t('pkey'),
+            ];
             $result['step'] = 2;
             
             $sql = 'select table_name from information_schema.tables where table_schema=:schema and table_name=:table';
             $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data']));
+            $stmt->execute([
+                ':schema' => $schema,
+                ':table' => $_REQUEST['data'],
+            ]);
             $dbTableName = $stmt->fetchColumn(0);
             if ($dbTableName != $_REQUEST['data']) {
-                $ajax->error('Cannot find table '.$schema.'.'.$_REQUEST['data']);
+                $ajax->error('Cannot find table ' . $schema . '.' . $_REQUEST['data']);
             }
             
             $sql = 'select column_name from information_schema.columns where table_schema=:schema and table_name=:table and column_name=:column';
             $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data'], ':column'=>$_REQUEST['data_geom']));
+            $stmt->execute([
+                ':schema' => $schema,
+                ':table' => $_REQUEST['data'],
+                ':column' => $_REQUEST['data_geom'],
+            ]);
             $dbColumnName = $stmt->fetchColumn(0);
             if ($dbColumnName != $_REQUEST['data_geom']) {
-                $ajax->error('Cannot find column '.$_REQUEST['data_geom'].' for table '.$schema.'.'.$_REQUEST['data']);
+                $ajax->error('Cannot find column ' . $_REQUEST['data_geom'] . ' for table ' . $schema . '.' . $_REQUEST['data']);
             }
             
-            $sql = 'select st_extent('.$dbColumnName.') from '.$schema.'.'.$dbTableName;
+            $sql = 'select st_extent(' . $dbColumnName . ') from ' . $schema . '.' . $dbTableName;
             $box = $dataDb->query($sql)->fetchColumn(0);
-            $extent = array();
+            $extent = [];
             if (!empty($box)) {
                 $extent = GCUtils::parseBox($box);
             }
             
             $sql = "SELECT column_name FROM information_schema.columns WHERE table_schema=:schema AND table_name=:table ORDER BY column_name;";
             $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['data']));
+            $stmt->execute([
+                ':schema' => $schema,
+                ':table' => $_REQUEST['data'],
+            ]);
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $result['data'][$n] = array('pkey'=>$row['column_name']);
-                $result['data_objects'][$n] = array(
+                $result['data'][$n] = [
+                    'pkey' => $row['column_name'],
+                ];
+                $result['data_objects'][$n] = [
                     'data_unique' => $row['column_name'],
-                );
-                                // add data_extent only when requested
+                ];
+                // add data_extent only when requested
                 if (isset($_REQUEST['data_extent'])) {
                     $result['data_objects'][$n]['data_extent'] = implode(' ', $extent);
                 }
@@ -178,25 +217,33 @@ switch ($catalogData["connection_type"]) {
         }
         break;
     case 7: //WMS
-        $result = array(
-            'steps'=>2,
-            'data'=>array(),
-            'data_objects'=>array()
-        );
+        $result = [
+            'steps' => 2,
+            'data' => [],
+            'data_objects' => [],
+        ];
         $n = 0;
         
         if (empty($_REQUEST['step'])) {
             $result['step'] = 1;
-            $result['fields'] = array('group'=>GCAuthor::t('group'), 'name'=>GCAuthor::t('name'), 'title'=>GCAuthor::t('title'));
+            $result['fields'] = [
+                'group' => GCAuthor::t('group'),
+                'name' => GCAuthor::t('name'),
+                'title' => GCAuthor::t('title'),
+            ];
             
-            $defaultParameters = array("SERVICE"=>"WMS","REQUEST"=>"GetCapabilities",'VERSION'=>'1.1.1');
+            $defaultParameters = [
+                "SERVICE" => "WMS",
+                "REQUEST" => "GetCapabilities",
+                'VERSION' => '1.1.1',
+            ];
             $urlComponents = parse_url($catalogData["catalog_path"]);
             if (!empty($urlComponents['query'])) {
                 parse_str($urlComponents['query'], $urlParameters);
             } else {
-                $urlParameters = array();
+                $urlParameters = [];
             }
-            $parameters = array();
+            $parameters = [];
             foreach ($urlParameters as $key => $val) {
                 $parameters[strtoupper($key)] = $val;
             }
@@ -206,7 +253,7 @@ switch ($catalogData["connection_type"]) {
             $urlComponents['query'] = http_build_query($parameters);
             $url = http_build_url($catalogData['catalog_path'], $urlComponents);
 
-            require_once ADMIN_PATH.'lib/ParseXml.class.php';
+            require_once ADMIN_PATH . 'lib/ParseXml.class.php';
             $xml = new ParseXml();
             $xml->LoadRemote($url, 3);
             if (empty($xml->xmlStr)) {
@@ -220,35 +267,35 @@ switch ($catalogData["connection_type"]) {
             }
             
             $theme = $data["Capability"]["Layer"];
-            $lThemeSRS = (is_array($theme["SRS"]))?($theme["SRS"]):(array($theme["SRS"]));
+            $lThemeSRS = (is_array($theme["SRS"])) ? ($theme["SRS"]) : ([$theme["SRS"]]);
             if (!empty($theme["Layer"]["Name"])) {
-                $theme["Layer"] = array($theme['Layer']);
+                $theme["Layer"] = [$theme['Layer']];
             }
             
-            $mdEntries = array(
+            $mdEntries = [
                 'server_version' => $data["@attributes"]["version"],
                 'format' => current($data["Capability"]["Request"]["GetMap"]["Format"]),
                 'formatlist' => implode(' ', $data["Capability"]["Request"]["GetMap"]["Format"]),
-                'epsglist' => implode(' ', $lThemeSRS)
-            );
+                'epsglist' => implode(' ', $lThemeSRS),
+            ];
             $mdBuilder = new WMSMetadataBuilder($mdEntries);
             
             foreach ($theme['Layer'] as $layergroup) {
-                $layer = array(
-                    'group'=>$layergroup['Name']
-                );
+                $layer = [
+                    'group' => $layergroup['Name'],
+                ];
                 $availableSrids = $lThemeSRS;
                 if (!empty($layergroup['SRS'])) {
                     if (is_array($layergroup['SRS'])) {
                         $availableSrids = $layergroup['SRS'];
                     } else {
-                        $availableSrids = array($layergroup['SRS']);
+                        $availableSrids = [$layergroup['SRS']];
                     }
                 }
                 
                 if (!empty($layergroup['Style'])) {
                     if (empty($layergroup['Style']['Name']) && empty($layergroup['Style']['Title'])) {
-                        $layergroup['Style'] = array($layergroup['Style']);
+                        $layergroup['Style'] = [$layergroup['Style']];
                     }
                     foreach ($layergroup['Style'] as $style) {
                         $layer['name'] = $layergroup['Style']['Name'];
@@ -256,49 +303,63 @@ switch ($catalogData["connection_type"]) {
                         $layer['style'] = 1;
                         $result['data'][$n] = $layer;
                         $mdBuilder->setName($layer['group']);
-                        $result['data_objects'][$n] = array(
-                            'metadata'=>$mdBuilder->getMetadata(),
-                            'available_srids'=>$availableSrids
-                        );
+                        $result['data_objects'][$n] = [
+                            'metadata' => $mdBuilder->getMetadata(),
+                            'available_srids' => $availableSrids,
+                        ];
                         $n++;
                     }
                 }
             }
         } else {
             $result['step'] = 2;
-            $result['fields'] = array('srid'=>'SRID');
+            $result['fields'] = [
+                'srid' => 'SRID',
+            ];
             
             if (empty($_REQUEST['available_srids'])) {
                 $ajax->error();
             }
             
             foreach ($_REQUEST['available_srids'] as $srid) {
-                $result['data'][$n] = array('srid'=>$srid);
-                $result['data_objects'][$n] = array('data_srid'=>substr($srid, strpos($srid, ':')+1));
+                $result['data'][$n] = [
+                    'srid' => $srid,
+                ];
+                $result['data_objects'][$n] = [
+                    'data_srid' => substr($srid, strpos($srid, ':') + 1),
+                ];
                 $n++;
             }
         }
         break;
     case 9: //WFS
-        $result = array(
-            'steps'=>1,
-            'step'=>1,
-            'data'=>array(),
-            'data_objects'=>array()
-        );
+        $result = [
+            'steps' => 1,
+            'step' => 1,
+            'data' => [],
+            'data_objects' => [],
+        ];
         $n = 0;
         
         
-        $result['fields'] = array('name'=>GCAuthor::t('name'), 'title'=>GCAuthor::t('title'), 'srid'=>'SRID');
+        $result['fields'] = [
+            'name' => GCAuthor::t('name'),
+            'title' => GCAuthor::t('title'),
+            'srid' => 'SRID',
+        ];
         
-        $defaultParameters = array("SERVICE"=>"WFS","REQUEST"=>"GetCapabilities",'VERSION'=>'1.0.0');
+        $defaultParameters = [
+            "SERVICE" => "WFS",
+            "REQUEST" => "GetCapabilities",
+            'VERSION' => '1.0.0',
+        ];
         $urlComponents = parse_url($catalogData["catalog_path"]);
         if (!empty($urlComponents['query'])) {
             parse_str($urlComponents['query'], $urlParameters);
         } else {
-            $urlParameters = array();
+            $urlParameters = [];
         }
-        $parameters = array();
+        $parameters = [];
         foreach ($urlParameters as $key => $val) {
             $parameters[strtoupper($key)] = $val;
         }
@@ -308,7 +369,7 @@ switch ($catalogData["connection_type"]) {
         $urlComponents['query'] = http_build_query($parameters);
         $url = http_build_url($catalogData['catalog_path'], $urlComponents);
 
-        require_once ADMIN_PATH.'lib/ParseXml.class.php';
+        require_once ADMIN_PATH . 'lib/ParseXml.class.php';
         $xml = new ParseXml();
         $xml->LoadRemote($url, 3);
         if (empty($xml->xmlStr)) {
@@ -323,20 +384,20 @@ switch ($catalogData["connection_type"]) {
             
         $theme = $data["FeatureTypeList"]['FeatureType'];
         foreach ($theme as $featureType) {
-            $result['data'][$n] = array(
-                'name'=>$featureType['Name'],
-                'title'=>$featureType['Title'],
-                'srid'=>$featureType['SRS']
-            );
-            $result['data_objects'][$n] = array(
-                'data_srid' => substr($featureType['SRS'], strpos($featureType['SRS'], ':')+1),
-                'metadata' => '"wfs_name" "'.$featureType['Name'].'"'."\n".
-                    '"wfs_srs" "'.$featureType['SRS'].'"'."\n".
-                    '"wfs_request_method" "GET"'."\n".
-                    '"wfs_typename" "'.$featureType['Name'].'"'."\n".
-                    '"wfs_server_version" "1.0.0"'."\n".
-                    '"wfs_version" "1.0.0"'."\n"
-            );
+            $result['data'][$n] = [
+                'name' => $featureType['Name'],
+                'title' => $featureType['Title'],
+                'srid' => $featureType['SRS'],
+            ];
+            $result['data_objects'][$n] = [
+                'data_srid' => substr($featureType['SRS'], strpos($featureType['SRS'], ':') + 1),
+                'metadata' => '"wfs_name" "' . $featureType['Name'] . '"' . "\n" .
+                    '"wfs_srs" "' . $featureType['SRS'] . '"' . "\n" .
+                    '"wfs_request_method" "GET"' . "\n" .
+                    '"wfs_typename" "' . $featureType['Name'] . '"' . "\n" .
+                    '"wfs_server_version" "1.0.0"' . "\n" .
+                    '"wfs_version" "1.0.0"' . "\n",
+            ];
             $n++;
         }
         break;
@@ -360,11 +421,11 @@ class WMSMetadataBuilder
     
     public function getMetadata()
     {
-        $metadata = '"wms_name" "'.$this->wmsName.'"'."\n".
-                    '"wms_srs" "'.$this->entries['epsglist'].'"'."\n".
-                    '"wms_server_version" "'.$this->entries['server_version'].'"'."\n".
-                    '"wms_format" "'.$this->entries['format'].'"'."\n".
-                    '"wms_formatlist" "'.$this->entries['formatlist'].'"'."\n";
+        $metadata = '"wms_name" "' . $this->wmsName . '"' . "\n" .
+                    '"wms_srs" "' . $this->entries['epsglist'] . '"' . "\n" .
+                    '"wms_server_version" "' . $this->entries['server_version'] . '"' . "\n" .
+                    '"wms_format" "' . $this->entries['format'] . '"' . "\n" .
+                    '"wms_formatlist" "' . $this->entries['formatlist'] . '"' . "\n";
         return $metadata;
     }
 }

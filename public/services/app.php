@@ -1,5 +1,6 @@
 <?php
 
+$container = null;
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once ADMIN_PATH . 'lib/functions.php';
@@ -32,7 +33,7 @@ function getFirewall(Request $request)
                 return $firewall;
             }
         } else {
-            throw new \Exception('No pattern defined for this firewall '.$firewallName);
+            throw new \Exception('No pattern defined for this firewall ' . $firewallName);
         }
     }
 
@@ -114,26 +115,30 @@ try {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
         $response = new JsonResponse([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], $e->getStatusCode(), $e->getHeaders());
     } else {
         $response = new Response(
             $e->getMessage(),
             $e->getStatusCode(),
-            array_merge($e->getHeaders(), ['content-type' => 'text/plain'])
+            array_merge($e->getHeaders(), [
+                'content-type' => 'text/plain',
+            ])
         );
     }
 } catch (Exception $e) {
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
         $response = new JsonResponse([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
     } else {
         $response = new Response(
             'An error occurred: ' . $e->getMessage(),
             Response::HTTP_INTERNAL_SERVER_ERROR,
-            ['content-type' => 'text/plain']
+            [
+                'content-type' => 'text/plain',
+            ]
         );
     }
 }

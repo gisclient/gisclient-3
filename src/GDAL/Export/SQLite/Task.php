@@ -2,9 +2,8 @@
 
 namespace GisClient\GDAL\Export\SQLite;
 
-use GisClient\Author\Layer;
-use GisClient\Author\Catalog;
 use GisClient\Author\Db;
+use GisClient\Author\Layer;
 
 class Task implements \GisClient\GDAL\Export\Task
 {
@@ -80,6 +79,7 @@ class Task implements \GisClient\GDAL\Export\Task
             $char = fgetc($f);
         }
 
+        $buffer = "";
         /**
          * Read until the start of file or first newline char
          */
@@ -158,7 +158,7 @@ class Task implements \GisClient\GDAL\Export\Task
             '-sql',
             $sql,
             '-nln',
-            $name
+            $name,
         ];
         
         

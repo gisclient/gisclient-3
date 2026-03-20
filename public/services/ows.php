@@ -4,9 +4,9 @@ define('SKIP_INCLUDE', true);
 require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
 use GisClient\Author\Utils\OwsHandler;
+use Symfony\Component\HttpFoundation\Request;
 
 $gcService = GCService::instance();
 $gcService->startSession(true);
@@ -16,14 +16,14 @@ if (!defined('GC_SESSION_NAME')) {
 }
 
 // dirotta una richiesta PUT/DELETE GC_EDITMODE
-if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=')!==false )|| $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
+if (($_SERVER['REQUEST_METHOD'] == 'POST' && strpos($_SERVER['REQUEST_URI'], 'GC_EDITMODE=') !== false) || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
     include "./include/putrequest.php";
     exit(0);
 }
 
 // dirotta una richiesta POST di tipo OLWFS al cgi mapserv, per bug su loadparams
 if (!empty($_REQUEST['gcRequestType']) && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['gcRequestType'] == 'OLWFS') {
-    $url = MAPSERVER_URL.'map='.ROOT_PATH.'map/'.$_REQUEST['PROJECT'].'/'.$_REQUEST['MAP'].'.map';
+    $url = MAPSERVER_URL . 'map=' . ROOT_PATH . 'map/' . $_REQUEST['PROJECT'] . '/' . $_REQUEST['MAP'] . '.map';
     $postFields = file_get_contents('php://input');
     $owsHandler = new OwsHandler();
     $owsHandler->post($url, $postFields);
@@ -36,8 +36,8 @@ if (defined('DEBUG') && DEBUG == true) {
 }
 
 $objRequest = ms_newOwsrequestObj();
-$skippedParams = array();
-$invertedAxisOrderSrids = array(2176,2177,2178,6382,6707,6708,6709,31465,31466,31467,31468,31254,31255,31256,31257,31258,31259);
+$skippedParams = [];
+$invertedAxisOrderSrids = [2176, 2177, 2178, 6382, 6707, 6708, 6709, 31465, 31466, 31467, 31468, 31254, 31255, 31256, 31257, 31258, 31259];
 
 foreach ($_REQUEST as $k => $v) {
     // SLD parameter is handled later (to work also with getlegendgraphic)
@@ -47,7 +47,7 @@ foreach ($_REQUEST as $k => $v) {
     //
     // transparent handling is delayed in order to check, if the target format
     // really supports tranparent pixels
-    if (in_array(strtolower($k), array('sld', 'filter', 'transparent'))) {
+    if (in_array(strtolower($k), ['sld', 'filter', 'transparent'])) {
         $skippedParams[strtolower($k)] = $v;
         continue;
     }
@@ -70,7 +70,7 @@ if (!empty($skippedParams['transparent'])) {
 }
 if (isset($skippedParams['transparent'])) {
     if (is_string($skippedParams['transparent'])) {
-        print_debug('apply transparent="' .stripslashes($skippedParams['transparent']). '"', null, 'system');
+        print_debug('apply transparent="' . stripslashes($skippedParams['transparent']) . '"', null, 'system');
         $objRequest->setParameter('transparent', stripslashes($skippedParams['transparent']));
         unset($skippedParams['transparent']);
     }
@@ -125,7 +125,7 @@ $oMap = $mapObjFactory->from($objRequest);
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
     $hasPrivateLayers = false;
-    $layersArray = array();
+    $layersArray = [];
     if ($isGetLegendGraphicRequest) {
         // Get layer from request without change $layersParameter value
         $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $objRequest->getValueByName('layer'));  // not layers
@@ -167,9 +167,9 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
         $oMap = $mapObjFactory->from($objRequest);
         
         // get layers to populate session with GISCLIENT_USER_LAYER
-        GCApp::getLayerAuthorizationChecker()->getLayers(array(
-            'mapset_name' => $oMap->getMetaData('ows_title') // use ows_title to avoid mapset with language key
-        ));
+        GCApp::getLayerAuthorizationChecker()->getLayers([
+            'mapset_name' => $oMap->getMetaData('ows_title'), // use ows_title to avoid mapset with language key
+        ]);
     }
 }
 
@@ -185,7 +185,7 @@ if (!empty($format)) {
         if ($numOutputFormats > 0) {
             echo "<strong>List of available formats</strong>:";
             echo "<ul>";
-            for ($fidx=0; $fidx<$numOutputFormats; $fidx++) {
+            for ($fidx = 0; $fidx < $numOutputFormats; $fidx++) {
                 echo sprintf('<li>%s</li>', $oMap->getOutputFormat($fidx)->name);
             }
             echo "</ul>";
@@ -203,7 +203,7 @@ if (!empty($resolution) && $resolution != 72) {
 
 // APPLY SLD FOR WMS REQUEST
 if (strtolower($objRequest->getValueByName('service')) == 'wms' &&
-    in_array($requestRequest, array('getlegendgraphic', 'getmap'))) {
+    in_array($requestRequest, ['getlegendgraphic', 'getmap'])) {
     $db = GCApp::getDB();
     $i18n = new GCi18n($project, $objRequest->getvaluebyname('lang'));
     OwsHandler::applyWmsSld($db, $i18n, $oMap, $objRequest);
@@ -218,14 +218,15 @@ if ($objRequest->getvaluebyname('srs') && $oMap->getMetaData($objRequest->getval
 }
 if ($objRequest->getvaluebyname('srs')) {
     $srsParts = explode(':', strtolower($objRequest->getvaluebyname('srs')));
+    $srs = "";
     if (count($srsParts) == 7) {
         // e.g.: 'urn:ogc:def:crs:EPSG::4306'
-        $srs = $srsParts[4].':'.$srsParts[6];
+        $srs = $srsParts[4] . ':' . $srsParts[6];
     } elseif (count($srsParts) == 2) {
         // e.g.: 'EPSG:4306'
-        $srs = $srsParts[0].':'.$srsParts[1];
+        $srs = $srsParts[0] . ':' . $srsParts[1];
     }
-    $oMap->setProjection("+init=".strtolower($srs));
+    $oMap->setProjection("+init=" . strtolower($srs));
 }
 
 if (!empty($_REQUEST['GCFILTERS'])) {
@@ -233,8 +234,8 @@ if (!empty($_REQUEST['GCFILTERS'])) {
     throw new \Exception("Scream test - should not be used anymore");
 
     $v = explode(',', stripslashes($_REQUEST['GCFILTERS']));
-    for ($i=0; $i<count($v); $i++) {
-        list($layerName, $gcFilter)=explode('@', $v[$i]);
+    for ($i = 0; $i < count($v); $i++) {
+        [$layerName, $gcFilter] = explode('@', $v[$i]);
 
         $oLayer = $oMap->getLayerByName($layerName);
         if ($oLayer) {
@@ -247,8 +248,8 @@ if (!empty($layersParameter)) {
     $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     
     // stabilisco i layer da rimuovere (nascosti, privati e con filtri obbligatori non definiti) e applico i filtri
-    $layersToRemove = array();
-    $layersToInclude = array();
+    $layersToRemove = [];
+    $layersToInclude = [];
     foreach ($layersArray as $layer) {
         //espressione per le label (0 le rimuove)
         $labelrequires = $objRequest->getvaluebyname('labelrequires');
@@ -324,7 +325,7 @@ $oMap->owsdispatch($objRequest);
 $contenttype = ms_iostripstdoutbuffercontenttype();
 /* Send response with appropriate header */
 if (substr($contenttype, 0, 6) == 'image/') {
-    header('Content-Type: '. $contenttype);
+    header('Content-Type: ' . $contenttype);
 
     // Prevent apache to zip imnage
     ini_set('zlib.output_compression', 0);

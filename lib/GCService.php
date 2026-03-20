@@ -1,8 +1,8 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
+use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
 /**
  * GCService initialized correctly the pages used as a service within GisClient
@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
  */
 class GCService
 {
-    const SESSION_KEY_PREFIX = 'GISCLIENT/';
+    public const SESSION_KEY_PREFIX = 'GISCLIENT/';
     
     /**
      * Session instance
@@ -42,7 +42,7 @@ class GCService
     
     private function setExceptionHandler()
     {
-        $handler = function (Throwable $e) {
+        $handler = function (Throwable $e): void {
             print_debug($e->getMessage() . "\n" . $e->getTraceAsString(), null, 'service');
             header("HTTP/1.0 500 Internal Server Error");
             echo $e->getMessage();
@@ -53,22 +53,22 @@ class GCService
         
     public function has($name)
     {
-        return $this->session->has(self::SESSION_KEY_PREFIX.$name);
+        return $this->session->has(self::SESSION_KEY_PREFIX . $name);
     }
     
     public function get($name, $default = null)
     {
-        return $this->session->get(self::SESSION_KEY_PREFIX.$name, $default);
+        return $this->session->get(self::SESSION_KEY_PREFIX . $name, $default);
     }
     
     public function set($name, $value)
     {
-        $this->session->set(self::SESSION_KEY_PREFIX.$name, $value);
+        $this->session->set(self::SESSION_KEY_PREFIX . $name, $value);
     }
     
     public function remove($name)
     {
-        $this->session->remove(self::SESSION_KEY_PREFIX.$name);
+        $this->session->remove(self::SESSION_KEY_PREFIX . $name);
     }
 
     public function saveAndClose()
@@ -97,7 +97,7 @@ class GCService
 
             // Get Symfony to interface with the existing session
             $sessionHandler = new PdoSessionHandler(\GCApp::getDB(), [
-                'db_table' => 'gisclient_34.sessions'
+                'db_table' => 'gisclient_34.sessions',
             ]);
             $sessionStorage = new NativeSessionStorage([], $sessionHandler);
             if (defined('GC_SESSION_NAME')) {

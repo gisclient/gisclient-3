@@ -4,26 +4,29 @@ class GCi18n
 {
     private $db;
     private $languageId;
-    private $translations = array();
+    private $translations = [];
 
     public function __construct($projectName, $languageId)
     {
         $this->languageId = $languageId;
         $this->db = GCApp::getDB();
 
-        $sql = "select table_name, field_name, pkey_id, value from ".
-        DB_SCHEMA.".i18n_field inner join ".DB_SCHEMA.".localization using(i18nf_id) ".
-        " where project_name=:project_name and language_id=:language_id ".
+        $sql = "select table_name, field_name, pkey_id, value from " .
+        DB_SCHEMA . ".i18n_field inner join " . DB_SCHEMA . ".localization using(i18nf_id) " .
+        " where project_name=:project_name and language_id=:language_id " .
         " order by table_name, pkey_id, field_name ";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':project_name'=>$projectName, ':language_id'=>$languageId));
+        $stmt->execute([
+            ':project_name' => $projectName,
+            ':language_id' => $languageId,
+        ]);
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (!isset($this->translations[$row['table_name']])) {
-                $this->translations[$row['table_name']] = array();
+                $this->translations[$row['table_name']] = [];
             }
             if (!isset($this->translations[$row['table_name']][$row['pkey_id']])) {
-                $this->translations[$row['table_name']][$row['pkey_id']] = array();
+                $this->translations[$row['table_name']][$row['pkey_id']] = [];
             }
             $this->translations[$row['table_name']][$row['pkey_id']][$row['field_name']] = $row['value'];
         }
@@ -38,9 +41,9 @@ class GCi18n
         }
     }
 
-    public function translateRow($row, $table, $pkey, $limitFields = array())
+    public function translateRow($row, $table, $pkey, $limitFields = [])
     {
-        $translatedRow = array();
+        $translatedRow = [];
         foreach ($row as $key => $val) {
             if (!empty($limitFields) && !in_array($key, $limitFields)) {
                 $translatedRow[$key] = $val;
@@ -59,20 +62,21 @@ class GCi18n
 
 class GCLocalization
 {
+    private $db;
     private $languages;
     private $defaultLanguageId;
     private $project;
-    private $i18nFields = array(
-    /*'table'=>array(
+    private $i18nFields = [
+        /*'table'=>array(
     'fieldId'=>array()
     )*/
-    );
-    private $translations = array(
-    /*'languageid'=>
+    ];
+    private $translations = [
+        /*'languageid'=>
     'table'=>
                 'pkey_id' =>
                     'fieldId'=>'value'*/
-    );
+    ];
 
     public function __construct($project)
     {
@@ -85,17 +89,21 @@ class GCLocalization
         if (empty($this->project)) {
             return false;
         }
-        $sql = "select i18nf_id from ".DB_SCHEMA.".i18n_field ".
+        $sql = "select i18nf_id from " . DB_SCHEMA . ".i18n_field " .
         " where table_name=:level ";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':level'=>$level));
+        $stmt->execute([
+            ':level' => $level,
+        ]);
         if ($stmt->rowCount() < 1) {
             return false;
         }
-        $sql = "select language_id from ".DB_SCHEMA.".project_languages ".
+        $sql = "select language_id from " . DB_SCHEMA . ".project_languages " .
         " where project_name=:project_name ";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':project_name'=>$this->project));
+        $stmt->execute([
+            ':project_name' => $this->project,
+        ]);
         return ($stmt->rowCount() > 0);
     }
 
@@ -131,7 +139,7 @@ class GCLocalization
             $this->loadI18nFields();
         }
         if (!isset($this->i18nFields[$table])) {
-            return array();
+            return [];
         }
         return $this->i18nFields[$table];
     }
@@ -142,7 +150,7 @@ class GCLocalization
             $this->loadTranslations();
         }
         if (!isset($this->translations[$languageId][$table][$pkeyId])) {
-            return array();
+            return [];
         }
         return $this->translations[$languageId][$table][$pkeyId];
     }
@@ -153,9 +161,9 @@ class GCLocalization
             $this->loadTranslations();
         }
         if (!isset($this->translations[$languageId][$table][$pkeyId])) {
-            return array();
+            return [];
         }
-        $result = array();
+        $result = [];
         foreach ($this->translations[$languageId][$table][$pkeyId] as $fieldId => $translation) {
             $result[$this->getFieldName($fieldId)] = $translation;
         }
@@ -209,20 +217,22 @@ class GCLocalization
 
     private function loadTranslations()
     {
-        $sql = "select i18nf_id, pkey_id, language_id, value from ".DB_SCHEMA.".localization ".
+        $sql = "select i18nf_id, pkey_id, language_id, value from " . DB_SCHEMA . ".localization " .
         " where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':project_name'=>$this->project));
+        $stmt->execute([
+            ':project_name' => $this->project,
+        ]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (!isset($this->translations[$row['language_id']])) {
-                $this->translations[$row['language_id']] = array();
+                $this->translations[$row['language_id']] = [];
             }
             $table = $this->getFieldTable($row['i18nf_id']);
             if (!isset($this->translations[$row['language_id']][$table])) {
-                $this->translations[$row['language_id']][$table] = array();
+                $this->translations[$row['language_id']][$table] = [];
             }
             if (!isset($this->translations[$row['language_id']][$table][$row['pkey_id']])) {
-                $this->translations[$row['language_id']][$table][$row['pkey_id']] = array();
+                $this->translations[$row['language_id']][$table][$row['pkey_id']] = [];
             }
             $this->translations[$row['language_id']][$table][$row['pkey_id']][$row['i18nf_id']] = $row['value'];
         }
@@ -230,11 +240,13 @@ class GCLocalization
 
     private function loadLanguages()
     {
-        $sql = "select e.language_id, language_name from ".DB_SCHEMA.".e_language e ".
-        " inner join ".DB_SCHEMA.".project_languages pl on e.language_id = pl.language_id ".
+        $sql = "select e.language_id, language_name from " . DB_SCHEMA . ".e_language e " .
+        " inner join " . DB_SCHEMA . ".project_languages pl on e.language_id = pl.language_id " .
         " or e.language_id = :language_id ";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':language_id'=>$this->getDefaultLanguageId()));
+        $stmt->execute([
+            ':language_id' => $this->getDefaultLanguageId(),
+        ]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $this->languages[$row['language_id']] = $row['language_name'];
         }
@@ -242,19 +254,21 @@ class GCLocalization
 
     private function loadDefaultLanguageId()
     {
-        $sql = "select default_language_id from ".DB_SCHEMA.".project where project_name=:project_name";
+        $sql = "select default_language_id from " . DB_SCHEMA . ".project where project_name=:project_name";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array(':project_name'=>$this->project));
+        $stmt->execute([
+            ':project_name' => $this->project,
+        ]);
         $this->defaultLanguageId = $stmt->fetchColumn(0);
     }
 
     private function loadI18nFields()
     {
-        $sql = "select i18nf_id, table_name, field_name from ".DB_SCHEMA.".i18n_field";
+        $sql = "select i18nf_id, table_name, field_name from " . DB_SCHEMA . ".i18n_field";
         $stmt = $this->db->query($sql);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (!isset($this->i18nFields[$row['table_name']])) {
-                $this->i18nFields[$row['table_name']] = array();
+                $this->i18nFields[$row['table_name']] = [];
             }
             $this->i18nFields[$row['table_name']][$row['i18nf_id']] = $row;
         }

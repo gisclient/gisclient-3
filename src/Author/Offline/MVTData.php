@@ -2,12 +2,12 @@
 
 namespace GisClient\Author\Offline;
 
+use GisClient\Author\Layer;
 use GisClient\Author\LayerGroup;
 use GisClient\Author\LayerLevelInterface;
-use GisClient\Author\Layer;
-use GisClient\GDAL\Export\Process as GDALProcess;
-use GisClient\GDAL\Export\MVT\Task as MVTTask;
 use GisClient\GDAL\Export\MVT\Driver as MVTDriver;
+use GisClient\GDAL\Export\MVT\Task as MVTTask;
+use GisClient\GDAL\Export\Process as GDALProcess;
 
 class MVTData extends AbstractOfflineData
 {
@@ -18,17 +18,11 @@ class MVTData extends AbstractOfflineData
         $this->logDir = $logDir;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return 'mvt';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(LayerLevelInterface $layer)
     {
         if (!($layer instanceof Layer)) {

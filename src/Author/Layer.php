@@ -14,7 +14,7 @@ class Layer extends AbstractLayerLevel
 
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.layer WHERE layer_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($id));
+            $stmt->execute([$id]);
             $data = $stmt->fetch();
             if (!empty($data)) {
                 $this->data = $data;
@@ -47,11 +47,11 @@ class Layer extends AbstractLayerLevel
     {
         $fields = null;
         if (!empty($this->data)) {
-            $fields = array();
+            $fields = [];
 
             $sql = "SELECT field_id FROM {$this->db->getParams()['schema']}.field WHERE layer_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($this->get('layer_id')));
+            $stmt->execute([$this->get('layer_id')]);
             while ($field_id = $stmt->fetchColumn(0)) {
                 $fields[] = new Field($field_id);
             }
@@ -92,11 +92,11 @@ class Layer extends AbstractLayerLevel
 
     public function getLinks()
     {
-        $links = array();
+        $links = [];
         $sql = "SELECT link_id FROM {$this->db->getParams()['schema']}.layer_link WHERE layer_id = ?";
 
         $stmt = $this->db->getDb()->prepare($sql);
-        $stmt->execute(array($this->data['layer_id']));
+        $stmt->execute([$this->data['layer_id']]);
         while ($link_id = $stmt->fetchColumn(0)) {
             $links[] = new Link($link_id);
         }
@@ -104,9 +104,6 @@ class Layer extends AbstractLayerLevel
         return $links;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChildren()
     {
         return [];
@@ -136,11 +133,11 @@ class Layer extends AbstractLayerLevel
     {
         $classes = null;
         if (!empty($this->data)) {
-            $classes = array();
+            $classes = [];
 
             $sql = "SELECT class_id FROM {$this->db->getParams()['schema']}.class WHERE layer_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($this->get('layer_id')));
+            $stmt->execute([$this->get('layer_id')]);
             while ($class_id = $stmt->fetchColumn(0)) {
                 $classes[] = new StyleClass($class_id);
             }

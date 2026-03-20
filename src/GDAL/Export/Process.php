@@ -40,7 +40,6 @@ class Process implements OfflineProcessInterface
     /**
      * Get Command to run
      *
-     * @param OfflineTaskInterface $task
      * @param boolean $runInBackground
      * @param boolean $asArray
      * @return string|array
@@ -48,7 +47,7 @@ class Process implements OfflineProcessInterface
     public function getCommand(OfflineTaskInterface $task, $runInBackground = true, $asArray = false)
     {
         if (!($task instanceof Task)) {
-            throw new \Exception('The given task does not match the required class: '.Task::class);
+            throw new \Exception('The given task does not match the required class: ' . Task::class);
         }
 
         $commandLine = array_merge(
@@ -62,7 +61,7 @@ class Process implements OfflineProcessInterface
             $this->driver->getCmdArguments(),
             [
                 '-overwrite',
-                '-progress'
+                '-progress',
             ]
         );
         if ($runInBackground) {

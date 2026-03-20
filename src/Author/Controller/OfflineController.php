@@ -2,6 +2,9 @@
 
 namespace GisClient\Author\Controller;
 
+use GisClient\Author\LayerLevelInterface;
+use GisClient\Author\Map;
+use GisClient\Author\OfflineMap;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -9,9 +12,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use GisClient\Author\LayerLevelInterface;
-use GisClient\Author\Map;
-use GisClient\Author\OfflineMap;
 
 class OfflineController implements ContainerAwareInterface
 {
@@ -76,7 +76,6 @@ class OfflineController implements ContainerAwareInterface
      *
      * @param string $project
      * @param string $map
-     * @param Request $request
      * @return JsonResponse
      */
     public function startAction($project, $map, Request $request)
@@ -84,7 +83,7 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
         ];
 
         $target = $request->query->get('target');
@@ -99,7 +98,6 @@ class OfflineController implements ContainerAwareInterface
      *
      * @param string $project
      * @param string $map
-     * @param Request $request
      * @return JsonResponse
      */
     public function stopAction($project, $map, Request $request)
@@ -107,7 +105,7 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
         ];
 
         $target = $request->query->get('target');
@@ -122,7 +120,6 @@ class OfflineController implements ContainerAwareInterface
      *
      * @param string $project
      * @param string $map
-     * @param Request $request
      * @return JsonResponse
      */
     public function clearAction($project, $map, Request $request)
@@ -130,7 +127,7 @@ class OfflineController implements ContainerAwareInterface
         $mapObj = $this->getMap($project, $map);
 
         $result = [
-            'result' => 'ok'
+            'result' => 'ok',
         ];
 
         $target = $request->query->get('target');

@@ -6,15 +6,24 @@ $gcService = GCService::instance();
 $gcService->startSession();
 
 if (empty($_REQUEST['project']) || empty($_REQUEST['map']) || empty($_REQUEST['feature_type']) || empty($_REQUEST['primary_key'])) {
-    die(json_encode(array('result' => 'error', 'error' => 'Missing mandatory fields')));
+    die(json_encode([
+        'result' => 'error',
+        'error' => 'Missing mandatory fields',
+    ]));
 }
 
-if (empty($_REQUEST['action']) || !in_array($_REQUEST['action'], array('edit','delete','new'))) {
-    die(json_encode(array('result' => 'error', 'error' => 'Missing or invalid action')));
+if (empty($_REQUEST['action']) || !in_array($_REQUEST['action'], ['edit', 'delete', 'new'])) {
+    die(json_encode([
+        'result' => 'error',
+        'error' => 'Missing or invalid action',
+    ]));
 }
 
 if (empty($_REQUEST['primary_key']) || ($_REQUEST['action'] == 'edit' && empty($_REQUEST['primary_key_value']))) {
-    die(json_encode(array('result' => 'error', 'error' => 'Missing primary key data')));
+    die(json_encode([
+        'result' => 'error',
+        'error' => 'Missing primary key data',
+    ]));
 }
 
 try {
@@ -37,29 +46,38 @@ try {
             break;
     }
 } catch (Exception $e) {
-    die(json_encode(array('result'=>'error', 'error'=>$e->getMessage())));
+    die(json_encode([
+        'result' => 'error',
+        'error' => $e->getMessage(),
+    ]));
 }
-die(json_encode(array('result' => 'ok')));
+die(json_encode([
+    'result' => 'ok',
+]));
 
 class GCEditFeature
 {
     private $dataDB;
     private $table;
     private $primaryKey;
+    private $geomField;
+    private $schema;
     
     public function __construct($project, $map, $featureType, $primaryKey)
     {
-    
-        list(, $layerName) = $this->splitFeatureType($featureType);
+        [, $layerName] = $this->splitFeatureType($featureType);
         
         $db = GCApp::getDB();
-        $sql = "select data, data_unique, data_geom, catalog_path from ".DB_SCHEMA.".layer ".
-            " inner join ".DB_SCHEMA.".layergroup using(layergroup_id) ".
-            " inner join ".DB_SCHEMA.".theme using(theme_id) ".
-            " inner join ".DB_SCHEMA.".catalog using(catalog_id) ".
+        $sql = "select data, data_unique, data_geom, catalog_path from " . DB_SCHEMA . ".layer " .
+            " inner join " . DB_SCHEMA . ".layergroup using(layergroup_id) " .
+            " inner join " . DB_SCHEMA . ".theme using(theme_id) " .
+            " inner join " . DB_SCHEMA . ".catalog using(catalog_id) " .
             " where layer_name = :layer_name and theme.project_name = :project_name ";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':layer_name'=>$layerName, ':project_name'=>$project));
+        $stmt->execute([
+            ':layer_name' => $layerName,
+            ':project_name' => $project,
+        ]);
         $layerData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (empty($layerData)) {
@@ -82,10 +100,10 @@ class GCEditFeature
     
     public function delete($id)
     {
-        $sql = "delete from ".$this->schema.".".$this->table.
-            " where ".$this->primaryKey." = :id ";
+        $sql = "delete from " . $this->schema . "." . $this->table .
+            " where " . $this->primaryKey . " = :id ";
         $stmt = $this->dataDB->prepare($sql);
-        $stmt->execute(array($id));
+        $stmt->execute([$id]);
     }
     
     public function update($id, $data)
@@ -94,16 +112,16 @@ class GCEditFeature
             return;
         }
         
-        $updates = array();
-        $params = array();
+        $updates = [];
+        $params = [];
         foreach ($data as $key => $val) {
-            array_push($updates, $key.'=:'.$key);
-            $params[':'.$key] = $val;
+            array_push($updates, $key . '=:' . $key);
+            $params[':' . $key] = $val;
         }
         
-        $sql = "update ".$this->schema.".".$this->table.
-            " set ".implode(',', $updates).
-            " where ".$this->primaryKey." = :GisClient_pkey_value ";
+        $sql = "update " . $this->schema . "." . $this->table .
+            " set " . implode(',', $updates) .
+            " where " . $this->primaryKey . " = :GisClient_pkey_value ";
         $params[':GisClient_pkey_value'] = $id;
         
         $stmt = $this->dataDB->prepare($sql);
@@ -123,19 +141,19 @@ class GCEditFeature
             throw new Exception('Empty data');
         }
         
-        $columns = array();
-        $params = array();
+        $columns = [];
+        $params = [];
         $n = 0;
         foreach ($data as $key => $val) {
-            $columns[':gcpdo_col_'.$n] = $key;
-            $params[':'.$key] = $val;
+            $columns[':gcpdo_col_' . $n] = $key;
+            $params[':' . $key] = $val;
             $n++;
         }
         
-        $sql = "insert into ".$this->schema.".".$this->table.
-                " (" . implode(',', array_keys($columns)). ") ".
-                " values (". implode(',', array_keys($params)). ") ";
-                //echo $sql;
+        $sql = "insert into " . $this->schema . "." . $this->table .
+                " (" . implode(',', array_keys($columns)) . ") " .
+                " values (" . implode(',', array_keys($params)) . ") ";
+        //echo $sql;
         $stmt = $this->dataDB->prepare($sql);
         
         foreach ($params as $key => $val) {
@@ -158,19 +176,19 @@ class GCEditFeature
             throw new Exception('Missing srid');
         }
         if (strpos($geomData['srid'], ':') !== false) {
-            list(, $srid) = explode(':', $geomData['srid']);
+            [, $srid] = explode(':', $geomData['srid']);
         } else {
             $srid = $geomData['srid'];
         }
-        $sql = "update ".$this->schema.".".$this->table.
-            " set ".$this->geomField." = st_geomfromtext(:wkt, :srid) ".
-            " where ".$this->primaryKey." = :GisClient_pkey_value ";
+        $sql = "update " . $this->schema . "." . $this->table .
+            " set " . $this->geomField . " = st_geomfromtext(:wkt, :srid) " .
+            " where " . $this->primaryKey . " = :GisClient_pkey_value ";
         $stmt = $this->dataDB->prepare($sql);
-        $params = array(
+        $params = [
             ':wkt' => $geomData['wkt'],
             ':srid' => $srid,
-            ':GisClient_pkey_value' => $id
-        );
+            ':GisClient_pkey_value' => $id,
+        ];
         $stmt->execute($params);
     }
     
@@ -181,15 +199,15 @@ class GCEditFeature
     
     private function checkPermission($project, $map, $featureType)
     {
-            $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
+        $layerAuthorizations = \GCService::instance()->get('GISCLIENT_USER_LAYER');
         if (empty($layerAuthorizations)) {
-                    return false;
+            return false;
         }
         if (!isset($layerAuthorizations[$project]) || !isset($layerAuthorizations[$project][$map]) || !isset($layerAuthorizations[$project][$map][$featureType])) {
-                    return false;
+            return false;
         }
         if (empty($layerAuthorizations[$project][$map][$featureType]['WFST'])) {
-                    return false;
+            return false;
         }
         return true;
     }

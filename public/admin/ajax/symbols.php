@@ -3,8 +3,8 @@
 use GisClient\Author\Symbol;
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/PixmapSymbol.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/PixmapSymbol.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();

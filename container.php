@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Yaml;
 
-$file = __DIR__ .'/var/container.php';
+$file = __DIR__ . '/var/container.php';
 
 $containerConfigCache = new ConfigCache($file, DEBUG === 1);
 
@@ -21,10 +21,10 @@ if (!$containerConfigCache->isFresh()) {
     $loader->load('container.yml');
 
     // read command-list from /config/commands.yml
-    $yamlString = file_get_contents(__DIR__."/config/extensions.yml");
+    $yamlString = file_get_contents(__DIR__ . "/config/extensions.yml");
     $extensions = Yaml::parse($yamlString)["extensions"];
     if ($extensions !== null
-        && (is_array($extensions) || $extensions instanceof \Traversable)
+        && (is_iterable($extensions))
     ) {
         foreach ($extensions as $extensionClassName) {
             $extension = new $extensionClassName();
@@ -37,7 +37,9 @@ if (!$containerConfigCache->isFresh()) {
 
     $dumper = new PhpDumper($containerBuilder);
     $containerConfigCache->write(
-        $dumper->dump(['class' => 'GisclientCachedContainer']),
+        $dumper->dump([
+            'class' => 'GisclientCachedContainer',
+        ]),
         $containerBuilder->getResources()
     );
 }

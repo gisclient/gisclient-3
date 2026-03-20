@@ -9,9 +9,6 @@ use Symfony\Component\Process\Process as SymfonyProcess;
  */
 abstract class AbstractDriver implements Driver
 {
-    /**
-     * {@inheritdoc}
-     */
     public function isAvailable()
     {
         $process = new SymfonyProcess(sprintf("ogrinfo --formats | grep %s", $this->getName()));

@@ -1,11 +1,14 @@
 <?php
 
-include __DIR__."/../../config/config.db.php";
+use PHPUnit\Framework\TestCase;
 
-class AppTest extends PHPUnit_Framework_TestCase {
-    public function testConnection() {
+include __DIR__ . "/../../config/config.db.php";
+
+class AppTest extends TestCase
+{
+    public function testConnection()
+    {
         $connection = GCApp::getDB();
         $this->assertTrue($connection instanceof PDO);
     }
 }
-

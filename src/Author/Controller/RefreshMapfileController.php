@@ -3,12 +3,10 @@
 namespace GisClient\Author\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
 class RefreshMapfileController
 {
-
     /**
      * Refresh Mapfile
      */
@@ -18,16 +16,16 @@ class RefreshMapfileController
         $project = $request->request->get("project", null);
         $mapset = $request->request->get("mapset", null);
         if ($target === null) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 "result" => "ok",
                 "error" => "Missing parameter 'target'",
-            ), JsonResponse::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
         if ($project === null) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 "result" => "ok",
                 "error" => "Missing parameter 'project'",
-            ), JsonResponse::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
         try {
             if (defined('PROJECT_MAPFILE') && PROJECT_MAPFILE) {
@@ -45,14 +43,14 @@ class RefreshMapfileController
             if (!empty($errors)) {
                 throw new \Exception("GCErrors:\n" . implode("\n", $errors));
             }
-            return new JsonResponse(array(
+            return new JsonResponse([
                 "result" => "ok",
-            ));
+            ]);
         } catch (\Exception $e) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 "result" => "error",
                 "error" => $e->getMessage(),
-            ), JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -2,10 +2,6 @@
 
 namespace GisClient\Author\Utils;
 
-use Symfony\Component\HttpFoundation\HeaderBag;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Symbol;
 
 class SymbolCreator
@@ -32,10 +28,10 @@ class SymbolCreator
         $symbol = new Symbol($table);
         switch ($symbol->table) {
             case 'class':
-                $symbol->filter = "class.class_id=".$this->database->quote($id);
+                $symbol->filter = "class.class_id=" . $this->database->quote($id);
                 break;
             case 'symbol':
-                $symbol->filter = "symbol.symbol_name=".$this->database->quote($id);
+                $symbol->filter = "symbol.symbol_name=" . $this->database->quote($id);
                 break;
         }
 

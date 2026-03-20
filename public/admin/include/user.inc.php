@@ -1,4 +1,5 @@
 <?php
+
 use GisClient\Author\Security\User\UserProvider;
 
 require_once __DIR__ . '/../../../bootstrap.php';
@@ -11,22 +12,22 @@ if (isset($this->parametri["users"])) {
 
 if (!empty($username)) {
     if (!isset($data) || !is_array($data)) {
-        $data = array();
+        $data = [];
     }
     $userProvider = new UserProvider(\GCApp::getDB());
     $user = $userProvider->loadUserByUsername($username);
-    array_push($data, array(
+    array_push($data, [
         'username' => $user->getUsername(),
         'nome' => $user->getNome(),
         'cognome' => $user->getCognome(),
-    ));
+    ]);
 }
 
 if (empty($data)) {
     $msg = "Nessun Utente definito";
 }
 
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
 
-$button=($this->currentMode=='view')?("modifica"):("nuovo");
+$button = ($this->currentMode == 'view') ? ("modifica") : ("nuovo");

@@ -14,7 +14,7 @@ class Style
 
             $sql = "SELECT * FROM {$this->db->getParams()['schema']}.style WHERE style_id = ?";
             $stmt = $this->db->getDb()->prepare($sql);
-            $stmt->execute(array($id));
+            $stmt->execute([$id]);
             $data = $stmt->fetch();
             if (!empty($data)) {
                 $this->data = $data;
@@ -56,11 +56,6 @@ class Style
     public function getOutlineColor()
     {
         return $this->get('outlinecolor');
-    }
-
-    public function getPattern()
-    {
-        return new Pattern($this->get('pattern_id'));
     }
 
     public function getSize()

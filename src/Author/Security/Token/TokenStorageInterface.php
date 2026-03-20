@@ -16,8 +16,6 @@ interface TokenStorageInterface
 
     /**
      * Sets the authentication token.
-     *
-     * @param TokenInterface $token
      */
     public function setToken(TokenInterface $token = null);
     

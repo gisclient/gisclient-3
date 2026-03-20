@@ -2,39 +2,41 @@
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
-$layer=$this->parametri["layer"];
-$data = array();
+$layer = $this->parametri["layer"];
+$data = [];
 
 $db = GCApp::getDB();
 
-$JOIN=($this->mode==0)?(" INNER JOIN "):(" LEFT JOIN ");
-$sql="select X.*,Y.wms,Y.wfs,Y.wfst,case when coalesce(Y.groupname,'')='' then 0 else 1 end as presente from (select distinct groupname from ".DB_SCHEMA.".groups order by groupname) X LEFT JOIN (SELECT * FROM ".DB_SCHEMA.".layer_groups WHERE layer_id=:layer)  Y using (groupname)";
+$JOIN = ($this->mode == 0) ? (" INNER JOIN ") : (" LEFT JOIN ");
+$sql = "select X.*,Y.wms,Y.wfs,Y.wfst,case when coalesce(Y.groupname,'')='' then 0 else 1 end as presente from (select distinct groupname from " . DB_SCHEMA . ".groups order by groupname) X LEFT JOIN (SELECT * FROM " . DB_SCHEMA . ".layer_groups WHERE layer_id=:layer)  Y using (groupname)";
 
 try {
     $stmt = $db->prepare($sql);
-    $stmt->execute(array('layer'=>$layer));
+    $stmt->execute([
+        'layer' => $layer,
+    ]);
     if ($stmt->rowCount() > 0) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if ($this->mode!=0 || $row['presente']==1) {
-                array_push($data, array(
-                    'presente'=>$row['presente'],
-                    'groupname'=>$row['groupname'],
-                    'wms'=>$row['wms'],
-                    'wfs'=>$row['wfs'],
-                    'wfst'=>$row['wfst']
-                ));
+            if ($this->mode != 0 || $row['presente'] == 1) {
+                array_push($data, [
+                    'presente' => $row['presente'],
+                    'groupname' => $row['groupname'],
+                    'wms' => $row['wms'],
+                    'wfs' => $row['wfs'],
+                    'wfst' => $row['wfst'],
+                ]);
             }
         }
     } else {
-        $data=array();
-        $msg="Nessun layer definito nel mapset";
+        $data = [];
+        $msg = "Nessun layer definito nel mapset";
     }
 } catch (Exception $e) {
-    $data=array();
-    $msg="<b style=\"color:red\">Errore</b>";
+    $data = [];
+    $msg = "<b style=\"color:red\">Errore</b>";
 }
 
-    
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">'.GCAuthor::t('button_cancel').'</button>';
-$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">'.GCAuthor::t('button_save').'</button>';
-$button="modifica";
+
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="annulla">' . GCAuthor::t('button_cancel') . '</button>';
+$btn[] = '<button name="azione" class="hexfield" type="submit" value="salva">' . GCAuthor::t('button_save') . '</button>';
+$button = "modifica";

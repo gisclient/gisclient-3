@@ -27,11 +27,10 @@
  */
 class Excel_XML
 {
-
-/**
- * Header (of document)
- * @var string
- */
+    /**
+     * Header (of document)
+     * @var string
+     */
     private $header = "<?xml version=\"1.0\" encoding=\"%s\"?\>\n<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:html=\"http://www.w3.org/TR/REC-html40\">";
 
     /**
@@ -44,7 +43,7 @@ class Excel_XML
      * Lines to output in the excel document
      * @var array
      */
-    private $lines = array();
+    private $lines = [];
 
     /**
      * Used encoding
@@ -83,7 +82,7 @@ class Excel_XML
      */
     public function __construct($sEncoding = 'UTF-8', $bConvertTypes = false, $sWorksheetTitle = 'Table1')
     {
-            $this->bConvertTypes = $bConvertTypes;
+        $this->bConvertTypes = $bConvertTypes;
         $this->setEncoding($sEncoding);
         $this->setWorksheetTitle($sWorksheetTitle);
     }
@@ -107,9 +106,9 @@ class Excel_XML
      */
     public function setWorksheetTitle($title)
     {
-            $title = preg_replace("/[\\\|:|\/|\?|\*|\[|\]]/", "", $title);
-            $title = substr($title, 0, 31);
-            $this->sWorksheetTitle = $title;
+        $title = preg_replace("/[\\\|:|\/|\?|\*|\[|\]]/", "", $title);
+        $title = substr($title, 0, 31);
+        $this->sWorksheetTitle = $title;
     }
 
     /**
@@ -125,14 +124,14 @@ class Excel_XML
     {
         $cells = "";
         foreach ($array as $v) :
-                $type = 'String';
+            $type = 'String';
             if ($this->bConvertTypes === true && is_numeric($v)) :
-                    $type = 'Number';
+                $type = 'Number';
             endif;
-                $v = html_entity_decode(htmlentities($v, ENT_COMPAT, $this->sEncoding));
-                $cells .= "<Cell><Data ss:Type=\"$type\">" . $v . "</Data></Cell>\n";
+            $v = html_entity_decode(htmlentities($v, ENT_COMPAT, $this->sEncoding));
+            $cells .= "<Cell><Data ss:Type=\"$type\">" . $v . "</Data></Cell>\n";
         endforeach;
-            $this->lines[] = "<Row>\n" . $cells . "</Row>\n";
+        $this->lines[] = "<Row>\n" . $cells . "</Row>\n";
     }
 
     /**
@@ -142,26 +141,25 @@ class Excel_XML
     public function addArray($array)
     {
         foreach ($array as $v) {
-                $this->addRow($v);
+            $this->addRow($v);
         }
     }
 
 
     /**
      * Generate the excel file
-     * @param string $filename Name of excel file to generate (...xls)
      */
     public function generateXML()
     {
-            $content = '';
-            $content .= stripslashes(sprintf($this->header, $this->sEncoding));
-            $content .= "\n<Worksheet ss:Name=\"" . $this->sWorksheetTitle . "\">\n<Table>\n";
+        $content = '';
+        $content .= stripslashes(sprintf($this->header, $this->sEncoding));
+        $content .= "\n<Worksheet ss:Name=\"" . $this->sWorksheetTitle . "\">\n<Table>\n";
         foreach ($this->lines as $line) {
-                $content .= $line;
+            $content .= $line;
         }
 
-            $content .= "</Table>\n</Worksheet>\n";
-            $content .= $this->footer;
-            return $content;
+        $content .= "</Table>\n</Worksheet>\n";
+        $content .= $this->footer;
+        return $content;
     }
 }

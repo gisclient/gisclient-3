@@ -1,0 +1,28 @@
+parameters:
+    phpVersion: 70400
+    level: 1
+    paths:
+        - src
+        - lib
+        - public
+        - tests
+    excludePaths:
+        analyse:
+            # some difficult to analyse files because they are included - lots of "$x might not be defined" because it's defined in the file that includes
+            - public/admin/db
+            - public/admin/inc
+            - public/admin/include
+            - public/services/include
+    tmpDir: var/cache/phpstan
+    bootstrapFiles:
+        # for constants
+        - config/config.php.sample
+        # stub for mapscript functions
+        - stubs/mapscript-stubs.php
+    ignoreErrors:
+        # docs say it returns void, but it's used to fetch a string, so very unclear
+        - '#Result of function ms_iogetstdoutbufferstring \(void\) is used.#'
+        # docs say 2 parameters, phpstan has wrong definition(?)
+        - '#Function ms_newMapObjFromString invoked with 2 parameters, 1 required.#'
+        # TODO understand where the constants come from, how to resolve without ignoring, if possible
+        - '#Constant (BINGKEY|GC_EXPORT_CATALOG|GC_EXPORT_TMP_SCHEMA|GMAP_MIN_ZOOM_LEVEL|MAPPROXY_CONFIG_PATH|MS_MYGIS|MS_SUCCESS|MS_TRUETYPE|UPLOADED_FILES_PRIVATE_PATH) not found.#'

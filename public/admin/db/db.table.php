@@ -1,24 +1,27 @@
 <?php
+
 if (in_array(strtolower($_POST["azione"]), $arr_action)) {
     // Parte di Salvataggio e UPLOAD del File
-    array_push($param, array($p->livello=>$p->parametri[$p->livello]));
-    $p->mode=1;
+    array_push($param, [
+        $p->livello => $p->parametri[$p->livello],
+    ]);
+    $p->mode = 1;
         
     
     
-    if (count($Errors)>0) {
-        $p->livello=$p->last_livello;
-        $p->mode=$p->arr_mode[$_POST["modo"]];
+    if (count($Errors) > 0) {
+        $p->livello = $p->last_livello;
+        $p->mode = $p->arr_mode[$_POST["modo"]];
     }
-    if (in_array(strtolower($_POST["azione"]), array("elimina","cancella"))) {
-        $p->livello="catalog";
+    if (in_array(strtolower($_POST["azione"]), ["elimina", "cancella"])) {
+        $p->livello = "catalog";
         array_pop($p->parametri);
         array_pop($param);
     }
 } else {
-    $p->livello="catalog";
+    $p->livello = "catalog";
     array_pop($p->parametri);
     array_pop($param);
 }
-    
+
 $p->get_conf();

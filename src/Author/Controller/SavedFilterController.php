@@ -5,8 +5,8 @@ namespace GisClient\Author\Controller;
 use GisClient\Author\Utils\SavedFilterHandler;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class SavedFilterController
 {
@@ -20,7 +20,7 @@ class SavedFilterController
         return new JsonResponse([
             'status' => 'error',
             'message' => 'Bad Request',
-            'errors' => $errors
+            'errors' => $errors,
         ], JsonResponse::HTTP_BAD_REQUEST);
     }
 
@@ -28,7 +28,9 @@ class SavedFilterController
     {
         $handler = $this->getHandler();
 
-        $ret = ['status' => 'ok'];
+        $ret = [
+            'status' => 'ok',
+        ];
         if ($id > 0) {
             $ret['data'] = $handler->getSavedFilter($id);
         }
@@ -49,15 +51,14 @@ class SavedFilterController
             'status' => 'ok',
             'data' => [
                 'rows' => $rows,
-                'totals' => count($rows)
-            ]
+                'totals' => count($rows),
+            ],
         ]);
     }
 
     /**
      * Create a new saved filter
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function createAction(Request $request)
@@ -68,7 +69,7 @@ class SavedFilterController
         $data = json_decode($request->getContent(), true);
         
         // validate data
-        list($values, $errors) = $handler->validate($data);
+        [$values, $errors] = $handler->validate($data);
         if (count($errors) > 0) {
             return $this->createBadRequestResponse($errors);
         }
@@ -82,7 +83,6 @@ class SavedFilterController
      * Modify a saved filter
      *
      * @param integer $id
-     * @param Request $request
      * @return JsonResponse
      */
     public function modifyAction($id, Request $request)
@@ -102,7 +102,7 @@ class SavedFilterController
 
         // retrieve data & validate
         $data = json_decode($request->getContent(), true);
-        list($values, $errors) = $handler->validate($data, $filter);
+        [$values, $errors] = $handler->validate($data, $filter);
         if (count($errors) > 0) {
             return $this->createBadRequestResponse($errors);
         }

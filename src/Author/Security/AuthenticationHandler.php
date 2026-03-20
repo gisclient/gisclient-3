@@ -2,8 +2,6 @@
 
 namespace GisClient\Author\Security;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Token\PreAuthenticationToken;
 use GisClient\Author\Security\Token\SessionTokenStorage;
@@ -11,6 +9,8 @@ use GisClient\Author\Security\Token\TokenInterface;
 use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\UserInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class AuthenticationHandler
 {
@@ -37,9 +37,6 @@ class AuthenticationHandler
     
     /**
      * Constructor
-     *
-     * @param SessionInterface $session
-     * @param UserProviderInterface $userProvider
      */
     public function __construct(
         SessionInterface $session,
@@ -53,8 +50,6 @@ class AuthenticationHandler
     
     /**
      * Execute login
-     *
-     * @param Request $request
      */
     public function login(Request $request)
     {

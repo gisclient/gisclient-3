@@ -2,26 +2,24 @@
 
 namespace GisClient\Author\Controller;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use GisClient\Author\Utils\GCMap;
-use GisClient\Author\Utils\GWGCMap;
 use GisClient\Author\Utils\R3GisGCMap;
-use GisClient\Author\Utils\SenchaTouchUtils;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ClientController
 {
     private function getOutputHeaders()
     {
-        return array(
+        return [
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT', // Date in the past
-            'Last-Modified' => gmdate("D, d M Y H:i:s").' GMT', // always modified
+            'Last-Modified' => gmdate("D, d M Y H:i:s") . ' GMT', // always modified
             'Cache-Control' => 'no-cache, must-revalidate', // HTTP/1.1
             'Pragma' => 'no-cache', // HTTP/1.0
             'Content-Type' => 'application/json; Charset=UTF-8',
             'Access-Control-Allow-Origin' => '*',
-        );
+        ];
     }
     
     /**
@@ -29,7 +27,6 @@ class ClientController
      *
      * @deprecated change to gcmapConfigAction
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function gcmapAction(Request $request)
@@ -37,10 +34,10 @@ class ClientController
         // check for required queryString parameter
         $mapset = $request->query->get('mapset');
         if (empty($mapset)) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 'error' => 200,
                 'message' => 'No mapset name',
-            ), JsonResponse::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
         
         $getLegend = $request->query->get('legend', 0) == 1;
@@ -50,7 +47,7 @@ class ClientController
         // choose customer gcmap
         $jsonformat = $request->query->get('jsonformat');
         if (empty($jsonformat)) {
-            $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
+            $objMapset = new GCMap($mapset, $getLegend, $languageId);
         } else {
             $objMapset = new R3GisGCMap(
                 trim(PUBLIC_URL, '/'),
@@ -66,10 +63,6 @@ class ClientController
             $output = $objMapset->mapConfig;
         } else {
             $output = $objMapset->mapOptions;
-            
-            if ($jsonformat == 'senchatouch') {
-                $output = SenchaTouchUtils::toSenchaTouch($output);
-            }
         }
         
         $callback = $request->query->get('callback');
@@ -83,7 +76,6 @@ class ClientController
     /**
      * Get the initialization object to create the map
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function gcmapConfigAction(Request $request)
@@ -91,17 +83,16 @@ class ClientController
         // check for required queryString parameter
         $mapset = $request->query->get('mapset');
         if (empty($mapset)) {
-            return new JsonResponse(array(
+            return new JsonResponse([
                 'error' => 200,
                 'message' => 'No mapset name',
-            ), JsonResponse::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
         
         $getLegend = $request->query->get('legend', 0) == 1;
         $languageId = $request->query->get('lang');
-        $showAsPublic = $request->query->get('show_as_public') == 1;
-        
-        $objMapset = new GCMap($mapset, $getLegend, $languageId, $showAsPublic);
+
+        $objMapset = new GCMap($mapset, $getLegend, $languageId);
         
         // get output
         $jsonformat = $request->query->get('jsonformat');

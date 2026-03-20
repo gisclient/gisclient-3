@@ -1,31 +1,31 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ROOT_PATH.'lib/gclog.class.php';
-include_once ADMIN_PATH.'lib/functions.php';
-include_once ROOT_PATH.'lib/export.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ROOT_PATH . 'lib/gclog.class.php';
+include_once ADMIN_PATH . 'lib/functions.php';
+include_once ROOT_PATH . 'lib/export.php';
 
 use GisClient\Author\Security\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-define('IMPORT_PATH', ROOT_PATH.'import/');
+define('IMPORT_PATH', ROOT_PATH . 'import/');
 
-$extensions = array(
-    'shp'=>array('shp', 'shx', 'dbf'),
-    'raster'=>array('tif', 'tiff', 'ecw', 'jpg', 'jpeg', 'png')
-);
+$extensions = [
+    'shp' => ['shp', 'shx', 'dbf'],
+    'raster' => ['tif', 'tiff', 'ecw', 'jpg', 'jpeg', 'png'],
+];
 
-$columnTypes = array('double precision', 'text', 'date');
+$columnTypes = ['double precision', 'text', 'date'];
 
-$autoUpdaters = array(
+$autoUpdaters = [
     'last_edit_user' => defined('LAST_EDIT_USER_COL_NAME') ? LAST_EDIT_USER_COL_NAME : false,
     'last_edit_date' => defined('LAST_EDIT_DATE_COL_NAME') ? LAST_EDIT_DATE_COL_NAME : false,
     'area' => defined('MEASURE_AREA_COL_NAME') ? MEASURE_AREA_COL_NAME : false,
     'length' => defined('MEASURE_LENGTH_COL_NAME') ? MEASURE_LENGTH_COL_NAME : false,
-    'pointx'=> defined('COORDINATE_X_COL_NAME') ? COORDINATE_X_COL_NAME : false,
-    'pointy'=> defined('COORDINATE_Y_COL_NAME') ? COORDINATE_Y_COL_NAME : false
-);
+    'pointx' => defined('COORDINATE_X_COL_NAME') ? COORDINATE_X_COL_NAME : false,
+    'pointy' => defined('COORDINATE_Y_COL_NAME') ? COORDINATE_Y_COL_NAME : false,
+];
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -66,24 +66,24 @@ if (empty($_REQUEST['action'])) {
 }
 
 if (!is_dir(IMPORT_PATH)) {
-     $ajax->error(IMPORT_PATH . ' is not a directory');
+    $ajax->error(IMPORT_PATH . ' is not a directory');
 }
 if (!is_writable(IMPORT_PATH)) {
-     $ajax->error(IMPORT_PATH . ' is not writable');
+    $ajax->error(IMPORT_PATH . ' is not writable');
 }
 
 switch ($_REQUEST['action']) {
     case 'get-available-imports':
-        $results = array();
-        $imports = array(
-            0=>'shp',
-            1=>'raster',
-            2=>'postgis',
-            3=>'xls',
+        $results = [];
+        $imports = [
+            0 => 'shp',
+            1 => 'raster',
+            2 => 'postgis',
+            3 => 'xls',
             // 4=>'csv', // not working, yet
-            5=>'doc'
-        );
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
+            5 => 'doc',
+        ];
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id']);
         $dir = filesPathFromCatalog($_REQUEST['catalog_id']);
         if (!$dir) {
             unset($imports[1]);
@@ -96,7 +96,9 @@ switch ($_REQUEST['action']) {
         $results['lastEditColumn'] = $autoUpdaters['last_edit_user'] || $autoUpdaters['last_edit_date'];
         $results['measureColumn'] = $autoUpdaters['area'] || $autoUpdaters['length'];
         
-        $ajax->success(array('imports'=>$imports));
+        $ajax->success([
+            'imports' => $imports,
+        ]);
         break;
 
     case 'upload-xls':
@@ -127,13 +129,13 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'upload-raster':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'directory']);
         $targetDir = addFinalSlash($_REQUEST['directory']);
 
         $basePath = filesPathFromCatalog($_REQUEST['catalog_id']);
 
-        if (!is_dir($basePath.$targetDir)) {
-            mkdir($basePath.$targetDir);
+        if (!is_dir($basePath . $targetDir)) {
+            mkdir($basePath . $targetDir);
         }
 
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
@@ -158,16 +160,16 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'upload-doc':
-        checkMissingParameters($ajax, $_REQUEST, array('parent_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['parent_id']);
 
-        $parent_id = $_REQUEST['parent_id']? $_REQUEST['parent_id'] : null;
+        $parent_id = $_REQUEST['parent_id'] ?: null;
         $tmp_name = $_FILES['fileToUpload']['tmp_name'];
         $name = basename($_REQUEST['filename']);
 
         $checkSql = "SELECT doc_id FROM " . DB_SCHEMA . ".document WHERE doc_parent_id = ? AND doc_name = ? AND doc_type = ?";
 
         $stmt = $db->prepare($checkSql);
-        $stmt->execute(array($parent_id, $name, $_FILES["fileToUpload"]["type"]));
+        $stmt->execute([$parent_id, $name, $_FILES["fileToUpload"]["type"]]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -175,7 +177,7 @@ switch ($_REQUEST['action']) {
             $sql = "INSERT INTO " . DB_SCHEMA . ".document (doc_parent_id, doc_name, doc_type) VALUES(?, ?, ?) RETURNING doc_id";
 
             $stmt = $db->prepare($sql);
-            $stmt->execute(array($parent_id, $name, $_FILES["fileToUpload"]["type"]));
+            $stmt->execute([$parent_id, $name, $_FILES["fileToUpload"]["type"]]);
 
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
         }
@@ -207,43 +209,49 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'get-uploaded-files':
-        include_once(ADMIN_PATH.'lib/filesystem.php');
+        include_once(ADMIN_PATH . 'lib/filesystem.php');
 
         if ($_REQUEST['file_type'] == 'shp') {
-            $files = elenco_file(IMPORT_PATH, array('shp'));
+            $files = elenco_file(IMPORT_PATH, ['shp']);
         } elseif ($_REQUEST['file_type'] == 'raster') {
-            checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
+            checkMissingParameters($ajax, $_REQUEST, ['catalog_id']);
             $dir = filesPathFromCatalog($_REQUEST['catalog_id']);
             if (!is_dir($dir)) {
                 $ajax->error("'$dir' is not a directory");
             }
             $files = elenco_dir($dir);
         } elseif ($_REQUEST['file_type'] == 'xls') {
-            $files = elenco_file(IMPORT_PATH, array('xls','xlsx'));
+            $files = elenco_file(IMPORT_PATH, ['xls', 'xlsx']);
         } elseif ($_REQUEST['file_type'] == 'csv') {
-            $files = elenco_file(IMPORT_PATH, array('csv'));
+            $files = elenco_file(IMPORT_PATH, ['csv']);
         } else {
             $ajax->error("can not handle file_type '{$_REQUEST['file_type']}'");
         }
         if (empty($files) || !is_array($files)) {
-            $files = array();
+            $files = [];
         }
 
-        $data = array();
+        $data = [];
         foreach ($files as $file) {
-            array_push($data, array('file_name'=>$file));
+            array_push($data, [
+                'file_name' => $file,
+            ]);
         }
-        $ajax->success(array('data'=>$data));
+        $ajax->success([
+            'data' => $data,
+        ]);
         break;
 
     case 'get-postgis-tables':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id']);
         $alphaOnly = !empty($_REQUEST['alhpaOnly']) && $_REQUEST['alhpaOnly'] != 'false';
         $geomOnly = !empty($_REQUEST['geomOnly']) && $_REQUEST['geomOnly'] != 'false';
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -261,24 +269,28 @@ switch ($_REQUEST['action']) {
         }
         $sql .= ' order by table_name';
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array(':schema'=>$schema));
-        $data = array();
+        $stmt->execute([
+            ':schema' => $schema,
+        ]);
+        $data = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             foreach ($autoUpdaters as $type => $colName) {
                 if (!$colName) {
                     continue;
                 }
-                $row['has_'.$type.'_column'] = GCApp::columnExists($dataDb, $schema, $row['name'], $colName);
+                $row['has_' . $type . '_column'] = GCApp::columnExists($dataDb, $schema, $row['name'], $colName);
             }
             array_push($data, $row);
         }
-        $ajax->success(array('data'=>$data));
+        $ajax->success([
+            'data' => $data,
+        ]);
         break;
 
     case 'get-virtual-fs':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id'));
-        $data = array();
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id']);
+        $data = [];
 
         if (!empty($_REQUEST['folder_id'])) {
             $sql = "SELECT doc_parent_id, doc_name, doc_path FROM " . DB_SCHEMA . ".vista_document_paths WHERE doc_id = " . $db->quote($_REQUEST['folder_id']);
@@ -307,16 +319,18 @@ switch ($_REQUEST['action']) {
         $stmt = $db->prepare($sql);
         $stmt->execute();
 
-        $data['content'] = array();
+        $data['content'] = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             array_push($data['content'], $row);
         }
 
-        $ajax->success(array('data'=>$data));
+        $ajax->success([
+            'data' => $data,
+        ]);
         break;
 
     case 'check-virtual-name':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'name', 'parent_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'name', 'parent_id']);
         $name = trim($_REQUEST['name']);
         $isValidName = false;
         if ($name && strpbrk($name, "\\/?%*:|\"<>") === false) {
@@ -329,7 +343,7 @@ switch ($_REQUEST['action']) {
             $sql .= ' AND doc_name = ?';
 
             $stmt = $db->prepare($sql);
-            $stmt->execute(array($name));
+            $stmt->execute([$name]);
             $res = $stmt->fetchColumn(0);
 
             if ($res === 0) {
@@ -337,18 +351,20 @@ switch ($_REQUEST['action']) {
             }
         }
 
-        $ajax->success(array('isValidName'=>$isValidName));
+        $ajax->success([
+            'isValidName' => $isValidName,
+        ]);
         break;
 
     case 'create-virtual-folder':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'folder_name', 'parent_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'folder_name', 'parent_id']);
         $folder_name = trim($_REQUEST['folder_name']);
-        $parent_id = $_REQUEST['parent_id']? $_REQUEST['parent_id'] : null;
+        $parent_id = $_REQUEST['parent_id'] ?: null;
 
         $sql = "INSERT INTO " . DB_SCHEMA . ".document (doc_parent_id, doc_name, doc_type) VALUES(?, ?, 'folder') RETURNING doc_id";
 
         $stmt = $db->prepare($sql);
-        $stmt->execute(array($parent_id, $folder_name));
+        $stmt->execute([$parent_id, $folder_name]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $log->log($authHandler->getToken()->getUserName(), 'CREATE', 'new folder: ' . $folder_name . '  in parent_id: ' . $parent_id);
@@ -357,7 +373,7 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'delete-from-virtual-fs':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'doc_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'doc_id']);
 
         $result = deleteRecursive($_REQUEST['doc_id']);
 
@@ -370,12 +386,12 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'set-public-virtual-fs':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'doc_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'doc_id']);
 
         $db = GCApp::getDB();
         $sql = 'UPDATE ' . DB_SCHEMA . '.document SET doc_public = true WHERE doc_id = ?';
         $stmt = $db->prepare($sql);
-        $result = $stmt->execute(array($_REQUEST['doc_id']));
+        $result = $stmt->execute([$_REQUEST['doc_id']]);
 
         if (!$result) {
             $ajax->error("Error public document");
@@ -387,12 +403,12 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'set-private-virtual-fs':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'doc_id'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'doc_id']);
 
         $db = GCApp::getDB();
         $sql = 'UPDATE ' . DB_SCHEMA . '.document SET doc_public = false WHERE doc_id = ?';
         $stmt = $db->prepare($sql);
-        $result = $stmt->execute(array($_REQUEST['doc_id']));
+        $result = $stmt->execute([$_REQUEST['doc_id']]);
 
         if (!$result) {
             $ajax->error("Error private document");
@@ -404,15 +420,17 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'add-column':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name', 'column_name', 'column_type'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name', 'column_name', 'column_type']);
 
         $_REQUEST['column_name'] = strtolower(trim($_REQUEST['column_name']));
         if ($_REQUEST['column_name'] != niceName($_REQUEST['column_name'])) {
             $ajax->error('Invalid column name');
         }
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -423,7 +441,7 @@ switch ($_REQUEST['action']) {
         }
 
         try {
-            $sql = 'alter table '.$schema.'.'.$_REQUEST['table_name'].' add column '.$_REQUEST['column_name'].' '.$_REQUEST['column_type'];
+            $sql = 'alter table ' . $schema . '.' . $_REQUEST['table_name'] . ' add column ' . $_REQUEST['column_name'] . ' ' . $_REQUEST['column_type'];
             $dataDb->exec($sql);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -432,17 +450,19 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'add-last-edit-column':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
         $schema = GCApp::getDataDBSchema($catalogPath);
         $table = $_REQUEST['table_name'];
-        $results = array();
+        $results = [];
 
         if (!GCApp::tableExists($dataDb, $schema, $table)) {
             $ajax->error("table '{$table}' does not exist");
@@ -456,7 +476,7 @@ switch ($_REQUEST['action']) {
                 $sql = "ALTER TABLE {$schema}.{$table} ADD COLUMN {$autoUpdaters['last_edit_user']} text";
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute();
-                array_push($results, 'creata la colonna '.$autoUpdaters['last_edit_user']);
+                array_push($results, 'creata la colonna ' . $autoUpdaters['last_edit_user']);
 
                 setAutoUpdateUserTrigger($dataDb, $schema, $table, $autoUpdaters['last_edit_user']);
                 array_push($results, 'creato il trigger ..._last_edit_user_auto_updater ');
@@ -471,7 +491,7 @@ switch ($_REQUEST['action']) {
                 $sql = "ALTER TABLE {$schema}.{$table} ADD COLUMN {$autoUpdaters['last_edit_date']} timestamp without time zone";
                 $stmt = $dataDb->prepare($sql);
                 $stmt->execute();
-                array_push($results, 'aggiunta la colonna '.$autoUpdaters['last_edit_date']);
+                array_push($results, 'aggiunta la colonna ' . $autoUpdaters['last_edit_date']);
 
                 setAutoUpdateDateTrigger($dataDb, $schema, $table, $autoUpdaters['last_edit_date']);
                 array_push($results, 'aggiunto il trigger ..._last_edit_date_auto_updater');
@@ -485,11 +505,13 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'add-measure-column':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -505,10 +527,10 @@ switch ($_REQUEST['action']) {
 
         //controllo tipo geometria per area/lunghezza
         $columnName = $measureFunction = null;
-        if (in_array($geomInfo['type'], array('POLYGON', 'MULTIPOLYGON')) && $autoUpdaters['area']) {
+        if (in_array($geomInfo['type'], ['POLYGON', 'MULTIPOLYGON']) && $autoUpdaters['area']) {
             $columnName = $autoUpdaters['area'];
             $measureFunction = 'st_area';
-        } elseif (in_array($geomInfo['type'], array('LINESTRING', 'MULTILINESTRING')) && $autoUpdaters['length']) {
+        } elseif (in_array($geomInfo['type'], ['LINESTRING', 'MULTILINESTRING']) && $autoUpdaters['length']) {
             $columnName = $autoUpdaters['length'];
             $measureFunction = 'st_length';
         }
@@ -527,7 +549,7 @@ switch ($_REQUEST['action']) {
             } catch (Exception $e) {
                 $ajax->error($e->getMessage());
             }
-        } elseif (in_array($geomInfo['type'], array('POINT')) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
+        } elseif (in_array($geomInfo['type'], ['POINT']) && $autoUpdaters['pointx'] && $autoUpdaters['pointy']) {
             //aggiungo colonne e trigger per coordinate
             try {
                 $sql = "ALTER TABLE {$schema}.{$table} ADD COLUMN {$autoUpdaters['pointx']} float";
@@ -552,11 +574,13 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'empty-table':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -566,21 +590,23 @@ switch ($_REQUEST['action']) {
             $ajax->error('table does not exist');
         }
 
-        $sql = 'truncate table '.$schema.'.'.$_REQUEST['table_name'];
+        $sql = 'truncate table ' . $schema . '.' . $_REQUEST['table_name'];
         try {
             $db->exec($sql);
             $ajax->success();
         } catch (Exception $e) {
-            $ajax->error($e->getMessage() .' on '.$sql);
+            $ajax->error($e->getMessage() . ' on ' . $sql);
         }
         break;
 
     case 'delete-table':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -589,7 +615,10 @@ switch ($_REQUEST['action']) {
         $sql = "select dropgeometrytable(:schema, :table)";
         try {
             $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array(':schema'=>$schema, ':table'=>$_REQUEST['table_name']));
+            $stmt->execute([
+                ':schema' => $schema,
+                ':table' => $_REQUEST['table_name'],
+            ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
         }
@@ -597,9 +626,9 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'delete-file':
-        checkMissingParameters($ajax, $_REQUEST, array('file_name', 'file_type'));
+        checkMissingParameters($ajax, $_REQUEST, ['file_name', 'file_type']);
 
-        $filePath = IMPORT_PATH.$_REQUEST['file_name'];
+        $filePath = IMPORT_PATH . $_REQUEST['file_name'];
         if ($_REQUEST['file_type'] == 'shp') {
             if (!file_exists($filePath)) {
                 $ajax->error("File '$filePath' does not exist");
@@ -618,7 +647,7 @@ switch ($_REQUEST['action']) {
                 $ajax->error("'$dir' is not a directory");
             }
             try {
-                rrmdir($dir.$_REQUEST['file_name']);
+                rrmdir($dir . $_REQUEST['file_name']);
             } catch (Exception $e) {
                 // TODO: add to log
                 $ajax->error($e->getMessage());
@@ -628,7 +657,7 @@ switch ($_REQUEST['action']) {
                 $ajax->error("File '$filePath' does not exist");
             }
             if (false === @unlink($filePath)) {
-                $ajax->error("File '$filePath' could not be removed, $php_errormsg");
+                $ajax->error("File '$filePath' could not be removed");
             }
         } else {
             $ajax->error("file type '{$_REQUEST['file_type']}' can not be handled");
@@ -642,11 +671,13 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'export-csv':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
         $dataDb = GCApp::getDataDB($catalogPath);
         $dbParams = GCApp::getDataDBParams($catalogPath);
@@ -663,11 +694,11 @@ switch ($_REQUEST['action']) {
             break;
         }
 
-        $sql = 'select * from '.$dbParams['schema'].'.'.$_REQUEST['table_name'];
+        $sql = 'select * from ' . $dbParams['schema'] . '.' . $_REQUEST['table_name'];
         $data = $dataDb->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . rand(0, 9999);
-        $filePath = ROOT_PATH.'public/admin/export/'.$fileName.'.csv';
+        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . random_int(0, 9999);
+        $filePath = ROOT_PATH . 'public/admin/export/' . $fileName . '.csv';
         $handle = fopen($filePath, 'w');
         fputcsv($handle, array_keys(reset($data)));
         foreach ($data as $row) {
@@ -675,15 +706,19 @@ switch ($_REQUEST['action']) {
         }
         fclose($handle);
 
-        $ajax->success(array('filename'=>$fileName.'.csv'));
+        $ajax->success([
+            'filename' => $fileName . '.csv',
+        ]);
         break;
 
     case 'export-xls':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
         $dataDb = GCApp::getDataDB($catalogPath);
         $dbParams = GCApp::getDataDBParams($catalogPath);
@@ -703,11 +738,14 @@ switch ($_REQUEST['action']) {
         $sql = "SELECT column_name FROM information_schema.columns WHERE " .
                 "  table_schema=:schema AND table_name=:table ORDER BY ordinal_position";
         $stmt = $dataDb->prepare($sql);
-        $stmt->execute(array('schema'=>$dbParams['schema'], 'table'=>$_REQUEST['table_name']));
+        $stmt->execute([
+            'schema' => $dbParams['schema'],
+            'table' => $_REQUEST['table_name'],
+        ]);
         $columns = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 
         $objPHPExcel = new PHPExcel();
-        $objPHPExcel->getProperties()->setTitle("Export ".$_REQUEST['table_name']);
+        $objPHPExcel->getProperties()->setTitle("Export " . $_REQUEST['table_name']);
         $sheet = $objPHPExcel->setActiveSheetIndex(0);
         foreach ($columns as $n => $col) {
             $sheet->setCellValueByColumnAndRow($n, 1, $col);
@@ -717,24 +755,28 @@ switch ($_REQUEST['action']) {
         foreach ($data as $nRow => $row) {
             $colCount = 0;
             foreach ($row as $cell) {
-                $sheet->setCellValueByColumnAndRow($colCount, ($nRow+2), $cell);
+                $sheet->setCellValueByColumnAndRow($colCount, ($nRow + 2), $cell);
                 $colCount++;
             }
         }
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . rand(0, 9999);
+        $fileName = $_REQUEST['table_name'] . '_' . date('YmdHis') . '_' . random_int(0, 9999);
         $objWriter->save(ROOT_PATH . 'public/admin/export/' . $fileName . '.xlsx');
-        $ajax->success(array('filename'=>$fileName.'.xlsx'));
+        $ajax->success([
+            'filename' => $fileName . '.xlsx',
+        ]);
         break;
 
     case 'export-shp':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name']);
 
-        include_once(ADMIN_PATH.'lib/filesystem.php');
+        include_once(ADMIN_PATH . 'lib/filesystem.php');
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
         $dataDb = GCApp::getDataDB($catalogPath);
         $dbParams = GCApp::getDataDBParams($catalogPath);
@@ -753,16 +795,20 @@ switch ($_REQUEST['action']) {
 
         try {
             $export = new GCExport($dataDb, 'shp');
-            $tables = array(
-                array(
-                    'db'=>$dbParams['db_name'],
-                    'schema'=>$dbParams['schema'],
-                    'table'=>$_REQUEST['table_name']
-                )
-            );
-            $zipFile = $export->export($tables, array('name'=>$_REQUEST['table_name']));
+            $tables = [
+                [
+                    'db' => $dbParams['db_name'],
+                    'schema' => $dbParams['schema'],
+                    'table' => $_REQUEST['table_name'],
+                ],
+            ];
+            $zipFile = $export->export($tables, [
+                'name' => $_REQUEST['table_name'],
+            ]);
 
-            $ajax->success(array('filename'=>$zipFile));
+            $ajax->success([
+                'filename' => $zipFile,
+            ]);
         } catch (\Exception $e) {
             $ajax->error($e->getMessage());
         }
@@ -770,16 +816,18 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'import-shp':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name', 'srid', 'file_name', 'mode'));
-        if (!in_array($_REQUEST['mode'], array('create', 'append', 'replace'))) {
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name', 'srid', 'file_name', 'mode']);
+        if (!in_array($_REQUEST['mode'], ['create', 'append', 'replace'])) {
             $ajax->error('mode');
         }
         $_REQUEST['srid'] = trim($_REQUEST['srid']);
         $_REQUEST['table_name'] = trim($_REQUEST['table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -813,16 +861,16 @@ switch ($_REQUEST['action']) {
             $charset = $_REQUEST['charset'];
         }
 
-        $outputFile = IMPORT_PATH.$fileName.'.sql';
-        $errorFile = ROOT_PATH.'config/debug/'.$fileName.'.err';
+        $outputFile = IMPORT_PATH . $fileName . '.sql';
+        $errorFile = ROOT_PATH . 'config/debug/' . $fileName . '.err';
 
-        $options = array(
-            'charset'=>$charset,
-            'mode'=>$_REQUEST['mode']
-        );
-        if (!shp2pgsql(IMPORT_PATH.$_REQUEST['file_name'], (int)$_REQUEST['srid'], $tableName, $outputFile, $errorFile, $options)) {
+        $options = [
+            'charset' => $charset,
+            'mode' => $_REQUEST['mode'],
+        ];
+        if (!shp2pgsql(IMPORT_PATH . $_REQUEST['file_name'], (int)$_REQUEST['srid'], $tableName, $outputFile, $errorFile, $options)) {
             $errorText = file_get_contents($errorFile);
-            $ajax->error('Shape Import Error:<br>'.$errorText);
+            $ajax->error('Shape Import Error:<br>' . $errorText);
         }
 
         $dataDb->beginTransaction();
@@ -830,7 +878,7 @@ switch ($_REQUEST['action']) {
         $sql .= file_get_contents($outputFile);
         try {
             $dataDb->exec($sql);
-            $sql = "GRANT SELECT ON TABLE $schema.$tableName TO ".MAP_USER.";";
+            $sql = "GRANT SELECT ON TABLE $schema.$tableName TO " . MAP_USER . ";";
             $dataDb->exec($sql);
             checkAutoUpdatersColumns($dataDb, $schema, $tableName, $autoUpdaters);
         } catch (Exception $e) {
@@ -843,12 +891,14 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'import-csv':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'file_name', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'file_name', 'table_name']);
         $_REQUEST['table_name'] = trim($_REQUEST['table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -856,24 +906,26 @@ switch ($_REQUEST['action']) {
 
         $tableExists = GCApp::tableExists($dataDb, $schema, $_REQUEST['table_name']);
         if ($_REQUEST['mode'] == 'create' && $tableExists) {
-            $ajax->error('Table '.$_REQUEST['table_name'].' already exists');
+            $ajax->error('Table ' . $_REQUEST['table_name'] . ' already exists');
         }
         if ($_REQUEST['mode'] != 'create' && !$tableExists) {
-            $ajax->error('Table '.$_REQUEST['table_name'].' does not exist');
+            $ajax->error('Table ' . $_REQUEST['table_name'] . ' does not exist');
         }
 
         if ($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
-            $ajax->error('Invalid table name '.$_REQUEST['table_name']);
+            $ajax->error('Invalid table name ' . $_REQUEST['table_name']);
         }
         break;
 
     case 'import-xls':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'file_name', 'table_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'file_name', 'table_name']);
         $tableName = trim($_REQUEST['table_name']);
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -881,30 +933,30 @@ switch ($_REQUEST['action']) {
 
         $tableExists = GCApp::tableExists($dataDb, $schema, $tableName);
         if ($_REQUEST['mode'] == 'create' && $tableExists) {
-            $ajax->error('Table '.$tableName.' already exists');
+            $ajax->error('Table ' . $tableName . ' already exists');
         }
         if ($_REQUEST['mode'] != 'create' && !$tableExists) {
-            $ajax->error('Table '.$tableName.' does not exist');
+            $ajax->error('Table ' . $tableName . ' does not exist');
         }
 
         if ($tableName != niceName($tableName)) {
-            $ajax->error('Invalid table name '.$tableName);
+            $ajax->error('Invalid table name ' . $tableName);
         }
 
-        $objPHPExcel = PHPExcel_IOFactory::load(IMPORT_PATH.$_REQUEST['file_name']);
+        $objPHPExcel = PHPExcel_IOFactory::load(IMPORT_PATH . $_REQUEST['file_name']);
 
-        $columns = array();
-        $data = array();
+        $columns = [];
+        $data = [];
 
         $worksheet = $objPHPExcel->getWorksheetIterator()->current();
         $lastRow = $worksheet->getHighestRow(); // e.g. 10
         $lastColumn = $worksheet->getHighestColumn(); // e.g 'F'
         $lastColumnIndex = PHPExcel_Cell::columnIndexFromString($lastColumn);
-        for ($row = 1; $row <= $lastRow; ++ $row) {
+        for ($row = 1; $row <= $lastRow; ++$row) {
             if ($row > 1) {
-                $data[$row] = array();
+                $data[$row] = [];
             }
-            for ($col = 0; $col < $lastColumnIndex; ++ $col) {
+            for ($col = 0; $col < $lastColumnIndex; ++$col) {
                 $cell = $worksheet->getCellByColumnAndRow($col, $row);
                 $val = $cell->getValue();
                 if ($row == 1) {
@@ -919,10 +971,10 @@ switch ($_REQUEST['action']) {
             }
         }
 
-        $colTypes = array();
+        $colTypes = [];
         foreach ($columns as $colIndex => $colName) {
             if ($colName != niceName($colName)) {
-                $ajax->error('Invalid column name '.$colName);
+                $ajax->error('Invalid column name ' . $colName);
             }
             $colTypes[$colIndex] = 'bigint';
         }
@@ -946,32 +998,32 @@ switch ($_REQUEST['action']) {
             }
         }
 
-        $sqlColumns = array();
-        $sqlParams = array();
+        $sqlColumns = [];
+        $sqlParams = [];
         foreach ($columns as $colIndex => $colName) {
-            array_push($sqlColumns, $colName.' '.$colTypes[$colIndex]);
-            array_push($sqlParams, ':param_'.$colIndex);
+            array_push($sqlColumns, $colName . ' ' . $colTypes[$colIndex]);
+            array_push($sqlParams, ':param_' . $colIndex);
         }
 
         $dataDb->beginTransaction();
 
         $create = ($_REQUEST['mode'] == 'create' || $_REQUEST['mode'] == 'replace');
         if ($_REQUEST['mode'] == 'replace') {
-            $sql = 'drop table '.$schema.'.'.$tableName;
+            $sql = 'drop table ' . $schema . '.' . $tableName;
             $dataDb->exec($sql);
         }
 
         try {
             if ($create) {
-                $sql = 'create table '.$schema.'.'.$tableName.' ('.implode(',', $sqlColumns).');';
+                $sql = 'create table ' . $schema . '.' . $tableName . ' (' . implode(',', $sqlColumns) . ');';
                 $dataDb->exec($sql);
             }
-            $sql = 'insert into '.$schema.'.'.$tableName.' ('.implode(',', $columns).') values ('.implode(',', $sqlParams).');';
+            $sql = 'insert into ' . $schema . '.' . $tableName . ' (' . implode(',', $columns) . ') values (' . implode(',', $sqlParams) . ');';
             $stmt = $dataDb->prepare($sql);
             foreach ($data as $row) {
-                $params = array();
+                $params = [];
                 foreach ($row as $colIndex => $val) {
-                    $params['param_'.$colIndex] = $val;
+                    $params['param_' . $colIndex] = $val;
                 }
                 $stmt->execute($params);
             }
@@ -979,28 +1031,30 @@ switch ($_REQUEST['action']) {
             $ajax->error($e->getMessage());
         }
 
-        $dataDb->exec('GRANT SELECT ON TABLE '.$schema.'.'.$tableName.' TO '.MAP_USER);
+        $dataDb->exec('GRANT SELECT ON TABLE ' . $schema . '.' . $tableName . ' TO ' . MAP_USER);
         checkAutoUpdatersColumns($dataDb, $schema, $tableName, $autoUpdaters);
         $dataDb->commit();
         $ajax->success();
         break;
 
     case 'create-table':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'table_name', 'srid', 'geometry_type', 'coordinate_dimension'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'table_name', 'srid', 'geometry_type', 'coordinate_dimension']);
         $_REQUEST['table_name'] = strtolower(trim($_REQUEST['table_name']));
         if ($_REQUEST['table_name'] != niceName($_REQUEST['table_name'])) {
             $ajax->error('Invalid table name');
         }
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
         $schema = GCApp::getDataDBSchema($catalogPath);
 
-        $columns = array('gid serial not null primary key');
+        $columns = ['gid serial not null primary key'];
         foreach ($_REQUEST['columns'] as $column) {
             if (!in_array($column['type'], $columnTypes)) {
                 $ajax->error('Invalid column type');
@@ -1008,16 +1062,21 @@ switch ($_REQUEST['action']) {
             if ($column['name'] != niceName($column['name'])) {
                 $ajax->error('Invalid column name');
             }
-            array_push($columns, $column['name'].' '.$column['type']);
+            array_push($columns, $column['name'] . ' ' . $column['type']);
         }
-        $sql = "create table $schema.".$_REQUEST['table_name']." (".implode(', ', $columns).")";
+        $sql = "create table $schema." . $_REQUEST['table_name'] . " (" . implode(', ', $columns) . ")";
         $dataDb->beginTransaction();
         try {
             $dataDb->exec($sql);
             $sql = "select addgeometrycolumn('$schema', :table, 'the_geom', :srid, :type, :dimension)";
             $stmt = $dataDb->prepare($sql);
-            $stmt->execute(array(':table'=>$_REQUEST['table_name'], ':srid'=>$_REQUEST['srid'], ':type'=>$_REQUEST['geometry_type'], ':dimension'=>$_REQUEST['coordinate_dimension']));
-            $sql = "GRANT SELECT ON TABLE $schema.".$_REQUEST['table_name']." TO ".MAP_USER.";";
+            $stmt->execute([
+                ':table' => $_REQUEST['table_name'],
+                ':srid' => $_REQUEST['srid'],
+                ':type' => $_REQUEST['geometry_type'],
+                ':dimension' => $_REQUEST['coordinate_dimension'],
+            ]);
+            $sql = "GRANT SELECT ON TABLE $schema." . $_REQUEST['table_name'] . " TO " . MAP_USER . ";";
             $dataDb->exec($sql);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -1027,13 +1086,15 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'create-tileindex':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'file_name', 'table_name', 'srid'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'file_name', 'table_name', 'srid']);
         $_REQUEST['srid'] = trim($_REQUEST['srid']);
         $_REQUEST['table_name'] = strtolower(trim($_REQUEST['table_name']));
 
-        $sql = "select catalog_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+        $sql = "select catalog_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array(':catalog_id'=>$_REQUEST['catalog_id']));
+        $stmt->execute([
+            ':catalog_id' => $_REQUEST['catalog_id'],
+        ]);
         $catalogPath = $stmt->fetchColumn(0);
 
         $dataDb = GCApp::getDataDB($catalogPath);
@@ -1048,15 +1109,15 @@ switch ($_REQUEST['action']) {
         }
 
         $baseDir = filesPathFromCatalog($_REQUEST['catalog_id']);
-        if (!is_dir($baseDir.$_REQUEST['file_name'])) {
-            $ajax->error("'".$baseDir.$_REQUEST['file_name']." is not a directory");
+        if (!is_dir($baseDir . $_REQUEST['file_name'])) {
+            $ajax->error("'" . $baseDir . $_REQUEST['file_name'] . " is not a directory");
         }
-        $filesDir = $baseDir.addFinalSlash($_REQUEST['file_name']);
+        $filesDir = $baseDir . addFinalSlash($_REQUEST['file_name']);
 
-        $shapeFile = IMPORT_PATH.$_REQUEST['file_name'].'.shp';
+        $shapeFile = IMPORT_PATH . $_REQUEST['file_name'] . '.shp';
 
-        $cmd = 'gdaltindex '.escapeshellarg($shapeFile).' '.escapeshellarg($filesDir).'*';
-        $gdalOutput = array();
+        $cmd = 'gdaltindex ' . escapeshellarg($shapeFile) . ' ' . escapeshellarg($filesDir) . '*';
+        $gdalOutput = [];
         $retVal = -1;
 
         exec($cmd, $gdalOutput, $retVal);
@@ -1064,8 +1125,8 @@ switch ($_REQUEST['action']) {
             $ajax->error('gdal tileindex error');
         }
 
-        $outputFile = IMPORT_PATH.$_REQUEST['file_name'].'.sql';
-        $errorFile = ROOT_PATH.'config/debug/'.$_REQUEST['file_name'].'.err';
+        $outputFile = IMPORT_PATH . $_REQUEST['file_name'] . '.sql';
+        $errorFile = ROOT_PATH . 'config/debug/' . $_REQUEST['file_name'] . '.err';
 
         if (!shp2pgsql($shapeFile, (int)$_REQUEST['srid'], $_REQUEST['table_name'], $outputFile, $errorFile)) {
             $ajax->error('Shape to Postgres Error');
@@ -1076,7 +1137,7 @@ switch ($_REQUEST['action']) {
             $sql = "set search_path = $schema, public;\n";
             $sql .= file_get_contents($outputFile);
             $dataDb->exec($sql);
-            $sql = "GRANT SELECT ON TABLE $schema.".$_REQUEST['table_name']." TO ".MAP_USER.";";
+            $sql = "GRANT SELECT ON TABLE $schema." . $_REQUEST['table_name'] . " TO " . MAP_USER . ";";
             $dataDb->exec($sql);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
@@ -1090,16 +1151,16 @@ switch ($_REQUEST['action']) {
         break;
 
     case 'create-pyramid-raster':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'file_name'));
+        checkMissingParameters($ajax, $_REQUEST, ['catalog_id', 'file_name']);
 
         $baseDir = filesPathFromCatalog($_REQUEST['catalog_id']);
-        if (!is_dir($baseDir.$_REQUEST['file_name'])) {
-            $ajax->error("'".$baseDir.$_REQUEST['file_name']." is not a directory");
+        if (!is_dir($baseDir . $_REQUEST['file_name'])) {
+            $ajax->error("'" . $baseDir . $_REQUEST['file_name'] . " is not a directory");
         }
-        $filesDir = $baseDir.addFinalSlash($_REQUEST['file_name']);
+        $filesDir = $baseDir . addFinalSlash($_REQUEST['file_name']);
 
-        $cmd = 'for i in `find '.escapeshellarg($filesDir).'*.{png,jpeg,jpg,tif,gif,tiff} 2> /dev/null`;do gdaladdo -r average $i 3 9 27 81; done';
-        $gdalOutput = array();
+        $cmd = 'for i in `find ' . escapeshellarg($filesDir) . '*.{png,jpeg,jpg,tif,gif,tiff} 2> /dev/null`;do gdaladdo -r average $i 3 9 27 81; done';
+        $gdalOutput = [];
         $retVal = -1;
 
         exec($cmd, $gdalOutput, $retVal);
@@ -1110,23 +1171,23 @@ switch ($_REQUEST['action']) {
         $ajax->success();
         break;
 
-    /*case 'check-upload-folder':
-        checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
-        $targetDir = addFinalSlash($_REQUEST['directory']);
+        /*case 'check-upload-folder':
+            checkMissingParameters($ajax, $_REQUEST, array('catalog_id', 'directory'));
+            $targetDir = addFinalSlash($_REQUEST['directory']);
 
-        if (strtolower($targetDir) != $targetDir || !simpleCharsOnly(str_replace('/', '', $targetDir))) {
-            $ajax->success(array('data'=>'Invalid directory name (Allowed characters are a-z 0-9 _)'));
-        }
-
-        $basePath = filesPathFromCatalog($_REQUEST['catalog_id']);
-
-        if (!is_dir($basePath.$targetDir)) {
-            if (!mkdir($basePath.$targetDir)) {
-                $ajax->success(array('data'=>'Unable to create directory'));
+            if (strtolower($targetDir) != $targetDir || !simpleCharsOnly(str_replace('/', '', $targetDir))) {
+                $ajax->success(array('data'=>'Invalid directory name (Allowed characters are a-z 0-9 _)'));
             }
-        }
-        $ajax->success(array('data'=>'ok'));
-        break;*/
+
+            $basePath = filesPathFromCatalog($_REQUEST['catalog_id']);
+
+            if (!is_dir($basePath.$targetDir)) {
+                if (!mkdir($basePath.$targetDir)) {
+                    $ajax->success(array('data'=>'Unable to create directory'));
+                }
+            }
+            $ajax->success(array('data'=>'ok'));
+            break;*/
 
     default:
         $ajax->error("action {$_REQUEST['action']} can not be handled");
@@ -1141,7 +1202,7 @@ function deleteRecursive($doc_id)
 
     $sql = 'SELECT doc_id FROM ' . DB_SCHEMA . '.document WHERE doc_parent_id = ?';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array($doc_id));
+    $stmt->execute([$doc_id]);
 
     $result = true;
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -1153,7 +1214,7 @@ function deleteRecursive($doc_id)
 
     $documentSql = 'SELECT * FROM ' . DB_SCHEMA . '.document WHERE doc_id = ?';
     $stmt2 = $db->prepare($documentSql);
-    $stmt2->execute(array($doc_id));
+    $stmt2->execute([$doc_id]);
     $doc = $stmt2->fetch(PDO::FETCH_ASSOC);
 
     if ($doc['doc_type'] != 'folder') {
@@ -1167,7 +1228,7 @@ function deleteRecursive($doc_id)
 
     $deleteSql = 'DELETE FROM ' . DB_SCHEMA . '.document WHERE doc_id = ?';
     $stmt = $db->prepare($deleteSql);
-    $result = $stmt->execute(array($doc_id));
+    $result = $stmt->execute([$doc_id]);
     if ($result) {
         $log->log($authHandler->getToken()->getUserName(), 'DELETE', 'doc_id: ' . $doc['doc_id'] . ' doc_name: ' . $doc['doc_name']);
     }
@@ -1179,9 +1240,11 @@ function filesPathFromCatalog($catalogId)
 {
     $db = GCApp::getDB();
 
-    $sql = "select files_path from ".DB_SCHEMA.".catalog where catalog_id=:catalog_id";
+    $sql = "select files_path from " . DB_SCHEMA . ".catalog where catalog_id=:catalog_id";
     $stmt = $db->prepare($sql);
-    $stmt->execute(array(':catalog_id'=>$catalogId));
+    $stmt->execute([
+        ':catalog_id' => $catalogId,
+    ]);
     $basePath = $stmt->fetchColumn(0);
     if (empty($basePath)) {
         return false;
@@ -1189,17 +1252,12 @@ function filesPathFromCatalog($catalogId)
     return addFinalSlash($basePath);
 }
 
-/**
- *
- * @param array $request
- * @param array $mandatoryFields
- */
 function checkMissingParameters($ajax, array $request, array $mandatoryFields)
 {
     $missingKeys = array_diff($mandatoryFields, array_keys($request));
     if (count($missingKeys) > 0) {
         $msg = "'" . implode("', '", $missingKeys) . "'";
-        $ajax->error("Mandatory parameters missing in request: ". $msg);
+        $ajax->error("Mandatory parameters missing in request: " . $msg);
     }
 }
 
@@ -1207,7 +1265,6 @@ function checkMissingParameters($ajax, array $request, array $mandatoryFields)
  * Delete all files with share the same basename as the file
  *
  * @param string $fileFullPath
- * @param array $groupExtensions
  * @throws Exception
  */
 function deleteFilegroupByExtension($fileFullPath, array $groupExtensions)
@@ -1219,21 +1276,22 @@ function deleteFilegroupByExtension($fileFullPath, array $groupExtensions)
         $delendum = $pathWoExtension . '.' . $extension;
         if (file_exists($delendum)) {
             if (false === @unlink($delendum)) {
-                throw new Exception("Could not remove '$delendum', $php_errormsg");
+                throw new Exception("Could not remove '$delendum'");
             }
         }
     }
 }
 
-function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array $options = array())
+function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array $options = [])
 {
-    $defaultOptions = array(
-        'charset'=>'UTF-8',
-        'mode'=>'create'
-    );
+    $defaultOptions = [
+        'charset' => 'UTF-8',
+        'mode' => 'create',
+    ];
     $options = array_merge($defaultOptions, $options);
 
     $index = '';
+    $mode = '';
     switch ($options['mode']) {
         case 'create':
             $mode = '-c';
@@ -1251,14 +1309,14 @@ function shp2pgsql($shapefile, $srid, $tableName, $outputFile, $errorFile, array
     }
 
     if (defined('SET_BYTEA_OUTPUT')) {
-        putenv("PGOPTIONS=-c bytea_output=".SET_BYTEA_OUTPUT);
+        putenv("PGOPTIONS=-c bytea_output=" . SET_BYTEA_OUTPUT);
     }
 
     $cmd = "shp2pgsql $index -g the_geom -W '" . escapeshellarg($options['charset']) . "' -s $srid $mode " . escapeshellarg($shapefile) . " " .
         escapeshellarg($tableName) . " > " .
         escapeshellarg($outputFile) . " 2> " . escapeshellarg($errorFile);
 
-    $shp2pgsqlOutput = array();
+    $shp2pgsqlOutput = [];
     $retVal = -1;
 
     exec($cmd, $shp2pgsqlOutput, $retVal);
@@ -1279,7 +1337,7 @@ function simpleCharsOnly($string)
 /**
  * Recursively remove directory
  *
- * @param type $dir
+ * @param string $dir
  */
 function rrmdir($dir)
 {
@@ -1289,20 +1347,20 @@ function rrmdir($dir)
     }
     $objects = scandir($dir);
     foreach ($objects as $object) {
-        if ($object === "." ||  $object === "..") {
+        if ($object === "." || $object === "..") {
             continue;
         }
         if (filetype($dir . "/" . $object) == "dir") {
             rrmdir($dir . "/" . $object);
         } else {
             if (false === @unlink($dir . "/" . $object)) {
-                throw new Exception("Could not remove file '$dir/$object', $php_errormsg");
+                throw new Exception("Could not remove file '$dir/$object'");
             }
         }
     }
     reset($objects);
     if (false === @rmdir($dir)) {
-        throw new Exception("Could not remove directory '$dir/$object', $php_errormsg");
+        throw new Exception("Could not remove directory '$dir'");
     }
 }
 
@@ -1337,7 +1395,7 @@ function createAutoUpdateDateFunction($dataDb)
 {
     $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_date ()
             RETURNS trigger AS
-            $body$'.
+            $body$' .
             " DECLARE
                 rec record;
                 BEGIN
@@ -1351,8 +1409,8 @@ function createAutoUpdateDateFunction($dataDb)
                     execute 'UPDATE temporary_trigger_function_date set ' || TG_ARGV[0] || '= NOW()';
                     SELECT * from temporary_trigger_function_date into rec;
                     return rec;
-                END;".
-            '$body$'.
+                END;" .
+            '$body$' .
             "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
     $dataDb->exec($sql);
 }
@@ -1361,7 +1419,7 @@ function createAutoUpdateMeasureFunction($dataDb)
 {
     $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_measure ()
             RETURNS trigger AS
-            $body$'.
+            $body$' .
             "DECLARE
                 rec record;
                 val double precision;
@@ -1378,8 +1436,8 @@ function createAutoUpdateMeasureFunction($dataDb)
                     SELECT * from temporary_trigger_function_measure into rec;
                     --DROP TABLE temporary_trigger_function_measure;
                     return rec;
-                END;".
-            '$body$'.
+                END;" .
+            '$body$' .
             "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
     $dataDb->exec($sql);
 }
@@ -1388,7 +1446,7 @@ function createAutoUpdateCoordinatesFunction($dataDb)
 {
     $sql = 'CREATE OR REPLACE FUNCTION public.gc_auto_update_coordinates ()
             RETURNS trigger AS
-            $body$'.
+            $body$' .
             "DECLARE
                 rec record;
                 x double precision;
@@ -1408,8 +1466,8 @@ function createAutoUpdateCoordinatesFunction($dataDb)
                     execute 'UPDATE temporary_trigger_function_coordinates set ' || TG_ARGV[1] || '=' || y;
                     SELECT * from temporary_trigger_function_coordinates into rec;
                     return rec;
-                END;".
-            '$body$'.
+                END;" .
+            '$body$' .
             "LANGUAGE 'plpgsql' VOLATILE CALLED ON NULL INPUT SECURITY INVOKER COST 100;";
     $dataDb->exec($sql);
 }
@@ -1418,7 +1476,10 @@ function checkExistDbFunction($dataDb, $functionName)
 {
     $sql = 'SELECT count(*) FROM information_schema.routines WHERE routine_name = :functionName AND routine_schema = :schema';
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>'public', 'functionName'=>$functionName));
+    $stmt->execute([
+        'schema' => 'public',
+        'functionName' => $functionName,
+    ]);
     return ($stmt->fetchColumn(0) > 0);
 }
 
@@ -1513,7 +1574,10 @@ function getGeometryColumnInfo($dataDb, $schema, $table)
 {
     $sql = 'SELECT type, f_geometry_column AS column_name FROM public.geometry_columns WHERE f_table_schema = :schema AND f_table_name = :table';
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>$schema, 'table'=>$table));
+    $stmt->execute([
+        'schema' => $schema,
+        'table' => $table,
+    ]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -1521,7 +1585,10 @@ function checkAutoUpdatersColumns($dataDb, $schema, $table, $autoUpdaters)
 {
     $sql = 'SELECT * FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table';
     $stmt = $dataDb->prepare($sql);
-    $stmt->execute(array('schema'=>$schema, 'table'=>$table));
+    $stmt->execute([
+        'schema' => $schema,
+        'table' => $table,
+    ]);
 
     $pointx = null;
     $pointy = null;

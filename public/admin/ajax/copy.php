@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
-include_once ADMIN_PATH.'lib/functions.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
+include_once ADMIN_PATH . 'lib/functions.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -22,33 +22,43 @@ switch ($_REQUEST['action']) {
         if (empty($_REQUEST['mode'])) {
             $ajax->error('missing mode');
         }
-        
+
+        $parentLevels = [];
         try {
-            $parentLevels = GCLevels::getParents($_REQUEST['level'], array('use_copy_limits'=>true));
+            $parentLevels = GCLevels::getParents($_REQUEST['level'], [
+                'use_copy_limits' => true,
+            ]);
         } catch (Exception $e) {
             $ajax->error($e->getMessage());
         }
         
-        $filters = array();
+        $filters = [];
         $parent = null;
         $hasProject = false;
         foreach ($parentLevels as $level) {
             if ($level == 'project') {
                 $hasProject = true;
             }
-            $filter = array(
-                'level'=>$level,
-                'parent'=>!empty($parent) ? $parent : ''
-            );
+            $filter = [
+                'level' => $level,
+                'parent' => !empty($parent) ? $parent : '',
+            ];
             array_push($filters, $filter);
             $parent = $level;
         }
         if ($_REQUEST['mode'] != 'move') {
-            array_push($filters, array('level'=>$_REQUEST['level'], 'parent'=>!empty($level) ? $level :  null));
+            array_push($filters, [
+                'level' => $_REQUEST['level'],
+                'parent' => !empty($level) ? $level : null,
+            ]);
         }
-        $ajax->success(array('filters'=>$filters, 'has_project'=>(int)$hasProject));
+        $ajax->success([
+            'filters' => $filters,
+            'has_project' => (int)$hasProject,
+        ]);
         break;
     case 'get-data':
+        $parent = null;
         try {
             $parent = GCLevels::getParent($_REQUEST['level']);
         } catch (Exception $e) {
@@ -56,44 +66,61 @@ switch ($_REQUEST['action']) {
         }
         
         $filter = '';
-        $params = array();
+        $params = [];
         if (!empty($_REQUEST['parent_id'])) {
             $parentConfig = GCLevels::getConfig($parent);
-            $filter = 'where '.$parentConfig['pkey'].' = :filter_value';
+            $filter = 'where ' . $parentConfig['pkey'] . ' = :filter_value';
             $params[':filter_value'] = $_REQUEST['parent_id'];
         }
         $levelConfig = GCLevels::getConfig($_REQUEST['level']);
-        $sql = "select ".$levelConfig['pkey']." as key, ".$levelConfig['title']." as value ".
-            " from ".DB_SCHEMA.".".$_REQUEST['level']." ".$filter;
+        $sql = "select " . $levelConfig['pkey'] . " as key, " . $levelConfig['title'] . " as value " .
+            " from " . DB_SCHEMA . "." . $_REQUEST['level'] . " " . $filter;
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
-        $data = array();
+        $data = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $data[$row['key']] = $row['value'];
         }
-        $ajax->success(array('data'=>$data));
+        $ajax->success([
+            'data' => $data,
+        ]);
         break;
 }
 
 
 class GCLevels
 {
-    private static $levelsParent = array();
-    private static $levelsChildren = array();
-    private static $levels = array();
-    private static $config = array(
-        'project'=>array('pkey'=>'project_name', 'title'=>'project_title'),
-        'theme'=>array('pkey'=>'theme_id', 'title'=>'theme_title'),
-        'layergroup'=>array('pkey'=>'layergroup_id', 'title'=>'layergroup_title'),
-        'layer'=>array('pkey'=>'layer_id', 'title'=>'layer_title'),
-        'class'=>array('pkey'=>'class_id', 'title'=>'class_title')
-    );
-    private static $copyLimits = array(
-        'theme'=>'theme',
-        'layergroup'=>'theme',
-        'layer'=>'theme',
-        'class'=>'project'
-    );
+    private static $levelsParent = [];
+    private static $levelsChildren = [];
+    private static $levels = [];
+    private static $config = [
+        'project' => [
+            'pkey' => 'project_name',
+            'title' => 'project_title',
+        ],
+        'theme' => [
+            'pkey' => 'theme_id',
+            'title' => 'theme_title',
+        ],
+        'layergroup' => [
+            'pkey' => 'layergroup_id',
+            'title' => 'layergroup_title',
+        ],
+        'layer' => [
+            'pkey' => 'layer_id',
+            'title' => 'layer_title',
+        ],
+        'class' => [
+            'pkey' => 'class_id',
+            'title' => 'class_title',
+        ],
+    ];
+    private static $copyLimits = [
+        'theme' => 'theme',
+        'layergroup' => 'theme',
+        'layer' => 'theme',
+        'class' => 'project',
+    ];
     
     public function getLevels()
     {
@@ -109,7 +136,9 @@ class GCLevels
             self::loadLevels();
         }
         
-        $children = array($level => array());
+        $children = [
+            $level => [],
+        ];
         foreach (self::$levelsChildren[$level] as $childLevel) {
             array_push($children[$level], self::getChildren($childLevel));
         }
@@ -122,25 +151,25 @@ class GCLevels
             self::loadLevels();
         }
         if (!isset(self::$levelsParent[$level])) {
-            throw new Exception('Invalid level '.$level);
+            throw new Exception('Invalid level ' . $level);
         }
         return self::$levelsParent[$level];
     }
     
-    public static function getParents($level, $options = array())
+    public static function getParents($level, $options = [])
     {
-        $defaultOptions = array(
-            'use_copy_limits'=>false
-        );
+        $defaultOptions = [
+            'use_copy_limits' => false,
+        ];
         $options = array_merge($defaultOptions, $options);
         
         if (empty(self::$levels)) {
             self::loadLevels();
         }
         if (!isset(self::$levelsParent[$level])) {
-            throw new Exception('Invalid level '.$level);
+            throw new Exception('Invalid level ' . $level);
         }
-        $parents = array();
+        $parents = [];
         
         $stopLevel = $options['use_copy_limits'] ? self::$copyLimits[$level] : 'root';
         
@@ -163,14 +192,14 @@ class GCLevels
     {
         $db = GCApp::getDB();
         
-        $sql = "select id, name, coalesce(parent_id, 0) as parent_id from ".DB_SCHEMA.".e_level order by parent_id";
+        $sql = "select id, name, coalesce(parent_id, 0) as parent_id from " . DB_SCHEMA . ".e_level order by parent_id";
         $rows = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($rows as $row) {
             self::$levels[$row['id']] = $row['name'];
         }
         foreach ($rows as $row) {
-            self::$levelsParent[$row['name']] = isset(self::$levels[$row['parent_id']]) ? self::$levels[$row['parent_id']] : null;
+            self::$levelsParent[$row['name']] = self::$levels[$row['parent_id']] ?? null;
         }
         foreach ($rows as $row) {
             self::$levelsChildren[$row['name']] = array_keys(self::$levelsParent, $row['name']);

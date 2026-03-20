@@ -2,10 +2,10 @@
 
 namespace GisClient\Author\Controller;
 
-use Symfony\Component\HttpFoundation\Response;
+use GisClient\Author\Db;
 use GisClient\Author\LayerLevelInterface;
 use GisClient\Author\Map;
-use GisClient\Author\Db;
+use Symfony\Component\HttpFoundation\Response;
 
 class MvtController
 {
@@ -46,7 +46,7 @@ class MvtController
     {
         $mapObj = $this->getMap($project, $map);
 
-        list(, $layerName) = explode('.', $layer);
+        [, $layerName] = explode('.', $layer);
         $layer = $this->getLayer($mapObj, 'layer', $layerName);
 
         $dbObj = new Db($layer->getCatalog());
@@ -93,9 +93,11 @@ class MvtController
             FROM mvt_data_set
         ";
 
-            $stmtMvt = $db->prepare($sqlMvt);
-            $stmtMvt->bindColumn('mvt', $data);
-            $stmtMvt->execute();
+        $data = null;
+
+        $stmtMvt = $db->prepare($sqlMvt);
+        $stmtMvt->bindColumn('mvt', $data);
+        $stmtMvt->execute();
         if (!$stmtMvt->fetch()) {
             throw new \Exception("Could not load data from db");
         }

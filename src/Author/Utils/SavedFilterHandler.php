@@ -4,9 +4,9 @@ namespace GisClient\Author\Utils;
 
 use GisClient\Author\Form\Type\FilterType;
 use GisClient\Author\Security\AuthenticationHandler;
-use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\Forms;
 use Symfony\Component\Validator\Validation;
 
 class SavedFilterHandler
@@ -80,7 +80,7 @@ class SavedFilterHandler
 
     public function getSavedFilter($id)
     {
-        $sql = "SELECT * FROM ".DB_SCHEMA.".saved_filter WHERE saved_filter_id = ?";
+        $sql = "SELECT * FROM " . DB_SCHEMA . ".saved_filter WHERE saved_filter_id = ?";
         $stmt = $this->database->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -104,10 +104,10 @@ class SavedFilterHandler
 
         $sql = "
         SELECT saved_filter.*, layergroup_name||'.'||layer_name AS layer_id 
-            FROM ".DB_SCHEMA.".saved_filter 
-            INNER JOIN ".DB_SCHEMA.".layer USING(layer_id)
-            INNER JOIN ".DB_SCHEMA.".layergroup USING(layergroup_id)
-            INNER JOIN ".DB_SCHEMA.".theme USING(theme_id)
+            FROM " . DB_SCHEMA . ".saved_filter 
+            INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id)
+            INNER JOIN " . DB_SCHEMA . ".layergroup USING(layergroup_id)
+            INNER JOIN " . DB_SCHEMA . ".theme USING(theme_id)
             WHERE mapset_name=? AND (username = ? OR saved_filter_scope = 'all')
         ";
         // TODO: support group scope!!
@@ -123,14 +123,13 @@ class SavedFilterHandler
     /**
      * Add new saved filter for current user
      *
-     * @param array $values
      * @return integer
      */
     public function add(array $values)
     {
         // save data
         $sql = "
-        INSERT INTO ".DB_SCHEMA.".saved_filter (
+        INSERT INTO " . DB_SCHEMA . ".saved_filter (
             username, saved_filter_name, mapset_name, layer_id, 
             saved_filter_scope, saved_filter_data
         ) VALUES (?, ?, ?, ?, ?, ?) ";
@@ -141,23 +140,22 @@ class SavedFilterHandler
             $values['mapset_name'],
             $values['layer_id'],
             $values['saved_filter_scope'],
-            $values['saved_filter_data']
+            $values['saved_filter_data'],
         ]);
-        return $this->database->lastInsertId(DB_SCHEMA.".saved_filter_saved_filter_id_seq");
+        return $this->database->lastInsertId(DB_SCHEMA . ".saved_filter_saved_filter_id_seq");
     }
 
     /**
      * Modify saved filter for current user
      *
      * @param integer $id
-     * @param array $values
      * @return integer
      */
     public function modify($id, array $values)
     {
         // save data
         $sql = "
-        UPDATE ".DB_SCHEMA.".saved_filter SET
+        UPDATE " . DB_SCHEMA . ".saved_filter SET
             saved_filter_name=?, 
             saved_filter_scope=?,
             saved_filter_data=?
@@ -169,7 +167,7 @@ class SavedFilterHandler
             $values['saved_filter_name'],
             $values['saved_filter_scope'],
             $values['saved_filter_data'],
-            $id
+            $id,
         ]);
         return $id;
     }
@@ -182,7 +180,7 @@ class SavedFilterHandler
      */
     public function delete($id)
     {
-        $sql = "DELETE FROM ".DB_SCHEMA.".saved_filter WHERE saved_filter_id=? ";
+        $sql = "DELETE FROM " . DB_SCHEMA . ".saved_filter WHERE saved_filter_id=? ";
         $stmt = $this->database->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->rowCount() === 1;

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -17,9 +17,9 @@ if (empty($_REQUEST['project'])) {
 
 switch ($_REQUEST['action']) {
     case 'list':
-        $files = array();
+        $files = [];
 
-        $configFile = MAPPROXY_CONFIG_PATH.$_REQUEST['project'].'.yaml';
+        $configFile = MAPPROXY_CONFIG_PATH . $_REQUEST['project'] . '.yaml';
         if (!file_exists($configFile)) {
             $ajax->success($files);
         }
@@ -29,26 +29,28 @@ switch ($_REQUEST['action']) {
         $config = yaml_parse($content);
 
         foreach ($config['caches'] as $name => $cache) {
-            $file = TILES_CACHE.$_REQUEST['project'].'/'.$cache['cache']['filename'];
+            $file = TILES_CACHE . $_REQUEST['project'] . '/' . $cache['cache']['filename'];
             if (!file_exists($file)) {
                 continue;
             }
             $size = filesize($file);
             
-            array_push($files, array(
-                'layer'=>$name,
-                'name'=>$cache['cache']['filename'],
-                'size'=>formatBytes($size)
-            ));
+            array_push($files, [
+                'layer' => $name,
+                'name' => $cache['cache']['filename'],
+                'size' => formatBytes($size),
+            ]);
         }
 
-        $ajax->success(array('files'=>$files));
+        $ajax->success([
+            'files' => $files,
+        ]);
         break;
     case 'empty':
         if (empty($_REQUEST['file'])) {
             $ajax->error();
         }
-        $file = TILES_CACHE.$_REQUEST['project'].'/'.$_REQUEST['file'];
+        $file = TILES_CACHE . $_REQUEST['project'] . '/' . $_REQUEST['file'];
         if (!file_exists($file)) {
             $ajax->error('File does not exist');
         }
@@ -67,14 +69,14 @@ switch ($_REQUEST['action']) {
 
 function formatBytes($bytes, $precision = 2)
 {
-    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
     $bytes = max($bytes, 0);
     $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
     $pow = min($pow, count($units) - 1);
 
     // Uncomment one of the following alternatives
-    $bytes /= pow(1024, $pow);
+    $bytes /= 1024 ** $pow;
     // $bytes /= (1 << (10 * $pow));
 
     return round($bytes, $precision) . ' ' . $units[$pow];

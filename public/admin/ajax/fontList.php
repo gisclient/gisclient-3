@@ -4,7 +4,7 @@ use GisClient\Author\Security\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 require_once __DIR__ . '/../../../bootstrap.php';
-include_once ROOT_PATH.'lib/ajax.class.php';
+include_once ROOT_PATH . 'lib/ajax.class.php';
 
 $gcService = GCService::instance();
 $gcService->startSession();
@@ -42,33 +42,35 @@ $dbSchema = DB_SCHEMA;
 $font = 'r3-map-symbols.ttf';
 $fontName = basename($font, '.ttf');
 
-$result = array(
-    'steps'=>1,
-    'data'=>array(),
-    'data_objects'=>array(),
-    'step'=>1
-);
+$result = [
+    'steps' => 1,
+    'data' => [],
+    'data_objects' => [],
+    'step' => 1,
+];
 
-$result['fields'] = array(
-    'image'=>GCAuthor::t('image'),
-    'symbol'=>GCAuthor::t('symbol'),
-    'code'=>GCAuthor::t('code'),
-    'name'=>GCAuthor::t('name')
-);
+$result['fields'] = [
+    'image' => GCAuthor::t('image'),
+    'symbol' => GCAuthor::t('symbol'),
+    'code' => GCAuthor::t('code'),
+    'name' => GCAuthor::t('name'),
+];
 
-for ($i=33; $i <= 126; $i++) {
+for ($i = 33; $i <= 126; $i++) {
     $sql = "SELECT symbol_name FROM $dbSchema.symbol WHERE symbol_def LIKE :like";
-    $like = '%FONT "' . $fontName . '"%CHARACTER "&#'. $i .';"';
+    $like = '%FONT "' . $fontName . '"%CHARACTER "&#' . $i . ';"';
     $stmt = $db->prepare($sql);
-    $stmt->execute(array(':like'=>$like));
+    $stmt->execute([
+        ':like' => $like,
+    ]);
     $name = $stmt->fetchColumn();
 
-    $result['data'][] = array(
-        'image'=>'',
+    $result['data'][] = [
+        'image' => '',
         'symbol' => chr($i),
         'code' => $i,
-        'name' => '<input type="text" value="' . $name . '" name="char' . $i . '" style="text-transform:uppercase;">'
-    );
+        'name' => '<input type="text" value="' . $name . '" name="char' . $i . '" style="text-transform:uppercase;">',
+    ];
 }
 
 $ajax->success($result);
