@@ -107,6 +107,7 @@ class ProjectCopyControllerTest extends TestCase
             json_encode([
                 'source_project' => 'source_project',
                 'target_project' => 'target_project',
+                'project_title' => 'Target Project Title',
                 'mapset_naming_mode' => ProjectCopyRequestParser::MAPSET_NAMING_PREFIX_WITH_TARGET_PROJECT,
                 'refresh' => [
                     'private_mapfiles' => true,
@@ -118,6 +119,7 @@ class ProjectCopyControllerTest extends TestCase
         $this->assertSame(Response::HTTP_CREATED, $response->getStatusCode());
         $this->assertSame('source_project', $service->capturedRequest->getSourceProject());
         $this->assertSame('target_project', $service->capturedRequest->getTargetProject());
+        $this->assertSame('Target Project Title', $service->capturedRequest->getProjectTitle());
         $this->assertSame(ProjectCopyRequestParser::MAPSET_NAMING_PREFIX_WITH_TARGET_PROJECT, $service->capturedRequest->getMapsetNamingMode());
         $this->assertTrue($service->capturedRequest->shouldRefreshPrivateMapfiles());
         $this->assertSame('ok', $payload['status']);

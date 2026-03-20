@@ -18,6 +18,7 @@ class ProjectCopyRequestParserTest extends TestCase
 
         $this->assertSame('oldproj', $request->getSourceProject());
         $this->assertSame('newproj', $request->getTargetProject());
+        $this->assertNull($request->getProjectTitle());
         $this->assertSame(ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, $request->getMapsetNamingMode());
         $this->assertFalse($request->shouldRefreshPrivateMapfiles());
         $this->assertFalse($request->shouldRefreshPublicMapfiles());
@@ -31,6 +32,7 @@ class ProjectCopyRequestParserTest extends TestCase
         $request = $parser->parse(json_encode([
             'source_project' => 'source',
             'target_project' => 'target',
+            'project_title' => 'Target project title',
             'mapset_naming_mode' => ProjectCopyRequestParser::MAPSET_NAMING_PREFIX_WITH_TARGET_PROJECT,
             'refresh' => [
                 'private_mapfiles' => true,
@@ -38,6 +40,7 @@ class ProjectCopyRequestParserTest extends TestCase
             ],
         ]));
 
+        $this->assertSame('Target project title', $request->getProjectTitle());
         $this->assertSame(ProjectCopyRequestParser::MAPSET_NAMING_PREFIX_WITH_TARGET_PROJECT, $request->getMapsetNamingMode());
         $this->assertTrue($request->shouldRefreshPrivateMapfiles());
         $this->assertTrue($request->shouldRefreshPublicMapfiles());
@@ -61,6 +64,7 @@ class ProjectCopyRequestParserTest extends TestCase
         try {
             $parser->parse(json_encode([
                 'source_project' => '',
+                'project_title' => '',
                 'mapset_naming_mode' => 'invalid-mode',
                 'refresh' => [
                     'private_mapfiles' => 'yes',
@@ -71,11 +75,12 @@ class ProjectCopyRequestParserTest extends TestCase
             $errors = $exception->getErrors();
 
             $this->assertSame(400, $exception->getStatus());
-            $this->assertCount(4, $errors);
+            $this->assertCount(5, $errors);
             $this->assertSame('/source_project', $errors[0]['source']['pointer']);
             $this->assertSame('/target_project', $errors[1]['source']['pointer']);
-            $this->assertSame('invalid_mapset_naming_mode', $errors[2]['code']);
-            $this->assertSame('/refresh/private_mapfiles', $errors[3]['source']['pointer']);
+            $this->assertSame('/project_title', $errors[2]['source']['pointer']);
+            $this->assertSame('invalid_mapset_naming_mode', $errors[3]['code']);
+            $this->assertSame('/refresh/private_mapfiles', $errors[4]['source']['pointer']);
         }
     }
 }

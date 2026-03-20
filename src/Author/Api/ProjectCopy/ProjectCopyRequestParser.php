@@ -36,6 +36,7 @@ class ProjectCopyRequestParser
 
         $sourceProject = $this->readRequiredString($payload, 'source_project', $errors);
         $targetProject = $this->readRequiredString($payload, 'target_project', $errors);
+        $projectTitle = $this->readOptionalString($payload, 'project_title', $errors);
 
         $mapsetNamingMode = $payload['mapset_naming_mode'] ?? self::MAPSET_NAMING_REPLACE_PROJECT_NAME;
         if (!is_string($mapsetNamingMode) || trim($mapsetNamingMode) === '') {
@@ -78,6 +79,7 @@ class ProjectCopyRequestParser
         return new ProjectCopyRequest(
             $sourceProject,
             $targetProject,
+            $projectTitle,
             $mapsetNamingMode,
             $refreshPrivate,
             $refreshPublic
@@ -118,6 +120,40 @@ class ProjectCopyRequestParser
                 sprintf("Field '%s' must not be empty", $field),
                 '/' . $field
             );
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @param array<int,array<string,mixed>> $errors
+     */
+    private function readOptionalString(array $payload, string $field, array &$errors): ?string
+    {
+        if (!array_key_exists($field, $payload)) {
+            return null;
+        }
+
+        if (!is_string($payload[$field])) {
+            $errors[] = $this->error(
+                'invalid_attribute_type',
+                'Invalid Attribute Type',
+                sprintf("Field '%s' must be a string", $field),
+                '/' . $field
+            );
+            return null;
+        }
+
+        $value = trim($payload[$field]);
+        if ($value === '') {
+            $errors[] = $this->error(
+                'missing_required_attribute',
+                'Missing Required Attribute',
+                sprintf("Field '%s' must not be empty", $field),
+                '/' . $field
+            );
+            return null;
         }
 
         return $value;

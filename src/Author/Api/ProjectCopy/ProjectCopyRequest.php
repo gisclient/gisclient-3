@@ -15,6 +15,11 @@ class ProjectCopyRequest
     private $targetProject;
 
     /**
+     * @var string|null
+     */
+    private $projectTitle;
+
+    /**
      * @var string
      */
     private $mapsetNamingMode;
@@ -32,12 +37,14 @@ class ProjectCopyRequest
     public function __construct(
         string $sourceProject,
         string $targetProject,
+        ?string $projectTitle,
         string $mapsetNamingMode,
         bool $refreshPrivateMapfiles,
         bool $refreshPublicMapfiles
     ) {
         $this->sourceProject = $sourceProject;
         $this->targetProject = $targetProject;
+        $this->projectTitle = $projectTitle;
         $this->mapsetNamingMode = $mapsetNamingMode;
         $this->refreshPrivateMapfiles = $refreshPrivateMapfiles;
         $this->refreshPublicMapfiles = $refreshPublicMapfiles;
@@ -51,6 +58,11 @@ class ProjectCopyRequest
     public function getTargetProject(): string
     {
         return $this->targetProject;
+    }
+
+    public function getProjectTitle(): ?string
+    {
+        return $this->projectTitle;
     }
 
     public function getMapsetNamingMode(): string

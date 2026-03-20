@@ -50,8 +50,8 @@ class ProjectCopyService
 
         $this->prepareMapsetNames($request, $graph['mapset'], $context);
 
-        $this->gateway->runAtomically(function () use ($graph, $context): void {
-            $this->cloneCrudCollection('project', [$graph['project']], $context);
+        $this->gateway->runAtomically(function () use ($graph, $context, $request): void {
+            $this->cloneProject($graph['project'], $request, $context);
             $this->cloneCrudCollection('project_srs', $graph['project_srs'], $context);
             $this->cloneProjectLanguages($graph['project_languages'], $context);
             $this->cloneCrudCollection('catalog', $graph['catalog'], $context);
@@ -147,6 +147,20 @@ class ProjectCopyService
             if ($item->getId() !== null && $created->getId() !== null) {
                 $context->rememberMapping($type, $item->getId(), $created->getId());
             }
+        }
+    }
+
+    private function cloneProject(ProjectDto $source, ProjectCopyRequest $request, ProjectCopyContext $context): void
+    {
+        $target = $this->buildCrudCloneDto('project', $source, $context);
+        $target->projectTitle = $request->getProjectTitle() ?? $source->projectTitle;
+        $target->markPresent('project_title');
+
+        $created = $this->gateway->createResource('project', $target);
+        $context->incrementCreated('project');
+
+        if ($source->getId() !== null && $created->getId() !== null) {
+            $context->rememberMapping('project', $source->getId(), $created->getId());
         }
     }
 

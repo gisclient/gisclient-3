@@ -51,6 +51,7 @@ class ProjectCopyIntegrationTest extends TestCase
         $response = $service->execute(new ProjectCopyRequest(
             'default',
             $targetProject,
+            'Integration title',
             ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME,
             false,
             false
@@ -73,6 +74,11 @@ class ProjectCopyIntegrationTest extends TestCase
 
         $db = GCApp::getDB();
         $this->assertSame(1, $this->fetchCount($db, 'SELECT COUNT(*) FROM ' . DB_SCHEMA . '.project WHERE project_name = :project', $targetProject));
+        $stmt = $db->prepare('SELECT project_title FROM ' . DB_SCHEMA . '.project WHERE project_name = :project');
+        $stmt->execute([
+            ':project' => $targetProject,
+        ]);
+        $this->assertSame('Integration title', (string) $stmt->fetchColumn());
         $this->assertSame(1, $this->fetchCount($db, 'SELECT COUNT(*) FROM ' . DB_SCHEMA . '.mapset WHERE project_name = :project AND mapset_name = :project', $targetProject));
         $this->assertSame(6, $this->fetchCount($db, 'SELECT COUNT(*) FROM ' . DB_SCHEMA . '.mapset_layergroup WHERE mapset_name = :project', $targetProject));
         $this->assertSame(1, $this->fetchCount($db, 'SELECT COUNT(*) FROM ' . DB_SCHEMA . '.project_admin WHERE project_name = :project AND username = :username', $targetProject, 'integration_admin'));
@@ -88,6 +94,7 @@ class ProjectCopyIntegrationTest extends TestCase
         $service->execute(new ProjectCopyRequest(
             'default',
             'default',
+            null,
             ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME,
             false,
             false

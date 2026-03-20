@@ -48,7 +48,7 @@ class ProjectCopyServiceTest extends TestCase
         $service = new ProjectCopyService(new ProjectCopyGatewayStub());
 
         $this->assertApiException(static function () use ($service): void {
-            $service->execute(new ProjectCopyRequest('missing', 'target', ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
+            $service->execute(new ProjectCopyRequest('missing', 'target', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
         }, 404, 'resource_not_found', '/source_project');
     }
 
@@ -75,7 +75,7 @@ class ProjectCopyServiceTest extends TestCase
         $service = new ProjectCopyService($gateway);
 
         $this->assertApiException(static function () use ($service): void {
-            $service->execute(new ProjectCopyRequest('source', 'target', ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
+            $service->execute(new ProjectCopyRequest('source', 'target', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
         }, 409, 'target_project_exists', '/target_project');
     }
 
@@ -95,7 +95,7 @@ class ProjectCopyServiceTest extends TestCase
         $service = new ProjectCopyService($gateway);
 
         $this->assertApiException(static function () use ($service): void {
-            $service->execute(new ProjectCopyRequest('source', 'bad-name', ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
+            $service->execute(new ProjectCopyRequest('source', 'bad-name', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
         }, 422, 'invalid_target_project_name', '/target_project');
     }
 
@@ -112,7 +112,7 @@ class ProjectCopyServiceTest extends TestCase
         $service = new ProjectCopyService($gateway);
 
         $this->assertApiException(static function () use ($service): void {
-            $service->execute(new ProjectCopyRequest('source', 'target', ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
+            $service->execute(new ProjectCopyRequest('source', 'target', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
         }, 409, 'mapset_name_collision', '/mapset_naming_mode');
     }
 
@@ -235,6 +235,7 @@ class ProjectCopyServiceTest extends TestCase
         $response = $service->execute(new ProjectCopyRequest(
             'source',
             'target',
+            null,
             ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME,
             false,
             false
@@ -262,6 +263,44 @@ class ProjectCopyServiceTest extends TestCase
         $createdSelgroupLayer = $gateway->created[13]['dto'];
         $this->assertSame(7000, $createdSelgroupLayer->selgroup->id);
         $this->assertSame(3000, $createdSelgroupLayer->layer->id);
+    }
+
+    public function testExecuteUsesExplicitTargetProjectTitleOverride(): void
+    {
+        $gateway = new ProjectCopyGatewayStub([
+            'project' => [
+                $this->makeProject('source'),
+            ],
+            'project_srs' => [],
+            'project_languages' => [],
+            'catalog' => [],
+            'link' => [],
+            'theme' => [],
+            'layergroup' => [],
+            'mapset' => [],
+            'layer' => [],
+            'class' => [],
+            'style' => [],
+            'field' => [],
+            'mapset_layergroup' => [],
+            'selgroup' => [],
+            'selgroup_layer' => [],
+            'project_admin' => [],
+        ]);
+        $service = new ProjectCopyService($gateway);
+
+        $service->execute(new ProjectCopyRequest(
+            'source',
+            'target',
+            'Target title',
+            ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME,
+            false,
+            false
+        ));
+
+        /** @var ProjectDto $createdProject */
+        $createdProject = $gateway->created[0]['dto'];
+        $this->assertSame('Target title', $createdProject->projectTitle);
     }
 
     private function makeProject(string $id): ProjectDto
