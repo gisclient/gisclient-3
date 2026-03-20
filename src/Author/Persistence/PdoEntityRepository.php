@@ -6,6 +6,7 @@ use GisClient\Author\Persistence\Exception\ForeignKeyConstraintViolationExceptio
 use GisClient\Author\Persistence\Exception\InvalidPersistedDataException;
 use GisClient\Author\Persistence\Exception\RepositoryOperationException;
 use GisClient\Author\Persistence\Exception\UniqueConstraintViolationException;
+use PDOException;
 
 class PdoEntityRepository implements EntityRepository
 {
@@ -276,7 +277,11 @@ class PdoEntityRepository implements EntityRepository
         return (string) $id;
     }
 
-    private function rethrowDatabaseException(\PDOException $exception)
+    /**
+     * @throws PersistenceException
+     * @return never
+     */
+    private function rethrowDatabaseException(PDOException $exception)
     {
         $code = (string) $exception->getCode();
         if ($code === '23505') {

@@ -141,10 +141,7 @@ if ($objRequest->getValueByName('service') == 'WMS') {
 
 if (!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) {
     $hasPrivateLayers = false;
-    $layersArray = [];
-    if (!empty($layersParameter)) {
-        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
-    }
+    $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     foreach ($layersArray as $layer) {
         $privateLayer = $layer->getMetaData('gc_private_layer');
         if (!empty($privateLayer)) {

@@ -49,7 +49,7 @@ class JsonApiController implements ContainerAwareInterface
 
     public function showAction($entity, $id, Request $request)
     {
-        return $this->execute(function () use ($entity, $id, $request) {
+        return $this->execute(function () use ($entity, $id) {
             $this->assertAdmin();
             $payload = $this->serializer->serializeResource(
                 $this->apiCrudService->getResource($entity, $id)
@@ -89,7 +89,7 @@ class JsonApiController implements ContainerAwareInterface
 
     public function deleteAction($entity, $id, Request $request)
     {
-        return $this->execute(function () use ($entity, $id, $request) {
+        return $this->execute(function () use ($entity, $id) {
             $this->assertAdmin();
             $this->apiCrudService->deleteResource($entity, $id);
             return new Response('', Response::HTTP_NO_CONTENT);

@@ -130,9 +130,7 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
         // Get layer from request without change $layersParameter value
         $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $objRequest->getValueByName('layer'));  // not layers
     } else {
-        if (!empty($layersParameter)) {
-            $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
-        }
+        $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     }
     
     foreach ($layersArray as $layer) {
