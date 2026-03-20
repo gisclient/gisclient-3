@@ -20,11 +20,6 @@ class ProjectCopyController implements ContainerAwareInterface
     private $exceptionMapper;
 
     /**
-     * @var ProjectCopyRequestParser
-     */
-    private $requestParser;
-
-    /**
      * @var ProjectCopyService
      */
     private $projectCopyService;
@@ -32,7 +27,6 @@ class ProjectCopyController implements ContainerAwareInterface
     public function setContainer(?ContainerInterface $container = null)
     {
         $this->exceptionMapper = $container->get(JsonApiExceptionMapper::class);
-        $this->requestParser = $container->get(ProjectCopyRequestParser::class);
         $this->projectCopyService = $container->get(ProjectCopyService::class);
     }
 
@@ -42,7 +36,7 @@ class ProjectCopyController implements ContainerAwareInterface
             $this->assertAdmin();
 
             $result = $this->projectCopyService->execute(
-                $this->requestParser->parse($request->getContent())
+                (new ProjectCopyRequestParser())->parse($request->getContent())
             );
 
             return new JsonResponse($result->toArray(), Response::HTTP_CREATED);

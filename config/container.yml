@@ -43,9 +43,6 @@ services:
   GisClient\Author\Api\Service\ApiCrudService:
     public: true
 
-  GisClient\Author\Api\ProjectCopy\ProjectCopyRequestParser:
-    public: true
-
   GisClient\Author\Api\Service\ProjectCopyService:
     public: true
 
