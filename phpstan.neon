@@ -16,7 +16,7 @@ parameters:
     tmpDir: var/cache/phpstan
     bootstrapFiles:
         # for constants
-        - config/config.php.sample
+        - config/config.php
         # stub for mapscript functions
         - stubs/mapscript-stubs.php
     ignoreErrors:
