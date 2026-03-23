@@ -59,7 +59,7 @@ define('LAYER_CLOSE_CONNECTION_DEFER', true);
 define('MS_MAP_OBJ_FACTORY_DECORATOR', getenv('MS_MAP_OBJ_FACTORY_DECORATOR') ?: null);
 
 // custom user provider, must implement GisClient\Author\Security\User\UserProviderInterface
-// define('GC_CUSTOM_USER_PROVIDER', 'GisClient\Author\Security\User\UserProvider');
+define('GC_CUSTOM_USER_PROVIDER', getenv('GC_CUSTOM_USER_PROVIDER') ?: null);
 
 /*******************Installation path *************************/
 define('ROOT_PATH', realpath(__DIR__.'/..').'/');

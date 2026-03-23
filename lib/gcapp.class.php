@@ -96,7 +96,7 @@ class GCApp
     {
         if (empty(self::$userProvider)) {
             self::$userProvider = new UserProvider(self::getDB());
-            if (defined('GC_CUSTOM_USER_PROVIDER')) {
+            if (null !== GC_CUSTOM_USER_PROVIDER) {
                 $className = GC_CUSTOM_USER_PROVIDER;
                 if (class_exists($className)) {
                     self::$userProvider = new $className(self::getDB());
