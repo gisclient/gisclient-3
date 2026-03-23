@@ -23,6 +23,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 use Symfony\Component\HttpFoundation\Request;
 
+function gcEnvBool(string $name, bool $default): bool
+{
+    $value = getenv($name);
+    if (false === $value) {
+        return $default;
+    }
+
+    $parsed = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+    return null === $parsed ? $default : $parsed;
+}
+
 if (!empty(getenv('TRUSTED_PROXIES'))) {
     Request::setTrustedProxies(
         // trust *all* requests
@@ -53,7 +65,7 @@ define('LONG_EXECUTION_MEMORY', '512M');
 define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de, en, ..)
 //define('EXTERNAL_LOGIN_KEY', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
-define('LAYER_CLOSE_CONNECTION_DEFER', true);
+define('LAYER_CLOSE_CONNECTION_DEFER', gcEnvBool('LAYER_CLOSE_CONNECTION_DEFER', true));
 
 // decorator for msMapObjFactory
 define('MS_MAP_OBJ_FACTORY_DECORATOR', getenv('MS_MAP_OBJ_FACTORY_DECORATOR') ?: null);
@@ -188,10 +200,10 @@ define('LEGEND_POLYGON_WIDTH', 2);
 define('PRINT_PDF_FONT', 'times');
 
 /****************** DATA MANAGER ***************+*/
-define('USE_DATA_IMPORT', false);                                           // true = ABILITA IL DATAMANAGER
+define('USE_DATA_IMPORT', gcEnvBool('USE_DATA_IMPORT', false));              // true = ABILITA IL DATAMANAGER
 define('CURRENT_EDITING_USER_TABLE', 'gc_current_editing_user');            //TABELLA DB IN CUI VENGONO SCRITTI GLI UTENTI DI EDITING
 define('TRANSFORM_EDIT_GEOMETRY', false);                                   // true = CONSENTE L'EDITING SU MAPPA CON SRID XXXXX DI UNA TABELLA DB CON SRID YYYYY
-//define('USE_PHP_EXCEL', true);                                            // true = ABILITA IL TAB XLS DEL DATAMANAGER. DEVE ANCHE ESISTERE LA LIBRERIA PHPExcel
+define('USE_PHP_EXCEL', gcEnvBool('USE_PHP_EXCEL', false));                // true = ABILITA IL TAB XLS DEL DATAMANAGER. DEVE ANCHE ESISTERE LA LIBRERIA PHPExcel
 //define('MEASURE_AREA_COL_NAME', 'gc_area');                               //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELL'AREA IN EDITING DI MAPPA
 //define('MEASURE_LENGTH_COL_NAME', 'gc_length');                           //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELLA LUNGHEZZA IN EDITING DI MAPPA
 //define('COORDINATE_X_COL_NAME', 'gc_coord_x');                            //NOME DEL CAMPO DB IN CUI VERRA' SCRITTO IL VALORE CALCOLATO DELLA COORDINATA X IN EDITING DI MAPPA
