@@ -1,1 +1,0 @@
-INSERT INTO DB_SCHEMA.users (username, enc_pwd) VALUES ('admin', md5('gisclient'));
