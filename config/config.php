@@ -56,7 +56,7 @@ define('FORCE_LANGUAGE', 'it'); // Questi valori devono corrispondere a (it, de,
 define('LAYER_CLOSE_CONNECTION_DEFER', true);
 
 // decorator for msMapObjFactory
-// define('MS_MAP_OBJ_FACTORY_DECORATOR', 'GisClient\MapServer\MsMapObjFactoryDecorator');
+define('MS_MAP_OBJ_FACTORY_DECORATOR', getenv('MS_MAP_OBJ_FACTORY_DECORATOR') ?: null);
 
 // custom user provider, must implement GisClient\Author\Security\User\UserProviderInterface
 // define('GC_CUSTOM_USER_PROVIDER', 'GisClient\Author\Security\User\UserProvider');

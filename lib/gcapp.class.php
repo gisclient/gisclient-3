@@ -76,7 +76,7 @@ class GCApp
     public static function getMsMapObjFactory()
     {
         $factory = new MsMapObjFactory();
-        if (defined('MS_MAP_OBJ_FACTORY_DECORATOR')) {
+        if (null !== MS_MAP_OBJ_FACTORY_DECORATOR) {
             $className = MS_MAP_OBJ_FACTORY_DECORATOR;
             if (class_exists($className)) {
                 $factory = new $className($factory);
