@@ -174,3 +174,5 @@ geolocator:
         _controller: 'GisClient\Author\Controller\GeolocatorController::getAction'
     methods:
         - GET
+r3gis_author_extensions:
+    resource: ../src/Author/Resources/config/routing.yml

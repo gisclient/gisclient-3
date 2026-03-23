@@ -1,7 +1,7 @@
 r3gis_autocomplete:
     path: /r3gis_apps/autocomplete.php
     defaults:
-        _controller: 'R3Gis\GisClient\Author\Controller\AutocompleteController::autocompleteAction'
+        _controller: 'GisClient\Author\Controller\RlsAutocompleteController::autocompleteAction'
     methods:
         - GET
 r3gis_gcmap:
@@ -14,7 +14,7 @@ r3gis_refresh_mapfile:
         _controller: 'GisClient\Author\Controller\RefreshMapfileController::refreshMapfileAction'
     methods:
         - POST
-r3gis_refreshCookie:
+r3gis_refresh_cookie:
     path: /r3gis_apps/refresh
     defaults:
         _controller: 'GisClient\Author\Controller\LoginController::refreshAction'
