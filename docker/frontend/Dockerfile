@@ -28,9 +28,9 @@ COPY --chown=root:root --chmod=744 docker/frontend/docker-entrypoint.sh /usr/loc
 COPY docker/frontend/httpd.conf /etc/httpd/conf/httpd.conf
 COPY docker/frontend/location.conf docker/frontend/php.conf /etc/httpd/conf.d/
 
-ENV APACHE_SERVER_PORT "8080"
-ENV APACHE_SERVER_DOCUMENT_ROOT "/app/author/public"
-ENV APACHE_PHPFPM_HANDLER "proxy:fcgi://author-be:9000"
+ENV APACHE_SERVER_PORT="8080"
+ENV APACHE_SERVER_DOCUMENT_ROOT="/app/author/public"
+ENV APACHE_PHPFPM_HANDLER="proxy:fcgi://author-be:9000"
 
 EXPOSE $APACHE_SERVER_PORT
 

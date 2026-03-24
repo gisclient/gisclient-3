@@ -8,10 +8,11 @@ permissions:
   contents: read
 
 env:
-  PLATFORM: linux/amd64
   BACKEND_IMAGE: ghcr.io/${{ github.repository }}-backend
   FRONTEND_IMAGE: ghcr.io/${{ github.repository }}-frontend
   OCI_SOURCE: ${{ github.server_url }}/${{ github.repository }}
+  VALIDATE_PLATFORMS: linux/amd64,linux/arm64
+  PUBLISH_PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
   test:
@@ -101,7 +102,7 @@ jobs:
           path: version.txt
           if-no-files-found: error
 
-  build-backend:
+  validate-images:
     runs-on: ubuntu-latest
     needs:
       - prepare-release
@@ -115,103 +116,50 @@ jobs:
           name: version-file
           path: .
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build backend image archive
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/backend/Dockerfile
-          target: prod
-          platforms: ${{ env.PLATFORM }}
-          load: false
-          push: false
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.BACKEND_IMAGE }}:${{ needs.prepare-release.outputs.versioned_tag }}
-          build-args: |
-            OCI_VERSION=${{ needs.prepare-release.outputs.versioned_tag }}
-            OCI_REVISION=${{ needs.prepare-release.outputs.git_sha }}
-            OCI_SOURCE=${{ needs.prepare-release.outputs.oci_source }}
-          outputs: type=docker,dest=/tmp/backend-image.tar
-
-      - name: Upload backend image archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-image
-          path: /tmp/backend-image.tar
-          if-no-files-found: error
-
-  build-frontend:
-    runs-on: ubuntu-latest
-    needs:
-      - prepare-release
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download version file
-        uses: actions/download-artifact@v4
-        with:
-          name: version-file
-          path: .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build frontend image archive
-        uses: docker/build-push-action@v6
+      - name: Validate multi-arch images with Bake
+        uses: docker/bake-action@v6
+        env:
+          BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}
+          VERSIONED_TAG: ${{ needs.prepare-release.outputs.versioned_tag }}
+          GIT_SHA: ${{ needs.prepare-release.outputs.git_sha }}
+          OCI_SOURCE: ${{ needs.prepare-release.outputs.oci_source }}
+          VALIDATE_PLATFORMS: ${{ env.VALIDATE_PLATFORMS }}
         with:
-          context: .
-          file: docker/frontend/Dockerfile
-          target: prod
-          platforms: ${{ env.PLATFORM }}
-          load: false
-          push: false
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.FRONTEND_IMAGE }}:${{ needs.prepare-release.outputs.versioned_tag }}
-          build-args: |
-            OCI_VERSION=${{ needs.prepare-release.outputs.versioned_tag }}
-            OCI_REVISION=${{ needs.prepare-release.outputs.git_sha }}
-            OCI_SOURCE=${{ needs.prepare-release.outputs.oci_source }}
-          outputs: type=docker,dest=/tmp/frontend-image.tar
-
-      - name: Upload frontend image archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-image
-          path: /tmp/frontend-image.tar
-          if-no-files-found: error
+          source: .
+          files: docker-bake.hcl
+          targets: validate
 
   publish:
     runs-on: ubuntu-latest
     needs:
       - prepare-release
-      - build-backend
-      - build-frontend
+      - validate-images
+    if: github.event_name == 'push'
     permissions:
       contents: read
       packages: write
     steps:
-      - name: Download backend image archive
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download version file
         uses: actions/download-artifact@v4
         with:
-          name: backend-image
-          path: /tmp
+          name: version-file
+          path: .
 
-      - name: Download frontend image archive
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-image
-          path: /tmp
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Load backend image
-        run: docker load --input /tmp/backend-image.tar
-
-      - name: Load frontend image
-        run: docker load --input /tmp/frontend-image.tar
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -220,16 +168,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Push backend images
-        run: |
-          docker push "${BACKEND_IMAGE}:latest"
-          docker push "${BACKEND_IMAGE}:${VERSIONED_TAG}"
+      - name: Publish multi-arch images with Bake
+        uses: docker/bake-action@v6
         env:
+          BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}
           VERSIONED_TAG: ${{ needs.prepare-release.outputs.versioned_tag }}
-
-      - name: Push frontend images
-        run: |
-          docker push "${FRONTEND_IMAGE}:latest"
-          docker push "${FRONTEND_IMAGE}:${VERSIONED_TAG}"
-        env:
-          VERSIONED_TAG: ${{ needs.prepare-release.outputs.versioned_tag }}
+          GIT_SHA: ${{ needs.prepare-release.outputs.git_sha }}
+          OCI_SOURCE: ${{ needs.prepare-release.outputs.oci_source }}
+          PUBLISH_PLATFORMS: ${{ env.PUBLISH_PLATFORMS }}
+        with:
+          source: .
+          files: docker-bake.hcl
+          targets: publish
+          push: true
