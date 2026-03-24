@@ -22,6 +22,10 @@ services:
       args:
         UID: ${USER_ID:-48}
         GID: ${GROUP_ID:-48}
+      cache_from:
+        - type=gha,scope=dev-backend
+      cache_to:
+        - type=gha,scope=dev-backend,mode=max
     platform: linux/amd64
     restart: unless-stopped
     env_file:
@@ -48,6 +52,10 @@ services:
       context: .
       target: dev
       dockerfile: docker/frontend/Dockerfile
+      cache_from:
+        - type=gha,scope=dev-frontend
+      cache_to:
+        - type=gha,scope=dev-frontend,mode=max
     platform: linux/amd64
     restart: unless-stopped
     env_file:
