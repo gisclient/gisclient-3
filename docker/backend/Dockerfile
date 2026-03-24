@@ -4,9 +4,7 @@ FROM almalinux/8-base AS source
 
 COPY ./ /app/author/
 
-# Remove files not needed by backend
-RUN find /app \( -name "*.gif" -o -name "*.png" -o -name "*.jpg" -o -name "*.html" -o -name "*.css" -o -name "*.js" \) -type f -delete \
-	&& rm -rf /app/author/doc /app/author/docker /app/author/public/migrate /app/author/public/upgrade /app/compose*.yaml\
+RUN rm -rf /app/author/docker \
 	&& find /app -type d -empty -delete
 
 
