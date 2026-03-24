@@ -409,7 +409,6 @@ class GCAuthor
     public static function refreshProjectMapfile($project, $publish = false)
     {
         include_once ADMIN_PATH . "lib/functions.php";
-        include_once ADMIN_PATH . 'lib/spyc.php';
         include_once ADMIN_PATH . 'lib/gcFeature.class.php';
         include_once ADMIN_PATH . 'lib/gcMapfile.class.php';
         include_once ROOT_PATH . "lib/i18n.php";
@@ -458,7 +457,6 @@ class GCAuthor
     public static function refreshMapfile($project, $mapset, $publish = false, $refreshLayerMapfile = false)
     {
         include_once ADMIN_PATH . "lib/functions.php";
-        include_once ADMIN_PATH . 'lib/spyc.php';
         include_once ADMIN_PATH . 'lib/gcFeature.class.php';
         include_once ADMIN_PATH . 'lib/gcMapfile.class.php';
         include_once ROOT_PATH . "lib/i18n.php";
