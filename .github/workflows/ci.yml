@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare environment
         run: cp .env.dist .env
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare environment
         run: cp .env.dist .env
@@ -72,7 +72,7 @@ jobs:
       oci_source: ${{ steps.metadata.outputs.oci_source }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Compute release metadata
         id: metadata
@@ -96,7 +96,7 @@ jobs:
           cat version.txt
 
       - name: Upload version file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: version-file
           path: version.txt
@@ -108,7 +108,7 @@ jobs:
       - prepare-release
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download version file
         uses: actions/download-artifact@v4
@@ -147,7 +147,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download version file
         uses: actions/download-artifact@v4
