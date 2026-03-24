@@ -124,7 +124,7 @@ ARG GID=48
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 COPY --from=source --chown=root:root /app /app
 RUN dnf --nodocs update -y \
-	&& dnf --nodocs install -y binutils curl gzip procps telnet vim \
+	&& dnf --nodocs install -y binutils curl gzip procps telnet unzip vim \
 	&& dnf clean all \
 	&& cd /app/author \
 	&& composer install --no-ansi --no-interaction --no-plugins --no-progress --optimize-autoloader \

@@ -14,9 +14,9 @@ $containerConfigCache = new ConfigCache($file, DEBUG === 1);
 if (!$containerConfigCache->isFresh()) {
     $containerBuilder = new ContainerBuilder();
     $containerBuilder->setParameter('debug_dir', DEBUG_DIR);
-    $containerBuilder->setParameter('project_dir', ROOT_PATH);
+    $containerBuilder->setParameter('project_dir', rtrim(ROOT_PATH, '/'));
     $containerBuilder->setParameter('mapproxy_dir', MAPPROXY_PATH);
-    $containerBuilder->setParameter('tmp_dir', $containerBuilder->getParameter('project_dir') . 'tmp');
+    $containerBuilder->setParameter('tmp_dir', $containerBuilder->getParameter('project_dir') . '/tmp');
     $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/config'));
     $loader->load('container.yml');
 

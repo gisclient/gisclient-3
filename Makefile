@@ -14,6 +14,8 @@ VERSIONED_TAG ?= $(APP_VERSION)-$(BUILD_NUMBER)
 
 start: version-file
 	$(COMPOSE) up -d --build
+	$(MAKE) deps
+	$(MAKE) cache-clear
 	$(MAKE) db-upgrade
 
 up: version-file

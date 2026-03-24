@@ -107,7 +107,7 @@ versioned_tag() {
 version_file_value() {
     version=$(parse_version)
     sha=$(git_sha)
-    printf '%s-%s\n' "$version" "$sha"
+    printf '%s-%s-%s\n' "$version" "$BUILD_NUMBER" "$sha"
 }
 
 write_version_file() {

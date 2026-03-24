@@ -26,7 +26,7 @@ docker compose up
 Use the provided `Makefile` shortcuts for common development tasks:
 
 ```bash
-make start       # start all services in background, build images, and run db upgrade
+make start       # start all services in background, build images, install deps, and run db upgrade
 make up          # start all services in foreground and build images
 make down        # stop all services
 make clean       # stop services and remove volumes (full reset)
@@ -47,8 +47,6 @@ make rector-fix  # apply rector refactors
 make quality-fix # run all auto-fixes (rector-fix, ecs-fix)
 make cache-clear # clear container cache and restart backend service
 ```
-
-On first setup (or after resetting volumes), run `make deps` before `make test`.
 
 Open a browser and go to [http://127.0.0.1:8080/author/](http://127.0.0.1:8080/author/)
 

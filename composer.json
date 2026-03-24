@@ -10,6 +10,7 @@
         "ext-curl": "*",
         "ext-dom": "*",
         "phpoffice/phpexcel": "^1.8",
+        "sentry/sentry": "^4.23",
         "symfony/config": "^3.4",
         "symfony/console": "^3.4",
         "symfony/dependency-injection": "^3.4",
