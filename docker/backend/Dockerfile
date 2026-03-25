@@ -33,7 +33,7 @@ RUN dnf module enable -y php:7.4 \
 	php-sockets \
 	php-xml \
 	php-zip \
-	&& mkdir -p /run/php-fpm \ 
+	&& mkdir -p /run/php-fpm \
 	&& dnf clean all
 
 
@@ -122,16 +122,26 @@ USER 0
 ARG UID=48
 ARG GID=48
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-COPY --from=source --chown=root:root /app /app
+
+# Stable: system packages (only reruns if mapserver-rls base changes)
 RUN dnf --nodocs update -y \
 	&& dnf --nodocs install -y binutils curl gzip procps telnet unzip vim \
-	&& dnf clean all \
-	&& cd /app/author \
-	&& composer install --no-ansi --no-interaction --no-plugins --no-progress --optimize-autoloader \
+	&& dnf clean all
+
+# Stable: composer dependencies (only reruns if composer.json/lock changes)
+COPY --chown=root:root composer.json composer.lock /app/author/
+RUN cd /app/author \
+	&& composer install --no-ansi --no-interaction --no-plugins --no-progress --no-autoloader \
+	&& rm -rf /root/.cache/composer
+
+# Frequently-changing: source code (does NOT bust the layers above)
+COPY --from=source --chown=root:root /app /app
+RUN cd /app/author \
+	&& composer dump-autoload --optimize \
 	&& chmod 777 /app/author/var \
 	&& chmod 777 /app/author/map \
-	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list \
-	&& rm -rf /root/.cache/composer
+	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list
+
 WORKDIR /app/author
 USER ${UID}
 ENTRYPOINT ["docker-entrypoint.sh"]
