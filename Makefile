@@ -2,6 +2,7 @@ COMPOSE ?= docker compose
 PHP_SERVICE ?= author-be
 DOCKER ?= docker
 PLATFORM ?= linux/amd64
+PLATFORMS ?= linux/amd64,linux/arm64
 BUILD_NUMBER ?= local
 BACKEND_IMAGE ?= ghcr.io/gisclient/gisclient-3-backend
 FRONTEND_IMAGE ?= ghcr.io/gisclient/gisclient-3-frontend
@@ -9,8 +10,9 @@ APP_VERSION ?= $(shell scripts/release-metadata.sh parse-version)
 GIT_SHA ?= $(shell scripts/release-metadata.sh git-sha)
 OCI_SOURCE ?= $(shell scripts/release-metadata.sh source-url)
 VERSIONED_TAG ?= $(APP_VERSION)-$(BUILD_NUMBER)
+BAKE_FILE ?= docker-bake.hcl
 
-.PHONY: start up down clean deps db-upgrade test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear version-file build-backend build-frontend
+.PHONY: start up down clean deps db-upgrade test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear version-file build-backend build-frontend bake-validate bake-publish
 
 start: version-file
 	$(COMPOSE) up -d --build
@@ -28,7 +30,7 @@ clean:
 	$(COMPOSE) down -v --remove-orphans
 
 deps:
-	$(COMPOSE) exec -T -u 0 $(PHP_SERVICE) sh -lc 'COMPOSER_ALLOW_SUPERUSER=1 composer install'
+	$(COMPOSE) exec -T -u 0 $(PHP_SERVICE) sh -lc 'COMPOSER_ALLOW_SUPERUSER=1 composer install && chown -R apache:apache /app/author/var'
 
 db-upgrade:
 	sh -lc 'until $(COMPOSE) exec -T $(PHP_SERVICE) php -r '\''$$host = getenv("DB_HOST"); $$port = getenv("DB_PORT") ?: "5432"; $$dbname = getenv("DB_DBNAME"); $$user = getenv("DB_USER"); $$password = getenv("DB_PASSWORD"); $$connection = @pg_connect("host=$$host port=$$port dbname=$$dbname user=$$user password=$$password connect_timeout=1"); if (!$$connection) { exit(1); } pg_close($$connection);'\'' >/dev/null 2>&1; do sleep 2; done'
@@ -97,3 +99,11 @@ build-frontend: version-file
 		-t $(FRONTEND_IMAGE):latest \
 		-t $(FRONTEND_IMAGE):$(VERSIONED_TAG) \
 		-f docker/frontend/Dockerfile .
+
+bake-validate: version-file
+	BACKEND_IMAGE=$(BACKEND_IMAGE) FRONTEND_IMAGE=$(FRONTEND_IMAGE) VERSIONED_TAG=$(VERSIONED_TAG) GIT_SHA=$(GIT_SHA) OCI_SOURCE=$(OCI_SOURCE) VALIDATE_PLATFORMS=$(PLATFORMS) \
+		$(DOCKER) buildx bake --file $(BAKE_FILE) validate
+
+bake-publish: version-file
+	BACKEND_IMAGE=$(BACKEND_IMAGE) FRONTEND_IMAGE=$(FRONTEND_IMAGE) VERSIONED_TAG=$(VERSIONED_TAG) GIT_SHA=$(GIT_SHA) OCI_SOURCE=$(OCI_SOURCE) PUBLISH_PLATFORMS=$(PLATFORMS) \
+		$(DOCKER) buildx bake --file $(BAKE_FILE) --push publish
