@@ -9,7 +9,7 @@ use GisClient\Author\Persistence\PdoEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../Api/Support/TestApiCrudService.php';
-include __DIR__ . '/../../../config/config.db.php';
+include_once __DIR__ . '/../../../config/config.db.php';
 
 if (!defined('DEBUG')) {
     define('DEBUG', false);
