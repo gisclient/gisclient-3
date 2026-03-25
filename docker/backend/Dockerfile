@@ -137,8 +137,7 @@ RUN cd /app/author \
 # Frequently-changing: source code (does NOT bust the layers above)
 COPY --from=source --chown=root:root /app /app
 RUN cd /app/author \
-	&& composer dump-autoload --optimize \
-	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list
+	&& composer dump-autoload --optimize
 
 WORKDIR /app/author
 USER ${UID}
@@ -165,7 +164,6 @@ COPY --chown=root:root version.txt /app/author/version.txt
 
 RUN cd /app/author \
 	&& composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --optimize-autoloader \
-	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list \
 	&& rm -rf /root/.cache/composer
 
 USER 48
