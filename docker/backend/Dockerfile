@@ -138,8 +138,6 @@ RUN cd /app/author \
 COPY --from=source --chown=root:root /app /app
 RUN cd /app/author \
 	&& composer dump-autoload --optimize \
-	&& chmod 777 /app/author/var \
-	&& chmod 777 /app/author/map \
 	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list
 
 WORKDIR /app/author
@@ -167,8 +165,6 @@ COPY --chown=root:root version.txt /app/author/version.txt
 
 RUN cd /app/author \
 	&& composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --optimize-autoloader \
-	&& chmod 777 /app/author/var \
-	&& chmod 777 /app/author/map \
 	&& cp -a /app/author/fonts/fonts_sample.list /app/author/fonts/fonts.list \
 	&& rm -rf /root/.cache/composer
 
