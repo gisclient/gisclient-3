@@ -97,8 +97,11 @@ class GCService
             print_debug('start new session', null, 'system');
 
             // Get Symfony to interface with the existing session
-            $sessionHandler = new PdoSessionHandler(\GCApp::getDB(), [
+            $sessionDsn = 'pgsql:dbname=' . DB_NAME . ';host=' . DB_HOST . (defined('DB_PORT') && DB_PORT !== '' ? ';port=' . DB_PORT : '');
+            $sessionHandler = new PdoSessionHandler($sessionDsn, [
                 'db_table' => 'gisclient_34.sessions',
+                'db_username' => DB_USER,
+                'db_password' => DB_PWD,
             ]);
             $sessionStorage = new NativeSessionStorage([], $sessionHandler);
             if (defined('GC_SESSION_NAME')) {
