@@ -219,7 +219,7 @@ class page
         $this->navTreeValues = $tmp;
         //print_array($this->navTreeValues);
         $lbl = "<a class=\"link_label\" href=\"#\" onclick=\"javascript:navigate([],[])\">Admin</a>";
-        $n_elem = count($this->parametri);
+        $n_elem = is_array($this->parametri) ? count($this->parametri) : 0;
         if ($n_elem > 0) {
             $lvl = [];
             $val = [];
@@ -340,7 +340,7 @@ class page
         
     public function get_livello()
     {
-        if (count($this->parametri)) {
+        if (is_array($this->parametri) && count($this->parametri)) {
             $lvl = array_keys($this->parametri);
             return $lvl[count($lvl) - 1];
         } else {
@@ -349,17 +349,17 @@ class page
     }
     public function get_value()
     {
-        if (count($this->parametri)) {
+        if (is_array($this->parametri) && count($this->parametri)) {
             $tmp = array_keys($this->parametri);
             return $this->parametri[$tmp[count($this->parametri) - 1]];
         } else {
             return 0;
         }
     }
-        
+
     public function get_parentValue()
     {
-        if (count($this->parametri) > 1) {
+        if (is_array($this->parametri) && count($this->parametri) > 1) {
             $tmp = array_keys($this->parametri);
             return $this->parametri[$tmp[count($this->parametri) - 2]];
         } else {
@@ -455,7 +455,7 @@ class page
 
                 $flt = [];
                 foreach ($this->pageKeys as $key) {
-                    if ($el["value"]) {
+                    if (is_array($el) && $el["value"]) {
                         $flt[] = "$key = " . $this->db->quote($el["value"]);
                     }
                 }
@@ -490,7 +490,7 @@ class page
                 }
                 $flt = [];
                 foreach ($this->pageKeys as $key) {
-                    if ($el["value"]) {
+                    if (is_array($el) && $el["value"]) {
                         $flt[] = "$key = " . $this->db->quote($el["value"]);
                     }
                 }
@@ -674,7 +674,7 @@ class page
                 $tb = new Tabella_h($tab["config_file"] . ".tab", "list");
                 $flt = [];
                 foreach ($tb->pkeys as $key => $value) {
-                    if ($el["value"]) {
+                    if (is_array($el) && $el["value"]) {
                         $flt[] = "$key = " . $this->db->quote($el["value"]);
                     }
                 }
@@ -805,7 +805,7 @@ class page
                 $j = 0;
                 $filter = @implode(" AND ", $flt);
                     
-                if (count($this->errors)) {
+                if (is_array($this->errors) && count($this->errors)) {
                     $tb->set_errors($this->errors);
                     $tb->set_dati($_POST["dati"]);
                 } else {
@@ -847,7 +847,7 @@ class page
                     $flt[] = "$k=" . $this->db->quote($v);
                 }
                 $filter = @implode(" AND ", $flt);
-                if (count($this->errors)) {
+                if (is_array($this->errors) && count($this->errors)) {
                     $tb->set_errors($this->errors);
                     $tb->set_dati($_POST["dati"]);
                 }
@@ -878,7 +878,7 @@ class page
                     $prm["pkey_value[$j]"] = $this->_get_pkey_value($tb->pkeys[$j]);
                 }
                 $filter = $tab["parent_name"] . "_id = " . $this->db->quote($el["value"]);
-                if (count($this->errors)) {
+                if (is_array($this->errors) && count($this->errors)) {
                     $tb->set_errors($this->errors);
                     $tb->set_dati($_POST["dati"]);
                 }
@@ -1022,7 +1022,7 @@ class page
                 for ($j = 0; $j < count($tb->function_param); $j++) {
                     $tb->function_param[$j] = $this->parametri[$tb->function_param[$j]];
                 }
-                if (count($this->errors)) {
+                if (is_array($this->errors) && count($this->errors)) {
                     $tb->set_errors($this->errors);
                     $tb->set_dati($_POST["dati"]);
                 }
@@ -1060,7 +1060,7 @@ class page
 
             for ($i = 0; $i < count($this->tableList); $i++) {
                 $el = @each(@array_reverse($this->parametri, true));
-                $this->_getKey($el["value"]);
+                $this->_getKey(is_array($el) ? $el["value"] : null);
                 $prm = $this->_get_frm_parameter();
                 //VALORIZZO SE PRESENTI I PARAMETRI DELLE FUNZIONI DI SELECT
                 $tab = $this->tableList[$i];
@@ -1178,7 +1178,7 @@ class page
                     echo "<script>\n\t" . $tab["javascript"] . "('" . $tab["form_name"] . "');\n</script> \n";
                 }
             }
-            $arr_keys = (count($this->parametri)) ? (array_keys($this->parametri)) : ([]);
+            $arr_keys = (is_array($this->parametri) && count($this->parametri)) ? (array_keys($this->parametri)) : ([]);
 
             if (($this->mode == self::MODE_VIEW || $this->mode == self::MODE_LIST) && !empty($arr_keys[0])) {
                 $tmp = $this->parametri;
