@@ -686,7 +686,7 @@ class saveData
             $datipkeys = explode(';', $array_config["pkey"]);
             //for($i=0;$i<count($datipkeys);$i++) $this->pkeys[trim($datipkeys[$i])]=$pk[str_replace("_name","",str_replace("_id","",trim($datipkeys[$i])))];
             for ($i = 0; $i < count($pk); $i++) {
-                $this->pkeys[$pk[$i]] = stripslashes($pk_val[$i]);
+                $this->pkeys[$pk[$i]] = stripslashes($pk_val[$i] ?? '');
             }
         } else {
             $this->pkeys = [
