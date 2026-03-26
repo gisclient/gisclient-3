@@ -105,14 +105,14 @@ class Tabella_v extends Tabella
                 $retval = "<INPUT $class maxLength=\"$w\" size=\"$w\"  class=\"textbox\" name=\"dati[$campo]\" id=\"valuta\" value=\"$dato\" $disabilitato />$help";
                 break;
             case "locked":
-                $size = intval($w + ($w / 5));
+                $size = intval((int)$w + ((int)$w / 5));
                 $testo = stripslashes($dato);
                 $retval = "<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\"  id=\"locked_$campo\" value=\"$testo\" disabled /><input type=\"hidden\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" />$help";
                 break;
             case "text":
             case "textkey":
             case "image":
-                $size = intval($w + ($w / 5));
+                $size = intval((int)$w + ((int)$w / 5));
                 $testo = stripslashes(str_replace("\\", "\\\\", $dato));
                 $retval = "<INPUT $class maxLength=\"$w\" size=\"$size\"  class=\"textbox\" name=\"dati[$campo]\" id=\"$campo\" value=\"$testo\" $disabilitato />$help";
                 break;
