@@ -62,6 +62,17 @@ class MsMapObjFactoryDecorator
                 $processingInstructions = $processingToApply;
 
                 $objectType = $layer->getMetaData('obj_t');
+                if ($setRoleForThisLayer) {
+                    $path = in_array($objectType, $extras['object_types_using_geojson']) ? 'geojson' : 'postgis';
+                    print_debug(sprintf(
+                        'layer=%s obj_t=%s path=%s role=%s',
+                        $layer->name,
+                        $objectType,
+                        $path,
+                        $extras['us_db_role_name'] ?? '(none)'
+                    ), null, 'ows');
+                }
+
                 if ($setRoleForThisLayer && in_array($objectType, $extras['object_types_using_geojson'])) {
                     $geoJsonSource = $layer->getMetaData('geojson_source');
                     if (empty($geoJsonSource)) {
@@ -78,6 +89,7 @@ class MsMapObjFactoryDecorator
                         $geoJsonSource,
                         $this->getGeoJsonQueryStringFromRequest($request, $layer->name)
                     );
+                    print_debug(sprintf('geojson_source=%s', $geoJsonSource), null, 'ows');
 
                     $layer->setConnectionType(MS_OGR);
                     $layer->set('connection', sprintf('/vsicurl_streaming/%s', $geoJsonSource));

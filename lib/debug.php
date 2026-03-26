@@ -1,11 +1,7 @@
 <?php
 
 if (!defined('DEBUG_DIR')) {
-    if (defined('ROOT_PATH')) {
-        define('DEBUG_DIR', ROOT_PATH . 'config/debug/');
-    } else {
-        define('DEBUG_DIR', __DIR__ . '/../config/debug/');
-    }
+    define('DEBUG_DIR', defined('ROOT_PATH') ? ROOT_PATH . 'config/debug/' : __DIR__ . '/../config/debug/');
 }
 
 function print_debug($t = "", $db = null, $file = null)
@@ -13,38 +9,18 @@ function print_debug($t = "", $db = null, $file = null)
     if (DEBUG != 1) {
         return;
     }
-    if (!defined("DEBUG_DIR")) {
-        define("DEBUG_DIR", './');
-    } elseif (!is_dir(DEBUG_DIR)) {
-        mkdir(DEBUG_DIR);
-    }
-    $data = date('j-m-y');
-    $ora = date("H:i:s");
-    if (!$file) {
-        $nomefile = DEBUG_DIR . "standard.debug";
-    } else {
-        $nomefile = DEBUG_DIR . $file . ".debug";
-    }
-    $size = (file_exists($nomefile)) ? filesize($nomefile) : 0;
-    $f = ($size > 100000) ? (fopen($nomefile, "w+")) : (fopen($nomefile, "a+"));
+    $ts = date('d-m-y H:i:s');
+    $category = $file ?? 'debug';
+    $msg = (is_array($t) || is_object($t)) ? print_r($t, true) : (string)$t;
+    fwrite(fopen('php://stderr', 'w'), sprintf("\n%s [%s] %s\n", $ts, $category, $msg));
 
-    if (!$f) {
-        die("<p>Impossibile aprire il file $nomefile</p>");
-    }
-
-    if (is_array($t) || is_object($t)) {
-        ob_start();
-        print_r($t);
-        $out = ob_get_contents();
-        ob_end_clean();
-        if (!fwrite($f, "\n$data\t$ora\t --- STAMPA DI UN ARRAY ---\n\t$out")) {
-            echo "<p>Impossibile scrivere sul file $nomefile </p>";
-        }
-        fclose($f);
-    } elseif (!fwrite($f, "\n$data\t$ora\n\t" . $t)) {
-        echo "<p>Impossibile scrivere sul file $nomefile </p>";
-    } else {
-        fclose($f);
+    if (function_exists('Sentry\addBreadcrumb')) {
+        \Sentry\addBreadcrumb(new \Sentry\Breadcrumb(
+            \Sentry\Breadcrumb::LEVEL_DEBUG,
+            \Sentry\Breadcrumb::TYPE_DEFAULT,
+            $category,
+            $msg
+        ));
     }
 }
 

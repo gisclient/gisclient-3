@@ -171,6 +171,16 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
     }
 }
 
+$_gcUserLayers = $gcService->get('GISCLIENT_USER_LAYER') ?? [];
+print_debug(sprintf(
+    'GISCLIENT_USER_LAYER present=%s project=%s typename=%s layer_in_session=%s',
+    $gcService->has('GISCLIENT_USER_LAYER') ? 'yes' : 'no',
+    $project,
+    (string)$layersParameter,
+    isset($_gcUserLayers[$project][$layersParameter]) ? 'yes' : 'no'
+), null, 'ows');
+unset($_gcUserLayers);
+
 // close the session, because all relevant data are already writte into it
 $gcService->getSession()->save();
 
@@ -242,6 +252,8 @@ if (!empty($_REQUEST['GCFILTERS'])) {
     }
 }
 
+$layersToRemove = [];
+$layersToInclude = [];
 if (!empty($layersParameter)) {
     $layersArray = OwsHandler::getRequestedLayers($oMap, $objRequest, $layersParameter);
     
@@ -288,6 +300,11 @@ if (!empty($layersParameter)) {
     }
     // aggiorno il parametro layers con i soli layers che l'utente può vedere
     $objRequest->setParameter($parameterName, implode(",", $layersToInclude));
+    print_debug(sprintf(
+        'layersToInclude=[%s] layersToRemove=[%s]',
+        implode(',', $layersToInclude),
+        implode(',', $layersToRemove)
+    ), null, 'ows');
 }
 $gcService->saveAndClose();
 //die;
@@ -321,6 +338,21 @@ header('Access-Control-Allow-Origin: *');
 /* Execute request */
 $oMap->owsdispatch($objRequest);
 $contenttype = ms_iostripstdoutbuffercontenttype();
+print_debug(sprintf('owsdispatch done contenttype=%s', $contenttype), null, 'ows');
+if (defined('DEBUG') && DEBUG == 1 && function_exists('Sentry\captureMessage')) {
+    \Sentry\withScope(function (\Sentry\State\Scope $scope) use ($project, $layersParameter, $contenttype, $layersToInclude, $layersToRemove): void {
+        $scope->setTag('ows.service', 'WFS');
+        $scope->setTag('ows.project', $project ?? '');
+        $scope->setExtra('typename', $layersParameter ?? '');
+        $scope->setExtra('layers_include', $layersToInclude);
+        $scope->setExtra('layers_remove', $layersToRemove);
+        $scope->setExtra('response_content_type', $contenttype);
+        \Sentry\captureMessage(
+            sprintf('[ows.php] WFS dispatch: typename=%s contenttype=%s', $layersParameter, $contenttype),
+            \Sentry\Severity::debug()
+        );
+    });
+}
 /* Send response with appropriate header */
 if (substr($contenttype, 0, 6) == 'image/') {
     header('Content-Type: ' . $contenttype);
@@ -331,12 +363,10 @@ if (substr($contenttype, 0, 6) == 'image/') {
     $hasDynamicLayer = false;
     if (defined('DYNAMIC_LAYERS')) {
         $dynamicLayers = explode(',', DYNAMIC_LAYERS);
-        if (isset($layersToInclude)) {
-            foreach ($layersToInclude as $currentLayer) {
-                if (in_array($currentLayer, $dynamicLayers)) {
-                    $hasDynamicLayer = true;
-                    break;
-                }
+        foreach ($layersToInclude as $currentLayer) {
+            if (in_array($currentLayer, $dynamicLayers)) {
+                $hasDynamicLayer = true;
+                break;
             }
         }
     }

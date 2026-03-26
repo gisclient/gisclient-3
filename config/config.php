@@ -154,7 +154,7 @@ define('ADMIN_PATH', ROOT_PATH.'public/admin/');
 
 //debug
 if (!defined('DEBUG')) {
-    define('DEBUG', 0); // Debugging 0 off 1 on
+    define('DEBUG', gcEnvBool('APP_DEBUG', false) ? 1 : 0);
 }
 
 /****************** QUERY REPORTS ***************+*/

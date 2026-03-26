@@ -59,6 +59,7 @@
             "mkdir -p public/admin/export",
             "mkdir -p tmp/files",
             "mkdir -p tmp/sess",
+            "mkdir -p var/cache",
             "mkdir -p var/offline"
         ],
         "fix-writable-permissions": [
@@ -74,8 +75,7 @@
             "chmod 777 public/admin/export",
             "chmod 777 tmp/files",
             "chmod 777 tmp/sess",
-            "chmod 777 var",
-            "chmod 777 var/offline"
+            "chmod -R 777 var"
         ],
         "post-install-cmd": [
             "@create-writable-directories",
