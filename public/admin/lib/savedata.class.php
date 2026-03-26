@@ -621,9 +621,6 @@ class saveData
                 case "pword":
                 case "text":
                 case "textarea":
-                    if (get_magic_quotes_runtime() or get_magic_quotes_gpc()) {
-                        $val = stripslashes($val);
-                    }
                     break;
                 case "select":
                     break;
