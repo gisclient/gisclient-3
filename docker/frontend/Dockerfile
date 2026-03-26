@@ -19,7 +19,7 @@ LABEL org.opencontainers.image.version=$OCI_VERSION \
 WORKDIR /app
 
 RUN dnf --nodocs update -y \
-	&& dnf --nodocs install -y httpd \
+	&& dnf --nodocs install -y httpd mod_ssl \
 	&& dnf clean all
 
 COPY --from=source --chown=root:root /app /app
