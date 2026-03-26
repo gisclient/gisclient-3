@@ -115,6 +115,8 @@ RUN --mount=type=bind,from=builder,source=/tmp/rpms/mapserver.rpm,target=/tmp/ma
 	&& rm -f /tmp/fop-1.1-bin.tar.gz \
 	&& dnf clean all
 
+COPY docker/backend/10-app.ini /etc/php.d/10-app.ini
+
 
 FROM mapserver-rls AS dev
 
@@ -122,6 +124,8 @@ USER 0
 ARG UID=48
 ARG GID=48
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+
+COPY docker/backend/20-app.dev.ini /etc/php.d/20-app.ini
 
 # Stable: system packages (only reruns if mapserver-rls base changes)
 RUN dnf --nodocs update -y \
@@ -159,6 +163,7 @@ LABEL org.opencontainers.image.version=$OCI_VERSION \
 	org.opencontainers.image.source=$OCI_SOURCE
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+COPY docker/backend/20-app.prod.ini /etc/php.d/20-app.ini
 COPY --from=source --chown=root:root /app /app
 COPY --chown=root:root version.txt /app/author/version.txt
 
