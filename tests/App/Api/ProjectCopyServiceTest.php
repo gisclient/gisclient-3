@@ -21,6 +21,7 @@ use GisClient\Author\Api\Dto\ThemeDto;
 use GisClient\Author\Api\ProjectCopy\ProjectCopyRequest;
 use GisClient\Author\Api\ProjectCopy\ProjectCopyRequestParser;
 use GisClient\Author\Api\Service\ProjectCopyService;
+use GisClient\Author\Api\Service\ProjectTransferService;
 use PHPUnit\Framework\TestCase;
 
 class ProjectCopyServiceTest extends TestCase
@@ -45,7 +46,7 @@ class ProjectCopyServiceTest extends TestCase
 
     public function testExecuteRejectsMissingSourceProject(): void
     {
-        $service = new ProjectCopyService(new ProjectCopyGatewayStub());
+        $service = new ProjectCopyService(new ProjectCopyGatewayStub(), new ProjectTransferService());
 
         $this->assertApiException(static function () use ($service): void {
             $service->execute(new ProjectCopyRequest('missing', 'target', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
@@ -72,7 +73,7 @@ class ProjectCopyServiceTest extends TestCase
                 ]),
             ],
         ]);
-        $service = new ProjectCopyService($gateway);
+        $service = new ProjectCopyService($gateway, new ProjectTransferService());
 
         $this->assertApiException(static function () use ($service): void {
             $service->execute(new ProjectCopyRequest('source', 'target', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
@@ -92,7 +93,7 @@ class ProjectCopyServiceTest extends TestCase
                 ]),
             ],
         ]);
-        $service = new ProjectCopyService($gateway);
+        $service = new ProjectCopyService($gateway, new ProjectTransferService());
 
         $this->assertApiException(static function () use ($service): void {
             $service->execute(new ProjectCopyRequest('source', 'bad-name', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
@@ -109,7 +110,7 @@ class ProjectCopyServiceTest extends TestCase
                 $this->makeMapset('target', 'target', 'target'),
             ],
         ]);
-        $service = new ProjectCopyService($gateway);
+        $service = new ProjectCopyService($gateway, new ProjectTransferService());
 
         $this->assertApiException(static function () use ($service): void {
             $service->execute(new ProjectCopyRequest('source', 'target', null, ProjectCopyRequestParser::MAPSET_NAMING_REPLACE_PROJECT_NAME, false, false));
@@ -230,7 +231,7 @@ class ProjectCopyServiceTest extends TestCase
             'selgroup_layer' => [$selgroupLayer],
             'project_admin' => [$projectAdmin],
         ]);
-        $service = new ProjectCopyService($gateway);
+        $service = new ProjectCopyService($gateway, new ProjectTransferService());
 
         $response = $service->execute(new ProjectCopyRequest(
             'source',
@@ -287,7 +288,7 @@ class ProjectCopyServiceTest extends TestCase
             'selgroup_layer' => [],
             'project_admin' => [],
         ]);
-        $service = new ProjectCopyService($gateway);
+        $service = new ProjectCopyService($gateway, new ProjectTransferService());
 
         $service->execute(new ProjectCopyRequest(
             'source',

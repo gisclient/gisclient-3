@@ -106,7 +106,9 @@ class ProjectCopyIntegrationTest extends TestCase
         $repository = new PdoEntityRepository(GCApp::getDB());
         $crudService = new ApiCrudService($repository, new \GisClient\Author\Api\Validation\EntityValidator(GCApp::getDB()));
 
-        return new ProjectCopyService(new ApiCrudServiceGateway($crudService, GCApp::getDB()));
+        $gateway = new ApiCrudServiceGateway($crudService, GCApp::getDB());
+
+        return new ProjectCopyService($gateway, new \GisClient\Author\Api\Service\ProjectTransferService());
     }
 
     private function cleanupProject(string $projectName): void
