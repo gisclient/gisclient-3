@@ -36,6 +36,27 @@ class GCApp
     private static $dataDBs = [];
 
     /**
+     * @var \Psr\Container\ContainerInterface|\Symfony\Component\DependencyInjection\ContainerInterface|null
+     */
+    private static $container;
+
+    public static function setContainer($container): void
+    {
+        self::$container = $container;
+    }
+
+    /**
+     * @return \Psr\Container\ContainerInterface|\Symfony\Component\DependencyInjection\ContainerInterface
+     */
+    public static function getContainer()
+    {
+        if (self::$container === null) {
+            throw new \RuntimeException('DI container has not been initialised. Call GCApp::setContainer() in bootstrap.php first.');
+        }
+        return self::$container;
+    }
+
+    /**
      * Get database instance
      *
      * @return \PDO

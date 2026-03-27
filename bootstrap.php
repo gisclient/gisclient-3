@@ -39,3 +39,4 @@ if (($sentryDsn = getenv('SENTRY_DSN')) && function_exists('Sentry\init')) {
 
 require_once(__DIR__ . '/config/config.php');
 $container = require_once(__DIR__ . '/container.php');
+\GCApp::setContainer($container);
