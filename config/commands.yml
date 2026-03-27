@@ -1,4 +1,6 @@
 commands:
     - GisClient\Author\Command\CreateSqliteCommand
     - GisClient\Author\Command\DbUpgradeCommand
+    - GisClient\Author\Command\ProjectExportCommand
+    - GisClient\Author\Command\ProjectImportCommand
     - GisClient\Author\Command\RefreshMapfileCommand

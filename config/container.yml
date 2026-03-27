@@ -39,11 +39,24 @@ services:
 
   GisClient\Author\Api\Gateway\ApiCrudGatewayInterface:
     class: GisClient\Author\Api\Gateway\ApiCrudServiceGateway
+    public: true
 
   GisClient\Author\Api\Service\ApiCrudService:
     public: true
 
   GisClient\Author\Api\Service\ProjectCopyService:
+    public: true
+
+  GisClient\Author\Api\Service\ProjectTransferService:
+    public: true
+
+  GisClient\Author\Api\Service\ProjectExportService:
+    public: true
+
+  GisClient\Author\Api\Service\ProjectImportService:
+    public: true
+
+  GisClient\Author\Api\Serializer\DtoSerializer:
     public: true
 
   Symfony\Component\Config\FileLocator:
