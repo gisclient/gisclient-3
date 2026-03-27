@@ -2,7 +2,7 @@
 
 set -eu
 
-SQL_FILE=${SQL_FILE:-doc/update_db_from_3.4.0.sql}
+SQL_FILE=${SQL_FILE:-doc/migrations/3.6.4_upgrade.sql}
 VERSION_FILE=${VERSION_FILE:-version.txt}
 BUILD_NUMBER=${BUILD_NUMBER:-local}
 

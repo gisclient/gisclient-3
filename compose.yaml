@@ -12,6 +12,7 @@ services:
       - 5432:5432
     volumes:
       - ./docker/postgresql/initdb:/docker-entrypoint-initdb.d:ro
+      - ./sample-data:/sample-data:ro
       - postgresql17:/var/lib/postgresql/data
 
   author-be:
@@ -42,6 +43,10 @@ services:
       - type: volume
         source: fonts
         target: /app/author/fonts
+      - type: bind
+        source: ./sample-data
+        target: /sample-data
+        read_only: true
     depends_on:
       - db
 

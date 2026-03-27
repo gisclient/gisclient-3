@@ -12,13 +12,14 @@ OCI_SOURCE ?= $(shell scripts/release-metadata.sh source-url)
 VERSIONED_TAG ?= $(APP_VERSION)-$(BUILD_NUMBER)
 BAKE_FILE ?= docker-bake.hcl
 
-.PHONY: start up down clean deps db-upgrade test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear version-file build-backend build-frontend bake-validate bake-publish
+.PHONY: start up down clean deps db-upgrade seed test test-ci phpstan phpstan-ci ecs ecs-ci rector rector-ci quality quality-ci ecs-fix rector-fix quality-fix cache-clear version-file build-backend build-frontend bake-validate bake-publish
 
 start: version-file
 	$(COMPOSE) up -d --build
 	$(MAKE) deps
 	$(MAKE) cache-clear
 	$(MAKE) db-upgrade
+	$(MAKE) seed
 
 up: version-file
 	$(COMPOSE) up --build
@@ -35,6 +36,10 @@ deps:
 db-upgrade:
 	sh -lc 'until $(COMPOSE) exec -T $(PHP_SERVICE) php -r '\''$$host = getenv("DB_HOST"); $$port = getenv("DB_PORT") ?: "5432"; $$dbname = getenv("DB_DBNAME"); $$user = getenv("DB_USER"); $$password = getenv("DB_PASSWORD"); $$connection = @pg_connect("host=$$host port=$$port dbname=$$dbname user=$$user password=$$password connect_timeout=1"); if (!$$connection) { exit(1); } pg_close($$connection);'\'' >/dev/null 2>&1; do sleep 2; done'
 	$(COMPOSE) exec -T $(PHP_SERVICE) php bin/console gisclient:dbupgrade
+
+seed: ## Load dev sample data: geo schema + sample project (run automatically by make start)
+	$(COMPOSE) exec -T db bash /sample-data/10-seed.sh
+	$(COMPOSE) exec -T $(PHP_SERVICE) php bin/console gisclient:project:import /sample-data/default_project.json
 
 test:
 	$(COMPOSE) exec -T $(PHP_SERVICE) composer run test

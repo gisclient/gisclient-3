@@ -1,0 +1,4047 @@
+{
+    "format_version": "1.0",
+    "project_name": "default",
+    "resources": {
+        "project": [
+            {
+                "type": "project",
+                "id": "default",
+                "attributes": {
+                    "project_title": "Default project",
+                    "xc": 501090,
+                    "yc": 5022596,
+                    "project_srid": 32632,
+                    "max_extent_scale": 50000,
+                    "charset_encodings_id": 2,
+                    "default_language_id": "it",
+                    "base_path": null,
+                    "base_url": null,
+                    "imagelabel_text": null,
+                    "imagelabel_position": null,
+                    "imagelabel_offset_x": null,
+                    "imagelabel_offset_y": null,
+                    "imagelabel_font": null,
+                    "imagelabel_size": null,
+                    "imagelabel_color": null,
+                    "icon_h": null,
+                    "icon_w": null,
+                    "project_note": null
+                }
+            }
+        ],
+        "project_srs": [
+            {
+                "type": "project_srs",
+                "id": "2",
+                "attributes": {
+                    "srid": 3857,
+                    "projparam": null
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "project_srs",
+                "id": "1",
+                "attributes": {
+                    "srid": 32632,
+                    "projparam": null
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            }
+        ],
+        "catalog": [
+            {
+                "type": "catalog",
+                "id": "1",
+                "attributes": {
+                    "catalog_name": "geo",
+                    "connection_type": 6,
+                    "set_extent": 1,
+                    "catalog_path": "gisclient/geo",
+                    "files_path": null,
+                    "catalog_description": null
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            }
+        ],
+        "link": [],
+        "theme": [
+            {
+                "type": "theme",
+                "id": "19",
+                "attributes": {
+                    "theme_name": "boundaries_places",
+                    "theme_title": "Boundaries and places",
+                    "theme_order": 10,
+                    "copyright_string": "© <a target=\"_blank\" href =\"http://opendatacommons.org/licenses/odbl/summary/\">OpenStreetMap</a> contributors",
+                    "symbol_name": null,
+                    "theme_single": 0,
+                    "radio": 0
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "theme",
+                "id": "1",
+                "attributes": {
+                    "theme_name": "buildings",
+                    "theme_title": "Buildings",
+                    "theme_order": 20,
+                    "copyright_string": "© <a target=\"_blank\" href =\"http://opendatacommons.org/licenses/odbl/summary/\">OpenStreetMap</a> contributors",
+                    "symbol_name": null,
+                    "theme_single": 0,
+                    "radio": 0
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "theme",
+                "id": "22",
+                "attributes": {
+                    "theme_name": "roads",
+                    "theme_title": "Roads",
+                    "theme_order": 30,
+                    "copyright_string": "© <a target=\"_blank\" href =\"http://opendatacommons.org/licenses/odbl/summary/\">OpenStreetMap</a> contributors",
+                    "symbol_name": null,
+                    "theme_single": 0,
+                    "radio": 0
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "theme",
+                "id": "27",
+                "attributes": {
+                    "theme_name": "railroads",
+                    "theme_title": "Railroads",
+                    "theme_order": 40,
+                    "copyright_string": "© <a target=\"_blank\" href =\"http://opendatacommons.org/licenses/odbl/summary/\">OpenStreetMap</a> contributors",
+                    "symbol_name": null,
+                    "theme_single": 0,
+                    "radio": 0
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "theme",
+                "id": "21",
+                "attributes": {
+                    "theme_name": "hydro",
+                    "theme_title": "Hydro",
+                    "theme_order": 50,
+                    "copyright_string": "© <a target=\"_blank\" href =\"http://opendatacommons.org/licenses/odbl/summary/\">OpenStreetMap</a> contributors",
+                    "symbol_name": null,
+                    "theme_single": 0,
+                    "radio": 0
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            }
+        ],
+        "layergroup": [
+            {
+                "type": "layergroup",
+                "id": "93",
+                "attributes": {
+                    "layergroup_name": "places",
+                    "layergroup_title": "Places",
+                    "layergroup_order": 100,
+                    "owstype_id": 1,
+                    "layergroup_maxscale": 501000,
+                    "layergroup_minscale": null,
+                    "opacity": "100",
+                    "outputformat_id": 7,
+                    "layers": null,
+                    "tiles_extent_srid": null,
+                    "tiles_extent": null,
+                    "url": null,
+                    "wmsversion_id": null,
+                    "tile_origin": null,
+                    "tile_resolutions": null,
+                    "style": null,
+                    "tile_matrix_set": null,
+                    "sld": null,
+                    "metadata_url": null,
+                    "gutter": 0,
+                    "buffer": null,
+                    "isbaselayer": 0,
+                    "transition": 0,
+                    "layergroup_single": 0,
+                    "tiletype_id": 0
+                },
+                "relationships": {
+                    "theme": {
+                        "data": {
+                            "type": "theme",
+                            "id": "19"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layergroup",
+                "id": "34",
+                "attributes": {
+                    "layergroup_name": "boundaries",
+                    "layergroup_title": "Boundaries",
+                    "layergroup_order": 200,
+                    "owstype_id": 1,
+                    "layergroup_maxscale": null,
+                    "layergroup_minscale": null,
+                    "opacity": "100",
+                    "outputformat_id": 7,
+                    "layers": null,
+                    "tiles_extent_srid": null,
+                    "tiles_extent": null,
+                    "url": null,
+                    "wmsversion_id": null,
+                    "tile_origin": null,
+                    "tile_resolutions": null,
+                    "style": null,
+                    "tile_matrix_set": null,
+                    "sld": null,
+                    "metadata_url": null,
+                    "gutter": 0,
+                    "buffer": null,
+                    "isbaselayer": 0,
+                    "transition": 0,
+                    "layergroup_single": 0,
+                    "tiletype_id": 1
+                },
+                "relationships": {
+                    "theme": {
+                        "data": {
+                            "type": "theme",
+                            "id": "19"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layergroup",
+                "id": "1",
+                "attributes": {
+                    "layergroup_name": "buildings",
+                    "layergroup_title": "Buildings",
+                    "layergroup_order": null,
+                    "owstype_id": 1,
+                    "layergroup_maxscale": 300000,
+                    "layergroup_minscale": null,
+                    "opacity": "100",
+                    "outputformat_id": 7,
+                    "layers": null,
+                    "tiles_extent_srid": null,
+                    "tiles_extent": null,
+                    "url": null,
+                    "wmsversion_id": null,
+                    "tile_origin": null,
+                    "tile_resolutions": null,
+                    "style": null,
+                    "tile_matrix_set": null,
+                    "sld": null,
+                    "metadata_url": null,
+                    "gutter": 0,
+                    "buffer": null,
+                    "isbaselayer": 0,
+                    "transition": 0,
+                    "layergroup_single": 0,
+                    "tiletype_id": 1
+                },
+                "relationships": {
+                    "theme": {
+                        "data": {
+                            "type": "theme",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layergroup",
+                "id": "89",
+                "attributes": {
+                    "layergroup_name": "roads",
+                    "layergroup_title": "Roads",
+                    "layergroup_order": null,
+                    "owstype_id": 1,
+                    "layergroup_maxscale": null,
+                    "layergroup_minscale": null,
+                    "opacity": "100",
+                    "outputformat_id": 7,
+                    "layers": null,
+                    "tiles_extent_srid": null,
+                    "tiles_extent": null,
+                    "url": null,
+                    "wmsversion_id": null,
+                    "tile_origin": null,
+                    "tile_resolutions": null,
+                    "style": null,
+                    "tile_matrix_set": null,
+                    "sld": null,
+                    "metadata_url": null,
+                    "gutter": 0,
+                    "buffer": null,
+                    "isbaselayer": 0,
+                    "transition": 0,
+                    "layergroup_single": 0,
+                    "tiletype_id": 1
+                },
+                "relationships": {
+                    "theme": {
+                        "data": {
+                            "type": "theme",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layergroup",
+                "id": "90",
+                "attributes": {
+                    "layergroup_name": "railroads",
+                    "layergroup_title": "Railroads",
+                    "layergroup_order": null,
+                    "owstype_id": 1,
+                    "layergroup_maxscale": 101000,
+                    "layergroup_minscale": null,
+                    "opacity": "100",
+                    "outputformat_id": 7,
+                    "layers": null,
+                    "tiles_extent_srid": null,
+                    "tiles_extent": null,
+                    "url": null,
+                    "wmsversion_id": null,
+                    "tile_origin": null,
+                    "tile_resolutions": null,
+                    "style": null,
+                    "tile_matrix_set": null,
+                    "sld": null,
+                    "metadata_url": null,
+                    "gutter": 0,
+                    "buffer": null,
+                    "isbaselayer": 0,
+                    "transition": 0,
+                    "layergroup_single": 0,
+                    "tiletype_id": 1
+                },
+                "relationships": {
+                    "theme": {
+                        "data": {
+                            "type": "theme",
+                            "id": "27"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layergroup",
+                "id": "66",
+                "attributes": {
+                    "layergroup_name": "hydro",
+                    "layergroup_title": "Hydro",
+                    "layergroup_order": null,
+                    "owstype_id": 1,
+                    "layergroup_maxscale": null,
+                    "layergroup_minscale": null,
+                    "opacity": "100",
+                    "outputformat_id": 7,
+                    "layers": null,
+                    "tiles_extent_srid": null,
+                    "tiles_extent": null,
+                    "url": null,
+                    "wmsversion_id": null,
+                    "tile_origin": null,
+                    "tile_resolutions": null,
+                    "style": null,
+                    "tile_matrix_set": null,
+                    "sld": null,
+                    "metadata_url": null,
+                    "gutter": 0,
+                    "buffer": null,
+                    "isbaselayer": 0,
+                    "transition": 0,
+                    "layergroup_single": 0,
+                    "tiletype_id": 1
+                },
+                "relationships": {
+                    "theme": {
+                        "data": {
+                            "type": "theme",
+                            "id": "21"
+                        }
+                    }
+                }
+            }
+        ],
+        "mapset": [
+            {
+                "type": "mapset",
+                "id": "default",
+                "attributes": {
+                    "mapset_title": "Default mapset",
+                    "maxscale": 50000,
+                    "minscale": null,
+                    "mapset_srid": 32632,
+                    "displayprojection": 32632,
+                    "sizeunits_id": 5,
+                    "mapset_scales": "1500000,1000000,500000,250000,100000,50000,25000,10000,5000,2000,1000,500,250,100,50",
+                    "mapset_extent": "-245758 4561502 1247938 5483690",
+                    "refmap_extent": "-245758 4561502 1247938 5483690",
+                    "template": null,
+                    "mapset_scale_type": 0,
+                    "mapset_order": 0,
+                    "private": 0,
+                    "mapset_description": null,
+                    "page_size": null,
+                    "dl_image_res": null,
+                    "mapset_def": null,
+                    "metadata": null,
+                    "geolocator": null,
+                    "bg_color": "255 255 255",
+                    "static_reference": 0,
+                    "mapset_tiles": 0
+                },
+                "relationships": {
+                    "project": {
+                        "data": {
+                            "type": "project",
+                            "id": "default"
+                        }
+                    }
+                }
+            }
+        ],
+        "layer": [
+            {
+                "type": "layer",
+                "id": "26",
+                "attributes": {
+                    "layer_name": "city",
+                    "layer_title": "City",
+                    "layer_order": 100,
+                    "opacity": null,
+                    "layertype_id": 1,
+                    "data_type": "point",
+                    "data": "place_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": "500000",
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": "code = 1001",
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": "name",
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "93"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "31",
+                "attributes": {
+                    "layer_name": "town",
+                    "layer_title": "Town",
+                    "layer_order": 200,
+                    "opacity": null,
+                    "layertype_id": 1,
+                    "data_type": "point",
+                    "data": "place_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": "100000",
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": "code = 1002",
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": "name",
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "93"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "32",
+                "attributes": {
+                    "layer_name": "village_suburb",
+                    "layer_title": "Village and suburb",
+                    "layer_order": 300,
+                    "opacity": null,
+                    "layertype_id": 1,
+                    "data_type": "point",
+                    "data": "place_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": "40000",
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": "code = 1003 OR code = 1010",
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": "name",
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "93"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "33",
+                "attributes": {
+                    "layer_name": "hamlet_locality",
+                    "layer_title": "Hamlet and locality",
+                    "layer_order": 400,
+                    "opacity": null,
+                    "layertype_id": 1,
+                    "data_type": "point",
+                    "data": "place_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": "10000",
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": "code = 1004 OR code = 1050",
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": "name",
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "93"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "20",
+                "attributes": {
+                    "layer_name": "boundaries",
+                    "layer_title": "boundaries",
+                    "layer_order": 0,
+                    "opacity": null,
+                    "layertype_id": 3,
+                    "data_type": "multipolygon",
+                    "data": "adm_bound_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": null,
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": null,
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": null,
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "34"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "1",
+                "attributes": {
+                    "layer_name": "buildings",
+                    "layer_title": "buildings",
+                    "layer_order": 0,
+                    "opacity": null,
+                    "layertype_id": 3,
+                    "data_type": "multipolygon",
+                    "data": "edifici_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": null,
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": null,
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": null,
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "22",
+                "attributes": {
+                    "layer_name": "roads",
+                    "layer_title": "roads",
+                    "layer_order": 0,
+                    "opacity": null,
+                    "layertype_id": 2,
+                    "data_type": "multilinestring",
+                    "data": "strade_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": null,
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": null,
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": null,
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "89"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "23",
+                "attributes": {
+                    "layer_name": "railroads",
+                    "layer_title": "railroads",
+                    "layer_order": 0,
+                    "opacity": null,
+                    "layertype_id": 2,
+                    "data_type": "multilinestring",
+                    "data": "railroad_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": null,
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": null,
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": null,
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "90"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "21",
+                "attributes": {
+                    "layer_name": "poly",
+                    "layer_title": "poly",
+                    "layer_order": 100,
+                    "opacity": "75",
+                    "layertype_id": 3,
+                    "data_type": "multipolygon",
+                    "data": "idro_poli_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": null,
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": null,
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": null,
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "66"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "layer",
+                "id": "24",
+                "attributes": {
+                    "layer_name": "line",
+                    "layer_title": "line",
+                    "layer_order": 200,
+                    "opacity": null,
+                    "layertype_id": 2,
+                    "data_type": "multilinestring",
+                    "data": "idro_line_osm",
+                    "data_geom": "the_geom",
+                    "data_unique": "gid",
+                    "data_srid": 32632,
+                    "maxscale": "501000",
+                    "minscale": null,
+                    "symbolscale": null,
+                    "sizeunits_id": 1,
+                    "data_extent": null,
+                    "data_filter": null,
+                    "layer_def": null,
+                    "metadata": null,
+                    "labelitem": null,
+                    "labelsizeitem": null,
+                    "labelmaxscale": null,
+                    "labelminscale": null,
+                    "postlabelcache": 0,
+                    "classitem": null,
+                    "private": 0,
+                    "queryable": 0,
+                    "hide_vector_geom": 0,
+                    "hidden": 0,
+                    "searchable_id": 0,
+                    "template": null,
+                    "header": null,
+                    "footer": null,
+                    "tolerance": null,
+                    "toleranceunits_id": 1,
+                    "selection_width": null,
+                    "selection_color": null,
+                    "maxfeatures": null,
+                    "maxvectfeatures": null,
+                    "zoom_buffer": null,
+                    "last_update": null
+                },
+                "relationships": {
+                    "catalog": {
+                        "data": {
+                            "type": "catalog",
+                            "id": "1"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "66"
+                        }
+                    }
+                }
+            }
+        ],
+        "class": [
+            {
+                "type": "class",
+                "id": "38",
+                "attributes": {
+                    "class_name": "city",
+                    "class_title": "City",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": "verdana-bold",
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": "12",
+                    "class_text": null,
+                    "label_color": "0 0 0",
+                    "label_outlinecolor": "255 255 255",
+                    "label_bgcolor": null,
+                    "label_position": "AUTO",
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 99,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "26"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "45",
+                "attributes": {
+                    "class_name": "town",
+                    "class_title": "Town",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": "verdana",
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": "10",
+                    "class_text": null,
+                    "label_color": "0 0 0",
+                    "label_outlinecolor": "255 255 255",
+                    "label_bgcolor": null,
+                    "label_position": "AUTO",
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "31"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "46",
+                "attributes": {
+                    "class_name": "village_suburb",
+                    "class_title": "Village and suburb",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": "verdana",
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": "7",
+                    "class_text": null,
+                    "label_color": "0 0 0",
+                    "label_outlinecolor": "255 255 255",
+                    "label_bgcolor": null,
+                    "label_position": "AUTO",
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": null,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "32"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "47",
+                "attributes": {
+                    "class_name": "hamlet_locality",
+                    "class_title": "Hamlet locality",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": "verdana",
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": "6",
+                    "class_text": null,
+                    "label_color": "0 0 0",
+                    "label_outlinecolor": "255 255 255",
+                    "label_bgcolor": null,
+                    "label_position": "AUTO",
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "33"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "39",
+                "attributes": {
+                    "class_name": "regions",
+                    "class_title": "Regions",
+                    "class_order": 100,
+                    "expression": "([admin_lv] = 4)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "20"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "40",
+                "attributes": {
+                    "class_name": "provinces",
+                    "class_title": "Provinces",
+                    "class_order": 200,
+                    "expression": "([admin_lv] = 6)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "20"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "41",
+                "attributes": {
+                    "class_name": "municipalities",
+                    "class_title": "Municipalities",
+                    "class_order": 300,
+                    "expression": "([admin_lv] = 8)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "1000000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "20"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "3",
+                "attributes": {
+                    "class_name": "buildings",
+                    "class_title": "Buildings",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "48",
+                "attributes": {
+                    "class_name": "motorway",
+                    "class_title": "Motorway",
+                    "class_order": 100,
+                    "expression": "(\"[code]\" IN \"5111,5131\")",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "2001000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "49",
+                "attributes": {
+                    "class_name": "primary_trunk",
+                    "class_title": "Primary / trunk",
+                    "class_order": 200,
+                    "expression": "(\"[code]\" IN \"5113,5112,5133,5132\")",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "251000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "50",
+                "attributes": {
+                    "class_name": "secondary",
+                    "class_title": "Secondary",
+                    "class_order": 300,
+                    "expression": "(\"[code]\" IN \"5114,5134\")",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "101000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "51",
+                "attributes": {
+                    "class_name": "tertiary",
+                    "class_title": "Tertiary",
+                    "class_order": 400,
+                    "expression": "(\"[code]\" IN \"5115,5135\")",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "51000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "52",
+                "attributes": {
+                    "class_name": "unclassified",
+                    "class_title": "Unclassified",
+                    "class_order": 500,
+                    "expression": "(\"[code]\" IN \"5121\")",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "26000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "53",
+                "attributes": {
+                    "class_name": "residential_service",
+                    "class_title": "Residential / service",
+                    "class_order": 600,
+                    "expression": "(\"[code]\" IN \"5122,5141\")",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "11000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "44",
+                "attributes": {
+                    "class_name": "others",
+                    "class_title": "Others",
+                    "class_order": 999,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "6000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "22"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "37",
+                "attributes": {
+                    "class_name": "railroads",
+                    "class_title": "Railroads",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "35",
+                "attributes": {
+                    "class_name": "hydro_poly",
+                    "class_title": "Hydro poly",
+                    "class_order": null,
+                    "expression": null,
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": null,
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "21"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "34",
+                "attributes": {
+                    "class_name": "river",
+                    "class_title": "River",
+                    "class_order": 100,
+                    "expression": "([code] = 8101)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "501000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "42",
+                "attributes": {
+                    "class_name": "stream",
+                    "class_title": "Stream",
+                    "class_order": 200,
+                    "expression": "([code] = 8102)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "26000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "43",
+                "attributes": {
+                    "class_name": "canal",
+                    "class_title": "Canal",
+                    "class_order": 300,
+                    "expression": "([code] = 8103)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "101000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "class",
+                "id": "36",
+                "attributes": {
+                    "class_name": "drain",
+                    "class_title": "Drain",
+                    "class_order": 400,
+                    "expression": "([code] = 8104)",
+                    "keyimage": null,
+                    "legendtype_id": 1,
+                    "maxscale": "51000",
+                    "minscale": null,
+                    "class_template": null,
+                    "label_font": null,
+                    "label_maxsize": null,
+                    "label_minsize": null,
+                    "label_size": null,
+                    "class_text": null,
+                    "label_color": null,
+                    "label_outlinecolor": null,
+                    "label_bgcolor": null,
+                    "label_position": null,
+                    "label_angle": null,
+                    "label_def": null,
+                    "label_force": 1,
+                    "label_priority": null,
+                    "label_buffer": 0,
+                    "label_antialias": 1,
+                    "label_wrap": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            }
+        ],
+        "style": [
+            {
+                "type": "style",
+                "id": "1",
+                "attributes": {
+                    "style_name": "center1",
+                    "style_order": 10,
+                    "symbol_name": "CIRCLE",
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": "255 255 255",
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": "11",
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "2",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "38"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "2",
+                "attributes": {
+                    "style_name": "center2",
+                    "style_order": 20,
+                    "symbol_name": "CIRCLE",
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": "16",
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": null,
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "38"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "57",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": null,
+                    "outlinecolor": "0 0 0",
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": "1",
+                    "minwidth": "3",
+                    "width": "2",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "39"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "56",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": null,
+                    "outlinecolor": "75 75 75",
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": "1",
+                    "minwidth": "3",
+                    "width": "2",
+                    "angle": null,
+                    "style_def": "OPACITY 75"
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "40"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "55",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": null,
+                    "outlinecolor": "225 225 225",
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": "2",
+                    "minwidth": "1",
+                    "width": "1",
+                    "angle": null,
+                    "style_def": "OPACITY 80"
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "41"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "3",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "200 200 200",
+                    "outlinecolor": "150 150 150",
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": null,
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "3"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "60",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": 100,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "255 150 150",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": "5",
+                    "minwidth": "3",
+                    "width": "4",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "48"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "69",
+                "attributes": {
+                    "style_name": "background",
+                    "style_order": 200,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "155 50 50",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": "5.5",
+                    "minwidth": "3.5",
+                    "width": "4.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "48"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "63",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": 100,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "255 191 63",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "3.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "49"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "70",
+                "attributes": {
+                    "style_name": "background",
+                    "style_order": 200,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "4",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "49"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "64",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": 100,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "255 255 63",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "3",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "50"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "71",
+                "attributes": {
+                    "style_name": "background",
+                    "style_order": 200,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "3.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "50"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "61",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": 100,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "255 255 255",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "3",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "51"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "68",
+                "attributes": {
+                    "style_name": "background",
+                    "style_order": 200,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "3.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "51"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "62",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": 100,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "255 255 255",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "2.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "52"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "67",
+                "attributes": {
+                    "style_name": "background",
+                    "style_order": 200,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "3",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "52"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "65",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": 100,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "255 255 255",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "2",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "53"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "66",
+                "attributes": {
+                    "style_name": "background",
+                    "style_order": 200,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "0 0 0",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "2.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "53"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "59",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "200 200 200",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "1",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "44"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "53",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "150 150 150",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "2",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "37"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "51",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "74 146 214",
+                    "outlinecolor": "44 116 184",
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": null,
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "35"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "50",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "74 146 214",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "1.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "34"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "54",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "74 146 214",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "0.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "42"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "58",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "48 168 156",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "0.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "43"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "style",
+                "id": "52",
+                "attributes": {
+                    "style_name": "style",
+                    "style_order": null,
+                    "symbol_name": null,
+                    "pattern_id": 0,
+                    "color": "48 168 156",
+                    "outlinecolor": null,
+                    "bgcolor": null,
+                    "maxsize": null,
+                    "minsize": null,
+                    "size": null,
+                    "maxwidth": null,
+                    "minwidth": null,
+                    "width": "0.5",
+                    "angle": null,
+                    "style_def": null
+                },
+                "relationships": {
+                    "class": {
+                        "data": {
+                            "type": "class",
+                            "id": "36"
+                        }
+                    }
+                }
+            }
+        ],
+        "field": [
+            {
+                "type": "field",
+                "id": "969",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "26"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "970",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "26"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "971",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "26"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "972",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "26"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "989",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "31"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "990",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "31"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "991",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "31"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "992",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "31"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "993",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "32"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "994",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "32"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "995",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "32"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "996",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "32"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "997",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "33"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "998",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "33"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "999",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "33"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "1000",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "33"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "950",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "20"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "951",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "20"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "952",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "admin_lv",
+                    "field_header": "admin_lv",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "20"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "1",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "2",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "3",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "4",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "5",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "type",
+                    "field_header": "type",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "957",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "958",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "959",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "960",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "961",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "layer",
+                    "field_header": "layer",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "962",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "bridge",
+                    "field_header": "bridge",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "963",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "tunnel",
+                    "field_header": "tunnel",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "23"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "953",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "21"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "954",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "21"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "955",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "21"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "956",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "21"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "964",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "gid",
+                    "field_header": "gid",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "965",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "code",
+                    "field_header": "code",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "966",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "fclass",
+                    "field_header": "fclass",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "967",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "width",
+                    "field_header": "width",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 2,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "field",
+                "id": "968",
+                "attributes": {
+                    "relation_id": 0,
+                    "field_name": "name",
+                    "field_header": "name",
+                    "field_order": 0,
+                    "fieldtype_id": 1,
+                    "datatype_id": 1,
+                    "formula": null,
+                    "field_format": null,
+                    "resultype_id": 4,
+                    "searchtype_id": 1,
+                    "filter_field_name": null,
+                    "orderby_id": 0,
+                    "default_op": null,
+                    "editable": 0,
+                    "mandatory": 0,
+                    "lookup_table": null,
+                    "lookup_id": null,
+                    "lookup_name": null
+                },
+                "relationships": {
+                    "layer": {
+                        "data": {
+                            "type": "layer",
+                            "id": "24"
+                        }
+                    }
+                }
+            }
+        ],
+        "mapset_layergroup": [
+            {
+                "type": "mapset_layergroup",
+                "id": "1",
+                "attributes": {
+                    "status": 1,
+                    "refmap": 1,
+                    "hide": 0
+                },
+                "relationships": {
+                    "mapset": {
+                        "data": {
+                            "type": "mapset",
+                            "id": "default"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "34"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "mapset_layergroup",
+                "id": "2",
+                "attributes": {
+                    "status": 1,
+                    "refmap": 0,
+                    "hide": 0
+                },
+                "relationships": {
+                    "mapset": {
+                        "data": {
+                            "type": "mapset",
+                            "id": "default"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "93"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "mapset_layergroup",
+                "id": "3",
+                "attributes": {
+                    "status": 1,
+                    "refmap": 0,
+                    "hide": 0
+                },
+                "relationships": {
+                    "mapset": {
+                        "data": {
+                            "type": "mapset",
+                            "id": "default"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "1"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "mapset_layergroup",
+                "id": "4",
+                "attributes": {
+                    "status": 1,
+                    "refmap": 1,
+                    "hide": 0
+                },
+                "relationships": {
+                    "mapset": {
+                        "data": {
+                            "type": "mapset",
+                            "id": "default"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "66"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "mapset_layergroup",
+                "id": "5",
+                "attributes": {
+                    "status": 1,
+                    "refmap": 0,
+                    "hide": 0
+                },
+                "relationships": {
+                    "mapset": {
+                        "data": {
+                            "type": "mapset",
+                            "id": "default"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "90"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "mapset_layergroup",
+                "id": "6",
+                "attributes": {
+                    "status": 1,
+                    "refmap": 0,
+                    "hide": 0
+                },
+                "relationships": {
+                    "mapset": {
+                        "data": {
+                            "type": "mapset",
+                            "id": "default"
+                        }
+                    },
+                    "layergroup": {
+                        "data": {
+                            "type": "layergroup",
+                            "id": "89"
+                        }
+                    }
+                }
+            }
+        ],
+        "project_languages": [],
+        "selgroup": [],
+        "selgroup_layer": [],
+        "project_admin": []
+    }
+}
