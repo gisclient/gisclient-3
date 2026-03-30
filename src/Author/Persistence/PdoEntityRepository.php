@@ -20,6 +20,14 @@ class PdoEntityRepository implements EntityRepository
      */
     private $savepointCounter = 0;
 
+    /**
+     * Cache of pg_get_serial_sequence() results keyed by "schema.table.column".
+     * NULL means the column has no associated sequence.
+     *
+     * @var array<string, string|null>
+     */
+    private static $sequenceCache = [];
+
     public function __construct(\PDO $db = null)
     {
         $this->db = $db ?: \GCApp::getDB();
@@ -123,6 +131,15 @@ class PdoEntityRepository implements EntityRepository
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
         });
+
+        if ($schema->getIdPhpType() === 'int' && isset($attributes[$pk])) {
+            $this->syncSequence(
+                $schema->getResolvedDbSchema(),
+                $schema->getResolvedTable(),
+                $pk,
+                (int) $attributes[$pk]
+            );
+        }
 
         return $this->findById(new EntityRef($entity->getType(), $attributes[$pk]));
     }
@@ -275,6 +292,33 @@ class PdoEntityRepository implements EntityRepository
             return (int) $id;
         }
         return (string) $id;
+    }
+
+    private function syncSequence(string $dbSchema, string $table, string $pkColumn, int $id): void
+    {
+        $cacheKey = "$dbSchema.$table.$pkColumn";
+
+        if (!array_key_exists($cacheKey, self::$sequenceCache)) {
+            $stmt = $this->db->prepare('SELECT pg_get_serial_sequence(:qualified_table, :column)');
+            $stmt->execute([
+                ':qualified_table' => "$dbSchema.$table",
+                ':column' => $pkColumn,
+            ]);
+            $result = $stmt->fetchColumn();
+            self::$sequenceCache[$cacheKey] = ($result !== false && $result !== null) ? (string) $result : null;
+        }
+
+        $seqName = self::$sequenceCache[$cacheKey];
+        if ($seqName === null) {
+            return;
+        }
+
+        $this->db->exec(sprintf(
+            'SELECT setval(%s, GREATEST(%d, (SELECT last_value FROM %s)))',
+            $this->db->quote($seqName),
+            $id,
+            $seqName
+        ));
     }
 
     /**
