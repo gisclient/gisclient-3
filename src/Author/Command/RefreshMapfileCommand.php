@@ -41,7 +41,7 @@ class RefreshMapfileCommand extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $project = $input->getArgument("project");
         $mapset = $input->getArgument("mapset");
@@ -83,12 +83,22 @@ class RefreshMapfileCommand extends Command
         if ($output->isVerbose()) {
             $output->writeln("<info>Done.</info>");
         }
+
+        return 0;
     }
 
-    protected function refreshAllMapsetsOfProject(OutputInterface $output, $project, $public, $layerMapfile)
+    protected function refreshAllMapsetsOfProject(OutputInterface $output, $project, $public, $layerMapfile): void
     {
         if ($output->isVerbose()) {
             $output->writeln("<info>Refreshing all mapsets for project '$project'...</info>");
+        }
+        if (function_exists('Sentry\addBreadcrumb')) {
+            \Sentry\addBreadcrumb(new \Sentry\Breadcrumb(
+                \Sentry\Breadcrumb::LEVEL_INFO,
+                \Sentry\Breadcrumb::TYPE_DEFAULT,
+                'mapfile',
+                "Refreshing all mapsets for project '$project'"
+            ));
         }
         \GCAuthor::refreshMapfiles(
             $project,
@@ -97,10 +107,18 @@ class RefreshMapfileCommand extends Command
         );
     }
 
-    protected function refreshMapset(OutputInterface $output, $project, $mapset, $public, $layerMapfile)
+    protected function refreshMapset(OutputInterface $output, $project, $mapset, $public, $layerMapfile): void
     {
         if ($output->isVerbose()) {
             $output->writeln("<info>Refreshing mapset '$mapset' for project '$project'...</info>");
+        }
+        if (function_exists('Sentry\addBreadcrumb')) {
+            \Sentry\addBreadcrumb(new \Sentry\Breadcrumb(
+                \Sentry\Breadcrumb::LEVEL_INFO,
+                \Sentry\Breadcrumb::TYPE_DEFAULT,
+                'mapfile',
+                "Refreshing mapset '$mapset' for project '$project'"
+            ));
         }
         \GCAuthor::refreshMapfile(
             $project,

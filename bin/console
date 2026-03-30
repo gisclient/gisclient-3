@@ -5,14 +5,35 @@
 require __DIR__.'/../bootstrap.php';
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
+
+class GCConsoleApplication extends Application
+{
+    protected function doRunCommand(Command $command, InputInterface $input, OutputInterface $output): int
+    {
+        try {
+            return parent::doRunCommand($command, $input, $output);
+        } catch (\Throwable $e) {
+            if (function_exists('Sentry\captureException')) {
+                \Sentry\withScope(function (\Sentry\State\Scope $scope) use ($command, $e): void {
+                    $scope->setTag('command', $command->getName());
+                    \Sentry\captureException($e);
+                });
+            }
+            throw $e;
+        }
+    }
+}
 
 // read command-list from /config/commands.yml
 $yamlString = file_get_contents(__DIR__."/../config/commands.yml");
 $commands = Yaml::parse($yamlString)["commands"];
 
 // register commands
-$application = new Application();
+$application = new GCConsoleApplication();
 foreach ($commands as $cmd) {
     $application->add(new $cmd());
 }
