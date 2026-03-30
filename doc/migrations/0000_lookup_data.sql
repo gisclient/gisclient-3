@@ -333,10 +333,10 @@ INSERT INTO gisclient_34.e_outputformat (outputformat_id, outputformat_name, out
     ('4', 'PNG 8 bit', 'GD/PNG', 'image/png', 'PC256', 'png', NULL, NULL),
     ('5', 'PNG 24 bit', 'GD/PNG', 'image/png', 'RGB', 'png', NULL, NULL),
     ('6', 'PNG 32 bit Trasp', 'GD/PNG', 'image/png', 'RGBA', 'png', NULL, NULL),
-    ('7', 'AGG Q', 'AGG/PNG', 'image/png; mode=8bit', 'RGB', 'png', '    FORMATOPTION "QUANTIZE_FORCE=ON"\n    FORMATOPTION "QUANTIZE_DITHER=OFF"\n    FORMATOPTION "QUANTIZE_COLORS=256"', NULL),
+    ('7', 'AGG Q', 'AGG/PNG', 'image/png; mode=8bit', 'RGB', 'png', E'    FORMATOPTION "QUANTIZE_FORCE=ON"\n    FORMATOPTION "QUANTIZE_DITHER=OFF"\n    FORMATOPTION "QUANTIZE_COLORS=256"', NULL),
     ('1', 'AGG PNG 24 bit', 'AGG/PNG', 'image/png; mode=24bit', 'RGB', 'png', NULL, NULL),
     ('3', 'AGG JPG', 'AGG/JPG', 'jpeg', 'RGB', 'jpg', NULL, NULL),
-    ('9', 'AGG PNG', 'AGG/PNG', 'image/png', 'RGB', 'png', '    FORMATOPTION "QUANTIZE_FORCE=ON"\nFORMATOPTION "QUANTIZE_DITHER=OFF"\nFORMATOPTION "QUANTIZE_COLORS=256"', NULL),
+    ('9', 'AGG PNG', 'AGG/PNG', 'image/png', 'RGB', 'png', E'    FORMATOPTION "QUANTIZE_FORCE=ON"\nFORMATOPTION "QUANTIZE_DITHER=OFF"\nFORMATOPTION "QUANTIZE_COLORS=256"', NULL),
     ('10', 'GEOJSON', 'OGR/GEOJSON', 'application/json; subtype=geojson', 'JSON', 'json', 'FORMATOPTION "STORAGE=stream" FORMATOPTION "FORM=SIMPLE"', NULL);
 
 
