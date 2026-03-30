@@ -102,6 +102,7 @@ class GCService
                 'db_table' => 'gisclient_34.sessions',
                 'db_username' => DB_USER,
                 'db_password' => DB_PWD,
+                'lock_mode' => PdoSessionHandler::LOCK_NONE,
             ]);
             $sessionStorage = new NativeSessionStorage([], $sessionHandler);
             if (defined('GC_SESSION_NAME')) {
@@ -113,7 +114,11 @@ class GCService
                 $sessionStorage->setId($_REQUEST['GC_SESSION_ID']);
             }
             $this->session = new Session($sessionStorage);
-            $this->session->start();
+            try {
+                $this->session->start();
+            } catch (\RuntimeException $e) {
+                fwrite(fopen('php://stderr', 'w'), 'Session start failed: ' . $e->getMessage() . PHP_EOL);
+            }
         } else {
             print_debug('session already started', null, 'system');
         }
