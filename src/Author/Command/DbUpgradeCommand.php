@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace GisClient\Author\Command;
 
+use GisClient\Author\Api\Service\FontImportService;
+use GisClient\Author\Api\Service\SymbolImportService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,7 +29,8 @@ class DbUpgradeCommand extends Command
         // Phase 1 + 2: fresh install only — runs when gisclient_34 schema does not yet exist.
         // Both files execute in one transaction so a partial failure rolls back the schema
         // creation entirely, allowing a clean retry on the next invocation.
-        if (!$this->schemaExists($db)) {
+        $isFreshInstall = !$this->schemaExists($db);
+        if ($isFreshInstall) {
             $output->writeln('<info>Fresh install — creating baseline schema and seeding lookup data...</info>');
             $this->runSqlFiles($db, [
                 $rootDir . self::MIGRATIONS_DIR . '0000_baseline.sql',
@@ -47,9 +50,28 @@ class DbUpgradeCommand extends Command
             }
         }
 
+        // Phase 4: baseline content import — runs after all migrations on a fresh install,
+        // so that schema changes applied in Phase 3 (e.g. font_data column) are in place.
+        if ($isFreshInstall) {
+            $this->importBaselineContent($rootDir, $output);
+        }
+
         $output->writeln('<info>Done. Author version: ' . $this->getCurrentVersion($db) . '</info>');
 
         return 0;
+    }
+
+    private function importBaselineContent(string $rootDir, OutputInterface $output): void
+    {
+        $migrationsDir = $rootDir . self::MIGRATIONS_DIR;
+
+        $fontDocument = json_decode((string) file_get_contents($migrationsDir . '0000_fonts.json'), true);
+        $fontResult = (new FontImportService())->import($fontDocument);
+        $output->writeln("<info>Imported {$fontResult['fonts_imported']} fonts.</info>");
+
+        $symbolDocument = json_decode((string) file_get_contents($migrationsDir . '0000_symbols.json'), true);
+        $symbolResult = (new SymbolImportService())->import($symbolDocument);
+        $output->writeln("<info>Imported {$symbolResult['symbols_imported']} symbols.</info>");
     }
 
     private function schemaExists(\PDO $db): bool
