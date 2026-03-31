@@ -65,6 +65,7 @@
         "fix-writable-permissions": [
             "chmod 777 config/debug",
             "chmod 777 files",
+            "chmod 777 fonts",
             "chmod 777 import",
             "chmod 777 map",
             "chmod 777 map/tmp",
