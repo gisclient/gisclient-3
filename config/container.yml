@@ -56,6 +56,18 @@ services:
   GisClient\Author\Api\Service\ProjectImportService:
     public: true
 
+  GisClient\Author\Api\Service\SymbolExportService:
+    public: true
+
+  GisClient\Author\Api\Service\SymbolImportService:
+    public: true
+
+  GisClient\Author\Api\Service\FontExportService:
+    public: true
+
+  GisClient\Author\Api\Service\FontImportService:
+    public: true
+
   GisClient\Author\Api\Serializer\DtoSerializer:
     public: true
 
