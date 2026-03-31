@@ -5,6 +5,7 @@ namespace GisClient\Author\Shared;
 use GisClient\Author\Shared\Metadata\CatalogMetadata;
 use GisClient\Author\Shared\Metadata\ClassMetadata;
 use GisClient\Author\Shared\Metadata\FieldMetadata;
+use GisClient\Author\Shared\Metadata\FontMetadata;
 use GisClient\Author\Shared\Metadata\LayergroupMetadata;
 use GisClient\Author\Shared\Metadata\LayerMetadata;
 use GisClient\Author\Shared\Metadata\LinkMetadata;
@@ -14,6 +15,7 @@ use GisClient\Author\Shared\Metadata\Metadata;
 use GisClient\Author\Shared\Metadata\ProjectMetadata;
 use GisClient\Author\Shared\Metadata\ProjectSrsMetadata;
 use GisClient\Author\Shared\Metadata\StyleMetadata;
+use GisClient\Author\Shared\Metadata\SymbolMetadata;
 use GisClient\Author\Shared\Metadata\ThemeMetadata;
 
 class MetadataRegistry
@@ -86,6 +88,8 @@ class MetadataRegistry
             ProjectMetadata::class,
             ProjectSrsMetadata::class,
             ThemeMetadata::class,
+            SymbolMetadata::class,
+            FontMetadata::class,
             LayergroupMetadata::class,
             LayerMetadata::class,
             ClassMetadata::class,
