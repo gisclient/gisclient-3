@@ -2,7 +2,7 @@
 
 set -eu
 
-SQL_FILE=${SQL_FILE:-doc/migrations/3.6.4_upgrade.sql}
+SQL_FILE=${SQL_FILE:-$(ls doc/migrations/[0-9]*.sql 2>/dev/null | sort -V | tail -1)}
 VERSION_FILE=${VERSION_FILE:-version.txt}
 BUILD_NUMBER=${BUILD_NUMBER:-local}
 
@@ -25,6 +25,7 @@ parse_version() {
     BEGIN {
         assigned = "";
         inserted = "";
+        in_version_insert = 0;
         sq = sprintf("%c", 39);
     }
     {
@@ -35,38 +36,51 @@ parse_version() {
             }
         }
 
-        if ($0 ~ /INSERT INTO version/ && $0 ~ /'\''author'\''/) {
-            if (index($0, "values (" sq) > 0) {
+        lower = tolower($0);
+
+        # Single-line INSERT: INSERT INTO [schema.]version ... VALUES (...) on one line
+        if (lower ~ /insert into [^ ]*version/ && $0 ~ /'\''author'\''/) {
+            if (index(lower, "values (" sq) > 0) {
                 split($0, parts, sq);
                 if (parts[2] ~ /^[0-9]+\.[0-9]+\.[0-9]+$/) {
                     inserted = parts[2];
+                    in_version_insert = 0;
                 }
-            } else if ($0 ~ /values \(v_author_version, '\''author'\''/) {
+            } else if (lower ~ /values \(v_author_version, '\''author'\''/) {
                 if (assigned == "") {
                     print "Unable to resolve version: INSERT uses v_author_version before assignment" > "/dev/stderr";
                     exit 1;
                 }
                 inserted = assigned;
+                in_version_insert = 0;
             }
+        }
+
+        # Multi-line INSERT: detect the INSERT line, then look for VALUES on next line
+        if (lower ~ /insert into [^ ]*version/ && lower !~ /values /) {
+            in_version_insert = 1;
+        } else if (in_version_insert && index(lower, "values (" sq) > 0 && $0 ~ /'\''author'\''/) {
+            split($0, parts, sq);
+            if (parts[2] ~ /^[0-9]+\.[0-9]+\.[0-9]+$/) {
+                inserted = parts[2];
+            }
+            in_version_insert = 0;
+        } else if (in_version_insert && lower !~ /^[ \t]*$/) {
+            in_version_insert = 0;
         }
     }
     END {
-        if (assigned == "") {
-            print "Unable to resolve version: no v_author_version assignment found" > "/dev/stderr";
-            exit 1;
-        }
-
         if (inserted == "") {
             print "Unable to resolve version: no INSERT INTO version for author found" > "/dev/stderr";
             exit 1;
         }
 
-        if (assigned != inserted) {
+        if (assigned != "" && assigned != inserted) {
             print "Unable to resolve version: assignment and insert results disagree (" assigned " vs " inserted ")" > "/dev/stderr";
             exit 1;
         }
 
-        print assigned;
+        print inserted;
     }' "$SQL_FILE"
 }
 
