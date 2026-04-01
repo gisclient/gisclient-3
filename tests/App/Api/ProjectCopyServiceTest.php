@@ -14,6 +14,7 @@ use GisClient\Author\Api\Dto\ProjectAdminDto;
 use GisClient\Author\Api\Dto\ProjectDto;
 use GisClient\Author\Api\Dto\ProjectLanguageDto;
 use GisClient\Author\Api\Dto\ProjectSrsDto;
+use GisClient\Author\Api\Dto\RelationDto;
 use GisClient\Author\Api\Dto\SelgroupDto;
 use GisClient\Author\Api\Dto\SelgroupLayerDto;
 use GisClient\Author\Api\Dto\StyleDto;
@@ -168,7 +169,6 @@ class ProjectCopyServiceTest extends TestCase
             'class' => $this->identifierDto(ClassDto::class, 50),
         ]);
         $field = $this->makeDto(FieldDto::class, 70, [
-            'relation_id' => 1,
             'field_name' => 'field',
             'field_header' => 'Field',
             'field_order' => 1,
@@ -179,6 +179,7 @@ class ProjectCopyServiceTest extends TestCase
             'orderby_id' => 1,
         ], [
             'layer' => $this->identifierDto(LayerDto::class, 40),
+            'relation' => $this->identifierDto(RelationDto::class, 1),
         ]);
         $mapsetLayergroup = $this->makeDto(MapsetLayergroupDto::class, null, [
             'status' => 1,

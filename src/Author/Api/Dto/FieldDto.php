@@ -6,8 +6,6 @@ class FieldDto extends JsonApiDto
 {
     public ?int $id = null;
 
-    public int $relationId;
-
     public string $fieldName;
 
     public string $fieldHeader;
@@ -43,4 +41,6 @@ class FieldDto extends JsonApiDto
     public ?string $lookupName = null;
 
     public ?LayerDto $layer = null;
+
+    public ?RelationDto $relation = null;
 }

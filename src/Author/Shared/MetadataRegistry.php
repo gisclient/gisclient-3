@@ -14,6 +14,7 @@ use GisClient\Author\Shared\Metadata\MapsetMetadata;
 use GisClient\Author\Shared\Metadata\Metadata;
 use GisClient\Author\Shared\Metadata\ProjectMetadata;
 use GisClient\Author\Shared\Metadata\ProjectSrsMetadata;
+use GisClient\Author\Shared\Metadata\RelationMetadata;
 use GisClient\Author\Shared\Metadata\StyleMetadata;
 use GisClient\Author\Shared\Metadata\SymbolMetadata;
 use GisClient\Author\Shared\Metadata\ThemeMetadata;
@@ -94,6 +95,7 @@ class MetadataRegistry
             LayerMetadata::class,
             ClassMetadata::class,
             StyleMetadata::class,
+            RelationMetadata::class,
             FieldMetadata::class,
             CatalogMetadata::class,
             LinkMetadata::class,

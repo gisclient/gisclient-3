@@ -253,6 +253,19 @@ class ProjectTransferService
             return $dto;
         }
 
+        if ($type === 'relation') {
+            // relation entities are catalog-scoped, not project-scoped, so they are not cloned;
+            // keep the original reference as-is
+            $dtoClass = DtoSchemaRegistry::classFromType($type);
+            /** @var JsonApiDto $dto */
+            $dto = new $dtoClass();
+            $dto->id = $sourceId;
+            $dto->markPresent('id');
+            $dto->markAsIdentifierOnly();
+
+            return $dto;
+        }
+
         $dtoClass = DtoSchemaRegistry::classFromType($type);
         /** @var JsonApiDto $dto */
         $dto = new $dtoClass();

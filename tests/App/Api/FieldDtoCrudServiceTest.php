@@ -56,12 +56,12 @@ class FieldDtoCrudServiceTest extends TestCase
         ], $queryOptions->getFilters());
     }
 
-    public function testGetResourceKeepsRelationIdAsAttribute(): void
+    public function testGetResourceReturnsRelationAsNullableRelationship(): void
     {
         $repository = new EntityRepositoryStub([], static fn ($ref) => [
             'field_id' => (int) $ref->getId(),
             'layer_id' => 2,
-            'relation_id' => 0,
+            'relation_id' => 5,
             'field_name' => 'gid',
             'field_header' => 'GID',
         ]);
@@ -69,6 +69,7 @@ class FieldDtoCrudServiceTest extends TestCase
         $payload = $service->getResource('field', 51);
 
         $this->assertSame('2', $payload['data']['relationships']['layer']['data']['id']);
-        $this->assertSame(0, $payload['data']['attributes']['relation_id']);
+        $this->assertSame('5', $payload['data']['relationships']['relation']['data']['id']);
+        $this->assertArrayNotHasKey('relation_id', $payload['data']['attributes']);
     }
 }

@@ -4,6 +4,7 @@ namespace GisClient\Author\Shared\Metadata;
 
 use GisClient\Author\Api\Dto\FieldDto;
 use GisClient\Author\Api\Dto\LayerDto;
+use GisClient\Author\Api\Dto\RelationDto;
 
 class FieldMetadata extends Metadata
 {
@@ -16,7 +17,6 @@ class FieldMetadata extends Metadata
             ->requiredOnPut(['layer', 'field_name', 'field_header'])
             ->filterable(['field_id', 'layer_id', 'relation_id', 'field_name', 'field_header', 'field_order', 'fieldtype_id', 'datatype_id', 'searchtype_id', 'resultype_id'])
             ->sortable(['field_id', 'field_order', 'field_name', 'field_header'], 'field_order')
-            ->addAttribute('relation_id', 'relationId', 'int')
             ->addAttribute('field_name', 'fieldName', 'string')
             ->addAttribute('field_header', 'fieldHeader', 'string')
             ->addAttribute('field_order', 'fieldOrder', 'int')
@@ -59,6 +59,7 @@ class FieldMetadata extends Metadata
             ->addAttribute('lookup_table', 'lookupTable', 'string', true)
             ->addAttribute('lookup_id', 'lookupId', 'string', true)
             ->addAttribute('lookup_name', 'lookupName', 'string', true)
-            ->addRelationship('layer', 'layer', LayerDto::class, 'layer', true, true, true, 'layer_id');
+            ->addRelationship('layer', 'layer', LayerDto::class, 'layer', true, true, true, 'layer_id')
+            ->addRelationship('relation', 'relation', RelationDto::class, 'relation', true, true, true, 'relation_id');
     }
 }
