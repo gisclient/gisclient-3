@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace GisClient\Author\Command;
 
-use GisClient\Author\Api\Service\FontImportService;
-use GisClient\Author\Api\Service\SymbolImportService;
+use GisClient\Author\Api\Service\DataImportService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -65,13 +64,12 @@ class DbUpgradeCommand extends Command
     {
         $migrationsDir = $rootDir . self::MIGRATIONS_DIR;
 
-        $fontDocument = json_decode((string) file_get_contents($migrationsDir . '0000_fonts.json'), true);
-        $fontResult = (new FontImportService())->import($fontDocument);
-        $output->writeln("<info>Imported {$fontResult['fonts_imported']} fonts.</info>");
+        $document = json_decode((string) file_get_contents($migrationsDir . '0000_data.json'), true);
+        $result = (new DataImportService())->import($document);
 
-        $symbolDocument = json_decode((string) file_get_contents($migrationsDir . '0000_symbols.json'), true);
-        $symbolResult = (new SymbolImportService())->import($symbolDocument);
-        $output->writeln("<info>Imported {$symbolResult['symbols_imported']} symbols.</info>");
+        foreach ($result as $key => $count) {
+            $output->writeln("<info>Imported {$count} {$key}.</info>");
+        }
     }
 
     private function schemaExists(\PDO $db): bool

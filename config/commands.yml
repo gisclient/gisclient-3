@@ -3,8 +3,6 @@ commands:
     - GisClient\Author\Command\DbUpgradeCommand
     - GisClient\Author\Command\ProjectExportCommand
     - GisClient\Author\Command\ProjectImportCommand
-    - GisClient\Author\Command\SymbolExportCommand
-    - GisClient\Author\Command\SymbolImportCommand
-    - GisClient\Author\Command\FontExportCommand
-    - GisClient\Author\Command\FontImportCommand
+    - GisClient\Author\Command\DataExportCommand
+    - GisClient\Author\Command\DataImportCommand
     - GisClient\Author\Command\RefreshMapfileCommand

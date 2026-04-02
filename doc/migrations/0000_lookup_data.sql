@@ -687,9 +687,7 @@ INSERT INTO gisclient_34.form_level (id, level, mode, form, order_fld, visible) 
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: gisclient_34; Owner: -
+-- (seeded via 0000_data.json during Phase 4 of dbupgrade)
 --
-
-INSERT INTO gisclient_34.users (username, pwd, enc_pwd, data_creazione, data_scadenza, data_modifica, attivato, ultimo_accesso, cognome, nome, macaddress, ip, host, controllo, userdata, email) VALUES
-    ('admin', NULL, '21232f297a57a5a743894a0e4a801fc3', NULL, NULL, '2024-09-16', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 

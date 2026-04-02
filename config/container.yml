@@ -68,6 +68,24 @@ services:
   GisClient\Author\Api\Service\FontImportService:
     public: true
 
+  GisClient\Author\Api\Service\GroupExportService:
+    public: true
+
+  GisClient\Author\Api\Service\GroupImportService:
+    public: true
+
+  GisClient\Author\Api\Service\UserExportService:
+    public: true
+
+  GisClient\Author\Api\Service\UserImportService:
+    public: true
+
+  GisClient\Author\Api\Service\DataExportService:
+    public: true
+
+  GisClient\Author\Api\Service\DataImportService:
+    public: true
+
   GisClient\Author\Api\Serializer\DtoSerializer:
     public: true
 
