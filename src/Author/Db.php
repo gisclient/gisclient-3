@@ -19,8 +19,8 @@ class Db
 
                 $dbParams['db_host'] = DB_HOST;
                 $dbParams['db_port'] = DB_PORT;
-                $dbParams['db_user'] = defined('MAP_USER') ? MAP_USER : DB_USER;
-                $dbParams['db_pass'] = defined('MAP_USER') ? MAP_PWD : DB_PWD;
+                $dbParams['db_user'] = !empty(MAP_USER) ? MAP_USER : DB_USER;
+                $dbParams['db_pass'] = !empty(MAP_USER) ? MAP_PWD : DB_PWD;
             } else {
                 throw new \Exception("Connection type not supported", 1);
             }

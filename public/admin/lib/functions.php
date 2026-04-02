@@ -151,7 +151,7 @@ function crop_border($image, $border)
 function connInfofromPath($sPath)
 {
     $pathInfo = explode("/", $sPath);
-    if (defined('MAP_USER')) {
+    if (!empty(MAP_USER)) {
         $mapUser = MAP_USER;
         $mapPwd = MAP_PWD;
     } else {
