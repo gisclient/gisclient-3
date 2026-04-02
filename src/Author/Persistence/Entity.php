@@ -34,17 +34,24 @@ class Entity
     private $relationships;
 
     /**
+     * @var array<string,array<int,string|int>>
+     */
+    private $collectionRelationships;
+
+    /**
      * @param int|string|null $id
      * @param array<string,mixed> $attributes
      * @param array<string,array{type:?string,id:string|int|null}|null> $relationships
+     * @param array<string,array<int,string|int>> $collectionRelationships
      */
-    public function __construct(string $type, string $operation, $id = null, array $attributes = [], array $relationships = [])
+    public function __construct(string $type, string $operation, $id = null, array $attributes = [], array $relationships = [], array $collectionRelationships = [])
     {
         $this->type = $type;
         $this->operation = $operation;
         $this->id = $id;
         $this->attributes = $attributes;
         $this->relationships = $relationships;
+        $this->collectionRelationships = $collectionRelationships;
     }
 
     public function getType(): string
@@ -94,5 +101,13 @@ class Entity
     public function getRelationships(): array
     {
         return $this->relationships;
+    }
+
+    /**
+     * @return array<string,array<int,string|int>>
+     */
+    public function getCollectionRelationships(): array
+    {
+        return $this->collectionRelationships;
     }
 }

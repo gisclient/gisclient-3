@@ -21,6 +21,10 @@ class DtoSerializer
         ];
 
         foreach ($schema->getAttributes() as $field) {
+            if (!$field->isReadable()) {
+                continue;
+            }
+
             if (!DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
                 continue;
             }
@@ -32,7 +36,25 @@ class DtoSerializer
 
         $relationships = [];
         foreach ($schema->getRelationships() as $field) {
+            if (!$field->isReadable()) {
+                continue;
+            }
+
             if (!DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
+                continue;
+            }
+
+            if ($field->isCollection()) {
+                $items = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+                $relationships[$field->getJsonApiName()] = [
+                    'data' => is_array($items) ? array_map(
+                        static fn ($id) => [
+                            'type' => $field->getTargetType(),
+                            'id' => (string) $id,
+                        ],
+                        $items
+                    ) : [],
+                ];
                 continue;
             }
 

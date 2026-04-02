@@ -22,7 +22,7 @@ class DtoValidator
         foreach ($requiredFields as $fieldName) {
             if ($fieldName === $schema->getPrimaryKey()) {
                 if (!$dto->isPresent('id') || $this->isEmpty($dto, 'id')) {
-                    $errors[] = $this->error('missing_required_attribute', 'Missing Required Attribute', sprintf("Attribute '%s' is required", $fieldName), [
+                    $errors[] = $this->error('missing_required_attribute', 'Missing Required Attribute', sprintf("'%s' is required and must be sent as data.id", $fieldName), [
                         'id' => true,
                     ]);
                 }
@@ -86,6 +86,10 @@ class DtoValidator
         $field = DtoSchemaRegistry::schemaForDtoClass(get_class($dto))->getRelationship($relationshipName);
         if ($field === null || !$dto->isPresent($relationshipName)) {
             return false;
+        }
+
+        if ($field->isCollection()) {
+            return true;
         }
 
         if (!DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {

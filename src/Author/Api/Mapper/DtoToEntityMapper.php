@@ -34,7 +34,8 @@ class DtoToEntityMapper
             Entity::OPERATION_CREATE,
             $id,
             $attributes,
-            $this->extractRelationshipIdentifiers($schema, $dto)
+            $this->extractRelationshipIdentifiers($schema, $dto),
+            $this->extractCollectionRelationships($schema, $dto)
         );
     }
 
@@ -63,12 +64,25 @@ class DtoToEntityMapper
             $attributes = $complete;
         }
 
+        $collectionRelationships = $this->extractCollectionRelationships($schema, $dto);
+        if ($isPut) {
+            foreach ($schema->getRelationships() as $field) {
+                if (!$field->isCollection() || !$field->isWritable()) {
+                    continue;
+                }
+                if (!array_key_exists($field->getJsonApiName(), $collectionRelationships)) {
+                    $collectionRelationships[$field->getJsonApiName()] = [];
+                }
+            }
+        }
+
         return new Entity(
             $type,
             Entity::OPERATION_UPDATE,
             $id,
             $attributes,
-            $this->extractRelationshipIdentifiers($schema, $dto)
+            $this->extractRelationshipIdentifiers($schema, $dto),
+            $collectionRelationships
         );
     }
 
@@ -80,15 +94,65 @@ class DtoToEntityMapper
         $attributes = [];
 
         foreach ($schema->getAttributes() as $field) {
+            if (!$field->isWritable()) {
+                continue;
+            }
+
             if (!$dto->isPresent($field->getJsonApiName()) || !DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())) {
                 continue;
             }
 
             $column = $entitySchema->getAttributeColumn($field->getJsonApiName()) ?? $field->getJsonApiName();
-            $attributes[$column] = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+            $value = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+
+            $transform = $entitySchema->getAttributeTransform($field->getJsonApiName());
+            if ($transform !== null && $value !== null) {
+                $value = $this->applyTransform($transform, $value);
+            }
+
+            $attributes[$column] = $value;
         }
 
         return $attributes;
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    private function applyTransform(string $transform, $value)
+    {
+        if ($transform === 'md5') {
+            return md5((string) $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return array<string,array<int,string|int>>
+     */
+    private function extractCollectionRelationships(ResourceSchema $schema, JsonApiDto $dto): array
+    {
+        $collections = [];
+
+        foreach ($schema->getRelationships() as $field) {
+            if (!$field->isCollection() || !$field->isWritable()) {
+                continue;
+            }
+
+            if (!$dto->isPresent($field->getJsonApiName())) {
+                continue;
+            }
+
+            $value = DtoPropertyAccessor::isInitialized($dto, $field->getPropertyName())
+                ? DtoPropertyAccessor::get($dto, $field->getPropertyName())
+                : null;
+
+            $collections[$field->getJsonApiName()] = is_array($value) ? array_values($value) : [];
+        }
+
+        return $collections;
     }
 
     /**
@@ -142,6 +206,10 @@ class DtoToEntityMapper
         $relationships = [];
 
         foreach ($schema->getRelationships() as $relationshipName => $relationship) {
+            if ($relationship->isCollection()) {
+                continue;
+            }
+
             if (!$dto->isPresent($relationshipName)) {
                 continue;
             }

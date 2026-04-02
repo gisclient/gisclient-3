@@ -47,7 +47,8 @@ class ResourceSchema
                 $relationship['target_type'],
                 $relationship['nullable'],
                 $relationship['readable'],
-                $relationship['writable']
+                $relationship['writable'],
+                $relationship['collection'] ?? false
             ));
         }
 

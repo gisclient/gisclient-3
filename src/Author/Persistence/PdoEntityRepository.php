@@ -75,6 +75,7 @@ class PdoEntityRepository implements EntityRepository
             foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
                 $items[] = $this->mapRowToEntity($schema, $row);
             }
+            $items = $this->loadCollectionRelationships($schema, $items);
 
             return new PagedResult($items, $total, $query->getLimit(), $query->getOffset());
         });
@@ -95,7 +96,12 @@ class PdoEntityRepository implements EntityRepository
             $stmt->execute($params);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            return $row === false ? null : $this->mapRowToEntity($schema, $row);
+            if ($row === false) {
+                return null;
+            }
+            $entities = $this->loadCollectionRelationships($schema, [$this->mapRowToEntity($schema, $row)]);
+
+            return $entities[0];
         });
     }
 
@@ -127,21 +133,42 @@ class PdoEntityRepository implements EntityRepository
             implode(', ', $placeholders)
         );
 
-        $this->executeSafely(function () use ($sql, $params): void {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-        });
-
-        if ($schema->getIdPhpType() === 'int' && isset($attributes[$pk])) {
-            $this->syncSequence(
-                $schema->getResolvedDbSchema(),
-                $schema->getResolvedTable(),
-                $pk,
-                (int) $attributes[$pk]
-            );
+        $hasCollections = $entity->getCollectionRelationships() !== [];
+        $ownTransaction = $hasCollections && !$this->db->inTransaction();
+        if ($ownTransaction) {
+            $this->db->beginTransaction();
         }
 
-        return $this->findById(new EntityRef($entity->getType(), $attributes[$pk]));
+        try {
+            $this->executeSafely(function () use ($sql, $params): void {
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute($params);
+            });
+
+            if ($schema->getIdPhpType() === 'int' && isset($attributes[$pk])) {
+                $this->syncSequence(
+                    $schema->getResolvedDbSchema(),
+                    $schema->getResolvedTable(),
+                    $pk,
+                    (int) $attributes[$pk]
+                );
+            }
+
+            $this->syncCollectionRelationships($schema, $attributes[$pk], $entity);
+
+            $result = $this->findById(new EntityRef($entity->getType(), $attributes[$pk]));
+
+            if ($ownTransaction) {
+                $this->db->commit();
+            }
+        } catch (\Throwable $e) {
+            if ($ownTransaction) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+
+        return $result;
     }
 
     public function update(Entity $entity)
@@ -167,12 +194,33 @@ class PdoEntityRepository implements EntityRepository
             $schema->getPrimaryKey()
         );
 
-        $this->executeSafely(function () use ($sql, $params): void {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-        });
+        $hasCollections = $entity->getCollectionRelationships() !== [];
+        $ownTransaction = $hasCollections && !$this->db->inTransaction();
+        if ($ownTransaction) {
+            $this->db->beginTransaction();
+        }
 
-        return $this->findById(new EntityRef($entity->getType(), $entity->getId()));
+        try {
+            $this->executeSafely(function () use ($sql, $params): void {
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute($params);
+            });
+
+            $this->syncCollectionRelationships($schema, $entity->getId(), $entity);
+
+            $result = $this->findById(new EntityRef($entity->getType(), $entity->getId()));
+
+            if ($ownTransaction) {
+                $this->db->commit();
+            }
+        } catch (\Throwable $e) {
+            if ($ownTransaction) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+
+        return $result;
     }
 
     public function delete(EntityRef $ref)
@@ -192,6 +240,129 @@ class PdoEntityRepository implements EntityRepository
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
         });
+    }
+
+    /**
+     * Loads collection (junction-table) relationships for a set of entities in bulk.
+     *
+     * @param array<int,Entity> $entities
+     * @return array<int,Entity>
+     */
+    private function loadCollectionRelationships(EntitySchema $schema, array $entities): array
+    {
+        $collectionConfigs = $schema->getCollectionRelationships();
+        if ($collectionConfigs === [] || $entities === []) {
+            return $entities;
+        }
+
+        $ids = [];
+        foreach ($entities as $entity) {
+            $ids[] = (string) $entity->getId();
+        }
+
+        $collectionData = [];
+        foreach ($ids as $id) {
+            foreach ($collectionConfigs as $name => $config) {
+                $collectionData[$id][$name] = [];
+            }
+        }
+
+        foreach ($collectionConfigs as $name => $config) {
+            if (!($config['readable'] ?? true)) {
+                continue;
+            }
+
+            $junctionTable = $schema->getResolvedDbSchema() . '.' . $config['junction_table'];
+            $localKey = $config['junction_local_key'];
+            $foreignKey = $config['junction_foreign_key'];
+
+            $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+            $sql = sprintf(
+                'SELECT %s, %s FROM %s WHERE %s IN (%s) ORDER BY %s, %s',
+                $localKey,
+                $foreignKey,
+                $junctionTable,
+                $localKey,
+                $placeholders,
+                $localKey,
+                $foreignKey
+            );
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array_values($ids));
+
+            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $localId = (string) $row[$localKey];
+                if (isset($collectionData[$localId])) {
+                    $collectionData[$localId][$name][] = $row[$foreignKey];
+                }
+            }
+        }
+
+        $result = [];
+        foreach ($entities as $entity) {
+            $id = (string) $entity->getId();
+            $entityCollections = $collectionData[$id] ?? [];
+            $result[] = new Entity(
+                $entity->getType(),
+                $entity->getOperation(),
+                $entity->getId(),
+                $entity->getAttributes(),
+                $entity->getRelationships(),
+                $entityCollections
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Syncs junction-table rows for collection relationships declared on the entity.
+     *
+     * @param int|string|null $id
+     */
+    private function syncCollectionRelationships(EntitySchema $schema, $id, Entity $entity): void
+    {
+        $collectionConfigs = $schema->getCollectionRelationships();
+        if ($collectionConfigs === []) {
+            return;
+        }
+
+        $entityCollections = $entity->getCollectionRelationships();
+
+        foreach ($collectionConfigs as $name => $config) {
+            if (!($config['writable'] ?? true) || !array_key_exists($name, $entityCollections)) {
+                continue;
+            }
+
+            $junctionTable = $schema->getResolvedDbSchema() . '.' . $config['junction_table'];
+            $localKey = $config['junction_local_key'];
+            $foreignKey = $config['junction_foreign_key'];
+
+            $deleteStmt = $this->db->prepare(
+                sprintf('DELETE FROM %s WHERE %s = :id', $junctionTable, $localKey)
+            );
+            $deleteStmt->execute([
+                ':id' => $id,
+            ]);
+
+            $foreignIds = array_values(array_unique($entityCollections[$name]));
+            if ($foreignIds !== []) {
+                $insertStmt = $this->db->prepare(
+                    sprintf(
+                        'INSERT INTO %s (%s, %s) VALUES (:local_id, :foreign_id)',
+                        $junctionTable,
+                        $localKey,
+                        $foreignKey
+                    )
+                );
+                foreach ($foreignIds as $foreignId) {
+                    $insertStmt->execute([
+                        ':local_id' => $id,
+                        ':foreign_id' => $foreignId,
+                    ]);
+                }
+            }
+        }
     }
 
     private function schemaForType(string $type): EntitySchema

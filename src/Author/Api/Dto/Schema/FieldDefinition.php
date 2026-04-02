@@ -29,7 +29,8 @@ class FieldDefinition
         string $targetType,
         bool $nullable = false,
         bool $readable = true,
-        bool $writable = true
+        bool $writable = true,
+        bool $collection = false
     ): self {
         return new self(
             $jsonApiName,
@@ -41,7 +42,7 @@ class FieldDefinition
             $targetClass,
             $targetType,
             true,
-            false
+            $collection
         );
     }
 

@@ -131,7 +131,8 @@ class Metadata
         bool $readable = true,
         bool $writable = true,
         ?string $column = null,
-        array $rules = []
+        array $rules = [],
+        ?string $transform = null
     ): self {
         $this->attributes[$jsonApiName] = [
             'json_api_name' => $jsonApiName,
@@ -142,6 +143,7 @@ class Metadata
             'writable' => $writable,
             'column' => $column ?? $jsonApiName,
             'rules' => $rules,
+            'transform' => $transform,
         ];
 
         return $this;
@@ -155,7 +157,11 @@ class Metadata
         bool $nullable = false,
         bool $readable = true,
         bool $writable = true,
-        ?string $column = null
+        ?string $column = null,
+        bool $collection = false,
+        ?string $junctionTable = null,
+        ?string $junctionLocalKey = null,
+        ?string $junctionForeignKey = null
     ): self {
         $this->relationships[$jsonApiName] = [
             'json_api_name' => $jsonApiName,
@@ -165,7 +171,11 @@ class Metadata
             'nullable' => $nullable,
             'readable' => $readable,
             'writable' => $writable,
-            'column' => $column ?? $jsonApiName,
+            'column' => $column,
+            'collection' => $collection,
+            'junction_table' => $junctionTable,
+            'junction_local_key' => $junctionLocalKey,
+            'junction_foreign_key' => $junctionForeignKey,
         ];
 
         return $this;

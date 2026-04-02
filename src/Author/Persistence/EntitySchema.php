@@ -37,7 +37,8 @@ class EntitySchema
                 $attribute['column'],
                 $attribute['readable'],
                 $attribute['writable'],
-                $attribute['rules']
+                $attribute['rules'],
+                $attribute['transform'] ?? null
             );
         }
 
@@ -46,7 +47,11 @@ class EntitySchema
                 $relationship['json_api_name'],
                 $relationship['column'],
                 $relationship['readable'],
-                $relationship['writable']
+                $relationship['writable'],
+                $relationship['collection'] ?? false,
+                $relationship['junction_table'] ?? null,
+                $relationship['junction_local_key'] ?? null,
+                $relationship['junction_foreign_key'] ?? null
             );
         }
 
@@ -79,12 +84,12 @@ class EntitySchema
     private $dbSchema;
 
     /**
-     * @var array<string,array{column:string,readable:bool,writable:bool,rules:array<string,mixed>}>
+     * @var array<string,array{column:string,readable:bool,writable:bool,rules:array<string,mixed>,transform:string|null}>
      */
     private $attributes = [];
 
     /**
-     * @var array<string,array{column:string,readable:bool,writable:bool}>
+     * @var array<string,array{column:string|null,readable:bool,writable:bool,collection:bool,junction_table:string|null,junction_local_key:string|null,junction_foreign_key:string|null}>
      */
     private $relationships = [];
 
@@ -127,7 +132,8 @@ class EntitySchema
         ?string $column = null,
         bool $readable = true,
         bool $writable = true,
-        array $rules = []
+        array $rules = [],
+        ?string $transform = null
     ): self {
         $column ??= $publicName;
         $type = $this->normalizeRuleType($phpType);
@@ -143,6 +149,7 @@ class EntitySchema
             'readable' => $readable,
             'writable' => $writable,
             'rules' => $rules,
+            'transform' => $transform,
         ];
 
         return $this;
@@ -150,14 +157,22 @@ class EntitySchema
 
     public function addRelationship(
         string $relationshipName,
-        string $column,
+        ?string $column,
         bool $readable = true,
-        bool $writable = true
+        bool $writable = true,
+        bool $collection = false,
+        ?string $junctionTable = null,
+        ?string $junctionLocalKey = null,
+        ?string $junctionForeignKey = null
     ): self {
         $this->relationships[$relationshipName] = [
             'column' => $column,
             'readable' => $readable,
             'writable' => $writable,
+            'collection' => $collection,
+            'junction_table' => $junctionTable,
+            'junction_local_key' => $junctionLocalKey,
+            'junction_foreign_key' => $junctionForeignKey,
         ];
 
         return $this;
@@ -216,9 +231,31 @@ class EntitySchema
         return $this->attributes[$publicName]['column'] ?? null;
     }
 
+    public function getAttributeTransform(string $publicName): ?string
+    {
+        return $this->attributes[$publicName]['transform'] ?? null;
+    }
+
     public function getRelationshipColumn(string $relationshipName): ?string
     {
         return $this->relationships[$relationshipName]['column'] ?? null;
+    }
+
+    /**
+     * Returns configuration for collection (junction-table) relationships only.
+     *
+     * @return array<string,array{readable:bool,writable:bool,junction_table:string,junction_local_key:string,junction_foreign_key:string}>
+     */
+    public function getCollectionRelationships(): array
+    {
+        $result = [];
+        foreach ($this->relationships as $name => $rel) {
+            if ($rel['collection'] ?? false) {
+                $result[$name] = $rel;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -267,6 +304,9 @@ class EntitySchema
         }
 
         foreach ($this->relationships as $relationship) {
+            if (($relationship['collection'] ?? false) || $relationship['column'] === null) {
+                continue;
+            }
             if ($relationship['readable']) {
                 $fields[] = $relationship['column'];
             }
@@ -289,6 +329,9 @@ class EntitySchema
         }
 
         foreach ($this->relationships as $relationship) {
+            if (($relationship['collection'] ?? false) || $relationship['column'] === null) {
+                continue;
+            }
             if ($relationship['writable']) {
                 $fields[] = $relationship['column'];
             }

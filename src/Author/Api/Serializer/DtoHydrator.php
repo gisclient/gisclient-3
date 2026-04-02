@@ -66,11 +66,24 @@ class DtoHydrator
 
             $field = $schema->getAttribute($name);
             if ($field === null) {
+                $detail = $name === $schema->getPrimaryKey()
+                    ? sprintf("'%s' is the resource ID and must be sent as data.id, not data.attributes", $name)
+                    : sprintf("Attribute '%s' is not allowed for resource type '%s'", $name, $schema->getType());
                 throw new ApiException(
                     400,
                     'invalid_attribute',
                     'Invalid Attribute',
-                    sprintf("Attribute '%s' is not allowed for resource type '%s'", $name, $schema->getType()),
+                    $detail,
+                    '/data/attributes/' . $name
+                );
+            }
+
+            if (!$field->isWritable()) {
+                throw new ApiException(
+                    400,
+                    'readonly_attribute',
+                    'Read-only Attribute',
+                    sprintf("Attribute '%s' is read-only", $name),
                     '/data/attributes/' . $name
                 );
             }
@@ -107,6 +120,17 @@ class DtoHydrator
                 );
             }
 
+            if ($field->isCollection()) {
+                $ids = $this->hydrateCollectionRelationshipData($relationshipData, $field, $name);
+                $relationshipErrors = [];
+                $this->assignValue($dto, $field->getPropertyName(), $ids, '/data/relationships/' . $name . '/data', $name, $relationshipErrors);
+                if ($relationshipErrors !== []) {
+                    throw new ValidationException($relationshipErrors, 400);
+                }
+                $dto->markPresent($name);
+                continue;
+            }
+
             if ($relationshipData === null) {
                 $relationshipErrors = [];
                 $this->assignValue($dto, $field->getPropertyName(), null, '/data/relationships/' . $name . '/data', $name, $relationshipErrors);
@@ -137,6 +161,67 @@ class DtoHydrator
         }
 
         return $dto;
+    }
+
+    /**
+     * Parses a to-many (collection) relationship data array into a flat list of IDs.
+     *
+     * @param mixed $data
+     * @return array<int,string|int>
+     */
+    private function hydrateCollectionRelationshipData($data, FieldDefinition $field, string $name): array
+    {
+        if ($data === null || $data === []) {
+            return [];
+        }
+
+        if (!is_array($data)) {
+            throw new ApiException(
+                400,
+                'invalid_relationship',
+                'Invalid Relationship',
+                sprintf("Relationship '%s' data must be an array for to-many relationships", $name),
+                '/data/relationships/' . $name . '/data'
+            );
+        }
+
+        $ids = [];
+        foreach ($data as $index => $item) {
+            if (!is_array($item)) {
+                throw new ApiException(
+                    422,
+                    'invalid_relationship',
+                    'Invalid Relationship',
+                    "Each item in a to-many relationship must be a resource identifier object",
+                    '/data/relationships/' . $name . '/data/' . $index
+                );
+            }
+
+            if (($item['type'] ?? null) !== $field->getTargetType()) {
+                throw new ApiException(
+                    422,
+                    'invalid_relationship_type',
+                    'Invalid Relationship Type',
+                    sprintf("Relationship type must be '%s'", $field->getTargetType()),
+                    '/data/relationships/' . $name . '/data/' . $index . '/type'
+                );
+            }
+
+            $itemId = $item['id'] ?? null;
+            if (!is_string($itemId) || trim($itemId) === '') {
+                throw new ApiException(
+                    422,
+                    'invalid_relationship_id',
+                    'Invalid Relationship Id',
+                    "Collection relationship item id must be a non-empty string",
+                    '/data/relationships/' . $name . '/data/' . $index . '/id'
+                );
+            }
+
+            $ids[] = $itemId;
+        }
+
+        return $ids;
     }
 
     /**

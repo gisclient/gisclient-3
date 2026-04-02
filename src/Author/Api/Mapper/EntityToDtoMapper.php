@@ -38,6 +38,17 @@ class EntityToDtoMapper
         }
 
         foreach ($dtoSchema->getRelationships() as $field) {
+            if ($field->isCollection()) {
+                $collectionData = $entity->getCollectionRelationships()[$field->getJsonApiName()] ?? null;
+                if ($collectionData === null) {
+                    continue;
+                }
+
+                DtoPropertyAccessor::set($dto, $field->getPropertyName(), $collectionData);
+                $dto->markPresent($field->getJsonApiName());
+                continue;
+            }
+
             $relationshipData = $entity->getRelationships()[$field->getJsonApiName()] ?? null;
             if (!is_array($relationshipData) || !array_key_exists('id', $relationshipData) || $relationshipData['id'] === null) {
                 continue;

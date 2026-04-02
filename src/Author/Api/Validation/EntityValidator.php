@@ -77,6 +77,12 @@ class EntityValidator
 
         $requiredFields = $entity->isCreate() ? $resourceSchema->getRequiredOnCreate() : $resourceSchema->getRequiredOnPut();
         foreach ($requiredFields as $field) {
+            if ($field === $primaryKey && !$entity->isCreate()) {
+                // For updates the PK comes from the URL; ApiCrudService already confirmed the entity
+                // exists via findById, so there is nothing to check here.
+                continue;
+            }
+
             $requiredColumn = $this->resolveRequiredFieldColumn($resourceSchema, $entitySchema, $field);
             if ($requiredColumn === null || !array_key_exists($requiredColumn, $attributes) || $this->isEmptyValue($attributes[$requiredColumn])) {
                 $this->addError(
@@ -92,6 +98,7 @@ class EntityValidator
         }
 
         $this->validateRelationshipReferences($resourceSchema, $entity->getRelationships(), $errors);
+        $this->validateCollectionRelationshipReferences($resourceSchema, $entity->getCollectionRelationships(), $errors);
         $this->validateAttributeLookups($entitySchema, $attributes, $errors);
 
         if (count($errors) > 0) {
@@ -168,7 +175,7 @@ class EntityValidator
             }
 
             $relationship = $schema->getRelationship($relationshipName);
-            if ($relationship === null) {
+            if ($relationship === null || $relationship->isCollection()) {
                 continue;
             }
 
@@ -190,6 +197,45 @@ class EntityValidator
                     'pointer' => '/data/relationships/' . $relationshipName . '/data/id',
                 ],
             ];
+        }
+    }
+
+    /**
+     * @param array<string,array<int,string|int>> $collectionRelationships
+     * @param array<int,array<string,mixed>> $errors
+     */
+    private function validateCollectionRelationshipReferences(ResourceSchema $schema, array $collectionRelationships, array &$errors): void
+    {
+        if ($this->repository === null) {
+            return;
+        }
+
+        foreach ($collectionRelationships as $relationshipName => $ids) {
+            $relationship = $schema->getRelationship($relationshipName);
+            if ($relationship === null || !$relationship->isCollection()) {
+                continue;
+            }
+
+            $targetType = $relationship->getTargetType();
+            if (!is_string($targetType) || trim($targetType) === '') {
+                continue;
+            }
+
+            foreach ($ids as $index => $id) {
+                if ($this->repository->findById(new EntityRef($targetType, $id)) !== null) {
+                    continue;
+                }
+
+                $errors[] = [
+                    'status' => '422',
+                    'code' => 'invalid_relationship',
+                    'title' => 'Invalid Relationship',
+                    'detail' => sprintf("Relationship '%s' references an unknown resource", $relationshipName),
+                    'source' => [
+                        'pointer' => '/data/relationships/' . $relationshipName . '/data/' . $index . '/id',
+                    ],
+                ];
+            }
         }
     }
 
@@ -219,7 +265,12 @@ class EntityValidator
             return $entitySchema->getAttributeColumn($field) ?? $field;
         }
 
-        if ($resourceSchema->getRelationship($field) !== null) {
+        $relationship = $resourceSchema->getRelationship($field);
+        if ($relationship !== null) {
+            if ($relationship->isCollection()) {
+                return null;
+            }
+
             return $entitySchema->getRelationshipColumn($field);
         }
 
