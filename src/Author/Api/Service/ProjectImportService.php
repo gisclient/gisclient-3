@@ -78,7 +78,7 @@ class ProjectImportService
      */
     private function buildGraph(array $resources, string $sourceProjectName, ProjectCopyContext $context): array
     {
-        $standardTypes = ['project_srs', 'catalog', 'link', 'theme', 'layergroup', 'mapset', 'layer', 'class', 'style', 'field', 'mapset_layergroup'];
+        $standardTypes = ['project_srs', 'catalog', 'link', 'theme', 'layergroup', 'mapset', 'layer', 'relation', 'class', 'style', 'field', 'mapset_layergroup'];
 
         // Project (single)
         $projectResources = $resources['project'] ?? [];

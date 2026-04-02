@@ -39,6 +39,7 @@ class ProjectTransferService
         $this->cloneCrudCollection($gateway, 'layergroup', $graph['layergroup'], $context);
         $this->cloneCrudCollection($gateway, 'mapset', $graph['mapset'], $context);
         $this->cloneCrudCollection($gateway, 'layer', $graph['layer'], $context);
+        $this->cloneCrudCollection($gateway, 'relation', $graph['relation'], $context);
         $this->cloneCrudCollection($gateway, 'class', $graph['class'], $context);
         $this->cloneCrudCollection($gateway, 'style', $graph['style'], $context);
         $this->cloneCrudCollection($gateway, 'field', $graph['field'], $context);
@@ -68,6 +69,7 @@ class ProjectTransferService
         $layers = $this->listByParentIds($gateway, 'layer', 'layergroup_id', $layergroups);
         $classes = $this->listByParentIds($gateway, 'class', 'layer_id', $layers);
         $styles = $this->listByParentIds($gateway, 'style', 'class_id', $classes);
+        $relations = $this->listByParentIds($gateway, 'relation', 'layer_id', $layers);
         $fields = $this->listByParentIds($gateway, 'field', 'layer_id', $layers);
         $mapsetLayergroups = $this->listMapsetLayergroups($gateway, $mapsets);
 
@@ -85,6 +87,7 @@ class ProjectTransferService
             'layergroup' => $layergroups,
             'mapset' => $mapsets,
             'layer' => $layers,
+            'relation' => $relations,
             'class' => $classes,
             'style' => $styles,
             'field' => $fields,
@@ -247,19 +250,6 @@ class ProjectTransferService
         if ($type === 'mapset') {
             $dto = new MapsetDto();
             $dto->id = (string) $context->mapId('mapset', $sourceId);
-            $dto->markPresent('id');
-            $dto->markAsIdentifierOnly();
-
-            return $dto;
-        }
-
-        if ($type === 'relation') {
-            // relation entities are catalog-scoped, not project-scoped, so they are not cloned;
-            // keep the original reference as-is
-            $dtoClass = DtoSchemaRegistry::classFromType($type);
-            /** @var JsonApiDto $dto */
-            $dto = new $dtoClass();
-            $dto->id = $sourceId;
             $dto->markPresent('id');
             $dto->markAsIdentifierOnly();
 

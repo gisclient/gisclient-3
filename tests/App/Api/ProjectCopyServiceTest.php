@@ -168,6 +168,16 @@ class ProjectCopyServiceTest extends TestCase
         ], [
             'class' => $this->identifierDto(ClassDto::class, 50),
         ]);
+        $relation = $this->makeDto(RelationDto::class, 1, [
+            'relation_name' => 'rel',
+            'relationtype_id' => 1,
+            'data_field_1' => 'gid',
+            'table_name' => 'public.some_table',
+            'table_field_1' => 'id',
+        ], [
+            'catalog' => $this->identifierDto(CatalogDto::class, 10),
+            'layer' => $this->identifierDto(LayerDto::class, 40),
+        ]);
         $field = $this->makeDto(FieldDto::class, 70, [
             'field_name' => 'field',
             'field_header' => 'Field',
@@ -224,6 +234,7 @@ class ProjectCopyServiceTest extends TestCase
             'layergroup' => [$layergroup],
             'mapset' => [$mapset],
             'layer' => [$layer],
+            'relation' => [$relation],
             'class' => [$class],
             'style' => [$style],
             'field' => [$field],
@@ -244,7 +255,7 @@ class ProjectCopyServiceTest extends TestCase
         ));
 
         $payload = $response->toArray();
-        $this->assertSame(['project', 'project_srs', 'project_languages', 'catalog', 'theme', 'layergroup', 'mapset', 'layer', 'class', 'style', 'field', 'mapset_layergroup', 'selgroup', 'selgroup_layer', 'project_admin', 'project_admin'], array_column($gateway->created, 'type'));
+        $this->assertSame(['project', 'project_srs', 'project_languages', 'catalog', 'theme', 'layergroup', 'mapset', 'layer', 'relation', 'class', 'style', 'field', 'mapset_layergroup', 'selgroup', 'selgroup_layer', 'project_admin', 'project_admin'], array_column($gateway->created, 'type'));
         $this->assertSame('target', $payload['target_project']);
         $this->assertSame(1, $payload['created']['project']);
         $this->assertSame(1, $payload['created']['project_languages']);
@@ -256,13 +267,23 @@ class ProjectCopyServiceTest extends TestCase
         $this->assertSame(2000, $createdLayer->layergroup->id);
         $this->assertSame(950, $createdLayer->catalog->id);
 
+        /** @var RelationDto $createdRelation */
+        $createdRelation = $gateway->created[8]['dto'];
+        $this->assertSame(9000, $createdRelation->id);
+        $this->assertSame(950, $createdRelation->catalog->id);
+        $this->assertSame(3000, $createdRelation->layer->id);
+
+        /** @var FieldDto $createdField */
+        $createdField = $gateway->created[11]['dto'];
+        $this->assertSame(9000, $createdField->relation->id);
+
         /** @var MapsetLayergroupDto $createdMapsetLayergroup */
-        $createdMapsetLayergroup = $gateway->created[11]['dto'];
+        $createdMapsetLayergroup = $gateway->created[12]['dto'];
         $this->assertSame('target', $createdMapsetLayergroup->mapset->id);
         $this->assertSame(2000, $createdMapsetLayergroup->layergroup->id);
 
         /** @var SelgroupLayerDto $createdSelgroupLayer */
-        $createdSelgroupLayer = $gateway->created[13]['dto'];
+        $createdSelgroupLayer = $gateway->created[14]['dto'];
         $this->assertSame(7000, $createdSelgroupLayer->selgroup->id);
         $this->assertSame(3000, $createdSelgroupLayer->layer->id);
     }
@@ -281,6 +302,7 @@ class ProjectCopyServiceTest extends TestCase
             'layergroup' => [],
             'mapset' => [],
             'layer' => [],
+            'relation' => [],
             'class' => [],
             'style' => [],
             'field' => [],

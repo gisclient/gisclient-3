@@ -44,7 +44,7 @@ class ProjectExportService
 
         $graph = $this->transferService->loadProjectGraph($gateway, $projectName, $project);
 
-        $standardTypes = ['project_srs', 'catalog', 'link', 'theme', 'layergroup', 'mapset', 'layer', 'class', 'style', 'field', 'mapset_layergroup'];
+        $standardTypes = ['project_srs', 'catalog', 'link', 'theme', 'layergroup', 'mapset', 'layer', 'relation', 'class', 'style', 'field', 'mapset_layergroup'];
 
         $resources = [];
         $resources['project'] = [$this->serializer->serialize($graph['project'])];

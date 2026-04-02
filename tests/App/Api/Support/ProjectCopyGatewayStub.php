@@ -29,6 +29,7 @@ class ProjectCopyGatewayStub implements ApiCrudGatewayInterface
         'theme' => 1000,
         'layergroup' => 2000,
         'layer' => 3000,
+        'relation' => 9000,
         'class' => 4000,
         'style' => 5000,
         'field' => 6000,
