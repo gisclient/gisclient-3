@@ -59,8 +59,11 @@ class DtoSerializer
             }
 
             $relatedDto = DtoPropertyAccessor::get($dto, $field->getPropertyName());
+            if ($relatedDto === null) {
+                continue;
+            }
             $relationships[$field->getJsonApiName()] = [
-                'data' => $relatedDto === null ? null : [
+                'data' => [
                     'type' => $field->getTargetType(),
                     'id' => DtoPropertyAccessor::isInitialized($relatedDto, 'id') ? (string) DtoPropertyAccessor::get($relatedDto, 'id') : null,
                 ],
