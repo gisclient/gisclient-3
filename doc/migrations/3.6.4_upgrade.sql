@@ -1712,6 +1712,18 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             );
             EXECUTE format('UPDATE %I.project_srs SET id = DEFAULT WHERE id IS NULL', v_schema);
             EXECUTE format('ALTER TABLE %I.project_srs ALTER COLUMN id SET NOT NULL', v_schema);
+            DECLARE
+                v_pk_name text;
+            BEGIN
+                SELECT c.conname INTO v_pk_name
+                FROM pg_constraint c
+                JOIN pg_class t ON c.conrelid = t.oid
+                JOIN pg_namespace n ON t.relnamespace = n.oid
+                WHERE c.contype = 'p' AND t.relname = 'project_srs' AND n.nspname = v_schema;
+                IF v_pk_name IS NOT NULL THEN
+                    EXECUTE format('ALTER TABLE %I.project_srs DROP CONSTRAINT %I', v_schema, v_pk_name);
+                END IF;
+            END;
             EXECUTE format(
                 'ALTER TABLE %I.project_srs ADD CONSTRAINT project_srs_pkey PRIMARY KEY (id)',
                 v_schema
@@ -1727,10 +1739,18 @@ SELECT max(version_name) INTO v_author_version FROM version where version_key = 
             );
             EXECUTE format('UPDATE %I.mapset_layergroup SET id = DEFAULT WHERE id IS NULL', v_schema);
             EXECUTE format('ALTER TABLE %I.mapset_layergroup ALTER COLUMN id SET NOT NULL', v_schema);
-            EXECUTE format(
-                'ALTER TABLE %I.mapset_layergroup DROP CONSTRAINT mapset_layergroup_pkey',
-                v_schema
-            );
+            DECLARE
+                v_pk_name text;
+            BEGIN
+                SELECT c.conname INTO v_pk_name
+                FROM pg_constraint c
+                JOIN pg_class t ON c.conrelid = t.oid
+                JOIN pg_namespace n ON t.relnamespace = n.oid
+                WHERE c.contype = 'p' AND t.relname = 'mapset_layergroup' AND n.nspname = v_schema;
+                IF v_pk_name IS NOT NULL THEN
+                    EXECUTE format('ALTER TABLE %I.mapset_layergroup DROP CONSTRAINT %I', v_schema, v_pk_name);
+                END IF;
+            END;
             EXECUTE format(
                 'ALTER TABLE %I.mapset_layergroup ADD CONSTRAINT mapset_layergroup_pkey PRIMARY KEY (id)',
                 v_schema
