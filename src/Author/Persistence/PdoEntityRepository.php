@@ -60,7 +60,7 @@ class PdoEntityRepository implements EntityRepository
 
             $sortField = $query->getSortField() ?: $schema->getDefaultSortColumn();
             $sortDirection = $query->getSortDirection();
-            $selectSql .= sprintf(' ORDER BY %s %s', $sortField, $sortDirection);
+            $selectSql .= sprintf(' ORDER BY %s %s, %s ASC', $sortField, $sortDirection, $schema->getPrimaryKey());
             $selectSql .= ' LIMIT :limit OFFSET :offset';
 
             $stmt = $this->db->prepare($selectSql);
