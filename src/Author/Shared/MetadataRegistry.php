@@ -10,6 +10,7 @@ use GisClient\Author\Shared\Metadata\GroupMetadata;
 use GisClient\Author\Shared\Metadata\LayergroupMetadata;
 use GisClient\Author\Shared\Metadata\LayerMetadata;
 use GisClient\Author\Shared\Metadata\LinkMetadata;
+use GisClient\Author\Shared\Metadata\LocalizationMetadata;
 use GisClient\Author\Shared\Metadata\MapsetLayergroupMetadata;
 use GisClient\Author\Shared\Metadata\MapsetMetadata;
 use GisClient\Author\Shared\Metadata\Metadata;
@@ -101,6 +102,7 @@ class MetadataRegistry
             FieldMetadata::class,
             CatalogMetadata::class,
             LinkMetadata::class,
+            LocalizationMetadata::class,
             MapsetMetadata::class,
             MapsetLayergroupMetadata::class,
             GroupMetadata::class,

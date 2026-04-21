@@ -34,6 +34,35 @@ class ResourceSchemaMetadataTest extends TestCase
         $this->assertSame('symbol', $schema->getAttributeRule('symbol_name')['lookup']['table']);
     }
 
+    public function testLocalizationResourceSchemaExposesContractMetadata(): void
+    {
+        $schema = DtoSchemaRegistry::schemaForType('localization');
+
+        $this->assertSame('localization', $schema->getType());
+        $this->assertSame('localization_id', $schema->getPrimaryKey());
+        $this->assertSame(['project', 'pkey_id'], $schema->getRequiredOnCreate());
+        $this->assertContains('localization_id', $schema->getFilterableFields());
+        $this->assertContains('project_name', $schema->getFilterableFields());
+        $this->assertContains('pkey_id', $schema->getFilterableFields());
+        $this->assertContains('language_id', $schema->getFilterableFields());
+        $this->assertContains('i18nf_id', $schema->getFilterableFields());
+        $this->assertSame('localization_id', $schema->getDefaultSort());
+        $this->assertSame('project', $schema->getRelationship('project')->getJsonApiName());
+    }
+
+    public function testLocalizationEntitySchemaExposesPersistenceMetadata(): void
+    {
+        $schema = EntitySchemaRegistry::schemaForType('localization');
+
+        $this->assertSame('gisclient_34', $schema->getResolvedDbSchema());
+        $this->assertSame('localization', $schema->getResolvedTable());
+        $this->assertSame('localization_id', $schema->getPrimaryKey());
+        $this->assertSame('project_name', $schema->getRelationshipColumn('project'));
+        $this->assertContains('project_name', $schema->getWritableDbFields());
+        $this->assertSame('e_language', $schema->getAttributeRule('language_id')['lookup']['table']);
+        $this->assertSame('i18n_field', $schema->getAttributeRule('i18nf_id')['lookup']['table']);
+    }
+
     public function testProjectSrsSchemaExposesContractMetadata(): void
     {
         $schema = DtoSchemaRegistry::schemaForType('project_srs');
