@@ -18,11 +18,17 @@ class LocalizationMetadata extends Metadata
             ->sortable(['localization_id', 'pkey_id', 'language_id'], 'localization_id')
             ->addAttribute('pkey_id', 'pkeyId', 'string')
             ->addAttribute('language_id', 'languageId', 'string', true, true, true, null, [
-                'lookup' => ['table' => 'e_language', 'column' => 'language_id'],
+                'lookup' => [
+                    'table' => 'e_language',
+                    'column' => 'language_id',
+                ],
             ])
             ->addAttribute('value', 'value', 'string', true)
             ->addAttribute('i18nf_id', 'i18nfId', 'int', true, true, true, null, [
-                'lookup' => ['table' => 'i18n_field', 'column' => 'i18nf_id'],
+                'lookup' => [
+                    'table' => 'i18n_field',
+                    'column' => 'i18nf_id',
+                ],
             ])
             ->addRelationship('project', 'project', ProjectDto::class, 'project', false, true, true, 'project_name');
     }
