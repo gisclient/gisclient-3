@@ -301,9 +301,6 @@ class PrintDocument
                 $wms['PARAMETERS']['SERVICE'] != 'WMS') {
                 continue;
             }
-            if ($wms['PARAMETERS']['SERVICE'] == 'REDLINE') {
-                continue;
-            }
             $legendGraphicRequest = array_merge($wms['PARAMETERS'], [
                 'url' => (!empty($wms['URL']) ? $wms['URL'] : $wms['baseURL']),
                 'PROJECT' => $wms['PARAMETERS']['PROJECT'],

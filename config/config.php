@@ -132,11 +132,6 @@ define('TINYOWS_FILES', ROOT_PATH.'tinyows/');
 define('TINYOWS_SCHEMA_DIR', '/usr/share/tinyows/schema/');
 define('TINYOWS_ONLINE_RESOURCE', PUBLIC_URL.'services/tinyows/');
 
-/*************  REDLINE ***************/
-define('REDLINE_SCHEMA', 'public');             //SCHEMA DB IN CUI VIENE CREATA LA TABELLA ANNOTAZIONI
-define('REDLINE_TABLE', 'annotazioni');         //NOME DELLA TABELLA DB DELLE ANNOTAZIONI
-define('REDLINE_SRID', '4326');                 //SRID DELLA TABELLA DB DELLE ANNOTAZIONI
-define('REDLINE_FONT', 'dejavu-sans-bold');     //FONT DELLE ANNOTAZIONI. DEVE ESISTERE TRA I FONT AUTHOR
 
 require_once(ROOT_PATH."config/config.db.php");
 
@@ -168,10 +163,8 @@ define('EDIT_BUTTON', 'edit');
 define('DEFAULT_TOLERANCE', 4);                          //Raggio di ricerca in caso non venga specificato layer.tolerance
 define('LAYER_SELECTION', '__sel_layer');                //Nome per i layer di selezione
 define('LAYER_IMAGELABEL', '__image_label');             //Nome per il layer testo sulla mappa
-define('LAYER_READLINE', '__readline_layer');
 define('DATALAYER_ALIAS_TABLE', '__data__');             //nome riservato ad alias per il nome della tabella del layer (usato dal sistema nelle query, non ci devono essere tabelle con questo nome)
 define('WRAP_READLINE', '\\');
-define('COLOR_REDLINE', '0 0 255');                      //Colore Line di contorno oggetti poligono o linea selezionati
 define('OBJ_COLOR_SELECTION', '255 255 0');              //Colore Line di contorno oggetti poligono o linea selezionati
 define('MAP_DPI', 72);                                   //Mapserver map resolution
 define('TILE_SIZE', 256);                                //Mapserver map resolution

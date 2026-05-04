@@ -7,12 +7,9 @@ var GC_LABEL = {
 'wmsMode':'Dati WMS',
 'editMode':'Aggiungi / Modifica Oggetti',
 'measureMode':'Misura',
-'redlineMode':'Annotazioni',
 'queryModeOn':'Ricerca attiva',
 'List':'Elenco',
 'Table':'Tabella',
-
-'redlineModeOn':'Redline attivo',
 'measureModeOn':'Misura attiva',
 'geometryPoint':'Punto-Box',
 'geometryPointWMS':'Punto-WMS',

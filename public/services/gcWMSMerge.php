@@ -28,9 +28,6 @@ function getWmsParameters(array $layerParameters)
     if (!empty($layerParameters['PREV_TIME'])) {
         $query .= '&PREV_TIME=' . $layerParameters['PREV_TIME'];
     }
-    if (!empty($layerParameters['REDLINEID'])) {
-        $query .= '&REDLINEID=' . $layerParameters['REDLINEID'];
-    }
     if (!empty($layerParameters['LANG'])) {
         $query .= '&LANG=' . $layerParameters['LANG'];
     }

@@ -238,11 +238,6 @@ class R3GisGCMap
             $mapOptions["selgroup"] = $this->selgroupList;
         }
 
-        // SE HO DEFINITO UN CONTESTO AGGIUNGO LE OPZIONI DI CONTESTO
-        //  (PER ORA AGGIUNGO I LAYER DEL REDLINE) (TODO FRANCESCO)
-        // SOVRASCRIVO GLI ATTRIBUTI DI mapOptions E AGGIUNGO I LAYER DEL CONTEXT
-        // LASCEREI IL DOPPIO PASSAGGIO JSONENCODE JSONDECODE PER IL CONTROLLO DEGLI ERRORI ..... DA VEDERE
-
         // background diverso da bianco/trasparente
         if (!empty($row['bg_color']) && $row['bg_color'] != '255 255 255') {
             $mapOptions['bg_color'] = $row['bg_color'];
