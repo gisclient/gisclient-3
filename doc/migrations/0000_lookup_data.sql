@@ -271,7 +271,6 @@ INSERT INTO gisclient_34.e_language (language_id, language_name, language_order)
 --
 
 INSERT INTO gisclient_34.e_layertype (layertype_id, layertype_name, layertype_ms, layertype_order) VALUES
-    ('5', 'annotation', '4', NULL),
     ('1', 'point', '0', NULL),
     ('2', 'line', '1', NULL),
     ('3', 'polygon', '2', NULL),

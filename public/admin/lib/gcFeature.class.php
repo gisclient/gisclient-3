@@ -276,7 +276,6 @@ class gcFeature
             2 => "LINE",
             3 => "POLYGON",
             4 => "RASTER",
-            5 => "ANNOTATION",
             10 => 'RASTER',
             11 => 'CHART',
         ]; //10 TILERASTER
