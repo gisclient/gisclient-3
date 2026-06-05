@@ -104,7 +104,7 @@ if ($_REQUEST["REQUEST"] == "SaveUser") {
 
 //elenco dei layer di redline per l'utente corrente
 if($_REQUEST["REQUEST"] == "GetLayers"){
-	$sql = "SELECT DISTINCT redline_id, redline_title, redline_status, mapset FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE project=:project AND username=:username ORDER BY redline_id;";
+	$sql = "SELECT DISTINCT redline_id, redline_title, redline_status, mapset, note_type, note_attr FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." LEFT JOIN ".REDLINE_SCHEMA.".".REDLINE_TABLE."_attr USING (redline_id) WHERE project=:project AND username=:username ORDER BY redline_id;";
 	$params = array(
 		':project'=>$_REQUEST['PROJECT'],
 		':username'=> $redlineUser
@@ -127,6 +127,13 @@ if($_REQUEST["REQUEST"] == "GetLayers"){
 
 if($_REQUEST["REQUEST"] == "DeleteLayer"){
 	$sql = "DELETE FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE." WHERE redline_id=?;";
+	$stmt = $db->prepare($sql);
+	try {
+		$stmt->execute(array($_REQUEST['REDLINEID']));
+	} catch(Exception $e) {
+		outputError($e->getMessage());
+	}
+	$sql = "DELETE FROM ".REDLINE_SCHEMA.".".REDLINE_TABLE."_attr WHERE redline_id=?;";
 	$stmt = $db->prepare($sql);
 	try {
 		$stmt->execute(array($_REQUEST['REDLINEID']));
@@ -188,6 +195,12 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
 	} catch(Exception $e) { //table already exists
 	}
 
+	$sql_t = "CREATE TABLE IF NOT EXISTS ".REDLINE_SCHEMA.".".REDLINE_TABLE."_attr (redline_id varchar UNIQUE, note_type varchar, note_attr text)";
+	try {
+		$db->exec($sql_t);
+	} catch(Exception $e) { //table already exists
+	}
+
 	$featureCollection = json_decode($_REQUEST['features'], true);
         if ($_REQUEST['REDLINEID'])
             $redlineId = $_REQUEST['REDLINEID'];
@@ -195,6 +208,8 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
             $redlineId = array_sum( explode( ' ' , microtime() ) );
 	$redlineTitle = !empty($_REQUEST['TITLE']) ? $_REQUEST['TITLE'] : null;
 	$redlineStatus = !empty($_REQUEST['STATUS']) ? $_REQUEST['STATUS'] : 0;
+	$redlineType = !empty($_REQUEST['TYPE']) ? $_REQUEST['TYPE'] : null;
+	$redlineTypeAttr = !empty($_REQUEST['TYPE_ATTR']) ? pg_escape_string($_REQUEST['TYPE_ATTR']) : null;
 
         $inserted = false;
         $insertedIdList = array();
@@ -272,6 +287,14 @@ if($_REQUEST["REQUEST"] == "SaveLayer"){
         }
 
     if($inserted) {
+		if (!empty($redlineType) && !empty($redlineTypeAttr)) {
+			try {
+				$db->exec("INSERT INTO " .REDLINE_SCHEMA.".".REDLINE_TABLE."_attr (redline_id, note_type, note_attr) VALUES ('$redlineId','$redlineType','$redlineTypeAttr')
+				ON CONFLICT(redline_id) DO UPDATE SET note_type=EXCLUDED.note_type, note_attr=EXCLUDED.note_attr");
+			} catch(Exception $e) {
+				outputError($e->getMessage()."\n\n--".$rowId);
+			}
+		}
         die(json_encode(array('redlineId'=>"$redlineId", 'redlineTitle'=>$redlineTitle, 'redlineStatus'=>$redlineStatus)));
     } else {
         outputError('Invalid format');
