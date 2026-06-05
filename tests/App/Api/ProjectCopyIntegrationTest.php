@@ -6,6 +6,7 @@ use GisClient\Author\Api\ProjectCopy\ProjectCopyRequestParser;
 use GisClient\Author\Api\Service\ApiCrudService;
 use GisClient\Author\Api\Service\ProjectCopyService;
 use GisClient\Author\Persistence\PdoEntityRepository;
+use GisClient\MapServer\Writer\MapfileWriterInterface;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../Api/Support/TestApiCrudService.php';
@@ -108,7 +109,7 @@ class ProjectCopyIntegrationTest extends TestCase
 
         $gateway = new ApiCrudServiceGateway($crudService, GCApp::getDB());
 
-        return new ProjectCopyService($gateway, new \GisClient\Author\Api\Service\ProjectTransferService());
+        return new ProjectCopyService($gateway, new \GisClient\Author\Api\Service\ProjectTransferService(), $this->createMock(MapfileWriterInterface::class));
     }
 
     private function cleanupProject(string $projectName): void

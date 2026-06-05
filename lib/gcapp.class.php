@@ -477,46 +477,7 @@ class GCAuthor
      */
     public static function refreshMapfile($project, $mapset, $publish = false, $refreshLayerMapfile = false)
     {
-        include_once ADMIN_PATH . "lib/functions.php";
-        include_once ADMIN_PATH . 'lib/gcFeature.class.php';
-        include_once ADMIN_PATH . 'lib/gcMapfile.class.php';
-        include_once ROOT_PATH . "lib/i18n.php";
-        
-        $target = $publish ? 'public' : 'tmp';
-        
-        if (!GCAuthor::hasProject($project)) {
-            throw new Exception("Project '$project' does not exist.");
-        }
-
-        if (!GCAuthor::hasProjectWithMapset($project, $mapset)) {
-            throw new Exception("Project '$project' does not have a mapset named '$mapset'.");
-        }
-
-        $mapfile = new gcMapfile(null, $target);
-        $mapfile->writeMap("mapset", $mapset);
-        
-        if ($refreshLayerMapfile) {
-            foreach (GCAuthor::getLayerList($project, $mapset) as $mapsetData) {
-                $mapfile = new gcMapfile(null, "layer");
-                $mapfile->writeMap('layer', "{$mapset}.{$mapsetData['feature_type']}");
-            }
-        }
-
-        $localization = new GCLocalization($project);
-        $alternativeLanguages = $localization->getAlternativeLanguages();
-        if ($alternativeLanguages) {
-            foreach ($alternativeLanguages as $languageId => $foo) {
-                $mapfile = new gcMapfile($languageId, $target);
-                $mapfile->writeMap('mapset', $mapset);
-                
-                if ($refreshLayerMapfile) {
-                    foreach (GCAuthor::getLayerList($project, $mapset) as $mapsetData) {
-                        $mapfile = new gcMapfile($languageId, "layer");
-                        $mapfile->writeMap('layer', "{$mapset}.{$mapsetData['feature_type']}");
-                    }
-                }
-            }
-        }
+        (new \GisClient\MapServer\Writer\OptimizedMapfileWriter())->refreshMapset($project, $mapset, $publish, $refreshLayerMapfile);
     }
     
     public static function buildFeatureQuery($aFeature, array $options = [])

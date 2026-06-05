@@ -53,7 +53,7 @@ class RefreshMapfileCommand extends Command
                 "w",
                 InputOption::VALUE_REQUIRED,
                 "Which mapfile writer to use: 'legacy' or 'optimized'",
-                self::WRITER_LEGACY
+                self::WRITER_OPTIMIZED
             )
             ->addOption(
                 "compare",

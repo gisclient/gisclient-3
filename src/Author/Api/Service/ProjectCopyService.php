@@ -10,6 +10,7 @@ use GisClient\Author\Api\ProjectCopy\ProjectCopyContext;
 use GisClient\Author\Api\ProjectCopy\ProjectCopyRequest;
 use GisClient\Author\Api\ProjectCopy\ProjectCopyRequestParser;
 use GisClient\Author\Api\ProjectCopy\ProjectCopyResponse;
+use GisClient\MapServer\Writer\MapfileWriterInterface;
 
 class ProjectCopyService
 {
@@ -23,10 +24,19 @@ class ProjectCopyService
      */
     private $transferService;
 
-    public function __construct(ApiCrudGatewayInterface $gateway, ProjectTransferService $transferService)
-    {
+    /**
+     * @var MapfileWriterInterface
+     */
+    private $mapfileWriter;
+
+    public function __construct(
+        ApiCrudGatewayInterface $gateway,
+        ProjectTransferService $transferService,
+        MapfileWriterInterface $mapfileWriter
+    ) {
         $this->gateway = $gateway;
         $this->transferService = $transferService;
+        $this->mapfileWriter = $mapfileWriter;
     }
 
     public function execute(ProjectCopyRequest $request): ProjectCopyResponse
@@ -165,11 +175,15 @@ class ProjectCopyService
             return;
         }
 
+        $targetProject = $context->getTargetProject();
         $refreshLayerMapfile = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
+        $mapsets = \GCAuthor::getMapsets($targetProject);
 
         if ($request->shouldRefreshPrivateMapfiles()) {
             try {
-                \GCAuthor::refreshMapfiles($context->getTargetProject(), false, $refreshLayerMapfile);
+                foreach ($mapsets as $mapsetData) {
+                    $this->mapfileWriter->refreshMapset($targetProject, $mapsetData['mapset_name'], false, $refreshLayerMapfile);
+                }
                 $this->assertNoRefreshErrors();
             } catch (\Throwable $exception) {
                 $context->addWarning('Private mapfile refresh failed: ' . $exception->getMessage());
@@ -178,7 +192,9 @@ class ProjectCopyService
 
         if ($request->shouldRefreshPublicMapfiles()) {
             try {
-                \GCAuthor::refreshMapfiles($context->getTargetProject(), true, $refreshLayerMapfile);
+                foreach ($mapsets as $mapsetData) {
+                    $this->mapfileWriter->refreshMapset($targetProject, $mapsetData['mapset_name'], true, $refreshLayerMapfile);
+                }
                 $this->assertNoRefreshErrors();
             } catch (\Throwable $exception) {
                 $context->addWarning('Public mapfile refresh failed: ' . $exception->getMessage());

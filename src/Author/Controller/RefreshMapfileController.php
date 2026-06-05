@@ -2,11 +2,16 @@
 
 namespace GisClient\Author\Controller;
 
+use GisClient\MapServer\Writer\MapfileWriterInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-class RefreshMapfileController
+class RefreshMapfileController implements ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     /**
      * Refresh Mapfile
      */
@@ -33,10 +38,16 @@ class RefreshMapfileController
             } else {
                 $refreshLayerMapfile = defined('ENABLE_OGC_SINGLE_LAYER_WMS') && ENABLE_OGC_SINGLE_LAYER_WMS === true;
                 $publish = $target === "public";
+                $writer = $this->container->get(MapfileWriterInterface::class);
                 if (empty($mapset)) {
-                    \GCAuthor::refreshMapfiles($project, $publish, $refreshLayerMapfile);
+                    if (!\GCAuthor::hasProject($project)) {
+                        throw new \Exception("Project '$project' does not exist.");
+                    }
+                    foreach (\GCAuthor::getMapsets($project) as $mapsetData) {
+                        $writer->refreshMapset($project, $mapsetData['mapset_name'], $publish, $refreshLayerMapfile);
+                    }
                 } else {
-                    \GCAuthor::refreshMapfile($project, $mapset, $publish, $refreshLayerMapfile);
+                    $writer->refreshMapset($project, $mapset, $publish, $refreshLayerMapfile);
                 }
             }
             $errors = \GCError::get();
