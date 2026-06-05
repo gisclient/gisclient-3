@@ -1,78 +1,50 @@
 <?php
 
-/*
-  GisClient map browser
+namespace GisClient\MapServer\Writer;
 
-  Copyright (C) 2008 - 2009  Roberto Starnini - Gis & Web S.r.l. -info@gisweb.it
-
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  as published by the Free Software Foundation; either version 3
-  of the License, or (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+/**
+ * Port of the legacy gcFeature (public/admin/lib/gcFeature.class.php)
+ * used by the OptimizedMapfileWriter.
+ *
+ * The text-building code is copied verbatim from gcFeature so the produced
+ * mapfile bytes are identical. The only difference is the data access:
+ * instead of per-layer / per-class queries, rows come from a prefilled
+ * MapfileDataCache.
+ *
+ * IMPORTANT: when the mapfile output of gcFeature changes, this class must
+ * be updated accordingly (verified via `gisclient:refresh-mapfile --compare`)
+ * until the legacy writer is removed.
  */
-
-/*  Campo search_type per definizione della ricerca:
-  1 - Testo secco;
-  2 - Parte di testo senza suggerimenti
-  3 - Testo con autocompletamento e lista suggerimenti (dati presi dal campo search_list);
-  4 - Numerico
-  5 - Data
-  6 - SI/NO */
-
-// QUESTA SERVE SOLO PER LA COSTRUZIONE DEI MAPFILES
-
-
-
-class gcFeature
+class FeatureTextBuilder
 {
-    public $msFeatureType = [];
-    public $aggregateFunction = [
-        101 => 'sum',
-        102 => 'avg',
-        103 => 'min',
-        104 => 'max',
-        105 => 'count',
-        106 => 'variance',
-        107 => 'stddev',
-    ];
-    public $resultHeaders = [];
     public $owsUrl;
     public $labels = false;
     public $aSymbols;
-    public $db;
     public $srsList;
     public $srsParams;
-    public $dataTypes;
     public $msVersion;
     public $forcePrivate = false;
+
+    /**
+     * @var MapfileDataCache
+     */
+    private $cache;
+
     private $i18n;
-    
+
     /**
      * Container of feature information
      *
-     * @var array
+     * @var array|null
      */
     private $aFeature;
 
-    public function __destruct()
+    /**
+     * @param \GCi18n|null $i18n
+     */
+    public function __construct(MapfileDataCache $cache, $i18n = null)
     {
-        unset($this->aFeature);
-        unset($this->mapError);
-    }
-
-    public function __construct($i18n = null)
-    {
-        $this->db = GCApp::getDB();
+        $this->cache = $cache;
         $this->i18n = $i18n;
         $this->msVersion = substr(ms_GetVersionInt(), 0, 1);
     }
@@ -81,23 +53,12 @@ class gcFeature
     {
         $this->forcePrivate = false;
 
-        $sqlField = "select field.*,
-			relation.relation_name, relation_id, relationtype_id, data_field_1, data_field_2, data_field_3, table_field_1, table_field_2, table_field_3, table_name, 
-			catalog_path, catalog_url from " . DB_SCHEMA . ".field 
-			left join " . DB_SCHEMA . ".relation using (layer_id,relation_id) 
-			left join " . DB_SCHEMA . ".catalog using (catalog_id) 
-			where field.layer_id = ?
-			order by field_order, field_id;";
-        print_debug($sqlField, null, 'template');
-
-        $stmt = $this->db->prepare($sqlField);
-        $stmt->execute([$layerId]);
-
         $qRelation = [];
         $qField = [];
 
         // Costruzione dell'oggetto Feature
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        // (legacy: per-layer field query, see gcFeature::initFeature)
+        foreach ($this->cache->getFieldRows($layerId) as $row) {
             if (!empty($this->i18n)) {
                 $row = $this->i18n->translateRow($row, 'field', $row['field_id'], ['field_name', 'field_header']);
             }
@@ -145,20 +106,12 @@ class gcFeature
         }
 
         //Feature *******************
-        $sqlFeature = "select layer.*,connection_type,base_path,catalog_path,catalog_url 
-			from " . DB_SCHEMA . ".layer inner join " . DB_SCHEMA . ".catalog using (catalog_id) 
-			inner join " . DB_SCHEMA . ".project using(project_name) 
-			where layer.layer_id = ?;";
-
-        $stmt = $this->db->prepare($sqlFeature);
-        $stmt->execute([$layerId]);
-
-        $res = $stmt->fetchAll();
-        if ($stmt->rowCount() == 0) {
+        // (legacy: per-layer feature query, see gcFeature::initFeature)
+        $aFeature = $this->cache->getLayerRow($layerId);
+        if ($aFeature === null) {
             $this->aFeature = null;
             return;
         }
-        $aFeature = $res[0];
         if (!empty($this->i18n)) {
             $aFeature = $this->i18n->translateRow($aFeature, 'layer', $aFeature['layer_id']);
         }
@@ -178,10 +131,9 @@ class gcFeature
         $aFeature["link"] = [];
         $aFeature["tileindex"] = false;
 
-        print_debug($aFeature, null, 'template');
         $this->aFeature = $aFeature;
     }
-    
+
     /**
      * Return data of the current feature
      *
@@ -191,7 +143,7 @@ class gcFeature
     {
         return $this->aFeature;
     }
-    
+
     /**
      * Set feature data
      */
@@ -250,15 +202,17 @@ class gcFeature
         if (!$this->aFeature) {
             return false;
         }
-            
+
         // translate layergroup
         if (!empty($this->i18n)) {
             $layergroup = $this->i18n->translateRow($layergroup, 'layergroup', $layergroup['layergroup_id']);
         }
-            
+
         $maxScale = $layergroup['layergroup_maxscale'];
         $minScale = $layergroup['layergroup_minscale'];
-        // FIXME: the following does not use the return value, can it be removed?
+        // NOTE: kept although the return value is unused — it populates
+        // $this->aFeature['1n_count_fields'] which _getMetadata() reads below
+        // (same behavior as legacy gcFeature::getLayerText).
         $this->_getLayerData();
         $this->aFeature['layergroup_name'] = $layergroupName;
         $this->aSymbols = []; //Elenco dei simboli usati nelle classi della feature
@@ -315,8 +269,6 @@ class gcFeature
         } elseif (!empty($minScale)) {
             $layText[] = 'MINSCALEDENOM ' . $minScale;
         }
-        //if(!empty($maxScale))$layText[]="MAXSCALEDENOM $maxScale"; elseif(!empty($this->aFeature["maxscale"])) $layText[]="MAXSCALEDENOM ". $this->aFeature["maxscale"];
-        //if(!empty($minScale))$layText[]="MINSCALEDENOM $minScale"; elseif(!empty($this->aFeature["minscale"])) $layText[]="MINSCALEDENOM ". $this->aFeature["minscale"];
         if (!empty($this->aFeature["maxfeatures"]) && $this->aFeature["maxfeatures"] > 0) {
             $layText[] = "MAXFEATURES " . $this->aFeature["maxfeatures"];
         }
@@ -345,15 +297,8 @@ class gcFeature
         }
 
         //classi:
-
-        $sql = "select class_id,class_name,class_title,class_text,class_image,legendtype_id,keyimage,expression,class.maxscale,class.minscale,label_font,label_angle,label_color,label_outlinecolor,label_bgcolor,label_size,label_minsize,label_maxsize,label_position,label_priority,label_buffer,label_force,label_wrap,label_def
-        from " . DB_SCHEMA . ".class where layer_id=? order by class_order, class_id;";
-
-        print_debug($sql, null, 'classi');
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$this->aFeature["layer_id"]]);
-        $res = $stmt->fetchAll();
+        // (legacy: per-layer class query, see gcFeature::getLayerText)
+        $res = $this->cache->getClassRows($this->aFeature["layer_id"]);
 
         //Solo se presenti classi
         if (count($res) > 0) {
@@ -444,7 +389,6 @@ class gcFeature
                     $layText[] = "CONNECTIONTYPE ORACLESPATIAL";
                     $layText[] = "CONNECTION \"" . $this->aFeature["catalog_path"] . "\"";
                     $sData = $this->_getOracleLayerData();
-                    $using = '';
                     if (!empty($this->aFeature['data_srid']) || !empty($this->aFeature["data_unique"])) {
                         $sData .= ' USING ';
                         if (!empty($this->aFeature["data_unique"])) {
@@ -479,7 +423,6 @@ class gcFeature
                     break;
                 case MS_MYGIS:
                     break;
-                    break;
                 case MS_PLUGIN:
                     break;
             }
@@ -510,16 +453,6 @@ class gcFeature
     {
         $string = $this->aFeature['data_geom'] . ' FROM ';
         return $string . $this->aFeature['data'];
-        // questo sotto non sembra funzionare
-        if (empty($this->aFeature["fields"])) {
-            return $string . $this->aFeature['data'];
-        }
-
-        $fields = [$this->aFeature['data_geom']];
-        foreach ($this->aFeature["fields"] as $fieldId => $field) {
-            array_push($fields, $field['field_name']);
-        }
-        return $string . ' (SELECT ' . implode(', ', $fields) . ' FROM ' . $this->aFeature['data'] . ') as foo';
     }
 
     /**
@@ -568,10 +501,8 @@ class gcFeature
                     }
 
                     //Campi calcolati non metto tabella.campo
-                    //if(strpos($aField["field_name"],'(')!==false)
-                    //if(preg_match('|[(](.+)[)]|i',$aField["field_name"]) || strpos($aField["field_name"],"||"))
                     if ($aField["formula"]) {
-                        $fieldName = $aField["formula"] . " AS " . $aField["field_name"]; // . " AS " . strtolower(NameReplace($aField["field_title"]));
+                        $fieldName = $aField["formula"] . " AS " . $aField["field_name"];
                         $groupByFieldList[] = $aField['field_name'];
                     } else {
                         $fieldName = $aliasTable . "." . $aField["field_name"];
@@ -589,7 +520,6 @@ class gcFeature
 
                     //TODO RELAZIONI 1-MOLTI IN GC3
                     if ($rel["relation_type"] == 2) {
-                        //continue;
                         //aggiungo un campo che ha come nome il nome della relazione, come formato l'id della relazione  e valore il valore di un campo di join -> se la tabella secondaria non ha corrispondenze il valore è vuoto
                         $keyList = [];
                         foreach ($rel["join_field"] as $jF) {
@@ -609,12 +539,10 @@ class gcFeature
                     $joinList = [];
                     for ($i = 0; $i < count($rel["join_field"]); $i++) {
                         $joinList[] = DATALAYER_ALIAS_TABLE . "." . $rel["join_field"][$i][0] . "=" . $relationAliasTable . "." . $rel["join_field"][$i][1];
-                        //$flagField = $relationAliasTable.".".$rel["join_field"][$i][1]." AS " .$relationAliasTable;   //tengo un campo della tabella in relazione per sapere in caso di secondarie se il dato � presente
                     }
 
                     $joinFields = implode(" AND ", $joinList);
                     $joinString = "$joinString left join " . $rel["table_schema"] . "." . $rel["table_name"] . " AS " . $relationAliasTable . " ON (" . $joinFields . ")";
-                    //Se non sto visualizzando la secondaria e la relazione � 1 a molti genero il campo che dar� origine al link alla tabella
                 }
             }
 
@@ -622,7 +550,6 @@ class gcFeature
         }
 
         $datalayerTable = "gc_geom FROM (SELECT " . DATALAYER_ALIAS_TABLE . "." . $datalayerKey . " as gc_objid," . DATALAYER_ALIAS_TABLE . "." . $datalayerGeom . " as gc_geom, $fieldString FROM $joinString $groupBy) AS foo";
-        print_debug($datalayerTable, null, 'datalayer');
 
         return $datalayerTable;
     }
@@ -718,13 +645,11 @@ class gcFeature
         if (!empty($this->aFeature["metadata"])) {
             $metaText .= "\t" . str_replace("\n", "\n\t\t", $this->aFeature["metadata"]);
         }
-        //$metaText;
         return $metaText;
     }
 
     private function _getClassText($aClass)
     {
-        print_debug($aClass, null, 'classi');
         $clsText = [];
         $clsText[] = "\tNAME \"" . str_replace(" ", "_", $aClass["class_name"]) . "\"";
         if ($aClass['legendtype_id'] == 0) {
@@ -824,14 +749,8 @@ class gcFeature
             $clsText[] = "END";
         }
 
-        $sql = "select style_id,angle,color,outlinecolor,bgcolor,size,minsize,maxsize,minwidth,width,style_def,symbol.symbol_name, pattern_def
-                    from " . DB_SCHEMA . ".style left join " . DB_SCHEMA . ".symbol using (symbol_name) left join " . DB_SCHEMA . ".e_pattern using(pattern_id)
-                    where class_id=? order by style_order DESC, style_id;";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$aClass["class_id"]]);
-
-        $res = $stmt->fetchAll();
+        // (legacy: per-class style query, see gcFeature::_getClassText)
+        $res = $this->cache->getStyleRows($aClass["class_id"]);
         for ($i = 0; $i < count($res); $i++) {
             $aStyle = $res[$i];
 
@@ -898,40 +817,11 @@ class gcFeature
     }
 
     /**
-     * Funzione utilizzato ancora in rpc.php
-     *
-     * SERVE A MARCO??????
-     *
-     * @return type
-     */
-    public function getFeatureField()
-    {
-        $result = [];
-
-        $aFeature = $this->aFeature;
-        foreach ($aFeature["fields"] as $fieldId => $field) {
-            $relationName = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["table_name"]) : ($aFeature["data"]);
-            $relationSchema = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["table_schema"]) : ($aFeature["table_schema"]);
-            $relationConnStr = ($field["relation"]) ? ($aFeature["relation"][$field["relation"]]["connection_string"]) : ($aFeature["connection_string"]);
-            $result[$fieldId] = [
-                "id" => $fieldId,
-                "name" => $field["field_name"],
-                "title" => $field["field_title"],
-                "table" => $relationName,
-                "schema" => $relationSchema,
-                "connection_string" => $relationConnStr,
-                "data_type" => $field["data_type"],
-            ];
-        }
-        return $result;
-    }
-
-    /**
      * Convert datatype into gml type
      *
      * @see https://mapserver.org/ogc/wfs_server.html (gml_[item name]_type)
      * @param integer $typeId
-     * @return string
+     * @return string|false
      */
     private function _getMetadataFieldDataType($typeId)
     {
@@ -942,7 +832,7 @@ class gcFeature
             case 2:
                 return 'Real';
         }
-            
+
         return false;
     }
 }
