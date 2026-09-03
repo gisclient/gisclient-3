@@ -1303,12 +1303,25 @@ EOF;
             }
         }
 
+        // I template vengono scritti nella directory del progetto corrente, ma la
+        // query non filtrava per progetto: ogni writeMap() riscriveva un file per
+        // ogni layer interrogabile di TUTTI i progetti, con una query ciascuno.
+        // Stesso filtro gia' applicato dal writer moderno
+        // (MapfileDataCache::loadTemplateData).
+        $sqlParamsLayers = [];
         $sqlLayers = "SELECT DISTINCT layergroup_name, layer_id, layer_name, layer_title "
             . " FROM " . DB_SCHEMA . ".field "
             . " INNER JOIN " . DB_SCHEMA . ".layer USING(layer_id) "
-            . " INNER JOIN " . DB_SCHEMA . ".layergroup USING (layergroup_id) "
-            . " WHERE resultype_id <> 4 AND queryable = 1"
-            . " ORDER BY layergroup_name, layer_name";
+            . " INNER JOIN " . DB_SCHEMA . ".layergroup USING (layergroup_id) ";
+        if (!empty($this->projectName)) {
+            $sqlLayers .= " INNER JOIN " . DB_SCHEMA . ".theme USING (theme_id) ";
+        }
+        $sqlLayers .= " WHERE resultype_id <> 4 AND queryable = 1";
+        if (!empty($this->projectName)) {
+            $sqlLayers .= " AND project_name = :project_name";
+            $sqlParamsLayers[':project_name'] = $this->projectName;
+        }
+        $sqlLayers .= " ORDER BY layergroup_name, layer_name";
         $stmtLayers = $this->db->prepare($sqlLayers);
         
         $sqlField = "SELECT field_id, field_name, field_header "
@@ -1318,7 +1331,7 @@ EOF;
             . " ORDER BY field_order, field_id";
         $stmtField = $this->db->prepare($sqlField);
         
-        $stmtLayers->execute();
+        $stmtLayers->execute($sqlParamsLayers);
         $resLayer = $stmtLayers->fetchAll();
 
         foreach ($resLayer as $item) {
