@@ -1,0 +1,35 @@
+# Replica PostgreSQL in streaming, per provare in locale il routing MAP_DB_*.
+#
+#   docker compose -f compose.yaml -f compose.replica.yaml up -d db-replica
+#
+# Non fa parte dello stack di sviluppo: va richiesta esplicitamente.
+services:
+  db-replica:
+    image: postgis/postgis:17-3.5-alpine
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PGPASSWORD: postgres
+    ports:
+      - 5433:5432
+    user: postgres
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          echo "clono il primario con pg_basebackup..."
+          until pg_isready -h db -U postgres -q; do sleep 1; done
+          rm -rf /var/lib/postgresql/data/*
+          pg_basebackup -h db -U postgres -D /var/lib/postgresql/data -Fp -Xs -R -P
+        fi
+        chmod 0700 /var/lib/postgresql/data
+        exec postgres -c hot_standby=on
+    volumes:
+      - postgresql17_replica:/var/lib/postgresql/data
+
+volumes:
+  postgresql17_replica:

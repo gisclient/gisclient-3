@@ -85,6 +85,76 @@ MAP_DB_NAME=app_staging
 Su Apache le due variabili vanno esposte a PHP come le altre, in
 `docker/frontend/location.conf` (`PassEnv MAP_DB_HOST`, `PassEnv MAP_DB_NAME`).
 
+## Provare in locale con una replica vera
+
+`compose.replica.yaml` aggiunge allo stack di sviluppo una replica PostgreSQL
+in streaming, così il routing si verifica su una standby reale e non solo
+guardando cambiare l'host.
+
+Una volta sola, se il volume del primario esiste già, va abilitata la
+connessione di replica (nelle installazioni nuove ci pensa
+`docker/postgresql/initdb/`):
+
+```bash
+docker compose exec -T db sh -c \
+  'grep -q "^host replication all all trust" "$PGDATA/pg_hba.conf" || \
+   echo "host replication all all trust" >> "$PGDATA/pg_hba.conf"'
+docker compose exec -T db psql -U postgres -c "SELECT pg_reload_conf();"
+```
+
+Poi:
+
+```bash
+docker compose -f compose.yaml -f compose.replica.yaml up -d db-replica
+
+# la replica è in streaming?
+docker compose exec -T db psql -U postgres -tAc "SELECT state FROM pg_stat_replication;"
+# atteso: streaming
+```
+
+Ora una richiesta di lettura, servita davvero dalla standby:
+
+```bash
+docker compose -f compose.yaml -f compose.replica.yaml \
+  exec -T -e MAP_DB_HOST=db-replica author-be php -r '
+$_SERVER["REQUEST_METHOD"]="GET"; $_SERVER["REQUEST_URI"]="/ows.php"; $_REQUEST=[];
+require "/app/author/bootstrap.php";
+$r = ms_newOwsrequestObj();
+$r->setParameter("project","default"); $r->setParameter("map","default");
+$r->setParameter("service","WMS"); $r->setParameter("request","GetMap");
+$m = \GCApp::getMsMapObjFactory()->from($r);
+echo \GisClient\MapServer\Connection\ConnectionString::redact($m->getLayer(0)->connection), "\n";
+for($i=0;$i<$m->numlayers;$i++){ $m->getLayer($i)->set("status", MS_ON); }
+$m->setExtent(496574,5018080,505605,5027111);
+echo $m->draw() ? "immagine prodotta dalla replica\n" : "FALLITO\n";'
+```
+
+Cambiando `service`/`request` si percorre tutta la matrice: `WMS GetMap`,
+`GetLegendGraphic` e `WFS GetFeature` finiscono su `db-replica`, mentre
+`WFS Transaction` e un `REQUEST_METHOD=PUT` restano su `db`.
+
+Per smontare il banco di prova:
+
+```bash
+docker compose -f compose.yaml -f compose.replica.yaml down db-replica
+docker volume rm gisclient-3_postgresql17_replica
+```
+
+## Costruire l'immagine
+
+Le variabili sono lette a runtime dall'ambiente, quindi l'immagine non cambia
+in funzione della replica e non serve ricostruirla per attivare o disattivare
+il routing:
+
+```bash
+make build-backend        # ghcr.io/gisclient/gisclient-3-backend:<versione>-local
+make bake-validate        # build multi-arch di verifica, senza push
+make bake-publish         # build e push (amd64 + arm64)
+```
+
+Il tag deriva da `scripts/release-metadata.sh parse-version`, cioè dalla
+migration più recente.
+
 ## Procedura di test con staging
 
 ```bash

@@ -16,3 +16,8 @@ psql -q -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${DB_DBNAME}"
 EOSQL
 
 echo "* INIT SUCCESSFUL"
+
+# Consente le connessioni di replica in streaming dalla rete di compose,
+# necessarie per il banco di prova di compose.replica.yaml.
+# Vale solo per lo stack di sviluppo locale.
+echo "host replication all all trust" >> "$PGDATA/pg_hba.conf"
