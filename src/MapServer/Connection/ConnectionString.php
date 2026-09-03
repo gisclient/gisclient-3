@@ -63,6 +63,48 @@ class ConnectionString
     }
 
     /**
+     * Merge extra libpq parameters into a connection string, overriding any
+     * key already present. Used to add endpoint-selection options such as
+     * target_session_attrs and connect_timeout without touching credentials.
+     *
+     * Returns the input unchanged when either side cannot be parsed.
+     */
+    public static function withParams(string $connection, ?string $params): string
+    {
+        if ($params === null || trim($params) === '') {
+            return $connection;
+        }
+
+        $extra = self::parse($params);
+        $pairs = self::parse($connection);
+        if ($extra === null || $pairs === null) {
+            return $connection;
+        }
+
+        $overrides = [];
+        foreach ($extra as [$key, $value]) {
+            $overrides[$key] = $value;
+        }
+
+        $out = [];
+        $seen = [];
+        foreach ($pairs as [$key, $value]) {
+            if (isset($overrides[$key])) {
+                $value = $overrides[$key];
+                $seen[$key] = true;
+            }
+            $out[] = $key . '=' . self::quote($value);
+        }
+        foreach ($overrides as $key => $value) {
+            if (!isset($seen[$key])) {
+                $out[] = $key . '=' . self::quote($value);
+            }
+        }
+
+        return implode(' ', $out);
+    }
+
+    /**
      * Strip the password so a connection string can be logged.
      */
     public static function redact(string $connection): string

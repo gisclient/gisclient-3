@@ -21,6 +21,12 @@ define('MAP_PWD', getenv('MAP_PASSWORD') ?: DB_PWD);
 // copiato da produzione in un ambiente di test).
 define('MAP_DB_HOST', getenv('MAP_DB_HOST') ?: DB_HOST);
 define('MAP_DB_NAME', getenv('MAP_DB_NAME') ?: DB_NAME);
+// Parametri libpq aggiuntivi per le connessioni instradate, es.
+// "target_session_attrs=prefer-standby connect_timeout=2". Con MAP_DB_HOST
+// che elenca piu' host separati da virgola, libpq sceglie da solo lo standby
+// e ricade sul primario se nessuno risponde. connect_timeout va sempre
+// impostato: senza, il fallback attende il timeout TCP del sistema.
+define('MAP_DB_CONN_PARAMS', getenv('MAP_DB_CONN_PARAMS') ?: null);
 define('MAP_DB_ROUTING', getenv('MAP_DB_HOST') !== false || getenv('MAP_DB_NAME') !== false);
 
 // user with manager permission (can create new users and groups)

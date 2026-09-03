@@ -13,6 +13,7 @@ Senza le variabili `MAP_DB_*` non cambia assolutamente nulla.
 | --- | --- | --- |
 | `MAP_DB_HOST` | host PostgreSQL read-only usato da MapServer | `DB_HOST` |
 | `MAP_DB_NAME` | database del deployment usato da MapServer | `DB_NAME` |
+| `MAP_DB_CONN_PARAMS` | parametri libpq aggiuntivi sulle connessioni instradate | nessuno |
 
 Le credenziali restano quelle già configurate (`MAP_USER` / `MAP_PASSWORD`, con
 fallback su `DB_USER` / `DB_PASSWORD`): il routing sostituisce solo l'endpoint,
@@ -82,8 +83,30 @@ MAP_DB_HOST=pg-cluster-ro
 MAP_DB_NAME=app_staging
 ```
 
-Su Apache le due variabili vanno esposte a PHP come le altre, in
-`docker/frontend/location.conf` (`PassEnv MAP_DB_HOST`, `PassEnv MAP_DB_NAME`).
+Su Apache le variabili vanno esposte a PHP come le altre, in
+`docker/frontend/location.conf`.
+
+### Selezione dell'endpoint delegata a libpq
+
+`MAP_DB_HOST` accetta un elenco di host separati da virgola. Insieme a
+`MAP_DB_CONN_PARAMS` questo lascia scegliere a libpq, con fallback automatico:
+
+```bash
+MAP_DB_HOST=pg-cluster-ro,pg-cluster-rw
+MAP_DB_NAME=app_staging
+MAP_DB_CONN_PARAMS="target_session_attrs=prefer-standby connect_timeout=2"
+```
+
+libpq scorre la lista in ordine cercando uno standby e ricade sul primario se
+nessuno risponde, quindi uno switchover non produce errori. Due accortezze
+misurate:
+
+- il servizio `-ro` va messo **per primo**: con il primario in testa ogni
+  connessione paga un ciclo completo di connessione e autenticazione (~4 ms)
+  solo per essere scartata per il ruolo sbagliato;
+- `connect_timeout` va **sempre** impostato. Il fallback costa l'intero
+  timeout — misurato a 2007 ms con `connect_timeout=2` — e il default di libpq
+  e' nessun timeout, cioe' quello TCP del sistema operativo.
 
 ## Provare in locale con una replica vera
 

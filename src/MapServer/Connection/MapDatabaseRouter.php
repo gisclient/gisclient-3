@@ -37,9 +37,22 @@ class MapDatabaseRouter
     /**
      * Rewrite the endpoint of a single PostGIS connection string.
      */
+    /**
+     * Extra libpq parameters applied to routed connections, e.g.
+     *   target_session_attrs=prefer-standby connect_timeout=2
+     * Combined with a comma-separated MAP_DB_HOST this lets libpq pick the
+     * standby itself and fall back to the primary when none answers.
+     */
+    public static function connectionParams(): ?string
+    {
+        return defined('MAP_DB_CONN_PARAMS') && MAP_DB_CONN_PARAMS !== '' ? MAP_DB_CONN_PARAMS : null;
+    }
+
     public static function route(string $connection): string
     {
-        return ConnectionString::withEndpoint($connection, self::readHost(), self::readDatabase());
+        $routed = ConnectionString::withEndpoint($connection, self::readHost(), self::readDatabase());
+
+        return ConnectionString::withParams($routed, self::connectionParams());
     }
 
     /**

@@ -78,6 +78,34 @@ class ConnectionStringTest extends TestCase
         $this->assertSame($once, $twice);
     }
 
+    public function testAddsExtraParametersWithoutTouchingCredentials()
+    {
+        $out = ConnectionString::withParams(
+            "user=map password='pa ss' dbname=app host=ro,rw port=5432",
+            'target_session_attrs=prefer-standby connect_timeout=2'
+        );
+
+        $this->assertStringContainsString('target_session_attrs=prefer-standby', $out);
+        $this->assertStringContainsString('connect_timeout=2', $out);
+        $this->assertStringContainsString("password='pa ss'", $out);
+        $this->assertStringContainsString('host=ro,rw', $out);
+    }
+
+    public function testExtraParametersOverrideExistingKeys()
+    {
+        $out = ConnectionString::withParams('dbname=app host=rw connect_timeout=30', 'connect_timeout=2');
+
+        $this->assertStringContainsString('connect_timeout=2', $out);
+        $this->assertStringNotContainsString('connect_timeout=30', $out);
+    }
+
+    public function testEmptyParametersLeaveTheStringAlone()
+    {
+        $in = 'dbname=app host=rw';
+        $this->assertSame($in, ConnectionString::withParams($in, null));
+        $this->assertSame($in, ConnectionString::withParams($in, '   '));
+    }
+
     public function testRedactHidesThePasswordOnly()
     {
         $out = ConnectionString::redact('user=map password=secret dbname=app host=pg-ro');
