@@ -22,6 +22,8 @@ class OgcRequestClassifierTest extends TestCase
             'WMS GetMap' => ['WMS', 'GetMap'],
             'WMS GetFeatureInfo' => ['WMS', 'GetFeatureInfo'],
             'WMS GetCapabilities' => ['WMS', 'GetCapabilities'],
+            'WMS GetLegendGraphic' => ['WMS', 'GetLegendGraphic'],
+            'WMS DescribeLayer' => ['WMS', 'DescribeLayer'],
             'WFS GetFeature' => ['WFS', 'GetFeature'],
             'WFS DescribeFeatureType' => ['WFS', 'DescribeFeatureType'],
             'WFS GetCapabilities' => ['WFS', 'GetCapabilities'],
@@ -86,8 +88,7 @@ class OgcRequestClassifierTest extends TestCase
             'missing request' => ['WMS', null],
             'empty strings' => ['', ''],
             'unknown service' => ['WCS', 'GetCoverage'],
-            'unknown WMS operation' => ['WMS', 'DescribeLayer'],
-            'GetLegendGraphic is not in the routed set' => ['WMS', 'GetLegendGraphic'],
+            'unknown WMS operation' => ['WMS', 'GetTile'],
             'WMS Transaction is not a thing' => ['WMS', 'Transaction'],
             'WFS operation offered to WMS' => ['WMS', 'GetFeature'],
         ];

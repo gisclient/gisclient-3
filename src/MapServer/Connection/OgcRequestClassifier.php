@@ -18,14 +18,10 @@ class OgcRequestClassifier
     /**
      * OGC operations with no side effects, per service.
      *
-     * GetLegendGraphic and DescribeLayer are deliberately absent: they are
-     * read-only too, but they are not part of the agreed routing set and the
-     * conservative default keeps them on the primary.
-     *
      * @var array<string,array<int,string>>
      */
     private const READ_ONLY_OPERATIONS = [
-        'wms' => ['getmap', 'getfeatureinfo', 'getcapabilities'],
+        'wms' => ['getmap', 'getfeatureinfo', 'getcapabilities', 'getlegendgraphic', 'describelayer'],
         'wfs' => ['getfeature', 'describefeaturetype', 'getcapabilities'],
     ];
 

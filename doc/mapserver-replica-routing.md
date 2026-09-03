@@ -24,7 +24,7 @@ Vanno alla **replica**:
 
 | Servizio | Operazione |
 | --- | --- |
-| WMS | GetMap, GetFeatureInfo, GetCapabilities |
+| WMS | GetMap, GetFeatureInfo, GetCapabilities, GetLegendGraphic, DescribeLayer |
 | WFS | GetFeature, DescribeFeatureType, GetCapabilities |
 
 Restano sul **primary**:
@@ -37,9 +37,8 @@ Restano sul **primary**:
 
 L'ultimo punto è la scelta di fondo: una lettura mandata per errore sul primary
 costa solo il mancato alleggerimento, una scrittura mandata per errore su una
-replica fallisce. Per lo stesso motivo `GetLegendGraphic` e `DescribeLayer`,
-pur essendo read-only, non sono nell'insieme instradato — aggiungerli è una
-riga in `OgcRequestClassifier::READ_ONLY_OPERATIONS` se in futuro lo si vuole.
+replica fallisce. Aggiungere un'operazione all'insieme instradato è una riga in
+`OgcRequestClassifier::READ_ONLY_OPERATIONS`.
 
 ## Dove agisce il routing
 
