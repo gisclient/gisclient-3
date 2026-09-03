@@ -1232,15 +1232,16 @@ END";
             $languageId = '_' . $this->i18n->getLanguageId();
         }
 
+        // I template venivano cancellati in blocco e riscritti identici a ogni
+        // chiamata. Su volumi di rete ogni file costa millisecondi, quindi qui
+        // si censisce cosa esiste, si scrive solo cio' che cambia e si cancella
+        // alla fine solo cio' che e' rimasto orfano. Lo stato finale della
+        // directory e' identico a prima.
+        $existingFiles = [];
         foreach (glob($templateDir . '*' . $languageId . '.html') as $filename) {
-            $r = unlink($filename);
-
-            if ($r === false) {
-                $errorMsg = "Could not delete $filename";
-                GCError::register($errorMsg);
-                return;
-            }
+            $existingFiles[$filename] = true;
         }
+        $wantedFiles = [];
 
         if (!file_exists($templateDir . 'header' . $languageId . '.html')) {
             $data = <<<EOF
@@ -1287,6 +1288,7 @@ EOF;
                 return;
             }
         }
+        $wantedFiles[$templateDir . 'header' . $languageId . '.html'] = true;
 
         if (!file_exists($templateDir . 'footer' . $languageId . '.html')) {
             $data = <<<EOF
@@ -1302,6 +1304,7 @@ EOF;
                 return;
             }
         }
+        $wantedFiles[$templateDir . 'footer' . $languageId . '.html'] = true;
 
         // I template vengono scritti nella directory del progetto corrente, ma la
         // query non filtrava per progetto: ogni writeMap() riscriveva un file per
@@ -1362,7 +1365,23 @@ EOF;
             $data .= '</tr><tr>' . $dataTmp;
             $data .= '</tr></tbody></table><br/>';
 
-            file_put_contents($templateName, $data);
+            $wantedFiles[$templateName] = true;
+            if (!isset($existingFiles[$templateName]) || file_get_contents($templateName) !== $data) {
+                file_put_contents($templateName, $data);
+            }
+        }
+
+        // Template rimasti da configurazioni precedenti: vanno rimossi, come
+        // faceva la cancellazione in blocco.
+        foreach (array_keys($existingFiles) as $filename) {
+            if (!isset($wantedFiles[$filename])) {
+                $r = unlink($filename);
+                if ($r === false) {
+                    $errorMsg = "Could not delete $filename";
+                    GCError::register($errorMsg);
+                    return;
+                }
+            }
         }
     }
 }
