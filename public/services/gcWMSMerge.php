@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Utils\RequestId;
+
 $gcService = GCService::instance();
 $gcService->startSession();
 
@@ -12,6 +14,21 @@ if (defined('DEBUG') && DEBUG) {
     $enableDebug = true;
     $logfile = DEBUG_DIR . "/mapfile.debug";
 }
+
+// Senza MS_ERRORFILE gli errori di MapServer non finiscono da nessuna parte.
+// Conta soprattutto per i layer cascading: se uno fallisce o va in timeout,
+// draw() NON restituisce null, quindi l'immagine esce semplicemente senza
+// quel layer e non se ne accorge nessuno. Scrivendo su "stderr" gli errori
+// arrivano nel log del container. Livello 1 = solo errori, nessun rumore.
+// GC_MS_DEBUG_LEVEL=2 aggiunge i tempi per layer, =3 il dettaglio: e' la
+// scomposizione interna del disegno, da attivare solo per una misura.
+$msErrorFile = $enableDebug ? $logfile : 'stderr';
+$msDebugLevel = $enableDebug ? 5 : (int) (getenv('GC_MS_DEBUG_LEVEL') ?: 1);
+
+// Senza wms_connectiontimeout MapServer usa il proprio default di 30 secondi
+// per ogni layer cascading: un solo servizio che non risponde puo' bloccare
+// l'immagine per mezzo minuto, in silenzio.
+$wmsConnectionTimeout = (int) (getenv('GC_WMS_CONNECTION_TIMEOUT') ?: 10);
 
 function getWmsParameters(array $layerParameters)
 {
@@ -89,6 +106,14 @@ function cleanWMSRequest($url)
 // questo file si occuperà solo di creare l'immagine e può essere usato anche per fare il download dell'immagine di mappa
 $mapConfig = json_decode($_REQUEST['options'], true);
 
+// Id che lega questa composizione, e le ows.php che ne derivano, alla
+// richiesta che l'ha originata. Arriva come header o dentro il payload;
+// RequestId::get() ricade su un id generato se non c'e' nulla.
+if (!empty($mapConfig[RequestId::QUERY_PARAM])) {
+    RequestId::set($mapConfig[RequestId::QUERY_PARAM]);
+}
+$requestIdFragment = RequestId::asQueryFragment();
+
 ms_ResetErrorList();
 $oMap = ms_newMapObj('');
 if (defined('PROJ_LIB')) {
@@ -111,10 +136,8 @@ if (count($sridParts) == 2) {
 
 $oMap->setProjection("init={$srs}");
 $oMap->extent->setextent($mapConfig['extent'][0], $mapConfig['extent'][1], $mapConfig['extent'][2], $mapConfig['extent'][3]);
-if ($enableDebug) {
-    $oMap->setConfigOption("MS_ERRORFILE", $logfile);
-    $oMap->set('debug', 5);
-}
+$oMap->setConfigOption("MS_ERRORFILE", $msErrorFile);
+$oMap->set('debug', $msDebugLevel);
 if (!empty($mapConfig['resolution'])) {
     $oMap->set('resolution', (int)$mapConfig['resolution']);
 } else {
@@ -167,9 +190,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
         $oLay = ms_newLayerObj($oMap);
         $oLay->set('name', 'print_layer_' . $key);
         $oLay->set('type', MS_LAYER_RASTER);
-        if ($enableDebug) {
-            $oLay->set('debug', 5);
-        }
+        $oLay->set('debug', $msDebugLevel);
         
         switch ($layer['SERVICE']) {
             case 'WMS':
@@ -191,6 +212,10 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 if (!empty($sessionId)) {
                     $query .= '&GC_SESSION_ID=' . $sessionId;
                 }
+                // MapServer costruisce da solo questa URL, quindi non
+                // possiamo aggiungere header: l'id passa in query string e
+                // ricompare nel campo %q dell'access log di ogni ows.php
+                $query .= '&' . $requestIdFragment;
                 if (!empty($mapConfig['resolution'])) {
                     $query .= '&RESOLUTION=' . $mapConfig['resolution'];
                 }
@@ -212,6 +237,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 if (!empty($layer['PARAMETERS']['SLD'])) {
                     $oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);
                 }
+                $oLay->setMetaData("wms_connectiontimeout", (string) $wmsConnectionTimeout);
                 $oLay->setMetaData("wms_srs", $mapConfig['srs']);
                 $oLay->setMetaData("wms_name", $layerNames);
                 $oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);

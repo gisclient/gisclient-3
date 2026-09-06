@@ -122,6 +122,16 @@ $isGetLegendGraphicRequest = $requestRequest == 'getlegendgraphic';
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->from($objRequest);
 
+// Il mapfile porta CONFIG 'MS_ERRORFILE' solo quando e' stato generato con
+// DEBUG attivo, quindi in produzione gli errori di MapServer durante
+// owsdispatch() — connessioni PostGIS, SLD non applicabili, layer mancanti —
+// non vengono scritti da nessuna parte. Con "stderr" finiscono nel log del
+// container. Livello 1 = solo errori; GC_MS_DEBUG_LEVEL=2 aggiunge i tempi
+// per layer e =3 il dettaglio delle query, utili per una misura mirata.
+// Non tocca lo stdout, quindi lo stream binario dell'immagine resta intatto.
+$oMap->setConfigOption('MS_ERRORFILE', 'stderr');
+$oMap->set('debug', (int) (getenv('GC_MS_DEBUG_LEVEL') ?: 1));
+
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
     $hasPrivateLayers = false;

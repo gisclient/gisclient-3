@@ -264,6 +264,8 @@ class MapImage
             'file_name' => $this->options['TMP_PATH'] . $this->imageFileName,
             'format' => $this->options['image_format'],
             'GC_SESSION_ID' => $gcService->getSession()->getId(),
+            // gcWMSMerge.php lo inoltra poi a ogni ows.php in query string
+            RequestId::QUERY_PARAM => RequestId::get(),
         ]);
         $gcService->saveAndClose();
 
@@ -272,7 +274,12 @@ class MapImage
             throw new \Exception("Could not init curl");
         }
         UrlChecker::checkUrl($this->wmsMergeUrl);
-        curl_setopt($ch, CURLOPT_URL, str_replace($this->baseUrl, INTERNAL_URL, $this->wmsMergeUrl));
+        $mergeUrl = str_replace($this->baseUrl, INTERNAL_URL, $this->wmsMergeUrl);
+        // in query string oltre che nell'header: cosi' l'id compare anche
+        // nella riga di access log di gcWMSMerge.php, che e' una POST
+        $mergeUrl .= (strpos($mergeUrl, '?') === false ? '?' : '&') . RequestId::asQueryFragment();
+        curl_setopt($ch, CURLOPT_URL, $mergeUrl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [RequestId::asCurlHeader()]);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
