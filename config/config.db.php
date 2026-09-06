@@ -28,6 +28,27 @@ define('MAP_DB_HOST', getenv('MAP_DB_HOST') ?: DB_HOST);
 // e ricade sul primario se nessuno risponde. connect_timeout va sempre
 // impostato: senza, il fallback attende il timeout TCP del sistema.
 define('MAP_DB_CONN_PARAMS', getenv('MAP_DB_CONN_PARAMS') ?: null);
+
+// Tetto per la singola query delle richieste OGC di sola lettura, in
+// millisecondi. 0 lo disattiva.
+//
+// Serve perche' nessuno, a valle, puo' fermare una query gia' partita: quando
+// il browser rinuncia, o quando scade wms_connectiontimeout, la GetMap smette
+// di essere attesa ma continua a girare nel database. Senza questo tetto il
+// lavoro abbandonato si accumula mentre l'utente ne genera dell'altro.
+//
+// Vale solo per le connessioni instradate da MapDatabaseRouter, cioe' le sole
+// letture OGC: editing, transazioni, import e comandi console non sono
+// toccati. Per la stessa ragione non si usa ALTER ROLE, che colpirebbe anche
+// quelli — e che comunque non avrebbe effetto sui layer RLS, perche' SET ROLE
+// non riapplica le impostazioni del ruolo impersonato.
+//
+// Deve restare SOTTO il timeout di chi aspetta (wms_connectiontimeout in
+// gcWMSMerge.php): un tetto piu' alto di chi attende genera per definizione
+// lavoro orfano.
+define('MAP_DB_STATEMENT_TIMEOUT', (int) (getenv('MAP_DB_STATEMENT_TIMEOUT') !== false
+    ? getenv('MAP_DB_STATEMENT_TIMEOUT')
+    : 20000));
 define('MAP_DB_ROUTING', getenv('MAP_DB_HOST') !== false);
 
 // user with manager permission (can create new users and groups)

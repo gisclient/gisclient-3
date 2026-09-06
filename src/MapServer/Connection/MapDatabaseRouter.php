@@ -40,7 +40,39 @@ class MapDatabaseRouter
      */
     public static function connectionParams(): ?string
     {
-        return defined('MAP_DB_CONN_PARAMS') && MAP_DB_CONN_PARAMS !== '' ? MAP_DB_CONN_PARAMS : null;
+        $params = [];
+
+        // Il tetto sulla query viene prima, cosi' un deployment che valorizza
+        // MAP_DB_CONN_PARAMS puo' sovrascriverlo di proposito invece di
+        // perderlo per sbaglio.
+        $timeout = self::statementTimeout();
+        if ($timeout !== null) {
+            $params[] = sprintf("options='-c statement_timeout=%d'", $timeout);
+        }
+
+        if (defined('MAP_DB_CONN_PARAMS') && MAP_DB_CONN_PARAMS !== '' && MAP_DB_CONN_PARAMS !== null) {
+            $params[] = MAP_DB_CONN_PARAMS;
+        }
+
+        return $params === [] ? null : implode(' ', $params);
+    }
+
+    /**
+     * Tetto per la singola query, in millisecondi, o null se disattivato.
+     *
+     * Nota: libpq tratta "options" come una stringa unica. Un deployment che
+     * la valorizza per altro deve reinserirci anche statement_timeout, perche'
+     * la chiave viene sostituita e non fusa.
+     */
+    public static function statementTimeout(): ?int
+    {
+        if (!defined('MAP_DB_STATEMENT_TIMEOUT')) {
+            return null;
+        }
+
+        $timeout = (int) MAP_DB_STATEMENT_TIMEOUT;
+
+        return $timeout > 0 ? $timeout : null;
     }
 
     /**
