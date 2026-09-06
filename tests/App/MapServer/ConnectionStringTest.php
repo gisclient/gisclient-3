@@ -78,6 +78,21 @@ class ConnectionStringTest extends TestCase
         $this->assertSame($once, $twice);
     }
 
+    public function testRoutingTheHostLeavesTheDatabaseAlone()
+    {
+        // Un catalog_path che nomina un database lo fa di proposito: spostare
+        // l'host non deve mai cambiare il database, o i layer che vivono
+        // altrove puntano a tabelle inesistenti.
+        $out = ConnectionString::withEndpoint(
+            'user=map password=x dbname=altro_db host=pg-rw port=5432',
+            'pg-ro',
+            null
+        );
+
+        $this->assertStringContainsString('dbname=altro_db', $out);
+        $this->assertStringContainsString('host=pg-ro', $out);
+    }
+
     public function testAddsExtraParametersWithoutTouchingCredentials()
     {
         $out = ConnectionString::withParams(
@@ -104,6 +119,16 @@ class ConnectionStringTest extends TestCase
         $in = 'dbname=app host=rw';
         $this->assertSame($in, ConnectionString::withParams($in, null));
         $this->assertSame($in, ConnectionString::withParams($in, '   '));
+    }
+
+    public function testValueOfReadsASingleParameter()
+    {
+        $c = "user=map password='pa ss' dbname=app host=pg-rw port=5432";
+
+        $this->assertSame('pg-rw', ConnectionString::valueOf($c, 'host'));
+        $this->assertSame('app', ConnectionString::valueOf($c, 'dbname'));
+        $this->assertNull(ConnectionString::valueOf($c, 'target_session_attrs'));
+        $this->assertNull(ConnectionString::valueOf('non e una conninfo', 'host'));
     }
 
     public function testRedactHidesThePasswordOnly()

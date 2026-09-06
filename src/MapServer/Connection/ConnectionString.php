@@ -105,6 +105,26 @@ class ConnectionString
     }
 
     /**
+     * Read a single parameter, or null when absent or unparsable.
+     */
+    public static function valueOf(string $connection, string $key): ?string
+    {
+        $pairs = self::parse($connection);
+        if ($pairs === null) {
+            return null;
+        }
+
+        $found = null;
+        foreach ($pairs as [$k, $v]) {
+            if ($k === $key) {
+                $found = $v; // last one wins, as libpq does
+            }
+        }
+
+        return $found;
+    }
+
+    /**
      * Strip the password so a connection string can be logged.
      */
     public static function redact(string $connection): string

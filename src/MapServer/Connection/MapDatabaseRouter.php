@@ -21,17 +21,12 @@ class MapDatabaseRouter
      */
     public static function isConfigured(): bool
     {
-        return (defined('MAP_DB_ROUTING') && MAP_DB_ROUTING === true);
+        return self::readHost() !== null;
     }
 
     public static function readHost(): ?string
     {
         return defined('MAP_DB_HOST') && MAP_DB_HOST !== '' ? MAP_DB_HOST : null;
-    }
-
-    public static function readDatabase(): ?string
-    {
-        return defined('MAP_DB_NAME') && MAP_DB_NAME !== '' ? MAP_DB_NAME : null;
     }
 
     /**
@@ -48,11 +43,30 @@ class MapDatabaseRouter
         return defined('MAP_DB_CONN_PARAMS') && MAP_DB_CONN_PARAMS !== '' ? MAP_DB_CONN_PARAMS : null;
     }
 
+    /**
+     * Rewrite the endpoint of a single PostGIS connection string.
+     *
+     * Only connections that currently point at the primary are moved: a
+     * catalog naming another server does so deliberately, and the replica of
+     * this cluster would not hold its database.
+     */
     public static function route(string $connection): string
     {
-        $routed = ConnectionString::withEndpoint($connection, self::readHost(), self::readDatabase());
+        if (!self::isConfigured() || !self::pointsAtPrimary($connection)) {
+            return $connection;
+        }
+
+        $routed = ConnectionString::withEndpoint($connection, self::readHost(), null);
 
         return ConnectionString::withParams($routed, self::connectionParams());
+    }
+
+    private static function pointsAtPrimary(string $connection): bool
+    {
+        $host = ConnectionString::valueOf($connection, 'host');
+
+        // No host at all means the libpq default, i.e. the local primary.
+        return $host === null || $host === '' || $host === DB_HOST;
     }
 
     /**
@@ -91,10 +105,9 @@ class MapDatabaseRouter
 
         if ($routed > 0) {
             print_debug(sprintf(
-                'read-only routing: %d layer(s) -> host=%s dbname=%s',
+                'read-only routing: %d layer(s) -> host=%s',
                 $routed,
-                self::readHost() ?? '(unchanged)',
-                self::readDatabase() ?? '(unchanged)'
+                self::readHost() ?? '(unchanged)'
             ), null, 'ows');
         }
 

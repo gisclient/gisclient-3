@@ -159,13 +159,11 @@ function connInfofromPath($sPath)
         $mapPwd = DB_PWD;
     }
 
-    // Il nome del database del deployment ha la precedenza su quello eventualmente
-    // scritto in catalog_path: un catalogo copiato da un altro ambiente porterebbe
-    // con se' il database sbagliato (es. 'app' su un'installazione staging).
-    // Non tocchiamo l'host: il mapfile resta sul primario e il routing verso la
-    // replica avviene a runtime, per richiesta (MapDatabaseRouter).
-    $dbName = (defined('MAP_DB_NAME') && MAP_DB_NAME !== '') ? MAP_DB_NAME : DB_NAME;
-    $pinDbName = defined('MAP_DB_ROUTING') && MAP_DB_ROUTING && getenv('MAP_DB_NAME') !== false;
+    // Il database resta sempre quello indicato dal catalogo: un catalog_path che
+    // ne nomina uno esplicitamente punta a quel database di proposito, e
+    // sovrascriverlo romperebbe i layer che vivono altrove. Il routing sposta
+    // solo l'host, mai il database.
+    $dbName = DB_NAME;
 
     if (count($pathInfo) == 1) {//Mancano le informazioni di connessione, ho solo lo schema e il db ï¿½ quello del gisclient
         $connString = "user=" . $mapUser . " password=" . $mapPwd . " dbname=" . $dbName . " host=" . DB_HOST . " port=" . DB_PORT;
@@ -174,11 +172,9 @@ function connInfofromPath($sPath)
         $datalayerSchema = $pathInfo[1];
         $connInfo = explode(" ", $pathInfo[0]);
         if (count($connInfo) == 1) { //abbiamo il nome del db
-            $connString = "user=" . $mapUser . " password=" . $mapPwd . " dbname=" . ($pinDbName ? $dbName : $connInfo[0]) . " host=" . DB_HOST . " port=" . DB_PORT;
+            $connString = "user=" . $mapUser . " password=" . $mapPwd . " dbname=" . $connInfo[0] . " host=" . DB_HOST . " port=" . DB_PORT;
         } else { //abbiamo la stringa di connessione
-            $connString = $pinDbName
-                ? \GisClient\MapServer\Connection\ConnectionString::withEndpoint($pathInfo[0], null, $dbName)
-                : $pathInfo[0];
+            $connString = $pathInfo[0];
         }
     }
     return [$connString, $datalayerSchema];
