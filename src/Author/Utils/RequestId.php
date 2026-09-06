@@ -31,13 +31,19 @@ use Exception;
  */
 class RequestId
 {
-    /** Header usato per trasportare l'id fra le applicazioni */
-    const HEADER = 'X-Request-Id';
+    /**
+     * Header usato per trasportare l'id fra le applicazioni
+     */
+    public const HEADER = 'X-Request-Id';
 
-    /** Parametro usato dove non si possono aggiungere header (MapServer) */
-    const QUERY_PARAM = 'GC_REQUEST_ID';
+    /**
+     * Parametro usato dove non si possono aggiungere header (MapServer)
+     */
+    public const QUERY_PARAM = 'GC_REQUEST_ID';
 
-    /** @var string|null */
+    /**
+     * @var string|null
+     */
     private static $id = null;
 
     /**
