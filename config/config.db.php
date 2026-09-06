@@ -44,11 +44,21 @@ define('MAP_DB_CONN_PARAMS', getenv('MAP_DB_CONN_PARAMS') ?: null);
 // non riapplica le impostazioni del ruolo impersonato.
 //
 // Deve restare SOTTO il timeout di chi aspetta (wms_connectiontimeout in
-// gcWMSMerge.php): un tetto piu' alto di chi attende genera per definizione
-// lavoro orfano.
+// gcWMSMerge.php, 10s di default): un tetto piu' alto di chi attende genera
+// per definizione lavoro orfano.
+//
+// 8000 e non 10000: il timeout HTTP conta dall'inizio della richiesta, mentre
+// la query comincia dopo il boot di ows.php, il parsing del mapfile e lo
+// scaricamento dell'SLD. A parita' di valore chi aspetta mollerebbe sempre per
+// primo, e la query resterebbe a girare per nessuno; i 2s di scarto coprono
+// quel preambolo.
+//
+// Il residuo: il tetto e' per singola query, non per richiesta. Una GetMap che
+// disegna N layer puo' quindi spendere fino a N x MAP_DB_STATEMENT_TIMEOUT.
+// Per limitare il totale bisogna ridurre i layer, non abbassare il tetto.
 define('MAP_DB_STATEMENT_TIMEOUT', (int) (getenv('MAP_DB_STATEMENT_TIMEOUT') !== false
     ? getenv('MAP_DB_STATEMENT_TIMEOUT')
-    : 20000));
+    : 8000));
 define('MAP_DB_ROUTING', getenv('MAP_DB_HOST') !== false);
 
 // user with manager permission (can create new users and groups)
