@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Utils\DebugLevel;
 use GisClient\Author\Utils\RequestId;
 
 $gcService = GCService::instance();
@@ -21,9 +22,11 @@ if (defined('DEBUG') && DEBUG) {
 // quel layer e non se ne accorge nessuno. Scrivendo su "stderr" gli errori
 // arrivano nel log del container. Livello 1 = solo errori, nessun rumore.
 // GC_MS_DEBUG_LEVEL=2 aggiunge i tempi per layer, =3 il dettaglio: e' la
-// scomposizione interna del disegno, da attivare solo per una misura.
+// scomposizione interna del disegno. Con GC_DEBUG_ALLOW_REQUEST attivo il
+// livello si alza per la singola richiesta con &GC_DEBUG=3, che viene poi
+// propagato a ogni ows.php generata da questo disegno.
 $msErrorFile = $enableDebug ? $logfile : 'stderr';
-$msDebugLevel = $enableDebug ? 5 : (int) (getenv('GC_MS_DEBUG_LEVEL') ?: 1);
+$msDebugLevel = $enableDebug ? 5 : DebugLevel::resolve();
 
 // Senza wms_connectiontimeout MapServer usa il proprio default di 30 secondi
 // per ogni layer cascading: un solo servizio che non risponde puo' bloccare
@@ -144,6 +147,7 @@ if (!empty($mapConfig[RequestId::QUERY_PARAM])) {
     RequestId::set($mapConfig[RequestId::QUERY_PARAM]);
 }
 $requestIdFragment = RequestId::asQueryFragment();
+$debugFragment = DebugLevel::asQueryFragment();
 
 ms_ResetErrorList();
 $oMap = ms_newMapObj('');
@@ -247,6 +251,10 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 // possiamo aggiungere header: l'id passa in query string e
                 // ricompare nel campo %q dell'access log di ogni ows.php
                 $query .= '&' . $requestIdFragment;
+                // il livello chiesto per questa richiesta segue fino a ows.php
+                if ($debugFragment !== '') {
+                    $query .= '&' . $debugFragment;
+                }
                 if (!empty($mapConfig['resolution'])) {
                     $query .= '&RESOLUTION=' . $mapConfig['resolution'];
                 }

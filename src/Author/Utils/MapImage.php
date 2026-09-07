@@ -278,6 +278,12 @@ class MapImage
         // in query string oltre che nell'header: cosi' l'id compare anche
         // nella riga di access log di gcWMSMerge.php, che e' una POST
         $mergeUrl .= (strpos($mergeUrl, '?') === false ? '?' : '&') . RequestId::asQueryFragment();
+        // se chi ha chiamato download.php ha chiesto piu' debug, lo si porta
+        // avanti: da qui gcWMSMerge.php lo propaga a ogni ows.php
+        $debugFragment = DebugLevel::asQueryFragment();
+        if ($debugFragment !== '') {
+            $mergeUrl .= '&' . $debugFragment;
+        }
         curl_setopt($ch, CURLOPT_URL, $mergeUrl);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [RequestId::asCurlHeader()]);
         curl_setopt($ch, CURLOPT_HEADER, 0);

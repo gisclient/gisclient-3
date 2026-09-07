@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+use GisClient\Author\Utils\DebugLevel;
 use GisClient\Author\Utils\OwsHandler;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -127,9 +128,10 @@ $oMap = $mapObjFactory->from($objRequest);
 // owsdispatch() — connessioni PostGIS, SLD non applicabili, layer mancanti —
 // non vengono scritti da nessuna parte. Con "stderr" finiscono nel log del
 // container. Livello 1 = solo errori; GC_MS_DEBUG_LEVEL=2 aggiunge i tempi
-// per layer e =3 il dettaglio delle query, utili per una misura mirata.
+// per layer e =3 il dettaglio delle query. Con GC_DEBUG_ALLOW_REQUEST attivo
+// il livello si puo' alzare per la singola richiesta con &GC_DEBUG=3.
 // Non tocca lo stdout, quindi lo stream binario dell'immagine resta intatto.
-$msDebugLevel = (int) (getenv('GC_MS_DEBUG_LEVEL') ?: 1);
+$msDebugLevel = DebugLevel::resolve();
 $oMap->setConfigOption('MS_ERRORFILE', 'stderr');
 $oMap->set('debug', $msDebugLevel);
 
