@@ -56,6 +56,37 @@ function getWmsParameters(array $layerParameters)
 }
 
 /**
+ * Etichetta leggibile per un gruppo WMS, usata come nome del layer.
+ *
+ * I layer cascading si chiamavano print_layer_0, print_layer_1: nei tempi per
+ * layer che MapServer emette con GC_MS_DEBUG_LEVEL=2 quei nomi non dicono
+ * nulla su cosa sia stato disegnato. Aggiungendo il primo layergroup del
+ * gruppo e quanti altri ne contiene, la riga diventa attribuibile:
+ *
+ *   msDrawMap(): Layer 0 (print_0_g_tree.tree+11), 8.412s
+ *
+ * L'indice resta in testa perche' i nomi devono restare univoci.
+ */
+function layerDebugName($key, array $layerParameters)
+{
+    $layers = $layerParameters['LAYERS'] ?? null;
+    if (is_string($layers)) {
+        $layers = explode(',', $layers);
+    }
+    if (!is_array($layers) || $layers === []) {
+        return 'print_' . $key;
+    }
+
+    $first = preg_replace('/[^A-Za-z0-9_.-]/', '', (string) reset($layers));
+    if ($first === '') {
+        return 'print_' . $key;
+    }
+    $more = count($layers) - 1;
+
+    return 'print_' . $key . '_' . $first . ($more > 0 ? '+' . $more : '');
+}
+
+/**
  * MapServer, at least of version 5.6, is not too happy if there are some
  * parameters in the request.
  */
@@ -188,7 +219,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
         }
         
         $oLay = ms_newLayerObj($oMap);
-        $oLay->set('name', 'print_layer_' . $key);
+        $oLay->set('name', layerDebugName($key, $layer['PARAMETERS'] ?? []));
         $oLay->set('type', MS_LAYER_RASTER);
         $oLay->set('debug', $msDebugLevel);
         

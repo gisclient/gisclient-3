@@ -129,8 +129,20 @@ $oMap = $mapObjFactory->from($objRequest);
 // container. Livello 1 = solo errori; GC_MS_DEBUG_LEVEL=2 aggiunge i tempi
 // per layer e =3 il dettaglio delle query, utili per una misura mirata.
 // Non tocca lo stdout, quindi lo stream binario dell'immagine resta intatto.
+$msDebugLevel = (int) (getenv('GC_MS_DEBUG_LEVEL') ?: 1);
 $oMap->setConfigOption('MS_ERRORFILE', 'stderr');
-$oMap->set('debug', (int) (getenv('GC_MS_DEBUG_LEVEL') ?: 1));
+$oMap->set('debug', $msDebugLevel);
+
+// Il livello della mappa non si propaga ai layer. Il driver PostGIS traccia la
+// SQL che genera in base a layer->debug, e il mapfile non lo imposta: senza
+// questo ciclo, alzare GC_MS_DEBUG_LEVEL da' i tempi per layer ma non le
+// query. Si applica solo da 2 in su, per non aggiungere rumore al livello
+// predefinito, dove servono i soli errori.
+if ($msDebugLevel > 1) {
+    for ($layerIndex = 0; $layerIndex < $oMap->numlayers; $layerIndex++) {
+        $oMap->getLayer($layerIndex)->set('debug', $msDebugLevel);
+    }
+}
 
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
