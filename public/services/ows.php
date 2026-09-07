@@ -127,24 +127,31 @@ $oMap = $mapObjFactory->from($objRequest);
 // DEBUG attivo, quindi in produzione gli errori di MapServer durante
 // owsdispatch() — connessioni PostGIS, SLD non applicabili, layer mancanti —
 // non vengono scritti da nessuna parte. Con "stderr" finiscono nel log del
-// container. Livello 1 = solo errori; GC_MS_DEBUG_LEVEL=2 aggiunge i tempi
-// per layer e =3 il dettaglio delle query. Con GC_DEBUG_ALLOW_REQUEST attivo
-// il livello si puo' alzare per la singola richiesta con &GC_DEBUG=3.
-// Non tocca lo stdout, quindi lo stream binario dell'immagine resta intatto.
+// container, senza toccare lo stdout: lo stream binario dell'immagine resta
+// intatto.
+//
+// Livello 1 = solo errori. Da 2 in su MapServer aggiunge i tempi per layer;
+// il dump della SQL generata dal driver PostGIS arriva solo ai livelli alti,
+// fino a 5. Con GC_DEBUG_ALLOW_REQUEST attivo il livello si alza per la
+// singola richiesta con &GC_DEBUG=<n>.
+//
+// Il livello della mappa non si propaga ai layer, e il mapfile non lo imposta:
+// senza applicarlo anche a ognuno di essi il driver PostGIS resta muto. Si fa
+// solo da 2 in su, per lasciare pulito il livello predefinito.
 $msDebugLevel = DebugLevel::resolve();
-$oMap->setConfigOption('MS_ERRORFILE', 'stderr');
-$oMap->set('debug', $msDebugLevel);
 
-// Il livello della mappa non si propaga ai layer. Il driver PostGIS traccia la
-// SQL che genera in base a layer->debug, e il mapfile non lo imposta: senza
-// questo ciclo, alzare GC_MS_DEBUG_LEVEL da' i tempi per layer ma non le
-// query. Si applica solo da 2 in su, per non aggiungere rumore al livello
-// predefinito, dove servono i soli errori.
-if ($msDebugLevel > 1) {
-    for ($layerIndex = 0; $layerIndex < $oMap->numlayers; $layerIndex++) {
-        $oMap->getLayer($layerIndex)->set('debug', $msDebugLevel);
+$applyDebugLevel = function ($map) use ($msDebugLevel) {
+    $map->setConfigOption('MS_ERRORFILE', 'stderr');
+    $map->set('debug', $msDebugLevel);
+
+    if ($msDebugLevel > 1) {
+        for ($layerIndex = 0; $layerIndex < $map->numlayers; $layerIndex++) {
+            $map->getLayer($layerIndex)->set('debug', $msDebugLevel);
+        }
     }
-}
+};
+
+$applyDebugLevel($oMap);
 
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
@@ -187,6 +194,11 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
 
         // re-create mapobj to consider authenticated user
         $oMap = $mapObjFactory->from($objRequest);
+
+        // la mappa e' nuova: il debug impostato sopra e' andato perso con
+        // quella precedente e va riapplicato, altrimenti le GetLegendGraphic
+        // e le GetMap senza GISCLIENT_MAP restano mute
+        $applyDebugLevel($oMap);
         
         // get layers to populate session with GISCLIENT_USER_LAYER
         GCApp::getLayerAuthorizationChecker()->getLayers([

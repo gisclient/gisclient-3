@@ -21,9 +21,9 @@ if (defined('DEBUG') && DEBUG) {
 // draw() NON restituisce null, quindi l'immagine esce semplicemente senza
 // quel layer e non se ne accorge nessuno. Scrivendo su "stderr" gli errori
 // arrivano nel log del container. Livello 1 = solo errori, nessun rumore.
-// GC_MS_DEBUG_LEVEL=2 aggiunge i tempi per layer, =3 il dettaglio: e' la
-// scomposizione interna del disegno. Con GC_DEBUG_ALLOW_REQUEST attivo il
-// livello si alza per la singola richiesta con &GC_DEBUG=3, che viene poi
+// Da 2 in su MapServer aggiunge i tempi per layer; i livelli piu' alti, fino
+// a 5, aggiungono il dettaglio del disegno. Con GC_DEBUG_ALLOW_REQUEST attivo
+// il livello si alza per la singola richiesta con &GC_DEBUG=<n>, che viene poi
 // propagato a ogni ows.php generata da questo disegno.
 $msErrorFile = $enableDebug ? $logfile : 'stderr';
 $msDebugLevel = $enableDebug ? 5 : DebugLevel::resolve();
