@@ -140,7 +140,7 @@ $oMap = $mapObjFactory->from($objRequest);
 // solo da 2 in su, per lasciare pulito il livello predefinito.
 $msDebugLevel = DebugLevel::resolve();
 
-$applyDebugLevel = function ($map) use ($msDebugLevel) {
+$applyDebugLevel = function ($map) use ($msDebugLevel): void {
     $map->setConfigOption('MS_ERRORFILE', 'stderr');
     $map->set('debug', $msDebugLevel);
 
