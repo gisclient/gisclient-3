@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 
 use GisClient\Author\Security\Guard\BasicAuthAuthenticator;
+use GisClient\Author\Utils\DebugLevel;
 use GisClient\Author\Utils\OwsHandler;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -122,6 +123,36 @@ $isGetLegendGraphicRequest = $requestRequest == 'getlegendgraphic';
 $mapObjFactory = \GCApp::getMsMapObjFactory();
 $oMap = $mapObjFactory->from($objRequest);
 
+// Il mapfile porta CONFIG 'MS_ERRORFILE' solo quando e' stato generato con
+// DEBUG attivo, quindi in produzione gli errori di MapServer durante
+// owsdispatch() — connessioni PostGIS, SLD non applicabili, layer mancanti —
+// non vengono scritti da nessuna parte. Con "stderr" finiscono nel log del
+// container, senza toccare lo stdout: lo stream binario dell'immagine resta
+// intatto.
+//
+// Livello 1 = solo errori. Da 2 in su MapServer aggiunge i tempi per layer;
+// il dump della SQL generata dal driver PostGIS arriva solo ai livelli alti,
+// fino a 5. Con GC_DEBUG_ALLOW_REQUEST attivo il livello si alza per la
+// singola richiesta con &GC_DEBUG=<n>.
+//
+// Il livello della mappa non si propaga ai layer, e il mapfile non lo imposta:
+// senza applicarlo anche a ognuno di essi il driver PostGIS resta muto. Si fa
+// solo da 2 in su, per lasciare pulito il livello predefinito.
+$msDebugLevel = DebugLevel::resolve();
+
+$applyDebugLevel = function ($map) use ($msDebugLevel): void {
+    $map->setConfigOption('MS_ERRORFILE', 'stderr');
+    $map->set('debug', $msDebugLevel);
+
+    if ($msDebugLevel > 1) {
+        for ($layerIndex = 0; $layerIndex < $map->numlayers; $layerIndex++) {
+            $map->getLayer($layerIndex)->set('debug', $msDebugLevel);
+        }
+    }
+};
+
+$applyDebugLevel($oMap);
+
 if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && empty($_REQUEST['GISCLIENT_MAP'])) ||
     $isGetLegendGraphicRequest) {
     $hasPrivateLayers = false;
@@ -163,6 +194,11 @@ if ((!$gcService->has('GISCLIENT_USER_LAYER') && !empty($layersParameter) && emp
 
         // re-create mapobj to consider authenticated user
         $oMap = $mapObjFactory->from($objRequest);
+
+        // la mappa e' nuova: il debug impostato sopra e' andato perso con
+        // quella precedente e va riapplicato, altrimenti le GetLegendGraphic
+        // e le GetMap senza GISCLIENT_MAP restano mute
+        $applyDebugLevel($oMap);
         
         // get layers to populate session with GISCLIENT_USER_LAYER
         GCApp::getLayerAuthorizationChecker()->getLayers([

@@ -3,6 +3,8 @@
 namespace GisClient\MapServer;
 
 use GisClient\Author\Utils\OwsHandler;
+use GisClient\MapServer\Connection\MapDatabaseRouter;
+use GisClient\MapServer\Connection\OgcRequestClassifier;
 
 class MsMapObjFactory
 {
@@ -102,6 +104,23 @@ class MsMapObjFactory
             $lang = null;
         }
 
-        return $this->create($project, $map, $temporary, $lang);
+        $oMap = $this->create($project, $map, $temporary, $lang);
+
+        // Route read-only OGC operations to the replica. Done here rather than
+        // in the decorator so that layers without a SETROLE directive are
+        // covered too: the decorator only rewrites RLS layers, everything else
+        // would keep the primary connection baked into the mapfile.
+        if (OgcRequestClassifier::isReadOnlyRequest($request, $_SERVER, $_REQUEST)) {
+            MapDatabaseRouter::applyTo($oMap);
+        } elseif (MapDatabaseRouter::isConfigured()) {
+            print_debug(sprintf(
+                'read-only routing: not applied (service=%s request=%s method=%s), staying on the primary',
+                $request->getValueByName('service') ?: '(none)',
+                $request->getValueByName('request') ?: '(none)',
+                $_SERVER['REQUEST_METHOD'] ?? '(none)'
+            ), null, 'ows');
+        }
+
+        return $oMap;
     }
 }

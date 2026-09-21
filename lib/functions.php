@@ -11,8 +11,14 @@ function connInfofromPath($sPath)
         $mapPwd = DB_PWD;
     }
 
+    // Il database resta sempre quello indicato dal catalogo: un catalog_path che
+    // ne nomina uno esplicitamente punta a quel database di proposito, e
+    // sovrascriverlo romperebbe i layer che vivono altrove. Il routing sposta
+    // solo l'host, mai il database.
+    $dbName = DB_NAME;
+
     if (count($pathInfo) == 1) {//Mancano le informazioni di connessione, ho solo lo schema e il db � quello del gisclient
-        $connString = "user=" . $mapUser . " password=" . $mapPwd . " dbname=" . DB_NAME . " host=" . DB_HOST . " port=" . DB_PORT;
+        $connString = "user=" . $mapUser . " password=" . $mapPwd . " dbname=" . $dbName . " host=" . DB_HOST . " port=" . DB_PORT;
         $datalayerSchema = $pathInfo[0];
     } else {//Abbiamo db e schema
         $datalayerSchema = $pathInfo[1];

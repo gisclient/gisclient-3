@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 
+use GisClient\Author\Utils\DebugLevel;
+use GisClient\Author\Utils\RequestId;
+
 $gcService = GCService::instance();
 $gcService->startSession();
 
@@ -12,6 +15,23 @@ if (defined('DEBUG') && DEBUG) {
     $enableDebug = true;
     $logfile = DEBUG_DIR . "/mapfile.debug";
 }
+
+// Senza MS_ERRORFILE gli errori di MapServer non finiscono da nessuna parte.
+// Conta soprattutto per i layer cascading: se uno fallisce o va in timeout,
+// draw() NON restituisce null, quindi l'immagine esce semplicemente senza
+// quel layer e non se ne accorge nessuno. Scrivendo su "stderr" gli errori
+// arrivano nel log del container. Livello 1 = solo errori, nessun rumore.
+// Da 2 in su MapServer aggiunge i tempi per layer; i livelli piu' alti, fino
+// a 5, aggiungono il dettaglio del disegno. Con GC_DEBUG_ALLOW_REQUEST attivo
+// il livello si alza per la singola richiesta con &GC_DEBUG=<n>, che viene poi
+// propagato a ogni ows.php generata da questo disegno.
+$msErrorFile = $enableDebug ? $logfile : 'stderr';
+$msDebugLevel = $enableDebug ? 5 : DebugLevel::resolve();
+
+// Senza wms_connectiontimeout MapServer usa il proprio default di 30 secondi
+// per ogni layer cascading: un solo servizio che non risponde puo' bloccare
+// l'immagine per mezzo minuto, in silenzio.
+$wmsConnectionTimeout = (int) (getenv('GC_WMS_CONNECTION_TIMEOUT') ?: 10);
 
 function getWmsParameters(array $layerParameters)
 {
@@ -36,6 +56,37 @@ function getWmsParameters(array $layerParameters)
     }
     
     return $query;
+}
+
+/**
+ * Etichetta leggibile per un gruppo WMS, usata come nome del layer.
+ *
+ * I layer cascading si chiamavano print_layer_0, print_layer_1: nei tempi per
+ * layer che MapServer emette con GC_MS_DEBUG_LEVEL=2 quei nomi non dicono
+ * nulla su cosa sia stato disegnato. Aggiungendo il primo layergroup del
+ * gruppo e quanti altri ne contiene, la riga diventa attribuibile:
+ *
+ *   msDrawMap(): Layer 0 (print_0_g_tree.tree+11), 8.412s
+ *
+ * L'indice resta in testa perche' i nomi devono restare univoci.
+ */
+function layerDebugName($key, array $layerParameters)
+{
+    $layers = $layerParameters['LAYERS'] ?? null;
+    if (is_string($layers)) {
+        $layers = explode(',', $layers);
+    }
+    if (!is_array($layers) || $layers === []) {
+        return 'print_' . $key;
+    }
+
+    $first = preg_replace('/[^A-Za-z0-9_.-]/', '', (string) reset($layers));
+    if ($first === '') {
+        return 'print_' . $key;
+    }
+    $more = count($layers) - 1;
+
+    return 'print_' . $key . '_' . $first . ($more > 0 ? '+' . $more : '');
 }
 
 /**
@@ -89,6 +140,15 @@ function cleanWMSRequest($url)
 // questo file si occuperà solo di creare l'immagine e può essere usato anche per fare il download dell'immagine di mappa
 $mapConfig = json_decode($_REQUEST['options'], true);
 
+// Id che lega questa composizione, e le ows.php che ne derivano, alla
+// richiesta che l'ha originata. Arriva come header o dentro il payload;
+// RequestId::get() ricade su un id generato se non c'e' nulla.
+if (!empty($mapConfig[RequestId::QUERY_PARAM])) {
+    RequestId::set($mapConfig[RequestId::QUERY_PARAM]);
+}
+$requestIdFragment = RequestId::asQueryFragment();
+$debugFragment = DebugLevel::asQueryFragment();
+
 ms_ResetErrorList();
 $oMap = ms_newMapObj('');
 if (defined('PROJ_LIB')) {
@@ -111,10 +171,8 @@ if (count($sridParts) == 2) {
 
 $oMap->setProjection("init={$srs}");
 $oMap->extent->setextent($mapConfig['extent'][0], $mapConfig['extent'][1], $mapConfig['extent'][2], $mapConfig['extent'][3]);
-if ($enableDebug) {
-    $oMap->setConfigOption("MS_ERRORFILE", $logfile);
-    $oMap->set('debug', 5);
-}
+$oMap->setConfigOption("MS_ERRORFILE", $msErrorFile);
+$oMap->set('debug', $msDebugLevel);
 if (!empty($mapConfig['resolution'])) {
     $oMap->set('resolution', (int)$mapConfig['resolution']);
 } else {
@@ -165,11 +223,9 @@ foreach ($mapConfig['layers'] as $key => $layer) {
         }
         
         $oLay = ms_newLayerObj($oMap);
-        $oLay->set('name', 'print_layer_' . $key);
+        $oLay->set('name', layerDebugName($key, $layer['PARAMETERS'] ?? []));
         $oLay->set('type', MS_LAYER_RASTER);
-        if ($enableDebug) {
-            $oLay->set('debug', 5);
-        }
+        $oLay->set('debug', $msDebugLevel);
         
         switch ($layer['SERVICE']) {
             case 'WMS':
@@ -190,6 +246,14 @@ foreach ($mapConfig['layers'] as $key => $layer) {
 
                 if (!empty($sessionId)) {
                     $query .= '&GC_SESSION_ID=' . $sessionId;
+                }
+                // MapServer costruisce da solo questa URL, quindi non
+                // possiamo aggiungere header: l'id passa in query string e
+                // ricompare nel campo %q dell'access log di ogni ows.php
+                $query .= '&' . $requestIdFragment;
+                // il livello chiesto per questa richiesta segue fino a ows.php
+                if ($debugFragment !== '') {
+                    $query .= '&' . $debugFragment;
                 }
                 if (!empty($mapConfig['resolution'])) {
                     $query .= '&RESOLUTION=' . $mapConfig['resolution'];
@@ -212,6 +276,7 @@ foreach ($mapConfig['layers'] as $key => $layer) {
                 if (!empty($layer['PARAMETERS']['SLD'])) {
                     $oLay->setMetaData('wms_sld_url', $layer['PARAMETERS']['SLD']);
                 }
+                $oLay->setMetaData("wms_connectiontimeout", (string) $wmsConnectionTimeout);
                 $oLay->setMetaData("wms_srs", $mapConfig['srs']);
                 $oLay->setMetaData("wms_name", $layerNames);
                 $oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);

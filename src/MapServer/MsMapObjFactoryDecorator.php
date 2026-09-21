@@ -6,6 +6,8 @@ use DOMDocument;
 use DOMXPath;
 use Exception;
 use GisClient\Author\Utils\UrlChecker;
+use GisClient\MapServer\Connection\MapDatabaseRouter;
+use GisClient\MapServer\Connection\OgcRequestClassifier;
 use LogicException;
 
 /**
@@ -35,6 +37,11 @@ class MsMapObjFactoryDecorator
     {
         $isUsingVsi = false;
         $oMap = $this->factory->from($request);
+
+        // The RLS branch below rebuilds the connection from scratch, which
+        // would undo the routing already applied by the factory. Recompute the
+        // same decision so those layers follow it too.
+        $isReadOnly = OgcRequestClassifier::isReadOnlyRequest($request, $_SERVER, $_REQUEST);
 
         $authHandler = \GCApp::getAuthenticationHandler();
         if ($authHandler->isAuthenticated()) {
@@ -110,16 +117,18 @@ class MsMapObjFactoryDecorator
 
                     $layer->getMetaData('obj_t');
                 } elseif ($setRoleForThisLayer) {
-                    $layer->set(
-                        'connection',
-                        sprintf(
-                            'user=%s password=%s dbname=%s host=%s port=5432',
-                            getenv('GISCLIENT__APP__USER'),
-                            getenv('GISCLIENT__APP__PASSWORD'),
-                            DB_NAME,
-                            DB_HOST
-                        )
+                    $connection = sprintf(
+                        'user=%s password=%s dbname=%s host=%s port=%s',
+                        getenv('GISCLIENT__APP__USER'),
+                        getenv('GISCLIENT__APP__PASSWORD'),
+                        DB_NAME,
+                        DB_HOST,
+                        defined('DB_PORT') && DB_PORT !== '' ? DB_PORT : '5432'
                     );
+                    if ($isReadOnly) {
+                        $connection = MapDatabaseRouter::route($connection);
+                    }
+                    $layer->set('connection', $connection);
 
                     if (!empty($extras['us_db_role_name'])) {
                         $processingInstructions[] = sprintf("SETROLE=%s", $extras['us_db_role_name']);
