@@ -71,7 +71,9 @@ if ($objRequest->getvaluebyname('layer')) {
     // QGIS set the layers list
     $layerNames = explode(',', $objRequest->getvaluebyname('layer'));
     foreach ($layerNames as $layerName) {
-        $layer = $oMap->getLayerByName($layerName);
+        // Suppress the MapServer warning emitted when the layer name is not found;
+        // the result is checked via empty() below.
+        $layer = @$oMap->getLayerByName($layerName);
         if (!empty($layer)) {
             $layerIndexes[] = $layer->index;
         } else {
