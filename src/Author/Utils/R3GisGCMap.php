@@ -395,11 +395,12 @@ class R3GisGCMap
                 } elseif ($row["layergroup_single"] == 1) {
                     $layerParameters["layers"] = [$layergroupName];
                 } else {
-                    $layerParameters["layers"] = $this->mapLayers[$themeName][$layergroupName];
                     $list = [];
-                    foreach ($this->mapLayers[$themeName][$layergroupName] as $layer) {
-                        if (isset($layer["name"])) {
-                            array_push($list, $layer["name"]);
+                    if (isset($this->mapLayers[$themeName][$layergroupName])) {
+                        foreach ($this->mapLayers[$themeName][$layergroupName] as $layer) {
+                            if (isset($layer["name"])) {
+                                array_push($list, $layer["name"]);
+                            }
                         }
                     }
                     $layerParameters["layers"] = $list;
