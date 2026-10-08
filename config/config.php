@@ -35,6 +35,54 @@ function gcEnvBool(string $name, bool $default): bool
     return null === $parsed ? $default : $parsed;
 }
 
+/**
+ * Elenco di interi da una variabile d'ambiente, separati da virgola.
+ *
+ * Non ha un valore predefinito: una variabile assente e' un errore, non un
+ * ripiego silenzioso su un elenco scritto nel codice. Cosi' il comportamento
+ * dipende solo da cio' che e' configurato, ed e' leggibile dall'ambiente
+ * invece che deducibile dal sorgente.
+ *
+ * Una variabile valorizzata a stringa vuota e' invece un elenco vuoto
+ * esplicito, per i deployment che non ne hanno bisogno.
+ *
+ * Un valore non numerico interrompe l'avvio invece di essere scartato: un
+ * refuso deve farsi notare subito, non diventare un SRID mancante all'elenco
+ * che nessuno collega al refuso mesi dopo.
+ *
+ * @return int[]
+ * @throws RuntimeException
+ */
+function gcEnvIntList(string $name): array
+{
+    $value = getenv($name);
+    if (false === $value) {
+        throw new RuntimeException(sprintf(
+            '%s environment variable is not defined. '
+            . 'You need to define environment variables for configuration.',
+            $name
+        ));
+    }
+
+    $parsed = [];
+    foreach (explode(',', $value) as $item) {
+        $item = trim($item);
+        if ('' === $item) {
+            continue;
+        }
+        if (!ctype_digit($item)) {
+            throw new RuntimeException(sprintf(
+                '%s contains a non-numeric value: "%s".',
+                $name,
+                $item
+            ));
+        }
+        $parsed[] = (int) $item;
+    }
+
+    return array_values(array_unique($parsed));
+}
+
 if (!empty(getenv('TRUSTED_PROXIES'))) {
     Request::setTrustedProxies(
         // trust *all* requests
@@ -94,6 +142,17 @@ define('OPENLAYERS', '///cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLa
 define('GISCLIENT_OWS_URL', PUBLIC_URL.'services/ows.php');     //NON E' OBBLIGATORIO
 define('GISCLIENT_TMS_URL', PUBLIC_URL.'services/tms/');        //NON E' OBBLIGATORIO
 define('ENABLE_OGC_SINGLE_LAYER_WMS', false);                   // true = ABILITA IL WMS PER SINGOLO LAYER NEI SERVIZI OGC
+
+// SRID i cui assi, secondo il registro EPSG, sono in ordine invertito
+// (latitudine prima della longitudine). ows.php li usa per ripulire l'attributo
+// srsName dai filtri WFS, dove l'ordine degli assi cambierebbe il significato
+// delle coordinate.
+//
+// La variabile e' obbligatoria e non ha un ripiego nel codice: l'elenco e'
+// quello configurato, sempre. Valorizzarla a stringa vuota significa "nessuno".
+//
+//   GC_INVERTED_AXIS_ORDER_SRIDS=2176,2177,2178,6382,6707,6708,6709,31254,31255,31256,31257,31258,31259,31465,31466,31467,31468
+define('INVERTED_AXIS_ORDER_SRIDS', gcEnvIntList('GC_INVERTED_AXIS_ORDER_SRIDS'));
 
 /********************* MAPPROXY ***************/
 define('MAPSERVER_URL', 'http://localhost/cgi-bin/mapserv?');   //NON E' OBBLIGATORIO; ? finale è necessario (serve per le richieste WFS di OpenLayers, quando il loadparams non funziona, vedi ows.php commento #LOADPARAMS)
