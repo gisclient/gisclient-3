@@ -81,11 +81,19 @@ class DbUpgradeCommand extends Command
 
     private function getCurrentVersion(\PDO $db): string
     {
+        // version_name is varchar: compare in PHP, since SQL max() would rank '3.6.9' above '3.6.10'
         $stmt = $db->query(
-            "SELECT max(version_name) FROM gisclient_34.version WHERE version_key = 'author'"
+            "SELECT version_name FROM gisclient_34.version WHERE version_key = 'author'"
         );
 
-        return $stmt->fetchColumn() ?: '0';
+        $currentVersion = '0';
+        foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) as $versionName) {
+            if (version_compare((string) $versionName, $currentVersion, '>')) {
+                $currentVersion = (string) $versionName;
+            }
+        }
+
+        return $currentVersion;
     }
 
     /**
