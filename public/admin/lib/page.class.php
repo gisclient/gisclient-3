@@ -646,7 +646,8 @@ class page
                 for ($j = 0; $j < count($tb->pkeys); $j++) {
                     $tb->pkeys_value[$j] = isset($tb->pkeys[$j]) ? $this->_get_pkey_value($tb->pkeys[$j]) : null;
                 }
-                $tb->set_titolo($tb->FileTitle, 0, $prm);
+                //$button arriva dal file incluso poco sopra, 0 disattiverebbe il pulsante
+                $tb->set_titolo($tb->FileTitle, $button ?? 0, $prm);
                 $tb->get_titolo($frm);
                 $tb->tab();
                 break;
