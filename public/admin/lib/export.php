@@ -91,6 +91,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
     }
     
     $handle = fopen(ROOT_PATH . 'config/debug/test_import.sql', 'w+');
+    $newid = [];    //mappa chiave sorgente => chiave nuova, deve valere per tutto l'import
     for ($i = 3; $i < count($rows); $i++) {
         $sql = trim(str_replace("\n", '', str_replace("\r", "", $rows[$i])));
         foreach ($arrSubst as $key => $value) {
@@ -125,11 +126,16 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
                     } catch (Exception $e) {
                         echo "<p>$sqlVal</p>";
                     }
+                    if ($newVal === false || $newVal === null || $newVal === "") {
+                        //senza questo controllo il segnaposto diventa una stringa vuota
+                        //e l'errore si manifesta molto piu' avanti come sintassi SQL non valida
+                        $newVal = "";
+                        array_push($err, "ROW $i : chiave esterna non risolta " . $out[$k][0] . "\n<p>$sqlVal</>");
+                    }
                 }
                 $sql = str_replace($out[$k][0], $newVal, $sql);
             }
         }
-        $newid = [];
         if (preg_match_all('|@KEY\[(.+)\]\[(.+)\]@|Ui', $sql, $newkey)) {
             for ($j = 0; $j < count($newkey[0]); $j++) {
                 if (!$newid[$newkey[1][$j]][$newkey[2][$j]]) {
@@ -140,7 +146,7 @@ function import($f, $parentId, $parentName, $newName = '', $parentkey = null)
         }
         if (preg_match("|@NEWKEY_I\[(.+)\]\[(.+)\]@|Ui", $sql, $out)) {
             if ($out[1] == 'relation' && !$out[2]) {
-                $newId[$out[1]][$out[2]] = "0";
+                $newid[$out[1]][$out[2]] = "0";
             } else {
                 $table = str_replace('_id', '', $out[1]);
                 $sqlId = "select " . DB_SCHEMA . ".new_pkey('$table','" . $out[1] . "_id') as newid;";
@@ -417,7 +423,9 @@ function _export($fileName = "export.sql", $currentLevel, $projName, $structure,
                 }
             } elseif (_isPKey($key, $pkey)) {                    //CHIAVI ESTERNE
                 if (($key == 'relation_id' && !$val) || ($key == 'catalog_id' && $val == -1)) {
-                    $values[$key] = "$val";
+                    //$val null produrrebbe un valore vuoto, non un literal SQL valido
+                    $cast = empty($fldType[$key]) ? "" : ("::" . $fldType[$key]);
+                    $values[$key] = isset($val) ? (((int) $val) . $cast) : ("null" . $cast);
                     $valutatedKey[$key][$val] = 1;
                 } elseif ($start && $key == "theme_id") {
                     $values[$key] = "@PARENTID@";
