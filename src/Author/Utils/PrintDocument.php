@@ -224,6 +224,27 @@ class PrintDocument
         $this->documentElements['map-lang'] = $lang;
     }
     
+    /**
+     * Progetto della stampa, ricavato dal parametro PROJECT dei layer WMS di GisClient.
+     * Il map-client lo invia in minuscolo (parameters.project), come generato da GCMap.
+     */
+    public function getProjectName(): ?string
+    {
+        return self::projectNameFromTiles($this->tiles);
+    }
+
+    public static function projectNameFromTiles(array $tiles): ?string
+    {
+        foreach ($tiles as $wms) {
+            $parameters = array_change_key_case((array) ($wms['parameters'] ?? []), CASE_UPPER);
+            if (!empty($parameters['PROJECT']) && is_string($parameters['PROJECT'])) {
+                return $parameters['PROJECT'];
+            }
+        }
+
+        return null;
+    }
+
     public function setLogo($logo, $position = 'sx')
     {
         $this->documentElements['map-logo-' . $position] = $logo;

@@ -72,4 +72,17 @@ class ResourceSchemaMetadataTest extends TestCase
         $this->assertSame(['id', 'srid'], $schema->getSortableFields());
         $this->assertSame('project', $schema->getRelationship('project')->getJsonApiName());
     }
+
+    public function testProjectPrintLogoSchemaExposesContractMetadata(): void
+    {
+        $schema = DtoSchemaRegistry::schemaForType('project_print_logo');
+        $entitySchema = EntitySchemaRegistry::schemaForType('project_print_logo');
+
+        $this->assertSame('project_print_logo_id', $schema->getPrimaryKey());
+        $this->assertSame(['project', 'logo_position', 'logo_data'], $schema->getRequiredOnCreate());
+        $this->assertSame(['project_print_logo_id', 'project_name', 'logo_position'], $schema->getFilterableFields());
+        $this->assertSame('project_print_logo', $entitySchema->getResolvedTable());
+        $this->assertSame('project_name', $entitySchema->getRelationshipColumn('project'));
+        $this->assertSame(['image/png', 'image/jpeg'], $entitySchema->getAttributeRule('logo_data')['image']['mime_types']);
+    }
 }
