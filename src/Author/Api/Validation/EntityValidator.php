@@ -11,6 +11,7 @@ use GisClient\Author\Persistence\EntityRef;
 use GisClient\Author\Persistence\EntityRepository;
 use GisClient\Author\Persistence\EntitySchema;
 use GisClient\Author\Persistence\EntitySchemaRegistry;
+use GisClient\Author\Utils\Base64Image;
 
 class EntityValidator
 {
@@ -100,6 +101,7 @@ class EntityValidator
         $this->validateRelationshipReferences($resourceSchema, $entity->getRelationships(), $errors);
         $this->validateCollectionRelationshipReferences($resourceSchema, $entity->getCollectionRelationships(), $errors);
         $this->validateAttributeLookups($entitySchema, $attributes, $errors);
+        $this->validateAttributeImages($entitySchema, $attributes, $errors);
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);
@@ -153,6 +155,60 @@ class EntityValidator
                 );
             }
         }
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $errors
+     */
+    private function validateAttributeImages(EntitySchema $schema, array $attributes, array &$errors): void
+    {
+        foreach ($attributes as $field => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $rule = $schema->getAttributeRule($field);
+            if ($rule === null || !isset($rule['image']) || !is_array($rule['image'])) {
+                continue;
+            }
+
+            $detail = $this->imageRuleViolation($rule['image'], $value);
+            if ($detail !== null) {
+                $this->addError(
+                    $errors,
+                    'invalid_attribute_value',
+                    'Invalid Attribute Value',
+                    sprintf("Attribute '%s' %s", $field, $detail),
+                    [
+                        'attribute' => $field,
+                    ]
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $imageRule
+     * @param mixed $value
+     */
+    private function imageRuleViolation(array $imageRule, $value): ?string
+    {
+        $image = is_string($value) ? Base64Image::fromBase64($value) : null;
+        if ($image === null) {
+            return 'must be a base64 encoded image';
+        }
+
+        $maxBytes = $imageRule['max_bytes'] ?? null;
+        if (is_int($maxBytes) && $image->getByteSize() > $maxBytes) {
+            return sprintf('must not exceed %d bytes', $maxBytes);
+        }
+
+        $mimeTypes = $imageRule['mime_types'] ?? [];
+        if (!in_array($image->getMimeType(), $mimeTypes, true)) {
+            return sprintf('must be an image of type: %s', implode(', ', $mimeTypes));
+        }
+
+        return null;
     }
 
     /**

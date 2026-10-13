@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/ajax.class.php';
 
 use GisClient\Author\Utils\PrintDocument;
+use GisClient\Author\Utils\ProjectPrintLogoProvider;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -41,13 +42,27 @@ try {
     if (!empty($_REQUEST['lang'])) {
         $printMap->setLang($_REQUEST['lang']);
     }
+    $projectLogos = [];
+    $projectName = $printMap->getProjectName();
+    if ($projectName !== null) {
+        // Senza loghi di progetto la stampa continua con quelli da env o di default
+        try {
+            $projectLogos = (new ProjectPrintLogoProvider(GCApp::getDB()))->getDataUris($projectName);
+        } catch (Exception $e) {
+            error_log('Could not read print logos of project ' . $projectName . ': ' . $e->getMessage());
+        }
+    }
     if (!empty($_REQUEST['logoSx'])) {
         $printMap->setLogo($_REQUEST['logoSx']);
+    } elseif (isset($projectLogos['sx'])) {
+        $printMap->setLogo($projectLogos['sx']);
     } elseif (defined('GC_PRINT_LOGO_SX')) {
         $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_SX));
     }
     if (!empty($_REQUEST['logoDx'])) {
         $printMap->setLogo($_REQUEST['logoDx'], 'dx');
+    } elseif (isset($projectLogos['dx'])) {
+        $printMap->setLogo($projectLogos['dx'], 'dx');
     } elseif (defined('GC_PRINT_LOGO_DX')) {
         $printMap->setLogo(str_replace(PUBLIC_URL, INTERNAL_URL, GC_PRINT_LOGO_DX), 'dx');
     }

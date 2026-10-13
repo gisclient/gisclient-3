@@ -70,6 +70,7 @@ At the moment the CRUD API supports:
 
 - `project`
 - `project_srs`
+- `project_print_logo`
 - `theme`
 - `layergroup`
 - `layer`
@@ -322,6 +323,8 @@ It checks:
 - required attributes after relationship-to-column mapping
 - referenced related resources exist
 - lookup-based attribute constraints defined in metadata
+- `image` rules: the value must be a base64 image of an allowed type
+  (detected from the content) and within a maximum size
 
 Lookup rules are metadata-driven and support contextual filters. Example:
 
@@ -467,6 +470,37 @@ Example `catalog` create with relationship-driven FK:
   }
 }
 ```
+
+Example `project_print_logo` create (print logo for a project):
+
+```json
+{
+  "data": {
+    "type": "project_print_logo",
+    "attributes": {
+      "logo_position": "sx",
+      "logo_data": "iVBORw0KGgoAAAANSUhEUgAA..."
+    },
+    "relationships": {
+      "project": {
+        "data": {
+          "type": "project",
+          "id": "default"
+        }
+      }
+    }
+  }
+}
+```
+
+`logo_position` is `sx` (top left) or `dx` (top right), enforced by a database
+check constraint; one logo per position and project. `logo_data` is a PNG or
+JPEG of at most 1 MB, base64 encoded without the `data:` prefix. When printing,
+`services/print.php` reads the project from the `PROJECT` parameter of the
+printed WMS layers and uses these logos as data URIs. The order of precedence
+is: `logoSx`/`logoDx` in the request, then the project logo, then
+`GC_PRINT_LOGO_SX`/`GC_PRINT_LOGO_DX`, then the default logo. If the project
+logos cannot be read, printing falls back to the next options.
 
 ## Current limitations
 

@@ -15,6 +15,7 @@ use GisClient\Author\Shared\Metadata\MapsetLayergroupMetadata;
 use GisClient\Author\Shared\Metadata\MapsetMetadata;
 use GisClient\Author\Shared\Metadata\Metadata;
 use GisClient\Author\Shared\Metadata\ProjectMetadata;
+use GisClient\Author\Shared\Metadata\ProjectPrintLogoMetadata;
 use GisClient\Author\Shared\Metadata\ProjectSrsMetadata;
 use GisClient\Author\Shared\Metadata\RelationMetadata;
 use GisClient\Author\Shared\Metadata\StyleMetadata;
@@ -91,6 +92,7 @@ class MetadataRegistry
         return [
             ProjectMetadata::class,
             ProjectSrsMetadata::class,
+            ProjectPrintLogoMetadata::class,
             ThemeMetadata::class,
             SymbolMetadata::class,
             FontMetadata::class,
