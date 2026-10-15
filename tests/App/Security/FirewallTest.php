@@ -435,10 +435,9 @@ class FirewallTest extends TestCase
             ?TokenStorageInterface $tokenStorage
         ) {
             $handler = new AuthenticationHandler(
-                null === $tokenStorage ? $this->session : null,
+                $tokenStorage ?? new SessionTokenStorage($this->session),
                 $provider,
-                $guard,
-                $tokenStorage
+                $guard
             );
             $this->factoryCalls[] = [$provider, $guard, $handler, $tokenStorage];
 

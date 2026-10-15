@@ -4,13 +4,11 @@ namespace GisClient\Author\Security;
 
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Token\PreAuthenticationToken;
-use GisClient\Author\Security\Token\SessionTokenStorage;
 use GisClient\Author\Security\Token\TokenInterface;
 use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\UserInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class AuthenticationHandler
 {
@@ -38,21 +36,13 @@ class AuthenticationHandler
     /**
      * Constructor
      *
-     * @param SessionInterface|null $session holds the authenticated token, unless another token storage is given
-     * @param TokenStorageInterface|null $tokenStorage holds the authenticated token instead of the session
+     * @param TokenStorageInterface $tokenStorage holds the authenticated token, usually a SessionTokenStorage
      */
     public function __construct(
-        ?SessionInterface $session,
+        TokenStorageInterface $tokenStorage,
         UserProviderInterface $userProvider,
-        GuardAuthenticatorInterface $guard,
-        ?TokenStorageInterface $tokenStorage = null
+        GuardAuthenticatorInterface $guard
     ) {
-        if (null === $tokenStorage) {
-            if (null === $session) {
-                throw new \InvalidArgumentException('A session or a token storage is required.');
-            }
-            $tokenStorage = new SessionTokenStorage($session);
-        }
         $this->tokenStorage = $tokenStorage;
         $this->userProvider = $userProvider;
         $this->guard = $guard;

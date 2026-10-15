@@ -4,6 +4,7 @@ use GisClient\Author\Security\AuthenticationHandler;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
 use GisClient\Author\Security\LayerAuthorizationChecker;
+use GisClient\Author\Security\Token\SessionTokenStorage;
 use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
@@ -150,8 +151,10 @@ class GCApp
             if (is_null($guard)) {
                 $guard = new UsernamePasswordAuthenticator();
             }
-            $session = null === $tokenStorage ? GCService::instance()->getSession() : null;
-            self::$authenticationHandler = new AuthenticationHandler($session, $userProvider, $guard, $tokenStorage);
+            if (is_null($tokenStorage)) {
+                $tokenStorage = new SessionTokenStorage(GCService::instance()->getSession());
+            }
+            self::$authenticationHandler = new AuthenticationHandler($tokenStorage, $userProvider, $guard);
         }
         return self::$authenticationHandler;
     }
