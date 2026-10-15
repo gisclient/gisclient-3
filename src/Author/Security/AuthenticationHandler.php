@@ -37,13 +37,23 @@ class AuthenticationHandler
     
     /**
      * Constructor
+     *
+     * @param SessionInterface|null $session holds the authenticated token, unless another token storage is given
+     * @param TokenStorageInterface|null $tokenStorage holds the authenticated token instead of the session
      */
     public function __construct(
-        SessionInterface $session,
+        ?SessionInterface $session,
         UserProviderInterface $userProvider,
-        GuardAuthenticatorInterface $guard
+        GuardAuthenticatorInterface $guard,
+        ?TokenStorageInterface $tokenStorage = null
     ) {
-        $this->tokenStorage = new SessionTokenStorage($session);
+        if (null === $tokenStorage) {
+            if (null === $session) {
+                throw new \InvalidArgumentException('A session or a token storage is required.');
+            }
+            $tokenStorage = new SessionTokenStorage($session);
+        }
+        $this->tokenStorage = $tokenStorage;
         $this->userProvider = $userProvider;
         $this->guard = $guard;
     }

@@ -4,6 +4,7 @@ use GisClient\Author\Security\AuthenticationHandler;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
 use GisClient\Author\Security\LayerAuthorizationChecker;
+use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
 use GisClient\Author\Security\User\UserProviderInterface;
@@ -133,22 +134,24 @@ class GCApp
      * Get authentication handler
      *
      * @param  boolean                     $force
+     * @param  TokenStorageInterface|null  $tokenStorage holds the authenticated token instead of the session
      * @return AuthenticationHandler
      */
     public static function getAuthenticationHandler(
         UserProviderInterface $userProvider = null,
         GuardAuthenticatorInterface $guard = null,
-        $force = false
+        $force = false,
+        TokenStorageInterface $tokenStorage = null
     ) {
         if (empty(self::$authenticationHandler) || $force) {
-            $service = GCService::instance();
             if (is_null($userProvider)) {
                 $userProvider = self::getUserProvider();
             }
             if (is_null($guard)) {
                 $guard = new UsernamePasswordAuthenticator();
             }
-            self::$authenticationHandler = new AuthenticationHandler($service->getSession(), $userProvider, $guard);
+            $session = null === $tokenStorage ? GCService::instance()->getSession() : null;
+            self::$authenticationHandler = new AuthenticationHandler($session, $userProvider, $guard, $tokenStorage);
         }
         return self::$authenticationHandler;
     }

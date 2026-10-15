@@ -1,5 +1,6 @@
 <?php
 
+use GisClient\Author\Api\Dto\PagedResultDto;
 use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
@@ -14,6 +15,7 @@ use GisClient\Author\Security\Guard\TokenAuthenticator;
 use GisClient\Author\Security\Guard\UsernamePasswordAuthenticator;
 use GisClient\Author\Security\Token\PostAuthenticationToken;
 use GisClient\Author\Security\Token\SessionTokenStorage;
+use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\R3UserProvider;
 use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
@@ -37,7 +39,7 @@ class FirewallTest extends TestCase
     private $session;
 
     /**
-     * @var array<array{UserProviderInterface|null, GuardAuthenticatorInterface|null}>
+     * @var array<array{UserProviderInterface|null, GuardAuthenticatorInterface|null, AuthenticationHandler, TokenStorageInterface|null}>
      */
     private $factoryCalls = [];
 
@@ -109,6 +111,74 @@ class FirewallTest extends TestCase
         $response = $this->createFirewall()->authenticate($this->createBearerRequest('/api/project', $token));
 
         $this->assertNull($response);
+        $this->assertSame('admin', $this->getAuthenticatedUsername());
+    }
+
+    public function testValidApiTokenDoesNotStartOrWriteSession()
+    {
+        $token = $this->createApiToken('admin', 'client-app');
+        $request = $this->createBearerRequest('/api/project', $token);
+        $firewall = $this->createFirewall();
+
+        $this->assertTrue($firewall->isStateless($request));
+        $response = $firewall->authenticate($request);
+
+        $this->assertNull($response);
+        $this->assertSame('admin', $this->getAuthenticatedUsername());
+        $this->assertNotNull($this->factoryCalls[0][3]);
+        $this->assertFalse($this->session->isStarted());
+        $this->assertSame([], $this->session->all());
+    }
+
+    public function testInvalidApiTokenDoesNotStartSession()
+    {
+        $this->addUser('admin');
+        $request = $this->createBearerRequest('/api/project', 'gca_ffffffffffffffff_secret');
+        $firewall = $this->createFirewall();
+
+        $this->assertTrue($firewall->isStateless($request));
+        $response = $firewall->authenticate($request);
+
+        $this->assertInvalidTokenResponse($response);
+        $this->assertFalse($this->session->isStarted());
+    }
+
+    /**
+     * @dataProvider sessionRequestProvider
+     */
+    public function testRequestWithoutBearerTokenOnApiPathIsNotStateless(Request $request)
+    {
+        $this->assertFalse($this->createFirewall()->isStateless($request));
+    }
+
+    public function sessionRequestProvider(): array
+    {
+        return [
+            'api without authorization header' => [Request::create('/api/project')],
+            'admin login' => [
+                Request::create('/login', 'POST', [
+                    'username' => 'admin',
+                    'password' => 'secret',
+                ])],
+            'r3gis_apps' => [Request::create('/r3gis_apps/print.php')],
+            'bearer token on non-api path' => [$this->createBearerRequest('/logout', 'gca_0123456789abcdef_secret')],
+        ];
+    }
+
+    public function testSessionLoginStoresAuthenticatedUserInSession()
+    {
+        $this->addUser('admin');
+
+        $response = $this->createFirewall()->authenticate(
+            Request::create('/login', 'POST', [
+                'username' => 'admin',
+                'password' => 'secret',
+            ])
+        );
+
+        $this->assertNull($response);
+        $this->assertNull($this->factoryCalls[0][3]);
+        $this->assertTrue($this->session->has(SessionTokenStorage::TOKEN_ID));
         $this->assertSame('admin', $this->getAuthenticatedUsername());
     }
 
@@ -203,6 +273,21 @@ class FirewallTest extends TestCase
         $this->expectException(AccessDeniedHttpException::class);
 
         $this->createFirewall()->authenticate($this->createBearerRequest('/logout', $token));
+    }
+
+    public function testApiTokenOfSuperUserIsAllowedByController()
+    {
+        $token = $this->createApiToken('admin', 'client-app');
+
+        $response = $this->createFirewall()->authenticate($this->createBearerRequest('/api/project', $token));
+        $this->assertNull($response);
+
+        $this->setGlobalAuthenticationHandler($this->factoryCalls[0][2]);
+        $response = $this->createJsonApiController(new PagedResultDto([], 0, 10, 0))
+            ->indexAction('project', Request::create('/api/project'));
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertFalse($this->session->isStarted());
     }
 
     public function testApiTokenOfUserWhoIsNotSuperUserIsForbiddenByController()
@@ -344,9 +429,18 @@ class FirewallTest extends TestCase
 
     private function createHandlerFactory(): callable
     {
-        return function (?UserProviderInterface $provider, ?GuardAuthenticatorInterface $guard) {
-            $handler = new AuthenticationHandler($this->session, $provider, $guard);
-            $this->factoryCalls[] = [$provider, $guard, $handler];
+        return function (
+            ?UserProviderInterface $provider,
+            ?GuardAuthenticatorInterface $guard,
+            ?TokenStorageInterface $tokenStorage
+        ) {
+            $handler = new AuthenticationHandler(
+                null === $tokenStorage ? $this->session : null,
+                $provider,
+                $guard,
+                $tokenStorage
+            );
+            $this->factoryCalls[] = [$provider, $guard, $handler, $tokenStorage];
 
             return $handler;
         };
@@ -372,13 +466,27 @@ class FirewallTest extends TestCase
         $this->assertSame('invalid_token', $payload['errors'][0]['code']);
     }
 
-    private function createJsonApiController(): JsonApiController
+    private function createJsonApiController(?PagedResultDto $resources = null): JsonApiController
     {
         $container = new Container();
-        $container->set(ApiCrudService::class, new class() {
+        $container->set(ApiCrudService::class, new class($resources) {
+            /**
+             * @var PagedResultDto|null
+             */
+            private $resources;
+
+            public function __construct(?PagedResultDto $resources)
+            {
+                $this->resources = $resources;
+            }
+
             public function listResources($entity, array $query)
             {
-                throw new \LogicException('The controller must not reach the service.');
+                if (null === $this->resources) {
+                    throw new \LogicException('The controller must not reach the service.');
+                }
+
+                return $this->resources;
             }
         });
         $container->set(JsonApiExceptionMapper::class, new JsonApiExceptionMapper());

@@ -8,6 +8,9 @@ use GisClient\Author\Security\ApiToken\ApiTokenStoreInterface;
 use GisClient\Author\Security\ApiToken\InvalidApiTokenException;
 use GisClient\Author\Security\Guard\BearerTokenAuthenticator;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
+use GisClient\Author\Security\Guard\StatelessAuthenticatorInterface;
+use GisClient\Author\Security\Token\InMemoryTokenStorage;
+use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,13 +54,15 @@ class Firewall
     /**
      * Creates the authentication handler for the matched provider and guard
      *
-     * @var callable(UserProviderInterface|null, GuardAuthenticatorInterface|null): AuthenticationHandler
+     * The token storage is given for stateless requests only: the handler must use it instead of the session.
+     *
+     * @var callable(UserProviderInterface|null, GuardAuthenticatorInterface|null, TokenStorageInterface|null): AuthenticationHandler
      */
     private $authenticationHandlerFactory;
 
     /**
      * @param array $security the `security` section of config/security.yml
-     * @param callable(UserProviderInterface|null, GuardAuthenticatorInterface|null): AuthenticationHandler $authenticationHandlerFactory
+     * @param callable(UserProviderInterface|null, GuardAuthenticatorInterface|null, TokenStorageInterface|null): AuthenticationHandler $authenticationHandlerFactory
      */
     public function __construct(
         array $security,
@@ -70,6 +75,21 @@ class Firewall
         $this->db = $db;
         $this->apiTokenStore = $apiTokenStore;
         $this->authenticationHandlerFactory = $authenticationHandlerFactory;
+    }
+
+    /**
+     * Returns true if the first matching firewall authenticates the request without a session
+     *
+     * The session must not be started for a stateless request.
+     */
+    public function isStateless(Request $request): bool
+    {
+        $firewall = $this->getFirewall($request);
+        if (null === $firewall || !isset($firewall['guard'])) {
+            return false;
+        }
+
+        return $this->isStatelessGuard($this->createGuard($firewall['guard']), $request);
     }
 
     /**
@@ -99,7 +119,12 @@ class Firewall
             return null;
         }
 
-        $authHandler = ($this->authenticationHandlerFactory)($provider, $guard);
+        $tokenStorage = null;
+        if (null !== $guard && $this->isStatelessGuard($guard, $request)) {
+            $tokenStorage = new InMemoryTokenStorage();
+        }
+
+        $authHandler = ($this->authenticationHandlerFactory)($provider, $guard, $tokenStorage);
         try {
             $authHandler->login($request);
         } catch (InvalidApiTokenException $e) {
@@ -119,6 +144,11 @@ class Firewall
         }
 
         return new $guardClass();
+    }
+
+    private function isStatelessGuard(GuardAuthenticatorInterface $guard, Request $request): bool
+    {
+        return $guard instanceof StatelessAuthenticatorInterface && $guard->isStateless($request);
     }
 
     private function createInvalidApiTokenResponse(): Response

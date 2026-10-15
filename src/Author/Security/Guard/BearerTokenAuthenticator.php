@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Authenticates a request with an API Token sent as `Authorization: Bearer <token>`
  *
- * Requests without an authorization header are left to the session.
+ * Requests without an authorization header are left to the session. Requests with one are stateless.
  */
-class BearerTokenAuthenticator implements GuardAuthenticatorInterface
+class BearerTokenAuthenticator implements StatelessAuthenticatorInterface
 {
     /**
      * @var ApiTokenStoreInterface
@@ -27,6 +27,14 @@ class BearerTokenAuthenticator implements GuardAuthenticatorInterface
     public function __construct(ApiTokenStoreInterface $store)
     {
         $this->store = $store;
+    }
+
+    /**
+     * Any authorization header makes the request stateless: one that is not a valid Bearer token gets a 401, never the session
+     */
+    public function isStateless(Request $request): bool
+    {
+        return $request->headers->has('Authorization');
     }
 
     /**

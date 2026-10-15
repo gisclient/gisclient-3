@@ -8,6 +8,7 @@ require_once ADMIN_PATH . 'lib/functions.php';
 use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
 use GisClient\Author\Security\Firewall;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
+use GisClient\Author\Security\Token\TokenStorageInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,20 +23,14 @@ use Symfony\Component\Routing\Router;
 use Symfony\Component\Yaml\Yaml;
 
 $gcService = \GCService::instance();
-$gcService->startSession();
 
 // create request & context
 $request = Request::createFromGlobals();
 $requestContext = new RequestContext();
 $requestContext->fromRequest($request);
 
+$sessionStarted = false;
 try {
-    $router = $container->get(Router::class);
-    $router->setContext($requestContext);
-    
-    $requestMatch = $router->match($request->getPathInfo());
-    
-    
     $security = Yaml::parse(
         file_get_contents(ROOT_PATH . 'config/security.yml')
     );
@@ -43,8 +38,20 @@ try {
         $security['security'],
         \GCApp::getDB(),
         new PdoApiTokenStore(\GCApp::getDB()),
-        fn (?UserProviderInterface $provider, ?GuardAuthenticatorInterface $guard) => \GCApp::getAuthenticationHandler($provider, $guard)
+        fn (?UserProviderInterface $provider, ?GuardAuthenticatorInterface $guard, ?TokenStorageInterface $tokenStorage) => \GCApp::getAuthenticationHandler($provider, $guard, null !== $tokenStorage, $tokenStorage)
     );
+
+    // stateless requests (API Token) must neither start a session nor send a session cookie
+    if (!$firewall->isStateless($request)) {
+        $gcService->startSession();
+        $sessionStarted = true;
+    }
+
+    $router = $container->get(Router::class);
+    $router->setContext($requestContext);
+    
+    $requestMatch = $router->match($request->getPathInfo());
+    
     $response = $firewall->authenticate($request);
 
     if (null === $response) {
@@ -96,6 +103,8 @@ try {
 }
 
 // close the session, because all relevant data are already writte into it
-$gcService->saveAndClose();
+if ($sessionStarted) {
+    $gcService->saveAndClose();
+}
 
 $response->send();
