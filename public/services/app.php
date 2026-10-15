@@ -5,62 +5,20 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once ADMIN_PATH . 'lib/functions.php';
 
-use GisClient\Author\Security\AuthenticationHandler;
+use GisClient\Author\Security\Firewall;
+use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
+use GisClient\Author\Security\User\UserProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Router;
 use Symfony\Component\Yaml\Yaml;
-
-function getFirewall(Request $request)
-{
-    $security = Yaml::parse(
-        file_get_contents(ROOT_PATH . 'config/security.yml')
-    );
-    $firewalls = $security['security']['firewalls'];
-    foreach ($firewalls as $firewallName => $firewall) {
-        if (isset($firewall['pattern'])) {
-            $firewallMatcher = new RequestMatcher($firewall['pattern']);
-            if ($firewallMatcher->matches($request)) {
-                return $firewall;
-            }
-        } else {
-            throw new \Exception('No pattern defined for this firewall ' . $firewallName);
-        }
-    }
-
-    return null;
-}
-
-function checkAccessControl(Request $request, AuthenticationHandler $authHandler)
-{
-    $security = Yaml::parse(
-        file_get_contents(ROOT_PATH . 'config/security.yml')
-    );
-    $accessControls = $security['security']['access_control'];
-    foreach ($accessControls as $accessControl) {
-        $accessControlMatcher = new RequestMatcher($accessControl['path']);
-        if ($accessControlMatcher->matches($request)) {
-            if (!$accessControl['authenticated']) {
-                return true;
-            } elseif ($authHandler->isAuthenticated()) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    return false;
-}
 
 $gcService = \GCService::instance();
 $gcService->startSession();
@@ -77,27 +35,16 @@ try {
     $requestMatch = $router->match($request->getPathInfo());
     
     
-    $firewall = getFirewall($request);
-    if (null !== $firewall && isset($firewall['provider'])) {
-        $provider = new $firewall['provider'](\GCApp::getDB());
-    } else {
-        $provider = null;
-    }
-    
-    if (null !== $firewall && isset($firewall['guard'])) {
-        $guard = new $firewall['guard']();
-    } else {
-        $guard = null;
-    }
-    
-    if ($provider !== null || $guard !== null) {
-        $authHandler = GCApp::getAuthenticationHandler($provider, $guard);
-        $authHandler->login($request);
-        if (!checkAccessControl($request, $authHandler)) {
-            throw new AccessDeniedHttpException('Authentication required to access this path.');
-        }
-    }
-    
+    $security = Yaml::parse(
+        file_get_contents(ROOT_PATH . 'config/security.yml')
+    );
+    $firewall = new Firewall(
+        $security['security'],
+        \GCApp::getDB(),
+        fn (?UserProviderInterface $provider, ?GuardAuthenticatorInterface $guard) => \GCApp::getAuthenticationHandler($provider, $guard)
+    );
+    $firewall->authenticate($request);
+
     $request->attributes->add($requestMatch);
 
     $controllerResolver = new ControllerResolver();
