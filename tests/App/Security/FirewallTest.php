@@ -4,6 +4,7 @@ use GisClient\Author\Api\Dto\PagedResultDto;
 use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
+use GisClient\Author\Command\ApiTokenRegisterCommand;
 use GisClient\Author\Controller\JsonApiController;
 use GisClient\Author\Security\ApiToken\ApiTokenGenerator;
 use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
@@ -21,6 +22,7 @@ use GisClient\Author\Security\User\User;
 use GisClient\Author\Security\User\UserProvider;
 use GisClient\Author\Security\User\UserProviderInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -107,6 +109,25 @@ class FirewallTest extends TestCase
         $this->addUser('admin');
         $token = 'gca_0123456789abcdef_a_b-c_-d' . str_repeat('x', 36);
         $this->createStore()->register('0123456789abcdef', 'admin', 'client-app', hash('sha256', $token));
+
+        $response = $this->createFirewall()->authenticate($this->createBearerRequest('/api/project', $token));
+
+        $this->assertNull($response);
+        $this->assertSame('admin', $this->getAuthenticatedUsername());
+    }
+
+    public function testExternallyGeneratedApiTokenRegisteredByCommandAuthenticates()
+    {
+        $this->addUser('admin');
+        // generated and hashed outside Author, as by the wiki script (openssl + shasum)
+        $token = 'gca_0123456789abcdef_q1Xb-Zk_8nR2vT4wY6aC9eG1iK3mO5qS7uW9yA1cE3g';
+        $register = new CommandTester(new ApiTokenRegisterCommand($this->createStore()));
+        $this->assertSame(0, $register->execute([
+            'username' => 'admin',
+            'name' => 'client-app',
+            '--id' => '0123456789abcdef',
+            '--hash' => 'e7d3fe086d7203229f92eb56ced97b436b9d6fb51118bc761f21417eb627bc8d',
+        ]));
 
         $response = $this->createFirewall()->authenticate($this->createBearerRequest('/api/project', $token));
 

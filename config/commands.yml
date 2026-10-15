@@ -7,3 +7,4 @@ commands:
     - GisClient\Author\Command\DataImportCommand
     - GisClient\Author\Command\RefreshMapfileCommand
     - GisClient\Author\Command\ApiTokenCreateCommand
+    - GisClient\Author\Command\ApiTokenRegisterCommand
