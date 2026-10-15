@@ -4,7 +4,9 @@ use GisClient\Author\Api\Dto\PagedResultDto;
 use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
 use GisClient\Author\Api\Serializer\JsonApiSerializer;
 use GisClient\Author\Api\Service\ApiCrudService;
+use GisClient\Author\Command\ApiTokenCreateCommand;
 use GisClient\Author\Command\ApiTokenRegisterCommand;
+use GisClient\Author\Command\ApiTokenRevokeCommand;
 use GisClient\Author\Controller\JsonApiController;
 use GisClient\Author\Security\ApiToken\ApiTokenGenerator;
 use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
@@ -268,6 +270,29 @@ class FirewallTest extends TestCase
         );
 
         $this->assertInvalidTokenResponse($response);
+    }
+
+    public function testApiTokenCreatedByCommandIsRejectedAfterRevokeCommand()
+    {
+        $this->addUser('admin');
+        $create = new CommandTester(new ApiTokenCreateCommand($this->createStore()));
+        $this->assertSame(0, $create->execute([
+            'username' => 'admin',
+            'name' => 'client-app',
+        ]));
+        $this->assertSame(1, preg_match('/gca_([0-9a-f]{16})_\S+/', $create->getDisplay(), $matches));
+        [$token, $id] = $matches;
+        $request = $this->createBearerRequest('/api/project', $token);
+
+        $this->assertNull($this->createFirewall()->authenticate($request));
+        $this->assertSame('admin', $this->getAuthenticatedUsername());
+
+        $revoke = new CommandTester(new ApiTokenRevokeCommand($this->createStore()));
+        $this->assertSame(0, $revoke->execute([
+            'id' => $id,
+        ]));
+
+        $this->assertInvalidTokenResponse($this->createFirewall()->authenticate($request));
     }
 
     public function testApiPathWithoutAuthorizationHeaderUsesSession()

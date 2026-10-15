@@ -59,13 +59,21 @@ class PdoApiTokenStore implements ApiTokenStoreInterface
             return null;
         }
 
-        return new ApiToken(
-            (string) $row['id'],
-            (string) $row['username'],
-            (string) $row['name'],
-            (string) $row['token_hash'],
-            (string) $row['created_at']
-        );
+        return $this->createToken($row);
+    }
+
+    public function list(?string $username = null): array
+    {
+        $sql = 'SELECT id, username, name, token_hash, created_at FROM ' . DB_SCHEMA . '.api_token';
+        $params = [];
+        if ($username !== null) {
+            $sql .= ' WHERE username = :username';
+            $params['username'] = $username;
+        }
+        $stmt = $this->db->prepare($sql . ' ORDER BY username, name');
+        $stmt->execute($params);
+
+        return array_map(fn (array $row) => $this->createToken($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     public function delete(string $id): bool
@@ -76,6 +84,20 @@ class PdoApiTokenStore implements ApiTokenStoreInterface
         ]);
 
         return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function createToken(array $row): ApiToken
+    {
+        return new ApiToken(
+            (string) $row['id'],
+            (string) $row['username'],
+            (string) $row['name'],
+            (string) $row['token_hash'],
+            (string) $row['created_at']
+        );
     }
 
     private function userExists(string $username): bool

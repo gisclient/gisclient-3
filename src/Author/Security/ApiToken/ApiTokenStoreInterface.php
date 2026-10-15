@@ -15,6 +15,13 @@ interface ApiTokenStoreInterface
     public function find(string $id): ?ApiToken;
 
     /**
+     * @param string|null $username only the tokens of this user, or all tokens if null
+     *
+     * @return ApiToken[] ordered by username and name
+     */
+    public function list(?string $username = null): array;
+
+    /**
      * @return bool false if no token has the given id
      */
     public function delete(string $id): bool;

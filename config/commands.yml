@@ -8,3 +8,5 @@ commands:
     - GisClient\Author\Command\RefreshMapfileCommand
     - GisClient\Author\Command\ApiTokenCreateCommand
     - GisClient\Author\Command\ApiTokenRegisterCommand
+    - GisClient\Author\Command\ApiTokenListCommand
+    - GisClient\Author\Command\ApiTokenRevokeCommand
