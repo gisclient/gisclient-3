@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once ROOT_PATH . 'lib/i18n.php';
 require_once ADMIN_PATH . 'lib/functions.php';
 
+use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
 use GisClient\Author\Security\Firewall;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
@@ -41,21 +42,24 @@ try {
     $firewall = new Firewall(
         $security['security'],
         \GCApp::getDB(),
+        new PdoApiTokenStore(\GCApp::getDB()),
         fn (?UserProviderInterface $provider, ?GuardAuthenticatorInterface $guard) => \GCApp::getAuthenticationHandler($provider, $guard)
     );
-    $firewall->authenticate($request);
+    $response = $firewall->authenticate($request);
 
-    $request->attributes->add($requestMatch);
+    if (null === $response) {
+        $request->attributes->add($requestMatch);
 
-    $controllerResolver = new ControllerResolver();
-    $argumentResolver = new ArgumentResolver();
-    $controller = $controllerResolver->getController($request);
-    $arguments = $argumentResolver->getArguments($request, $controller);
-    if ($controller[0] instanceof ContainerAwareInterface) {
-        $controller[0]->setContainer($container);
+        $controllerResolver = new ControllerResolver();
+        $argumentResolver = new ArgumentResolver();
+        $controller = $controllerResolver->getController($request);
+        $arguments = $argumentResolver->getArguments($request, $controller);
+        if ($controller[0] instanceof ContainerAwareInterface) {
+            $controller[0]->setContainer($container);
+        }
+
+        $response = call_user_func_array($controller, $arguments);
     }
-    
-    $response = call_user_func_array($controller, $arguments);
 } catch (ResourceNotFoundException $e) {
     $response = new Response('Not Found', Response::HTTP_NOT_FOUND);
 } catch (HttpException $e) {

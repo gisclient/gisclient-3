@@ -5,6 +5,10 @@ security:
             pattern: ^/r3gis_apps/
             guard: GisClient\Author\Security\Guard\TokenAuthenticator
             provider: GisClient\Author\Security\User\R3UserProvider
+        api:
+            pattern: ^/api/
+            guard: GisClient\Author\Security\Guard\BearerTokenAuthenticator
+            provider: GisClient\Author\Security\User\UserProvider
         default:
             pattern: ^/
             guard: GisClient\Author\Security\Guard\UsernamePasswordAuthenticator

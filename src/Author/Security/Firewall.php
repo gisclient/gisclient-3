@@ -2,10 +2,17 @@
 
 namespace GisClient\Author\Security;
 
+use GisClient\Author\Api\Exception\ApiException;
+use GisClient\Author\Api\Mapper\JsonApiExceptionMapper;
+use GisClient\Author\Security\ApiToken\ApiTokenStoreInterface;
+use GisClient\Author\Security\ApiToken\InvalidApiTokenException;
+use GisClient\Author\Security\Guard\BearerTokenAuthenticator;
 use GisClient\Author\Security\Guard\GuardAuthenticatorInterface;
 use GisClient\Author\Security\User\UserProviderInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcher;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
@@ -35,6 +42,13 @@ class Firewall
     private $db;
 
     /**
+     * API Token store passed to the Bearer token authenticator
+     *
+     * @var ApiTokenStoreInterface
+     */
+    private $apiTokenStore;
+
+    /**
      * Creates the authentication handler for the matched provider and guard
      *
      * @var callable(UserProviderInterface|null, GuardAuthenticatorInterface|null): AuthenticationHandler
@@ -45,24 +59,30 @@ class Firewall
      * @param array $security the `security` section of config/security.yml
      * @param callable(UserProviderInterface|null, GuardAuthenticatorInterface|null): AuthenticationHandler $authenticationHandlerFactory
      */
-    public function __construct(array $security, \PDO $db, callable $authenticationHandlerFactory)
-    {
+    public function __construct(
+        array $security,
+        \PDO $db,
+        ApiTokenStoreInterface $apiTokenStore,
+        callable $authenticationHandlerFactory
+    ) {
         $this->firewalls = $security['firewalls'];
         $this->accessControls = $security['access_control'];
         $this->db = $db;
+        $this->apiTokenStore = $apiTokenStore;
         $this->authenticationHandlerFactory = $authenticationHandlerFactory;
     }
 
     /**
      * Log in through the first matching firewall and apply the access control rules
      *
+     * @return Response|null a 401 response if the request carries an invalid API Token, null to go on with the request
      * @throws AccessDeniedHttpException if the path requires authentication and the request is not authenticated
      */
-    public function authenticate(Request $request): void
+    public function authenticate(Request $request): ?Response
     {
         $firewall = $this->getFirewall($request);
         if (null === $firewall) {
-            return;
+            return null;
         }
 
         $provider = null;
@@ -72,18 +92,47 @@ class Firewall
 
         $guard = null;
         if (isset($firewall['guard'])) {
-            $guard = new $firewall['guard']();
+            $guard = $this->createGuard($firewall['guard']);
         }
 
         if ($provider === null && $guard === null) {
-            return;
+            return null;
         }
 
         $authHandler = ($this->authenticationHandlerFactory)($provider, $guard);
-        $authHandler->login($request);
+        try {
+            $authHandler->login($request);
+        } catch (InvalidApiTokenException $e) {
+            return $this->createInvalidApiTokenResponse();
+        }
         if (!$this->checkAccessControl($request, $authHandler)) {
             throw new AccessDeniedHttpException('Authentication required to access this path.');
         }
+
+        return null;
+    }
+
+    private function createGuard(string $guardClass): GuardAuthenticatorInterface
+    {
+        if ($guardClass === BearerTokenAuthenticator::class) {
+            return new BearerTokenAuthenticator($this->apiTokenStore);
+        }
+
+        return new $guardClass();
+    }
+
+    private function createInvalidApiTokenResponse(): Response
+    {
+        $mapped = (new JsonApiExceptionMapper())->map(new ApiException(
+            Response::HTTP_UNAUTHORIZED,
+            'invalid_token',
+            'Unauthorized',
+            'The API token is missing, malformed or invalid.'
+        ));
+
+        return new JsonResponse($mapped['payload'], $mapped['status'], [
+            'WWW-Authenticate' => 'Bearer error="invalid_token"',
+        ]);
     }
 
     /**

@@ -6,3 +6,4 @@ commands:
     - GisClient\Author\Command\DataExportCommand
     - GisClient\Author\Command\DataImportCommand
     - GisClient\Author\Command\RefreshMapfileCommand
+    - GisClient\Author\Command\ApiTokenCreateCommand
