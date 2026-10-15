@@ -84,7 +84,7 @@ try {
             ])
         );
     }
-} catch (Exception $e) {
+} catch (\Throwable $e) {
     \Sentry\captureException($e);
     if (strpos($request->headers->get('accept'), 'application/json') !== false) {
         $response = new JsonResponse([
