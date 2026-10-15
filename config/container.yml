@@ -93,6 +93,10 @@ services:
     class: GisClient\MapServer\Writer\OptimizedMapfileWriter
     public: true
 
+  GisClient\MapServer\Writer\MapfileRefresherInterface:
+    class: GisClient\MapServer\Writer\MapfileRefresher
+    public: true
+
   Symfony\Component\Config\FileLocator:
     arguments: ['%project_dir%/config']
   Symfony\Component\Routing\Loader\YamlFileLoader:
