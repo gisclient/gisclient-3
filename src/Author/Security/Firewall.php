@@ -61,6 +61,20 @@ class Firewall
     private $authenticationHandlerFactory;
 
     /**
+     * Request the matched firewall and guard were resolved for
+     *
+     * @var Request|null
+     */
+    private $matchedRequest;
+
+    /**
+     * Firewall and guard matched for the request, so that both are resolved once per request
+     *
+     * @var array{0: array<string, string>|null, 1: GuardAuthenticatorInterface|null}
+     */
+    private $match = [null, null];
+
+    /**
      * @param array $security the `security` section of config/security.yml
      * @param callable(UserProviderInterface|null, GuardAuthenticatorInterface|null, TokenStorageInterface|null): AuthenticationHandler $authenticationHandlerFactory
      */
@@ -84,12 +98,9 @@ class Firewall
      */
     public function isStateless(Request $request): bool
     {
-        $firewall = $this->getFirewall($request);
-        if (null === $firewall || !isset($firewall['guard'])) {
-            return false;
-        }
+        [, $guard] = $this->match($request);
 
-        return $this->isStatelessGuard($this->createGuard($firewall['guard']), $request);
+        return null !== $guard && $this->isStatelessGuard($guard, $request);
     }
 
     /**
@@ -100,7 +111,7 @@ class Firewall
      */
     public function authenticate(Request $request): ?Response
     {
-        $firewall = $this->getFirewall($request);
+        [$firewall, $guard] = $this->match($request);
         if (null === $firewall) {
             return null;
         }
@@ -108,11 +119,6 @@ class Firewall
         $provider = null;
         if (isset($firewall['provider'])) {
             $provider = new $firewall['provider']($this->db);
-        }
-
-        $guard = null;
-        if (isset($firewall['guard'])) {
-            $guard = $this->createGuard($firewall['guard']);
         }
 
         if ($provider === null && $guard === null) {
@@ -135,6 +141,23 @@ class Firewall
         }
 
         return null;
+    }
+
+    /**
+     * Returns the first matching firewall and its guard
+     *
+     * @return array{0: array<string, string>|null, 1: GuardAuthenticatorInterface|null}
+     */
+    private function match(Request $request): array
+    {
+        if ($this->matchedRequest !== $request) {
+            $firewall = $this->getFirewall($request);
+            $guard = isset($firewall['guard']) ? $this->createGuard($firewall['guard']) : null;
+            $this->match = [$firewall, $guard];
+            $this->matchedRequest = $request;
+        }
+
+        return $this->match;
     }
 
     private function createGuard(string $guardClass): GuardAuthenticatorInterface
