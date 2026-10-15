@@ -4,30 +4,12 @@ namespace GisClient\Author\Command;
 
 use GisClient\Author\Security\ApiToken\ApiTokenGenerator;
 use GisClient\Author\Security\ApiToken\ApiTokenRegistrationException;
-use GisClient\Author\Security\ApiToken\ApiTokenStoreInterface;
-use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ApiTokenCreateCommand extends Command
+class ApiTokenCreateCommand extends AbstractApiTokenCommand
 {
-    /**
-     * @var ApiTokenStoreInterface|null
-     */
-    private $store;
-
-    /**
-     * @param ApiTokenStoreInterface|null $store defaults to the store of the Tenant selected via HTTP_HOST
-     */
-    public function __construct(?ApiTokenStoreInterface $store = null)
-    {
-        $this->store = $store;
-        parent::__construct();
-    }
-
     protected function configure(): void
     {
         $this->setName('gisclient:api-token:create')
@@ -44,8 +26,8 @@ class ApiTokenCreateCommand extends Command
     {
         $username = (string) $input->getArgument('username');
         $name = (string) $input->getArgument('name');
-        $store = $this->store ?? new PdoApiTokenStore(\GCApp::getDB());
-        $errorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
+        $store = $this->getStore();
+        $errorOutput = $this->getErrorOutput($output);
 
         $generated = (new ApiTokenGenerator())->generate();
         try {

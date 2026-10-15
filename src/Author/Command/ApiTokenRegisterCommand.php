@@ -3,31 +3,13 @@
 namespace GisClient\Author\Command;
 
 use GisClient\Author\Security\ApiToken\ApiTokenRegistrationException;
-use GisClient\Author\Security\ApiToken\ApiTokenStoreInterface;
-use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ApiTokenRegisterCommand extends Command
+class ApiTokenRegisterCommand extends AbstractApiTokenCommand
 {
-    /**
-     * @var ApiTokenStoreInterface|null
-     */
-    private $store;
-
-    /**
-     * @param ApiTokenStoreInterface|null $store defaults to the store of the Tenant selected via HTTP_HOST
-     */
-    public function __construct(?ApiTokenStoreInterface $store = null)
-    {
-        $this->store = $store;
-        parent::__construct();
-    }
-
     protected function configure(): void
     {
         $this->setName('gisclient:api-token:register')
@@ -48,7 +30,7 @@ class ApiTokenRegisterCommand extends Command
         $name = (string) $input->getArgument('name');
         $id = (string) $input->getOption('id');
         $hash = (string) $input->getOption('hash');
-        $errorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
+        $errorOutput = $this->getErrorOutput($output);
 
         foreach ([
             'id' => $id,
@@ -61,7 +43,7 @@ class ApiTokenRegisterCommand extends Command
             }
         }
 
-        $store = $this->store ?? new PdoApiTokenStore(\GCApp::getDB());
+        $store = $this->getStore();
         try {
             $store->register($id, $username, $name, $hash);
         } catch (ApiTokenRegistrationException $e) {

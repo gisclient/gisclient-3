@@ -2,30 +2,13 @@
 
 namespace GisClient\Author\Command;
 
-use GisClient\Author\Security\ApiToken\ApiTokenStoreInterface;
-use GisClient\Author\Security\ApiToken\PdoApiTokenStore;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ApiTokenListCommand extends Command
+class ApiTokenListCommand extends AbstractApiTokenCommand
 {
-    /**
-     * @var ApiTokenStoreInterface|null
-     */
-    private $store;
-
-    /**
-     * @param ApiTokenStoreInterface|null $store defaults to the store of the Tenant selected via HTTP_HOST
-     */
-    public function __construct(?ApiTokenStoreInterface $store = null)
-    {
-        $this->store = $store;
-        parent::__construct();
-    }
-
     protected function configure(): void
     {
         $this->setName('gisclient:api-token:list')
@@ -41,7 +24,7 @@ class ApiTokenListCommand extends Command
     {
         $username = $input->getArgument('username');
         $username = $username === null ? null : (string) $username;
-        $store = $this->store ?? new PdoApiTokenStore(\GCApp::getDB());
+        $store = $this->getStore();
 
         $tokens = $store->list($username);
         if ($tokens === []) {
