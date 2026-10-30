@@ -28,9 +28,15 @@ class PdoEntityRepository implements EntityRepository
      */
     private static $sequenceCache = [];
 
-    public function __construct(\PDO $db = null)
+    /**
+     * @var PrimaryKeyAllocator
+     */
+    private $primaryKeyAllocator;
+
+    public function __construct(\PDO $db = null, ?PrimaryKeyAllocator $primaryKeyAllocator = null)
     {
         $this->db = $db ?: \GCApp::getDB();
+        $this->primaryKeyAllocator = $primaryKeyAllocator ?: new PdoPrimaryKeyAllocator($this->db);
     }
 
     public function findAll(EntityQuery $query)
@@ -111,7 +117,7 @@ class PdoEntityRepository implements EntityRepository
         $attributes = $entity->getAttributes();
         $pk = $schema->getPrimaryKey();
         if ($schema->getIdPhpType() === 'int' && empty($attributes[$pk])) {
-            $attributes[$pk] = \GCApp::getNewPKey(DB_SCHEMA, $schema->getResolvedDbSchema(), $schema->getResolvedTable(), $pk);
+            $attributes[$pk] = $this->primaryKeyAllocator->allocate($schema->getResolvedDbSchema(), $schema->getResolvedTable(), $pk);
         } elseif ($entity->getId() !== null && !array_key_exists($pk, $attributes)) {
             $attributes[$pk] = $entity->getId();
         }
