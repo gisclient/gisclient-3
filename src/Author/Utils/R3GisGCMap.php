@@ -65,6 +65,7 @@ class R3GisGCMap
     public $projectName;
     public $mapsetName;
     public $mapsetScaleType;
+    private $mapResolutions = [];
     public $mapOptions;
     public $maxResolution;
     public $minResolution;
@@ -196,6 +197,7 @@ class R3GisGCMap
         
         //Normalizzo rispetto all'array delle risoluzioni
         $mapOptions["resolutions"] = $this->getResolutions($this->mapsetScaleType);
+        $this->mapResolutions = $mapOptions['resolutions'];
         $mapOptions["minZoomLevel"] = $this->arrayIndex($mapOptions["resolutions"], $maxRes);
         $mapOptions["maxResolution"] = $mapOptions["resolutions"][0];
         $this->maxResolution = $mapOptions["maxResolution"];
@@ -615,7 +617,7 @@ class R3GisGCMap
                 $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
                 $aLayers[$themeName][$layergroupName]["options"] = $layerOptions;
             } elseif ($layerType == LayerGroup::XYZ_LAYER_TYPE) {
-                $layerOptions = array_merge($layerOptions, XyzPrintSource::browserOptions((int) $this->mapsetSRID));
+                $layerOptions = array_merge($layerOptions, XyzPrintSource::browserOptions((int) $this->mapsetSRID, $this->mapResolutions));
                 $layerOptions['xyzLayergroupId'] = (int) $row['layergroup_id'];
                 $layerOptions['isBaseLayer'] = $row['isbaselayer'] == 1;
                 $layerOptions['gc_id'] = $layerId;

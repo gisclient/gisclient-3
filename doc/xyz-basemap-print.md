@@ -45,6 +45,8 @@ intended for mapsets using EPSG:3857 (or its 900913 alias) and matching zooms.
 Other mapset CRSs are explicitly rejected for direct browser XYZ configuration.
 The browser uses the global Web Mercator extent and the full server-resolution
 list; it does not assume that the map's zoom index equals the source zoom index.
+The layer retains the mapset's configured display resolutions, independently of
+the source resolutions, so selecting XYZ does not replace the map's scale ladder.
 For local-CRS mapsets, retain a WMS facade such as MapProxy. Do not switch an
 existing customer mapset to XYZ solely to test printing.
 

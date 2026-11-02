@@ -42,7 +42,7 @@ class XyzPrintSource
         }, $urls);
     }
 
-    public static function browserOptions(int $srid): array
+    public static function browserOptions(int $srid, array $mapResolutions = []): array
     {
         if (!in_array($srid, [3857, 900913], true)) {
             throw new \InvalidArgumentException('Direct XYZ requires a Web Mercator mapset; use WMS/MapProxy for other CRSs');
@@ -56,6 +56,9 @@ class XyzPrintSource
             'projection' => 'EPSG:' . $srid,
             'maxExtent' => [-self::WORLD_EXTENT, -self::WORLD_EXTENT, self::WORLD_EXTENT, self::WORLD_EXTENT],
             'serverResolutions' => $resolutions,
+            // Do not let OpenLayers derive a new map scale ladder from the world extent.
+            'resolutions' => $mapResolutions ?: $resolutions,
+            'numZoomLevels' => count($mapResolutions ?: $resolutions),
             'zoomOffset' => 0,
         ];
     }

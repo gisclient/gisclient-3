@@ -63,6 +63,7 @@ class XyzPrintSourceTest extends TestCase
         putenv('GC_XYZ_MAX_ZOOM=18');
         $options = XyzPrintSource::browserOptions(3857);
         $this->assertCount(19, $options['serverResolutions']);
+        $this->assertSame(19, $options['numZoomLevels']);
         $this->assertEqualsWithDelta(156543.033928, $options['serverResolutions'][0], 0.00001);
         $this->assertSame(0, $options['zoomOffset']);
         $this->assertSame(-XyzPrintSource::WORLD_EXTENT, $options['maxExtent'][0]);
@@ -80,6 +81,17 @@ class XyzPrintSourceTest extends TestCase
         putenv('GC_XYZ_MAX_ZOOM=0');
         $this->assertSame(0, XyzPrintSource::maxZoom());
         $this->assertCount(1, XyzPrintSource::browserOptions(3857)['serverResolutions']);
+        $this->assertSame(1, XyzPrintSource::browserOptions(3857)['numZoomLevels']);
+    }
+
+    public function testBrowserPreservesCustomMapsetScalesWithoutShiftingTileZooms(): void
+    {
+        $mapResolutions = [38.218514, 19.109257, 9.5546285];
+        $options = XyzPrintSource::browserOptions(3857, $mapResolutions);
+        $this->assertSame($mapResolutions, $options['resolutions']);
+        $this->assertSame(3, $options['numZoomLevels']);
+        $this->assertCount(20, $options['serverResolutions']);
+        $this->assertSame(0, $options['zoomOffset']);
     }
 
     public function testInvalidEnvironmentValueIsRejected(): void

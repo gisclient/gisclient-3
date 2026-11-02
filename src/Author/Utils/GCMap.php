@@ -888,7 +888,7 @@ class GCMap
                         $v = XyzPrintSource::urls($row['url']);
                         //$aLayer["url"] = implode ("FFF",$v);
                         $aLayer["url"] = $v;
-                        $layerOptions = array_merge($layerOptions, XyzPrintSource::browserOptions((int) $this->mapsetSRID));
+                        $layerOptions = array_merge($layerOptions, XyzPrintSource::browserOptions((int) $this->mapsetSRID, $this->mapResolutions));
                         $aLayer["options"] = $layerOptions;
 
                         array_push($this->mapLayers, $aLayer);
