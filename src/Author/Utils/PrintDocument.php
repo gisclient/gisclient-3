@@ -346,6 +346,9 @@ class PrintDocument
         $themes = [];
 
         foreach ($this->tiles as $wms) {
+            if (strtoupper($wms['service'] ?? $wms['type'] ?? '') === 'XYZ') {
+                continue; // Basemaps have attribution, not a WMS legend.
+            }
             if (!empty($wms['parameters']['PROJECT']) && empty($project)) {
                 $project = $wms['parameters']['PROJECT'];
             }

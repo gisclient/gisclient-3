@@ -216,7 +216,18 @@ console.log(me.printBox)
             var tile;
             var layerUrl = layer.url;
             if(layer.owsurl) layerUrl = layer.owsurl;
-            if(layer.CLASS_NAME == 'OpenLayers.Layer.TMS') {
+            if(layer.CLASS_NAME == 'OpenLayers.Layer.XYZ') {
+                tile = {
+                    service: 'XYZ',
+                    type: 'XYZ',
+                    parameters: {
+                        PROJECT: gcConfig.projectName,
+                        MAP: gcConfig.mapsetName,
+                        LAYERGROUP_ID: layer.options.xyzLayergroupId
+                    },
+                    opacity: layer.opacity == null ? 100 : layer.opacity * 100
+                };
+            } else if(layer.CLASS_NAME == 'OpenLayers.Layer.TMS') {
                 tile = {
                     url: layerUrl,//.replace('/tms/', '/wms/'),
                     parameters: {

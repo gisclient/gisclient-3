@@ -228,6 +228,11 @@ foreach ($mapConfig['layers'] as $key => $layer) {
         $oLay->set('debug', $msDebugLevel);
         
         switch ($layer['SERVICE']) {
+            case 'XYZ':
+                $oLay->set('data', \GisClient\Author\Utils\XyzPrintSource::fromLayer($layer));
+                $oLay->setProjection('init=epsg:3857');
+                $oLay->set('opacity', max(0, min(100, (int) ($layer['PARAMETERS']['OPACITY'] ?? 100))));
+                break;
             case 'WMS':
             case 'TMS':
                 $query = getWmsParameters($layer['PARAMETERS']);

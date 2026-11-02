@@ -614,6 +614,16 @@ class R3GisGCMap
                 $aLayers[$themeName][$layergroupName]["title"] = $layergroupTitle;
                 $aLayers[$themeName][$layergroupName]["url"] = $layerUrl;
                 $aLayers[$themeName][$layergroupName]["options"] = $layerOptions;
+            } elseif ($layerType == LayerGroup::XYZ_LAYER_TYPE) {
+                $layerOptions = array_merge($layerOptions, XyzPrintSource::browserOptions((int) $this->mapsetSRID));
+                $layerOptions['xyzLayergroupId'] = (int) $row['layergroup_id'];
+                $layerOptions['isBaseLayer'] = $row['isbaselayer'] == 1;
+                $layerOptions['gc_id'] = $layerId;
+                $layerOptions['group'] = $layerTreeGroup;
+                $aLayers[$themeName][$layergroupName]['type'] = $layerType;
+                $aLayers[$themeName][$layergroupName]['title'] = $layergroupTitle;
+                $aLayers[$themeName][$layergroupName]['url'] = XyzPrintSource::urls($row['url']);
+                $aLayers[$themeName][$layergroupName]['options'] = $layerOptions;
             } elseif ($layerType == LayerGroup::WFS_LAYER_TYPE) {
                 $layerUrl = $row["url"] ?? $ows_url;
                 $layerParameters = [];
@@ -1361,6 +1371,9 @@ class R3GisGCMap
                 ')';
             case LayerGroup::WMTS_LAYER_TYPE:
                 throw new \Exception("wmts layer not supported");
+            case LayerGroup::XYZ_LAYER_TYPE:
+                return 'new OpenLayers.Layer.XYZ(' . json_encode($aLayer['title']) . ',' .
+                    json_encode($aLayer['url']) . ',' . json_encode($aLayer['options']) . ')';
         }
     }
     

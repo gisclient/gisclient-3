@@ -882,10 +882,13 @@ class GCMap
 
                 case LayerGroup::XYZ_LAYER_TYPE:
                     if ($row["url"]) {
-                        $v = preg_split("/[\r\n,]+/", $row["url"]);
+                        $aLayer['type'] = 'XYZ';
+                        $layerOptions['xyzLayergroupId'] = (int) $row['layergroup_id'];
+                        $layerOptions['isBaseLayer'] = $row['isbaselayer'] == 1;
+                        $v = XyzPrintSource::urls($row['url']);
                         //$aLayer["url"] = implode ("FFF",$v);
                         $aLayer["url"] = $v;
-                        $layerOptions["zoomOffset"] = $this->levelOffset - 1;
+                        $layerOptions = array_merge($layerOptions, XyzPrintSource::browserOptions((int) $this->mapsetSRID));
                         $aLayer["options"] = $layerOptions;
 
                         array_push($this->mapLayers, $aLayer);
@@ -1410,6 +1413,9 @@ class GCMap
     private function OLlayerText($aLayer)
     {
         switch ($aLayer["type"]) {
+            case 'XYZ':
+                return 'new OpenLayers.Layer.XYZ(' . json_encode($aLayer['name']) . ',' .
+                    json_encode($aLayer['url']) . ',' . json_encode($aLayer['options']) . ')';
             case "WMS":
                 $aLayer["options"]["group"] = $aLayer["options"]["theme"];
                 return 'new OpenLayers.Layer.WMS("' .
