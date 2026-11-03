@@ -115,7 +115,11 @@ class XyzPrintSourceTest extends TestCase
         $db->exec("INSERT INTO " . DB_SCHEMA . ".layergroup VALUES (7, 9, 'https://configured.example/{z}/{x}/{y}.png')");
         $db->exec("INSERT INTO " . DB_SCHEMA . ".mapset_layergroup VALUES (7, 'map_a')");
         $db->exec("INSERT INTO " . DB_SCHEMA . ".mapset VALUES ('map_a', 'project_a')");
-        $parameters = ['LAYERGROUP_ID' => 7, 'MAP' => 'map_a', 'PROJECT' => 'project_a'];
+        $parameters = [
+            'LAYERGROUP_ID' => 7,
+            'MAP' => 'map_a',
+            'PROJECT' => 'project_a',
+        ];
         $this->assertSame('https://configured.example/${z}/${x}/${y}.png', XyzPrintSource::configuredUrl($db, $parameters));
         $parameters['PROJECT'] = 'different_project';
         $this->expectException(RuntimeException::class);

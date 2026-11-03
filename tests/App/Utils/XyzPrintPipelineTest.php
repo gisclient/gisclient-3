@@ -10,7 +10,11 @@ class XyzPrintPipelineTest extends TestCase
     {
         $tiles = [[
             'service' => 'XYZ',
-            'parameters' => ['PROJECT' => 'customer', 'MAP' => 'map', 'LAYERGROUP_ID' => 7],
+            'parameters' => [
+                'PROJECT' => 'customer',
+                'MAP' => 'map',
+                'LAYERGROUP_ID' => 7,
+            ],
         ]];
         $this->assertSame('customer', PrintDocument::projectNameFromTiles($tiles));
         $reflection = new ReflectionClass(PrintDocument::class);
@@ -20,7 +24,9 @@ class XyzPrintPipelineTest extends TestCase
         $property->setValue($document, $tiles);
         $method = $reflection->getMethod('getLegendsFromMapfile');
         $method->setAccessible(true);
-        $this->assertSame(['themes' => []], $method->invoke($document));
+        $this->assertSame([
+            'themes' => [],
+        ], $method->invoke($document));
     }
 
     public function testStaticImagePayloadDoesNotRequireOrForwardAnUrl(): void
@@ -35,7 +41,11 @@ class XyzPrintPipelineTest extends TestCase
         $property->setValue($image, [[
             'type' => 'XYZ',
             'url' => 'https://caller-supplied.example/not-used',
-            'parameters' => ['project' => 'customer', 'map' => 'map', 'layergroup_id' => 7],
+            'parameters' => [
+                'project' => 'customer',
+                'map' => 'map',
+                'layergroup_id' => 7,
+            ],
             'opacity' => 0,
         ]]);
         $method = $reflection->getMethod('buildWmsList');
@@ -44,7 +54,12 @@ class XyzPrintPipelineTest extends TestCase
         $this->assertSame([[
             'URL' => '',
             'SERVICE' => 'XYZ',
-            'PARAMETERS' => ['PROJECT' => 'customer', 'MAP' => 'map', 'LAYERGROUP_ID' => 7, 'OPACITY' => 0],
+            'PARAMETERS' => [
+                'PROJECT' => 'customer',
+                'MAP' => 'map',
+                'LAYERGROUP_ID' => 7,
+                'OPACITY' => 0,
+            ],
         ]], $image->getWmsList());
     }
 }

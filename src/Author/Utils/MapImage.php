@@ -152,7 +152,11 @@ class MapImage
             if (strtoupper($tile['service'] ?? $tile['type'] ?? '') === 'XYZ') {
                 $parameters = array_change_key_case($tile['parameters'] ?? [], CASE_UPPER);
                 $parameters['OPACITY'] = $tile['opacity'] ?? 100;
-                $this->wmsList[] = ['URL' => '', 'SERVICE' => 'XYZ', 'PARAMETERS' => $parameters];
+                $this->wmsList[] = [
+                    'URL' => '',
+                    'SERVICE' => 'XYZ',
+                    'PARAMETERS' => $parameters,
+                ];
                 continue;
             }
             if (is_array($tile['url'])) {

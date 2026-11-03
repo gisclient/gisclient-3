@@ -49,7 +49,7 @@ class XyzPrintSource
         }
         $resolutions = [];
         for ($zoom = 0; $zoom <= self::maxZoom(); $zoom++) {
-            $resolutions[] = (2 * self::WORLD_EXTENT / 256) / pow(2, $zoom);
+            $resolutions[] = (2 * self::WORLD_EXTENT / 256) / 2 ** $zoom;
         }
         return [
             'sphericalMercator' => true,
