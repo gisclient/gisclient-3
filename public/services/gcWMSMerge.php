@@ -184,6 +184,7 @@ foreach($mapConfig['layers'] as $key => $layer) {
 				$oLay->setMetaData("wms_name", $layerNames);
 				$oLay->setMetaData("wms_server_version", $layer['PARAMETERS']['VERSION']);
 				$oLay->setMetaData("wms_format", $layer['PARAMETERS']['FORMAT']);
+				$oLay->setMetaData("wms_connectiontimeout", 1800);
 
 				break;
 			case 'WMTS':
