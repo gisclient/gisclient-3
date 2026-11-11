@@ -8,6 +8,7 @@ use GisClient\Author\Shared\Metadata\FieldMetadata;
 use GisClient\Author\Shared\Metadata\FontMetadata;
 use GisClient\Author\Shared\Metadata\GroupMetadata;
 use GisClient\Author\Shared\Metadata\LayergroupMetadata;
+use GisClient\Author\Shared\Metadata\LayerGroupsMetadata;
 use GisClient\Author\Shared\Metadata\LayerMetadata;
 use GisClient\Author\Shared\Metadata\LinkMetadata;
 use GisClient\Author\Shared\Metadata\LocalizationMetadata;
@@ -107,6 +108,7 @@ class MetadataRegistry
             LocalizationMetadata::class,
             MapsetMetadata::class,
             MapsetLayergroupMetadata::class,
+            LayerGroupsMetadata::class,
             GroupMetadata::class,
             UserMetadata::class,
         ];
