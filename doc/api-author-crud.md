@@ -81,6 +81,16 @@ At the moment the CRUD API supports:
 - `link`
 - `mapset`
 - `mapset_layergroup`
+- `layer_group`
+
+`layer_group` (table `layer_groups`) holds the WMS/WFS/WFS-T permissions of a user group on a layer
+(one row per layer/group pair, the same data the admin edits from the "Groups"
+tab of each layer). It has its own integer id (`layer_groups_id`) and two required
+relationships, `layer` and `group`. To read the permissions of one layer:
+
+```text
+GET /services/api/layer_group?filter[layer_id]=42
+```
 
 Each type defines:
 
